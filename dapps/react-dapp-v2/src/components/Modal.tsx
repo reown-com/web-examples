@@ -164,7 +164,7 @@ class Modal extends React.Component<ModalProps, ModalState> {
     const { offset } = this.state;
     const { children, show, opacity } = this.props;
     return (
-      <SLightbox show={show} offset={offset} opacity={opacity} ref={(c) => (this.lightbox = c)}>
+      <SLightbox show={show} offset={offset} opacity={opacity} ref={c => (this.lightbox = c)}>
         <SModalContainer>
           <SHitbox onClick={this.closeModal} />
 

@@ -164,7 +164,6 @@ class App extends React.Component<any, any> {
     try {
       await this.loadChainData();
 
-      console.log(DEFAULT_RELAY_URL,DEFAULT_PROJECT_ID )
       const client = await Client.init({
         logger: DEFAULT_LOGGER,
         relayUrl: DEFAULT_RELAY_URL,
@@ -249,10 +248,7 @@ class App extends React.Component<any, any> {
     if (this.state.client.session.topics.length) {
       const session = await this.state.client.session.get(this.state.client.session.topics[0]);
       const chains = session.state.accounts.map(account =>
-        account
-          .split(":")
-          .slice(0, -1)
-          .join(":"),
+        account.split(":").slice(0, -1).join(":"),
       );
       this.setState({ accounts: session.state.accounts, chains });
       this.onSessionConnected(session);
