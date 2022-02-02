@@ -1,15 +1,12 @@
-import * as React from "react";
-import * as PropTypes from "prop-types";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { colors, transitions } from "../styles";
 
-interface LightboxStyleProps {
+const SLightbox = styled.div<{
   show: boolean;
   offset: number;
   opacity?: number;
-}
-
-const SLightbox = styled.div<LightboxStyleProps>`
+}>`
   transition: opacity 0.1s ease-in-out;
   text-align: center;
   position: absolute;
@@ -107,75 +104,38 @@ const SModalContent = styled.div`
   word-wrap: break-word;
 `;
 
-interface ModalState {
-  offset: number;
-}
-
-interface ModalProps {
+interface IProps {
   children: React.ReactNode;
   show: boolean;
-  closeModal: any;
+  closeModal: () => void;
   opacity?: number;
 }
 
-const INITIAL_STATE: ModalState = {
-  offset: 0,
-};
+export default function Modal({ children, show, opacity, closeModal }: IProps) {
+  const [offset, setOffset] = useState(0);
+  const lightboxRef = useRef<HTMLDivElement>(null);
 
-class Modal extends React.Component<ModalProps, ModalState> {
-  public static propTypes = {
-    children: PropTypes.node.isRequired,
-    show: PropTypes.bool.isRequired,
-    closeModal: PropTypes.func.isRequired,
-    opacity: PropTypes.number,
-  };
+  useEffect(() => {
+    if (lightboxRef.current) {
+      const lightboxRect = lightboxRef.current.getBoundingClientRect();
+      const nextOffset = lightboxRect.top > 0 ? lightboxRect.top : 0;
 
-  public lightbox?: HTMLDivElement | null;
-
-  public state: ModalState = {
-    ...INITIAL_STATE,
-  };
-
-  public componentDidUpdate() {
-    if (this.lightbox) {
-      const lightboxRect = this.lightbox.getBoundingClientRect();
-      const offset = lightboxRect.top > 0 ? lightboxRect.top : 0;
-
-      if (offset !== INITIAL_STATE.offset && offset !== this.state.offset) {
-        this.setState({ offset });
+      if (nextOffset !== 0 && nextOffset !== offset) {
+        setOffset(nextOffset);
       }
     }
-  }
+  }, [offset]);
 
-  public closeModal = async () => {
-    const d = typeof window !== "undefined" ? document : "";
-    const body = d ? d.body || d.getElementsByTagName("body")[0] : "";
-    if (body) {
-      if (this.props.show) {
-        body.style.position = "";
-      } else {
-        body.style.position = "fixed";
-      }
-    }
-    this.props.closeModal();
-  };
+  return (
+    <SLightbox show={show} offset={offset} opacity={opacity} ref={lightboxRef}>
+      <SModalContainer>
+        <SHitbox onClick={closeModal} />
 
-  public render() {
-    const { offset } = this.state;
-    const { children, show, opacity } = this.props;
-    return (
-      <SLightbox show={show} offset={offset} opacity={opacity} ref={c => (this.lightbox = c)}>
-        <SModalContainer>
-          <SHitbox onClick={this.closeModal} />
-
-          <SCard>
-            <SCloseButton size={25} color={"dark"} onClick={this.closeModal} />
-            <SModalContent>{children}</SModalContent>
-          </SCard>
-        </SModalContainer>
-      </SLightbox>
-    );
-  }
+        <SCard>
+          <SCloseButton size={25} color={"dark"} onClick={closeModal} />
+          <SModalContent>{children}</SModalContent>
+        </SCard>
+      </SModalContainer>
+    </SLightbox>
+  );
 }
-
-export default Modal;
