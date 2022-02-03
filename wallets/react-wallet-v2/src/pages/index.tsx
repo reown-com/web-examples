@@ -1,3 +1,5 @@
+import PageHeader from '@/components/PageHeader'
+
 export default function HomePage() {
-  return <h1>Accounts</h1>
+  return <PageHeader>Accounts</PageHeader>
 }
