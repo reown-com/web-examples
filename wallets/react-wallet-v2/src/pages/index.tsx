@@ -1,3 +1,3 @@
 export default function HomePage() {
-  return null
+  return <h1>Accounts</h1>
 }
