@@ -68,7 +68,6 @@ export default function App() {
 
   const [modal, setModal] = useState("");
   const [client, setClient] = useState<Client>();
-  const [uri, setUri] = useState("");
   const [session, setSession] = useState<SessionTypes.Created>();
   const [accounts, setAccounts] = useState<string[]>([]);
   const [pairings, setPairings] = useState<string[]>([]);
@@ -122,7 +121,6 @@ export default function App() {
 
     _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
       const { uri } = proposal.signal.params;
-      setUri(uri);
       console.log("EVENT", "QR Code Modal open");
       QRCodeModal.open(uri, () => {
         console.log("EVENT", "QR Code Modal closed");
@@ -247,40 +245,6 @@ export default function App() {
     await getAccountBalances(accounts);
   };
 
-  const ping = async () => {
-    if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    if (typeof session === "undefined") {
-      throw new Error("Session is not connected");
-    }
-
-    try {
-      setPending(true);
-      openPingModal();
-
-      let valid = false;
-
-      try {
-        await client.session.ping(session.topic);
-        valid = true;
-      } catch (e) {
-        valid = false;
-      }
-
-      // display result
-      setResult({
-        method: "ping",
-        valid,
-      });
-    } catch (e) {
-      console.error(e);
-      setResult(null);
-    } finally {
-      setPending(false);
-    }
-  };
-
   const getAccountBalances = async (_accounts: string[]) => {
     setFetching(true);
     try {
@@ -347,6 +311,40 @@ export default function App() {
         setPending(false);
       }
     };
+
+  const ping = async () => {
+    if (typeof client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
+    }
+    if (typeof session === "undefined") {
+      throw new Error("Session is not connected");
+    }
+
+    try {
+      setPending(true);
+      openPingModal();
+
+      let valid = false;
+
+      try {
+        await client.session.ping(session.topic);
+        valid = true;
+      } catch (e) {
+        valid = false;
+      }
+
+      // display result
+      setResult({
+        method: "ping",
+        valid,
+      });
+    } catch (e) {
+      console.error(e);
+      setResult(null);
+    } finally {
+      setPending(false);
+    }
+  };
 
   const testSendTransaction = createJsonRpcRequestHandler(async (chainId: string) => {
     // get ethereum address
