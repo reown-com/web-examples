@@ -8,7 +8,7 @@ import { ERROR, getAppMetadata } from "@walletconnect/utils";
 import * as encoding from "@walletconnect/encoding";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
 import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
-import { BigNumber, constants } from "ethers";
+import { BigNumber } from "ethers";
 
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";
@@ -46,7 +46,6 @@ import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
 import PairingModal from "./modals/PairingModal";
 import PingModal from "./modals/PingModal";
-import { setUncaughtExceptionCaptureCallback } from "process";
 
 const SLayout = styled.div`
   position: relative;
@@ -120,7 +119,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [pending, setPending] = useState(false);
   const [fetching, setFetching] = useState(false);
-  const [isTestnet, setIsTestnet] = useState(true);
+  const [isTestnet, setIsTestnet] = useState(getInitialStateTestnet());
 
   const [modal, setModal] = useState("");
   const [client, setClient] = useState<Client>();

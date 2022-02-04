@@ -2,7 +2,6 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createGlobalStyle } from "styled-components";
 
-import App from "./App";
 import HooksApp from "./HooksApp";
 import { globalStyle } from "./styles";
 const GlobalStyle = createGlobalStyle`
