@@ -26,7 +26,6 @@ import {
   DEFAULT_PROJECT_ID,
   DEFAULT_RELAY_URL,
   DEFAULT_TEST_CHAINS,
-  DEFAULT_CHAINS,
 } from "./constants";
 import {
   apiGetAccountAssets,
@@ -142,9 +141,8 @@ export default function App() {
   const openRequestModal = () => setModal("request");
 
   const init = async () => {
-    setLoading(true);
-
     try {
+      setLoading(true);
       await loadChainData();
 
       const _client = await Client.init({
@@ -153,7 +151,7 @@ export default function App() {
         projectId: DEFAULT_PROJECT_ID,
       });
       setClient(_client);
-      subscribeToEvents(_client);
+      await subscribeToEvents(_client);
       await checkPersistedState(_client);
     } catch (err) {
       throw err;
@@ -166,9 +164,15 @@ export default function App() {
     init();
   }, []);
 
-  const subscribeToEvents = (_client: Client) => {
+  const subscribeToEvents = async (_client: Client) => {
     if (typeof _client === "undefined") {
       throw new Error("WalletConnect is not initialized");
+    }
+
+    let _session = {} as SessionTypes.Settled;
+
+    if (_client.session.topics.length) {
+      _session = await _client.session.get(_client.session.topics[0]);
     }
 
     _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
@@ -186,10 +190,11 @@ export default function App() {
     });
 
     _client.on(CLIENT_EVENTS.session.deleted, (deletedSession: SessionTypes.Settled) => {
-      if (deletedSession.topic !== session?.topic) return;
+      if (deletedSession.topic !== _session?.topic) return;
       console.log("EVENT", "session_deleted");
       // TODO:
       // this.resetApp();
+      window.location.reload();
     });
   };
 
