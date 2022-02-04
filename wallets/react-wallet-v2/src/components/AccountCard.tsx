@@ -18,7 +18,8 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
         borderColor: `rgba(${rgb}, 0.6)`,
         boxShadow: `0 0 10px 0 rgba(${rgb}, 0.1)`,
         marginBottom: '$6',
-        overflowY: 'hidden'
+        overflowY: 'hidden',
+        minHeight: '70px'
       }}
     >
       <Card.Body

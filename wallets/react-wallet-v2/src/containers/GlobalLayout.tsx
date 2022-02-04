@@ -48,8 +48,6 @@ export default function GlobalLayout({ children }: Props) {
       >
         {initialized ? (
           <Fragment>
-            <Card.Header>Header</Card.Header>
-            <Divider />
             <Card.Body css={{ overflow: 'scroll' }}>{children}</Card.Body>
             <Divider />
             <Card.Footer>Footer</Card.Footer>
