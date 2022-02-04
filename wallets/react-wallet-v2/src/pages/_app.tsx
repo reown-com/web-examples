@@ -1,4 +1,4 @@
-import Layout from '@/components/Layout'
+import Layout from '@/containers/GlobalLayout'
 import { WalletContextProvider } from '@/contexts/WalletContext'
 import { theme } from '@/utils/ThemeUtil'
 import { NextUIProvider } from '@nextui-org/react'
