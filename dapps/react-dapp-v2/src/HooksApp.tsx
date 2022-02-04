@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 
-import Client, { CLIENT_EVENTS } from "@walletconnect/client";
 import QRCodeModal from "@walletconnect/legacy-modal";
-import { PairingTypes, SessionTypes } from "@walletconnect/types";
+import { SessionTypes } from "@walletconnect/types";
 import { ERROR, getAppMetadata } from "@walletconnect/utils";
 import * as encoding from "@walletconnect/encoding";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
@@ -17,11 +16,8 @@ import Modal from "./components/Modal";
 import {
   DEFAULT_APP_METADATA,
   DEFAULT_MAIN_CHAINS,
-  DEFAULT_LOGGER,
   DEFAULT_EIP155_METHODS,
   DEFAULT_COSMOS_METHODS,
-  DEFAULT_PROJECT_ID,
-  DEFAULT_RELAY_URL,
   DEFAULT_TEST_CHAINS,
 } from "./constants";
 import {
@@ -52,6 +48,7 @@ import {
   SLayout,
   SToggleContainer,
 } from "./components/app";
+import { useWalletConnectClient } from "./contexts/ClientContext";
 
 interface FormattedRpcResponse {
   method: string;
@@ -61,104 +58,58 @@ interface FormattedRpcResponse {
 }
 
 export default function App() {
-  const [loading, setLoading] = useState(false);
   const [pending, setPending] = useState(false);
-  const [fetching, setFetching] = useState(false);
   const [isTestnet, setIsTestnet] = useState(getInitialStateTestnet());
 
   const [modal, setModal] = useState("");
-  const [client, setClient] = useState<Client>();
-  const [session, setSession] = useState<SessionTypes.Created>();
-  const [accounts, setAccounts] = useState<string[]>([]);
-  const [pairings, setPairings] = useState<string[]>([]);
+
   const [result, setResult] = useState<{
     method: string;
     valid: boolean;
   } | null>();
-  const [balances, setBalances] = useState<AccountBalances>({});
+
   const [chainData, setChainData] = useState<ChainNamespaces>({});
-  const [chains, setChains] = useState<string[]>([]);
 
   const closeModal = () => setModal("");
   const openPairingModal = () => setModal("pairing");
   const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
 
-  const init = async () => {
-    try {
-      setLoading(true);
-      await loadChainData();
+  const {
+    client,
+    session,
+    chains,
+    accounts,
+    balances,
+    fetching,
+    loading,
+    setSession,
+    setPairings,
+    setAccounts,
+    setChains,
+    setFetching,
+    setBalances,
+  } = useWalletConnectClient();
 
-      const _client = await Client.init({
-        logger: DEFAULT_LOGGER,
-        relayUrl: DEFAULT_RELAY_URL,
-        projectId: DEFAULT_PROJECT_ID,
-      });
-      setClient(_client);
-      await subscribeToEvents(_client);
-      await checkPersistedState(_client);
-    } catch (err) {
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  console.log({
+    client,
+    session,
+    chains,
+    accounts,
+    balances,
+    fetching,
+    loading,
+    setSession,
+    setPairings,
+    setAccounts,
+    setChains,
+    setFetching,
+    setBalances,
+  });
 
   useEffect(() => {
-    init();
+    loadChainData();
   }, []);
-
-  const subscribeToEvents = async (_client: Client) => {
-    if (typeof _client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-
-    let _session = {} as SessionTypes.Settled;
-
-    if (_client.session.topics.length) {
-      _session = await _client.session.get(_client.session.topics[0]);
-    }
-
-    _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
-      const { uri } = proposal.signal.params;
-      console.log("EVENT", "QR Code Modal open");
-      QRCodeModal.open(uri, () => {
-        console.log("EVENT", "QR Code Modal closed");
-      });
-    });
-
-    _client.on(CLIENT_EVENTS.pairing.created, async (proposal: PairingTypes.Settled) => {
-      if (typeof client === "undefined") return;
-      setPairings(client.pairing.topics);
-    });
-
-    _client.on(CLIENT_EVENTS.session.deleted, (deletedSession: SessionTypes.Settled) => {
-      if (deletedSession.topic !== _session?.topic) return;
-      console.log("EVENT", "session_deleted");
-      // TODO:
-      // this.resetApp();
-      window.location.reload();
-    });
-  };
-
-  const checkPersistedState = async (_client: Client) => {
-    if (typeof _client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    // populates existing pairings to state
-    setPairings(_client.pairing.topics);
-    if (typeof session !== "undefined") return;
-    // populates existing session to state (assume only the top one)
-    if (_client.session.topics.length) {
-      const session = await _client.session.get(_client.session.topics[0]);
-      const chains = session.state.accounts.map(account =>
-        account.split(":").slice(0, -1).join(":"),
-      );
-      setAccounts(session.state.accounts);
-      setChains(chains);
-      onSessionConnected(session);
-    }
-  };
 
   const connect = async (pairing?: { topic: string }) => {
     if (typeof client === "undefined") {
