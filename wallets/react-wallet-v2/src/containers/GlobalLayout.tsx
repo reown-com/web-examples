@@ -1,20 +1,28 @@
 import { WalletContext } from '@/contexts/WalletContext'
 import { Card, Container, Divider, Loading } from '@nextui-org/react'
-import { Fragment, ReactNode, useContext, useEffect } from 'react'
+import { Fragment, ReactNode, useCallback, useContext, useEffect } from 'react'
 
 interface Props {
   children: ReactNode | ReactNode[]
 }
 
 export default function GlobalLayout({ children }: Props) {
-  const { state, actions } = useContext(WalletContext)
-  const hasWallet = state.wallet !== undefined
+  const {
+    state: { initialized },
+    actions
+  } = useContext(WalletContext)
+
+  const onInitialize = useCallback(async () => {
+    actions.createWallet()
+    await actions.createWalletConnectClient()
+    actions.setInitialized()
+  }, [actions])
 
   useEffect(() => {
-    if (!hasWallet) {
-      actions.createWallet()
+    if (!initialized) {
+      onInitialize()
     }
-  }, [actions, hasWallet])
+  }, [initialized, onInitialize])
 
   return (
     <Container
@@ -26,9 +34,15 @@ export default function GlobalLayout({ children }: Props) {
       <Card
         bordered
         borderWeight="light"
-        css={{ height: '92vh', maxWidth: '600px', width: '100%' }}
+        css={{
+          height: '92vh',
+          maxWidth: '600px',
+          width: '100%',
+          justifyContent: initialized ? 'normal' : 'center',
+          alignItems: initialized ? 'normal' : 'center'
+        }}
       >
-        {hasWallet ? (
+        {initialized ? (
           <Fragment>
             <Card.Header>Header</Card.Header>
             <Divider />
