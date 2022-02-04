@@ -53,6 +53,13 @@ import {
   SToggleContainer,
 } from "./components/app";
 
+interface FormattedRpcResponse {
+  method: string;
+  address: string;
+  valid: boolean;
+  result: string;
+}
+
 export default function App() {
   const [loading, setLoading] = useState(false);
   const [pending, setPending] = useState(false);
@@ -317,204 +324,174 @@ export default function App() {
     setChainData(chainData);
   };
 
-  const testSendTransaction = async (chainId: string) => {
-    if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    if (typeof session === "undefined") {
-      throw new Error("Session is not connected");
-    }
+  // ----- EVM RPC -----
 
-    try {
-      setPending(true);
-      // get ethereum address
-      const account = accounts.find(account => account.startsWith(chainId));
-      if (account === undefined) throw new Error("Account is not found");
-      const address = account.split(":").pop();
-      if (address === undefined) throw new Error("Address is invalid");
-
-      // open modal
-      openRequestModal();
-
-      const tx = await formatTestTransaction(account);
-
-      const balance = BigNumber.from(balances[account][0].balance || "0");
-      if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
-        const formattedResult = {
-          method: "eth_sendTransaction",
-          address,
-          valid: false,
-          result: "Insufficient funds for intrinsic transaction cost",
-        };
-        setResult(formattedResult);
-        return;
+  const createJsonRpcRequestHandler =
+    (rpcRequest: (...requestArgs: [any]) => Promise<FormattedRpcResponse>) =>
+    async (chainId: string) => {
+      if (typeof client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
+      if (typeof session === "undefined") {
+        throw new Error("Session is not connected");
       }
 
-      const result = await client.request({
-        topic: session.topic,
-        chainId,
-        request: {
-          method: "eth_sendTransaction",
-          params: [tx],
-        },
-      });
+      try {
+        setPending(true);
+        const result = await rpcRequest(chainId);
+        setResult(result);
+      } catch (err) {
+        console.error(err);
+        setResult(null);
+      } finally {
+        setPending(false);
+      }
+    };
 
-      // format displayed result
-      const formattedResult = {
+  const testSendTransaction = createJsonRpcRequestHandler(async (chainId: string) => {
+    // get ethereum address
+    const account = accounts.find(account => account.startsWith(chainId));
+    if (account === undefined) throw new Error("Account is not found");
+    const address = account.split(":").pop();
+    if (address === undefined) throw new Error("Address is invalid");
+
+    // open modal
+    openRequestModal();
+
+    const tx = await formatTestTransaction(account);
+
+    const balance = BigNumber.from(balances[account][0].balance || "0");
+    if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
+      return {
         method: "eth_sendTransaction",
         address,
-        valid: true,
-        result,
+        valid: false,
+        result: "Insufficient funds for intrinsic transaction cost",
       };
-
-      // display result
-      setResult(formattedResult);
-    } catch (e) {
-      console.error(e);
-      setResult(null);
-    } finally {
-      setPending(false);
-    }
-  };
-
-  const testSignPersonalMessage = async (chainId: string) => {
-    if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    if (typeof session === "undefined") {
-      throw new Error("Session is not connected");
     }
 
-    try {
-      setPending(true);
-      // test message
-      const message = `My email is john@doe.com - ${Date.now()}`;
+    const result: string = await client!.request({
+      topic: session!.topic,
+      chainId,
+      request: {
+        method: "eth_sendTransaction",
+        params: [tx],
+      },
+    });
 
-      // encode message (hex)
-      const hexMsg = encoding.utf8ToHex(message, true);
+    // format displayed result
+    return {
+      method: "eth_sendTransaction",
+      address,
+      valid: true,
+      result,
+    };
+  });
 
-      // get ethereum address
-      const account = accounts.find(account => account.startsWith(chainId));
-      if (account === undefined) throw new Error("Account is not found");
-      const address = account.split(":").pop();
-      if (address === undefined) throw new Error("Address is invalid");
+  const testSignPersonalMessage = createJsonRpcRequestHandler(async (chainId: string) => {
+    // test message
+    const message = `My email is john@doe.com - ${Date.now()}`;
 
-      // personal_sign params
-      const params = [hexMsg, address];
+    // encode message (hex)
+    const hexMsg = encoding.utf8ToHex(message, true);
 
-      // open modal
-      openRequestModal();
+    // get ethereum address
+    const account = accounts.find(account => account.startsWith(chainId));
+    if (account === undefined) throw new Error("Account is not found");
+    const address = account.split(":").pop();
+    if (address === undefined) throw new Error("Address is invalid");
 
-      // send message
-      const result = await client.request({
-        topic: session.topic,
-        chainId,
-        request: {
-          method: "personal_sign",
-          params,
-        },
-      });
+    // personal_sign params
+    const params = [hexMsg, address];
 
-      //  split chainId
-      const [namespace, reference] = chainId.split(":");
+    // open modal
+    openRequestModal();
 
-      const targetChainData = chainData[namespace][reference];
-
-      if (typeof targetChainData === "undefined") {
-        throw new Error(`Missing chain data for chainId: ${chainId}`);
-      }
-
-      const rpcUrl = targetChainData.rpc[0];
-
-      // verify signature
-      const hash = hashPersonalMessage(message);
-      const valid = await verifySignature(address, result, hash, rpcUrl);
-
-      // format displayed result
-      const formattedResult = {
+    // send message
+    const result: string = await client!.request({
+      topic: session!.topic,
+      chainId,
+      request: {
         method: "personal_sign",
-        address,
-        valid,
-        result,
-      };
+        params,
+      },
+    });
 
-      // display result
-      setResult(formattedResult);
-    } catch (e) {
-      console.error(e);
-      setResult(null);
-    } finally {
-      setPending(false);
+    //  split chainId
+    const [namespace, reference] = chainId.split(":");
+
+    const targetChainData = chainData[namespace][reference];
+
+    if (typeof targetChainData === "undefined") {
+      throw new Error(`Missing chain data for chainId: ${chainId}`);
     }
-  };
 
-  const testSignTypedData = async (chainId: string) => {
-    if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    if (typeof session === "undefined") {
-      throw new Error("Session is not connected");
-    }
-    try {
-      setPending(true);
+    const rpcUrl = targetChainData.rpc[0];
 
-      // test message
-      const message = JSON.stringify(eip712.example);
+    // verify signature
+    const hash = hashPersonalMessage(message);
+    const valid = await verifySignature(address, result, hash, rpcUrl);
 
-      // get ethereum address
-      const account = accounts.find(account => account.startsWith(chainId));
-      if (account === undefined) throw new Error("Account is not found");
-      const address = account.split(":").pop();
-      if (address === undefined) throw new Error("Address is invalid");
+    // format displayed result
+    return {
+      method: "personal_sign",
+      address,
+      valid,
+      result,
+    };
+  });
 
-      // eth_signTypedData params
-      const params = [address, message];
+  const testSignTypedData = createJsonRpcRequestHandler(async (chainId: string) => {
+    // test message
+    const message = JSON.stringify(eip712.example);
 
-      // open modal
-      openRequestModal();
+    // get ethereum address
+    const account = accounts.find(account => account.startsWith(chainId));
+    if (account === undefined) throw new Error("Account is not found");
+    const address = account.split(":").pop();
+    if (address === undefined) throw new Error("Address is invalid");
 
-      // send message
-      const result = await client.request({
-        topic: session.topic,
-        chainId,
-        request: {
-          method: "eth_signTypedData",
-          params,
-        },
-      });
+    // eth_signTypedData params
+    const params = [address, message];
 
-      //  split chainId
-      const [namespace, reference] = chainId.split(":");
+    // open modal
+    openRequestModal();
 
-      const targetChainData = chainData[namespace][reference];
-
-      if (typeof targetChainData === "undefined") {
-        throw new Error(`Missing chain data for chainId: ${chainId}`);
-      }
-
-      const rpcUrl = targetChainData.rpc[0];
-
-      // verify signature
-      const hash = hashTypedDataMessage(message);
-      const valid = await verifySignature(address, result, hash, rpcUrl);
-
-      // format displayed result
-      const formattedResult = {
+    // send message
+    const result = await client!.request({
+      topic: session!.topic,
+      chainId,
+      request: {
         method: "eth_signTypedData",
-        address,
-        valid,
-        result,
-      };
+        params,
+      },
+    });
 
-      // display result
-      setResult(formattedResult);
-    } catch (e) {
-      console.error(e);
-      setResult(null);
-    } finally {
-      setPending(false);
+    //  split chainId
+    const [namespace, reference] = chainId.split(":");
+
+    const targetChainData = chainData[namespace][reference];
+
+    if (typeof targetChainData === "undefined") {
+      throw new Error(`Missing chain data for chainId: ${chainId}`);
     }
-  };
+
+    const rpcUrl = targetChainData.rpc[0];
+
+    // verify signature
+    const hash = hashTypedDataMessage(message);
+    const valid = await verifySignature(address, result, hash, rpcUrl);
+
+    // format displayed result
+    return {
+      method: "eth_signTypedData",
+      address,
+      valid,
+      result,
+    };
+  });
+
+  // ------ COSMOS RPC ------
 
   const testSignDirect = async (chainId: string) => {
     if (typeof client === "undefined") {
