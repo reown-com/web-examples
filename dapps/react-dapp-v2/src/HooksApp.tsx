@@ -237,7 +237,7 @@ export default function App() {
   const onSessionUpdate = async (accounts: string[], chains: string[]) => {
     setChains(chains);
     setAccounts(accounts);
-    await getAccountBalances();
+    await getAccountBalances(accounts);
   };
 
   const ping = async () => {
@@ -274,11 +274,11 @@ export default function App() {
     }
   };
 
-  const getAccountBalances = async () => {
+  const getAccountBalances = async (_accounts: string[]) => {
     setFetching(true);
     try {
       const arr = await Promise.all(
-        accounts.map(async account => {
+        _accounts.map(async account => {
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
           const assets = await apiGetAccountAssets(address, chainId);
