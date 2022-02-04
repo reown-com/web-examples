@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { version } from "@walletconnect/client/package.json";
 
 // import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
 
@@ -153,7 +154,7 @@ export default function App() {
       <SLanding center>
         <Banner />
         <h6>
-          <span>{`Using v${process.env.REACT_APP_VERSION || "2.0.0-beta"}`}</span>
+          <span>{`Using v${version || "2.0.0-beta"}`}</span>
         </h6>
         <SButtonContainer>
           <h6>Select chains:</h6>
