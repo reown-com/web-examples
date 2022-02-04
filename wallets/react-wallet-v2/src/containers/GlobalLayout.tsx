@@ -1,6 +1,7 @@
-import { WalletContext } from '@/contexts/WalletContext'
+import WalletStore from '@/store/WalletStore'
 import { Card, Container, Divider, Loading } from '@nextui-org/react'
-import { Fragment, ReactNode, useCallback, useContext, useEffect } from 'react'
+import { Fragment, ReactNode, useCallback, useEffect } from 'react'
+import { useSnapshot } from 'valtio'
 
 /**
  * Types
@@ -13,20 +14,19 @@ interface Props {
  * Container
  */
 export default function GlobalLayout({ children }: Props) {
-  const { walletState, walletActions } = useContext(WalletContext)
-  const waletReady = walletState.ready
+  const { initialized } = useSnapshot(WalletStore.state)
 
   const onInitialize = useCallback(async () => {
-    walletActions.createWallet()
-    await walletActions.createWalletConnectClient()
-    walletActions.setInitialized()
-  }, [walletActions])
+    WalletStore.createWallet()
+    await WalletStore.createWalletConnectClient()
+    WalletStore.setInitialized(true)
+  }, [])
 
   useEffect(() => {
-    if (!waletReady) {
+    if (!initialized) {
       onInitialize()
     }
-  }, [waletReady, onInitialize])
+  }, [initialized, onInitialize])
 
   return (
     <Container
@@ -42,11 +42,11 @@ export default function GlobalLayout({ children }: Props) {
           height: '92vh',
           maxWidth: '600px',
           width: '100%',
-          justifyContent: waletReady ? 'normal' : 'center',
-          alignItems: waletReady ? 'normal' : 'center'
+          justifyContent: initialized ? 'normal' : 'center',
+          alignItems: initialized ? 'normal' : 'center'
         }}
       >
-        {waletReady ? (
+        {initialized ? (
           <Fragment>
             <Card.Header>Header</Card.Header>
             <Divider />

@@ -2437,6 +2437,11 @@ prop-types@^15.7.2:
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
+proxy-compare@2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/proxy-compare/-/proxy-compare-2.0.2.tgz#343e624d0ec399dfbe575f1d365d4fa042c9fc69"
+  integrity sha512-3qUXJBariEj3eO90M3Rgqq3+/P5Efl0t/dl9g/1uVzIQmO3M+ql4hvNH3mYdu8H+1zcKv07YvL55tsY74jmH1A==
+
 pump@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/pump/-/pump-3.0.0.tgz#b4a2116815bde2f4e1ea602354e8c75565107a64"
@@ -2949,6 +2954,13 @@ v8-compile-cache@^2.0.3:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/v8-compile-cache/-/v8-compile-cache-2.3.0.tgz#2de19618c66dc247dcfb6f99338035d8245a2cee"
   integrity sha512-l8lCEmLcLYZh4nbunNZvQCJc5pv7+RCwa8q/LdUx8u7lsWvPDKmpodJAJNwkAhJC//dFY48KuIEmjtd4RViDrA==
+
+valtio@1.2.11:
+  version "1.2.11"
+  resolved "https://registry.yarnpkg.com/valtio/-/valtio-1.2.11.tgz#1a49c6a24d774a1f0bb70692b20d93c1f7d40a06"
+  integrity sha512-zNbJsBNQ0EpzZnOUpuy6lUlpGSvkZu+/hZ9g7ifY3AQxo1RkqL7Ld6fVxRNLE04tVwOMNiDOgYihpEd6apLrog==
+  dependencies:
+    proxy-compare "2.0.2"
 
 which-boxed-primitive@^1.0.2:
   version "1.0.2"

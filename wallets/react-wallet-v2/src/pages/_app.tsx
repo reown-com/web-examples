@@ -1,16 +1,13 @@
-import Layout from '@/containers/GlobalLayout'
-import { WalletContextProvider } from '@/contexts/WalletContext'
+import GlobalLayout from '@/containers/GlobalLayout'
 import { NextUIProvider } from '@nextui-org/react'
 import { AppProps } from 'next/app'
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <NextUIProvider>
-      <WalletContextProvider>
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-      </WalletContextProvider>
+      <GlobalLayout>
+        <Component {...pageProps} />
+      </GlobalLayout>
     </NextUIProvider>
   )
 }
