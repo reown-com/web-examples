@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-import QRCodeModal from "@walletconnect/legacy-modal";
-import { SessionTypes } from "@walletconnect/types";
-import { ERROR, getAppMetadata } from "@walletconnect/utils";
 import * as encoding from "@walletconnect/encoding";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
 import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
@@ -13,21 +10,13 @@ import Blockchain from "./components/Blockchain";
 import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
+import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
 import {
-  DEFAULT_APP_METADATA,
-  DEFAULT_MAIN_CHAINS,
-  DEFAULT_EIP155_METHODS,
-  DEFAULT_COSMOS_METHODS,
-  DEFAULT_TEST_CHAINS,
-} from "./constants";
-import {
-  apiGetAccountAssets,
   AccountAction,
   eip712,
   hashPersonalMessage,
   hashTypedDataMessage,
   verifySignature,
-  AccountBalances,
   formatTestTransaction,
   ChainNamespaces,
   setInitialStateTestnet,
@@ -78,102 +67,19 @@ export default function App() {
   const {
     client,
     session,
+    connect,
+    disconnect,
     chains,
     accounts,
     balances,
     fetching,
     loading,
-    setSession,
-    setPairings,
-    setAccounts,
     setChains,
-    setFetching,
-    setBalances,
   } = useWalletConnectClient();
-
-  console.log({
-    client,
-    session,
-    chains,
-    accounts,
-    balances,
-    fetching,
-    loading,
-    setSession,
-    setPairings,
-    setAccounts,
-    setChains,
-    setFetching,
-    setBalances,
-  });
 
   useEffect(() => {
     loadChainData();
   }, []);
-
-  const connect = async (pairing?: { topic: string }) => {
-    if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    console.log("connect", pairing);
-    if (modal === "pairing") {
-      closeModal();
-    }
-    try {
-      const supportedNamespaces: string[] = [];
-      chains.forEach(chainId => {
-        const [namespace] = chainId.split(":");
-        if (!supportedNamespaces.includes(namespace)) {
-          supportedNamespaces.push(namespace);
-        }
-      });
-      const methods: string[] = supportedNamespaces
-        .map(namespace => {
-          switch (namespace) {
-            case "eip155":
-              return DEFAULT_EIP155_METHODS;
-            case "cosmos":
-              return DEFAULT_COSMOS_METHODS;
-            default:
-              throw new Error(`No default methods for namespace: ${namespace}`);
-          }
-        })
-        .flat();
-      const session = await client.connect({
-        metadata: getAppMetadata() || DEFAULT_APP_METADATA,
-        pairing,
-        permissions: {
-          blockchain: {
-            chains,
-          },
-          jsonrpc: {
-            methods,
-          },
-        },
-      });
-
-      onSessionConnected(session);
-    } catch (e) {
-      console.error(e);
-      // ignore rejection
-    }
-
-    // close modal in case it was open
-    QRCodeModal.close();
-  };
-
-  const disconnect = async () => {
-    if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    if (typeof session === "undefined") {
-      throw new Error("Session is not connected");
-    }
-    await client.disconnect({
-      topic: session.topic,
-      reason: ERROR.USER_DISCONNECTED.format(),
-    });
-  };
 
   const onConnect = () => {
     if (typeof client === "undefined") {
@@ -183,41 +89,6 @@ export default function App() {
       return openPairingModal();
     }
     connect();
-  };
-
-  const onSessionConnected = async (incomingSession: SessionTypes.Settled) => {
-    setSession(incomingSession);
-    onSessionUpdate(incomingSession.state.accounts, incomingSession.permissions.blockchain.chains);
-  };
-
-  const onSessionUpdate = async (accounts: string[], chains: string[]) => {
-    setChains(chains);
-    setAccounts(accounts);
-    await getAccountBalances(accounts);
-  };
-
-  const getAccountBalances = async (_accounts: string[]) => {
-    setFetching(true);
-    try {
-      const arr = await Promise.all(
-        _accounts.map(async account => {
-          const [namespace, reference, address] = account.split(":");
-          const chainId = `${namespace}:${reference}`;
-          const assets = await apiGetAccountAssets(address, chainId);
-          return { account, assets };
-        }),
-      );
-
-      const balances: AccountBalances = {};
-      arr.forEach(({ account, assets }) => {
-        balances[account] = assets;
-      });
-      setBalances(balances);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setFetching(false);
-    }
   };
 
   const loadChainData = async () => {

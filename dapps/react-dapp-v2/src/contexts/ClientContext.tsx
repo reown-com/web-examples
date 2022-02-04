@@ -2,8 +2,16 @@ import Client, { CLIENT_EVENTS } from "@walletconnect/client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import QRCodeModal from "@walletconnect/legacy-modal";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from "../constants";
+import {
+  DEFAULT_APP_METADATA,
+  DEFAULT_COSMOS_METHODS,
+  DEFAULT_EIP155_METHODS,
+  DEFAULT_LOGGER,
+  DEFAULT_PROJECT_ID,
+  DEFAULT_RELAY_URL,
+} from "../constants";
 import { AccountBalances, apiGetAccountAssets } from "../helpers";
+import { ERROR, getAppMetadata } from "@walletconnect/utils";
 
 /**
  * Types
@@ -11,18 +19,15 @@ import { AccountBalances, apiGetAccountAssets } from "../helpers";
 interface IContext {
   client: Client | undefined;
   session: SessionTypes.Created | undefined;
+  connect: (pairing?: { topic: string }) => Promise<void>;
+  disconnect: () => Promise<void>;
   loading: boolean;
   fetching: boolean;
   chains: string[];
   pairings: string[];
   accounts: string[];
   balances: AccountBalances;
-  setSession: any;
-  setPairings: any;
-  setAccounts: any;
   setChains: any;
-  setFetching: any;
-  setBalances: any;
 }
 
 /**
@@ -110,6 +115,72 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     await getAccountBalances(accounts);
   };
 
+  const connect = async (pairing?: { topic: string }) => {
+    if (typeof client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
+    }
+    console.log("connect", pairing);
+    // TODO:
+    // if (modal === "pairing") {
+    //   closeModal();
+    // }
+    try {
+      const supportedNamespaces: string[] = [];
+      chains.forEach(chainId => {
+        const [namespace] = chainId.split(":");
+        if (!supportedNamespaces.includes(namespace)) {
+          supportedNamespaces.push(namespace);
+        }
+      });
+      const methods: string[] = supportedNamespaces
+        .map(namespace => {
+          switch (namespace) {
+            case "eip155":
+              return DEFAULT_EIP155_METHODS;
+            case "cosmos":
+              return DEFAULT_COSMOS_METHODS;
+            default:
+              throw new Error(`No default methods for namespace: ${namespace}`);
+          }
+        })
+        .flat();
+      const session = await client.connect({
+        metadata: getAppMetadata() || DEFAULT_APP_METADATA,
+        pairing,
+        permissions: {
+          blockchain: {
+            chains,
+          },
+          jsonrpc: {
+            methods,
+          },
+        },
+      });
+
+      onSessionConnected(session);
+    } catch (e) {
+      console.error(e);
+      // ignore rejection
+    }
+
+    // close modal in case it was open
+    QRCodeModal.close();
+  };
+
+  const disconnect = async () => {
+    if (typeof client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
+    }
+    if (typeof session === "undefined") {
+      throw new Error("Session is not connected");
+    }
+    console.log(client);
+    await client.disconnect({
+      topic: session.topic,
+      reason: ERROR.USER_DISCONNECTED.format(),
+    });
+  };
+
   const getAccountBalances = async (_accounts: string[]) => {
     setFetching(true);
     try {
@@ -166,12 +237,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         chains,
         client,
         session,
-        setSession,
-        setPairings,
-        setAccounts,
+        connect,
+        disconnect,
         setChains,
-        setFetching,
-        setBalances,
       }}
     >
       {children}
