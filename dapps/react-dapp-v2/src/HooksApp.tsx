@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import styled from "styled-components";
 
 import Client, { CLIENT_EVENTS } from "@walletconnect/client";
 import QRCodeModal from "@walletconnect/legacy-modal";
@@ -12,11 +11,9 @@ import { BigNumber } from "ethers";
 
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";
-import Button from "./components/Button";
 import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
-import Wrapper from "./components/Wrapper";
 import {
   DEFAULT_APP_METADATA,
   DEFAULT_MAIN_CHAINS,
@@ -41,79 +38,20 @@ import {
   getInitialStateTestnet,
   getAllChainNamespaces,
 } from "./helpers";
-import { fonts } from "./styles";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
 import PairingModal from "./modals/PairingModal";
 import PingModal from "./modals/PingModal";
-
-const SLayout = styled.div`
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-  text-align: center;
-`;
-
-const SContent = styled(Wrapper as any)`
-  width: 100%;
-  height: 100%;
-  padding: 0 16px;
-`;
-
-const SLanding = styled(Column as any)`
-  /* height: 600px; */
-`;
-
-const SButtonContainer = styled(Column as any)`
-  width: 250px;
-  margin: 50px 0;
-`;
-
-const SConnectButton = styled(Button as any)`
-  border-radius: 8px;
-  font-size: ${fonts.size.medium};
-  height: 44px;
-  width: 100%;
-  margin: 12px 0;
-`;
-
-const SAccountsContainer = styled(SLanding as any)`
-  height: 100%;
-  padding-bottom: 30px;
-  & h3 {
-    padding-top: 30px;
-  }
-`;
-
-const SToggleContainer = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 10px auto;
-  & > p {
-    margin-right: 10px;
-  }
-`;
-
-const SFullWidthContainer = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-`;
-
-const SAccounts = styled(SFullWidthContainer)`
-  justify-content: space-between;
-  & > div {
-    margin: 12px 0;
-    flex: 1 0 100%;
-    @media (min-width: 648px) {
-      flex: 0 1 48%;
-    }
-  }
-`;
+import {
+  SAccounts,
+  SAccountsContainer,
+  SButtonContainer,
+  SConnectButton,
+  SContent,
+  SLanding,
+  SLayout,
+  SToggleContainer,
+} from "./components/app";
 
 export default function App() {
   const [loading, setLoading] = useState(false);
