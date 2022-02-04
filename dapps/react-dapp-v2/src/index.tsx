@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { createGlobalStyle } from "styled-components";
 import { ClientContextProvider } from "./contexts/ClientContext";
+import { JsonRpcContextProvider } from "./contexts/JsonRpcContext";
 
 import HooksApp from "./HooksApp";
 import { globalStyle } from "./styles";
@@ -20,7 +21,9 @@ ReactDOM.render(
   <>
     <GlobalStyle />
     <ClientContextProvider>
-      <HooksApp />
+      <JsonRpcContextProvider>
+        <HooksApp />
+      </JsonRpcContextProvider>
     </ClientContextProvider>
   </>,
   document.getElementById("root"),
