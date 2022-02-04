@@ -1,7 +1,15 @@
 import Client, { CLIENT_EVENTS } from "@walletconnect/client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import QRCodeModal from "@walletconnect/legacy-modal";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   DEFAULT_APP_METADATA,
   DEFAULT_COSMOS_METHODS,
@@ -104,70 +112,79 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }
   };
 
-  const onSessionConnected = async (incomingSession: SessionTypes.Settled) => {
-    setSession(incomingSession);
-    onSessionUpdate(incomingSession.state.accounts, incomingSession.permissions.blockchain.chains);
-  };
-
-  const onSessionUpdate = async (accounts: string[], chains: string[]) => {
+  const onSessionUpdate = useCallback(async (accounts: string[], chains: string[]) => {
     setChains(chains);
     setAccounts(accounts);
     await getAccountBalances(accounts);
-  };
+  }, []);
 
-  const connect = async (pairing?: { topic: string }) => {
-    if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    console.log("connect", pairing);
-    // TODO:
-    // if (modal === "pairing") {
-    //   closeModal();
-    // }
-    try {
-      const supportedNamespaces: string[] = [];
-      chains.forEach(chainId => {
-        const [namespace] = chainId.split(":");
-        if (!supportedNamespaces.includes(namespace)) {
-          supportedNamespaces.push(namespace);
-        }
-      });
-      const methods: string[] = supportedNamespaces
-        .map(namespace => {
-          switch (namespace) {
-            case "eip155":
-              return DEFAULT_EIP155_METHODS;
-            case "cosmos":
-              return DEFAULT_COSMOS_METHODS;
-            default:
-              throw new Error(`No default methods for namespace: ${namespace}`);
+  const onSessionConnected = useCallback(
+    async (incomingSession: SessionTypes.Settled) => {
+      setSession(incomingSession);
+      onSessionUpdate(
+        incomingSession.state.accounts,
+        incomingSession.permissions.blockchain.chains,
+      );
+    },
+    [onSessionUpdate],
+  );
+
+  const connect = useCallback(
+    async (pairing?: { topic: string }) => {
+      if (typeof client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
+      console.log("connect", pairing);
+      // TODO:
+      // if (modal === "pairing") {
+      //   closeModal();
+      // }
+      try {
+        const supportedNamespaces: string[] = [];
+        chains.forEach(chainId => {
+          const [namespace] = chainId.split(":");
+          if (!supportedNamespaces.includes(namespace)) {
+            supportedNamespaces.push(namespace);
           }
-        })
-        .flat();
-      const session = await client.connect({
-        metadata: getAppMetadata() || DEFAULT_APP_METADATA,
-        pairing,
-        permissions: {
-          blockchain: {
-            chains,
+        });
+        const methods: string[] = supportedNamespaces
+          .map(namespace => {
+            switch (namespace) {
+              case "eip155":
+                return DEFAULT_EIP155_METHODS;
+              case "cosmos":
+                return DEFAULT_COSMOS_METHODS;
+              default:
+                throw new Error(`No default methods for namespace: ${namespace}`);
+            }
+          })
+          .flat();
+        const session = await client.connect({
+          metadata: getAppMetadata() || DEFAULT_APP_METADATA,
+          pairing,
+          permissions: {
+            blockchain: {
+              chains,
+            },
+            jsonrpc: {
+              methods,
+            },
           },
-          jsonrpc: {
-            methods,
-          },
-        },
-      });
+        });
 
-      onSessionConnected(session);
-    } catch (e) {
-      console.error(e);
-      // ignore rejection
-    }
+        onSessionConnected(session);
+      } catch (e) {
+        console.error(e);
+        // ignore rejection
+      }
 
-    // close modal in case it was open
-    QRCodeModal.close();
-  };
+      // close modal in case it was open
+      QRCodeModal.close();
+    },
+    [chains, client, onSessionConnected],
+  );
 
-  const disconnect = async () => {
+  const disconnect = useCallback(async () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
@@ -179,7 +196,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       topic: session.topic,
       reason: ERROR.USER_DISCONNECTED.format(),
     });
-  };
+  }, [client, session]);
 
   const getAccountBalances = async (_accounts: string[]) => {
     setFetching(true);
@@ -226,20 +243,39 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     init();
   }, []);
 
+  const value = useMemo(
+    () => ({
+      pairings,
+      fetching,
+      loading,
+      balances,
+      accounts,
+      chains,
+      client,
+      session,
+      connect,
+      disconnect,
+      setChains,
+    }),
+    [
+      pairings,
+      fetching,
+      loading,
+      balances,
+      accounts,
+      chains,
+      client,
+      session,
+      connect,
+      disconnect,
+      setChains,
+    ],
+  );
+
   return (
     <ClientContext.Provider
       value={{
-        pairings,
-        fetching,
-        loading,
-        balances,
-        accounts,
-        chains,
-        client,
-        session,
-        connect,
-        disconnect,
-        setChains,
+        ...value,
       }}
     >
       {children}
