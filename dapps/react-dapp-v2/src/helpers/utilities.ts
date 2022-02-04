@@ -4,6 +4,7 @@ import { TypedDataUtils } from "eth-sig-util";
 import * as ethUtil from "ethereumjs-util";
 
 import { eip1271 } from "./eip1271";
+import { DEFAULT_CHAINS } from "../constants";
 
 export function capitalize(string: string): string {
   return string
@@ -198,3 +199,14 @@ export function getInitialStateTestnet(): boolean {
   }
   return value;
 }
+
+export const getAllChainNamespaces = () => {
+  const namespaces: string[] = [];
+  DEFAULT_CHAINS.forEach(chainId => {
+    const [namespace] = chainId.split(":");
+    if (!namespaces.includes(namespace)) {
+      namespaces.push(namespace);
+    }
+  });
+  return namespaces;
+};

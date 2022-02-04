@@ -40,6 +40,7 @@ import {
   ChainNamespaces,
   setInitialStateTestnet,
   getInitialStateTestnet,
+  getAllChainNamespaces,
 } from "./helpers";
 import { fonts } from "./styles";
 import Toggle from "./components/Toggle";
@@ -354,19 +355,8 @@ export default function App() {
     }
   };
 
-  const getAllNamespaces = () => {
-    const namespaces: string[] = [];
-    DEFAULT_CHAINS.forEach(chainId => {
-      const [namespace] = chainId.split(":");
-      if (!namespaces.includes(namespace)) {
-        namespaces.push(namespace);
-      }
-    });
-    return namespaces;
-  };
-
   const loadChainData = async () => {
-    const namespaces = getAllNamespaces();
+    const namespaces = getAllChainNamespaces();
     const chainData: ChainNamespaces = {};
     await Promise.all(
       namespaces.map(async namespace => {
@@ -840,7 +830,6 @@ export default function App() {
                 address={address}
                 chainId={chainId}
                 balances={balances}
-                // TODO:
                 actions={getBlockchainActions(chainId)}
               />
             );
