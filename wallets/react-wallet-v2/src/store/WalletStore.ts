@@ -1,6 +1,5 @@
 import WalletConnectClient from '@walletconnect/client'
 import { Wallet } from 'ethers'
-import KeyValueStorage from 'keyvaluestorage'
 import { proxy } from 'valtio'
 
 /**
@@ -46,8 +45,7 @@ const WalletStore = {
         description: 'React Wallet for WalletConnect',
         url: 'https://walletconnect.com/',
         icons: ['https://avatars.githubusercontent.com/u/37784886']
-      },
-      storage: new KeyValueStorage()
+      }
     })
     state.walletConnectClient = walletConnectClient
   }

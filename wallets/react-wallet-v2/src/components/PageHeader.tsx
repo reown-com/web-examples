@@ -13,11 +13,12 @@ interface Props {
 export default function PageHeader({ children }: Props) {
   return (
     <Text
-      h3
-      css={{
-        textGradient: '45deg, $primary -20%, $secondary 100%'
-      }}
+      h2
       weight="bold"
+      css={{
+        textGradient: '45deg, $primary -20%, $secondary 100%',
+        marginBottom: '$10'
+      }}
     >
       {children}
     </Text>

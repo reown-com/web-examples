@@ -40,7 +40,7 @@ export default function GlobalLayout({ children }: Props) {
         borderWeight="light"
         css={{
           height: '92vh',
-          maxWidth: '600px',
+          maxWidth: '500px',
           width: '100%',
           justifyContent: initialized ? 'normal' : 'center',
           alignItems: initialized ? 'normal' : 'center'
