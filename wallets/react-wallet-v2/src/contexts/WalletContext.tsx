@@ -7,7 +7,7 @@ import { createContext, ReactNode, useMemo, useState } from 'react'
  * Types
  */
 interface State {
-  initialized: boolean
+  ready: boolean
   wallet: Wallet
   walletConnectClient: WalletConnectClient
 }
@@ -19,8 +19,8 @@ interface Actions {
 }
 
 interface Context {
-  state: State
-  actions: Actions
+  walletState: State
+  walletActions: Actions
 }
 
 interface Props {
@@ -33,13 +33,13 @@ interface Props {
 export const WalletContext = createContext<Context>({} as Context)
 
 export function WalletContextProvider({ children }: Props) {
-  const [state, setState] = useState<State>({
-    initialized: false,
+  const [walletState, setState] = useState<State>({
+    ready: false,
     wallet: undefined,
     walletConnectClient: undefined
   })
 
-  const actions = useMemo(
+  const walletActions = useMemo(
     () => ({
       setInitialized() {
         setState(s => ({ ...s, initialized: true }))
@@ -70,5 +70,9 @@ export function WalletContextProvider({ children }: Props) {
     []
   )
 
-  return <WalletContext.Provider value={{ state, actions }}>{children}</WalletContext.Provider>
+  return (
+    <WalletContext.Provider value={{ walletState, walletActions }}>
+      {children}
+    </WalletContext.Provider>
+  )
 }
