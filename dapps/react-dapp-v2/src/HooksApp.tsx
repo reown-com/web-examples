@@ -388,6 +388,7 @@ export default function App() {
     }
 
     try {
+      setPending(true);
       // get ethereum address
       const account = accounts.find(account => account.startsWith(chainId));
       if (account === undefined) throw new Error("Account is not found");
@@ -447,6 +448,7 @@ export default function App() {
     }
 
     try {
+      setPending(true);
       // test message
       const message = `My email is john@doe.com - ${Date.now()}`;
 
@@ -516,6 +518,8 @@ export default function App() {
       throw new Error("Session is not connected");
     }
     try {
+      setPending(true);
+
       // test message
       const message = JSON.stringify(eip712.example);
 
