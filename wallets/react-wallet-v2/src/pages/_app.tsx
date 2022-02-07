@@ -1,4 +1,5 @@
 import Layout from '@/components/Layout'
+import Modal from '@/components/Modal'
 import useInitialization from '@/hooks/useInitialization'
 import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
 import { darkTheme, lightTheme } from '@/utils/ThemeUtil'
@@ -26,6 +27,8 @@ export default function App({ Component, pageProps }: AppProps) {
         <Layout initialized={initialized}>
           <Component {...pageProps} />
         </Layout>
+
+        <Modal />
       </NextUIProvider>
     </ThemeProvider>
   )
