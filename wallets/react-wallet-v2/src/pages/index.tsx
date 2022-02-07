@@ -8,6 +8,10 @@ import { useSnapshot } from 'valtio'
 export default function HomePage() {
   const { wallet } = useSnapshot(WalletStore.state)
 
+  if (!wallet) {
+    return null
+  }
+
   return (
     <Fragment>
       <PageHeader>Accounts</PageHeader>

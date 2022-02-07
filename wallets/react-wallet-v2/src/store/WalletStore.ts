@@ -5,7 +5,7 @@ import { proxy } from 'valtio'
  * Types
  */
 interface State {
-  wallet: Wallet
+  wallet?: Wallet
 }
 
 /**

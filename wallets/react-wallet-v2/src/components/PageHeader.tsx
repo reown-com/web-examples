@@ -1,4 +1,5 @@
-import { Text } from '@nextui-org/react'
+import { Divider, Text } from '@nextui-org/react'
+import { Fragment } from 'react'
 
 /**
  * Types
@@ -12,15 +13,18 @@ interface Props {
  */
 export default function PageHeader({ children }: Props) {
   return (
-    <Text
-      h2
-      weight="bold"
-      css={{
-        textGradient: '45deg, $primary, $secondary 100%',
-        marginBottom: '$10'
-      }}
-    >
-      {children}
-    </Text>
+    <Fragment>
+      <Text
+        h3
+        weight="bold"
+        css={{
+          textGradient: '45deg, $primary, $secondary 100%',
+          marginBottom: '$5'
+        }}
+      >
+        {children}
+      </Text>
+      <Divider css={{ marginBottom: '$10' }} />
+    </Fragment>
   )
 }
