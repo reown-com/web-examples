@@ -1,10 +1,14 @@
-import GlobalLayout from '@/containers/GlobalLayout'
+import Layout from '@/components/Layout'
+import WalletConnectManager from '@/components/WalletConnectManager'
+import useInitialization from '@/hooks/useInitialization'
 import { darkTheme, lightTheme } from '@/utils/ThemeUtil'
 import { NextUIProvider } from '@nextui-org/react'
 import { ThemeProvider } from 'next-themes'
 import { AppProps } from 'next/app'
 
 export default function App({ Component, pageProps }: AppProps) {
+  const initialized = useInitialization()
+
   return (
     <ThemeProvider
       defaultTheme="system"
@@ -15,9 +19,11 @@ export default function App({ Component, pageProps }: AppProps) {
       }}
     >
       <NextUIProvider>
-        <GlobalLayout>
+        <Layout initialized={initialized}>
           <Component {...pageProps} />
-        </GlobalLayout>
+        </Layout>
+
+        {initialized && <WalletConnectManager />}
       </NextUIProvider>
     </ThemeProvider>
   )

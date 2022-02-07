@@ -1,33 +1,18 @@
-import WalletConnectStore from '@/store/WalletConnectStore'
-import WalletStore from '@/store/WalletStore'
 import { Card, Container, Divider, Loading } from '@nextui-org/react'
-import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
+import { Fragment, ReactNode } from 'react'
 
 /**
  * Types
  */
 interface Props {
+  initialized: boolean
   children: ReactNode | ReactNode[]
 }
 
 /**
  * Container
  */
-export default function GlobalLayout({ children }: Props) {
-  const [initialized, setInitialized] = useState(false)
-
-  const onInitialize = useCallback(async () => {
-    WalletStore.createWallet()
-    await WalletConnectStore.createWalletConnectClient()
-    setInitialized(true)
-  }, [])
-
-  useEffect(() => {
-    if (!initialized) {
-      onInitialize()
-    }
-  }, [initialized, onInitialize])
-
+export default function GlobalLayout({ children, initialized }: Props) {
   return (
     <Container
       display="flex"
