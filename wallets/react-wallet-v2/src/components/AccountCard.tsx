@@ -15,8 +15,8 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
       bordered
       borderWeight="light"
       css={{
-        borderColor: `rgba(${rgb}, 0.6)`,
-        boxShadow: `0 0 10px 0 rgba(${rgb}, 0.1)`,
+        borderColor: `rgba(${rgb}, 0.4)`,
+        boxShadow: `0 0 10px 0 rgba(${rgb}, 0.2)`,
         marginBottom: '$6',
         overflowY: 'hidden',
         minHeight: '70px'
@@ -25,7 +25,7 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
       <Card.Body
         css={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
       >
-        <Avatar src={logo} css={{ borderColor: `rgb(${rgb})` }} />
+        <Avatar src={logo} />
         <div style={{ flex: 1 }}>
           <Text h5 css={{ marginLeft: '$9' }}>
             {name}

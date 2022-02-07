@@ -1,7 +1,7 @@
+import WalletConnectStore from '@/store/WalletConnectStore'
 import WalletStore from '@/store/WalletStore'
 import { Card, Container, Divider, Loading } from '@nextui-org/react'
-import { Fragment, ReactNode, useCallback, useEffect } from 'react'
-import { useSnapshot } from 'valtio'
+import { Fragment, ReactNode, useCallback, useEffect, useState } from 'react'
 
 /**
  * Types
@@ -14,12 +14,12 @@ interface Props {
  * Container
  */
 export default function GlobalLayout({ children }: Props) {
-  const { initialized } = useSnapshot(WalletStore.state)
+  const [initialized, setInitialized] = useState(false)
 
   const onInitialize = useCallback(async () => {
     WalletStore.createWallet()
-    await WalletStore.createWalletConnectClient()
-    WalletStore.setInitialized(true)
+    await WalletConnectStore.createWalletConnectClient()
+    setInitialized(true)
   }, [])
 
   useEffect(() => {
