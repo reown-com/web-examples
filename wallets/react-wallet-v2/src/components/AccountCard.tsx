@@ -1,6 +1,5 @@
 import { truncate } from '@/utils/HelperUtil'
-import { Avatar, Button, Card, Text } from '@nextui-org/react'
-import { Paper } from 'react-iconly'
+import { Avatar, Card, Text } from '@nextui-org/react'
 
 interface Props {
   name: string
@@ -16,14 +15,19 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
       borderWeight="light"
       css={{
         borderColor: `rgba(${rgb}, 0.4)`,
-        boxShadow: `0 0 10px 0 rgba(${rgb}, 0.2)`,
+        boxShadow: `0 0 10px 0 rgba(${rgb}, 0.15)`,
+        backgroundColor: `rgba(${rgb}, 0.25)`,
         marginBottom: '$6',
-        overflowY: 'hidden',
         minHeight: '70px'
       }}
     >
       <Card.Body
-        css={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+        css={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          overflow: 'hidden'
+        }}
       >
         <Avatar src={logo} />
         <div style={{ flex: 1 }}>
@@ -34,7 +38,6 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
             {truncate(address, 19)}
           </Text>
         </div>
-        <Button auto flat color="primary" icon={<Paper filled />} />
       </Card.Body>
     </Card>
   )
