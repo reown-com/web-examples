@@ -102,32 +102,17 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     if (typeof session !== "undefined") return;
     // populates existing session to state (assume only the top one)
     if (_client.session.topics.length) {
-      const session = await _client.session.get(_client.session.topics[0]);
-      const chains = session.state.accounts.map(account =>
-        account.split(":").slice(0, -1).join(":"),
-      );
-      setAccounts(session.state.accounts);
-      setChains(chains);
-      onSessionConnected(session);
+      const _session = await _client.session.get(_client.session.topics[0]);
+      onSessionConnected(_session);
     }
   };
 
-  const onSessionUpdate = useCallback(async (accounts: string[], chains: string[]) => {
-    setChains(chains);
-    setAccounts(accounts);
-    await getAccountBalances(accounts);
+  const onSessionConnected = useCallback(async (incomingSession: SessionTypes.Settled) => {
+    setSession(incomingSession);
+    setChains(incomingSession.permissions.blockchain.chains);
+    setAccounts(incomingSession.state.accounts);
+    await getAccountBalances(incomingSession.state.accounts);
   }, []);
-
-  const onSessionConnected = useCallback(
-    async (incomingSession: SessionTypes.Settled) => {
-      setSession(incomingSession);
-      onSessionUpdate(
-        incomingSession.state.accounts,
-        incomingSession.permissions.blockchain.chains,
-      );
-    },
-    [onSessionUpdate],
-  );
 
   const connect = useCallback(
     async (pairing?: { topic: string }) => {
@@ -135,10 +120,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         throw new Error("WalletConnect is not initialized");
       }
       console.log("connect", pairing);
-      // TODO:
-      // if (modal === "pairing") {
-      //   closeModal();
-      // }
       try {
         const supportedNamespaces: string[] = [];
         chains.forEach(chainId => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { version } from "@walletconnect/client/package.json";
 
 // import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
@@ -59,6 +59,13 @@ export default function App() {
     isRpcRequestPending,
     rpcResult,
   } = useJsonRpc();
+
+  useEffect(() => {
+    // Close the pairing modal after a session is established.
+    if (session && modal === "pairing") {
+      closeModal();
+    }
+  }, [session, modal]);
 
   const onConnect = () => {
     if (typeof client === "undefined") {
