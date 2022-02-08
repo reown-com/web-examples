@@ -60,53 +60,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [accounts, setAccounts] = useState<string[]>([]);
   const [chains, setChains] = useState<string[]>([]);
 
-  const subscribeToEvents = async (_client: Client) => {
-    if (typeof _client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-
-    let _session = {} as SessionTypes.Settled;
-
-    if (_client.session.topics.length) {
-      _session = await _client.session.get(_client.session.topics[0]);
-    }
-
-    _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
-      const { uri } = proposal.signal.params;
-      console.log("EVENT", "QR Code Modal open");
-      QRCodeModal.open(uri, () => {
-        console.log("EVENT", "QR Code Modal closed");
-      });
-    });
-
-    _client.on(CLIENT_EVENTS.pairing.created, async (proposal: PairingTypes.Settled) => {
-      if (typeof client === "undefined") return;
-      setPairings(client.pairing.topics);
-    });
-
-    _client.on(CLIENT_EVENTS.session.deleted, (deletedSession: SessionTypes.Settled) => {
-      if (deletedSession.topic !== _session?.topic) return;
-      console.log("EVENT", "session_deleted");
-      // TODO:
-      // this.resetApp();
-      window.location.reload();
-    });
-  };
-
-  const checkPersistedState = async (_client: Client) => {
-    if (typeof _client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    // populates existing pairings to state
-    setPairings(_client.pairing.topics);
-    if (typeof session !== "undefined") return;
-    // populates existing session to state (assume only the top one)
-    if (_client.session.topics.length) {
-      const _session = await _client.session.get(_client.session.topics[0]);
-      onSessionConnected(_session);
-    }
-  };
-
   const onSessionConnected = useCallback(async (incomingSession: SessionTypes.Settled) => {
     setSession(incomingSession);
     setChains(incomingSession.permissions.blockchain.chains);
@@ -203,26 +156,81 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }
   };
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const _client = await Client.init({
-          logger: DEFAULT_LOGGER,
-          relayUrl: DEFAULT_RELAY_URL,
-          projectId: DEFAULT_PROJECT_ID,
-        });
-        setClient(_client);
-        await subscribeToEvents(_client);
-        await checkPersistedState(_client);
-      } catch (err) {
-        throw err;
-      } finally {
-        setLoading(false);
+  const subscribeToEvents = useCallback(
+    async (_client: Client) => {
+      if (typeof _client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
       }
-    };
 
-    init();
-  }, []);
+      let _session = {} as SessionTypes.Settled;
+
+      if (_client.session.topics.length) {
+        _session = await _client.session.get(_client.session.topics[0]);
+      }
+
+      _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
+        const { uri } = proposal.signal.params;
+        console.log("EVENT", "QR Code Modal open");
+        QRCodeModal.open(uri, () => {
+          console.log("EVENT", "QR Code Modal closed");
+        });
+      });
+
+      _client.on(CLIENT_EVENTS.pairing.created, async (proposal: PairingTypes.Settled) => {
+        if (typeof client === "undefined") return;
+        setPairings(client.pairing.topics);
+      });
+
+      _client.on(CLIENT_EVENTS.session.deleted, (deletedSession: SessionTypes.Settled) => {
+        if (deletedSession.topic !== _session?.topic) return;
+        console.log("EVENT", "session_deleted");
+        // TODO:
+        // this.resetApp();
+        window.location.reload();
+      });
+    },
+    [client],
+  );
+
+  const checkPersistedState = useCallback(
+    async (_client: Client) => {
+      if (typeof _client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
+      // populates existing pairings to state
+      setPairings(_client.pairing.topics);
+      if (typeof session !== "undefined") return;
+      // populates existing session to state (assume only the top one)
+      if (_client.session.topics.length) {
+        const _session = await _client.session.get(_client.session.topics[0]);
+        onSessionConnected(_session);
+      }
+    },
+    [session, onSessionConnected],
+  );
+
+  const createClient = useCallback(async () => {
+    try {
+      const _client = await Client.init({
+        logger: DEFAULT_LOGGER,
+        relayUrl: DEFAULT_RELAY_URL,
+        projectId: DEFAULT_PROJECT_ID,
+      });
+      setClient(_client);
+      await subscribeToEvents(_client);
+      await checkPersistedState(_client);
+    } catch (err) {
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [checkPersistedState, subscribeToEvents]);
+
+  useEffect(() => {
+    if (!client) {
+      createClient();
+    }
+  }, [client, createClient]);
 
   const value = useMemo(
     () => ({
