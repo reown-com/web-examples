@@ -1,4 +1,5 @@
 import Navigation from '@/components/Navigation'
+import RouteTransition from '@/components/RouteTransition'
 import { Card, Container, Loading } from '@nextui-org/react'
 import { Fragment, ReactNode } from 'react'
 
@@ -35,6 +36,7 @@ export default function Layout({ children, initialized }: Props) {
           justifyContent: initialized ? 'normal' : 'center',
           alignItems: initialized ? 'normal' : 'center',
           borderRadius: 0,
+          outline: 'none',
           '@xs': {
             borderRadius: '$lg',
             height: '93vh',
@@ -44,16 +46,18 @@ export default function Layout({ children, initialized }: Props) {
       >
         {initialized ? (
           <Fragment>
-            <Card.Body
-              css={{
-                padding: 2,
-                '@xs': {
-                  padding: '20px'
-                }
-              }}
-            >
-              {children}
-            </Card.Body>
+            <RouteTransition>
+              <Card.Body
+                css={{
+                  padding: 2,
+                  '@xs': {
+                    padding: '20px'
+                  }
+                }}
+              >
+                {children}
+              </Card.Body>
+            </RouteTransition>
 
             <Card.Footer>
               <Navigation />
