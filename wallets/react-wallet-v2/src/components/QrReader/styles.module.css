@@ -1,0 +1,25 @@
+.container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.mask {
+  width: 100%;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+}
+
+.placeholder {
+  border: 2px rgba(139, 139, 139, 0.4) dashed;
+  width: 100%;
+  border-radius: 15px;
+  padding: 50px;
+}
+
+.icon {
+  opacity: 0.3;
+}

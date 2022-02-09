@@ -46,7 +46,7 @@ export default function Layout({ children, initialized }: Props) {
           <Fragment>
             <Card.Body
               css={{
-                padding: 0,
+                padding: 2,
                 '@xs': {
                   padding: '20px'
                 }

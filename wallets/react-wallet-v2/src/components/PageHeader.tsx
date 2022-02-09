@@ -18,7 +18,7 @@ export default function PageHeader({ children }: Props) {
         h3
         weight="bold"
         css={{
-          textGradient: '45deg, $primary, $secondary 100%',
+          textGradient: '90deg, $secondary, $primary 30%',
           marginBottom: '$5'
         }}
       >
