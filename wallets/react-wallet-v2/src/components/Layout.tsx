@@ -37,6 +37,7 @@ export default function Layout({ children, initialized }: Props) {
           alignItems: initialized ? 'normal' : 'center',
           borderRadius: 0,
           outline: 'none',
+          paddingBottom: 5,
           '@xs': {
             borderRadius: '$lg',
             height: '95vh',
@@ -62,7 +63,8 @@ export default function Layout({ children, initialized }: Props) {
 
             <Card.Footer
               css={{
-                minHeight: 55,
+                height: '50px',
+                minHeight: '50px',
                 position: 'sticky',
                 bottom: 0,
                 left: 0
