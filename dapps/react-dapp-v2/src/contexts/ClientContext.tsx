@@ -156,41 +156,43 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }
   };
 
-  const subscribeToEvents = useCallback(
-    async (_client: Client) => {
-      if (typeof _client === "undefined") {
-        throw new Error("WalletConnect is not initialized");
-      }
+  const resetApp = () => {
+    setPairings([]);
+    setSession(undefined);
+    setBalances({});
+    setAccounts([]);
+    setChains([]);
+  };
 
-      let _session = {} as SessionTypes.Settled;
+  const subscribeToEvents = useCallback(async (_client: Client) => {
+    if (typeof _client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
+    }
 
-      if (_client.session.topics.length) {
-        _session = await _client.session.get(_client.session.topics[0]);
-      }
+    let _session = {} as SessionTypes.Settled;
 
-      _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
-        const { uri } = proposal.signal.params;
-        console.log("EVENT", "QR Code Modal open");
-        QRCodeModal.open(uri, () => {
-          console.log("EVENT", "QR Code Modal closed");
-        });
+    if (_client.session.topics.length) {
+      _session = await _client.session.get(_client.session.topics[0]);
+    }
+
+    _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
+      const { uri } = proposal.signal.params;
+      console.log("EVENT", "QR Code Modal open");
+      QRCodeModal.open(uri, () => {
+        console.log("EVENT", "QR Code Modal closed");
       });
+    });
 
-      _client.on(CLIENT_EVENTS.pairing.created, async (proposal: PairingTypes.Settled) => {
-        if (typeof client === "undefined") return;
-        setPairings(client.pairing.topics);
-      });
+    _client.on(CLIENT_EVENTS.pairing.created, async (proposal: PairingTypes.Settled) => {
+      setPairings(_client.pairing.topics);
+    });
 
-      _client.on(CLIENT_EVENTS.session.deleted, (deletedSession: SessionTypes.Settled) => {
-        if (deletedSession.topic !== _session?.topic) return;
-        console.log("EVENT", "session_deleted");
-        // TODO:
-        // this.resetApp();
-        window.location.reload();
-      });
-    },
-    [client],
-  );
+    _client.on(CLIENT_EVENTS.session.deleted, (deletedSession: SessionTypes.Settled) => {
+      if (deletedSession.topic !== _session?.topic) return;
+      console.log("EVENT", "session_deleted");
+      resetApp();
+    });
+  }, []);
 
   const checkPersistedState = useCallback(
     async (_client: Client) => {
