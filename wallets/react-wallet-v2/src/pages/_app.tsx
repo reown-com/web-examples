@@ -3,7 +3,7 @@ import Modal from '@/components/Modal'
 import useInitialization from '@/hooks/useInitialization'
 import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
 import '@/styles/main.css'
-import { lightTheme } from '@/utils/ThemeUtil'
+import { darkTheme, lightTheme } from '@/utils/ThemeUtil'
 import { NextUIProvider } from '@nextui-org/react'
 import { ThemeProvider } from 'next-themes'
 import { AppProps } from 'next/app'
@@ -21,7 +21,7 @@ export default function App({ Component, pageProps }: AppProps) {
       attribute="class"
       value={{
         light: lightTheme.className,
-        dark: lightTheme.className
+        dark: darkTheme.className
       }}
     >
       <NextUIProvider>
