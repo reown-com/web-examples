@@ -213,11 +213,14 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
   const createClient = useCallback(async () => {
     try {
+      setLoading(true);
+
       const _client = await Client.init({
         logger: DEFAULT_LOGGER,
         relayUrl: DEFAULT_RELAY_URL,
         projectId: DEFAULT_PROJECT_ID,
       });
+
       setClient(_client);
       await subscribeToEvents(_client);
       await checkPersistedState(_client);
