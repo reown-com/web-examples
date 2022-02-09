@@ -1,6 +1,7 @@
 import { BigNumber } from "ethers";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
+import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
 
 import {
   ChainNamespaces,
@@ -31,9 +32,15 @@ interface IRpcResult {
 
 interface IContext {
   ping: () => Promise<void>;
-  testSendTransaction: (chainId: string) => Promise<void>;
-  testSignPersonalMessage: (chainId: string) => Promise<void>;
-  testSignTypedData: (chainId: string) => Promise<void>;
+  ethereumRpc: {
+    testSendTransaction: (chainId: string) => Promise<void>;
+    testSignPersonalMessage: (chainId: string) => Promise<void>;
+    testSignTypedData: (chainId: string) => Promise<void>;
+  };
+  cosmosRpc: {
+    testSignDirect: (chainId: string) => Promise<void>;
+    testSignAmino: (chainId: string) => Promise<void>;
+  };
   chainData: ChainNamespaces;
   rpcResult?: IRpcResult | null;
   isRpcRequestPending: boolean;
@@ -132,148 +139,271 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
     }
   };
 
-  const testSendTransaction = _createJsonRpcRequestHandler(async (chainId: string) => {
-    // get ethereum address
-    const account = accounts.find(account => account.startsWith(chainId));
-    if (account === undefined) throw new Error("Account is not found");
-    const address = account.split(":").pop();
-    if (address === undefined) throw new Error("Address is invalid");
+  // -------- ETHEREUM/EIP155 RPC METHODS --------
 
-    const tx = await formatTestTransaction(account);
+  const ethereumRpc = {
+    testSendTransaction: _createJsonRpcRequestHandler(async (chainId: string) => {
+      // get ethereum address
+      const account = accounts.find(account => account.startsWith(chainId));
+      if (account === undefined) throw new Error("Account is not found");
+      const address = account.split(":").pop();
+      if (address === undefined) throw new Error("Address is invalid");
 
-    const balance = BigNumber.from(balances[account][0].balance || "0");
-    if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
+      const tx = await formatTestTransaction(account);
+
+      const balance = BigNumber.from(balances[account][0].balance || "0");
+      if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
+        return {
+          method: "eth_sendTransaction",
+          address,
+          valid: false,
+          result: "Insufficient funds for intrinsic transaction cost",
+        };
+      }
+
+      const result: string = await client!.request({
+        topic: session!.topic,
+        chainId,
+        request: {
+          method: "eth_sendTransaction",
+          params: [tx],
+        },
+      });
+
+      // format displayed result
       return {
         method: "eth_sendTransaction",
         address,
-        valid: false,
-        result: "Insufficient funds for intrinsic transaction cost",
+        valid: true,
+        result,
       };
-    }
+    }),
+    testSignPersonalMessage: _createJsonRpcRequestHandler(async (chainId: string) => {
+      // test message
+      const message = `My email is john@doe.com - ${Date.now()}`;
 
-    const result: string = await client!.request({
-      topic: session!.topic,
-      chainId,
-      request: {
-        method: "eth_sendTransaction",
-        params: [tx],
-      },
-    });
+      // encode message (hex)
+      const hexMsg = encoding.utf8ToHex(message, true);
 
-    // format displayed result
-    return {
-      method: "eth_sendTransaction",
-      address,
-      valid: true,
-      result,
-    };
-  });
+      // get ethereum address
+      const account = accounts.find(account => account.startsWith(chainId));
+      if (account === undefined) throw new Error("Account is not found");
+      const address = account.split(":").pop();
+      if (address === undefined) throw new Error("Address is invalid");
 
-  const testSignPersonalMessage = _createJsonRpcRequestHandler(async (chainId: string) => {
-    // test message
-    const message = `My email is john@doe.com - ${Date.now()}`;
+      // personal_sign params
+      const params = [hexMsg, address];
 
-    // encode message (hex)
-    const hexMsg = encoding.utf8ToHex(message, true);
+      // send message
+      const result: string = await client!.request({
+        topic: session!.topic,
+        chainId,
+        request: {
+          method: "personal_sign",
+          params,
+        },
+      });
 
-    // get ethereum address
-    const account = accounts.find(account => account.startsWith(chainId));
-    if (account === undefined) throw new Error("Account is not found");
-    const address = account.split(":").pop();
-    if (address === undefined) throw new Error("Address is invalid");
+      //  split chainId
+      const [namespace, reference] = chainId.split(":");
 
-    // personal_sign params
-    const params = [hexMsg, address];
+      const targetChainData = chainData[namespace][reference];
 
-    // send message
-    const result: string = await client!.request({
-      topic: session!.topic,
-      chainId,
-      request: {
+      if (typeof targetChainData === "undefined") {
+        throw new Error(`Missing chain data for chainId: ${chainId}`);
+      }
+
+      const rpcUrl = targetChainData.rpc[0];
+
+      // verify signature
+      const hash = hashPersonalMessage(message);
+      const valid = await verifySignature(address, result, hash, rpcUrl);
+
+      // format displayed result
+      return {
         method: "personal_sign",
-        params,
-      },
-    });
+        address,
+        valid,
+        result,
+      };
+    }),
+    testSignTypedData: _createJsonRpcRequestHandler(async (chainId: string) => {
+      // test message
+      const message = JSON.stringify(eip712.example);
 
-    //  split chainId
-    const [namespace, reference] = chainId.split(":");
+      // get ethereum address
+      const account = accounts.find(account => account.startsWith(chainId));
+      if (account === undefined) throw new Error("Account is not found");
+      const address = account.split(":").pop();
+      if (address === undefined) throw new Error("Address is invalid");
 
-    const targetChainData = chainData[namespace][reference];
+      // eth_signTypedData params
+      const params = [address, message];
 
-    if (typeof targetChainData === "undefined") {
-      throw new Error(`Missing chain data for chainId: ${chainId}`);
-    }
+      // send message
+      const result = await client!.request({
+        topic: session!.topic,
+        chainId,
+        request: {
+          method: "eth_signTypedData",
+          params,
+        },
+      });
 
-    const rpcUrl = targetChainData.rpc[0];
+      //  split chainId
+      const [namespace, reference] = chainId.split(":");
 
-    // verify signature
-    const hash = hashPersonalMessage(message);
-    const valid = await verifySignature(address, result, hash, rpcUrl);
+      const targetChainData = chainData[namespace][reference];
 
-    // format displayed result
-    return {
-      method: "personal_sign",
-      address,
-      valid,
-      result,
-    };
-  });
+      if (typeof targetChainData === "undefined") {
+        throw new Error(`Missing chain data for chainId: ${chainId}`);
+      }
 
-  const testSignTypedData = _createJsonRpcRequestHandler(async (chainId: string) => {
-    // test message
-    const message = JSON.stringify(eip712.example);
+      const rpcUrl = targetChainData.rpc[0];
 
-    // get ethereum address
-    const account = accounts.find(account => account.startsWith(chainId));
-    if (account === undefined) throw new Error("Account is not found");
-    const address = account.split(":").pop();
-    if (address === undefined) throw new Error("Address is invalid");
+      // verify signature
+      const hash = hashTypedDataMessage(message);
+      const valid = await verifySignature(address, result, hash, rpcUrl);
 
-    // eth_signTypedData params
-    const params = [address, message];
-
-    // send message
-    const result = await client!.request({
-      topic: session!.topic,
-      chainId,
-      request: {
+      // format displayed result
+      return {
         method: "eth_signTypedData",
-        params,
-      },
-    });
+        address,
+        valid,
+        result,
+      };
+    }),
+  };
 
-    //  split chainId
-    const [namespace, reference] = chainId.split(":");
+  // -------- COSMOS RPC METHODS --------
 
-    const targetChainData = chainData[namespace][reference];
+  const cosmosRpc = {
+    testSignDirect: _createJsonRpcRequestHandler(async (chainId: string) => {
+      // test direct sign doc inputs
+      const inputs = {
+        fee: [{ amount: "2000", denom: "ucosm" }],
+        pubkey: "AgSEjOuOr991QlHCORRmdE5ahVKeyBrmtgoYepCpQGOW",
+        gasLimit: 200000,
+        accountNumber: 1,
+        sequence: 1,
+        bodyBytes:
+          "0a90010a1c2f636f736d6f732e62616e6b2e763162657461312e4d736753656e6412700a2d636f736d6f7331706b707472653766646b6c366766727a6c65736a6a766878686c63337234676d6d6b38727336122d636f736d6f7331717970717870713971637273737a673270767871367273307a716733797963356c7a763778751a100a0575636f736d120731323334353637",
+        authInfoBytes:
+          "0a500a460a1f2f636f736d6f732e63727970746f2e736563703235366b312e5075624b657912230a21034f04181eeba35391b858633a765c4a0c189697b40d216354d50890d350c7029012040a020801180112130a0d0a0575636f736d12043230303010c09a0c",
+      };
 
-    if (typeof targetChainData === "undefined") {
-      throw new Error(`Missing chain data for chainId: ${chainId}`);
-    }
+      // split chainId
+      const [namespace, reference] = chainId.split(":");
 
-    const rpcUrl = targetChainData.rpc[0];
+      // format sign doc
+      const signDoc = formatDirectSignDoc(
+        inputs.fee,
+        inputs.pubkey,
+        inputs.gasLimit,
+        inputs.accountNumber,
+        inputs.sequence,
+        inputs.bodyBytes,
+        reference,
+      );
 
-    // verify signature
-    const hash = hashTypedDataMessage(message);
-    const valid = await verifySignature(address, result, hash, rpcUrl);
+      // get cosmos address
+      const account = accounts.find(account => account.startsWith(chainId));
+      if (account === undefined) throw new Error("Account is not found");
+      const address = account.split(":").pop();
+      if (address === undefined) throw new Error("Address is invalid");
 
-    // format displayed result
-    return {
-      method: "eth_signTypedData",
-      address,
-      valid,
-      result,
-    };
-  });
+      // cosmos_signDirect params
+      const params = {
+        signerAddress: address,
+        signDoc: stringifySignDocValues(signDoc),
+      };
+
+      // send message
+      const result = await client!.request({
+        topic: session!.topic,
+        chainId,
+        request: {
+          method: "cosmos_signDirect",
+          params,
+        },
+      });
+
+      const targetChainData = chainData[namespace][reference];
+
+      if (typeof targetChainData === "undefined") {
+        throw new Error(`Missing chain data for chainId: ${chainId}`);
+      }
+
+      // TODO: check if valid
+      const valid = true;
+
+      // format displayed result
+      return {
+        method: "cosmos_signDirect",
+        address,
+        valid,
+        result: result.signature.signature,
+      };
+    }),
+    testSignAmino: _createJsonRpcRequestHandler(async (chainId: string) => {
+      // split chainId
+      const [namespace, reference] = chainId.split(":");
+
+      // test amino sign doc
+      const signDoc = {
+        msgs: [],
+        fee: { amount: [], gas: "23" },
+        chain_id: "foochain",
+        memo: "hello, world",
+        account_number: "7",
+        sequence: "54",
+      };
+
+      // get cosmos address
+      const account = accounts.find(account => account.startsWith(chainId));
+      if (account === undefined) throw new Error("Account is not found");
+      const address = account.split(":").pop();
+      if (address === undefined) throw new Error("Address is invalid");
+
+      // cosmos_signAmino params
+      const params = { signerAddress: address, signDoc };
+
+      // send message
+      const result = await client!.request({
+        topic: session!.topic,
+        chainId,
+        request: {
+          method: "cosmos_signAmino",
+          params,
+        },
+      });
+
+      const targetChainData = chainData[namespace][reference];
+
+      if (typeof targetChainData === "undefined") {
+        throw new Error(`Missing chain data for chainId: ${chainId}`);
+      }
+
+      // TODO: check if valid
+      const valid = true;
+
+      // format displayed result
+      return {
+        method: "cosmos_signAmino",
+        address,
+        valid,
+        result: result.signature.signature,
+      };
+    }),
+  };
 
   return (
     <JsonRpcContext.Provider
       value={{
         chainData,
         ping,
-        testSendTransaction,
-        testSignPersonalMessage,
-        testSignTypedData,
+        ethereumRpc,
+        cosmosRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
       }}
@@ -290,164 +420,3 @@ export function useJsonRpc() {
   }
   return context;
 }
-
-// ------ COSMOS RPC ------
-
-// const testSignDirect = async (chainId: string) => {
-//   if (typeof client === "undefined") {
-//     throw new Error("WalletConnect is not initialized");
-//   }
-//   if (typeof session === "undefined") {
-//     throw new Error("Session is not connected");
-//   }
-
-//   try {
-//     // test direct sign doc inputs
-//     const inputs = {
-//       fee: [{ amount: "2000", denom: "ucosm" }],
-//       pubkey: "AgSEjOuOr991QlHCORRmdE5ahVKeyBrmtgoYepCpQGOW",
-//       gasLimit: 200000,
-//       accountNumber: 1,
-//       sequence: 1,
-//       bodyBytes:
-//         "0a90010a1c2f636f736d6f732e62616e6b2e763162657461312e4d736753656e6412700a2d636f736d6f7331706b707472653766646b6c366766727a6c65736a6a766878686c63337234676d6d6b38727336122d636f736d6f7331717970717870713971637273737a673270767871367273307a716733797963356c7a763778751a100a0575636f736d120731323334353637",
-//       authInfoBytes:
-//         "0a500a460a1f2f636f736d6f732e63727970746f2e736563703235366b312e5075624b657912230a21034f04181eeba35391b858633a765c4a0c189697b40d216354d50890d350c7029012040a020801180112130a0d0a0575636f736d12043230303010c09a0c",
-//     };
-
-//     // split chainId
-//     const [namespace, reference] = chainId.split(":");
-
-//     // format sign doc
-//     const signDoc = formatDirectSignDoc(
-//       inputs.fee,
-//       inputs.pubkey,
-//       inputs.gasLimit,
-//       inputs.accountNumber,
-//       inputs.sequence,
-//       inputs.bodyBytes,
-//       reference,
-//     );
-
-//     // get cosmos address
-//     const account = accounts.find(account => account.startsWith(chainId));
-//     if (account === undefined) throw new Error("Account is not found");
-//     const address = account.split(":").pop();
-//     if (address === undefined) throw new Error("Address is invalid");
-
-//     // cosmos_signDirect params
-//     const params = {
-//       signerAddress: address,
-//       signDoc: stringifySignDocValues(signDoc),
-//     };
-
-//     // open modal
-//     openRequestModal();
-
-//     // send message
-//     const result = await client.request({
-//       topic: session.topic,
-//       chainId,
-//       request: {
-//         method: "cosmos_signDirect",
-//         params,
-//       },
-//     });
-
-//     const targetChainData = chainData[namespace][reference];
-
-//     if (typeof targetChainData === "undefined") {
-//       throw new Error(`Missing chain data for chainId: ${chainId}`);
-//     }
-
-//     // TODO: check if valid
-//     const valid = true;
-
-//     // format displayed result
-//     const formattedResult = {
-//       method: "cosmos_signDirect",
-//       address,
-//       valid,
-//       result: result.signature.signature,
-//     };
-
-//     // display result
-//     setResult(formattedResult);
-//   } catch (e) {
-//     console.error(e);
-//     setResult(null);
-//   } finally {
-//     setPending(false);
-//   }
-// };
-
-// const testSignAmino = async (chainId: string) => {
-//   if (typeof client === "undefined") {
-//     throw new Error("WalletConnect is not initialized");
-//   }
-//   if (typeof session === "undefined") {
-//     throw new Error("Session is not connected");
-//   }
-
-//   try {
-//     // split chainId
-//     const [namespace, reference] = chainId.split(":");
-
-//     // test amino sign doc
-//     const signDoc = {
-//       msgs: [],
-//       fee: { amount: [], gas: "23" },
-//       chain_id: "foochain",
-//       memo: "hello, world",
-//       account_number: "7",
-//       sequence: "54",
-//     };
-
-//     // get cosmos address
-//     const account = accounts.find(account => account.startsWith(chainId));
-//     if (account === undefined) throw new Error("Account is not found");
-//     const address = account.split(":").pop();
-//     if (address === undefined) throw new Error("Address is invalid");
-
-//     // cosmos_signAmino params
-//     const params = { signerAddress: address, signDoc };
-
-//     // open modal
-//     openRequestModal();
-
-//     // send message
-//     const result = await client.request({
-//       topic: session.topic,
-//       chainId,
-//       request: {
-//         method: "cosmos_signAmino",
-//         params,
-//       },
-//     });
-
-//     const targetChainData = chainData[namespace][reference];
-
-//     if (typeof targetChainData === "undefined") {
-//       throw new Error(`Missing chain data for chainId: ${chainId}`);
-//     }
-
-//     // TODO: check if valid
-//     const valid = true;
-
-//     // format displayed result
-//     const formattedResult = {
-//       method: "cosmos_signAmino",
-//       address,
-//       valid,
-//       result: result.signature.signature,
-//     };
-
-//     // display result
-//     setResult(formattedResult);
-//   } catch (e) {
-//     console.error(e);
-//     setResult(null);
-//   } finally {
-//     setPending(false);
-//   }
-// };

@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { version } from "@walletconnect/client/package.json";
 
-// import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
-
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";
 import Column from "./components/Column";
@@ -50,15 +48,7 @@ export default function App() {
     setChains,
   } = useWalletConnectClient();
 
-  const {
-    chainData,
-    ping,
-    testSendTransaction,
-    testSignPersonalMessage,
-    testSignTypedData,
-    isRpcRequestPending,
-    rpcResult,
-  } = useJsonRpc();
+  const { chainData, ping, ethereumRpc, cosmosRpc, isRpcRequestPending, rpcResult } = useJsonRpc();
 
   useEffect(() => {
     // Close the pairing modal after a session is established.
@@ -82,22 +72,20 @@ export default function App() {
     await ping();
   };
 
-  const onSendTransaction = async (chainId: string) => {
-    openRequestModal();
-    await testSendTransaction(chainId);
-  };
-
-  const onSignPersonalMessage = async (chainId: string) => {
-    openRequestModal();
-    await testSignPersonalMessage(chainId);
-  };
-
-  const onSignTypedData = async (chainId: string) => {
-    openRequestModal();
-    await testSignTypedData(chainId);
-  };
-
   const getEthereumActions = (): AccountAction[] => {
+    const onSendTransaction = async (chainId: string) => {
+      openRequestModal();
+      await ethereumRpc.testSendTransaction(chainId);
+    };
+    const onSignPersonalMessage = async (chainId: string) => {
+      openRequestModal();
+      await ethereumRpc.testSignPersonalMessage(chainId);
+    };
+    const onSignTypedData = async (chainId: string) => {
+      openRequestModal();
+      await ethereumRpc.testSignTypedData(chainId);
+    };
+
     return [
       { method: "eth_sendTransaction", callback: onSendTransaction },
       { method: "personal_sign", callback: onSignPersonalMessage },
@@ -106,9 +94,17 @@ export default function App() {
   };
 
   const getCosmosActions = (): AccountAction[] => {
+    const onSignDirect = async (chainId: string) => {
+      openRequestModal();
+      await cosmosRpc.testSignDirect(chainId);
+    };
+    const onSignAmino = async (chainId: string) => {
+      openRequestModal();
+      await cosmosRpc.testSignAmino(chainId);
+    };
     return [
-      // { method: "cosmos_signDirect", callback: testSignDirect },
-      // { method: "cosmos_signAmino", callback: testSignAmino },
+      { method: "cosmos_signDirect", callback: onSignDirect },
+      { method: "cosmos_signAmino", callback: onSignAmino },
     ];
   };
 
