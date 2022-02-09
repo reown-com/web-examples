@@ -39,7 +39,7 @@ export default function Layout({ children, initialized }: Props) {
           outline: 'none',
           '@xs': {
             borderRadius: '$lg',
-            height: '93vh',
+            height: '95vh',
             maxWidth: '450px'
           }
         }}
@@ -60,7 +60,14 @@ export default function Layout({ children, initialized }: Props) {
               </Card.Body>
             </RouteTransition>
 
-            <Card.Footer>
+            <Card.Footer
+              css={{
+                minHeight: 55,
+                position: 'sticky',
+                bottom: 0,
+                left: 0
+              }}
+            >
               <Navigation />
             </Card.Footer>
           </Fragment>
