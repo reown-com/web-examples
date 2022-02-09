@@ -20,10 +20,10 @@ export default function RouteTransition({ children }: IProps) {
       <motion.div
         className="routeTransition"
         key={pathname}
-        initial={{ opacity: 0, translateY: 10 }}
+        initial={{ opacity: 0, translateY: 7 }}
         animate={{ opacity: 1, translateY: 0 }}
-        exit={{ opacity: 0, translateY: 10 }}
-        transition={{ duration: 0.15 }}
+        exit={{ opacity: 0, translateY: 7 }}
+        transition={{ duration: 0.18 }}
       >
         {children}
       </motion.div>

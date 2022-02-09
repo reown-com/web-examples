@@ -49,7 +49,8 @@ export default function Layout({ children, initialized }: Props) {
             <RouteTransition>
               <Card.Body
                 css={{
-                  padding: 2,
+                  paddingLeft: 2,
+                  paddingRight: 2,
                   '@xs': {
                     padding: '20px'
                   }
