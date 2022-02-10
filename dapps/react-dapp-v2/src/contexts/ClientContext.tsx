@@ -60,6 +60,38 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [accounts, setAccounts] = useState<string[]>([]);
   const [chains, setChains] = useState<string[]>([]);
 
+  const resetApp = () => {
+    setPairings([]);
+    setSession(undefined);
+    setBalances({});
+    setAccounts([]);
+    setChains([]);
+  };
+
+  const getAccountBalances = async (_accounts: string[]) => {
+    setFetching(true);
+    try {
+      const arr = await Promise.all(
+        _accounts.map(async account => {
+          const [namespace, reference, address] = account.split(":");
+          const chainId = `${namespace}:${reference}`;
+          const assets = await apiGetAccountAssets(address, chainId);
+          return { account, assets };
+        }),
+      );
+
+      const balances: AccountBalances = {};
+      arr.forEach(({ account, assets }) => {
+        balances[account] = assets;
+      });
+      setBalances(balances);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setFetching(false);
+    }
+  };
+
   const onSessionConnected = useCallback(async (incomingSession: SessionTypes.Settled) => {
     setSession(incomingSession);
     setChains(incomingSession.permissions.blockchain.chains);
@@ -132,39 +164,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     });
   }, [client, session]);
 
-  const getAccountBalances = async (_accounts: string[]) => {
-    setFetching(true);
-    try {
-      const arr = await Promise.all(
-        _accounts.map(async account => {
-          const [namespace, reference, address] = account.split(":");
-          const chainId = `${namespace}:${reference}`;
-          const assets = await apiGetAccountAssets(address, chainId);
-          return { account, assets };
-        }),
-      );
-
-      const balances: AccountBalances = {};
-      arr.forEach(({ account, assets }) => {
-        balances[account] = assets;
-      });
-      setBalances(balances);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setFetching(false);
-    }
-  };
-
-  const resetApp = () => {
-    setPairings([]);
-    setSession(undefined);
-    setBalances({});
-    setAccounts([]);
-    setChains([]);
-  };
-
-  const subscribeToEvents = useCallback(async (_client: Client) => {
+  const _subscribeToEvents = useCallback(async (_client: Client) => {
     if (typeof _client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
@@ -194,7 +194,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     });
   }, []);
 
-  const checkPersistedState = useCallback(
+  const _checkPersistedState = useCallback(
     async (_client: Client) => {
       if (typeof _client === "undefined") {
         throw new Error("WalletConnect is not initialized");
@@ -222,14 +222,14 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       });
 
       setClient(_client);
-      await subscribeToEvents(_client);
-      await checkPersistedState(_client);
+      await _subscribeToEvents(_client);
+      await _checkPersistedState(_client);
     } catch (err) {
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [checkPersistedState, subscribeToEvents]);
+  }, [_checkPersistedState, subscribeToEvents]);
 
   useEffect(() => {
     if (!client) {
