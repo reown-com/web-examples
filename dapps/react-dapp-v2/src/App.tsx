@@ -124,6 +124,7 @@ export default function App() {
     }
   };
 
+  // Toggle between displaying testnet or mainnet chains as selection options.
   const toggleTestnets = () => {
     const nextIsTestnetState = !isTestnet;
     setIsTestnet(nextIsTestnetState);
@@ -138,6 +139,7 @@ export default function App() {
     }
   };
 
+  // Renders the appropriate model for the given request that is currently in-flight.
   const renderModal = () => {
     switch (modal) {
       case "pairing":
