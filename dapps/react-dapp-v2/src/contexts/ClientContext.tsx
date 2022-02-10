@@ -192,7 +192,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       });
     });
 
-    _client.on(CLIENT_EVENTS.pairing.created, async (proposal: PairingTypes.Settled) => {
+    _client.on(CLIENT_EVENTS.pairing.created, async () => {
       setPairings(_client.pairing.topics);
     });
 
