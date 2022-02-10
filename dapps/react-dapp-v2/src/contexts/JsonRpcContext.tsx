@@ -84,6 +84,15 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
     setChainData(chainData);
   };
 
+  const getAddressByChainId = (chainId: string) => {
+    const account = accounts.find(account => account.startsWith(chainId));
+    if (account === undefined) throw new Error(`Account for chainId ${chainId} not found.`);
+    const address = account.split(":").pop();
+    if (address === undefined) throw new Error(`Address for account ${account} is invalid`);
+
+    return address;
+  };
+
   const _createJsonRpcRequestHandler =
     (rpcRequest: (...requestArgs: [any]) => Promise<IFormattedRpcResponse>) =>
     async (chainId: string) => {
@@ -185,11 +194,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       // encode message (hex)
       const hexMsg = encoding.utf8ToHex(message, true);
 
-      // get ethereum address
-      const account = accounts.find(account => account.startsWith(chainId));
-      if (account === undefined) throw new Error("Account is not found");
-      const address = account.split(":").pop();
-      if (address === undefined) throw new Error("Address is invalid");
+      const address = getAddressByChainId(chainId);
 
       // personal_sign params
       const params = [hexMsg, address];
@@ -231,11 +236,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       // test message
       const message = JSON.stringify(eip712.example);
 
-      // get ethereum address
-      const account = accounts.find(account => account.startsWith(chainId));
-      if (account === undefined) throw new Error("Account is not found");
-      const address = account.split(":").pop();
-      if (address === undefined) throw new Error("Address is invalid");
+      const address = getAddressByChainId(chainId);
 
       // eth_signTypedData params
       const params = [address, message];
@@ -306,11 +307,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         reference,
       );
 
-      // get cosmos address
-      const account = accounts.find(account => account.startsWith(chainId));
-      if (account === undefined) throw new Error("Account is not found");
-      const address = account.split(":").pop();
-      if (address === undefined) throw new Error("Address is invalid");
+      const address = getAddressByChainId(chainId);
 
       // cosmos_signDirect params
       const params = {
@@ -359,11 +356,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         sequence: "54",
       };
 
-      // get cosmos address
-      const account = accounts.find(account => account.startsWith(chainId));
-      if (account === undefined) throw new Error("Account is not found");
-      const address = account.split(":").pop();
-      if (address === undefined) throw new Error("Address is invalid");
+      const address = getAddressByChainId(chainId);
 
       // cosmos_signAmino params
       const params = { signerAddress: address, signDoc };
