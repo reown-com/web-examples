@@ -44,7 +44,7 @@ export default function App() {
     chains,
     accounts,
     balances,
-    fetching,
+    isFetchingBalances,
     isInitializing,
     setChains,
   } = useWalletConnectClient();
@@ -179,7 +179,7 @@ export default function App() {
               active={chains.includes(chainId)}
             />
           ))}
-          <SConnectButton left onClick={onConnect} fetching={fetching} disabled={!chains.length}>
+          <SConnectButton left onClick={onConnect} disabled={!chains.length}>
             {"Connect"}
           </SConnectButton>
         </SButtonContainer>
@@ -196,7 +196,7 @@ export default function App() {
                 key={account}
                 active={true}
                 chainData={chainData}
-                fetching={fetching}
+                fetching={isFetchingBalances}
                 address={address}
                 chainId={chainId}
                 balances={balances}

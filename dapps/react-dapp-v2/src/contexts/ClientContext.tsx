@@ -30,11 +30,11 @@ interface IContext {
   connect: (pairing?: { topic: string }) => Promise<void>;
   disconnect: () => Promise<void>;
   isInitializing: boolean;
-  fetching: boolean;
   chains: string[];
   pairings: string[];
   accounts: string[];
   balances: AccountBalances;
+  isFetchingBalances: boolean;
   setChains: any;
 }
 
@@ -51,7 +51,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [pairings, setPairings] = useState<string[]>([]);
   const [session, setSession] = useState<SessionTypes.Created>();
 
-  const [fetching, setFetching] = useState(false);
+  const [isFetchingBalances, setIsFetchingBalances] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
 
   const [balances, setBalances] = useState<AccountBalances>({});
@@ -67,7 +67,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   };
 
   const getAccountBalances = async (_accounts: string[]) => {
-    setFetching(true);
+    setIsFetchingBalances(true);
     try {
       const arr = await Promise.all(
         _accounts.map(async account => {
@@ -86,7 +86,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     } catch (e) {
       console.error(e);
     } finally {
-      setFetching(false);
+      setIsFetchingBalances(false);
     }
   };
 
@@ -249,9 +249,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const value = useMemo(
     () => ({
       pairings,
-      fetching,
       isInitializing,
       balances,
+      isFetchingBalances,
       accounts,
       chains,
       client,
@@ -262,9 +262,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }),
     [
       pairings,
-      fetching,
       isInitializing,
       balances,
+      isFetchingBalances,
       accounts,
       chains,
       client,
