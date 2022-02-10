@@ -229,7 +229,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     } finally {
       setLoading(false);
     }
-  }, [_checkPersistedState, subscribeToEvents]);
+  }, [_checkPersistedState, _subscribeToEvents]);
 
   useEffect(() => {
     if (!client) {
