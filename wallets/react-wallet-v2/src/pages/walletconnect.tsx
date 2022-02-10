@@ -15,6 +15,7 @@ export default function WalletConnectPage() {
     } catch (err: unknown) {
       alert(err)
     } finally {
+      setUri('')
       setLoading(false)
     }
   }

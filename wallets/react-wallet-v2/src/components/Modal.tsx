@@ -1,15 +1,16 @@
 import ModalStore from '@/store/ModalStore'
+import SessionProposalModal from '@/views/SessionProposalModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
 
 export default function Modal() {
-  const { open } = useSnapshot(ModalStore.state)
+  const { open, view } = useSnapshot(ModalStore.state)
+
+  console.log(open)
 
   return (
-    <NextModal open={open} onClose={ModalStore.close}>
-      <NextModal.Header></NextModal.Header>
-      <NextModal.Body></NextModal.Body>
-      <NextModal.Footer></NextModal.Footer>
+    <NextModal blur open={open} style={{ border: '1px solid rgba(139, 139, 139, 0.4)' }}>
+      {view === 'SessionProposalModal' && <SessionProposalModal />}
     </NextModal>
   )
 }

@@ -1,17 +1,27 @@
+import { SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
 
 /**
  * Types
  */
+interface ModalData {
+  proposal?: SessionTypes.Proposal
+  created?: SessionTypes.Created
+}
+
 interface State {
   open: boolean
+  view?: 'SessionProposalModal' | 'SessionCreatedModal'
+  data?: ModalData
 }
 
 /**
  * State
  */
 const state = proxy<State>({
-  open: false
+  view: undefined,
+  open: false,
+  data: undefined
 })
 
 /**
@@ -20,7 +30,9 @@ const state = proxy<State>({
 const ModalStore = {
   state,
 
-  open() {
+  open(view: State['view'], data: State['data']) {
+    state.view = view
+    state.data = data
     state.open = true
   },
 
