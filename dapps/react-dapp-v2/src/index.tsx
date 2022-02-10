@@ -4,7 +4,7 @@ import { createGlobalStyle } from "styled-components";
 import { ClientContextProvider } from "./contexts/ClientContext";
 import { JsonRpcContextProvider } from "./contexts/JsonRpcContext";
 
-import HooksApp from "./HooksApp";
+import App from "./App";
 import { globalStyle } from "./styles";
 const GlobalStyle = createGlobalStyle`
   ${globalStyle}
@@ -22,7 +22,7 @@ ReactDOM.render(
     <GlobalStyle />
     <ClientContextProvider>
       <JsonRpcContextProvider>
-        <HooksApp />
+        <App />
       </JsonRpcContextProvider>
     </ClientContextProvider>
   </>,
