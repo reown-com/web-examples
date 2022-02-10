@@ -92,6 +92,35 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }
   };
 
+  const getSupportedNamespaces = useCallback(() => {
+    const supportedNamespaces: string[] = [];
+    chains.forEach(chainId => {
+      const [namespace] = chainId.split(":");
+      if (!supportedNamespaces.includes(namespace)) {
+        supportedNamespaces.push(namespace);
+      }
+    });
+
+    return supportedNamespaces;
+  }, [chains]);
+
+  const getSupportedMethods = (namespaces: string[]) => {
+    const supportedMethods: string[] = namespaces
+      .map(namespace => {
+        switch (namespace) {
+          case "eip155":
+            return DEFAULT_EIP155_METHODS;
+          case "cosmos":
+            return DEFAULT_COSMOS_METHODS;
+          default:
+            throw new Error(`No default methods for namespace: ${namespace}`);
+        }
+      })
+      .flat();
+
+    return supportedMethods;
+  };
+
   const onSessionConnected = useCallback(async (incomingSession: SessionTypes.Settled) => {
     setSession(incomingSession);
     setChains(incomingSession.permissions.blockchain.chains);
@@ -106,25 +135,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       }
       console.log("connect", pairing);
       try {
-        const supportedNamespaces: string[] = [];
-        chains.forEach(chainId => {
-          const [namespace] = chainId.split(":");
-          if (!supportedNamespaces.includes(namespace)) {
-            supportedNamespaces.push(namespace);
-          }
-        });
-        const methods: string[] = supportedNamespaces
-          .map(namespace => {
-            switch (namespace) {
-              case "eip155":
-                return DEFAULT_EIP155_METHODS;
-              case "cosmos":
-                return DEFAULT_COSMOS_METHODS;
-              default:
-                throw new Error(`No default methods for namespace: ${namespace}`);
-            }
-          })
-          .flat();
+        const supportedNamespaces = getSupportedNamespaces();
+        const methods = getSupportedMethods(supportedNamespaces);
         const session = await client.connect({
           metadata: getAppMetadata() || DEFAULT_APP_METADATA,
           pairing,
@@ -147,7 +159,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       // close modal in case it was open
       QRCodeModal.close();
     },
-    [chains, client, onSessionConnected],
+    [chains, client, onSessionConnected, getSupportedNamespaces],
   );
 
   const disconnect = useCallback(async () => {
@@ -157,7 +169,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     if (typeof session === "undefined") {
       throw new Error("Session is not connected");
     }
-    console.log(client);
     await client.disconnect({
       topic: session.topic,
       reason: ERROR.USER_DISCONNECTED.format(),
