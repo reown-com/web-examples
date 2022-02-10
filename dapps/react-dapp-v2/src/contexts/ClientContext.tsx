@@ -29,7 +29,7 @@ interface IContext {
   session: SessionTypes.Created | undefined;
   connect: (pairing?: { topic: string }) => Promise<void>;
   disconnect: () => Promise<void>;
-  loading: boolean;
+  isInitializing: boolean;
   fetching: boolean;
   chains: string[];
   pairings: string[];
@@ -51,11 +51,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [pairings, setPairings] = useState<string[]>([]);
   const [session, setSession] = useState<SessionTypes.Created>();
 
-  // UI State
   const [fetching, setFetching] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
 
-  // Other entities
   const [balances, setBalances] = useState<AccountBalances>({});
   const [accounts, setAccounts] = useState<string[]>([]);
   const [chains, setChains] = useState<string[]>([]);
@@ -224,7 +222,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
   const createClient = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsInitializing(true);
 
       const _client = await Client.init({
         logger: DEFAULT_LOGGER,
@@ -238,7 +236,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     } catch (err) {
       throw err;
     } finally {
-      setLoading(false);
+      setIsInitializing(false);
     }
   }, [_checkPersistedState, _subscribeToEvents]);
 
@@ -252,7 +250,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     () => ({
       pairings,
       fetching,
-      loading,
+      isInitializing,
       balances,
       accounts,
       chains,
@@ -265,7 +263,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     [
       pairings,
       fetching,
-      loading,
+      isInitializing,
       balances,
       accounts,
       chains,

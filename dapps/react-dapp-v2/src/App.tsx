@@ -45,7 +45,7 @@ export default function App() {
     accounts,
     balances,
     fetching,
-    loading,
+    isInitializing,
     setChains,
   } = useWalletConnectClient();
 
@@ -213,7 +213,7 @@ export default function App() {
     <SLayout>
       <Column maxWidth={1000} spanHeight>
         <Header ping={onPing} disconnect={disconnect} session={session} />
-        <SContent>{loading ? "Loading..." : renderContent()}</SContent>
+        <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>
         {renderModal()}
