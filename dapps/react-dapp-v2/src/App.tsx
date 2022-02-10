@@ -7,7 +7,7 @@ import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
 import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
-import { AccountAction, setInitialStateTestnet, getInitialStateTestnet } from "./helpers";
+import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
 import PairingModal from "./modals/PairingModal";
@@ -26,7 +26,7 @@ import { useWalletConnectClient } from "./contexts/ClientContext";
 import { useJsonRpc } from "./contexts/JsonRpcContext";
 
 export default function App() {
-  const [isTestnet, setIsTestnet] = useState(getInitialStateTestnet());
+  const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
 
   const [modal, setModal] = useState("");
 
@@ -35,6 +35,7 @@ export default function App() {
   const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
 
+  // Initialize the WalletConnect client.
   const {
     client,
     session,
@@ -48,10 +49,11 @@ export default function App() {
     setChains,
   } = useWalletConnectClient();
 
+  // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
   const { chainData, ping, ethereumRpc, cosmosRpc, isRpcRequestPending, rpcResult } = useJsonRpc();
 
+  // Close the pairing modal after a session is established.
   useEffect(() => {
-    // Close the pairing modal after a session is established.
     if (session && modal === "pairing") {
       closeModal();
     }
@@ -61,9 +63,11 @@ export default function App() {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
+    // Suggest existing pairings (if any).
     if (client.pairing.topics.length) {
       return openPairingModal();
     }
+    // If no existing pairings are available, trigger `WalletConnectClient.connect`.
     connect();
   };
 
@@ -123,8 +127,7 @@ export default function App() {
   const toggleTestnets = () => {
     const nextIsTestnetState = !isTestnet;
     setIsTestnet(nextIsTestnetState);
-    // TODO: rename "setLocalStorage..."
-    setInitialStateTestnet(nextIsTestnetState);
+    setLocaleStorageTestnetFlag(nextIsTestnetState);
   };
 
   const handleChainSelectionClick = (chainId: string) => {
