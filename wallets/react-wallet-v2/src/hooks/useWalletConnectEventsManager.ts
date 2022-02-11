@@ -6,12 +6,16 @@ import { useCallback, useEffect } from 'react'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   const onSessionProposal = useCallback((proposal: SessionTypes.Proposal) => {
-    console.log(proposal)
     ModalStore.open('SessionProposalModal', { proposal })
   }, [])
 
   const onSessionCreated = useCallback((created: SessionTypes.Created) => {
-    // ModalStore.open('SessionCreatedModal', { created })
+    // TODO show successful feedback here
+  }, [])
+
+  const onSessionRequest = useCallback(async (request: SessionTypes.RequestEvent) => {
+    const requestSession = await client?.session.get(request.topic)
+    ModalStore.open('SessionRequestModal', { request, requestSession })
   }, [])
 
   useEffect(() => {
@@ -21,6 +25,9 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
       // 2. Open session created modal to show success feedback
       client.on(CLIENT_EVENTS.session.created, onSessionCreated)
+
+      // 3. Open rpc request handling modal
+      client.on(CLIENT_EVENTS.session.request, onSessionRequest)
     }
-  }, [initialized, onSessionProposal, onSessionCreated])
+  }, [initialized, onSessionProposal, onSessionCreated, onSessionRequest])
 }
