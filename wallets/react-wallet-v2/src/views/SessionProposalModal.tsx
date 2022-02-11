@@ -10,12 +10,12 @@ export default function SessionProposalModal() {
   const proposal = ModalStore.state.data?.proposal
   const address = WalletStore.state.wallet?.address
 
-  // Ensure proposal and client are defined
-  if (!proposal || !client) {
+  // Ensure proposal is defined
+  if (!proposal) {
     return <Text>Missing proposal data</Text>
   }
 
-  // Get data to display
+  // Get required proposal data
   const { proposer, permissions, relay } = proposal
   const { icons, name, url } = proposer.metadata
   const { chains } = permissions.blockchain
