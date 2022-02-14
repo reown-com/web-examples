@@ -1,5 +1,5 @@
-import WalletStore from '@/store/WalletStore'
-import { createClient } from '@/utils/WalletConnectUtil'
+import { createWalletConnectClient } from '@/utils/WalletConnectUtil'
+import { createOrRestoreWallet } from '@/utils/WalletUtil'
 import { useCallback, useEffect, useState } from 'react'
 
 export default function useInitialization() {
@@ -7,8 +7,8 @@ export default function useInitialization() {
 
   const onInitialize = useCallback(async () => {
     try {
-      WalletStore.createWallet()
-      await createClient()
+      createOrRestoreWallet()
+      await createWalletConnectClient()
       setInitialized(true)
     } catch (err: unknown) {
       alert(err)

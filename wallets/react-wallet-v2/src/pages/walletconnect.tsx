@@ -1,6 +1,6 @@
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
-import { client } from '@/utils/WalletConnectUtil'
+import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
@@ -11,7 +11,7 @@ export default function WalletConnectPage() {
   async function onConnect(uri: string) {
     try {
       setLoading(true)
-      await client?.pair({ uri })
+      await walletConnectClient.pair({ uri })
     } catch (err: unknown) {
       alert(err)
     } finally {

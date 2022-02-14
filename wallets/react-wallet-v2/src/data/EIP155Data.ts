@@ -3,10 +3,19 @@
  * @url https://chainlist.org
  */
 
-export type CHAIN = keyof typeof MAINNET_CHAINS
+/**
+ * Types
+ */
+export type TChain = keyof typeof MAINNET_CHAINS
 
+/**
+ * Utilities
+ */
 export const LOGO_BASE_URL = 'https://blockchain-api.xyz/logos/'
 
+/**
+ * Chains
+ */
 export const MAINNET_CHAINS = {
   'eip155:1': {
     chainId: 1,
@@ -32,4 +41,16 @@ export const MAINNET_CHAINS = {
     logo: LOGO_BASE_URL + 'eip155:42161.png',
     rgb: '44, 55, 75'
   }
+}
+
+/**
+ * Methods
+ */
+export const SIGNING_METHODS = {
+  PERSONAL_SIGN: 'personal_sign',
+  SEND_TRANSACTION: 'eth_sendTransaction',
+  SIGN: 'eth_sign',
+  SIGN_TRANSACTION: 'eth_signTransaction',
+  SIGN_TYPED_DATA: 'eth_signTypedData',
+  SIGN_TYPED_DATA_V4: 'eth_signTypedData_v4'
 }

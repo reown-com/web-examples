@@ -12,6 +12,7 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
   return (
     <Card
       bordered
+      clickable
       borderWeight="light"
       css={{
         borderColor: `rgba(${rgb}, 0.4)`,

@@ -1,7 +1,7 @@
+import { MAINNET_CHAINS, TChain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
-import WalletStore from '@/store/WalletStore'
-import { CHAIN, MAINNET_CHAINS } from '@/utils/EIP155ChainsUtil'
-import { client } from '@/utils/WalletConnectUtil'
+import { getSignMessage } from '@/utils/HelperUtil'
+import { wallet } from '@/utils/WalletUtil'
 import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -9,23 +9,24 @@ export default function SessionRequestModal() {
   // Get request and wallet data from store
   const request = ModalStore.state.data?.request
   const requestSession = ModalStore.state.data?.requestSession
-  const { wallet } = WalletStore.state
 
   // Ensure request and wallet are defined
-  if (!request || !requestSession || !wallet) {
+  if (!request || !requestSession) {
     return <Text>Missing request data</Text>
   }
 
   // Get required request data
   const { chainId } = request
-  const { method } = request.request
+  const { method, params } = request.request
   const { protocol } = requestSession.relay
   const { name, icons, url } = requestSession.peer.metadata
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
-    if (client && wallet) {
-      // TODO figure out how to sign different personal messages correctly with ethers
+    // Handle sign requests
+    if (['eth_sign', 'personal_sign'].includes(method)) {
+      const message = getSignMessage(params, wallet.address)
+      const signedMessage = wallet.signMessage(message)
     }
   }
 
@@ -55,7 +56,7 @@ export default function SessionRequestModal() {
           <Row>
             <Col>
               <Text h5>Blockchain</Text>
-              <Text color="$gray400">{MAINNET_CHAINS[chainId as CHAIN]?.name ?? chainId}</Text>
+              <Text color="$gray400">{MAINNET_CHAINS[chainId as TChain]?.name ?? chainId}</Text>
             </Col>
           </Row>
 

@@ -1,5 +1,5 @@
 import PageHeader from '@/components/PageHeader'
-import WalletStore from '@/store/WalletStore'
+import { wallet } from '@/utils/WalletUtil'
 import { Card, Divider, Row, Switch, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -11,7 +11,7 @@ export default function SettingsPage() {
         Mnemonic
       </Text>
       <Card bordered borderWeight="light">
-        <Text css={{ fontFamily: '$mono' }}>{WalletStore.state.wallet?.mnemonic.phrase}</Text>
+        <Text css={{ fontFamily: '$mono' }}>{wallet.mnemonic.phrase}</Text>
       </Card>
 
       <Text css={{ color: '$yellow500', marginTop: '$5', textAlign: 'center' }}>

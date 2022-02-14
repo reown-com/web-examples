@@ -1,17 +1,10 @@
 import AccountCard from '@/components/AccountCard'
 import PageHeader from '@/components/PageHeader'
-import WalletStore from '@/store/WalletStore'
-import { MAINNET_CHAINS } from '@/utils/EIP155ChainsUtil'
+import { MAINNET_CHAINS } from '@/data/EIP155Data'
+import { wallet } from '@/utils/WalletUtil'
 import { Fragment } from 'react'
-import { useSnapshot } from 'valtio'
 
 export default function HomePage() {
-  const { wallet } = useSnapshot(WalletStore.state)
-
-  if (!wallet) {
-    return null
-  }
-
   return (
     <Fragment>
       <PageHeader>Accounts</PageHeader>

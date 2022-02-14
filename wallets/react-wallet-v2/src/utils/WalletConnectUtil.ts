@@ -1,9 +1,9 @@
 import WalletConnectClient from '@walletconnect/client'
 
-export let client: WalletConnectClient | undefined = undefined
+export let walletConnectClient: WalletConnectClient
 
-export async function createClient() {
-  client = await WalletConnectClient.init({
+export async function createWalletConnectClient() {
+  walletConnectClient = await WalletConnectClient.init({
     controller: true,
     projectId: '8f331b9812e0e5b8f2da2c7203624869',
     relayUrl: 'wss://relay.walletconnect.com',

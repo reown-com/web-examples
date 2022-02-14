@@ -1,14 +1,13 @@
+import { MAINNET_CHAINS, TChain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
-import WalletStore from '@/store/WalletStore'
-import { CHAIN, MAINNET_CHAINS } from '@/utils/EIP155ChainsUtil'
-import { client } from '@/utils/WalletConnectUtil'
+import { walletConnectClient } from '@/utils/WalletConnectUtil'
+import { wallet } from '@/utils/WalletUtil'
 import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
 export default function SessionProposalModal() {
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
-  const address = WalletStore.state.wallet?.address
 
   // Ensure proposal is defined
   if (!proposal) {
@@ -24,21 +23,21 @@ export default function SessionProposalModal() {
 
   // Hanlde approve action
   async function onApprove() {
-    if (client && proposal && address) {
+    if (proposal) {
       const response = {
         state: {
-          accounts: chains.map(chain => `${chain}:${address}`)
+          accounts: chains.map(chain => `${chain}:${wallet.address}`)
         }
       }
-      await client.approve({ proposal, response })
+      await walletConnectClient.approve({ proposal, response })
     }
     ModalStore.close()
   }
 
   // Hanlde reject action
   async function onReject() {
-    if (client && proposal) {
-      await client.reject({ proposal })
+    if (proposal) {
+      await walletConnectClient.reject({ proposal })
     }
     ModalStore.close()
   }
@@ -67,7 +66,7 @@ export default function SessionProposalModal() {
             <Col>
               <Text h5>Blockchains</Text>
               <Text color="$gray400">
-                {chains.map(chain => MAINNET_CHAINS[chain as CHAIN]?.name ?? chain).join(', ')}
+                {chains.map(chain => MAINNET_CHAINS[chain as TChain]?.name ?? chain).join(', ')}
               </Text>
             </Col>
           </Row>
