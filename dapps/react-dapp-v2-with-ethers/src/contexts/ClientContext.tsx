@@ -10,7 +10,12 @@ import {
   useMemo,
   useState,
 } from "react";
-import { DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from "../constants";
+import {
+  DEFAULT_INFURA_ID,
+  DEFAULT_LOGGER,
+  DEFAULT_PROJECT_ID,
+  DEFAULT_RELAY_URL,
+} from "../constants";
 import { ERROR } from "@walletconnect/utils";
 import EthereumProvider from "@walletconnect/ethereum-provider";
 import { providers, utils } from "ethers";
@@ -138,7 +143,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       const ethereumProvider = new EthereumProvider({
         chainId: Number(chainId),
         rpc: {
-          infuraId: "5dc0df7abe4645dfb06a9a8c39ede422",
+          infuraId: DEFAULT_INFURA_ID,
         },
         // FIXME: `signer-connection` sub-dep is already specifying beta.23 -> typings mismatch.
         // @ts-ignore
