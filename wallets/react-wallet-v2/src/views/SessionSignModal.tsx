@@ -1,10 +1,10 @@
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
+import { convertHexToUtf8 } from '@/utils/HelperUtil'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/RequestHandlerUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { wallet } from '@/utils/WalletUtil'
 import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
-import { utils } from 'ethers'
 import { Fragment } from 'react'
 
 export default function SessionSignModal() {
@@ -23,11 +23,9 @@ export default function SessionSignModal() {
   const { protocol } = requestSession.relay
   const { name, icons, url } = requestSession.peer.metadata
 
-  // Get message as utf string
+  // Get message, convert it to UTF8 string if it is valid hex
   let message = method === EIP155_SIGNING_METHODS.PERSONAL_SIGN ? params[0] : params[1]
-  if (utils.isHexString(message)) {
-    message = utils.toUtf8String(message)
-  }
+  message = convertHexToUtf8(message)
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {

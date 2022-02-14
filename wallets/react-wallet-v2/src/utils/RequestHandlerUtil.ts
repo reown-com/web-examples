@@ -1,4 +1,5 @@
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { convertHexToUtf8 } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { RequestEvent } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
@@ -9,11 +10,11 @@ export async function approveEIP155Request(request: RequestEvent['request'], wal
 
   switch (method) {
     case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
-      const personalSignResult = await wallet.signMessage(params[0])
+      const personalSignResult = await wallet.signMessage(convertHexToUtf8(params[0]))
       return formatJsonRpcResult(id, personalSignResult)
 
     case EIP155_SIGNING_METHODS.ETH_SIGN:
-      const ethSignResult = await wallet.signMessage(params[1])
+      const ethSignResult = await wallet.signMessage(convertHexToUtf8(params[1]))
       return formatJsonRpcResult(id, ethSignResult)
 
     default:
