@@ -67,16 +67,14 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
-    if (typeof session === "undefined") {
-      throw new Error("Session is not connected");
-    }
+    const _session = await client.session.get(client.session.topics[0]);
     await client.disconnect({
-      topic: session.topic,
+      topic: _session.topic,
       reason: ERROR.USER_DISCONNECTED.format(),
     });
-  }, [client, session]);
+  }, [client]);
 
-  const _subscribeToEvents = useCallback(async (_client: Client) => {
+  const _subscribeToClientEvents = useCallback(async (_client: Client) => {
     if (typeof _client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
@@ -134,7 +132,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       });
 
       setClient(_client);
-      await _subscribeToEvents(_client);
+      await _subscribeToClientEvents(_client);
       // TODO:
       // await _checkPersistedState(_client);
     } catch (err) {
@@ -142,7 +140,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     } finally {
       setIsInitializing(false);
     }
-  }, [_subscribeToEvents]);
+  }, [_subscribeToClientEvents]);
 
   useEffect(() => {
     if (!client) {
@@ -176,21 +174,22 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       setWeb3Provider(web3Provider);
 
-      const accounts = await ethereumProvider.enable();
-      setAccounts(accounts);
+      const _accounts = await ethereumProvider.enable();
+      const _session = await client.session.get(client.session.topics[0]);
 
+      setAccounts(_accounts);
+      setSession(_session);
       setChain(caipChainId);
 
       try {
         setIsFetchingBalances(true);
-        const balances = await Promise.all(
-          accounts.map(async account => {
+        const _balances = await Promise.all(
+          _accounts.map(async account => {
             const balance = await web3Provider.getBalance(account);
             return { symbol: "ETH", balance: utils.formatEther(balance) };
           }),
         );
-
-        setBalances(balances);
+        setBalances(_balances);
       } catch (error: any) {
         throw new Error(error);
       } finally {

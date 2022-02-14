@@ -1,3 +1,4 @@
+import { SessionTypes } from "@walletconnect/types";
 import * as React from "react";
 import styled from "styled-components";
 
@@ -49,18 +50,18 @@ const SActiveSession = styled(SActiveAccount as any)`
 interface HeaderProps {
   ping: () => Promise<void>;
   disconnect: () => Promise<void>;
-  accounts: string[];
+  session: SessionTypes.Created | undefined;
 }
 
 const Header = (props: HeaderProps) => {
-  const { ping, disconnect, accounts } = props;
+  const { ping, disconnect, session } = props;
   return (
     <SHeader {...props}>
-      {accounts.length > 0 ? (
+      {session ? (
         <>
           <SActiveSession>
-            <p>{`Connected with`}</p>
-            <p>{accounts[0]}</p>
+            <p>{`Connected to`}</p>
+            <p>{session.peer.metadata.name}</p>
           </SActiveSession>
           <SHeaderActions>
             <Button outline color="black" onClick={ping}>

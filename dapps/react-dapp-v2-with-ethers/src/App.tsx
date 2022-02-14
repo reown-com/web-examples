@@ -59,7 +59,6 @@ export default function App() {
     session,
     disconnect,
     chain,
-    setChain,
     accounts,
     balances,
     isFetchingBalances,
@@ -98,6 +97,7 @@ export default function App() {
     setChainData(chainData);
   };
 
+  // TODO:
   // const onPing = async () => {
   //   openPingModal();
   //   await ping();
@@ -226,7 +226,7 @@ export default function App() {
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={() => Promise.resolve()} disconnect={disconnect} accounts={accounts} />
+        <Header ping={() => Promise.resolve()} disconnect={disconnect} session={session} />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>
