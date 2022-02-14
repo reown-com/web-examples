@@ -208,7 +208,7 @@ export default function App() {
       </SLanding>
     ) : (
       <SAccountsContainer>
-        <h3>Accounts</h3>
+        <h3>Account</h3>
         <SAccounts>
           {accounts.map(account => {
             return (
@@ -232,7 +232,7 @@ export default function App() {
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={() => Promise.resolve()} disconnect={disconnect} session={session} />
+        <Header ping={() => Promise.resolve()} disconnect={disconnect} accounts={accounts} />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>
