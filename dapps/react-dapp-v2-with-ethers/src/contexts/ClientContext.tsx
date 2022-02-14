@@ -12,7 +12,6 @@ import {
 } from "react";
 import {
   DEFAULT_APP_METADATA,
-  DEFAULT_COSMOS_METHODS,
   DEFAULT_EIP155_METHODS,
   DEFAULT_LOGGER,
   DEFAULT_PROJECT_ID,
@@ -30,13 +29,13 @@ interface IContext {
   session: SessionTypes.Created | undefined;
   disconnect: () => Promise<void>;
   isInitializing: boolean;
-  chains: string[];
+  chain: string;
   pairings: string[];
   accounts: string[];
   balances: { symbol: string; balance: string }[];
   isFetchingBalances: boolean;
-  setChains: any;
-  onEnable: () => Promise<void>;
+  setChain: (chainId: string) => void;
+  onEnable: (chainId: string) => Promise<void>;
   web3Provider?: providers.Web3Provider;
 }
 
@@ -61,43 +60,14 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
   const [balances, setBalances] = useState<{ symbol: string; balance: string }[]>([]);
   const [accounts, setAccounts] = useState<string[]>([]);
-  const [chains, setChains] = useState<string[]>([]);
+  const [chain, setChain] = useState<string>("");
 
   const resetApp = () => {
     setPairings([]);
     setSession(undefined);
     setBalances([]);
     setAccounts([]);
-    setChains([]);
-  };
-
-  const getSupportedNamespaces = useCallback(() => {
-    const supportedNamespaces: string[] = [];
-    chains.forEach(chainId => {
-      const [namespace] = chainId.split(":");
-      if (!supportedNamespaces.includes(namespace)) {
-        supportedNamespaces.push(namespace);
-      }
-    });
-
-    return supportedNamespaces;
-  }, [chains]);
-
-  const getSupportedMethods = (namespaces: string[]) => {
-    const supportedMethods: string[] = namespaces
-      .map(namespace => {
-        switch (namespace) {
-          case "eip155":
-            return DEFAULT_EIP155_METHODS;
-          case "cosmos":
-            return DEFAULT_COSMOS_METHODS;
-          default:
-            throw new Error(`No default methods for namespace: ${namespace}`);
-        }
-      })
-      .flat();
-
-    return supportedMethods;
+    setChain("");
   };
 
   const disconnect = useCallback(async () => {
@@ -133,7 +103,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     });
 
     _client.on(CLIENT_EVENTS.pairing.created, async () => {
-      debugger;
       setPairings(_client.pairing.topics);
     });
 
@@ -173,6 +142,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       setClient(_client);
       await _subscribeToEvents(_client);
+      // TODO:
       // await _checkPersistedState(_client);
     } catch (err) {
       throw err;
@@ -187,13 +157,64 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }
   }, [client, createClient]);
 
-  useEffect(() => {
-    const init = async () => {
-      if (!client) return;
+  // useEffect(() => {
+  //   const init = async () => {
+  //     if (!client) return;
+
+  //     //  Create WalletConnect Provider
+  //     const ethereumProvider = new EthereumProvider({
+  //       chainId: 42,
+  //       rpc: {
+  //         infuraId: "5dc0df7abe4645dfb06a9a8c39ede422",
+  //       },
+  //       // FIXME: `signer-connection` sub-dep is already specifying beta.23 -> typings mismatch.
+  //       // @ts-ignore
+  //       client,
+  //     });
+  //     const web3Provider = new providers.Web3Provider(ethereumProvider);
+
+  //     setEthereumProvider(ethereumProvider);
+  //     setWeb3Provider(web3Provider);
+
+  //     // Enable session (triggers QR Code modal if we bound the listener on `client` for it).
+  //     // const accounts = await ethereumProvider.enable();
+  //     // console.log("accounts:", accounts);
+
+  //     // const provider = new providers.Web3Provider(ethereumProvider);
+
+  //     // console.log(provider);
+  //     // console.log(await provider.listAccounts());
+  //     // console.log(await provider.getNetwork());
+  //     // console.log(provider.getSigner());
+  //     // console.log(await provider.getBalance(accounts[0]));
+
+  //     // const TEST_ETH_TRANSFER = {
+  //     //   from: accounts[0],
+  //     //   to: accounts[0],
+  //     //   value: utils.parseEther("1").toHexString(),
+  //     //   data: "0x",
+  //     // };
+
+  //     // const signer = provider.getSigner();
+  //     // const transferTx = await signer.sendTransaction(TEST_ETH_TRANSFER);
+  //   };
+
+  //   init();
+  // }, [client]);
+
+  const onEnable = useCallback(
+    async (caipChainId: string) => {
+      if (!client) {
+        throw new ReferenceError("WalletConnect Client is not initialized.");
+      }
+
+      const chainId = caipChainId.split(":").pop();
+
+      console.log("Enabling EthereumProvider for chainId: ", chainId);
 
       //  Create WalletConnect Provider
       const ethereumProvider = new EthereumProvider({
-        chainId: 42,
+        chainId: Number(chainId),
         rpc: {
           infuraId: "5dc0df7abe4645dfb06a9a8c39ede422",
         },
@@ -203,58 +224,36 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       });
       const web3Provider = new providers.Web3Provider(ethereumProvider);
 
+      console.log(ethereumProvider);
+
       setEthereumProvider(ethereumProvider);
       setWeb3Provider(web3Provider);
 
-      // Enable session (triggers QR Code modal if we bound the listener on `client` for it).
-      // const accounts = await ethereumProvider.enable();
-      // console.log("accounts:", accounts);
+      const accounts = await ethereumProvider.enable();
+      setAccounts(accounts);
 
-      // const provider = new providers.Web3Provider(ethereumProvider);
+      setChain(caipChainId);
 
-      // console.log(provider);
-      // console.log(await provider.listAccounts());
-      // console.log(await provider.getNetwork());
-      // console.log(provider.getSigner());
-      // console.log(await provider.getBalance(accounts[0]));
+      try {
+        setIsFetchingBalances(true);
+        const balances = await Promise.all(
+          accounts.map(async account => {
+            const balance = await web3Provider.getBalance(account);
+            return { symbol: "ETH", balance: utils.formatEther(balance) };
+          }),
+        );
 
-      // const TEST_ETH_TRANSFER = {
-      //   from: accounts[0],
-      //   to: accounts[0],
-      //   value: utils.parseEther("1").toHexString(),
-      //   data: "0x",
-      // };
+        setBalances(balances);
+      } catch (error: any) {
+        throw new Error(error);
+      } finally {
+        setIsFetchingBalances(false);
+      }
 
-      // const signer = provider.getSigner();
-      // const transferTx = await signer.sendTransaction(TEST_ETH_TRANSFER);
-    };
-
-    init();
-  }, [client]);
-
-  const onEnable = useCallback(async () => {
-    if (!ethereumProvider) {
-      throw new ReferenceError("ethereumProvider is not defined.");
-    }
-    if (!web3Provider) {
-      throw new ReferenceError("web3Provider is not defined.");
-    }
-    const accounts = await ethereumProvider.enable();
-    setAccounts(accounts);
-
-    setChains(["eip155:42"]);
-
-    const balances = await Promise.all(
-      accounts.map(async account => {
-        const balance = await web3Provider.getBalance(account);
-        return { symbol: "ETH", balance: utils.formatEther(balance) };
-      }),
-    );
-
-    setBalances(balances);
-
-    QRCodeModal.close();
-  }, [ethereumProvider, web3Provider]);
+      QRCodeModal.close();
+    },
+    [client],
+  );
 
   console.log(balances);
 
@@ -265,11 +264,11 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       balances,
       isFetchingBalances,
       accounts,
-      chains,
+      chain,
       client,
       session,
       disconnect,
-      setChains,
+      setChain,
       onEnable,
       web3Provider,
     }),
@@ -279,11 +278,11 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       balances,
       isFetchingBalances,
       accounts,
-      chains,
+      chain,
       client,
       session,
       disconnect,
-      setChains,
+      setChain,
       onEnable,
       web3Provider,
     ],

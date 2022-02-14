@@ -16,7 +16,6 @@ import {
   ChainNamespaces,
 } from "../helpers";
 import { fonts } from "../styles";
-import { useWalletConnectClient } from "../contexts/ClientContext";
 
 interface AccountStyleProps {
   rgb: string;
@@ -123,8 +122,6 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
 
   const chain = getBlockchainDisplayData(chainId, chainData);
   if (typeof chain === "undefined") {
-    console.warn("CHAIN UNDEFINED");
-
     return null;
   }
   const name = chain.meta.name || chain.data.name;

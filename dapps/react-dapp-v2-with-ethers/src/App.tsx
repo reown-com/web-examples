@@ -58,12 +58,12 @@ export default function App() {
     client,
     session,
     disconnect,
-    chains,
+    chain,
+    setChain,
     accounts,
     balances,
     isFetchingBalances,
     isInitializing,
-    setChains,
     onEnable,
     web3Provider,
   } = useWalletConnectClient();
@@ -160,14 +160,6 @@ export default function App() {
     setLocaleStorageTestnetFlag(nextIsTestnetState);
   };
 
-  const handleChainSelectionClick = (chainId: string) => {
-    if (chains.includes(chainId)) {
-      setChains(chains.filter(chain => chain !== chainId));
-    } else {
-      setChains([...chains, chainId]);
-    }
-  };
-
   // Renders the appropriate model for the given request that is currently in-flight.
   const renderModal = () => {
     switch (modal) {
@@ -175,7 +167,8 @@ export default function App() {
         if (typeof client === "undefined") {
           throw new Error("WalletConnect is not initialized");
         }
-        return <PairingModal pairings={client.pairing.values} connect={onEnable} />;
+        // return <PairingModal pairings={client.pairing.values} connect={onEnable} />;
+        return null;
       case "request":
         return <RequestModal pending={isRpcRequestPending} result={rpcResult} />;
       case "ping":
@@ -194,7 +187,7 @@ export default function App() {
           <span>{`Using v${version || "2.0.0-beta"}`}</span>
         </h6>
         <SButtonContainer>
-          <h6>Select chains:</h6>
+          <h6>Select an Ethereum chain:</h6>
           <SToggleContainer>
             <p>Testnets Only?</p>
             <Toggle active={isTestnet} onClick={toggleTestnets} />
@@ -204,13 +197,13 @@ export default function App() {
               key={chainId}
               chainId={chainId}
               chainData={chainData}
-              onClick={handleChainSelectionClick}
-              active={chains.includes(chainId)}
+              onClick={onEnable}
+              // active={chains.includes(chainId)}
             />
           ))}
-          <SConnectButton left onClick={onEnable} disabled={!chains.length}>
+          {/* <SConnectButton left onClick={onEnable} disabled={!chains.length}>
             {"Connect"}
-          </SConnectButton>
+          </SConnectButton> */}
         </SButtonContainer>
       </SLanding>
     ) : (
@@ -218,9 +211,6 @@ export default function App() {
         <h3>Accounts</h3>
         <SAccounts>
           {accounts.map(account => {
-            // const [namespace, reference, address] = account.split(":");
-            // const chainId = `${namespace}:${reference}`;
-            const chainId = "eip155:42";
             return (
               <Blockchain
                 key={account}
@@ -228,9 +218,9 @@ export default function App() {
                 chainData={chainData}
                 fetching={isFetchingBalances}
                 address={account}
-                chainId={chainId}
+                chainId={chain}
                 balances={balances}
-                actions={getBlockchainActions(chainId)}
+                actions={getBlockchainActions(chain)}
               />
             );
           })}

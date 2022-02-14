@@ -6,7 +6,6 @@ export const DEFAULT_MAIN_CHAINS = [
   "eip155:137",
   "eip155:42161",
   "eip155:42220",
-  "cosmos:cosmoshub-4",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -25,8 +24,6 @@ export const DEFAULT_PROJECT_ID = process.env.REACT_APP_PROJECT_ID;
 export const DEFAULT_RELAY_URL = process.env.REACT_APP_RELAY_URL;
 
 export const DEFAULT_EIP155_METHODS = ["eth_sendTransaction", "personal_sign", "eth_signTypedData"];
-
-export const DEFAULT_COSMOS_METHODS = ["cosmos_signDirect", "cosmos_signAmino"];
 
 export const DEFAULT_LOGGER = "debug";
 
