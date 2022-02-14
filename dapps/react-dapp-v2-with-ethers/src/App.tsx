@@ -193,13 +193,7 @@ export default function App() {
             <Toggle active={isTestnet} onClick={toggleTestnets} />
           </SToggleContainer>
           {chainOptions.map(chainId => (
-            <Blockchain
-              key={chainId}
-              chainId={chainId}
-              chainData={chainData}
-              onClick={onEnable}
-              // active={chains.includes(chainId)}
-            />
+            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onEnable} />
           ))}
           {/* <SConnectButton left onClick={onEnable} disabled={!chains.length}>
             {"Connect"}

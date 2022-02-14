@@ -1,6 +1,5 @@
 import * as React from "react";
 import styled from "styled-components";
-import { SessionTypes } from "@walletconnect/types";
 
 import { fonts, responsive } from "../styles";
 import Button from "./Button";
