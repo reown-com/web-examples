@@ -50,6 +50,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
   const [isFetchingBalances, setIsFetchingBalances] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [hasCheckedPersistedSession, setHasCheckedPersistedSession] = useState(false);
 
   const [balances, setBalances] = useState<{ symbol: string; balance: string }[]>([]);
   const [accounts, setAccounts] = useState<string[]>([]);
@@ -104,23 +105,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     });
   }, []);
 
-  // const _checkPersistedState = useCallback(
-  //   async (_client: Client) => {
-  //     if (typeof _client === "undefined") {
-  //       throw new Error("WalletConnect is not initialized");
-  //     }
-  //     // populates existing pairings to state
-  //     setPairings(_client.pairing.topics);
-  //     if (typeof session !== "undefined") return;
-  //     // populates existing session to state (assume only the top one)
-  //     if (_client.session.topics.length) {
-  //       const _session = await _client.session.get(_client.session.topics[0]);
-  //       onSessionConnected(_session);
-  //     }
-  //   },
-  //   [session, onSessionConnected],
-  // );
-
   const createClient = useCallback(async () => {
     try {
       setIsInitializing(true);
@@ -133,20 +117,12 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       setClient(_client);
       await _subscribeToClientEvents(_client);
-      // TODO:
-      // await _checkPersistedState(_client);
     } catch (err) {
       throw err;
     } finally {
       setIsInitializing(false);
     }
   }, [_subscribeToClientEvents]);
-
-  useEffect(() => {
-    if (!client) {
-      createClient();
-    }
-  }, [client, createClient]);
 
   const onEnable = useCallback(
     async (caipChainId: string) => {
@@ -201,7 +177,41 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     [client],
   );
 
-  console.log(balances);
+  const _checkForPersistedSession = useCallback(
+    async (_client: Client) => {
+      if (typeof _client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
+      // populates existing pairings to state
+      setPairings(_client.pairing.topics);
+      if (typeof session !== "undefined") return;
+      // populates existing session to state (assume only the top one)
+      if (_client.session.topics.length) {
+        const _session = await _client.session.get(_client.session.topics[0]);
+        const [namespace, chainId] = _session.state.accounts[0].split(":");
+        const caipChainId = `${namespace}:${chainId}`;
+        onEnable(caipChainId);
+      }
+    },
+    [session, onEnable],
+  );
+
+  useEffect(() => {
+    if (!client) {
+      createClient();
+    }
+  }, [client, createClient]);
+
+  useEffect(() => {
+    const getPersistedSession = async () => {
+      if (client && !hasCheckedPersistedSession) {
+        await _checkForPersistedSession(client);
+        setHasCheckedPersistedSession(true);
+      }
+    };
+
+    getPersistedSession();
+  }, [client, _checkForPersistedSession, hasCheckedPersistedSession]);
 
   const value = useMemo(
     () => ({
