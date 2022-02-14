@@ -4,19 +4,19 @@
  */
 
 /**
- * Types
- */
-export type TChain = keyof typeof MAINNET_CHAINS
-
-/**
  * Utilities
  */
-export const LOGO_BASE_URL = 'https://blockchain-api.xyz/logos/'
+const LOGO_BASE_URL = 'https://blockchain-api.xyz/logos/'
+
+/**
+ * Types
+ */
+export type TEIP155Chain = keyof typeof EIP155_CHAINS
 
 /**
  * Chains
  */
-export const MAINNET_CHAINS = {
+export const EIP155_CHAINS = {
   'eip155:1': {
     chainId: 1,
     name: 'Ethereum',
@@ -46,11 +46,12 @@ export const MAINNET_CHAINS = {
 /**
  * Methods
  */
-export const SIGNING_METHODS = {
+export const EIP155_SIGNING_METHODS = {
   PERSONAL_SIGN: 'personal_sign',
-  SEND_TRANSACTION: 'eth_sendTransaction',
-  SIGN: 'eth_sign',
-  SIGN_TRANSACTION: 'eth_signTransaction',
-  SIGN_TYPED_DATA: 'eth_signTypedData',
-  SIGN_TYPED_DATA_V4: 'eth_signTypedData_v4'
+  ETH_SIGN: 'eth_sign',
+  ETH_SIGN_TRANSACTION: 'eth_signTransaction',
+  ETH_SIGN_TYPED_DATA: 'eth_signTypedData',
+  ETH_SIGN_TYPED_DATA_V4: 'eth_signTypedData_v4',
+  ETH_SIGN_RAW_TRANSACTION: 'eth_sendRawTransaction',
+  ETH_SEND_TRANSACTION: 'eth_sendTransaction'
 }

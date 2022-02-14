@@ -2,11 +2,11 @@ import Layout from '@/components/Layout'
 import Modal from '@/components/Modal'
 import useInitialization from '@/hooks/useInitialization'
 import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
-import '@/styles/main.css'
 import { darkTheme, lightTheme } from '@/utils/ThemeUtil'
 import { NextUIProvider } from '@nextui-org/react'
 import { ThemeProvider } from 'next-themes'
 import { AppProps } from 'next/app'
+import '../../public/main.css'
 
 export default function App({ Component, pageProps }: AppProps) {
   // Step 1 - Initialize wallets and wallet connect client

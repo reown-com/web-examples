@@ -1,37 +1,57 @@
-import { MAINNET_CHAINS, TChain } from '@/data/EIP155Data'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
-import { getSignMessage } from '@/utils/HelperUtil'
+import { approveEIP155Request, rejectEIP155Request } from '@/utils/RequestHandlerUtil'
+import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { wallet } from '@/utils/WalletUtil'
 import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
+import { utils } from 'ethers'
 import { Fragment } from 'react'
 
-export default function SessionRequestModal() {
+export default function SessionSignModal() {
   // Get request and wallet data from store
-  const request = ModalStore.state.data?.request
+  const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
 
   // Ensure request and wallet are defined
-  if (!request || !requestSession) {
+  if (!requestEvent || !requestSession) {
     return <Text>Missing request data</Text>
   }
 
   // Get required request data
-  const { chainId } = request
-  const { method, params } = request.request
+  const { chainId } = requestEvent
+  const { method, params } = requestEvent.request
   const { protocol } = requestSession.relay
   const { name, icons, url } = requestSession.peer.metadata
 
+  // Get message as utf string
+  let message = method === EIP155_SIGNING_METHODS.PERSONAL_SIGN ? params[0] : params[1]
+  if (utils.isHexString(message)) {
+    message = utils.toUtf8String(message)
+  }
+
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
-    // Handle sign requests
-    if (['eth_sign', 'personal_sign'].includes(method)) {
-      const message = getSignMessage(params, wallet.address)
-      const signedMessage = wallet.signMessage(message)
+    if (requestEvent) {
+      const response = await approveEIP155Request(requestEvent.request, wallet)
+      await walletConnectClient.respond({
+        topic: requestEvent.topic,
+        response
+      })
+      ModalStore.close()
     }
   }
 
   // Handle reject action
-  async function onReject() {}
+  async function onReject() {
+    if (requestEvent) {
+      const response = rejectEIP155Request(requestEvent.request)
+      await walletConnectClient.respond({
+        topic: requestEvent.topic,
+        response
+      })
+      ModalStore.close()
+    }
+  }
 
   return (
     <Fragment>
@@ -56,7 +76,18 @@ export default function SessionRequestModal() {
           <Row>
             <Col>
               <Text h5>Blockchain</Text>
-              <Text color="$gray400">{MAINNET_CHAINS[chainId as TChain]?.name ?? chainId}</Text>
+              <Text color="$gray400">
+                {EIP155_CHAINS[chainId as TEIP155Chain]?.name ?? chainId}
+              </Text>
+            </Col>
+          </Row>
+
+          <Divider y={2} />
+
+          <Row>
+            <Col>
+              <Text h5>Message</Text>
+              <Text color="$gray400">{message}</Text>
             </Col>
           </Row>
 

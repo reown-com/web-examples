@@ -1,4 +1,4 @@
-import { MAINNET_CHAINS, TChain } from '@/data/EIP155Data'
+import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { wallet } from '@/utils/WalletUtil'
@@ -66,7 +66,9 @@ export default function SessionProposalModal() {
             <Col>
               <Text h5>Blockchains</Text>
               <Text color="$gray400">
-                {chains.map(chain => MAINNET_CHAINS[chain as TChain]?.name ?? chain).join(', ')}
+                {chains
+                  .map(chain => EIP155_CHAINS[chain as TEIP155Chain]?.name ?? chain)
+                  .join(', ')}
               </Text>
             </Col>
           </Row>

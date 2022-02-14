@@ -7,13 +7,13 @@ import { proxy } from 'valtio'
 interface ModalData {
   proposal?: SessionTypes.Proposal
   created?: SessionTypes.Created
-  request?: SessionTypes.RequestEvent
+  requestEvent?: SessionTypes.RequestEvent
   requestSession?: SessionTypes.Settled
 }
 
 interface State {
   open: boolean
-  view?: 'SessionProposalModal' | 'SessionRequestModal'
+  view?: 'SessionProposalModal' | 'SessionSignModal'
   data?: ModalData
 }
 
