@@ -51,6 +51,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [pairings, setPairings] = useState<string[]>([]);
   const [session, setSession] = useState<SessionTypes.Created>();
 
+  const [ethereumProvider, setEthereumProvider] = useState<EthereumProvider>();
   const [web3Provider, setWeb3Provider] = useState<providers.Web3Provider>();
 
   const [isFetchingBalances, setIsFetchingBalances] = useState(false);
@@ -70,15 +71,11 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   };
 
   const disconnect = useCallback(async () => {
-    if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
+    if (typeof ethereumProvider === "undefined") {
+      throw new Error("ethereumProvider is not initialized");
     }
-    const _session = await client.session.get(client.session.topics[0]);
-    await client.disconnect({
-      topic: _session.topic,
-      reason: ERROR.USER_DISCONNECTED.format(),
-    });
-  }, [client]);
+    await ethereumProvider.disconnect();
+  }, [ethereumProvider]);
 
   const _subscribeToClientEvents = useCallback(async (_client: Client) => {
     if (typeof _client === "undefined") {
@@ -153,6 +150,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       console.log(ethereumProvider);
 
+      setEthereumProvider(ethereumProvider);
       setWeb3Provider(web3Provider);
 
       const _accounts = await ethereumProvider.enable();
