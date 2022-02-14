@@ -14,7 +14,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   // 2. Open session created modal to show success feedback
   const onSessionCreated = useCallback((created: SessionTypes.Created) => {}, [])
 
-  // 3. Open rpc request handling modal based on method that was used
+  // 3. Open request handling modal based on method that was used
   const onSessionRequest = useCallback(async (requestEvent: SessionTypes.RequestEvent) => {
     const { topic, request } = requestEvent
     const { method } = request

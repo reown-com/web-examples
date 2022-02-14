@@ -1,9 +1,13 @@
 import PageHeader from '@/components/PageHeader'
 import { wallet } from '@/utils/WalletUtil'
-import { Card, Divider, Row, Switch, Text } from '@nextui-org/react'
+import { Card, Divider, Row, Switch, Text, useTheme } from '@nextui-org/react'
+import { useTheme as useNextTheme } from 'next-themes'
 import { Fragment } from 'react'
 
 export default function SettingsPage() {
+  const { setTheme } = useNextTheme()
+  const { isDark, type } = useTheme()
+
   return (
     <Fragment>
       <PageHeader>Settings</PageHeader>
@@ -34,7 +38,8 @@ export default function SettingsPage() {
         Theme
       </Text>
       <Row justify="space-between" align="center">
-        <Switch /> <Text>Dark</Text>
+        <Switch checked={isDark} onChange={e => setTheme(e.target.checked ? 'dark' : 'light')} />{' '}
+        <Text>{type}</Text>
       </Row>
     </Fragment>
   )
