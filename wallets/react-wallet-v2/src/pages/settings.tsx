@@ -1,12 +1,15 @@
 import PageHeader from '@/components/PageHeader'
+import SettingsStore from '@/store/SettingsStore'
 import { wallet } from '@/utils/WalletUtil'
 import { Card, Divider, Row, Switch, Text, useTheme } from '@nextui-org/react'
 import { useTheme as useNextTheme } from 'next-themes'
 import { Fragment } from 'react'
+import { useSnapshot } from 'valtio'
 
 export default function SettingsPage() {
   const { setTheme } = useNextTheme()
   const { isDark, type } = useTheme()
+  const { testNets } = useSnapshot(SettingsStore.state)
 
   return (
     <Fragment>
@@ -29,7 +32,8 @@ export default function SettingsPage() {
         Testnets
       </Text>
       <Row justify="space-between" align="center">
-        <Switch /> <Text>Dissabled</Text>
+        <Switch checked={testNets} onChange={SettingsStore.toggleTestNets} />
+        <Text>{testNets ? 'Enabled' : 'Disabled'}</Text>
       </Row>
 
       <Divider y={3} />
@@ -38,7 +42,7 @@ export default function SettingsPage() {
         Theme
       </Text>
       <Row justify="space-between" align="center">
-        <Switch checked={isDark} onChange={e => setTheme(e.target.checked ? 'dark' : 'light')} />{' '}
+        <Switch checked={isDark} onChange={e => setTheme(e.target.checked ? 'dark' : 'light')} />
         <Text>{type}</Text>
       </Row>
     </Fragment>
