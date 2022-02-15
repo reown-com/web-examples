@@ -200,7 +200,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       QRCodeModal.close();
     },
-    [client],
+    [client, chainData.eip155],
   );
 
   const _checkForPersistedSession = useCallback(
