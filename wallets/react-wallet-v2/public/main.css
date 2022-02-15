@@ -41,3 +41,12 @@
 .qrIcon {
   opacity: 0.3;
 }
+
+.codeBlock code {
+  flex: 1;
+}
+
+.codeBlock span {
+  background-color: transparent !important;
+  overflow: scroll;
+}

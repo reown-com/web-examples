@@ -32,6 +32,9 @@ export async function approveEIP155Request(request: RequestEvent['request'], wal
       const signedData = await wallet._signTypedData(domain, types, data)
       return formatJsonRpcResult(id, signedData)
 
+    /**
+     * Handle unsuported methods
+     */
     default:
       throw new Error(ERROR.UNKNOWN_JSONRPC_METHOD.format().message)
   }

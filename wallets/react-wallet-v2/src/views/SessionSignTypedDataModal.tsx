@@ -6,6 +6,7 @@ import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { wallet } from '@/utils/WalletUtil'
 import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
+import { CodeBlock, codepen } from 'react-code-blocks'
 
 export default function SessionSignTypedDataModal() {
   // Get request and wallet data from store
@@ -82,9 +83,42 @@ export default function SessionSignTypedDataModal() {
           <Divider y={2} />
 
           <Row>
-            <Col>
+            <Col className="codeBlock">
+              <Text h5>Domain</Text>
+              <CodeBlock
+                showLineNumbers={false}
+                text={JSON.stringify(data.domain, null, 2)}
+                theme={codepen}
+                language="json"
+              />
+            </Col>
+          </Row>
+
+          <Divider y={2} />
+
+          <Row>
+            <Col className="codeBlock">
+              <Text h5>Types</Text>
+              <CodeBlock
+                showLineNumbers={false}
+                text={JSON.stringify(data.types, null, 2)}
+                theme={codepen}
+                language="json"
+              />
+            </Col>
+          </Row>
+
+          <Divider y={2} />
+
+          <Row>
+            <Col className="codeBlock">
               <Text h5>Message</Text>
-              <Text color="$gray400">{JSON.stringify(data)}</Text>
+              <CodeBlock
+                showLineNumbers={false}
+                text={JSON.stringify(data.message, null, 2)}
+                theme={codepen}
+                language="json"
+              />
             </Col>
           </Row>
 
