@@ -20,8 +20,20 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     const { method } = request
     const requestSession = await walletConnectClient.session.get(topic)
 
+    // Hanle message signing requests of various formats
     if ([EIP155_SIGNING_METHODS.ETH_SIGN, EIP155_SIGNING_METHODS.PERSONAL_SIGN].includes(method)) {
       ModalStore.open('SessionSignModal', { requestEvent, requestSession })
+    }
+
+    // Hanle data signing requests of various formats
+    if (
+      [
+        EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA,
+        EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3,
+        EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4
+      ].includes(method)
+    ) {
+      ModalStore.open('SessionSignTypedDataModal', { requestEvent, requestSession })
     }
   }, [])
 

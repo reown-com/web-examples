@@ -13,7 +13,7 @@ interface ModalData {
 
 interface State {
   open: boolean
-  view?: 'SessionProposalModal' | 'SessionSignModal'
+  view?: 'SessionProposalModal' | 'SessionSignModal' | 'SessionSignTypedDataModal'
   data?: ModalData
 }
 

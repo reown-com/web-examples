@@ -11,7 +11,7 @@ interface State {
  * State
  */
 const state = proxy<State>({
-  testNets: false
+  testNets: Boolean(localStorage.getItem('TEST_NETS')) ?? false
 })
 
 /**
@@ -22,6 +22,11 @@ const SettingsStore = {
 
   toggleTestNets() {
     state.testNets = !state.testNets
+    if (state.testNets) {
+      localStorage.setItem('TEST_NETS', 'YES')
+    } else {
+      localStorage.removeItem('TEST_NETS')
+    }
   }
 }
 

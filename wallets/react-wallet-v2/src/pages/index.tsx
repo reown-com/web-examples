@@ -1,6 +1,6 @@
 import AccountCard from '@/components/AccountCard'
 import PageHeader from '@/components/PageHeader'
-import { EIP155_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
+import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
 import SettingsStore from '@/store/SettingsStore'
 import { wallet } from '@/utils/WalletUtil'
 import { Text } from '@nextui-org/react'
@@ -16,7 +16,7 @@ export default function HomePage() {
       <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets
       </Text>
-      {Object.values(EIP155_CHAINS).map(({ name, logo, rgb }) => (
+      {Object.values(EIP155_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={wallet.address} />
       ))}
 

@@ -1,5 +1,5 @@
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
-import { convertHexToUtf8 } from '@/utils/HelperUtil'
+import { getSignParamsMessage, getSignTypedDataParamsData } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { RequestEvent } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
@@ -9,13 +9,28 @@ export async function approveEIP155Request(request: RequestEvent['request'], wal
   const { method, params, id } = request
 
   switch (method) {
+    /**
+     * Handle message signing requests
+     */
     case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
-      const personalSignResult = await wallet.signMessage(convertHexToUtf8(params[0]))
-      return formatJsonRpcResult(id, personalSignResult)
-
     case EIP155_SIGNING_METHODS.ETH_SIGN:
-      const ethSignResult = await wallet.signMessage(convertHexToUtf8(params[1]))
-      return formatJsonRpcResult(id, ethSignResult)
+      const message = getSignParamsMessage(params)
+      const signedMessage = await wallet.signMessage(message)
+      return formatJsonRpcResult(id, signedMessage)
+
+    /**
+     * Handle data signing requests
+     */
+    case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA:
+    case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
+    case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4:
+      const { domain, types, message: data } = getSignTypedDataParamsData(params)
+
+      // https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
+      delete types.EIP712Domain
+
+      const signedData = await wallet._signTypedData(domain, types, data)
+      return formatJsonRpcResult(id, signedData)
 
     default:
       throw new Error(ERROR.UNKNOWN_JSONRPC_METHOD.format().message)

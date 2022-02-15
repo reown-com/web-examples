@@ -1,13 +1,13 @@
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
-import { getSignParamsMessage } from '@/utils/HelperUtil'
+import { getSignTypedDataParamsData } from '@/utils/HelperUtil'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/RequestHandlerUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { wallet } from '@/utils/WalletUtil'
 import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
-export default function SessionSignModal() {
+export default function SessionSignTypedDataModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
@@ -23,8 +23,8 @@ export default function SessionSignModal() {
   const { protocol } = requestSession.relay
   const { name, icons, url } = requestSession.peer.metadata
 
-  // Get message, convert it to UTF8 string if it is valid hex
-  const message = getSignParamsMessage(params)
+  // Get data
+  const data = getSignTypedDataParamsData(params)
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
@@ -53,7 +53,7 @@ export default function SessionSignModal() {
   return (
     <Fragment>
       <Modal.Header>
-        <Text h3>Sign Message</Text>
+        <Text h3>Sign Typed Data</Text>
       </Modal.Header>
 
       <Modal.Body>
@@ -84,7 +84,7 @@ export default function SessionSignModal() {
           <Row>
             <Col>
               <Text h5>Message</Text>
-              <Text color="$gray400">{message}</Text>
+              <Text color="$gray400">{JSON.stringify(data)}</Text>
             </Col>
           </Row>
 
