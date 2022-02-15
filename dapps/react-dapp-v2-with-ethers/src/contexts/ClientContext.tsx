@@ -1,7 +1,7 @@
 import Client, { CLIENT_EVENTS } from "@walletconnect/client";
 import EthereumProvider from "@walletconnect/ethereum-provider";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import QRCodeModal from "@walletconnect/legacy-modal";
+import QRCodeModal from "@walletconnect/qrcode-modal";
 import {
   createContext,
   ReactNode,
