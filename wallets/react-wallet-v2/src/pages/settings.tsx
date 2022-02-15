@@ -17,7 +17,7 @@ export default function SettingsPage() {
       <Text h4 css={{ marginBottom: '$5' }}>
         Mnemonic
       </Text>
-      <Card bordered borderWeight="light">
+      <Card bordered borderWeight="light" css={{ minHeight: '75px' }}>
         <Text css={{ fontFamily: '$mono' }}>{wallet.mnemonic.phrase}</Text>
       </Card>
 

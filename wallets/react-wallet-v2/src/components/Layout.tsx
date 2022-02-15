@@ -36,7 +36,7 @@ export default function Layout({ children, initialized }: Props) {
           justifyContent: initialized ? 'normal' : 'center',
           alignItems: initialized ? 'normal' : 'center',
           borderRadius: 0,
-          outline: 'none',
+
           paddingBottom: 5,
           '@xs': {
             borderRadius: '$lg',
@@ -63,9 +63,11 @@ export default function Layout({ children, initialized }: Props) {
 
             <Card.Footer
               css={{
-                height: '50px',
-                minHeight: '50px',
+                height: '85px',
+                minHeight: '85px',
                 position: 'sticky',
+                justifyContent: 'flex-end',
+                alignItems: 'flex-end',
                 bottom: 0,
                 left: 0
               }}

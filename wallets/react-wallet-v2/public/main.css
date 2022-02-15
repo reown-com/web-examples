@@ -1,21 +1,18 @@
 * {
   box-sizing: border-box;
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
 }
 
-body,
-html {
-  position: fixed;
-  height: calc(100vh - calc(100vh - 100%));
-  width: 100vw;
-  overflow: hidden;
+::-webkit-scrollbar {
+  display: none;
 }
 
 .routeTransition {
-  width:  100%;
-  height: 100%;
   display: flex;
   flex: 1;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .container {
