@@ -8,7 +8,12 @@ import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
 import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
-import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
+import {
+  AccountAction,
+  eip712,
+  getLocalStorageTestnetFlag,
+  setLocaleStorageTestnetFlag,
+} from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
 import PairingModal from "./modals/PairingModal";
@@ -90,15 +95,36 @@ export default function App() {
     };
   };
 
+  const testSignTypedData: () => Promise<IFormattedRpcResponse> = async () => {
+    if (!web3Provider) {
+      throw new Error("web3Provider not connected");
+    }
+    const message = JSON.stringify(eip712.example);
+
+    const address = accounts[0];
+
+    // eth_signTypedData params
+    const params = [address, message];
+
+    // send message
+    const signature = await web3Provider.send("eth_signTypedData", params);
+    return {
+      method: "eth_signTypedData",
+      address,
+      valid: true,
+      result: signature,
+    };
+  };
+
   const getEthereumActions = (): AccountAction[] => {
-    const onSignPersonalMessage = async () => {
+    const wrapRpcRequest = (rpcRequest: () => Promise<IFormattedRpcResponse>) => async () => {
       openRequestModal();
       try {
         setIsRpcRequestPending(true);
-        const result = await testSignMessage();
+        const result = await rpcRequest();
         setRpcResult(result);
       } catch (error) {
-        console.error(error);
+        console.error("RPC request failed:", error);
       } finally {
         setIsRpcRequestPending(false);
       }
@@ -106,8 +132,8 @@ export default function App() {
 
     return [
       // { method: "eth_sendTransaction", callback: onSendTransaction },
-      { method: "personal_sign", callback: onSignPersonalMessage },
-      // { method: "eth_signTypedData", callback: onSignTypedData },
+      { method: "personal_sign", callback: wrapRpcRequest(testSignMessage) },
+      { method: "eth_signTypedData", callback: wrapRpcRequest(testSignTypedData) },
     ];
   };
 
