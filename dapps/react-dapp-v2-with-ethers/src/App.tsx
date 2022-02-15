@@ -8,13 +8,7 @@ import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
 import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
-import {
-  getAllChainNamespaces,
-  AccountAction,
-  ChainNamespaces,
-  getLocalStorageTestnetFlag,
-  setLocaleStorageTestnetFlag,
-} from "./helpers";
+import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
 import PairingModal from "./modals/PairingModal";
@@ -30,7 +24,6 @@ import {
   SToggleContainer,
 } from "./components/app";
 import { useWalletConnectClient } from "./contexts/ClientContext";
-import { apiGetChainNamespace, ChainsMap } from "caip-api";
 import { utils } from "ethers";
 
 interface IFormattedRpcResponse {
@@ -42,7 +35,6 @@ interface IFormattedRpcResponse {
 
 export default function App() {
   const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
-  const [chainData, setChainData] = useState<ChainNamespaces>({});
   const [isRpcRequestPending, setIsRpcRequestPending] = useState(false);
   const [rpcResult, setRpcResult] = useState<IFormattedRpcResponse | null>();
 
@@ -61,6 +53,7 @@ export default function App() {
     chain,
     accounts,
     balances,
+    chainData,
     isFetchingBalances,
     isInitializing,
     onEnable,
@@ -73,29 +66,6 @@ export default function App() {
       closeModal();
     }
   }, [session, modal]);
-
-  useEffect(() => {
-    loadChainData();
-  }, []);
-
-  const loadChainData = async () => {
-    const namespaces = getAllChainNamespaces();
-    const chainData: ChainNamespaces = {};
-    await Promise.all(
-      namespaces.map(async namespace => {
-        let chains: ChainsMap | undefined;
-        try {
-          chains = await apiGetChainNamespace(namespace);
-        } catch (e) {
-          // ignore error
-        }
-        if (typeof chains !== "undefined") {
-          chainData[namespace] = chains;
-        }
-      }),
-    );
-    setChainData(chainData);
-  };
 
   // TODO:
   // const onPing = async () => {

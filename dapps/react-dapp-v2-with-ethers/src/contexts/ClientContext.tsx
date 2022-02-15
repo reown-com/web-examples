@@ -1,4 +1,5 @@
 import Client, { CLIENT_EVENTS } from "@walletconnect/client";
+import EthereumProvider from "@walletconnect/ethereum-provider";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import QRCodeModal from "@walletconnect/legacy-modal";
 import {
@@ -16,9 +17,9 @@ import {
   DEFAULT_PROJECT_ID,
   DEFAULT_RELAY_URL,
 } from "../constants";
-import { ERROR } from "@walletconnect/utils";
-import EthereumProvider from "@walletconnect/ethereum-provider";
 import { providers, utils } from "ethers";
+import { ChainNamespaces, getAllChainNamespaces } from "../helpers";
+import { apiGetChainNamespace, ChainsMap } from "caip-api";
 
 /**
  * Types
@@ -33,7 +34,7 @@ interface IContext {
   accounts: string[];
   balances: { symbol: string; balance: string }[];
   isFetchingBalances: boolean;
-  setChain: (chainId: string) => void;
+  chainData: ChainNamespaces;
   onEnable: (chainId: string) => Promise<void>;
   web3Provider?: providers.Web3Provider;
 }
@@ -60,6 +61,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
   const [balances, setBalances] = useState<{ symbol: string; balance: string }[]>([]);
   const [accounts, setAccounts] = useState<string[]>([]);
+  const [chainData, setChainData] = useState<ChainNamespaces>({});
   const [chain, setChain] = useState<string>("");
 
   const resetApp = () => {
@@ -68,6 +70,25 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     setBalances([]);
     setAccounts([]);
     setChain("");
+  };
+
+  const loadChainData = async () => {
+    const namespaces = getAllChainNamespaces();
+    const chainData: ChainNamespaces = {};
+    await Promise.all(
+      namespaces.map(async namespace => {
+        let chains: ChainsMap | undefined;
+        try {
+          chains = await apiGetChainNamespace(namespace);
+        } catch (e) {
+          // ignore error
+        }
+        if (typeof chains !== "undefined") {
+          chainData[namespace] = chains;
+        }
+      }),
+    );
+    setChainData(chainData);
   };
 
   const disconnect = useCallback(async () => {
@@ -129,11 +150,20 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       console.log("Enabling EthereumProvider for chainId: ", chainId);
 
+      const customRpcs = Object.keys(chainData.eip155).reduce(
+        (rpcs: Record<string, string>, chainId) => {
+          rpcs[chainId] = chainData.eip155[chainId].rpc[0];
+          return rpcs;
+        },
+        {},
+      );
+
       //  Create WalletConnect Provider
       const ethereumProvider = new EthereumProvider({
         chainId: Number(chainId),
         rpc: {
           infuraId: DEFAULT_INFURA_ID,
+          custom: customRpcs,
         },
         // FIXME: `signer-connection` sub-dep is already specifying beta.23 -> typings mismatch.
         // @ts-ignore
@@ -193,6 +223,10 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   );
 
   useEffect(() => {
+    loadChainData();
+  }, []);
+
+  useEffect(() => {
     if (!client) {
       createClient();
     }
@@ -220,7 +254,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       client,
       session,
       disconnect,
-      setChain,
+      chainData,
       onEnable,
       web3Provider,
     }),
@@ -234,7 +268,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       client,
       session,
       disconnect,
-      setChain,
+      chainData,
       onEnable,
       web3Provider,
     ],
