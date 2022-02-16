@@ -4,7 +4,7 @@ import { utils } from 'ethers'
  * Truncates string (in the middle) via given lenght value
  */
 export function truncate(value: string, length: number) {
-  if (value.length <= length) {
+  if (value?.length <= length) {
     return value
   }
 

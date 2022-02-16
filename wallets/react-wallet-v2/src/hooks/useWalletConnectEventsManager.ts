@@ -26,11 +26,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     const { method } = request
     const requestSession = await walletConnectClient.session.get(topic)
 
+    console.log(method)
+
     if ([EIP155_SIGNING_METHODS.ETH_SIGN, EIP155_SIGNING_METHODS.PERSONAL_SIGN].includes(method)) {
       ModalStore.open('SessionSignModal', { requestEvent, requestSession })
-    }
-
-    if (
+    } else if (
       [
         EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA,
         EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3,
@@ -38,9 +38,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       ].includes(method)
     ) {
       ModalStore.open('SessionSignTypedDataModal', { requestEvent, requestSession })
-    }
-
-    if (EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION) {
+    } else if (EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION) {
       ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
     }
   }, [])

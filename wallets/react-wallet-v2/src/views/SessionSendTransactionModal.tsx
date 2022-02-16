@@ -38,8 +38,6 @@ export default function SessionSendTransactionModal() {
   const { name, icons, url } = requestSession.peer.metadata
   const transaction = params[0]
 
-  console.log(transaction)
-
   // Handle approve action
   async function onApprove() {
     if (requestEvent) {
