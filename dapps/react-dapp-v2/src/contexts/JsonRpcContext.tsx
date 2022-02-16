@@ -1,15 +1,13 @@
-import { BigNumber } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
 import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
 
 import {
   ChainNamespaces,
-  eip712,
   formatTestTransaction,
   getAllChainNamespaces,
   hashPersonalMessage,
-  hashTypedDataMessage,
   verifySignature,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
@@ -303,16 +301,46 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       };
     }),
     testSignTypedData: _createJsonRpcRequestHandler(async (chainId: string) => {
-      // test message
-      const message = JSON.stringify(eip712.example);
+      const typedData = {
+        types: {
+          Person: [
+            { name: "name", type: "string" },
+            { name: "wallet", type: "address" },
+          ],
+          Mail: [
+            { name: "from", type: "Person" },
+            { name: "to", type: "Person" },
+            { name: "contents", type: "string" },
+          ],
+        },
+        primaryType: "Mail",
+        domain: {
+          name: "Ether Mail",
+          version: "1",
+          chainId: 1,
+          verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+        },
+        message: {
+          from: {
+            name: "Cow",
+            wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
+          },
+          to: {
+            name: "Bob",
+            wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+          },
+          contents: "Hello, Bob!",
+        },
+      };
 
       const address = getAddressByChainId(chainId);
+      const message = JSON.stringify(typedData);
 
       // eth_signTypedData params
       const params = [address, message];
 
       // send message
-      const result = await client!.request({
+      const signature = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -320,28 +348,15 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
           params,
         },
       });
+      const valid =
+        utils.verifyTypedData(typedData.domain, typedData.types, typedData.message, signature) ===
+        address;
 
-      //  split chainId
-      const [namespace, reference] = chainId.split(":");
-
-      const targetChainData = chainData[namespace][reference];
-
-      if (typeof targetChainData === "undefined") {
-        throw new Error(`Missing chain data for chainId: ${chainId}`);
-      }
-
-      const rpcUrl = targetChainData.rpc[0];
-
-      // verify signature
-      const hash = hashTypedDataMessage(message);
-      const valid = await verifySignature(address, result, hash, rpcUrl);
-
-      // format displayed result
       return {
         method: "eth_signTypedData",
         address,
         valid,
-        result,
+        result: signature,
       };
     }),
   };
