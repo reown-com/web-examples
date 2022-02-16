@@ -34,6 +34,8 @@ interface IContext {
   ping: () => Promise<void>;
   ethereumRpc: {
     testSendTransaction: (chainId: string) => Promise<void>;
+    testSignTransaction: (chainId: string) => Promise<void>;
+    testEthSign: (chainId: string) => Promise<void>;
     testSignPersonalMessage: (chainId: string) => Promise<void>;
     testSignTypedData: (chainId: string) => Promise<void>;
   };
@@ -187,6 +189,31 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         result,
       };
     }),
+    testSignTransaction: _createJsonRpcRequestHandler(async (chainId: string) => {
+      // get ethereum address
+      const account = accounts.find(account => account.startsWith(chainId));
+      if (account === undefined) throw new Error("Account is not found");
+      const address = account.split(":").pop();
+      if (address === undefined) throw new Error("Address is invalid");
+
+      const tx = await formatTestTransaction(account);
+
+      const result: string = await client!.request({
+        topic: session!.topic,
+        chainId,
+        request: {
+          method: "eth_signTransaction",
+          params: [tx],
+        },
+      });
+
+      return {
+        method: "eth_signTransaction",
+        address,
+        valid: true,
+        result,
+      };
+    }),
     testSignPersonalMessage: _createJsonRpcRequestHandler(async (chainId: string) => {
       // test message
       const message = `My email is john@doe.com - ${Date.now()}`;
@@ -227,6 +254,49 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       // format displayed result
       return {
         method: "personal_sign",
+        address,
+        valid,
+        result,
+      };
+    }),
+    testEthSign: _createJsonRpcRequestHandler(async (chainId: string) => {
+      const address = getAddressByChainId(chainId);
+
+      // test message
+      const message = `My email is john@doe.com - ${Date.now()}`;
+      // encode message (hex)
+      const hexMsg = encoding.utf8ToHex(message, true);
+      // eth_sign params
+      const params = [address, hexMsg];
+
+      // send message
+      const result: string = await client!.request({
+        topic: session!.topic,
+        chainId,
+        request: {
+          method: "eth_sign",
+          params,
+        },
+      });
+
+      //  split chainId
+      const [namespace, reference] = chainId.split(":");
+
+      const targetChainData = chainData[namespace][reference];
+
+      if (typeof targetChainData === "undefined") {
+        throw new Error(`Missing chain data for chainId: ${chainId}`);
+      }
+
+      const rpcUrl = targetChainData.rpc[0];
+
+      // verify signature
+      const hash = hashPersonalMessage(message);
+      const valid = await verifySignature(address, result, hash, rpcUrl);
+
+      // format displayed result
+      return {
+        method: "eth_sign (standard)",
         address,
         valid,
         result,

@@ -81,9 +81,17 @@ export default function App() {
       openRequestModal();
       await ethereumRpc.testSendTransaction(chainId);
     };
+    const onSignTransaction = async (chainId: string) => {
+      openRequestModal();
+      await ethereumRpc.testSignTransaction(chainId);
+    };
     const onSignPersonalMessage = async (chainId: string) => {
       openRequestModal();
       await ethereumRpc.testSignPersonalMessage(chainId);
+    };
+    const onEthSign = async (chainId: string) => {
+      openRequestModal();
+      await ethereumRpc.testEthSign(chainId);
     };
     const onSignTypedData = async (chainId: string) => {
       openRequestModal();
@@ -92,7 +100,9 @@ export default function App() {
 
     return [
       { method: "eth_sendTransaction", callback: onSendTransaction },
+      { method: "eth_signTransaction", callback: onSignTransaction },
       { method: "personal_sign", callback: onSignPersonalMessage },
+      { method: "eth_sign (standard)", callback: onEthSign },
       { method: "eth_signTypedData", callback: onSignTypedData },
     ];
   };

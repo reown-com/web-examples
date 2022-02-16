@@ -24,7 +24,13 @@ export const DEFAULT_PROJECT_ID = process.env.REACT_APP_PROJECT_ID;
 
 export const DEFAULT_RELAY_URL = process.env.REACT_APP_RELAY_URL;
 
-export const DEFAULT_EIP155_METHODS = ["eth_sendTransaction", "personal_sign", "eth_signTypedData"];
+export const DEFAULT_EIP155_METHODS = [
+  "eth_sendTransaction",
+  "eth_signTransaction",
+  "eth_sign",
+  "personal_sign",
+  "eth_signTypedData",
+];
 
 export const DEFAULT_COSMOS_METHODS = ["cosmos_signDirect", "cosmos_signAmino"];
 
