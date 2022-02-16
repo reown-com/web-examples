@@ -178,12 +178,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       throw new Error("WalletConnect is not initialized");
     }
 
-    let _session = {} as SessionTypes.Settled;
-
-    if (_client.session.topics.length) {
-      _session = await _client.session.get(_client.session.topics[0]);
-    }
-
     _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
       const { uri } = proposal.signal.params;
       console.log("EVENT", "QR Code Modal open");
@@ -196,8 +190,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       setPairings(_client.pairing.topics);
     });
 
-    _client.on(CLIENT_EVENTS.session.deleted, (deletedSession: SessionTypes.Settled) => {
-      if (deletedSession.topic !== _session?.topic) return;
+    _client.on(CLIENT_EVENTS.session.deleted, () => {
       console.log("EVENT", "session_deleted");
       resetApp();
     });
