@@ -8,12 +8,7 @@ import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
 import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
-import {
-  AccountAction,
-  eip712,
-  getLocalStorageTestnetFlag,
-  setLocaleStorageTestnetFlag,
-} from "./helpers";
+import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
 import PairingModal from "./modals/PairingModal";
@@ -99,7 +94,40 @@ export default function App() {
     if (!web3Provider) {
       throw new Error("web3Provider not connected");
     }
-    const message = JSON.stringify(eip712.example);
+
+    const typedData = {
+      types: {
+        Person: [
+          { name: "name", type: "string" },
+          { name: "wallet", type: "address" },
+        ],
+        Mail: [
+          { name: "from", type: "Person" },
+          { name: "to", type: "Person" },
+          { name: "contents", type: "string" },
+        ],
+      },
+      primaryType: "Mail",
+      domain: {
+        name: "Ether Mail",
+        version: "1",
+        chainId: 1,
+        verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+      },
+      message: {
+        from: {
+          name: "Cow",
+          wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
+        },
+        to: {
+          name: "Bob",
+          wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+        },
+        contents: "Hello, Bob!",
+      },
+    };
+
+    const message = JSON.stringify(typedData);
 
     const address = accounts[0];
 
@@ -108,10 +136,13 @@ export default function App() {
 
     // send message
     const signature = await web3Provider.send("eth_signTypedData", params);
+    const valid =
+      utils.verifyTypedData(typedData.domain, typedData.types, typedData.message, signature) ===
+      address;
     return {
       method: "eth_signTypedData",
       address,
-      valid: true,
+      valid,
       result: signature,
     };
   };
