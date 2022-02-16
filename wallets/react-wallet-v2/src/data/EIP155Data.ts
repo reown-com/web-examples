@@ -21,52 +21,32 @@ export const EIP155_MAINNET_CHAINS = {
     chainId: 1,
     name: 'Ethereum',
     logo: LOGO_BASE_URL + 'eip155:1.png',
-    rgb: '99, 125, 234'
-  },
-  'eip155:10': {
-    chainId: 10,
-    name: 'Optimism',
-    logo: LOGO_BASE_URL + 'eip155:10.png',
-    rgb: '233, 1, 1'
+    rgb: '99, 125, 234',
+    rpc: 'https://cloudflare-eth.com/'
   },
   'eip155:137': {
     chainId: 137,
     name: 'Polygon',
     logo: LOGO_BASE_URL + 'eip155:137.png',
-    rgb: '130, 71, 229'
+    rgb: '130, 71, 229',
+    rpc: 'https://polygon-rpc.com/'
   },
   'eip155:42161': {
     chainId: 42161,
     name: 'Arbitrum',
     logo: LOGO_BASE_URL + 'eip155:42161.png',
-    rgb: '44, 55, 75'
+    rgb: '44, 55, 75',
+    rpc: 'https://arb1.arbitrum.io/rpc/'
   }
 }
 
 export const EIP155_TEST_CHAINS = {
-  'eip155:4': {
-    chainId: 4,
-    name: 'Ethereum Rinkeby',
-    logo: LOGO_BASE_URL + 'eip155:1.png',
-    rgb: '99, 125, 234'
-  },
-  'eip155:69': {
-    chainId: 69,
-    name: 'Optimism Kovan',
-    logo: LOGO_BASE_URL + 'eip155:10.png',
-    rgb: '233, 1, 1'
-  },
   'eip155:80001': {
     chainId: 80001,
     name: 'Polygon Mumbai',
     logo: LOGO_BASE_URL + 'eip155:137.png',
-    rgb: '130, 71, 229'
-  },
-  'eip155:421611': {
-    chainId: 421611,
-    name: 'Arbitrum Rinkeby',
-    logo: LOGO_BASE_URL + 'eip155:42161.png',
-    rgb: '44, 55, 75'
+    rgb: '130, 71, 229',
+    rpc: 'https://rpc-mumbai.maticvigil.com/'
   }
 }
 

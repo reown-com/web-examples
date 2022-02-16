@@ -1,5 +1,6 @@
 import ModalStore from '@/store/ModalStore'
 import SessionProposalModal from '@/views/SessionProposalModal'
+import SessionSendTransactionModal from '@/views/SessionSendTransactionModal'
 import SessionRequestModal from '@/views/SessionSignModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import { Modal as NextModal } from '@nextui-org/react'
@@ -13,6 +14,7 @@ export default function Modal() {
       {view === 'SessionProposalModal' && <SessionProposalModal />}
       {view === 'SessionSignModal' && <SessionRequestModal />}
       {view === 'SessionSignTypedDataModal' && <SessionSignTypedDataModal />}
+      {view === 'SessionSendTransactionModal' && <SessionSendTransactionModal />}
     </NextModal>
   )
 }
