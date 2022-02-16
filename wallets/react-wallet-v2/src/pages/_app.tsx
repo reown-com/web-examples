@@ -1,17 +1,36 @@
 import Layout from '@/components/Layout'
-import { WalletContextProvider } from '@/contexts/WalletContext'
-import { theme } from '@/utils/ThemeUtil'
+import Modal from '@/components/Modal'
+import useInitialization from '@/hooks/useInitialization'
+import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
+import { darkTheme, lightTheme } from '@/utils/ThemeUtil'
 import { NextUIProvider } from '@nextui-org/react'
+import { ThemeProvider } from 'next-themes'
 import { AppProps } from 'next/app'
+import '../../public/main.css'
 
 export default function App({ Component, pageProps }: AppProps) {
+  // Step 1 - Initialize wallets and wallet connect client
+  const initialized = useInitialization()
+
+  // Step 2 - Once initialized, set up wallet connect event manager
+  useWalletConnectEventsManager(initialized)
+
   return (
-    <NextUIProvider theme={theme}>
-      <WalletContextProvider>
-        <Layout>
+    <ThemeProvider
+      defaultTheme="system"
+      attribute="class"
+      value={{
+        light: lightTheme.className,
+        dark: darkTheme.className
+      }}
+    >
+      <NextUIProvider>
+        <Layout initialized={initialized}>
           <Component {...pageProps} />
         </Layout>
-      </WalletContextProvider>
-    </NextUIProvider>
+
+        <Modal />
+      </NextUIProvider>
+    </ThemeProvider>
   )
 }

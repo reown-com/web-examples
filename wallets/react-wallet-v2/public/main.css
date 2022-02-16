@@ -1,0 +1,52 @@
+* {
+  box-sizing: border-box;
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.routeTransition {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.qrVideoMask {
+  width: 100%;
+  border-radius: 15px;
+  overflow: hidden !important;
+  position: relative;
+}
+
+.qrPlaceholder {
+  border: 2px rgba(139, 139, 139, 0.4) dashed;
+  width: 100%;
+  border-radius: 15px;
+  padding: 50px;
+}
+
+.qrIcon {
+  opacity: 0.3;
+}
+
+.codeBlock code {
+  flex: 1;
+}
+
+.codeBlock span {
+  background-color: transparent !important;
+  overflow: scroll;
+}
