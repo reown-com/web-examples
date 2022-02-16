@@ -174,7 +174,7 @@ export default function SessionSendTransactionModal() {
           Reject
         </Button>
         <Button auto flat color="success" onClick={onApprove} disabled={loading}>
-          {loading ? <Loading size="sm" color="white" /> : 'Approve'}
+          {loading ? <Loading size="sm" color="success" /> : 'Approve'}
         </Button>
       </Modal.Footer>
     </Fragment>

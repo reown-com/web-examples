@@ -50,3 +50,11 @@
   background-color: transparent !important;
   overflow: scroll;
 }
+
+.navLink {
+  transition: ease-in-out .2s opacity;
+}
+
+.navLink:hover {
+  opacity: 0.6;
+}
