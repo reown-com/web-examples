@@ -165,8 +165,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
           infuraId: DEFAULT_INFURA_ID,
           custom: customRpcs,
         },
-        // FIXME: `signer-connection` sub-dep is already specifying beta.23 -> typings mismatch.
-        // @ts-ignore
         client,
       });
       const web3Provider = new providers.Web3Provider(ethereumProvider);

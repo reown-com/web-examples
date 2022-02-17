@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { version } from "@walletconnect/client/package.json";
 import * as encoding from "@walletconnect/encoding";
 
@@ -45,11 +45,12 @@ export default function App() {
   const [selectedChainId, setSelectedChainId] = useState<string>();
 
   const closeModal = () => setModal("");
-  // const openPingModal = () => setModal("ping");
+  const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
 
   // Initialize the WalletConnect client.
   const {
+    client,
     session,
     disconnect,
     chain,
@@ -62,18 +63,32 @@ export default function App() {
     web3Provider,
   } = useWalletConnectClient();
 
-  // Close the pairing modal after a session is established.
-  useEffect(() => {
-    if (session && modal === "pairing") {
-      closeModal();
+  const ping = async () => {
+    if (typeof client === "undefined") {
+      throw new Error("WalletConnect Client is not initialized");
     }
-  }, [session, modal]);
 
-  // TODO:
-  // const onPing = async () => {
-  //   openPingModal();
-  //   await ping();
-  // };
+    try {
+      setIsRpcRequestPending(true);
+      const _session = await client.session.get(client.session.topics[0]);
+      await client.session.ping(_session.topic);
+      setRpcResult({
+        address: "",
+        method: "ping",
+        valid: true,
+        result: "success",
+      });
+    } catch (error) {
+      console.error("RPC request failed:", error);
+    } finally {
+      setIsRpcRequestPending(false);
+    }
+  };
+
+  const onPing = async () => {
+    openPingModal();
+    await ping();
+  };
 
   const testSignTransaction: () => Promise<IFormattedRpcResponse> = async () => {
     if (!web3Provider) {
@@ -286,7 +301,7 @@ export default function App() {
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={() => Promise.resolve()} disconnect={disconnect} session={session} />
+        <Header ping={onPing} disconnect={disconnect} session={session} />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>
