@@ -1,6 +1,6 @@
 {
-  "name": "walletconnect-react-app",
-  "version": "2.0.0-beta.22",
+  "name": "react-dapp-v2-with-ethers",
+  "version": "2.0.0-beta.23",
   "private": true,
   "keywords": [
     "walletconnect",
@@ -28,11 +28,11 @@
     "react-error-overlay": "6.0.9"
   },
   "dependencies": {
-    "@walletconnect/client": "^2.0.0-beta.22",
-    "@walletconnect/ethereum-provider": "2.0.0-beta.22",
+    "@walletconnect/client": "2.0.0-beta.23",
+    "@walletconnect/ethereum-provider": "2.0.0-beta.23",
     "@walletconnect/qrcode-modal": "^1.7.1",
-    "@walletconnect/types": "^2.0.0-beta.22",
-    "@walletconnect/utils": "^2.0.0-beta.22",
+    "@walletconnect/types": "2.0.0-beta.23",
+    "@walletconnect/utils": "2.0.0-beta.23",
     "axios": "^0.21.1",
     "blockies-ts": "^1.0.0",
     "caip-api": "^2.0.0-beta.1",
