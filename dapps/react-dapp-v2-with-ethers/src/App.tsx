@@ -86,6 +86,23 @@ export default function App() {
     };
   };
 
+  const testEthSign: () => Promise<IFormattedRpcResponse> = async () => {
+    if (!web3Provider) {
+      throw new Error("web3Provider not connected");
+    }
+    const msg = "hello world";
+    const hexMsg = encoding.utf8ToHex(msg, true);
+    const address = accounts[0];
+    const signature = await web3Provider.send("eth_sign", [address, hexMsg]);
+    const valid = utils.verifyMessage(msg, signature) === address;
+    return {
+      method: "eth_sign (standard)",
+      address,
+      valid,
+      result: signature,
+    };
+  };
+
   const testSignTypedData: () => Promise<IFormattedRpcResponse> = async () => {
     if (!web3Provider) {
       throw new Error("web3Provider not connected");
@@ -160,6 +177,7 @@ export default function App() {
     return [
       // { method: "eth_sendTransaction", callback: onSendTransaction },
       { method: "personal_sign", callback: wrapRpcRequest(testSignMessage) },
+      { method: "eth_sign (standard)", callback: wrapRpcRequest(testEthSign) },
       { method: "eth_signTypedData", callback: wrapRpcRequest(testSignTypedData) },
     ];
   };
