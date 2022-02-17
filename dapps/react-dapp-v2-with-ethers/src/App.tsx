@@ -8,7 +8,12 @@ import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
 import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
-import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
+import {
+  AccountAction,
+  formatTestTransaction,
+  getLocalStorageTestnetFlag,
+  setLocaleStorageTestnetFlag,
+} from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
 import PingModal from "./modals/PingModal";
@@ -37,6 +42,7 @@ export default function App() {
   const [rpcResult, setRpcResult] = useState<IFormattedRpcResponse | null>();
 
   const [modal, setModal] = useState("");
+  const [selectedChainId, setSelectedChainId] = useState<string>();
 
   const closeModal = () => setModal("");
   // const openPingModal = () => setModal("ping");
@@ -68,6 +74,22 @@ export default function App() {
   //   openPingModal();
   //   await ping();
   // };
+
+  const testSignTransaction: () => Promise<IFormattedRpcResponse> = async () => {
+    if (!web3Provider) {
+      throw new Error("web3Provider not connected");
+    }
+    const address = accounts[0];
+    const tx = await formatTestTransaction(selectedChainId + ":" + address);
+
+    const signature = await web3Provider.send("eth_signTransaction", [tx]);
+    return {
+      method: "eth_signTransaction",
+      address,
+      valid: true,
+      result: signature,
+    };
+  };
 
   const testSignMessage: () => Promise<IFormattedRpcResponse> = async () => {
     if (!web3Provider) {
@@ -176,6 +198,7 @@ export default function App() {
 
     return [
       // { method: "eth_sendTransaction", callback: onSendTransaction },
+      { method: "eth_signTransaction", callback: wrapRpcRequest(testSignTransaction) },
       { method: "personal_sign", callback: wrapRpcRequest(testSignMessage) },
       { method: "eth_sign (standard)", callback: wrapRpcRequest(testEthSign) },
       { method: "eth_signTypedData", callback: wrapRpcRequest(testSignTypedData) },
@@ -199,6 +222,11 @@ export default function App() {
     const nextIsTestnetState = !isTestnet;
     setIsTestnet(nextIsTestnetState);
     setLocaleStorageTestnetFlag(nextIsTestnetState);
+  };
+
+  const onConnect = (chainId: string) => {
+    setSelectedChainId(chainId);
+    onEnable(chainId);
   };
 
   // Renders the appropriate model for the given request that is currently in-flight.
@@ -228,7 +256,7 @@ export default function App() {
             <Toggle active={isTestnet} onClick={toggleTestnets} />
           </SToggleContainer>
           {chainOptions.map(chainId => (
-            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onEnable} />
+            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onConnect} />
           ))}
         </SButtonContainer>
       </SLanding>
