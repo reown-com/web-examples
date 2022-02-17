@@ -39,6 +39,7 @@ export default function App() {
   const [rpcResult, setRpcResult] = useState<IFormattedRpcResponse | null>();
 
   const [modal, setModal] = useState("");
+  const [selectedChainId, setSelectedChainId] = useState<string>();
 
   const closeModal = () => setModal("");
   const openPairingModal = () => setModal("pairing");
@@ -187,6 +188,20 @@ export default function App() {
     setLocaleStorageTestnetFlag(nextIsTestnetState);
   };
 
+  console.log(client?.pairing.values);
+
+  const onConnect = (chainId: string) => {
+    if (typeof client === "undefined") {
+      throw new Error("WalletConnect Client is not initialized");
+    }
+    if (client.pairing.topics.length) {
+      setSelectedChainId(chainId);
+      return openPairingModal();
+    }
+
+    onEnable(chainId);
+  };
+
   // Renders the appropriate model for the given request that is currently in-flight.
   const renderModal = () => {
     switch (modal) {
@@ -194,8 +209,15 @@ export default function App() {
         if (typeof client === "undefined") {
           throw new Error("WalletConnect is not initialized");
         }
-        // return <PairingModal pairings={client.pairing.values} connect={onEnable} />;
-        return null;
+        return (
+          <PairingModal
+            pairings={client.pairing.values}
+            connect={client.connect}
+            enable={onEnable}
+            selectedChainId={selectedChainId}
+          />
+        );
+      // return null;
       case "request":
         return <RequestModal pending={isRpcRequestPending} result={rpcResult} />;
       case "ping":
@@ -220,7 +242,7 @@ export default function App() {
             <Toggle active={isTestnet} onClick={toggleTestnets} />
           </SToggleContainer>
           {chainOptions.map(chainId => (
-            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onEnable} />
+            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onConnect} />
           ))}
           {/* <SConnectButton left onClick={onEnable} disabled={!chains.length}>
             {"Connect"}

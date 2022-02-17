@@ -173,6 +173,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       console.log(ethereumProvider);
 
+      new providers.JsonRpcProvider();
+
       setEthereumProvider(ethereumProvider);
       setWeb3Provider(web3Provider);
 

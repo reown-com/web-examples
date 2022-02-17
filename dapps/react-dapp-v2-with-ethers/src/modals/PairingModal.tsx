@@ -7,14 +7,18 @@ import Pairing from "../components/Pairing";
 import { STable } from "../components/shared";
 
 import { SModalContainer, SModalTitle } from "./shared";
+import { useWalletConnectClient } from "../contexts/ClientContext";
 
 interface PairingModalProps {
   pairings: PairingTypes.Settled[];
-  connect: (pairing?: { topic: string }) => Promise<void>;
+  connect: any;
+  enable: any;
+  selectedChainId?: string;
 }
 
 const PairingModal = (props: PairingModalProps) => {
-  const { pairings, connect } = props;
+  const { client } = useWalletConnectClient();
+  const { pairings, enable, selectedChainId } = props;
   return (
     <SModalContainer>
       <SModalTitle>{"Select available pairing or create new one"}</SModalTitle>
@@ -23,11 +27,16 @@ const PairingModal = (props: PairingModalProps) => {
           <Pairing
             key={pairing.topic}
             pairing={pairing}
-            onClick={() => connect({ topic: pairing.topic })}
+            // @ts-ignore
+            // onClick={async () => {
+            //   const _pairing = await client?.pairing.get(pairing.topic);
+            //   console.log(_pairing);
+            // }}
+            onClick={() => client?.connect({ topic: pairing.topic })}
           />
         ))}
       </STable>
-      <Button onClick={() => connect()}>{`New Pairing`}</Button>
+      <Button onClick={() => enable(selectedChainId)}>{`New Pairing`}</Button>
     </SModalContainer>
   );
 };
