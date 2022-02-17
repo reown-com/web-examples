@@ -8,13 +8,7 @@ import Column from "./Column";
 import Loader from "./Loader";
 
 import { getChainMetadata } from "../chains";
-import {
-  AccountAction,
-  ellipseAddress,
-  AccountBalances,
-  ChainMetadata,
-  ChainNamespaces,
-} from "../helpers";
+import { AccountAction, ellipseAddress, ChainMetadata, ChainNamespaces } from "../helpers";
 import { fonts } from "../styles";
 
 interface AccountStyleProps {
@@ -125,9 +119,6 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
     return null;
   }
   const name = chain.meta.name || chain.data.name;
-  const account = typeof address !== "undefined" ? `${chainId}:${address}` : undefined;
-  // const assets =
-  //   typeof account !== "undefined" && typeof balances !== "undefined" ? balances[account] : [];
 
   return (
     <React.Fragment>

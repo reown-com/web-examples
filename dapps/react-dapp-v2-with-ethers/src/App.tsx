@@ -11,13 +11,11 @@ import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
 import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
-import PairingModal from "./modals/PairingModal";
 import PingModal from "./modals/PingModal";
 import {
   SAccounts,
   SAccountsContainer,
   SButtonContainer,
-  SConnectButton,
   SContent,
   SLanding,
   SLayout,
@@ -41,13 +39,11 @@ export default function App() {
   const [modal, setModal] = useState("");
 
   const closeModal = () => setModal("");
-  const openPairingModal = () => setModal("pairing");
-  const openPingModal = () => setModal("ping");
+  // const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
 
   // Initialize the WalletConnect client.
   const {
-    client,
     session,
     disconnect,
     chain,
@@ -190,12 +186,6 @@ export default function App() {
   // Renders the appropriate model for the given request that is currently in-flight.
   const renderModal = () => {
     switch (modal) {
-      case "pairing":
-        if (typeof client === "undefined") {
-          throw new Error("WalletConnect is not initialized");
-        }
-        // return <PairingModal pairings={client.pairing.values} connect={onEnable} />;
-        return null;
       case "request":
         return <RequestModal pending={isRpcRequestPending} result={rpcResult} />;
       case "ping":
@@ -222,9 +212,6 @@ export default function App() {
           {chainOptions.map(chainId => (
             <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onEnable} />
           ))}
-          {/* <SConnectButton left onClick={onEnable} disabled={!chains.length}>
-            {"Connect"}
-          </SConnectButton> */}
         </SButtonContainer>
       </SLanding>
     ) : (

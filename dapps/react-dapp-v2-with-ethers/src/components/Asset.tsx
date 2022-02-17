@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import Icon from "./Icon";
 
-import { AssetData, fromWad } from "../helpers";
+import { AssetData } from "../helpers";
 
 import eth from "../assets/eth.svg";
 import erc20 from "../assets/erc20.svg";
@@ -35,6 +35,7 @@ const SAssetBalance = styled.div`
   display: flex;
 `;
 
+// eslint-disable-next-line
 function getAssetIcon(asset: AssetData): JSX.Element {
   if (!!asset.contractAddress) {
     const src = `https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/${asset.contractAddress.toLowerCase()}.png`;
