@@ -27,7 +27,7 @@ import {
   SToggleContainer,
 } from "./components/app";
 import { useWalletConnectClient } from "./contexts/ClientContext";
-import { utils } from "ethers";
+import { BigNumber, utils } from "ethers";
 
 interface IFormattedRpcResponse {
   method: string;
@@ -87,6 +87,36 @@ export default function App() {
   const onPing = async () => {
     openPingModal();
     await ping();
+  };
+
+  const testSendTransaction: () => Promise<IFormattedRpcResponse> = async () => {
+    if (!web3Provider) {
+      throw new Error("web3Provider not connected");
+    }
+
+    const { chainId } = await web3Provider.getNetwork();
+    const [address] = await web3Provider.listAccounts();
+    const balance = await web3Provider.getBalance(address);
+
+    const tx = await formatTestTransaction("eip155:" + chainId + ":" + address);
+
+    if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
+      return {
+        method: "eth_sendTransaction",
+        address,
+        valid: false,
+        result: "Insufficient funds for intrinsic transaction cost",
+      };
+    }
+
+    const txHash = await web3Provider.send("eth_sendTransaction", [tx]);
+
+    return {
+      method: "eth_sendTransaction",
+      address,
+      valid: true,
+      result: txHash,
+    };
   };
 
   const testSignTransaction: () => Promise<IFormattedRpcResponse> = async () => {
@@ -214,7 +244,7 @@ export default function App() {
     };
 
     return [
-      // { method: "eth_sendTransaction", callback: onSendTransaction },
+      { method: "eth_sendTransaction", callback: wrapRpcRequest(testSendTransaction) },
       { method: "eth_signTransaction", callback: wrapRpcRequest(testSignTransaction) },
       { method: "personal_sign", callback: wrapRpcRequest(testSignMessage) },
       { method: "eth_sign (standard)", callback: wrapRpcRequest(testEthSign) },
