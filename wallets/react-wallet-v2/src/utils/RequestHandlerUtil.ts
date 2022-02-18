@@ -1,6 +1,6 @@
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { getSignParamsMessage, getSignTypedDataParamsData } from '@/utils/HelperUtil'
-import { formatJsonRpcError, formatJsonRpcResult } from '@walletconnect/jsonrpc-utils'
+import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { RequestEvent } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
 import { Wallet } from 'ethers'
