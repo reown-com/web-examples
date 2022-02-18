@@ -42,7 +42,6 @@ export default function App() {
   const [rpcResult, setRpcResult] = useState<IFormattedRpcResponse | null>();
 
   const [modal, setModal] = useState("");
-  const [selectedChainId, setSelectedChainId] = useState<string>();
 
   const closeModal = () => setModal("");
   const openPingModal = () => setModal("ping");
@@ -94,8 +93,11 @@ export default function App() {
     if (!web3Provider) {
       throw new Error("web3Provider not connected");
     }
-    const address = accounts[0];
-    const tx = await formatTestTransaction(selectedChainId + ":" + address);
+
+    const { chainId } = await web3Provider.getNetwork();
+    const [address] = await web3Provider.listAccounts();
+
+    const tx = await formatTestTransaction("eip155:" + chainId + ":" + address);
 
     const signature = await web3Provider.send("eth_signTransaction", [tx]);
     return {
@@ -112,7 +114,7 @@ export default function App() {
     }
     const msg = "hello world";
     const hexMsg = encoding.utf8ToHex(msg, true);
-    const address = accounts[0];
+    const [address] = await web3Provider.listAccounts();
     const signature = await web3Provider.send("personal_sign", [hexMsg, address]);
     const valid = utils.verifyMessage(msg, signature) === address;
     return {
@@ -129,7 +131,7 @@ export default function App() {
     }
     const msg = "hello world";
     const hexMsg = encoding.utf8ToHex(msg, true);
-    const address = accounts[0];
+    const [address] = await web3Provider.listAccounts();
     const signature = await web3Provider.send("eth_sign", [address, hexMsg]);
     const valid = utils.verifyMessage(msg, signature) === address;
     return {
@@ -179,7 +181,7 @@ export default function App() {
 
     const message = JSON.stringify(typedData);
 
-    const address = accounts[0];
+    const [address] = await web3Provider.listAccounts();
 
     // eth_signTypedData params
     const params = [address, message];
@@ -239,11 +241,6 @@ export default function App() {
     setLocaleStorageTestnetFlag(nextIsTestnetState);
   };
 
-  const onConnect = (chainId: string) => {
-    setSelectedChainId(chainId);
-    onEnable(chainId);
-  };
-
   // Renders the appropriate model for the given request that is currently in-flight.
   const renderModal = () => {
     switch (modal) {
@@ -271,7 +268,7 @@ export default function App() {
             <Toggle active={isTestnet} onClick={toggleTestnets} />
           </SToggleContainer>
           {chainOptions.map(chainId => (
-            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onConnect} />
+            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onEnable} />
           ))}
         </SButtonContainer>
       </SLanding>

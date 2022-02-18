@@ -219,6 +219,8 @@ export default function App() {
     );
   };
 
+  console.log(accounts);
+
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
