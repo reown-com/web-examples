@@ -23,7 +23,6 @@ export default function PairingsPage() {
       {pairings.length ? (
         pairings.map(pairing => {
           const { metadata } = pairing.state
-          console.log(pairing)
 
           return (
             <PairingCard

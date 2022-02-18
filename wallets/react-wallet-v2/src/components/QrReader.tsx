@@ -57,7 +57,7 @@ export default function QrReader({ onConnect }: IProps) {
       ) : (
         <div className="container qrPlaceholder">
           <Image
-            src="/qr-icon.svg"
+            src="/icons/qr-icon.svg"
             width={100}
             height={100}
             alt="qr code icon"
