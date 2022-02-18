@@ -2,9 +2,7 @@ import Layout from '@/components/Layout'
 import Modal from '@/components/Modal'
 import useInitialization from '@/hooks/useInitialization'
 import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
-import { darkTheme, lightTheme } from '@/utils/ThemeUtil'
 import { NextUIProvider } from '@nextui-org/react'
-import { ThemeProvider } from 'next-themes'
 import { AppProps } from 'next/app'
 import '../../public/main.css'
 
@@ -16,21 +14,12 @@ export default function App({ Component, pageProps }: AppProps) {
   useWalletConnectEventsManager(initialized)
 
   return (
-    <ThemeProvider
-      defaultTheme="system"
-      attribute="class"
-      value={{
-        light: lightTheme.className,
-        dark: darkTheme.className
-      }}
-    >
-      <NextUIProvider>
-        <Layout initialized={initialized}>
-          <Component {...pageProps} />
-        </Layout>
+    <NextUIProvider>
+      <Layout initialized={initialized}>
+        <Component {...pageProps} />
+      </Layout>
 
-        <Modal />
-      </NextUIProvider>
-    </ThemeProvider>
+      <Modal />
+    </NextUIProvider>
   )
 }
