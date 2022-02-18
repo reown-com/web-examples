@@ -14,7 +14,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   }, [])
 
   /******************************************************************************
-   * 2. Open session created modal to show success feedback
+   * 2. [Optional] hanle session created
    *****************************************************************************/
   const onSessionCreated = useCallback((created: SessionTypes.Created) => {}, [])
 
