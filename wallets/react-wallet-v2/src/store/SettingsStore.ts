@@ -11,7 +11,7 @@ interface State {
  * State
  */
 const state = proxy<State>({
-  testNets: Boolean(localStorage.getItem('TEST_NETS')) ?? false
+  testNets: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem('TEST_NETS')) : true
 })
 
 /**

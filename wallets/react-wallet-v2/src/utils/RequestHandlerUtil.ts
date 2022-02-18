@@ -25,9 +25,14 @@ export async function approveEIP155Request(request: RequestEvent['request'], wal
       return formatJsonRpcResult(id, signedData)
 
     case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
-      const transaction = params[0]
-      const { hash } = await wallet.sendTransaction(transaction)
-      return formatJsonRpcError(id, hash)
+      const sendTransaction = params[0]
+      const { hash } = await wallet.sendTransaction(sendTransaction)
+      return formatJsonRpcResult(id, hash)
+
+    case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
+      const signTransaction = params[0]
+      const signature = await wallet.signTransaction(signTransaction)
+      return formatJsonRpcResult(id, signature)
 
     default:
       throw new Error(ERROR.UNKNOWN_JSONRPC_METHOD.format().message)

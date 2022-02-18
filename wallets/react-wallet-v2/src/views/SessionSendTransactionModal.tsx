@@ -68,7 +68,7 @@ export default function SessionSendTransactionModal() {
   return (
     <Fragment>
       <Modal.Header>
-        <Text h3>Send Transaction</Text>
+        <Text h3>Send / Sign Transaction</Text>
       </Modal.Header>
 
       <Modal.Body>

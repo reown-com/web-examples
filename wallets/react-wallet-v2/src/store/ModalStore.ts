@@ -18,6 +18,7 @@ interface State {
     | 'SessionSignModal'
     | 'SessionSignTypedDataModal'
     | 'SessionSendTransactionModal'
+    | 'SessionUnsuportedMethodModal'
   data?: ModalData
 }
 

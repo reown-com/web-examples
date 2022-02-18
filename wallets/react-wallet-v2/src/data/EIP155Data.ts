@@ -30,13 +30,6 @@ export const EIP155_MAINNET_CHAINS = {
     logo: LOGO_BASE_URL + 'eip155:137.png',
     rgb: '130, 71, 229',
     rpc: 'https://polygon-rpc.com/'
-  },
-  'eip155:42161': {
-    chainId: 42161,
-    name: 'Arbitrum',
-    logo: LOGO_BASE_URL + 'eip155:42161.png',
-    rgb: '44, 55, 75',
-    rpc: 'https://arb1.arbitrum.io/rpc/'
   }
 }
 
