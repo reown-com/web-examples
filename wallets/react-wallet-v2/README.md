@@ -1,34 +1,25 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# WalletConnect React Wallet Example
 
-## Getting Started
+⚠️ Wallet should only be used as a refference example & for development purposes <br />
+🔗 Live app - https://react-wallet-v2.vercel.app <br />
+📚 WalletConnect docs - https://docs.walletconnect.com/2.0
 
-First, run the development server:
+Example wallet implementation using [WalletConnect](https://walletconnect.com/), [Ethers](https://docs.ethers.io/v5/), [React](https://reactjs.org/) and [TypeScript](https://www.typescriptlang.org/)
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+## Getting started
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This example is built atop of [NextJS](https://nextjs.org/) in order to abstract complexity of setting up bundlers, routing etc.. So there are only few steps you need to follow in order to set everything up
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+1. Go to [WalletConnect Cloud](https://cloud.walletconnect.com/sign-in) and obtain a project it
+2. Add your project details in [WalletConnectUtil.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/utils/WalletConnectUtil.ts) file.
+3. [Optional] To use project id as environment variable follow [NextJS environment docs](https://nextjs.org/docs/basic-features/environment-variables)
+4. Install dependencies `yarn install` or `npm install`
+5. Run `yarn dev` or `npm run dev` to start local development
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+## Navigating through this example
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+1. Initial setup and initializations happen in [_app.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/pages/_app.tsx) file.
+2. WalletConnect client and ethers wallets are initialized in [useInitialization.ts ](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/hooks/useInitialization.ts) hook
+3. Subscription and handling of WalletConnect events happens in [useWalletConnectEventsManager.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/hooks/useWalletConnectEventsManager.ts) hook, that oppens related [Modal views](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-v2/src/views) and passes them all necesary data.
+4. [Modal views](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-v2/src/views) are responsible for data display and handling approval or rejection actions.
+5. Uppon approval or rejection modals pass request data to [RequestHandlerUtil.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/utils/RequestHandlerUtil.ts) that performs all necesary ethers work based on request method and returns formated json rpc result data that can be then used for WallteConnect client responses.

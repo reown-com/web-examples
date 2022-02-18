@@ -14,7 +14,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   }, [])
 
   /******************************************************************************
-   * 2. Open session created modal to show success feedback
+   * 2. [Optional] hanle session created
    *****************************************************************************/
   const onSessionCreated = useCallback((created: SessionTypes.Created) => {}, [])
 
@@ -25,8 +25,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     const { topic, request } = requestEvent
     const { method } = request
     const requestSession = await walletConnectClient.session.get(topic)
-
-    console.log({ requestEvent, requestSession })
 
     switch (method) {
       case EIP155_SIGNING_METHODS.ETH_SIGN:
