@@ -10,7 +10,7 @@ Example wallet implementation using [WalletConnect](https://walletconnect.com/),
 
 This example is built atop of [NextJS](https://nextjs.org/) in order to abstract complexity of setting up bundlers, routing etc.. So there are only few steps you need to follow in order to set everything up
 
-1. Go to [WalletConnect Cloud](https://cloud.walletconnect.com/sign-in) and obtain a project it
+1. Go to [WalletConnect Cloud](https://cloud.walletconnect.com/sign-in) and obtain a project id
 2. Add your project details in [WalletConnectUtil.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/utils/WalletConnectUtil.ts) file.
 3. [Optional] To use project id as environment variable follow [NextJS environment docs](https://nextjs.org/docs/basic-features/environment-variables)
 4. Install dependencies `yarn install` or `npm install`
