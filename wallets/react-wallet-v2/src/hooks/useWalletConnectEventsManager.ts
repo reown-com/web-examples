@@ -26,6 +26,8 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     const { method } = request
     const requestSession = await walletConnectClient.session.get(topic)
 
+    console.log({ requestEvent, requestSession })
+
     switch (method) {
       case EIP155_SIGNING_METHODS.ETH_SIGN:
       case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
@@ -37,6 +39,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         return ModalStore.open('SessionSignTypedDataModal', { requestEvent, requestSession })
 
       case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
+      case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
         return ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
 
       default:
