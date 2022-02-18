@@ -1,7 +1,8 @@
 # WalletConnect React Wallet Example
 
 ⚠️ Wallet should only be used as a refference example & for development purposes <br />
-🔗 Live app - https://react-wallet-v2.vercel.app <br />
+🔗 Live wallet app - https://react-wallet-v2.vercel.app <br />
+🔗 Live dapp app - https://react-dapp-v2.vercel.app <br />
 📚 WalletConnect docs - https://docs.walletconnect.com/2.0
 
 Example wallet implementation using [WalletConnect](https://walletconnect.com/), [Ethers](https://docs.ethers.io/v5/), [React](https://reactjs.org/) and [TypeScript](https://www.typescriptlang.org)
