@@ -19,6 +19,15 @@ export async function apiGetAccountAssets(address: string, chainId: string): Pro
   return result;
 }
 
+export async function apiGetAccountBalance(address: string, chainId: string): Promise<AssetData> {
+  const ethChainId = chainId.split(":")[1];
+  const response = await ethereumApi.get(
+    `/account-balance?address=${address}&chainId=${ethChainId}`,
+  );
+  const { result } = response.data;
+  return result;
+}
+
 export async function apiGetAccountTransactions(
   address: string,
   chainId: string,
