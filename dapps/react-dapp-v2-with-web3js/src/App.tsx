@@ -167,66 +167,71 @@ export default function App() {
     };
   };
 
-  // FIXME: need `web3.currentProvider.sendAsync` method for `signTypedData`, but EthereumProvider
-  // doesn't seem to have it implemented?
-  // e.g. https://docs.metamask.io/guide/signing-data.html#sign-typed-data-v4
+  const testSignTypedData: () => Promise<IFormattedRpcResponse> = async () => {
+    if (!web3Provider) {
+      throw new Error("web3Provider not connected");
+    }
+    if (!web3Provider.currentProvider) {
+      throw new Error("web3Provider.currentProvider is not set");
+    }
 
-  // const testSignTypedData: () => Promise<IFormattedRpcResponse> = async () => {
-  //   if (!web3Provider) {
-  //     throw new Error("web3Provider not connected");
-  //   }
+    const typedData = {
+      types: {
+        Person: [
+          { name: "name", type: "string" },
+          { name: "wallet", type: "address" },
+        ],
+        Mail: [
+          { name: "from", type: "Person" },
+          { name: "to", type: "Person" },
+          { name: "contents", type: "string" },
+        ],
+      },
+      primaryType: "Mail",
+      domain: {
+        name: "Ether Mail",
+        version: "1",
+        chainId: 1,
+        verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+      },
+      message: {
+        from: {
+          name: "Cow",
+          wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
+        },
+        to: {
+          name: "Bob",
+          wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+        },
+        contents: "Hello, Bob!",
+      },
+    };
 
-  //   const typedData = {
-  //     types: {
-  //       Person: [
-  //         { name: "name", type: "string" },
-  //         { name: "wallet", type: "address" },
-  //       ],
-  //       Mail: [
-  //         { name: "from", type: "Person" },
-  //         { name: "to", type: "Person" },
-  //         { name: "contents", type: "string" },
-  //       ],
-  //     },
-  //     primaryType: "Mail",
-  //     domain: {
-  //       name: "Ether Mail",
-  //       version: "1",
-  //       chainId: 1,
-  //       verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
-  //     },
-  //     message: {
-  //       from: {
-  //         name: "Cow",
-  //         wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
-  //       },
-  //       to: {
-  //         name: "Bob",
-  //         wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
-  //       },
-  //       contents: "Hello, Bob!",
-  //     },
-  //   };
+    const message = JSON.stringify(typedData);
 
-  //   const message = JSON.stringify(typedData);
+    const [address] = await web3Provider.eth.getAccounts();
 
-  //   const [address] = await web3Provider.eth.getAccounts();
+    // eth_signTypedData params
+    const params = [address, message];
 
-  //   // eth_signTypedData params
-  //   const params = [address, message];
-
-  //   // send message
-  //   const signature = await web3Provider.eth.signTypedData("eth_signTypedData", params);
-  //   const valid =
-  //     utils.verifyTypedData(typedData.domain, typedData.types, typedData.message, signature) ===
-  //     address;
-  //   return {
-  //     method: "eth_signTypedData",
-  //     address,
-  //     valid,
-  //     result: signature,
-  //   };
-  // };
+    // FIXME:
+    // Property 'request' does not exist on type 'string | HttpProvider | IpcProvider | WebsocketProvider | AbstractProvider'.
+    // Property 'request' does not exist on type 'string'.ts(2339)
+    // @ts-expect-error
+    const signature = await web3Provider.currentProvider.request({
+      method: "eth_signTypedData",
+      params,
+    });
+    const valid =
+      utils.verifyTypedData(typedData.domain, typedData.types, typedData.message, signature) ===
+      address;
+    return {
+      method: "eth_signTypedData",
+      address,
+      valid,
+      result: signature,
+    };
+  };
 
   const getEthereumActions = (): AccountAction[] => {
     const wrapRpcRequest = (rpcRequest: () => Promise<IFormattedRpcResponse>) => async () => {
@@ -247,7 +252,7 @@ export default function App() {
       { method: "eth_signTransaction", callback: wrapRpcRequest(testSignTransaction) },
       { method: "personal_sign", callback: wrapRpcRequest(testSignMessage) },
       { method: "eth_sign (standard)", callback: wrapRpcRequest(testEthSign) },
-      // { method: "eth_signTypedData", callback: wrapRpcRequest(testSignTypedData) },
+      { method: "eth_signTypedData", callback: wrapRpcRequest(testSignTypedData) },
     ];
   };
 
