@@ -52,3 +52,20 @@ export function getSignTypedDataParamsData(params: string[]) {
 
   return data
 }
+
+/**
+ * Get our address from params checking if params string contains one
+ * of our wallet addresses
+ */
+export function getWalletAddressFromParams(addresses: string[], params: any) {
+  const paramsString = JSON.stringify(params)
+  let address = ''
+
+  addresses.forEach(addr => {
+    if (paramsString.includes(addr)) {
+      address = addr
+    }
+  })
+
+  return address
+}

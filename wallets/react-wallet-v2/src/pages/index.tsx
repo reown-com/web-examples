@@ -3,14 +3,12 @@ import AccountPicker from '@/components/AccountPicker'
 import PageHeader from '@/components/PageHeader'
 import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
 import SettingsStore from '@/store/SettingsStore'
-import { wallets } from '@/utils/WalletUtil'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 
 export default function HomePage() {
-  const { testNets, account } = useSnapshot(SettingsStore.state)
-  const addresses = Object.keys(wallets)
+  const { testNets, address } = useSnapshot(SettingsStore.state)
 
   return (
     <Fragment>
@@ -21,7 +19,7 @@ export default function HomePage() {
         Mainnets
       </Text>
       {Object.values(EIP155_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={addresses[account]} />
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={address} />
       ))}
 
       {testNets ? (
@@ -30,13 +28,7 @@ export default function HomePage() {
             Testnets
           </Text>
           {Object.values(EIP155_TEST_CHAINS).map(({ name, logo, rgb }) => (
-            <AccountCard
-              key={name}
-              name={name}
-              logo={logo}
-              rgb={rgb}
-              address={addresses[account]}
-            />
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={address} />
           ))}
         </Fragment>
       ) : null}

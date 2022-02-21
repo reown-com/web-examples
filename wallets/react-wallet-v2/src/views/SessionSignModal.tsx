@@ -3,7 +3,6 @@ import ModalStore from '@/store/ModalStore'
 import { getSignParamsMessage } from '@/utils/HelperUtil'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/RequestHandlerUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { wallets } from '@/utils/WalletUtil'
 import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -29,10 +28,7 @@ export default function SessionSignModal() {
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
     if (requestEvent) {
-      const response = await approveEIP155Request(
-        requestEvent.request,
-        wallets['0xD0712a5018b6F3401b90Cd75C15d95B3353a4088']
-      )
+      const response = await approveEIP155Request(requestEvent)
       await walletConnectClient.respond({
         topic: requestEvent.topic,
         response

@@ -1,6 +1,7 @@
 import { Wallet } from 'ethers'
 
 export let wallets: Record<string, Wallet>
+export let addresses: string[]
 export let wallet1: Wallet
 export let wallet2: Wallet
 
@@ -20,5 +21,11 @@ export function createOrRestoreWallet() {
   wallets = {
     [wallet1.address]: wallet1,
     [wallet2.address]: wallet2
+  }
+  addresses = Object.keys(wallets)
+
+  return {
+    wallets,
+    addresses
   }
 }
