@@ -1,13 +1,15 @@
-import { ReactEventHandler } from 'react'
+import SettingsStore from '@/store/SettingsStore'
+import { useSnapshot } from 'valtio'
 
-interface IProps {
-  value: number
-  onChange: ReactEventHandler<HTMLSelectElement>
-}
+export default function AccountPicker() {
+  const { account } = useSnapshot(SettingsStore.state)
 
-export default function AccountPicker({ value, onChange }: IProps) {
   return (
-    <select value={Number(value)} onChange={onChange}>
+    <select
+      value={account}
+      onChange={e => SettingsStore.setAccount(e.currentTarget.value)}
+      aria-label="accounts"
+    >
       <option value={0}>Account 1</option>
       <option value={1}>Account 2</option>
     </select>

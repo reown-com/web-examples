@@ -5,18 +5,17 @@ import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
 import SettingsStore from '@/store/SettingsStore'
 import { wallets } from '@/utils/WalletUtil'
 import { Text } from '@nextui-org/react'
-import { Fragment, useState } from 'react'
+import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 
 export default function HomePage() {
-  const [account, setAccount] = useState(0)
-  const { testNets } = useSnapshot(SettingsStore.state)
+  const { testNets, account } = useSnapshot(SettingsStore.state)
   const addresses = Object.keys(wallets)
 
   return (
     <Fragment>
       <PageHeader title="Accounts">
-        <AccountPicker value={account} onChange={e => setAccount(Number(e.currentTarget.value))} />
+        <AccountPicker />
       </PageHeader>
       <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets

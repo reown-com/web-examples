@@ -5,13 +5,15 @@ import { proxy } from 'valtio'
  */
 interface State {
   testNets: boolean
+  account: number
 }
 
 /**
  * State
  */
 const state = proxy<State>({
-  testNets: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem('TEST_NETS')) : true
+  testNets: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem('TEST_NETS')) : true,
+  account: 0
 })
 
 /**
@@ -19,6 +21,10 @@ const state = proxy<State>({
  */
 const SettingsStore = {
   state,
+
+  setAccount(value: number | string) {
+    state.account = Number(value)
+  },
 
   toggleTestNets() {
     state.testNets = !state.testNets

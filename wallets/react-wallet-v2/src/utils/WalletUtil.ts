@@ -21,6 +21,4 @@ export function createOrRestoreWallet() {
     [wallet1.address]: wallet1,
     [wallet2.address]: wallet2
   }
-
-  console.log(wallets)
 }
