@@ -1,6 +1,6 @@
 import PageHeader from '@/components/PageHeader'
 import SettingsStore from '@/store/SettingsStore'
-import { wallet } from '@/utils/WalletUtil'
+import { wallets } from '@/utils/WalletUtil'
 import { Card, Divider, Row, Switch, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
@@ -10,12 +10,14 @@ export default function SettingsPage() {
 
   return (
     <Fragment>
-      <PageHeader>Settings</PageHeader>
+      <PageHeader title="Settings" />
       <Text h4 css={{ marginBottom: '$5' }}>
         Mnemonic
       </Text>
       <Card bordered borderWeight="light" css={{ minHeight: '75px' }}>
-        <Text css={{ fontFamily: '$mono' }}>{wallet.mnemonic.phrase}</Text>
+        <Text css={{ fontFamily: '$mono' }}>
+          {wallets['0xD0712a5018b6F3401b90Cd75C15d95B3353a4088'].mnemonic.phrase}
+        </Text>
       </Card>
 
       <Text css={{ color: '$yellow500', marginTop: '$5', textAlign: 'center' }}>

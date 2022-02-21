@@ -1,7 +1,7 @@
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { wallet } from '@/utils/WalletUtil'
+import { wallets } from '@/utils/WalletUtil'
 import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -26,7 +26,9 @@ export default function SessionProposalModal() {
     if (proposal) {
       const response = {
         state: {
-          accounts: chains.map(chain => `${chain}:${wallet.address}`)
+          accounts: chains.map(
+            chain => `${chain}:${wallets['0xD0712a5018b6F3401b90Cd75C15d95B3353a4088'].address}`
+          )
         }
       }
       await walletConnectClient.approve({ proposal, response })

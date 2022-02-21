@@ -19,7 +19,7 @@ export default function SessionsPage() {
 
   return (
     <Fragment>
-      <PageHeader>Sessions</PageHeader>
+      <PageHeader title="Sessions" />
       {sessions.length ? (
         sessions.map(session => {
           const { name, icons, url } = session.peer.metadata

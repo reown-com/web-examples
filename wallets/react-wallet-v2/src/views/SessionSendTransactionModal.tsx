@@ -3,7 +3,7 @@ import ModalStore from '@/store/ModalStore'
 import { truncate } from '@/utils/HelperUtil'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/RequestHandlerUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { wallet } from '@/utils/WalletUtil'
+import { wallets } from '@/utils/WalletUtil'
 import {
   Avatar,
   Button,
@@ -43,7 +43,8 @@ export default function SessionSendTransactionModal() {
     if (requestEvent) {
       setLoading(true)
       const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
-      const connectedWallet = wallet.connect(provider)
+      const connectedWallet =
+        wallets['0xD0712a5018b6F3401b90Cd75C15d95B3353a4088'].connect(provider)
       const response = await approveEIP155Request(requestEvent.request, connectedWallet)
       await walletConnectClient.respond({
         topic: requestEvent.topic,

@@ -58,3 +58,24 @@
 .navLink:hover {
   opacity: 0.6;
 }
+
+select {
+  background-color: rgba(139, 139, 139, 0.2);
+  background-image: url(/icons/arrow-down-icon.svg);
+  background-size: 15px 15px;
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  padding: 5px 30px 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  appearance: none;
+  transition: .2s ease-in-out background-color;
+  font-family: var(--nextui-fonts-sans);
+  font-weight: var(--nextui-fontWeights-light);
+  border: 1px solid rgba(139, 139, 139, 0.25);
+}
+
+select:hover {
+  background-color: rgba(139, 139, 139, 0.35);
+}
