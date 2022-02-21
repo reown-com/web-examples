@@ -18,7 +18,7 @@ import {
   DEFAULT_PROJECT_ID,
   DEFAULT_RELAY_URL,
 } from "../constants";
-import { AccountBalances, apiGetAccountAssets } from "../helpers";
+import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { ERROR, getAppMetadata } from "@walletconnect/utils";
 
 /**
@@ -73,8 +73,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         _accounts.map(async account => {
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
-          const assets = await apiGetAccountAssets(address, chainId);
-          return { account, assets };
+          const assets = await apiGetAccountBalance(address, chainId);
+          return { account, assets: [assets] };
         }),
       );
 
