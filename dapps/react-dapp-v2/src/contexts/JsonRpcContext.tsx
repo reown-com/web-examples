@@ -28,18 +28,20 @@ interface IRpcResult {
   valid: boolean;
 }
 
+type TRpcRequestCallback = (chainId: string, address: string) => Promise<void>;
+
 interface IContext {
   ping: () => Promise<void>;
   ethereumRpc: {
-    testSendTransaction: (chainId: string) => Promise<void>;
-    testSignTransaction: (chainId: string) => Promise<void>;
-    testEthSign: (chainId: string) => Promise<void>;
-    testSignPersonalMessage: (chainId: string) => Promise<void>;
-    testSignTypedData: (chainId: string) => Promise<void>;
+    testSendTransaction: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
+    testEthSign: TRpcRequestCallback;
+    testSignPersonalMessage: TRpcRequestCallback;
+    testSignTypedData: TRpcRequestCallback;
   };
   cosmosRpc: {
-    testSignDirect: (chainId: string) => Promise<void>;
-    testSignAmino: (chainId: string) => Promise<void>;
+    testSignDirect: TRpcRequestCallback;
+    testSignAmino: TRpcRequestCallback;
   };
   chainData: ChainNamespaces;
   rpcResult?: IRpcResult | null;
@@ -84,18 +86,9 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
     setChainData(chainData);
   };
 
-  const getAddressByChainId = (chainId: string) => {
-    const account = accounts.find(account => account.startsWith(chainId));
-    if (account === undefined) throw new Error(`Account for chainId ${chainId} not found.`);
-    const address = account.split(":").pop();
-    if (address === undefined) throw new Error(`Address for account ${account} is invalid`);
-
-    return address;
-  };
-
   const _createJsonRpcRequestHandler =
-    (rpcRequest: (...requestArgs: [any]) => Promise<IFormattedRpcResponse>) =>
-    async (chainId: string) => {
+    (rpcRequest: (chainId: string, address: string) => Promise<IFormattedRpcResponse>) =>
+    async (chainId: string, address: string) => {
       if (typeof client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
@@ -105,7 +98,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       try {
         setPending(true);
-        const result = await rpcRequest(chainId);
+        const result = await rpcRequest(chainId, address);
         setResult(result);
       } catch (err) {
         console.error(err);
@@ -151,12 +144,10 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
   // -------- ETHEREUM/EIP155 RPC METHODS --------
 
   const ethereumRpc = {
-    testSendTransaction: _createJsonRpcRequestHandler(async (chainId: string) => {
-      // get ethereum address
-      const account = accounts.find(account => account.startsWith(chainId));
-      if (account === undefined) throw new Error("Account is not found");
-      const address = account.split(":").pop();
-      if (address === undefined) throw new Error("Address is invalid");
+    testSendTransaction: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
+      const caipAccountAddress = `${chainId}:${address}`;
+      const account = accounts.find(account => account === caipAccountAddress);
+      if (account === undefined) throw new Error(`Account for ${caipAccountAddress} not found`);
 
       const tx = await formatTestTransaction(account);
 
@@ -185,8 +176,6 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         console.error(error);
       }
 
-      console.log(result);
-
       // format displayed result
       return {
         method: "eth_sendTransaction",
@@ -195,12 +184,10 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         result,
       };
     }),
-    testSignTransaction: _createJsonRpcRequestHandler(async (chainId: string) => {
-      // get ethereum address
-      const account = accounts.find(account => account.startsWith(chainId));
-      if (account === undefined) throw new Error("Account is not found");
-      const address = account.split(":").pop();
-      if (address === undefined) throw new Error("Address is invalid");
+    testSignTransaction: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
+      const caipAccountAddress = `${chainId}:${address}`;
+      const account = accounts.find(account => account === caipAccountAddress);
+      if (account === undefined) throw new Error(`Account for ${caipAccountAddress} not found`);
 
       const tx = await formatTestTransaction(account);
 
@@ -220,54 +207,52 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         result,
       };
     }),
-    testSignPersonalMessage: _createJsonRpcRequestHandler(async (chainId: string) => {
-      // test message
-      const message = `My email is john@doe.com - ${Date.now()}`;
+    testSignPersonalMessage: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        // test message
+        const message = `My email is john@doe.com - ${Date.now()}`;
 
-      // encode message (hex)
-      const hexMsg = encoding.utf8ToHex(message, true);
+        // encode message (hex)
+        const hexMsg = encoding.utf8ToHex(message, true);
 
-      const address = getAddressByChainId(chainId);
+        // personal_sign params
+        const params = [hexMsg, address];
 
-      // personal_sign params
-      const params = [hexMsg, address];
+        // send message
+        const result: string = await client!.request({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: "personal_sign",
+            params,
+          },
+        });
 
-      // send message
-      const result: string = await client!.request({
-        topic: session!.topic,
-        chainId,
-        request: {
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+
+        const targetChainData = chainData[namespace][reference];
+
+        if (typeof targetChainData === "undefined") {
+          throw new Error(`Missing chain data for chainId: ${chainId}`);
+        }
+
+        const rpcUrl = targetChainData.rpc[0];
+
+        // verify signature
+        const hash = hashPersonalMessage(message);
+        const valid = await verifySignature(address, result, hash, rpcUrl);
+
+        // format displayed result
+        return {
           method: "personal_sign",
-          params,
-        },
-      });
-
-      //  split chainId
-      const [namespace, reference] = chainId.split(":");
-
-      const targetChainData = chainData[namespace][reference];
-
-      if (typeof targetChainData === "undefined") {
-        throw new Error(`Missing chain data for chainId: ${chainId}`);
-      }
-
-      const rpcUrl = targetChainData.rpc[0];
-
-      // verify signature
-      const hash = hashPersonalMessage(message);
-      const valid = await verifySignature(address, result, hash, rpcUrl);
-
-      // format displayed result
-      return {
-        method: "personal_sign",
-        address,
-        valid,
-        result,
-      };
-    }),
-    testEthSign: _createJsonRpcRequestHandler(async (chainId: string) => {
-      const address = getAddressByChainId(chainId);
-
+          address,
+          valid,
+          result,
+        };
+      },
+    ),
+    testEthSign: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
       // test message
       const message = `My email is john@doe.com - ${Date.now()}`;
       // encode message (hex)
@@ -308,7 +293,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         result,
       };
     }),
-    testSignTypedData: _createJsonRpcRequestHandler(async (chainId: string) => {
+    testSignTypedData: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
       const typedData = {
         types: {
           Person: [
@@ -341,7 +326,6 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         },
       };
 
-      const address = getAddressByChainId(chainId);
       const message = JSON.stringify(typedData);
 
       // eth_signTypedData params
@@ -372,7 +356,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
   // -------- COSMOS RPC METHODS --------
 
   const cosmosRpc = {
-    testSignDirect: _createJsonRpcRequestHandler(async (chainId: string) => {
+    testSignDirect: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
       // test direct sign doc inputs
       const inputs = {
         fee: [{ amount: "2000", denom: "ucosm" }],
@@ -399,8 +383,6 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         inputs.bodyBytes,
         reference,
       );
-
-      const address = getAddressByChainId(chainId);
 
       // cosmos_signDirect params
       const params = {
@@ -435,7 +417,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         result: result.signature.signature,
       };
     }),
-    testSignAmino: _createJsonRpcRequestHandler(async (chainId: string) => {
+    testSignAmino: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
       // split chainId
       const [namespace, reference] = chainId.split(":");
 
@@ -448,8 +430,6 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         account_number: "7",
         sequence: "54",
       };
-
-      const address = getAddressByChainId(chainId);
 
       // cosmos_signAmino params
       const params = { signerAddress: address, signDoc };

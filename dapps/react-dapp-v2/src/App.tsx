@@ -77,25 +77,25 @@ export default function App() {
   };
 
   const getEthereumActions = (): AccountAction[] => {
-    const onSendTransaction = async (chainId: string) => {
+    const onSendTransaction = async (chainId: string, address: string) => {
       openRequestModal();
-      await ethereumRpc.testSendTransaction(chainId);
+      await ethereumRpc.testSendTransaction(chainId, address);
     };
-    const onSignTransaction = async (chainId: string) => {
+    const onSignTransaction = async (chainId: string, address: string) => {
       openRequestModal();
-      await ethereumRpc.testSignTransaction(chainId);
+      await ethereumRpc.testSignTransaction(chainId, address);
     };
-    const onSignPersonalMessage = async (chainId: string) => {
+    const onSignPersonalMessage = async (chainId: string, address: string) => {
       openRequestModal();
-      await ethereumRpc.testSignPersonalMessage(chainId);
+      await ethereumRpc.testSignPersonalMessage(chainId, address);
     };
-    const onEthSign = async (chainId: string) => {
+    const onEthSign = async (chainId: string, address: string) => {
       openRequestModal();
-      await ethereumRpc.testEthSign(chainId);
+      await ethereumRpc.testEthSign(chainId, address);
     };
-    const onSignTypedData = async (chainId: string) => {
+    const onSignTypedData = async (chainId: string, address: string) => {
       openRequestModal();
-      await ethereumRpc.testSignTypedData(chainId);
+      await ethereumRpc.testSignTypedData(chainId, address);
     };
 
     return [
@@ -108,13 +108,13 @@ export default function App() {
   };
 
   const getCosmosActions = (): AccountAction[] => {
-    const onSignDirect = async (chainId: string) => {
+    const onSignDirect = async (chainId: string, address: string) => {
       openRequestModal();
-      await cosmosRpc.testSignDirect(chainId);
+      await cosmosRpc.testSignDirect(chainId, address);
     };
-    const onSignAmino = async (chainId: string) => {
+    const onSignAmino = async (chainId: string, address: string) => {
       openRequestModal();
-      await cosmosRpc.testSignAmino(chainId);
+      await cosmosRpc.testSignAmino(chainId, address);
     };
     return [
       { method: "cosmos_signDirect", callback: onSignDirect },
