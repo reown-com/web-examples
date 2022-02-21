@@ -1,29 +1,35 @@
-import { Divider, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
+import { Col, Divider, Row, Text } from '@nextui-org/react'
+import { Fragment, ReactNode } from 'react'
 
 /**
  * Types
  */
 interface Props {
-  children: string
+  children?: ReactNode | ReactNode[]
+  title: string
 }
 
 /**
  * Component
  */
-export default function PageHeader({ children }: Props) {
+export default function PageHeader({ title, children }: Props) {
   return (
     <Fragment>
-      <Text
-        h3
-        weight="bold"
-        css={{
-          textGradient: '90deg, $secondary, $primary 30%',
-          marginBottom: '$5'
-        }}
-      >
-        {children}
-      </Text>
+      <Row css={{ marginBottom: '$5', width: '100%' }} justify="space-between" align="center">
+        <Col>
+          <Text
+            h3
+            weight="bold"
+            css={{
+              textGradient: '90deg, $secondary, $primary 30%'
+            }}
+          >
+            {title}
+          </Text>
+        </Col>
+        {children ? <Col css={{ flex: 1 }}>{children}</Col> : null}
+      </Row>
+
       <Divider css={{ marginBottom: '$10' }} />
     </Fragment>
   )

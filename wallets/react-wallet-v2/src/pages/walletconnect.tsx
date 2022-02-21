@@ -22,7 +22,7 @@ export default function WalletConnectPage() {
 
   return (
     <Fragment>
-      <PageHeader>WalletConnect</PageHeader>
+      <PageHeader title="WalletConnect" />
 
       <QrReader onConnect={onConnect} />
 

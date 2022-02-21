@@ -1,11 +1,25 @@
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
+import { truncate } from '@/utils/HelperUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { wallet } from '@/utils/WalletUtil'
-import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
+import { addresses } from '@/utils/WalletUtil'
+import {
+  Avatar,
+  Button,
+  Card,
+  Col,
+  Container,
+  Divider,
+  Link,
+  Modal,
+  Row,
+  Text
+} from '@nextui-org/react'
+import { Fragment, useState } from 'react'
 
 export default function SessionProposalModal() {
+  const [selectedAddresses, setSelectedAddresses] = useState<string[]>([])
+
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
 
@@ -21,12 +35,29 @@ export default function SessionProposalModal() {
   const { methods } = permissions.jsonrpc
   const { protocol } = relay
 
+  // Add / remove address from selection
+  function onSelectAddress(address: string) {
+    if (selectedAddresses.includes(address)) {
+      const newAddresses = selectedAddresses.filter(a => a !== address)
+      setSelectedAddresses(newAddresses)
+    } else {
+      setSelectedAddresses([...selectedAddresses, address])
+    }
+  }
+
   // Hanlde approve action
   async function onApprove() {
     if (proposal) {
+      const accounts: string[] = []
+      chains.forEach(chain => {
+        selectedAddresses.forEach(address => {
+          accounts.push(`${chain}:${address}`)
+        })
+      })
+
       const response = {
         state: {
-          accounts: chains.map(chain => `${chain}:${wallet.address}`)
+          accounts
         }
       }
       await walletConnectClient.approve({ proposal, response })
@@ -90,6 +121,27 @@ export default function SessionProposalModal() {
               <Text color="$gray400">{protocol}</Text>
             </Col>
           </Row>
+
+          <Divider y={2} />
+
+          <Row>
+            <Col>
+              <Text h5>Select Accounts to Connect</Text>
+              {addresses.map((address, index) => (
+                <Card
+                  onClick={() => onSelectAddress(address)}
+                  clickable
+                  key={address}
+                  css={{
+                    marginTop: '$5',
+                    backgroundColor: selectedAddresses.includes(address) ? '$green600' : '$accents2'
+                  }}
+                >
+                  <Text>{`Acc ${index + 1} - ${truncate(address, 19)}`}</Text>
+                </Card>
+              ))}
+            </Col>
+          </Row>
         </Container>
       </Modal.Body>
 
@@ -97,7 +149,14 @@ export default function SessionProposalModal() {
         <Button auto flat color="error" onClick={onReject}>
           Reject
         </Button>
-        <Button auto flat color="success" onClick={onApprove}>
+        <Button
+          auto
+          flat
+          color="success"
+          onClick={onApprove}
+          disabled={!selectedAddresses.length}
+          css={{ opacity: selectedAddresses.length ? 1 : 0.4 }}
+        >
           Approve
         </Button>
       </Modal.Footer>

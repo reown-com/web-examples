@@ -1,12 +1,19 @@
-import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
-import { getSignParamsMessage, getSignTypedDataParamsData } from '@/utils/HelperUtil'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
+import {
+  getSignParamsMessage,
+  getSignTypedDataParamsData,
+  getWalletAddressFromParams
+} from '@/utils/HelperUtil'
+import { addresses, wallets } from '@/utils/WalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { RequestEvent } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
-import { Wallet } from 'ethers'
+import { providers } from 'ethers'
 
-export async function approveEIP155Request(request: RequestEvent['request'], wallet: Wallet) {
-  const { method, params, id } = request
+export async function approveEIP155Request(requestEvent: RequestEvent) {
+  const { method, params, id } = requestEvent.request
+  const { chainId } = requestEvent
+  const wallet = wallets[getWalletAddressFromParams(addresses, params)]
 
   switch (method) {
     case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
@@ -25,8 +32,10 @@ export async function approveEIP155Request(request: RequestEvent['request'], wal
       return formatJsonRpcResult(id, signedData)
 
     case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
+      const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
       const sendTransaction = params[0]
-      const { hash } = await wallet.sendTransaction(sendTransaction)
+      const connectedWallet = wallet.connect(provider)
+      const { hash } = await connectedWallet.sendTransaction(sendTransaction)
       return formatJsonRpcResult(id, hash)
 
     case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:

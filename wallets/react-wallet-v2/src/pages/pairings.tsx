@@ -19,7 +19,7 @@ export default function PairingsPage() {
 
   return (
     <Fragment>
-      <PageHeader>Pairings</PageHeader>
+      <PageHeader title="Pairings" />
       {pairings.length ? (
         pairings.map(pairing => {
           const { metadata } = pairing.state
