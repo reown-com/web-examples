@@ -8,7 +8,13 @@ import Column from "./Column";
 import Loader from "./Loader";
 
 import { getChainMetadata } from "../chains";
-import { AccountAction, ellipseAddress, ChainMetadata, ChainNamespaces } from "../helpers";
+import {
+  AccountAction,
+  ellipseAddress,
+  ChainMetadata,
+  ChainNamespaces,
+  AccountBalances,
+} from "../helpers";
 import { fonts } from "../styles";
 
 interface AccountStyleProps {
@@ -82,7 +88,7 @@ interface BlockchainProps {
   chainId: string;
   address?: string;
   onClick?: (chain: string) => void;
-  balances?: any[];
+  balances?: AccountBalances;
   actions?: AccountAction[];
 }
 
@@ -141,13 +147,11 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
             </Column>
           ) : (
             <>
-              {!!balances && balances.length ? (
+              {!!address && !!balances && balances[address] ? (
                 <SFullWidthContainer>
                   <h6>Balances</h6>
                   <Column center>
-                    {balances.map(balance => (
-                      <Asset key={balance.symbol} asset={balance} />
-                    ))}
+                    <Asset key={balances[address].symbol} asset={balances[address]} />
                   </Column>
                 </SFullWidthContainer>
               ) : null}

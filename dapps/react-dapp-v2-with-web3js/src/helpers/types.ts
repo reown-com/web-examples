@@ -2,10 +2,8 @@ import { ChainsMap } from "caip-api";
 
 export interface AssetData {
   symbol: string;
-  name: string;
-  decimals: string;
-  contractAddress: string;
-  balance?: string;
+  balance: string;
+  contractAddress?: string;
 }
 
 export interface ChainData {
@@ -155,5 +153,5 @@ export interface AccountAction {
 }
 
 export interface AccountBalances {
-  [account: string]: AssetData[];
+  [account: string]: AssetData;
 }
