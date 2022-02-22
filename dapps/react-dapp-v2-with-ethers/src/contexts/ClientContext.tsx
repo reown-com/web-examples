@@ -18,7 +18,7 @@ import {
   DEFAULT_RELAY_URL,
 } from "../constants";
 import { providers, utils } from "ethers";
-import { ChainNamespaces, getAllChainNamespaces } from "../helpers";
+import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../helpers";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
 
 /**
@@ -32,7 +32,7 @@ interface IContext {
   chain: string;
   pairings: string[];
   accounts: string[];
-  balances: { symbol: string; balance: string }[];
+  balances: AccountBalances;
   isFetchingBalances: boolean;
   chainData: ChainNamespaces;
   onEnable: (chainId: string) => Promise<void>;
@@ -59,7 +59,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [isInitializing, setIsInitializing] = useState(false);
   const [hasCheckedPersistedSession, setHasCheckedPersistedSession] = useState(false);
 
-  const [balances, setBalances] = useState<{ symbol: string; balance: string }[]>([]);
+  const [balances, setBalances] = useState<AccountBalances>({});
   const [accounts, setAccounts] = useState<string[]>([]);
   const [chainData, setChainData] = useState<ChainNamespaces>({});
   const [chain, setChain] = useState<string>("");
@@ -67,7 +67,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const resetApp = () => {
     setPairings([]);
     setSession(undefined);
-    setBalances([]);
+    setBalances({});
     setAccounts([]);
     setChain("");
   };
@@ -186,10 +186,21 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         const _balances = await Promise.all(
           _accounts.map(async account => {
             const balance = await web3Provider.getBalance(account);
-            return { symbol: "ETH", balance: utils.formatEther(balance) };
+            return {
+              account,
+              symbol: "ETH",
+              balance: utils.formatEther(balance),
+              contractAddress: "",
+            };
           }),
         );
-        setBalances(_balances);
+
+        const balancesByAccount = _balances.reduce((obj, balance) => {
+          obj[balance.account] = balance;
+          return obj;
+        }, {} as AccountBalances);
+
+        setBalances(balancesByAccount);
       } catch (error: any) {
         throw new Error(error);
       } finally {
