@@ -1,5 +1,6 @@
 import { truncate } from '@/utils/HelperUtil'
-import { Avatar, Button, Card, Link, Text } from '@nextui-org/react'
+import { Avatar, Button, Card, Link, Text, Tooltip } from '@nextui-org/react'
+import Image from 'next/image'
 
 /**
  * Types
@@ -42,9 +43,11 @@ export default function PairingCard({ logo, name, url, onDelete }: IProps) {
             {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
           </Link>
         </div>
-        <Button size="xs" color="error" flat onClick={onDelete}>
-          DELETE
-        </Button>
+        <Tooltip content="Delete" placement="left">
+          <Button size="sm" color="error" flat onClick={onDelete} css={{ minWidth: 'auto' }}>
+            <Image src={'/icons/delete-icon.svg'} width={15} height={15} alt="delete icon" />
+          </Button>
+        </Tooltip>
       </Card.Body>
     </Card>
   )

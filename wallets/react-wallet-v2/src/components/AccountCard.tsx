@@ -1,5 +1,7 @@
 import { truncate } from '@/utils/HelperUtil'
-import { Avatar, Card, Text } from '@nextui-org/react'
+import { Avatar, Button, Card, Text, Tooltip } from '@nextui-org/react'
+import Image from 'next/image'
+import { useState } from 'react'
 
 interface Props {
   name: string
@@ -9,6 +11,14 @@ interface Props {
 }
 
 export default function AccountCard({ name, logo, rgb, address }: Props) {
+  const [copied, setCopied] = useState(false)
+
+  function onCopy() {
+    navigator?.clipboard?.writeText(address)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
   return (
     <Card
       bordered
@@ -38,6 +48,21 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
             {truncate(address, 19)}
           </Text>
         </div>
+
+        <Tooltip content={copied ? 'Copied!' : 'Copy'} placement="left">
+          <Button
+            size="sm"
+            css={{ minWidth: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+            onClick={onCopy}
+          >
+            <Image
+              src={copied ? '/icons/checkmark-icon.svg' : '/icons/copy-icon.svg'}
+              width={15}
+              height={15}
+              alt="copy icon"
+            />
+          </Button>
+        </Tooltip>
       </Card.Body>
     </Card>
   )

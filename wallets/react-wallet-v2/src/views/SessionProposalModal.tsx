@@ -1,12 +1,12 @@
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
-import { truncate } from '@/utils/HelperUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { addresses } from '@/utils/WalletUtil'
 import {
   Avatar,
   Button,
   Card,
+  Checkbox,
   Col,
   Container,
   Divider,
@@ -134,10 +134,20 @@ export default function SessionProposalModal() {
                   key={address}
                   css={{
                     marginTop: '$5',
-                    backgroundColor: selectedAddresses.includes(address) ? '$green600' : '$accents2'
+                    backgroundColor: selectedAddresses.includes(address)
+                      ? 'rgba(23, 200, 100, 0.2)'
+                      : '$accents2'
                   }}
                 >
-                  <Text>{`Acc ${index + 1} - ${truncate(address, 19)}`}</Text>
+                  <Row justify="space-between" align="center">
+                    <Checkbox
+                      size="lg"
+                      color="success"
+                      checked={selectedAddresses.includes(address)}
+                    />
+
+                    <Text>{`Account ${index + 1}`} </Text>
+                  </Row>
                 </Card>
               ))}
             </Col>
@@ -149,6 +159,7 @@ export default function SessionProposalModal() {
         <Button auto flat color="error" onClick={onReject}>
           Reject
         </Button>
+
         <Button
           auto
           flat
