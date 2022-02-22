@@ -16,7 +16,7 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
   function onCopy() {
     navigator?.clipboard?.writeText(address)
     setCopied(true)
-    setTimeout(() => setCopied(false), 1000)
+    setTimeout(() => setCopied(false), 1500)
   }
 
   return (
@@ -49,10 +49,10 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
           </Text>
         </div>
 
-        <Tooltip content="Copy" color="invert" placement="left">
+        <Tooltip content={copied ? 'Copied!' : 'Copy'} placement="left">
           <Button
             size="sm"
-            css={{ minWidth: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+            css={{ minWidth: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
             onClick={onCopy}
           >
             <Image
