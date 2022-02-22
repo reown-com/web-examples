@@ -79,3 +79,7 @@ select {
 select:hover {
   background-color: rgba(139, 139, 139, 0.35);
 }
+
+i {
+  margin-top: -5px !important;
+}
