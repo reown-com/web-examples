@@ -12,7 +12,6 @@ import {
   useState,
 } from "react";
 import { DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from "../constants";
-import { providers, utils } from "ethers";
 import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../helpers";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
 
@@ -28,10 +27,8 @@ interface IContext {
   pairings: string[];
   accounts: string[];
   balances: AccountBalances;
-  isFetchingBalances: boolean;
   chainData: ChainNamespaces;
   onEnable: (chainId: string) => Promise<void>;
-  web3Provider?: providers.Web3Provider;
   cosmosProvider?: CosmosProvider;
 }
 
@@ -49,9 +46,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [session, setSession] = useState<SessionTypes.Created>();
 
   const [cosmosProvider, setCosmosProvider] = useState<CosmosProvider>();
-  const [web3Provider, setWeb3Provider] = useState<providers.Web3Provider>();
 
-  const [isFetchingBalances, setIsFetchingBalances] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [hasCheckedPersistedSession, setHasCheckedPersistedSession] = useState(false);
 
@@ -84,8 +79,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         }
       }),
     );
-    console.log(chainData);
-
     setChainData(chainData);
   };
 
@@ -146,27 +139,20 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       const chainId = caipChainId.split(":").pop();
 
+      if (!chainId) {
+        throw new Error("Could not derive chainId from CAIP chainId");
+      }
+
       console.log("Enabling cosmosProvider for chainId: ", chainId);
 
       //  Create WalletConnect Provider
       const cosmosProvider = new CosmosProvider({
-        chains: ["cosmoshub-4"],
-        rpc: {
-          custom: {
-            "cosmoshub-4": "https://rpc.cosmos.network/",
-          },
-        },
+        chains: [chainId],
         client,
       });
-      const web3Provider = new providers.Web3Provider(cosmosProvider);
 
       console.log(cosmosProvider);
-      console.log(web3Provider);
-
       setCosmosProvider(cosmosProvider);
-      setWeb3Provider(web3Provider);
-
-      // cosmosProvider.signer.connection.on(SIGNER_EVENTS.uri, ({ uri }) => walletClient.pair({ uri }));
 
       try {
         await cosmosProvider.connect();
@@ -181,33 +167,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       setAccounts(_accounts);
       setSession(_session);
       setChain(caipChainId);
-
-      // TODO:
-      // try {
-      //   setIsFetchingBalances(true);
-      //   const _balances = await Promise.all(
-      //     _accounts.map(async account => {
-      //       const balance = await web3Provider.getBalance(account);
-      //       return {
-      //         account,
-      //         symbol: "ETH",
-      //         balance: utils.formatEther(balance),
-      //         contractAddress: "",
-      //       };
-      //     }),
-      //   );
-
-      //   const balancesByAccount = _balances.reduce((obj, balance) => {
-      //     obj[balance.account] = balance;
-      //     return obj;
-      //   }, {} as AccountBalances);
-
-      //   setBalances(balancesByAccount);
-      // } catch (error: any) {
-      //   throw new Error(error);
-      // } finally {
-      //   setIsFetchingBalances(false);
-      // }
 
       QRCodeModal.close();
     },
@@ -259,7 +218,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       pairings,
       isInitializing,
       balances,
-      isFetchingBalances,
       accounts,
       chain,
       client,
@@ -267,14 +225,12 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       disconnect,
       chainData,
       onEnable,
-      web3Provider,
       cosmosProvider,
     }),
     [
       pairings,
       isInitializing,
       balances,
-      isFetchingBalances,
       accounts,
       chain,
       client,
@@ -282,7 +238,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       disconnect,
       chainData,
       onEnable,
-      web3Provider,
       cosmosProvider,
     ],
   );

@@ -7,14 +7,8 @@ import Blockchain from "./components/Blockchain";
 import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
-import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
-import {
-  AccountAction,
-  formatTestTransaction,
-  getLocalStorageTestnetFlag,
-  setLocaleStorageTestnetFlag,
-} from "./helpers";
-import Toggle from "./components/Toggle";
+import { DEFAULT_MAIN_CHAINS } from "./constants";
+import { AccountAction } from "./helpers";
 import RequestModal from "./modals/RequestModal";
 import PingModal from "./modals/PingModal";
 import {
@@ -24,7 +18,6 @@ import {
   SContent,
   SLanding,
   SLayout,
-  SToggleContainer,
 } from "./components/app";
 import { useWalletConnectClient } from "./contexts/ClientContext";
 
@@ -36,7 +29,6 @@ interface IFormattedRpcResponse {
 }
 
 export default function App() {
-  const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
   const [isRpcRequestPending, setIsRpcRequestPending] = useState(false);
   const [rpcResult, setRpcResult] = useState<IFormattedRpcResponse | null>();
 
@@ -55,10 +47,8 @@ export default function App() {
     accounts,
     balances,
     chainData,
-    isFetchingBalances,
     isInitializing,
     onEnable,
-    web3Provider,
     cosmosProvider,
   } = useWalletConnectClient();
 
@@ -90,9 +80,6 @@ export default function App() {
   };
 
   const testSignDirect: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
-      throw new Error("web3Provider not connected");
-    }
     if (!cosmosProvider) {
       throw new Error("cosmosProvider not connected");
     }
@@ -147,7 +134,38 @@ export default function App() {
     };
   };
 
-  // const testSignAmino = null;
+  const testSignAmino: () => Promise<IFormattedRpcResponse> = async () => {
+    if (!cosmosProvider) {
+      throw new Error("cosmosProvider not connected");
+    }
+
+    // test amino sign doc
+    const signDoc = {
+      msgs: [],
+      fee: { amount: [], gas: "23" },
+      chain_id: "foochain",
+      memo: "hello, world",
+      account_number: "7",
+      sequence: "54",
+    };
+
+    const [address] = cosmosProvider.accounts;
+
+    // cosmos_signAmino params
+    const params = { signerAddress: address, signDoc };
+
+    const signature = (await cosmosProvider.request({
+      method: "cosmos_signAmino",
+      params,
+    })) as string;
+    // const valid = utils.verifyMessage(msg, signature) === address;
+    return {
+      method: "cosmos_signAmino",
+      address,
+      valid: true,
+      result: signature,
+    };
+  };
 
   const getCosmosActions = (): AccountAction[] => {
     const wrapRpcRequest = (rpcRequest: () => Promise<IFormattedRpcResponse>) => async () => {
@@ -163,14 +181,10 @@ export default function App() {
       }
     };
 
-    return [{ method: "cosmos_signDirect", callback: wrapRpcRequest(testSignDirect) }];
-  };
-
-  // Toggle between displaying testnet or mainnet chains as selection options.
-  const toggleTestnets = () => {
-    const nextIsTestnetState = !isTestnet;
-    setIsTestnet(nextIsTestnetState);
-    setLocaleStorageTestnetFlag(nextIsTestnetState);
+    return [
+      { method: "cosmos_signDirect", callback: wrapRpcRequest(testSignDirect) },
+      { method: "cosmos_signAmino", callback: wrapRpcRequest(testSignAmino) },
+    ];
   };
 
   // Renders the appropriate model for the given request that is currently in-flight.
@@ -186,7 +200,7 @@ export default function App() {
   };
 
   const renderContent = () => {
-    const chainOptions = isTestnet ? DEFAULT_TEST_CHAINS : DEFAULT_MAIN_CHAINS;
+    const chainOptions = DEFAULT_MAIN_CHAINS;
     return !accounts.length && !Object.keys(balances).length ? (
       <SLanding center>
         <Banner />
@@ -194,11 +208,7 @@ export default function App() {
           <span>{`Using v${version || "2.0.0-beta"}`}</span>
         </h6>
         <SButtonContainer>
-          <h6>Select an Ethereum chain:</h6>
-          <SToggleContainer>
-            <p>Testnets Only?</p>
-            <Toggle active={isTestnet} onClick={toggleTestnets} />
-          </SToggleContainer>
+          <h6>Select Cosmos chain:</h6>
           {chainOptions.map(chainId => (
             <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onEnable} />
           ))}
@@ -214,7 +224,6 @@ export default function App() {
                 key={account}
                 active={true}
                 chainData={chainData}
-                fetching={isFetchingBalances}
                 address={account}
                 chainId={chain}
                 balances={balances}
