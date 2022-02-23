@@ -1,54 +1,55 @@
 import { truncate } from '@/utils/HelperUtil'
-import { Avatar, Button, Card, Link, Text, Tooltip } from '@nextui-org/react'
+import { Avatar, Card, Link, Text } from '@nextui-org/react'
 import Image from 'next/image'
+import NextLink from 'next/link'
 
 /**
  * Types
  */
 interface IProps {
+  topic?: string
   logo?: string
   name?: string
   url?: string
-  onDelete: () => Promise<void>
 }
 
 /**
  * Component
  */
-export default function SessionCard({ logo, name, url, onDelete }: IProps) {
+export default function SessionCard({ logo, name, url, topic }: IProps) {
   return (
-    <Card
-      bordered
-      borderWeight="light"
-      css={{
-        position: 'relative',
-        marginBottom: '$6',
-        minHeight: '70px'
-      }}
-    >
-      <Card.Body
+    <NextLink href={`/session?topic=${topic}`} passHref>
+      <Card
+        clickable
+        bordered
+        borderWeight="light"
         css={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          overflow: 'hidden'
+          position: 'relative',
+          marginBottom: '$6',
+          minHeight: '70px'
         }}
       >
-        <Avatar src={logo} />
-        <div style={{ flex: 1 }}>
-          <Text h5 css={{ marginLeft: '$9' }}>
-            {name}
-          </Text>
-          <Link href={url} css={{ marginLeft: '$9' }}>
-            {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
-          </Link>
-        </div>
-        <Tooltip content="Delete" placement="left">
-          <Button size="sm" color="error" flat onClick={onDelete} css={{ minWidth: 'auto' }}>
-            <Image src={'/icons/delete-icon.svg'} width={15} height={15} alt="delete icon" />
-          </Button>
-        </Tooltip>
-      </Card.Body>
-    </Card>
+        <Card.Body
+          css={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            overflow: 'hidden'
+          }}
+        >
+          <Avatar src={logo} />
+          <div style={{ flex: 1 }}>
+            <Text h5 css={{ marginLeft: '$9' }}>
+              {name}
+            </Text>
+            <Link href={url} css={{ marginLeft: '$9' }}>
+              {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
+            </Link>
+          </div>
+
+          <Image src={'/icons/arrow-right-icon.svg'} width={20} height={20} alt="session icon" />
+        </Card.Body>
+      </Card>
+    </NextLink>
   )
 }
