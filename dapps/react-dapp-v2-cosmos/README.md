@@ -1,12 +1,12 @@
-# React dApp (with v2 EthereumProvider + Ethers.js)
+# React dApp (with v2 CosmosProvider)
 
-🔗 Live dapp demo - https://react-dapp-v2-with-ethers.vercel.app <br />
+🔗 Live dapp demo - https://react-dapp-v2-cosmos.vercel.app <br />
 🔗 Live wallet demo - https://react-wallet-v2.vercel.app <br />
 📚 WalletConnect v2 Docs - https://docs.walletconnect.com/2.0
 
 ## Overview
 
-This is an example implementation of a React dApp (generated via `create-react-app`) using the v2 [`EthereumProvider`](https://docs.walletconnect.com/2.0/quick-start/dapps/ethereum-provider) together with [`Ethers.js`](https://docs.ethers.io/v5/) to:
+This is an example implementation of a React dApp (generated via `create-react-app`) using the v2 [`CosmosProvider`](https://docs.walletconnect.com/2.0/quick-start/dapps/cosmos-provider) to:
 
 - handle pairings
 - manage sessions
@@ -29,7 +29,6 @@ cp .env.local.example .env.local
 Your `.env.local` now contains the following environment variables:
 
 - `REACT_APP_PROJECT_ID` (placeholder) - You can generate your own ProjectId at https://cloud.walletconnect.com
-- `REACT_APP_INFURA_ID` (placeholder) - You can generate your own Infura ID via https://infura.io/
 - `REACT_APP_RELAY_URL` (already set)
 
 ## Develop
