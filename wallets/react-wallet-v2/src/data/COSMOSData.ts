@@ -1,7 +1,7 @@
 /**
  * Chains
  */
-export const EIP155_MAINNET_CHAINS = {
+export const COSMOS_MAINNET_CHAINS = {
   'cosmos:cosmoshub-4': {
     chainId: 'cosmoshub-4',
     name: 'Cosmos Hub',

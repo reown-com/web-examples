@@ -1,6 +1,6 @@
 import SettingsStore from '@/store/SettingsStore'
+import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createWalletConnectClient } from '@/utils/WalletConnectUtil'
-import { createOrRestoreWallet } from '@/utils/WalletUtil'
 import { useCallback, useEffect, useState } from 'react'
 
 export default function useInitialization() {
@@ -8,8 +8,8 @@ export default function useInitialization() {
 
   const onInitialize = useCallback(async () => {
     try {
-      const { addresses } = createOrRestoreWallet()
-      SettingsStore.setAddress(addresses[0])
+      const { eip155Addresses } = createOrRestoreEIP155Wallet()
+      SettingsStore.setAddress(eip155Addresses[0])
       await createWalletConnectClient()
       setInitialized(true)
     } catch (err: unknown) {

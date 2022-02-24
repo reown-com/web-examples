@@ -1,5 +1,5 @@
 import SettingsStore from '@/store/SettingsStore'
-import { addresses } from '@/utils/WalletUtil'
+import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { useSnapshot } from 'valtio'
 
 export default function AccountPicker() {
@@ -11,8 +11,8 @@ export default function AccountPicker() {
       onChange={e => SettingsStore.setAddress(e.currentTarget.value)}
       aria-label="addresses"
     >
-      <option value={addresses[0]}>Account 1</option>
-      <option value={addresses[1]}>Account 2</option>
+      <option value={eip155Addresses[0]}>Account 1</option>
+      <option value={eip155Addresses[1]}>Account 2</option>
     </select>
   )
 }

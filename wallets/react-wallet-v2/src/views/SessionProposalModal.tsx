@@ -1,7 +1,7 @@
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
+import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { addresses } from '@/utils/WalletUtil'
 import {
   Avatar,
   Button,
@@ -127,7 +127,7 @@ export default function SessionProposalModal() {
           <Row>
             <Col>
               <Text h5>Select Accounts to Connect</Text>
-              {addresses.map((address, index) => (
+              {eip155Addresses.map((address, index) => (
                 <Card
                   onClick={() => onSelectAddress(address)}
                   clickable
