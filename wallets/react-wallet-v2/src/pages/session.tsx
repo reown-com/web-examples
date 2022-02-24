@@ -35,7 +35,7 @@ export default function SessionPage() {
     return null
   }
 
-  const { name, url, icons, description } = session.peer.metadata
+  const { name, url, icons } = session.peer.metadata
 
   return (
     <Fragment>
@@ -52,8 +52,6 @@ export default function SessionPage() {
           </Link>
         </Col>
       </Row>
-
-      <Text css={{ color: '$accents4' }}>{description}</Text>
     </Fragment>
   )
 }

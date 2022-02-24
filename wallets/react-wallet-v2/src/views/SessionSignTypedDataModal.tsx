@@ -1,7 +1,7 @@
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
+import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { getSignTypedDataParamsData } from '@/utils/HelperUtil'
-import { approveEIP155Request, rejectEIP155Request } from '@/utils/RequestHandlerUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
