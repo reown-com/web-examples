@@ -6,6 +6,9 @@ export let eip155Addresses: string[]
 let wallet1: Wallet
 let wallet2: Wallet
 
+/**
+ * Utilities
+ */
 export function createOrRestoreEIP155Wallet() {
   const mnemonic = localStorage.getItem('WALLET_MNEMONIC')
 
