@@ -10,7 +10,7 @@ export default function useInitialization() {
   const onInitialize = useCallback(async () => {
     try {
       const { eip155Addresses } = createOrRestoreEIP155Wallet()
-      const { cosmosAddresses } = createOrRestoreCosmosWallet()
+      const { cosmosAddresses } = await createOrRestoreCosmosWallet()
       console.log(cosmosAddresses)
       SettingsStore.setAddress(eip155Addresses[0])
       await createWalletConnectClient()
