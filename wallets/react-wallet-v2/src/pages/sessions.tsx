@@ -2,20 +2,10 @@ import PageHeader from '@/components/PageHeader'
 import SessionCard from '@/components/SessionCard'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Text } from '@nextui-org/react'
-import { ERROR } from '@walletconnect/utils'
 import { Fragment, useState } from 'react'
 
 export default function SessionsPage() {
   const [sessions, setSessions] = useState(walletConnectClient.session.values)
-
-  async function onDelete(topic: string) {
-    await walletConnectClient.session.delete({
-      topic,
-      reason: ERROR.DELETED.format()
-    })
-    const newSessions = sessions.filter(sessions => sessions.topic !== topic)
-    setSessions(newSessions)
-  }
 
   return (
     <Fragment>
@@ -27,10 +17,10 @@ export default function SessionsPage() {
           return (
             <SessionCard
               key={session.topic}
+              topic={session.topic}
               name={name}
               logo={icons[0]}
               url={url}
-              onDelete={() => onDelete(session.topic)}
             />
           )
         })

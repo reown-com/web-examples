@@ -1,6 +1,7 @@
 import SettingsStore from '@/store/SettingsStore'
+import { createOrRestoreCosmosWallet } from '@/utils/CosmosWalletUtil'
+import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createWalletConnectClient } from '@/utils/WalletConnectUtil'
-import { createOrRestoreWallet } from '@/utils/WalletUtil'
 import { useCallback, useEffect, useState } from 'react'
 
 export default function useInitialization() {
@@ -8,9 +9,14 @@ export default function useInitialization() {
 
   const onInitialize = useCallback(async () => {
     try {
-      const { addresses } = createOrRestoreWallet()
-      SettingsStore.setAddress(addresses[0])
+      const { eip155Addresses } = createOrRestoreEIP155Wallet()
+      const { cosmosAddresses } = await createOrRestoreCosmosWallet()
+
+      SettingsStore.setEIP155Address(eip155Addresses[0])
+      SettingsStore.setCosmosAddress(cosmosAddresses[0])
+
       await createWalletConnectClient()
+
       setInitialized(true)
     } catch (err: unknown) {
       alert(err)

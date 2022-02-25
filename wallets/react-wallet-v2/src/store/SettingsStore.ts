@@ -5,7 +5,9 @@ import { proxy } from 'valtio'
  */
 interface State {
   testNets: boolean
-  address: string
+  account: number
+  eip155Address: string
+  cosmosAddress: string
 }
 
 /**
@@ -13,7 +15,9 @@ interface State {
  */
 const state = proxy<State>({
   testNets: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem('TEST_NETS')) : true,
-  address: ''
+  account: 0,
+  eip155Address: '',
+  cosmosAddress: ''
 })
 
 /**
@@ -22,8 +26,16 @@ const state = proxy<State>({
 const SettingsStore = {
   state,
 
-  setAddress(address: string) {
-    state.address = address
+  setAccount(value: number) {
+    state.account = value
+  },
+
+  setEIP155Address(eip155Address: string) {
+    state.eip155Address = eip155Address
+  },
+
+  setCosmosAddress(cosmosAddresses: string) {
+    state.cosmosAddress = cosmosAddresses
   },
 
   toggleTestNets() {

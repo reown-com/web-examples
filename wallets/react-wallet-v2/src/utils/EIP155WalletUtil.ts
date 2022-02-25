@@ -1,11 +1,15 @@
 import { Wallet } from 'ethers'
 
-export let wallets: Record<string, Wallet>
-export let addresses: string[]
-export let wallet1: Wallet
-export let wallet2: Wallet
+export let eip155Wallets: Record<string, Wallet>
+export let eip155Addresses: string[]
 
-export function createOrRestoreWallet() {
+let wallet1: Wallet
+let wallet2: Wallet
+
+/**
+ * Utilities
+ */
+export function createOrRestoreEIP155Wallet() {
   const mnemonic = localStorage.getItem('WALLET_MNEMONIC')
 
   if (mnemonic) {
@@ -18,14 +22,14 @@ export function createOrRestoreWallet() {
     localStorage.setItem('WALLET_MNEMONIC', wallet1.mnemonic.phrase)
   }
 
-  wallets = {
+  eip155Wallets = {
     [wallet1.address]: wallet1,
     [wallet2.address]: wallet2
   }
-  addresses = Object.keys(wallets)
+  eip155Addresses = Object.keys(eip155Wallets)
 
   return {
-    wallets,
-    addresses
+    eip155Wallets,
+    eip155Addresses
   }
 }

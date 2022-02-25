@@ -1,10 +1,10 @@
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
+import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import {
   getSignParamsMessage,
   getSignTypedDataParamsData,
   getWalletAddressFromParams
 } from '@/utils/HelperUtil'
-import { addresses, wallets } from '@/utils/WalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { RequestEvent } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
@@ -13,7 +13,7 @@ import { providers } from 'ethers'
 export async function approveEIP155Request(requestEvent: RequestEvent) {
   const { method, params, id } = requestEvent.request
   const { chainId } = requestEvent
-  const wallet = wallets[getWalletAddressFromParams(addresses, params)]
+  const wallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
 
   switch (method) {
     case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
