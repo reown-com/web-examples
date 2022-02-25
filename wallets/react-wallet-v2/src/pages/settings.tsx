@@ -6,7 +6,7 @@ import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 
 export default function SettingsPage() {
-  const { testNets, address } = useSnapshot(SettingsStore.state)
+  const { testNets, eip155Address } = useSnapshot(SettingsStore.state)
 
   return (
     <Fragment>
@@ -15,7 +15,7 @@ export default function SettingsPage() {
         Mnemonic
       </Text>
       <Card bordered borderWeight="light" css={{ minHeight: '75px' }}>
-        <Text css={{ fontFamily: '$mono' }}>{eip155Wallets[address].mnemonic.phrase}</Text>
+        <Text css={{ fontFamily: '$mono' }}>{eip155Wallets[eip155Address].mnemonic.phrase}</Text>
       </Card>
 
       <Text css={{ color: '$yellow500', marginTop: '$5', textAlign: 'center' }}>

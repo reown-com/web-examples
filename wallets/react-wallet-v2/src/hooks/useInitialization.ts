@@ -11,9 +11,12 @@ export default function useInitialization() {
     try {
       const { eip155Addresses } = createOrRestoreEIP155Wallet()
       const { cosmosAddresses } = await createOrRestoreCosmosWallet()
-      console.log(cosmosAddresses)
-      SettingsStore.setAddress(eip155Addresses[0])
+
+      SettingsStore.setEIP155Address(eip155Addresses[0])
+      SettingsStore.setCosmosAddress(cosmosAddresses[0])
+
       await createWalletConnectClient()
+
       setInitialized(true)
     } catch (err: unknown) {
       alert(err)
