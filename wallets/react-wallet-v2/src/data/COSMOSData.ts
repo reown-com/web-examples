@@ -1,4 +1,9 @@
 /**
+ * Types
+ */
+export type TCosmosChain = keyof typeof COSMOS_MAINNET_CHAINS
+
+/**
  * Chains
  */
 export const COSMOS_MAINNET_CHAINS = {

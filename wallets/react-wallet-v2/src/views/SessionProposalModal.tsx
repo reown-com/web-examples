@@ -1,3 +1,4 @@
+import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
@@ -98,7 +99,12 @@ export default function SessionProposalModal() {
               <Text h5>Blockchains</Text>
               <Text color="$gray400">
                 {chains
-                  .map(chain => EIP155_CHAINS[chain as TEIP155Chain]?.name ?? chain)
+                  .map(
+                    chain =>
+                      EIP155_CHAINS[chain as TEIP155Chain]?.name ??
+                      COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name ??
+                      chain
+                  )
                   .join(', ')}
               </Text>
             </Col>
