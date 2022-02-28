@@ -69,3 +69,11 @@ export function getWalletAddressFromParams(addresses: string[], params: any) {
 
   return address
 }
+
+export function isEIP155Chain(chain: string) {
+  return chain.includes('eip155')
+}
+
+export function isCosmosChain(chain: string) {
+  return chain.includes('cosmos')
+}
