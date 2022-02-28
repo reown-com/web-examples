@@ -18,24 +18,28 @@ interface IInitArguments {
  * Utility
  */
 export class Cosmos {
-  keyring: MnemonicKeyring
-  wallet: CosmosWallet
-  derivationPath: string
+  private keyring: MnemonicKeyring
+  private wallet: CosmosWallet
 
-  constructor(keyring: MnemonicKeyring, wallet: CosmosWallet, derivationPath: string) {
+  constructor(keyring: MnemonicKeyring, wallet: CosmosWallet) {
     this.wallet = wallet
     this.keyring = keyring
-    this.derivationPath = derivationPath
   }
 
   static async init({ mnemonic, path }: IInitArguments) {
     const keyring = await MnemonicKeyring.init({ mnemonic })
-    const derivationPath = path ?? DEFAULT_PATH
-    const wallet = await CosmosWallet.init(keyring.getPrivateKey(derivationPath))
-    return new Cosmos(keyring, wallet, derivationPath)
+    const wallet = await CosmosWallet.init(keyring.getPrivateKey(path ?? DEFAULT_PATH))
+
+    return new Cosmos(keyring, wallet)
   }
 
-  public getPublicKey() {
-    return this.keyring.getPublicKey(this.derivationPath)
+  public async getAccount(number = 0) {
+    const account = await this.wallet.getAccounts()
+
+    return account[number]
+  }
+
+  public getMnemonic() {
+    return this.keyring.mnemonic
   }
 }
