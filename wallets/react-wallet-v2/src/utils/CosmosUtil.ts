@@ -1,53 +1,41 @@
-import { bech32 } from 'bech32'
-import BIP32Factory from 'bip32'
-import * as bip39 from 'bip39'
-// @ts-expect-error
-import * as ecc from 'tiny-secp256k1'
+import CosmosWallet from 'cosmos-wallet'
+import MnemonicKeyring from 'mnemonic-keyring'
 
 /**
- * Helpers
+ * Constants
  */
-const bip32 = BIP32Factory(ecc)
+const DEFAULT_PATH = "m/44'/118'/0'/0/0"
 
 /**
  * Types
  */
-interface IConstructor {
-  url?: string
-  prefix?: string
-  chainId?: string
-  path?: string
+interface IInitArguments {
   mnemonic?: string
+  path?: string
 }
 
 /**
  * Utility
  */
 export class Cosmos {
-  url: string
-  prefix: string
-  chainId: string
-  path: string
-  mnemonic: string
+  keyring: MnemonicKeyring
+  wallet: CosmosWallet
+  derivationPath: string
 
-  constructor({ url, prefix, chainId, path, mnemonic }: IConstructor) {
-    this.url = url ?? 'https://api.cosmos.network'
-    this.prefix = prefix ?? 'cosmos'
-    this.chainId = chainId ?? 'cosmoshub-4'
-    this.path = path ?? "m/44'/118'/0'/0/0"
-    this.mnemonic = mnemonic ?? this.generateMnemonic()
+  constructor(keyring: MnemonicKeyring, wallet: CosmosWallet, derivationPath: string) {
+    this.wallet = wallet
+    this.keyring = keyring
+    this.derivationPath = derivationPath
   }
 
-  generateMnemonic(strength = 128) {
-    return bip39.generateMnemonic(strength)
+  static async init({ mnemonic, path }: IInitArguments) {
+    const keyring = await MnemonicKeyring.init({ mnemonic })
+    const derivationPath = path ?? DEFAULT_PATH
+    const wallet = await CosmosWallet.init(keyring.getPrivateKey(derivationPath))
+    return new Cosmos(keyring, wallet, derivationPath)
   }
 
-  async getAddress() {
-    const seed = await bip39.mnemonicToSeed(this.mnemonic)
-    const node = bip32.fromSeed(seed)
-    const child = node.derivePath(this.path)
-    const words = bech32.toWords(child.identifier)
-
-    return bech32.encode(this.prefix, words)
+  public getPublicKey() {
+    return this.keyring.getPublicKey(this.derivationPath)
   }
 }
