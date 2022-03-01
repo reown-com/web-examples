@@ -28,6 +28,14 @@ interface IFormattedRpcResponse {
   result: string;
 }
 
+interface CosmosRpcResponse {
+  pub_key: {
+    type: string;
+    value: string;
+  };
+  signature: string;
+}
+
 export default function App() {
   const [isRpcRequestPending, setIsRpcRequestPending] = useState(false);
   const [rpcResult, setRpcResult] = useState<IFormattedRpcResponse | null>();
@@ -97,11 +105,6 @@ export default function App() {
         "0a500a460a1f2f636f736d6f732e63727970746f2e736563703235366b312e5075624b657912230a21034f04181eeba35391b858633a765c4a0c189697b40d216354d50890d350c7029012040a020801180112130a0d0a0575636f736d12043230303010c09a0c",
     };
 
-    // split chainId
-    // const [namespace, reference] = chainId.split(":");
-
-    // const reference = await web3Provider.getNetwork();
-
     // format sign doc
     const signDoc = formatDirectSignDoc(
       inputs.fee,
@@ -121,16 +124,16 @@ export default function App() {
       signDoc: stringifySignDocValues(signDoc),
     };
 
-    const signature = (await cosmosProvider.request({
+    const result = await cosmosProvider.request<CosmosRpcResponse>({
       method: "cosmos_signDirect",
       params,
-    })) as string;
-    // const valid = utils.verifyMessage(msg, signature) === address;
+    });
+
     return {
       method: "cosmos_signDirect",
       address,
       valid: true,
-      result: signature,
+      result: result.signature,
     };
   };
 
@@ -154,16 +157,16 @@ export default function App() {
     // cosmos_signAmino params
     const params = { signerAddress: address, signDoc };
 
-    const signature = (await cosmosProvider.request({
+    const result = await cosmosProvider.request<CosmosRpcResponse>({
       method: "cosmos_signAmino",
       params,
-    })) as string;
-    // const valid = utils.verifyMessage(msg, signature) === address;
+    });
+
     return {
       method: "cosmos_signAmino",
       address,
       valid: true,
-      result: signature,
+      result: result.signature,
     };
   };
 
