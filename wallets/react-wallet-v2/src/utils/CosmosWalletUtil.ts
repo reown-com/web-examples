@@ -15,17 +15,21 @@ export async function createOrRestoreCosmosWallet() {
   const mnemonic = localStorage.getItem('WALLET_MNEMONIC')
 
   if (mnemonic) {
-    wallet1 = new Cosmos({ mnemonic, path: "m/44'/118'/0'/0/0" })
-    wallet2 = new Cosmos({ mnemonic, path: "m/44'/118'/0'/0/1" })
-    address1 = await wallet1.getAddress()
-    address2 = await wallet2.getAddress()
+    wallet1 = await Cosmos.init({ mnemonic, path: "m/44'/118'/0'/0/0" })
+    wallet2 = await Cosmos.init({ mnemonic, path: "m/44'/118'/0'/0/1" })
+    const account1 = await wallet1.getAccount()
+    const account2 = await wallet2.getAccount()
+    address1 = account1.address
+    address2 = account2.address
   } else {
-    wallet1 = new Cosmos({ path: "m/44'/118'/0'/0/0" })
-    const mnemonic = wallet1.mnemonic
+    wallet1 = await Cosmos.init({ path: "m/44'/118'/0'/0/0" })
+    const mnemonic = wallet1.getMnemonic()
     // We can reuse same mnemonic for both wallets
-    wallet2 = new Cosmos({ mnemonic, path: "m/44'/118'/0'/0/1" })
-    address1 = await wallet1.getAddress()
-    address2 = await wallet2.getAddress()
+    wallet2 = await Cosmos.init({ mnemonic, path: "m/44'/118'/0'/0/1" })
+    const account1 = await wallet1.getAccount()
+    const account2 = await wallet2.getAccount()
+    address1 = account1.address
+    address2 = account2.address
     // Don't store mnemonic in local storage in a production project!
     localStorage.setItem('WALLET_MNEMONIC', mnemonic)
   }

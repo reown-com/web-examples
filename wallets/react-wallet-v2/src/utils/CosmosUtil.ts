@@ -1,53 +1,70 @@
-import { bech32 } from 'bech32'
-import BIP32Factory from 'bip32'
-import * as bip39 from 'bip39'
+import { Secp256k1Wallet, StdSignDoc } from '@cosmjs/amino'
+import { fromHex } from '@cosmjs/encoding'
+import { DirectSecp256k1Wallet, makeSignBytes } from '@cosmjs/proto-signing'
 // @ts-expect-error
-import * as ecc from 'tiny-secp256k1'
+import { SignDoc } from '@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx'
+import MnemonicKeyring from 'mnemonic-keyring'
 
 /**
- * Helpers
+ * Constants
  */
-const bip32 = BIP32Factory(ecc)
+const DEFAULT_PATH = "m/44'/118'/0'/0/0"
 
 /**
  * Types
  */
-interface IConstructor {
-  url?: string
-  prefix?: string
-  chainId?: string
-  path?: string
+interface IInitArguments {
   mnemonic?: string
+  path?: string
+  prefix?: string
 }
 
 /**
  * Utility
  */
 export class Cosmos {
-  url: string
-  prefix: string
-  chainId: string
-  path: string
-  mnemonic: string
+  private keyring: MnemonicKeyring
+  private directSigner: DirectSecp256k1Wallet
+  private aminoSigner: Secp256k1Wallet
 
-  constructor({ url, prefix, chainId, path, mnemonic }: IConstructor) {
-    this.url = url ?? 'https://api.cosmos.network'
-    this.prefix = prefix ?? 'cosmos'
-    this.chainId = chainId ?? 'cosmoshub-4'
-    this.path = path ?? "m/44'/118'/0'/0/0"
-    this.mnemonic = mnemonic ?? this.generateMnemonic()
+  constructor(
+    keyring: MnemonicKeyring,
+    directSigner: DirectSecp256k1Wallet,
+    aminoSigner: Secp256k1Wallet
+  ) {
+    this.directSigner = directSigner
+    this.keyring = keyring
+    this.aminoSigner = aminoSigner
   }
 
-  generateMnemonic(strength = 128) {
-    return bip39.generateMnemonic(strength)
+  static async init({ mnemonic, path, prefix }: IInitArguments) {
+    const keyring = await MnemonicKeyring.init({ mnemonic })
+    const privateKey = fromHex(keyring.getPrivateKey(path ?? DEFAULT_PATH))
+    const chainPrefix = prefix ?? 'cosmos'
+    const directSigner = await DirectSecp256k1Wallet.fromKey(privateKey, chainPrefix)
+    const aminoSigner = await Secp256k1Wallet.fromKey(privateKey, chainPrefix)
+
+    return new Cosmos(keyring, directSigner, aminoSigner)
   }
 
-  async getAddress() {
-    const seed = await bip39.mnemonicToSeed(this.mnemonic)
-    const node = bip32.fromSeed(seed)
-    const child = node.derivePath(this.path)
-    const words = bech32.toWords(child.identifier)
+  public async getAccount(number = 0) {
+    const account = await this.directSigner.getAccounts()
 
-    return bech32.encode(this.prefix, words)
+    return account[number]
+  }
+
+  public getMnemonic() {
+    return this.keyring.mnemonic
+  }
+
+  public async signDirect(address: string, signDoc: SignDoc) {
+    console.log(signDoc)
+    const signDocBytes = makeSignBytes(signDoc)
+    // @ts-expect-error
+    return await this.directSigner.signDirect(address, signDocBytes)
+  }
+
+  public async signAmino(address: string, signDoc: StdSignDoc) {
+    return await this.aminoSigner.signAmino(address, signDoc)
   }
 }
