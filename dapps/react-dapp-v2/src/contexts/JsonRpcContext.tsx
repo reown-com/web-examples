@@ -414,7 +414,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         method: "cosmos_signDirect",
         address,
         valid,
-        result: result.signature.signature,
+        result: result.signature,
       };
     }),
     testSignAmino: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
@@ -458,7 +458,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         method: "cosmos_signAmino",
         address,
         valid,
-        result: result.signature.signature,
+        result: result.signature,
       };
     }),
   };
