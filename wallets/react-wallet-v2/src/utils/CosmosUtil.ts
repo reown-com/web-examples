@@ -1,4 +1,4 @@
-import { Secp256k1Wallet } from '@cosmjs/amino'
+import { Secp256k1Wallet, StdSignDoc } from '@cosmjs/amino'
 import { fromHex } from '@cosmjs/encoding'
 import { DirectSecp256k1Wallet, makeSignBytes } from '@cosmjs/proto-signing'
 // @ts-expect-error
@@ -64,7 +64,7 @@ export class Cosmos {
     return await this.directSigner.signDirect(address, signDocBytes)
   }
 
-  public async signAmino(address: string, signDoc: SignDoc) {
+  public async signAmino(address: string, signDoc: StdSignDoc) {
     return await this.aminoSigner.signAmino(address, signDoc)
   }
 }
