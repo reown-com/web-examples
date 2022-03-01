@@ -22,9 +22,9 @@ import {
 import { useWalletConnectClient } from "./contexts/ClientContext";
 
 interface IFormattedRpcResponse {
-  method: string;
-  address: string;
-  valid: boolean;
+  method?: string;
+  address?: string;
+  valid?: boolean;
   result: string;
 }
 
@@ -179,6 +179,7 @@ export default function App() {
         setRpcResult(result);
       } catch (error) {
         console.error("RPC request failed:", error);
+        setRpcResult({ result: error as string });
       } finally {
         setIsRpcRequestPending(false);
       }
