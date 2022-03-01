@@ -70,10 +70,16 @@ export function getWalletAddressFromParams(addresses: string[], params: any) {
   return address
 }
 
+/**
+ * Check if chain is part of EIP155 standard
+ */
 export function isEIP155Chain(chain: string) {
   return chain.includes('eip155')
 }
 
+/**
+ * Check if chain is part of COSMOS standard
+ */
 export function isCosmosChain(chain: string) {
   return chain.includes('cosmos')
 }

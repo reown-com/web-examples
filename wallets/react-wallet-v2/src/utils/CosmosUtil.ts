@@ -1,3 +1,5 @@
+// @ts-expect-error
+import { SignDoc } from '@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx'
 import CosmosWallet from 'cosmos-wallet'
 import MnemonicKeyring from 'mnemonic-keyring'
 
@@ -41,5 +43,13 @@ export class Cosmos {
 
   public getMnemonic() {
     return this.keyring.mnemonic
+  }
+
+  public signDirect(address: string, signDoc: SignDoc) {
+    return this.wallet.signDirect(address, signDoc)
+  }
+
+  public signAmino(address: string, signDoc: SignDoc) {
+    return this.wallet.signAmino(address, signDoc)
   }
 }
