@@ -4,6 +4,7 @@ import { approveCosmosRequest, rejectCosmosRequest } from '@/utils/CosmosRequest
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
+import { CodeBlock, codepen } from 'react-code-blocks'
 
 export default function SessionSignCosmosModal() {
   // Get request and wallet data from store
@@ -78,17 +79,13 @@ export default function SessionSignCosmosModal() {
 
           <Row>
             <Col>
-              <Text h5>Message</Text>
-              <Text color="$gray400">{JSON.stringify(params.signDoc.msgs) ?? 'No Message'}</Text>
-            </Col>
-          </Row>
-
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Memo</Text>
-              <Text color="$gray400">{JSON.stringify(params.signDoc.memo)}</Text>
+              <Text h5>Data</Text>
+              <CodeBlock
+                showLineNumbers={false}
+                text={JSON.stringify(params, null, 2)}
+                theme={codepen}
+                language="json"
+              />
             </Col>
           </Row>
 
