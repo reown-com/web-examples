@@ -69,7 +69,7 @@ export default function SessionProposalModal() {
             accounts.push(`${chain}:${address}`)
           })
         } else if (isCosmosChain(chain)) {
-          cosmosAddresses.forEach(address => {
+          selectedCosmos.forEach(address => {
             accounts.push(`${chain}:${address}`)
           })
         }
