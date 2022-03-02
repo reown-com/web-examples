@@ -1,23 +1,12 @@
+import AccountSelectCard from '@/components/AccountSelectCard'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { isCosmosChain, isEIP155Chain, truncate } from '@/utils/HelperUtil'
+import { isCosmosChain, isEIP155Chain } from '@/utils/HelperUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import {
-  Avatar,
-  Button,
-  Card,
-  Checkbox,
-  Col,
-  Container,
-  Divider,
-  Link,
-  Modal,
-  Row,
-  Text
-} from '@nextui-org/react'
+import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
 export default function SessionProposalModal() {
@@ -157,27 +146,13 @@ export default function SessionProposalModal() {
                     <Col>
                       <Text h5>Select EIP155 Accounts</Text>
                       {eip155Addresses.map((address, index) => (
-                        <Card
-                          onClick={() => onSelectEIP155(address)}
-                          clickable
+                        <AccountSelectCard
                           key={address}
-                          css={{
-                            marginTop: '$5',
-                            backgroundColor: selectedEIP155.includes(address)
-                              ? 'rgba(23, 200, 100, 0.2)'
-                              : '$accents2'
-                          }}
-                        >
-                          <Row justify="space-between" align="center">
-                            <Checkbox
-                              size="lg"
-                              color="success"
-                              checked={selectedEIP155.includes(address)}
-                            />
-
-                            <Text>{`${truncate(address, 14)} - Account ${index + 1}`} </Text>
-                          </Row>
-                        </Card>
+                          address={address}
+                          index={index}
+                          onSelect={() => onSelectEIP155(address)}
+                          selected={selectedEIP155.includes(address)}
+                        />
                       ))}
                     </Col>
                   </Row>
@@ -192,27 +167,13 @@ export default function SessionProposalModal() {
                     <Col>
                       <Text h5>Select Cosmos Accounts</Text>
                       {cosmosAddresses.map((address, index) => (
-                        <Card
-                          onClick={() => onSelectCosmos(address)}
-                          clickable
+                        <AccountSelectCard
                           key={address}
-                          css={{
-                            marginTop: '$5',
-                            backgroundColor: selectedCosmos.includes(address)
-                              ? 'rgba(23, 200, 100, 0.2)'
-                              : '$accents2'
-                          }}
-                        >
-                          <Row justify="space-between" align="center">
-                            <Checkbox
-                              size="lg"
-                              color="success"
-                              checked={selectedCosmos.includes(address)}
-                            />
-
-                            <Text>{`${truncate(address, 14)} - Account ${index + 1}`} </Text>
-                          </Row>
-                        </Card>
+                          address={address}
+                          index={index}
+                          onSelect={() => onSelectCosmos(address)}
+                          selected={selectedCosmos.includes(address)}
+                        />
                       ))}
                     </Col>
                   </Row>
