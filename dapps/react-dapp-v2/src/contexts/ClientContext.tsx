@@ -173,34 +173,36 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     });
   }, [client, session]);
 
-  const _subscribeToEvents = useCallback(async (_client: Client) => {
-    if (typeof _client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
+  const _subscribeToEvents = useCallback(
+    async (_client: Client) => {
+      if (typeof _client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
 
-    _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
-      const { uri } = proposal.signal.params;
-      console.log("EVENT", "QR Code Modal open");
-      QRCodeModal.open(uri, () => {
-        console.log("EVENT", "QR Code Modal closed");
+      _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
+        const { uri } = proposal.signal.params;
+        console.log("EVENT", "QR Code Modal open");
+        QRCodeModal.open(uri, () => {
+          console.log("EVENT", "QR Code Modal closed");
+        });
       });
-    });
 
-    _client.on(CLIENT_EVENTS.pairing.created, async () => {
-      setPairings(_client.pairing.topics);
-    });
+      _client.on(CLIENT_EVENTS.pairing.created, async () => {
+        setPairings(_client.pairing.topics);
+      });
 
-    _client.on(CLIENT_EVENTS.session.updated, (updatedSession: SessionTypes.Settled) => {
-      console.log("EVENT", "session_updated");
-      setChains(updatedSession.permissions.blockchain.chains);
-      setAccounts(updatedSession.state.accounts);
-    });
+      _client.on(CLIENT_EVENTS.session.updated, (updatedSession: SessionTypes.Settled) => {
+        console.log("EVENT", "session_updated");
+        onSessionConnected(updatedSession);
+      });
 
-    _client.on(CLIENT_EVENTS.session.deleted, () => {
-      console.log("EVENT", "session_deleted");
-      resetApp();
-    });
-  }, []);
+      _client.on(CLIENT_EVENTS.session.deleted, () => {
+        console.log("EVENT", "session_deleted");
+        resetApp();
+      });
+    },
+    [onSessionConnected],
+  );
 
   const _checkPersistedState = useCallback(
     async (_client: Client) => {
