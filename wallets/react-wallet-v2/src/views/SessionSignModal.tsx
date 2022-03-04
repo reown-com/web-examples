@@ -1,10 +1,12 @@
 import ProjectInfoCard from '@/components/ProjectInfoCard'
-import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import RequesDetailsCard from '@/components/RequestDetalilsCard'
+import RequestMethodCard from '@/components/RequestMethodCard'
+import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { getSignParamsMessage } from '@/utils/HelperUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { Button, Col, Container, Divider, Modal, Row, Text } from '@nextui-org/react'
+import { Button, Col, Divider, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
 export default function SessionSignModal() {
@@ -18,9 +20,7 @@ export default function SessionSignModal() {
   }
 
   // Get required request data
-  const { chainId } = requestEvent
   const { method, params } = requestEvent.request
-  const { protocol } = requestSession.relay
 
   // Get message, convert it to UTF8 string if it is valid hex
   const message = getSignParamsMessage(params)
@@ -51,53 +51,29 @@ export default function SessionSignModal() {
 
   return (
     <Fragment>
-      <Modal.Header>
-        <Text h3>Sign Message</Text>
-      </Modal.Header>
+      <RequestModalContainer title="Sign Message">
+        <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
-      <Modal.Body>
-        <Container css={{ padding: 0 }}>
-          <ProjectInfoCard metadata={requestSession.peer.metadata} />
+        <Divider y={2} />
 
-          <Divider y={2} />
+        <RequesDetailsCard
+          chains={[requestEvent.chainId ?? '']}
+          protocol={requestSession.relay.protocol}
+        />
 
-          <Row>
-            <Col>
-              <Text h5>Blockchain</Text>
-              <Text color="$gray400">
-                {EIP155_CHAINS[chainId as TEIP155Chain]?.name ?? chainId}
-              </Text>
-            </Col>
-          </Row>
+        <Divider y={2} />
 
-          <Divider y={2} />
+        <Row>
+          <Col>
+            <Text h5>Message</Text>
+            <Text color="$gray400">{message}</Text>
+          </Col>
+        </Row>
 
-          <Row>
-            <Col>
-              <Text h5>Message</Text>
-              <Text color="$gray400">{message}</Text>
-            </Col>
-          </Row>
+        <Divider y={2} />
 
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Method</Text>
-              <Text color="$gray400">{method}</Text>
-            </Col>
-          </Row>
-
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Relay Protocol</Text>
-              <Text color="$gray400">{protocol}</Text>
-            </Col>
-          </Row>
-        </Container>
-      </Modal.Body>
+        <RequestMethodCard methods={[method]} />
+      </RequestModalContainer>
 
       <Modal.Footer>
         <Button auto flat color="error" onClick={onReject}>

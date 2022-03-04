@@ -1,13 +1,14 @@
 import AccountSelectCard from '@/components/AccountSelectCard'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
-import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
-import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import RequesDetailsCard from '@/components/RequestDetalilsCard'
+import RequestMethodCard from '@/components/RequestMethodCard'
+import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { isCosmosChain, isEIP155Chain } from '@/utils/HelperUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { Button, Col, Container, Divider, Modal, Row, Text } from '@nextui-org/react'
+import { Button, Col, Divider, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
 export default function SessionProposalModal() {
@@ -26,7 +27,6 @@ export default function SessionProposalModal() {
   const { proposer, permissions, relay } = proposal
   const { chains } = permissions.blockchain
   const { methods } = permissions.jsonrpc
-  const { protocol } = relay
 
   // Add / remove address from EIP155 selection
   function onSelectEIP155(address: string) {
@@ -84,97 +84,61 @@ export default function SessionProposalModal() {
 
   return (
     <Fragment>
-      <Modal.Header>
-        <Text h3>Session Proposal</Text>
-      </Modal.Header>
+      <RequestModalContainer title="Session Proposal">
+        <ProjectInfoCard metadata={proposer.metadata} />
 
-      <Modal.Body>
-        <Container css={{ padding: 0 }}>
-          <ProjectInfoCard metadata={proposer.metadata} />
+        <Divider y={2} />
 
-          <Divider y={2} />
+        <RequesDetailsCard chains={chains} protocol={relay.protocol} />
 
-          <Row>
-            <Col>
-              <Text h5>Blockchains</Text>
-              <Text color="$gray400">
-                {chains
-                  .map(
-                    chain =>
-                      EIP155_CHAINS[chain as TEIP155Chain]?.name ??
-                      COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name ??
-                      chain
-                  )
-                  .join(', ')}
-              </Text>
-            </Col>
-          </Row>
+        <Divider y={2} />
 
-          <Divider y={2} />
+        <RequestMethodCard methods={methods} />
 
-          <Row>
-            <Col>
-              <Text h5>Methods</Text>
-              <Text color="$gray400">{methods.map(method => method).join(', ')}</Text>
-            </Col>
-          </Row>
+        <Divider y={2} />
 
-          <Divider y={2} />
+        {chains.map(chain => {
+          if (isEIP155Chain(chain)) {
+            return (
+              <Row>
+                <Col>
+                  <Text h5>Select EIP155 Accounts</Text>
+                  {eip155Addresses.map((address, index) => (
+                    <AccountSelectCard
+                      key={address}
+                      address={address}
+                      index={index}
+                      onSelect={() => onSelectEIP155(address)}
+                      selected={selectedEIP155.includes(address)}
+                    />
+                  ))}
+                </Col>
+              </Row>
+            )
+          } else if (isCosmosChain(chain)) {
+            return (
+              <Fragment>
+                <Divider y={2} />
 
-          <Row>
-            <Col>
-              <Text h5>Relay Protocol</Text>
-              <Text color="$gray400">{protocol}</Text>
-            </Col>
-          </Row>
-
-          {chains.map(chain => {
-            if (isEIP155Chain(chain)) {
-              return (
-                <Fragment>
-                  <Divider y={2} />
-
-                  <Row>
-                    <Col>
-                      <Text h5>Select EIP155 Accounts</Text>
-                      {eip155Addresses.map((address, index) => (
-                        <AccountSelectCard
-                          key={address}
-                          address={address}
-                          index={index}
-                          onSelect={() => onSelectEIP155(address)}
-                          selected={selectedEIP155.includes(address)}
-                        />
-                      ))}
-                    </Col>
-                  </Row>
-                </Fragment>
-              )
-            } else if (isCosmosChain(chain)) {
-              return (
-                <Fragment>
-                  <Divider y={2} />
-
-                  <Row>
-                    <Col>
-                      <Text h5>Select Cosmos Accounts</Text>
-                      {cosmosAddresses.map((address, index) => (
-                        <AccountSelectCard
-                          key={address}
-                          address={address}
-                          index={index}
-                          onSelect={() => onSelectCosmos(address)}
-                          selected={selectedCosmos.includes(address)}
-                        />
-                      ))}
-                    </Col>
-                  </Row>
-                </Fragment>
-              )
-            }
-          })}
-        </Container>
-      </Modal.Body>
+                <Row>
+                  <Col>
+                    <Text h5>Select Cosmos Accounts</Text>
+                    {cosmosAddresses.map((address, index) => (
+                      <AccountSelectCard
+                        key={address}
+                        address={address}
+                        index={index}
+                        onSelect={() => onSelectCosmos(address)}
+                        selected={selectedCosmos.includes(address)}
+                      />
+                    ))}
+                  </Col>
+                </Row>
+              </Fragment>
+            )
+          }
+        })}
+      </RequestModalContainer>
 
       <Modal.Footer>
         <Button auto flat color="error" onClick={onReject}>

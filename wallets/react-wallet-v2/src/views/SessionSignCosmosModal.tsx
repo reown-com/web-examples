@@ -1,10 +1,12 @@
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
-import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
+import RequesDetailsCard from '@/components/RequestDetalilsCard'
+import RequestMethodCard from '@/components/RequestMethodCard'
+import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveCosmosRequest, rejectCosmosRequest } from '@/utils/CosmosRequestHandler'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { Button, Col, Container, Divider, Modal, Row, Text } from '@nextui-org/react'
+import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
 export default function SessionSignCosmosModal() {
@@ -18,9 +20,7 @@ export default function SessionSignCosmosModal() {
   }
 
   // Get required request data
-  const { chainId } = requestEvent
   const { method, params } = requestEvent.request
-  const { protocol } = requestSession.relay
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
@@ -48,48 +48,24 @@ export default function SessionSignCosmosModal() {
 
   return (
     <Fragment>
-      <Modal.Header>
-        <Text h3>Sign Message</Text>
-      </Modal.Header>
+      <RequestModalContainer title="Sign Message">
+        <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
-      <Modal.Body>
-        <Container css={{ padding: 0 }}>
-          <ProjectInfoCard metadata={requestSession.peer.metadata} />
+        <Divider y={2} />
 
-          <Divider y={2} />
+        <RequesDetailsCard
+          chains={[requestEvent.chainId ?? '']}
+          protocol={requestSession.relay.protocol}
+        />
 
-          <Row>
-            <Col>
-              <Text h5>Blockchain</Text>
-              <Text color="$gray400">
-                {COSMOS_MAINNET_CHAINS[chainId as TCosmosChain]?.name ?? chainId}
-              </Text>
-            </Col>
-          </Row>
+        <Divider y={2} />
 
-          <Divider y={2} />
+        <RequestDataCard data={params} />
 
-          <RequestDataCard data={params} />
+        <Divider y={2} />
 
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Method</Text>
-              <Text color="$gray400">{method}</Text>
-            </Col>
-          </Row>
-
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Relay Protocol</Text>
-              <Text color="$gray400">{protocol}</Text>
-            </Col>
-          </Row>
-        </Container>
-      </Modal.Body>
+        <RequestMethodCard methods={[method]} />
+      </RequestModalContainer>
 
       <Modal.Footer>
         <Button auto flat color="error" onClick={onReject}>

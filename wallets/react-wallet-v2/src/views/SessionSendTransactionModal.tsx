@@ -1,10 +1,12 @@
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
-import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import RequesDetailsCard from '@/components/RequestDetalilsCard'
+import RequestMethodCard from '@/components/RequestMethodCard'
+import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { Button, Col, Container, Divider, Loading, Modal, Row, Text } from '@nextui-org/react'
+import { Button, Divider, Loading, Modal, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
 export default function SessionSendTransactionModal() {
@@ -20,9 +22,8 @@ export default function SessionSendTransactionModal() {
   }
 
   // Get required proposal data
-  const { chainId } = requestEvent
+
   const { method, params } = requestEvent.request
-  const { protocol } = requestSession.relay
   const transaction = params[0]
 
   // Handle approve action
@@ -52,48 +53,24 @@ export default function SessionSendTransactionModal() {
 
   return (
     <Fragment>
-      <Modal.Header>
-        <Text h3>Send / Sign Transaction</Text>
-      </Modal.Header>
+      <RequestModalContainer title="Send / Sign Transaction">
+        <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
-      <Modal.Body>
-        <Container css={{ padding: 0 }}>
-          <ProjectInfoCard metadata={requestSession.peer.metadata} />
+        <Divider y={2} />
 
-          <Divider y={2} />
+        <RequestDataCard data={transaction} />
 
-          <RequestDataCard data={transaction} />
+        <Divider y={2} />
 
-          <Divider y={2} />
+        <RequesDetailsCard
+          chains={[requestEvent.chainId ?? '']}
+          protocol={requestSession.relay.protocol}
+        />
 
-          <Row>
-            <Col>
-              <Text h5>Blockchain</Text>
-              <Text color="$gray400">
-                {EIP155_CHAINS[chainId as TEIP155Chain]?.name ?? chainId}
-              </Text>
-            </Col>
-          </Row>
+        <Divider y={2} />
 
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Method</Text>
-              <Text color="$gray400">{method}</Text>
-            </Col>
-          </Row>
-
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Relay Protocol</Text>
-              <Text color="$gray400">{protocol}</Text>
-            </Col>
-          </Row>
-        </Container>
-      </Modal.Body>
+        <RequestMethodCard methods={[method]} />
+      </RequestModalContainer>
 
       <Modal.Footer>
         <Button auto flat color="error" onClick={onReject} disabled={loading}>
