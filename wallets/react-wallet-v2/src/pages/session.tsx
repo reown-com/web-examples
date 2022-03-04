@@ -1,6 +1,8 @@
 import AccountSelectCard from '@/components/AccountSelectCard'
 import PageHeader from '@/components/PageHeader'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
+import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
+import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { isCosmosChain, isEIP155Chain } from '@/utils/HelperUtil'
@@ -74,15 +76,15 @@ export default function SessionPage() {
 
       <ProjectInfoCard metadata={session.peer.metadata} />
 
-      <Divider y={2} />
-
       {chains.map(chain => {
         if (isEIP155Chain(chain)) {
           return (
             <Fragment key={chain}>
+              <Divider y={2} />
+
               <Row>
                 <Col>
-                  <Text h5>EIP155 Accounts</Text>
+                  <Text h5>{`${EIP155_CHAINS[chain as TEIP155Chain].name} Accounts`}</Text>
                   {eip155Addresses.map((address, index) => {
                     const fullAddress = `${chain}:${address}`
                     const selected = accounts.includes(fullAddress)
@@ -106,11 +108,11 @@ export default function SessionPage() {
         } else if (isCosmosChain(chain)) {
           return (
             <Fragment key={chain}>
-              <Divider y={1} />
+              <Divider y={2} />
 
               <Row>
                 <Col>
-                  <Text h5>Cosmos Accounts</Text>
+                  <Text h5>{`${COSMOS_MAINNET_CHAINS[chain as TCosmosChain].name} Accounts`}</Text>
                   {cosmosAddresses.map((address, index) => {
                     const fullAddress = `${chain}:${address}`
                     const selected = accounts.includes(fullAddress)
