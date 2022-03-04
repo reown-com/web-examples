@@ -4,8 +4,8 @@ This example aims to demonstrate basic and advanced use cases enabled by WalletC
 
 # Useful links
 
-🔗 Live wallet app - https://react-wallet-v2.vercel.app <br />
-🔗 Live dapp - https://react-dapp-v2.vercel.app <br />
+🔗 Live wallet app - https://react-wallet.walletconnect.com <br />
+🔗 Live dapp - https://react-app.walletconnect.com <br />
 📚 WalletConnect docs - https://docs.walletconnect.com/2.0
 
 ## Getting started
