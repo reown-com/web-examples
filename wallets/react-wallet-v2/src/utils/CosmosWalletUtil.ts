@@ -1,4 +1,4 @@
-import { Cosmos } from '@/utils/CosmosUtil'
+import { Cosmos } from '@/lib/Cosmos'
 
 export let wallet1: Cosmos
 export let wallet2: Cosmos

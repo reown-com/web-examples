@@ -1,9 +1,10 @@
+import ProjectInfoCard from '@/components/ProjectInfoCard'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { getSignTypedDataParamsData } from '@/utils/HelperUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
+import { Button, Col, Container, Divider, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { CodeBlock, codepen } from 'react-code-blocks'
 
@@ -21,7 +22,6 @@ export default function SessionSignTypedDataModal() {
   const { chainId } = requestEvent
   const { method, params } = requestEvent.request
   const { protocol } = requestSession.relay
-  const { name, icons, url } = requestSession.peer.metadata
 
   // Get data
   const data = getSignTypedDataParamsData(params)
@@ -58,17 +58,7 @@ export default function SessionSignTypedDataModal() {
 
       <Modal.Body>
         <Container css={{ padding: 0 }}>
-          <Row align="center">
-            <Col span={3}>
-              <Avatar src={icons[0]} />
-            </Col>
-            <Col span={14}>
-              <Text h5>{name}</Text>
-              <Link href={url}>{url}</Link>
-            </Col>
-          </Row>
-
-          <Divider y={2} />
+          <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
           <Row>
             <Col>

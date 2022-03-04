@@ -1,4 +1,5 @@
 import AccountSelectCard from '@/components/AccountSelectCard'
+import ProjectInfoCard from '@/components/ProjectInfoCard'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
@@ -6,7 +7,7 @@ import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { isCosmosChain, isEIP155Chain } from '@/utils/HelperUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
+import { Button, Col, Container, Divider, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
 export default function SessionProposalModal() {
@@ -23,7 +24,6 @@ export default function SessionProposalModal() {
 
   // Get required proposal data
   const { proposer, permissions, relay } = proposal
-  const { icons, name, url } = proposer.metadata
   const { chains } = permissions.blockchain
   const { methods } = permissions.jsonrpc
   const { protocol } = relay
@@ -90,17 +90,7 @@ export default function SessionProposalModal() {
 
       <Modal.Body>
         <Container css={{ padding: 0 }}>
-          <Row align="center">
-            <Col span={3}>
-              <Avatar src={icons[0]} />
-            </Col>
-            <Col span={14}>
-              <Text h5>{name}</Text>
-              <Link href={url}>{url}</Link>
-            </Col>
-          </Row>
-
-          <Divider y={2} />
+          <ProjectInfoCard metadata={proposer.metadata} />
 
           <Row>
             <Col>

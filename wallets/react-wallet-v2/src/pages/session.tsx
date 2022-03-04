@@ -1,10 +1,11 @@
 import AccountSelectCard from '@/components/AccountSelectCard'
 import PageHeader from '@/components/PageHeader'
+import ProjectInfoCard from '@/components/ProjectInfoCard'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { isCosmosChain, isEIP155Chain, truncate } from '@/utils/HelperUtil'
+import { isCosmosChain, isEIP155Chain } from '@/utils/HelperUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { Avatar, Button, Col, Divider, Link, Row, Text } from '@nextui-org/react'
+import { Button, Col, Divider, Row, Text } from '@nextui-org/react'
 import { ERROR } from '@walletconnect/utils'
 import { useRouter } from 'next/router'
 import { Fragment, useEffect, useState } from 'react'
@@ -30,7 +31,6 @@ export default function SessionPage() {
   }
 
   // Get necessary data from session
-  const { name, url, icons } = session.peer.metadata
   const expiryDate = new Date(session.expiry * 1000)
   const { chains } = session.permissions.blockchain
   const { methods } = session.permissions.jsonrpc
@@ -72,24 +72,12 @@ export default function SessionPage() {
     <Fragment>
       <PageHeader title="Session Details" />
 
-      <Row align="center">
-        <Col css={{ flex: 1 }}>
-          <Avatar size="xl" src={icons[0]} />
-        </Col>
-        <Col css={{ marginLeft: '$5' }}>
-          <Text h5>{name}</Text>
-          <Link css={{ marginLeft: '$5' }} href={url}>
-            {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
-          </Link>
-        </Col>
-      </Row>
+      <ProjectInfoCard metadata={session.peer.metadata} />
 
       {chains.map(chain => {
         if (isEIP155Chain(chain)) {
           return (
             <Fragment key={chain}>
-              <Divider y={1} />
-
               <Row>
                 <Col>
                   <Text h5>EIP155 Accounts</Text>
