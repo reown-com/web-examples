@@ -3,6 +3,8 @@ import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
+import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
+import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
@@ -51,19 +53,7 @@ export default function SessionProposalModal() {
   // Hanlde approve action
   async function onApprove() {
     if (proposal) {
-      const accounts: string[] = []
-      chains.forEach(chain => {
-        if (isEIP155Chain(chain)) {
-          selectedEIP155.forEach(address => {
-            accounts.push(`${chain}:${address}`)
-          })
-        } else if (isCosmosChain(chain)) {
-          selectedCosmos.forEach(address => {
-            accounts.push(`${chain}:${address}`)
-          })
-        }
-      })
-
+      const accounts = [...selectedEIP155, ...selectedCosmos]
       const response = {
         state: {
           accounts
@@ -95,25 +85,27 @@ export default function SessionProposalModal() {
 
         <RequestMethodCard methods={methods} />
 
-        <Divider y={2} />
-
         {chains.map(chain => {
           if (isEIP155Chain(chain)) {
             return (
-              <Row>
-                <Col>
-                  <Text h5>Select EIP155 Accounts</Text>
-                  {eip155Addresses.map((address, index) => (
-                    <AccountSelectCard
-                      key={address}
-                      address={address}
-                      index={index}
-                      onSelect={() => onSelectEIP155(address)}
-                      selected={selectedEIP155.includes(address)}
-                    />
-                  ))}
-                </Col>
-              </Row>
+              <Fragment>
+                <Divider y={2} />
+
+                <Row>
+                  <Col>
+                    <Text h5>{`Select ${EIP155_CHAINS[chain as TEIP155Chain].name} Accounts`}</Text>
+                    {eip155Addresses.map((address, index) => (
+                      <AccountSelectCard
+                        key={address}
+                        address={address}
+                        index={index}
+                        onSelect={() => onSelectEIP155(`${chain}:${address}`)}
+                        selected={selectedEIP155.includes(`${chain}:${address}`)}
+                      />
+                    ))}
+                  </Col>
+                </Row>
+              </Fragment>
             )
           } else if (isCosmosChain(chain)) {
             return (
@@ -122,14 +114,16 @@ export default function SessionProposalModal() {
 
                 <Row>
                   <Col>
-                    <Text h5>Select Cosmos Accounts</Text>
+                    <Text h5>
+                      {`Select ${COSMOS_MAINNET_CHAINS[chain as TCosmosChain].name} Accounts`}
+                    </Text>
                     {cosmosAddresses.map((address, index) => (
                       <AccountSelectCard
                         key={address}
                         address={address}
                         index={index}
-                        onSelect={() => onSelectCosmos(address)}
-                        selected={selectedCosmos.includes(address)}
+                        onSelect={() => onSelectCosmos(`${chain}:${address}`)}
+                        selected={selectedCosmos.includes(`${chain}:${address}`)}
                       />
                     ))}
                   </Col>
