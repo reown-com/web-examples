@@ -1,11 +1,11 @@
 import ProjectInfoCard from '@/components/ProjectInfoCard'
+import RequestDataCard from '@/components/RequestDataCard'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import ModalStore from '@/store/ModalStore'
 import { approveCosmosRequest, rejectCosmosRequest } from '@/utils/CosmosRequestHandler'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Button, Col, Container, Divider, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
-import { CodeBlock, codepen } from 'react-code-blocks'
 
 export default function SessionSignCosmosModal() {
   // Get request and wallet data from store
@@ -56,6 +56,8 @@ export default function SessionSignCosmosModal() {
         <Container css={{ padding: 0 }}>
           <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
+          <Divider y={2} />
+
           <Row>
             <Col>
               <Text h5>Blockchain</Text>
@@ -67,17 +69,7 @@ export default function SessionSignCosmosModal() {
 
           <Divider y={2} />
 
-          <Row>
-            <Col>
-              <Text h5>Data</Text>
-              <CodeBlock
-                showLineNumbers={false}
-                text={JSON.stringify(params, null, 2)}
-                theme={codepen}
-                language="json"
-              />
-            </Col>
-          </Row>
+          <RequestDataCard data={params} />
 
           <Divider y={2} />
 

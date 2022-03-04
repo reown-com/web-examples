@@ -74,6 +74,8 @@ export default function SessionPage() {
 
       <ProjectInfoCard metadata={session.peer.metadata} />
 
+      <Divider y={2} />
+
       {chains.map(chain => {
         if (isEIP155Chain(chain)) {
           return (

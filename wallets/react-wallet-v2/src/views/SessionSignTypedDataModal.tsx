@@ -1,4 +1,5 @@
 import ProjectInfoCard from '@/components/ProjectInfoCard'
+import RequestDataCard from '@/components/RequestDataCard'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
@@ -6,7 +7,6 @@ import { getSignTypedDataParamsData } from '@/utils/HelperUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Button, Col, Container, Divider, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
-import { CodeBlock, codepen } from 'react-code-blocks'
 
 export default function SessionSignTypedDataModal() {
   // Get request and wallet data from store
@@ -60,6 +60,8 @@ export default function SessionSignTypedDataModal() {
         <Container css={{ padding: 0 }}>
           <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
+          <Divider y={2} />
+
           <Row>
             <Col>
               <Text h5>Blockchain</Text>
@@ -71,45 +73,7 @@ export default function SessionSignTypedDataModal() {
 
           <Divider y={2} />
 
-          <Row>
-            <Col className="codeBlock">
-              <Text h5>Domain</Text>
-              <CodeBlock
-                showLineNumbers={false}
-                text={JSON.stringify(data.domain, null, 2)}
-                theme={codepen}
-                language="json"
-              />
-            </Col>
-          </Row>
-
-          <Divider y={2} />
-
-          <Row>
-            <Col className="codeBlock">
-              <Text h5>Types</Text>
-              <CodeBlock
-                showLineNumbers={false}
-                text={JSON.stringify(data.types, null, 2)}
-                theme={codepen}
-                language="json"
-              />
-            </Col>
-          </Row>
-
-          <Divider y={2} />
-
-          <Row>
-            <Col className="codeBlock">
-              <Text h5>Message</Text>
-              <CodeBlock
-                showLineNumbers={false}
-                text={JSON.stringify(data.message, null, 2)}
-                theme={codepen}
-                language="json"
-              />
-            </Col>
-          </Row>
+          <RequestDataCard data={data} />
 
           <Divider y={2} />
 

@@ -1,8 +1,8 @@
 import ProjectInfoCard from '@/components/ProjectInfoCard'
+import RequestDataCard from '@/components/RequestDataCard'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
-import { truncate } from '@/utils/HelperUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Button, Col, Container, Divider, Loading, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
@@ -60,56 +60,9 @@ export default function SessionSendTransactionModal() {
         <Container css={{ padding: 0 }}>
           <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
-          <Row>
-            <Col>
-              <Text h5>From</Text>
-              <Text color="$gray400">{truncate(transaction.from, 30)}</Text>
-            </Col>
-          </Row>
-
           <Divider y={2} />
 
-          <Row>
-            <Col>
-              <Text h5>To</Text>
-              <Text color="$gray400">{truncate(transaction.to, 30)}</Text>
-            </Col>
-          </Row>
-
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Value</Text>
-              <Text color="$gray400">{transaction.value}</Text>
-            </Col>
-          </Row>
-
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Gas Price</Text>
-              <Text color="$gray400">{transaction.gasPrice}</Text>
-            </Col>
-            <Col>
-              <Text h5>Gas Limit</Text>
-              <Text color="$gray400">{transaction.gasLimit}</Text>
-            </Col>
-          </Row>
-
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Nonce</Text>
-              <Text color="$gray400">{transaction.nonce}</Text>
-            </Col>
-            <Col>
-              <Text h5>Data</Text>
-              <Text color="$gray400">{transaction.data}</Text>
-            </Col>
-          </Row>
+          <RequestDataCard data={transaction} />
 
           <Divider y={2} />
 

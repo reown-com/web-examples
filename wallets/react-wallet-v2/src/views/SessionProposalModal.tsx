@@ -92,6 +92,8 @@ export default function SessionProposalModal() {
         <Container css={{ padding: 0 }}>
           <ProjectInfoCard metadata={proposer.metadata} />
 
+          <Divider y={2} />
+
           <Row>
             <Col>
               <Text h5>Blockchains</Text>

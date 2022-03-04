@@ -59,6 +59,8 @@ export default function SessionSignModal() {
         <Container css={{ padding: 0 }}>
           <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
+          <Divider y={2} />
+
           <Row>
             <Col>
               <Text h5>Blockchain</Text>
