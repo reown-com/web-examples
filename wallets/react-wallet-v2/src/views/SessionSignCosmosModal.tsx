@@ -1,10 +1,13 @@
-import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
+import ProjectInfoCard from '@/components/ProjectInfoCard'
+import RequestDataCard from '@/components/RequestDataCard'
+import RequesDetailsCard from '@/components/RequestDetalilsCard'
+import RequestMethodCard from '@/components/RequestMethodCard'
+import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveCosmosRequest, rejectCosmosRequest } from '@/utils/CosmosRequestHandler'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { Avatar, Button, Col, Container, Divider, Link, Modal, Row, Text } from '@nextui-org/react'
+import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
-import { CodeBlock, codepen } from 'react-code-blocks'
 
 export default function SessionSignCosmosModal() {
   // Get request and wallet data from store
@@ -17,10 +20,7 @@ export default function SessionSignCosmosModal() {
   }
 
   // Get required request data
-  const { chainId } = requestEvent
   const { method, params } = requestEvent.request
-  const { protocol } = requestSession.relay
-  const { name, icons, url } = requestSession.peer.metadata
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
@@ -48,66 +48,24 @@ export default function SessionSignCosmosModal() {
 
   return (
     <Fragment>
-      <Modal.Header>
-        <Text h3>Sign Message</Text>
-      </Modal.Header>
+      <RequestModalContainer title="Sign Message">
+        <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
-      <Modal.Body>
-        <Container css={{ padding: 0 }}>
-          <Row align="center">
-            <Col span={3}>
-              <Avatar src={icons[0]} />
-            </Col>
-            <Col span={14}>
-              <Text h5>{name}</Text>
-              <Link href={url}>{url}</Link>
-            </Col>
-          </Row>
+        <Divider y={2} />
 
-          <Divider y={2} />
+        <RequesDetailsCard
+          chains={[requestEvent.chainId ?? '']}
+          protocol={requestSession.relay.protocol}
+        />
 
-          <Row>
-            <Col>
-              <Text h5>Blockchain</Text>
-              <Text color="$gray400">
-                {COSMOS_MAINNET_CHAINS[chainId as TCosmosChain]?.name ?? chainId}
-              </Text>
-            </Col>
-          </Row>
+        <Divider y={2} />
 
-          <Divider y={2} />
+        <RequestDataCard data={params} />
 
-          <Row>
-            <Col>
-              <Text h5>Data</Text>
-              <CodeBlock
-                showLineNumbers={false}
-                text={JSON.stringify(params, null, 2)}
-                theme={codepen}
-                language="json"
-              />
-            </Col>
-          </Row>
+        <Divider y={2} />
 
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Method</Text>
-              <Text color="$gray400">{method}</Text>
-            </Col>
-          </Row>
-
-          <Divider y={2} />
-
-          <Row>
-            <Col>
-              <Text h5>Relay Protocol</Text>
-              <Text color="$gray400">{protocol}</Text>
-            </Col>
-          </Row>
-        </Container>
-      </Modal.Body>
+        <RequestMethodCard methods={[method]} />
+      </RequestModalContainer>
 
       <Modal.Footer>
         <Button auto flat color="error" onClick={onReject}>
