@@ -8,8 +8,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@walletconnect/client": "2.0.0-beta.22",
-    "@walletconnect/utils": "2.0.0-beta.22",
+    "@walletconnect/client": "experimental",
+    "@walletconnect/utils": "experimental",
     "@json-rpc-tools/utils": "1.7.6",
     "@nextui-org/react": "1.0.2-beta.4",
     "mnemonic-keyring": "1.4.0",
@@ -26,7 +26,7 @@
     "@cosmjs/amino": "0.27.1"
   },
   "devDependencies": {
-    "@walletconnect/types": "2.0.0-beta.22",
+    "@walletconnect/types": "experimental",
     "@types/node": "17.0.21",
     "@types/react": "17.0.39",
     "eslint": "8.10.0",
