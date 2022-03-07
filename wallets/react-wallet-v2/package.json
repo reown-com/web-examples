@@ -1,5 +1,5 @@
 {
-  "name": "react-wallet-v2",
+  "name": "staging-react-wallet-v2",
   "private": true,
   "scripts": {
     "dev": "next dev",
