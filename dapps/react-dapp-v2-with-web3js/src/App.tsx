@@ -227,6 +227,7 @@ export default function App() {
         setRpcResult(result);
       } catch (error) {
         console.error("RPC request failed:", error);
+        setRpcResult(null);
       } finally {
         setIsRpcRequestPending(false);
       }
