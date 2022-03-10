@@ -1,7 +1,6 @@
 import { Secp256k1Wallet, StdSignDoc } from '@cosmjs/amino'
 import { fromHex } from '@cosmjs/encoding'
-import { DirectSecp256k1Wallet, makeSignBytes } from '@cosmjs/proto-signing'
-// @ts-expect-error
+import { DirectSecp256k1Wallet } from '@cosmjs/proto-signing'
 import { SignDoc } from '@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx'
 import MnemonicKeyring from 'mnemonic-keyring'
 

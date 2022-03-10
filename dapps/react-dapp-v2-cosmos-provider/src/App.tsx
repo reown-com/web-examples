@@ -1,6 +1,11 @@
 import React, { useState } from "react";
 import { version } from "@walletconnect/client/package.json";
-import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
+import {
+  formatDirectSignDoc,
+  stringifySignDocValues,
+  verifyAminoSignature,
+  verifyDirectSignature,
+} from "cosmos-wallet";
 
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";
@@ -129,10 +134,12 @@ export default function App() {
       params,
     });
 
+    const valid = await verifyDirectSignature(address, result.signature, signDoc);
+
     return {
       method: "cosmos_signDirect",
       address,
-      valid: true,
+      valid,
       result: result.signature,
     };
   };
@@ -162,10 +169,12 @@ export default function App() {
       params,
     });
 
+    const valid = await verifyAminoSignature(address, result.signature, signDoc);
+
     return {
       method: "cosmos_signAmino",
       address,
-      valid: true,
+      valid,
       result: result.signature,
     };
   };

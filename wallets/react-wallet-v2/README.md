@@ -13,9 +13,23 @@ This example aims to demonstrate basic and advanced use cases enabled by WalletC
 Eexample is built atop of [NextJS](https://nextjs.org/) in order to abstract complexity of setting up bundlers, routing etc. So there are few steps you need to follow in order to set everything up
 
 1. Go to [WalletConnect Cloud](https://cloud.walletconnect.com/sign-in) and obtain a project id
+
 2. Add your project details in [WalletConnectUtil.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/utils/WalletConnectUtil.ts) file
+
 3. Install dependencies `yarn install` or `npm install`
-4. Run `yarn dev` or `npm run dev` to start local development
+
+4. Setup your environment variables
+
+```bash
+cp .env.local.example .env.local
+```
+
+Your `.env.local` now contains the following environment variables:
+
+- `NEXT_PUBLIC_PROJECT_ID` (placeholder) - You can generate your own ProjectId at https://cloud.walletconnect.com
+- `NEXT_PUBLIC_RELAY_URL` (already set)
+
+5. Run `yarn dev` or `npm run dev` to start local development
 
 ## Navigating through example
 
