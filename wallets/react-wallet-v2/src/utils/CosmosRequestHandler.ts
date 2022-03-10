@@ -4,6 +4,7 @@ import { getWalletAddressFromParams } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { RequestEvent } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
+import { parseSignDocValues } from 'cosmos-wallet'
 
 export async function approveCosmosRequest(requestEvent: RequestEvent) {
   const { method, params, id } = requestEvent.request
@@ -11,7 +12,10 @@ export async function approveCosmosRequest(requestEvent: RequestEvent) {
 
   switch (method) {
     case COSMOS_SIGNING_METHODS.COSMOS_SIGN_DIRECT:
-      const signedDirect = await wallet.signDirect(params.signerAddress, params.signDoc)
+      const signedDirect = await wallet.signDirect(
+        params.signerAddress,
+        parseSignDocValues(params.signDoc)
+      )
       return formatJsonRpcResult(id, signedDirect.signature)
 
     case COSMOS_SIGNING_METHODS.COSMOS_SIGN_AMINO:
