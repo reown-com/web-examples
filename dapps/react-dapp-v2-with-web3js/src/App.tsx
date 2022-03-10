@@ -8,7 +8,12 @@ import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
 import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
-import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
+import {
+  AccountAction,
+  eip712,
+  getLocalStorageTestnetFlag,
+  setLocaleStorageTestnetFlag,
+} from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
 import PingModal from "./modals/PingModal";
@@ -23,6 +28,7 @@ import {
 } from "./components/app";
 import { useWalletConnectClient } from "./contexts/ClientContext";
 import { utils } from "ethers";
+import { TypedDataField } from "@ethersproject/abstract-signer";
 
 interface IFormattedRpcResponse {
   method: string;
@@ -175,39 +181,7 @@ export default function App() {
       throw new Error("web3Provider.currentProvider is not set");
     }
 
-    const typedData = {
-      types: {
-        Person: [
-          { name: "name", type: "string" },
-          { name: "wallet", type: "address" },
-        ],
-        Mail: [
-          { name: "from", type: "Person" },
-          { name: "to", type: "Person" },
-          { name: "contents", type: "string" },
-        ],
-      },
-      primaryType: "Mail",
-      domain: {
-        name: "Ether Mail",
-        version: "1",
-        chainId: 1,
-        verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
-      },
-      message: {
-        from: {
-          name: "Cow",
-          wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
-        },
-        to: {
-          name: "Bob",
-          wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
-        },
-        contents: "Hello, Bob!",
-      },
-    };
-
-    const message = JSON.stringify(typedData);
+    const message = JSON.stringify(eip712.example);
 
     const [address] = await web3Provider.eth.getAccounts();
 
@@ -222,9 +196,20 @@ export default function App() {
       method: "eth_signTypedData",
       params,
     });
+
+    // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
+    // will throw due to "unused" `EIP712Domain` type.
+    const { EIP712Domain, ...nonDomainTypes }: Record<string, TypedDataField[]> =
+      eip712.example.types;
+
     const valid =
-      utils.verifyTypedData(typedData.domain, typedData.types, typedData.message, signature) ===
-      address;
+      utils.verifyTypedData(
+        eip712.example.domain,
+        nonDomainTypes,
+        eip712.example.message,
+        signature,
+      ) === address;
+
     return {
       method: "eth_signTypedData",
       address,

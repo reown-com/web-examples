@@ -5,6 +5,7 @@ import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
 
 import {
   ChainNamespaces,
+  eip712,
   formatTestTransaction,
   getAllChainNamespaces,
   hashPersonalMessage,
@@ -12,6 +13,7 @@ import {
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
+import { TypedDataField } from "@ethersproject/abstract-signer";
 
 /**
  * Types
@@ -294,39 +296,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       };
     }),
     testSignTypedData: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
-      const typedData = {
-        types: {
-          Person: [
-            { name: "name", type: "string" },
-            { name: "wallet", type: "address" },
-          ],
-          Mail: [
-            { name: "from", type: "Person" },
-            { name: "to", type: "Person" },
-            { name: "contents", type: "string" },
-          ],
-        },
-        primaryType: "Mail",
-        domain: {
-          name: "Ether Mail",
-          version: "1",
-          chainId: 1,
-          verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
-        },
-        message: {
-          from: {
-            name: "Cow",
-            wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
-          },
-          to: {
-            name: "Bob",
-            wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
-          },
-          contents: "Hello, Bob!",
-        },
-      };
-
-      const message = JSON.stringify(typedData);
+      const message = JSON.stringify(eip712.example);
 
       // eth_signTypedData params
       const params = [address, message];
@@ -340,9 +310,19 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
           params,
         },
       });
+
+      // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
+      // will throw due to "unused" `EIP712Domain` type.
+      const { EIP712Domain, ...nonDomainTypes }: Record<string, TypedDataField[]> =
+        eip712.example.types;
+
       const valid =
-        utils.verifyTypedData(typedData.domain, typedData.types, typedData.message, signature) ===
-        address;
+        utils.verifyTypedData(
+          eip712.example.domain,
+          nonDomainTypes,
+          eip712.example.message,
+          signature,
+        ) === address;
 
       return {
         method: "eth_signTypedData",
