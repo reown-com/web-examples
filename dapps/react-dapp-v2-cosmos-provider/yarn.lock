@@ -2605,7 +2605,7 @@
     "@walletconnect/utils" "^2.0.0-beta.23"
     ws "^8.3.0"
 
-"@walletconnect/cosmos-provider@2.0.0-beta.23":
+"@walletconnect/cosmos-provider@^2.0.0-beta.23":
   version "2.0.0-beta.23"
   resolved "https://registry.yarnpkg.com/@walletconnect/cosmos-provider/-/cosmos-provider-2.0.0-beta.23.tgz#54c3c26835c6bc286b14eb63a7c24f6961df95e6"
   integrity sha512-RDTSHWtFVNJxK00tQtZyueaFoPEh9Nsc1Hae5NOphQsp+FQhwvVX76+J48ELW+ylS5RNU1Ji1Q/xXX32QNtRLw==
