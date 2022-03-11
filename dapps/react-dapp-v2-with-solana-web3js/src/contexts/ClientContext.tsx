@@ -1,6 +1,6 @@
 import Client, { CLIENT_EVENTS } from "@walletconnect/client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import CosmosProvider from "@walletconnect/cosmos-provider";
+import { ERROR } from "@walletconnect/utils";
 import QRCodeModal from "@walletconnect/qrcode-modal";
 import {
   createContext,
@@ -11,13 +11,24 @@ import {
   useMemo,
   useState,
 } from "react";
+import { apiGetChainNamespace, ChainsMap } from "caip-api";
+import { PublicKey } from "@solana/web3.js";
+
 import { DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from "../constants";
 import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../helpers";
-import { apiGetChainNamespace, ChainsMap } from "caip-api";
 
 /**
  * Types
  */
+
+export enum SolanaChainId {
+  Mainnet = "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
+  Devnet = "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
+}
+
+export enum SolanaRpcMethod {
+  SOL_SIGN_TRANSACTION = "sol_signTransaction",
+}
 interface IContext {
   client: Client | undefined;
   session: SessionTypes.Created | undefined;
@@ -25,11 +36,11 @@ interface IContext {
   isInitializing: boolean;
   chain: string;
   pairings: string[];
+  publicKey?: PublicKey;
   accounts: string[];
   balances: AccountBalances;
   chainData: ChainNamespaces;
   onEnable: (chainId: string) => Promise<void>;
-  cosmosProvider?: CosmosProvider;
 }
 
 /**
@@ -45,13 +56,12 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [pairings, setPairings] = useState<string[]>([]);
   const [session, setSession] = useState<SessionTypes.Created>();
 
-  const [cosmosProvider, setCosmosProvider] = useState<CosmosProvider>();
-
   const [isInitializing, setIsInitializing] = useState(false);
   const [hasCheckedPersistedSession, setHasCheckedPersistedSession] = useState(false);
 
   const [balances, setBalances] = useState<AccountBalances>({});
   const [accounts, setAccounts] = useState<string[]>([]);
+  const [publicKey, setPublicKey] = useState<PublicKey>();
   const [chainData, setChainData] = useState<ChainNamespaces>({});
   const [chain, setChain] = useState<string>("");
 
@@ -59,6 +69,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     setPairings([]);
     setSession(undefined);
     setBalances({});
+    setPublicKey(undefined);
     setAccounts([]);
     setChain("");
   };
@@ -83,11 +94,17 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   };
 
   const disconnect = useCallback(async () => {
-    if (typeof cosmosProvider === "undefined") {
-      throw new Error("cosmosProvider is not initialized");
+    if (typeof client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
     }
-    await cosmosProvider.disconnect();
-  }, [cosmosProvider]);
+    if (typeof session === "undefined") {
+      throw new Error("Session is not connected");
+    }
+    await client.disconnect({
+      topic: session.topic,
+      reason: ERROR.USER_DISCONNECTED.format(),
+    });
+  }, [client, session]);
 
   const _subscribeToClientEvents = useCallback(async (_client: Client) => {
     if (typeof _client === "undefined") {
@@ -131,46 +148,41 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }
   }, [_subscribeToClientEvents]);
 
+  const onSessionConnected = useCallback(async (_session: SessionTypes.Settled) => {
+    const account = _session.state.accounts[0].split(":").pop();
+    if (!account) {
+      throw new Error("Could not derive account address from `session.state.accounts`.");
+    }
+
+    const _publicKey = new PublicKey(account);
+
+    setSession(_session);
+    setChain(_session.permissions.blockchain.chains[0]);
+    setAccounts(_session.state.accounts);
+    setPublicKey(_publicKey);
+  }, []);
+
   const onEnable = useCallback(
     async (caipChainId: string) => {
       if (!client) {
         throw new ReferenceError("WalletConnect Client is not initialized.");
       }
 
-      const chainId = caipChainId.split(":").pop();
-
-      if (!chainId) {
-        throw new Error("Could not derive chainId from CAIP chainId");
-      }
-
-      console.log("Enabling cosmosProvider for chainId: ", chainId);
-
-      //  Create WalletConnect Provider
-      const cosmosProvider = new CosmosProvider({
-        chains: [chainId],
-        client,
-      });
-
-      console.log(cosmosProvider);
-      setCosmosProvider(cosmosProvider);
-
       try {
-        await cosmosProvider.connect();
+        const _session = await client.connect({
+          permissions: {
+            blockchain: { chains: [caipChainId] },
+            jsonrpc: { methods: [SolanaRpcMethod.SOL_SIGN_TRANSACTION] },
+          },
+        });
+        onSessionConnected(_session);
       } catch (error) {
         console.error(error);
-        return;
+      } finally {
+        QRCodeModal.close();
       }
-
-      const _accounts = cosmosProvider.accounts;
-      const _session = await client.session.get(client.session.topics[0]);
-
-      setAccounts(_accounts);
-      setSession(_session);
-      setChain(caipChainId);
-
-      QRCodeModal.close();
     },
-    [client],
+    [client, onSessionConnected],
   );
 
   const _checkForPersistedSession = useCallback(
@@ -184,12 +196,10 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       // populates existing session to state (assume only the top one)
       if (_client.session.topics.length) {
         const _session = await _client.session.get(_client.session.topics[0]);
-        const [namespace, chainId] = _session.state.accounts[0].split(":");
-        const caipChainId = `${namespace}:${chainId}`;
-        onEnable(caipChainId);
+        onSessionConnected(_session);
       }
     },
-    [session, onEnable],
+    [session, onSessionConnected],
   );
 
   useEffect(() => {
@@ -218,6 +228,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       pairings,
       isInitializing,
       balances,
+      publicKey,
       accounts,
       chain,
       client,
@@ -225,12 +236,12 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       disconnect,
       chainData,
       onEnable,
-      cosmosProvider,
     }),
     [
       pairings,
       isInitializing,
       balances,
+      publicKey,
       accounts,
       chain,
       client,
@@ -238,7 +249,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       disconnect,
       chainData,
       onEnable,
-      cosmosProvider,
     ],
   );
 

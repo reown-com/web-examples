@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { version } from "@walletconnect/client/package.json";
-import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
+import { Keypair, SystemProgram, Transaction } from "@solana/web3.js";
+import bs58 from "bs58";
 
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";
@@ -19,21 +20,13 @@ import {
   SLanding,
   SLayout,
 } from "./components/app";
-import { useWalletConnectClient } from "./contexts/ClientContext";
+import { SolanaRpcMethod, useWalletConnectClient } from "./contexts/ClientContext";
 
 interface IFormattedRpcResponse {
   method?: string;
   address?: string;
   valid?: boolean;
   result: string;
-}
-
-interface CosmosRpcResponse {
-  pub_key: {
-    type: string;
-    value: string;
-  };
-  signature: string;
 }
 
 export default function App() {
@@ -53,11 +46,11 @@ export default function App() {
     disconnect,
     chain,
     accounts,
+    publicKey,
     balances,
     chainData,
     isInitializing,
     onEnable,
-    cosmosProvider,
   } = useWalletConnectClient();
 
   const ping = async () => {
@@ -87,90 +80,55 @@ export default function App() {
     await ping();
   };
 
-  const testSignDirect: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!cosmosProvider) {
-      throw new Error("cosmosProvider not connected");
+  const testSignTransaction = async (): Promise<IFormattedRpcResponse> => {
+    if (!client || !publicKey || !session) {
+      throw new Error("WalletConnect Client not initialized properly.");
     }
 
-    // test direct sign doc inputs
-    const inputs = {
-      fee: [{ amount: "2000", denom: "ucosm" }],
-      pubkey: "AgSEjOuOr991QlHCORRmdE5ahVKeyBrmtgoYepCpQGOW",
-      gasLimit: 200000,
-      accountNumber: 1,
-      sequence: 1,
-      bodyBytes:
-        "0a90010a1c2f636f736d6f732e62616e6b2e763162657461312e4d736753656e6412700a2d636f736d6f7331706b707472653766646b6c366766727a6c65736a6a766878686c63337234676d6d6b38727336122d636f736d6f7331717970717870713971637273737a673270767871367273307a716733797963356c7a763778751a100a0575636f736d120731323334353637",
-      authInfoBytes:
-        "0a500a460a1f2f636f736d6f732e63727970746f2e736563703235366b312e5075624b657912230a21034f04181eeba35391b858633a765c4a0c189697b40d216354d50890d350c7029012040a020801180112130a0d0a0575636f736d12043230303010c09a0c",
-    };
-
-    // format sign doc
-    const signDoc = formatDirectSignDoc(
-      inputs.fee,
-      inputs.pubkey,
-      inputs.gasLimit,
-      inputs.accountNumber,
-      inputs.sequence,
-      inputs.bodyBytes,
-      "cosmoshub-4",
+    const transaction = new Transaction({ feePayer: publicKey }).add(
+      SystemProgram.transfer({
+        fromPubkey: publicKey,
+        toPubkey: Keypair.generate().publicKey,
+        lamports: 1,
+      }),
     );
 
-    const [address] = cosmosProvider.accounts;
+    try {
+      const signature = await client.request({
+        topic: session.topic,
+        request: {
+          method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
+          params: {
+            feePayer: transaction.feePayer!.toBase58(),
+            instructions: transaction.instructions.map(i => ({
+              programId: i.programId.toBase58(),
+              data: bs58.encode(i.data),
+              keys: i.keys.map(k => ({
+                isSigner: k.isSigner,
+                isWritable: k.isWritable,
+                pubkey: k.pubkey.toBase58(),
+              })),
+            })),
+            recentBlockhash: transaction.recentBlockhash,
+          },
+        },
+      });
 
-    // cosmos_signDirect params
-    const params = {
-      signerAddress: address,
-      signDoc: stringifySignDocValues(signDoc),
-    };
+      // @ts-expect-error
+      transaction.addSignature(publicKey, bs58.decode(signature));
 
-    const result = await cosmosProvider.request<CosmosRpcResponse>({
-      method: "cosmos_signDirect",
-      params,
-    });
-
-    return {
-      method: "cosmos_signDirect",
-      address,
-      valid: true,
-      result: result.signature,
-    };
-  };
-
-  const testSignAmino: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!cosmosProvider) {
-      throw new Error("cosmosProvider not connected");
+      return {
+        method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
+        // address,
+        valid: true,
+        result: signature,
+      };
+    } catch (error: any) {
+      throw new Error(error);
     }
-
-    // test amino sign doc
-    const signDoc = {
-      msgs: [],
-      fee: { amount: [], gas: "23" },
-      chain_id: "foochain",
-      memo: "hello, world",
-      account_number: "7",
-      sequence: "54",
-    };
-
-    const [address] = cosmosProvider.accounts;
-
-    // cosmos_signAmino params
-    const params = { signerAddress: address, signDoc };
-
-    const result = await cosmosProvider.request<CosmosRpcResponse>({
-      method: "cosmos_signAmino",
-      params,
-    });
-
-    return {
-      method: "cosmos_signAmino",
-      address,
-      valid: true,
-      result: result.signature,
-    };
   };
 
-  const getCosmosActions = (): AccountAction[] => {
+  const getSolanaActions = (): AccountAction[] => {
     const wrapRpcRequest = (rpcRequest: () => Promise<IFormattedRpcResponse>) => async () => {
       openRequestModal();
       try {
@@ -186,8 +144,10 @@ export default function App() {
     };
 
     return [
-      { method: "cosmos_signDirect", callback: wrapRpcRequest(testSignDirect) },
-      { method: "cosmos_signAmino", callback: wrapRpcRequest(testSignAmino) },
+      {
+        method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
+        callback: wrapRpcRequest(testSignTransaction),
+      },
     ];
   };
 
@@ -212,7 +172,7 @@ export default function App() {
           <span>{`Using v${version || "2.0.0-beta"}`}</span>
         </h6>
         <SButtonContainer>
-          <h6>Select Cosmos chain:</h6>
+          <h6>Select chain:</h6>
           {chainOptions.map(chainId => (
             <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onEnable} />
           ))}
@@ -231,7 +191,7 @@ export default function App() {
                 address={account}
                 chainId={chain}
                 balances={balances}
-                actions={getCosmosActions()}
+                actions={getSolanaActions()}
               />
             );
           })}
