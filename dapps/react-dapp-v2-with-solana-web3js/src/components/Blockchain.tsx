@@ -97,6 +97,7 @@ interface BlockchainDisplayData {
   meta: ChainMetadata;
 }
 
+// eslint-disable-next-line
 function getBlockchainDisplayData(
   chainId: string,
   chainData: ChainNamespaces,
@@ -113,18 +114,28 @@ function getBlockchainDisplayData(
   return { data, meta };
 }
 
+// TODO: add `solana` namespace + chains to https://github.com/pedrouid/blockchain-api
+// Specifying solana chain metadata manually here for now.
 const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
   props: PropsWithChildren<BlockchainProps>,
 ) => {
-  const { chainData, fetching, chainId, address, onClick, balances, active, actions } = props;
+  const { fetching, chainId, address, onClick, balances, active, actions } = props;
 
-  if (!Object.keys(chainData).length) return null;
+  // if (!Object.keys(chainData).length) return null;
 
-  const chain = getBlockchainDisplayData(chainId, chainData);
-  if (typeof chain === "undefined") {
-    return null;
-  }
-  const name = chain.meta.name || chain.data.name;
+  // const chain = getBlockchainDisplayData(chainId, chainData);
+  // if (typeof chain === "undefined") {
+  //   return null;
+  // }
+
+  const chain = {
+    meta: {
+      name: "Solana",
+      rgb: "0, 0, 0",
+      logo: "/solana_logo.png",
+    },
+  };
+  const name = chain.meta.name; /*|| chain.data.name;*/
 
   return (
     <React.Fragment>
