@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { version } from "@walletconnect/client/package.json";
 
 import Banner from "./components/Banner";
@@ -10,7 +10,6 @@ import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
 import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
-import PairingModal from "./modals/PairingModal";
 import PingModal from "./modals/PingModal";
 import {
   SAccounts,
@@ -31,7 +30,6 @@ export default function App() {
   const [modal, setModal] = useState("");
 
   const closeModal = () => setModal("");
-  const openPairingModal = () => setModal("pairing");
   const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
 
@@ -52,22 +50,10 @@ export default function App() {
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
   const { chainData, ping, ethereumRpc, cosmosRpc, isRpcRequestPending, rpcResult } = useJsonRpc();
 
-  // Close the pairing modal after a session is established.
-  useEffect(() => {
-    if (session && modal === "pairing") {
-      closeModal();
-    }
-  }, [session, modal]);
-
   const onConnect = () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
-    // Suggest existing pairings (if any).
-    if (client.pairing.topics.length) {
-      return openPairingModal();
-    }
-    // If no existing pairings are available, trigger `WalletConnectClient.connect`.
     connect();
   };
 
@@ -152,11 +138,6 @@ export default function App() {
   // Renders the appropriate model for the given request that is currently in-flight.
   const renderModal = () => {
     switch (modal) {
-      case "pairing":
-        if (typeof client === "undefined") {
-          throw new Error("WalletConnect is not initialized");
-        }
-        return <PairingModal pairings={client.pairing.values} connect={connect} />;
       case "request":
         return <RequestModal pending={isRpcRequestPending} result={rpcResult} />;
       case "ping":

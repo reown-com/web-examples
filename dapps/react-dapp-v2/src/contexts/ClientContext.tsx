@@ -131,7 +131,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       if (typeof client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
-      console.log("connect", pairing);
+      console.log("connect handler for topic:", pairing);
       try {
         const supportedNamespaces = getSupportedNamespaces();
         const methods = getSupportedMethods(supportedNamespaces);
@@ -173,18 +173,45 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     });
   }, [client, session]);
 
+  const handlePairingSelected = useCallback(
+    async (_client: Client, pairing: { topic: string }) => {
+      if (typeof _client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
+      console.log("onPairingSelected handler for pairing topic:", pairing);
+
+      try {
+        const supportedNamespaces = getSupportedNamespaces();
+        const methods = getSupportedMethods(supportedNamespaces);
+        const session = await _client.connect({
+          metadata: getAppMetadata() || DEFAULT_APP_METADATA,
+          pairing,
+          permissions: {
+            blockchain: {
+              chains,
+            },
+            jsonrpc: {
+              methods,
+            },
+          },
+        });
+
+        onSessionConnected(session);
+      } catch (e) {
+        console.error(e);
+        // ignore rejection
+      }
+
+      // close modal in case it was open
+      QRCodeModal.close();
+    },
+    [chains, getSupportedNamespaces, onSessionConnected],
+  );
+
   const _subscribeToEvents = useCallback(async (_client: Client) => {
     if (typeof _client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
-
-    _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
-      const { uri } = proposal.signal.params;
-      console.log("EVENT", "QR Code Modal open");
-      QRCodeModal.open(uri, () => {
-        console.log("EVENT", "QR Code Modal closed");
-      });
-    });
 
     _client.on(CLIENT_EVENTS.pairing.created, async () => {
       setPairings(_client.pairing.topics);
@@ -233,11 +260,47 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }
   }, [_checkPersistedState, _subscribeToEvents]);
 
+  // Initialize the client if it doesn't exist yet.
   useEffect(() => {
     if (!client) {
       createClient();
     }
   }, [client, createClient]);
+
+  // Rebind listener for `CLIENT_EVENTS.pairing.proposal` whenever selected `chains` change (via `onPairingSelected`).
+  useEffect(() => {
+    if (client) {
+      console.log("SUBSCRIBE TO PROPOSAL");
+      console.log("selected chains: ", chains);
+
+      const handlePairingProposal = async (proposal: PairingTypes.Proposal) => {
+        const { uri } = proposal.signal.params;
+        console.log("EVENT", "QR Code Modal open");
+        console.log(client.pairing.values);
+        QRCodeModal.open({
+          uri,
+          chains,
+          pairings: client.pairing.values,
+          onPairingSelected: topic => {
+            handlePairingSelected(client, { topic });
+          },
+          cb: () => {
+            console.log("EVENT", "QR Code Modal closed");
+          },
+        });
+      };
+
+      // TODO: don't use `removeAllListeners`, this is a workaround due to `handlePairingProposal`
+      // reference being recreated between useEffect calls -> cannot remove prior listener with `removeListener`.
+      client.events.removeAllListeners(CLIENT_EVENTS.pairing.proposal);
+      client.on(CLIENT_EVENTS.pairing.proposal, handlePairingProposal);
+
+      console.log(
+        "pairing_proposal event listeners:",
+        client.events.listeners(CLIENT_EVENTS.pairing.proposal),
+      );
+    }
+  }, [client, chains, handlePairingSelected]);
 
   const value = useMemo(
     () => ({
