@@ -1,10 +1,11 @@
 export const DEFAULT_MAIN_CHAINS = [
   // mainnets
-  "cosmos:cosmoshub-4",
+  "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
   // testnets
+  "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
