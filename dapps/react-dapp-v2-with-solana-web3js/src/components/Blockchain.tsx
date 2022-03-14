@@ -90,6 +90,7 @@ interface BlockchainProps {
   onClick?: (chain: string) => void;
   balances?: AccountBalances;
   actions?: AccountAction[];
+  isTestnet?: boolean;
 }
 
 interface BlockchainDisplayData {
@@ -119,7 +120,7 @@ function getBlockchainDisplayData(
 const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
   props: PropsWithChildren<BlockchainProps>,
 ) => {
-  const { fetching, chainId, address, onClick, balances, active, actions } = props;
+  const { fetching, chainId, address, onClick, balances, active, actions, isTestnet } = props;
 
   // if (!Object.keys(chainData).length) return null;
 
@@ -130,7 +131,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
 
   const chain = {
     meta: {
-      name: "Solana",
+      name: isTestnet ? "Solana Devnet" : "Solana Mainnet",
       rgb: "0, 0, 0",
       logo: "/solana_logo.png",
     },

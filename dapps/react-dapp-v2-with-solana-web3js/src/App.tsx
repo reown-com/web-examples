@@ -8,8 +8,8 @@ import Blockchain from "./components/Blockchain";
 import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
-import { DEFAULT_MAIN_CHAINS } from "./constants";
-import { AccountAction } from "./helpers";
+import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
+import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
 import RequestModal from "./modals/RequestModal";
 import PingModal from "./modals/PingModal";
 import {
@@ -19,8 +19,10 @@ import {
   SContent,
   SLanding,
   SLayout,
+  SToggleContainer,
 } from "./components/app";
 import { SolanaRpcMethod, useWalletConnectClient } from "./contexts/ClientContext";
+import Toggle from "./components/Toggle";
 
 interface IFormattedRpcResponse {
   method?: string;
@@ -30,6 +32,7 @@ interface IFormattedRpcResponse {
 }
 
 export default function App() {
+  const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
   const [isRpcRequestPending, setIsRpcRequestPending] = useState(false);
   const [rpcResult, setRpcResult] = useState<IFormattedRpcResponse | null>();
 
@@ -163,8 +166,15 @@ export default function App() {
     }
   };
 
+  // Toggle between displaying testnet or mainnet chains as selection options.
+  const toggleTestnets = () => {
+    const nextIsTestnetState = !isTestnet;
+    setIsTestnet(nextIsTestnetState);
+    setLocaleStorageTestnetFlag(nextIsTestnetState);
+  };
+
   const renderContent = () => {
-    const chainOptions = DEFAULT_MAIN_CHAINS;
+    const chainOptions = isTestnet ? DEFAULT_TEST_CHAINS : DEFAULT_MAIN_CHAINS;
     return !accounts.length && !Object.keys(balances).length ? (
       <SLanding center>
         <Banner />
@@ -173,8 +183,18 @@ export default function App() {
         </h6>
         <SButtonContainer>
           <h6>Select chain:</h6>
+          <SToggleContainer>
+            <p>Testnet Only?</p>
+            <Toggle active={isTestnet} onClick={toggleTestnets} />
+          </SToggleContainer>
           {chainOptions.map(chainId => (
-            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onEnable} />
+            <Blockchain
+              key={chainId}
+              chainId={chainId}
+              chainData={chainData}
+              isTestnet={isTestnet}
+              onClick={onEnable}
+            />
           ))}
         </SButtonContainer>
       </SLanding>
