@@ -93,6 +93,20 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     setChainData(chainData);
   };
 
+  const onSessionConnected = useCallback(async (_session: SessionTypes.Settled) => {
+    const account = _session.state.accounts[0].split(":").pop();
+    if (!account) {
+      throw new Error("Could not derive account address from `session.state.accounts`.");
+    }
+
+    const _publicKey = new PublicKey(account);
+
+    setSession(_session);
+    setChain(_session.permissions.blockchain.chains[0]);
+    setAccounts(_session.state.accounts);
+    setPublicKey(_publicKey);
+  }, []);
+
   const disconnect = useCallback(async () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
@@ -106,33 +120,36 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     });
   }, [client, session]);
 
-  const _subscribeToClientEvents = useCallback(async (_client: Client) => {
-    if (typeof _client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
+  const _subscribeToClientEvents = useCallback(
+    async (_client: Client) => {
+      if (typeof _client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
 
-    _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
-      const { uri } = proposal.signal.params;
-      console.log("EVENT", "QR Code Modal open");
-      QRCodeModal.open(uri, () => {
-        console.log("EVENT", "QR Code Modal closed");
+      _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
+        const { uri } = proposal.signal.params;
+        console.log("EVENT", "QR Code Modal open");
+        QRCodeModal.open(uri, () => {
+          console.log("EVENT", "QR Code Modal closed");
+        });
       });
-    });
 
-    _client.on(CLIENT_EVENTS.pairing.created, async () => {
-      setPairings(_client.pairing.topics);
-    });
+      _client.on(CLIENT_EVENTS.pairing.created, async () => {
+        setPairings(_client.pairing.topics);
+      });
 
-    _client.on(CLIENT_EVENTS.session.updated, (updatedSession: SessionTypes.Settled) => {
-      console.log("EVENT", "session_updated");
-      onSessionConnected(updatedSession);
-    });
+      _client.on(CLIENT_EVENTS.session.updated, (updatedSession: SessionTypes.Settled) => {
+        console.log("EVENT", "session_updated");
+        onSessionConnected(updatedSession);
+      });
 
-    _client.on(CLIENT_EVENTS.session.deleted, () => {
-      console.log("EVENT", "session_deleted");
-      resetApp();
-    });
-  }, []);
+      _client.on(CLIENT_EVENTS.session.deleted, () => {
+        console.log("EVENT", "session_deleted");
+        resetApp();
+      });
+    },
+    [onSessionConnected],
+  );
 
   const createClient = useCallback(async () => {
     try {
@@ -152,20 +169,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       setIsInitializing(false);
     }
   }, [_subscribeToClientEvents]);
-
-  const onSessionConnected = useCallback(async (_session: SessionTypes.Settled) => {
-    const account = _session.state.accounts[0].split(":").pop();
-    if (!account) {
-      throw new Error("Could not derive account address from `session.state.accounts`.");
-    }
-
-    const _publicKey = new PublicKey(account);
-
-    setSession(_session);
-    setChain(_session.permissions.blockchain.chains[0]);
-    setAccounts(_session.state.accounts);
-    setPublicKey(_publicKey);
-  }, []);
 
   const onEnable = useCallback(
     async (caipChainId: string) => {
