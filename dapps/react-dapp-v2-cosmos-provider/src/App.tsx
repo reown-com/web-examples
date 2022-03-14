@@ -87,7 +87,7 @@ export default function App() {
     await ping();
   };
 
-  const testSignDirect: () => Promise<IFormattedRpcResponse> = async () => {
+  const testSignDirect: (account: string) => Promise<IFormattedRpcResponse> = async account => {
     if (!cosmosProvider) {
       throw new Error("cosmosProvider not connected");
     }
@@ -116,7 +116,7 @@ export default function App() {
       "cosmoshub-4",
     );
 
-    const [address] = cosmosProvider.accounts;
+    const address = account.split(":").pop();
 
     // cosmos_signDirect params
     const params = {
@@ -137,7 +137,7 @@ export default function App() {
     };
   };
 
-  const testSignAmino: () => Promise<IFormattedRpcResponse> = async () => {
+  const testSignAmino: (account: string) => Promise<IFormattedRpcResponse> = async account => {
     if (!cosmosProvider) {
       throw new Error("cosmosProvider not connected");
     }
@@ -152,7 +152,7 @@ export default function App() {
       sequence: "54",
     };
 
-    const [address] = cosmosProvider.accounts;
+    const address = account.split(":").pop();
 
     // cosmos_signAmino params
     const params = { signerAddress: address, signDoc };
@@ -171,19 +171,21 @@ export default function App() {
   };
 
   const getCosmosActions = (): AccountAction[] => {
-    const wrapRpcRequest = (rpcRequest: () => Promise<IFormattedRpcResponse>) => async () => {
-      openRequestModal();
-      try {
-        setIsRpcRequestPending(true);
-        const result = await rpcRequest();
-        setRpcResult(result);
-      } catch (error) {
-        console.error("RPC request failed:", error);
-        setRpcResult({ result: error as string });
-      } finally {
-        setIsRpcRequestPending(false);
-      }
-    };
+    const wrapRpcRequest =
+      (rpcRequest: (account: string) => Promise<IFormattedRpcResponse>) =>
+      async (account: string) => {
+        openRequestModal();
+        try {
+          setIsRpcRequestPending(true);
+          const result = await rpcRequest(account);
+          setRpcResult(result);
+        } catch (error) {
+          console.error("RPC request failed:", error);
+          setRpcResult({ result: error as string });
+        } finally {
+          setIsRpcRequestPending(false);
+        }
+      };
 
     return [
       { method: "cosmos_signDirect", callback: wrapRpcRequest(testSignDirect) },
