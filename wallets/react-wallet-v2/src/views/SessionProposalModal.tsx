@@ -5,7 +5,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
-import { SOLANA_MAINNET_CHAINS, TSolanaChain } from '@/data/SolanaData'
+import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
@@ -103,7 +103,7 @@ export default function SessionProposalModal() {
           if (isEIP155Chain(chain)) {
             return (
               <ProposalSelectSection
-                name={EIP155_CHAINS[chain as TEIP155Chain].name}
+                name={EIP155_CHAINS[chain as TEIP155Chain]?.name}
                 addresses={eip155Addresses}
                 selectedAddresses={selectedEIP155}
                 onSelect={onSelectEIP155}
@@ -113,7 +113,7 @@ export default function SessionProposalModal() {
           } else if (isCosmosChain(chain)) {
             return (
               <ProposalSelectSection
-                name={COSMOS_MAINNET_CHAINS[chain as TCosmosChain].name}
+                name={COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name}
                 addresses={cosmosAddresses}
                 selectedAddresses={selectedCosmos}
                 onSelect={onSelectCosmos}
@@ -123,7 +123,7 @@ export default function SessionProposalModal() {
           } else if (isSolanaChain(chain)) {
             return (
               <ProposalSelectSection
-                name={SOLANA_MAINNET_CHAINS[chain as TSolanaChain].name}
+                name={SOLANA_CHAINS[chain as TSolanaChain]?.name}
                 addresses={solanaAddresses}
                 selectedAddresses={selectedSolana}
                 onSelect={onSelectSolana}
