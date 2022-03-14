@@ -123,6 +123,11 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       setPairings(_client.pairing.topics);
     });
 
+    _client.on(CLIENT_EVENTS.session.updated, (updatedSession: SessionTypes.Settled) => {
+      console.log("EVENT", "session_updated");
+      onSessionConnected(updatedSession);
+    });
+
     _client.on(CLIENT_EVENTS.session.deleted, () => {
       console.log("EVENT", "session_deleted");
       resetApp();

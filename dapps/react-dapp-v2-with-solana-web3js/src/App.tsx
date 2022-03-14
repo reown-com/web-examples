@@ -211,6 +211,7 @@ export default function App() {
                 address={account}
                 chainId={chain}
                 balances={balances}
+                isTestnet={isTestnet}
                 actions={getSolanaActions()}
               />
             );

@@ -90,7 +90,7 @@ interface BlockchainProps {
   onClick?: (chain: string) => void;
   balances?: AccountBalances;
   actions?: AccountAction[];
-  isTestnet?: boolean;
+  isTestnet: boolean;
 }
 
 interface BlockchainDisplayData {
