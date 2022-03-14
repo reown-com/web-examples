@@ -163,20 +163,14 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         };
       }
 
-      let result = "";
-
-      try {
-        result = await client!.request({
-          topic: session!.topic,
-          chainId,
-          request: {
-            method: "eth_sendTransaction",
-            params: [tx],
-          },
-        });
-      } catch (error) {
-        console.error(error);
-      }
+      const result = await client!.request({
+        topic: session!.topic,
+        chainId,
+        request: {
+          method: "eth_sendTransaction",
+          params: [tx],
+        },
+      });
 
       // format displayed result
       return {
