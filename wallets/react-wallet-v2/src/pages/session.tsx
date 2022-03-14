@@ -1,11 +1,13 @@
-import AccountSelectCard from '@/components/AccountSelectCard'
 import PageHeader from '@/components/PageHeader'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
+import SessionSelectSection from '@/components/SessionSelectSection'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { isCosmosChain, isEIP155Chain } from '@/utils/HelperUtil'
+import { isCosmosChain, isEIP155Chain, isSolanaChain } from '@/utils/HelperUtil'
+import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Button, Col, Divider, Row, Text } from '@nextui-org/react'
 import { ERROR } from '@walletconnect/utils'
@@ -79,59 +81,39 @@ export default function SessionPage() {
       {chains.map(chain => {
         if (isEIP155Chain(chain)) {
           return (
-            <Fragment key={chain}>
-              <Divider y={2} />
-
-              <Row>
-                <Col>
-                  <Text h5>{`${EIP155_CHAINS[chain as TEIP155Chain].name} Accounts`}</Text>
-                  {eip155Addresses.map((address, index) => {
-                    const fullAddress = `${chain}:${address}`
-                    const selected = accounts.includes(fullAddress)
-
-                    return (
-                      <AccountSelectCard
-                        key={address}
-                        address={address}
-                        index={index}
-                        onSelect={() =>
-                          selected ? onDeleteAccount(fullAddress) : onAddAccount(fullAddress)
-                        }
-                        selected={selected}
-                      />
-                    )
-                  })}
-                </Col>
-              </Row>
-            </Fragment>
+            <SessionSelectSection
+              key={chain}
+              chain={chain}
+              name={EIP155_CHAINS[chain as TEIP155Chain]?.name}
+              addresses={eip155Addresses}
+              selectedAddresses={accounts}
+              onDelete={onDeleteAccount}
+              onAdd={onAddAccount}
+            />
           )
         } else if (isCosmosChain(chain)) {
           return (
-            <Fragment key={chain}>
-              <Divider y={2} />
-
-              <Row>
-                <Col>
-                  <Text h5>{`${COSMOS_MAINNET_CHAINS[chain as TCosmosChain].name} Accounts`}</Text>
-                  {cosmosAddresses.map((address, index) => {
-                    const fullAddress = `${chain}:${address}`
-                    const selected = accounts.includes(fullAddress)
-
-                    return (
-                      <AccountSelectCard
-                        key={address}
-                        address={address}
-                        index={index}
-                        onSelect={() =>
-                          selected ? onDeleteAccount(fullAddress) : onAddAccount(fullAddress)
-                        }
-                        selected={selected}
-                      />
-                    )
-                  })}
-                </Col>
-              </Row>
-            </Fragment>
+            <SessionSelectSection
+              key={chain}
+              chain={chain}
+              name={COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name}
+              addresses={cosmosAddresses}
+              selectedAddresses={accounts}
+              onDelete={onDeleteAccount}
+              onAdd={onAddAccount}
+            />
+          )
+        } else if (isSolanaChain(chain)) {
+          return (
+            <SessionSelectSection
+              key={chain}
+              chain={chain}
+              name={SOLANA_CHAINS[chain as TSolanaChain]?.name}
+              addresses={solanaAddresses}
+              selectedAddresses={accounts}
+              onDelete={onDeleteAccount}
+              onAdd={onAddAccount}
+            />
           )
         }
       })}

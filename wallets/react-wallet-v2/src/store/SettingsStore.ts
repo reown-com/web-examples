@@ -8,6 +8,7 @@ interface State {
   account: number
   eip155Address: string
   cosmosAddress: string
+  solanaAddress: string
 }
 
 /**
@@ -17,7 +18,8 @@ const state = proxy<State>({
   testNets: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem('TEST_NETS')) : true,
   account: 0,
   eip155Address: '',
-  cosmosAddress: ''
+  cosmosAddress: '',
+  solanaAddress: ''
 })
 
 /**
@@ -36,6 +38,10 @@ const SettingsStore = {
 
   setCosmosAddress(cosmosAddresses: string) {
     state.cosmosAddress = cosmosAddresses
+  },
+
+  setSolanaAddress(solanaAddress: string) {
+    state.solanaAddress = solanaAddress
   },
 
   toggleTestNets() {

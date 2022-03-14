@@ -1,21 +1,25 @@
-import AccountSelectCard from '@/components/AccountSelectCard'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
+import ProposalSelectSection from '@/components/ProposalSelectSection'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { isCosmosChain, isEIP155Chain } from '@/utils/HelperUtil'
+import { isCosmosChain, isEIP155Chain, isSolanaChain } from '@/utils/HelperUtil'
+import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
-import { Button, Col, Divider, Modal, Row, Text } from '@nextui-org/react'
+import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
 export default function SessionProposalModal() {
   const [selectedEIP155, setSelectedEip155] = useState<string[]>([])
   const [selectedCosmos, setSelectedCosmos] = useState<string[]>([])
+  const [selectedSolana, setSelectedSolana] = useState<string[]>([])
+  const allSelected = [...selectedEIP155, ...selectedCosmos, ...selectedSolana]
 
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
@@ -50,10 +54,20 @@ export default function SessionProposalModal() {
     }
   }
 
+  // Add / remove address from Solana selection
+  function onSelectSolana(address: string) {
+    if (selectedSolana.includes(address)) {
+      const newAddresses = selectedSolana.filter(a => a !== address)
+      setSelectedSolana(newAddresses)
+    } else {
+      setSelectedSolana([...selectedSolana, address])
+    }
+  }
+
   // Hanlde approve action
   async function onApprove() {
     if (proposal) {
-      const accounts = [...selectedEIP155, ...selectedCosmos]
+      const accounts = allSelected
       const response = {
         state: {
           accounts
@@ -88,47 +102,33 @@ export default function SessionProposalModal() {
         {chains.map(chain => {
           if (isEIP155Chain(chain)) {
             return (
-              <Fragment>
-                <Divider y={2} />
-
-                <Row>
-                  <Col>
-                    <Text h5>{`Select ${EIP155_CHAINS[chain as TEIP155Chain].name} Accounts`}</Text>
-                    {eip155Addresses.map((address, index) => (
-                      <AccountSelectCard
-                        key={address}
-                        address={address}
-                        index={index}
-                        onSelect={() => onSelectEIP155(`${chain}:${address}`)}
-                        selected={selectedEIP155.includes(`${chain}:${address}`)}
-                      />
-                    ))}
-                  </Col>
-                </Row>
-              </Fragment>
+              <ProposalSelectSection
+                name={EIP155_CHAINS[chain as TEIP155Chain]?.name}
+                addresses={eip155Addresses}
+                selectedAddresses={selectedEIP155}
+                onSelect={onSelectEIP155}
+                chain={chain}
+              />
             )
           } else if (isCosmosChain(chain)) {
             return (
-              <Fragment>
-                <Divider y={2} />
-
-                <Row>
-                  <Col>
-                    <Text h5>
-                      {`Select ${COSMOS_MAINNET_CHAINS[chain as TCosmosChain].name} Accounts`}
-                    </Text>
-                    {cosmosAddresses.map((address, index) => (
-                      <AccountSelectCard
-                        key={address}
-                        address={address}
-                        index={index}
-                        onSelect={() => onSelectCosmos(`${chain}:${address}`)}
-                        selected={selectedCosmos.includes(`${chain}:${address}`)}
-                      />
-                    ))}
-                  </Col>
-                </Row>
-              </Fragment>
+              <ProposalSelectSection
+                name={COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name}
+                addresses={cosmosAddresses}
+                selectedAddresses={selectedCosmos}
+                onSelect={onSelectCosmos}
+                chain={chain}
+              />
+            )
+          } else if (isSolanaChain(chain)) {
+            return (
+              <ProposalSelectSection
+                name={SOLANA_CHAINS[chain as TSolanaChain]?.name}
+                addresses={solanaAddresses}
+                selectedAddresses={selectedSolana}
+                onSelect={onSelectSolana}
+                chain={chain}
+              />
             )
           }
         })}
@@ -144,8 +144,10 @@ export default function SessionProposalModal() {
           flat
           color="success"
           onClick={onApprove}
-          disabled={![...selectedEIP155, ...selectedCosmos].length}
-          css={{ opacity: [...selectedEIP155, ...selectedCosmos].length ? 1 : 0.4 }}
+          disabled={!allSelected.length}
+          css={{
+            opacity: allSelected.length ? 1 : 0.4
+          }}
         >
           Approve
         </Button>

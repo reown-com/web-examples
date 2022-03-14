@@ -32,6 +32,7 @@ export default function WalletConnectPage() {
 
       <Input
         bordered
+        aria-label="wc url connect input"
         placeholder="e.g. wc:a281567bb3e4..."
         onChange={e => setUri(e.target.value)}
         value={uri}

@@ -36,7 +36,6 @@ export default function Layout({ children, initialized }: Props) {
           justifyContent: initialized ? 'normal' : 'center',
           alignItems: initialized ? 'normal' : 'center',
           borderRadius: 0,
-
           paddingBottom: 5,
           '@xs': {
             borderRadius: '$lg',
@@ -53,7 +52,8 @@ export default function Layout({ children, initialized }: Props) {
                   paddingLeft: 2,
                   paddingRight: 2,
                   '@xs': {
-                    padding: '20px'
+                    padding: '20px',
+                    paddingBottom: '40px'
                   }
                 }}
               >
@@ -68,6 +68,8 @@ export default function Layout({ children, initialized }: Props) {
                 position: 'sticky',
                 justifyContent: 'flex-end',
                 alignItems: 'flex-end',
+                boxShadow: '0 -30px 20px #111111',
+                zIndex: 200,
                 bottom: 0,
                 left: 0
               }}
