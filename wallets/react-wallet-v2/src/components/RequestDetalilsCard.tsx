@@ -1,5 +1,6 @@
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { SOLANA_MAINNET_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { Col, Divider, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -26,6 +27,7 @@ export default function RequesDetailsCard({ chains, protocol }: IProps) {
                 chain =>
                   EIP155_CHAINS[chain as TEIP155Chain]?.name ??
                   COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name ??
+                  SOLANA_MAINNET_CHAINS[chain as TSolanaChain]?.name ??
                   chain
               )
               .join(', ')}

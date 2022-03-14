@@ -5,10 +5,12 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { SOLANA_MAINNET_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { isCosmosChain, isEIP155Chain } from '@/utils/HelperUtil'
+import { isCosmosChain, isEIP155Chain, isSolanaChain } from '@/utils/HelperUtil'
+import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Button, Col, Divider, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
@@ -16,6 +18,7 @@ import { Fragment, useState } from 'react'
 export default function SessionProposalModal() {
   const [selectedEIP155, setSelectedEip155] = useState<string[]>([])
   const [selectedCosmos, setSelectedCosmos] = useState<string[]>([])
+  const [selectedSolana, setSelectedSolana] = useState<string[]>([])
 
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
@@ -47,6 +50,16 @@ export default function SessionProposalModal() {
       setSelectedCosmos(newAddresses)
     } else {
       setSelectedCosmos([...selectedCosmos, address])
+    }
+  }
+
+  // Add / remove address from Solana selection
+  function onSelectSolana(address: string) {
+    if (selectedSolana.includes(address)) {
+      const newAddresses = selectedSolana.filter(a => a !== address)
+      setSelectedSolana(newAddresses)
+    } else {
+      setSelectedSolana([...selectedSolana, address])
     }
   }
 
@@ -124,6 +137,29 @@ export default function SessionProposalModal() {
                         index={index}
                         onSelect={() => onSelectCosmos(`${chain}:${address}`)}
                         selected={selectedCosmos.includes(`${chain}:${address}`)}
+                      />
+                    ))}
+                  </Col>
+                </Row>
+              </Fragment>
+            )
+          } else if (isSolanaChain(chain)) {
+            return (
+              <Fragment>
+                <Divider y={2} />
+
+                <Row>
+                  <Col>
+                    <Text h5>
+                      {`Select ${SOLANA_MAINNET_CHAINS[chain as TSolanaChain].name} Accounts`}
+                    </Text>
+                    {solanaAddresses.map((address, index) => (
+                      <AccountSelectCard
+                        key={address}
+                        address={address}
+                        index={index}
+                        onSelect={() => onSelectSolana(`${chain}:${address}`)}
+                        selected={selectedSolana.includes(`${chain}:${address}`)}
                       />
                     ))}
                   </Col>
