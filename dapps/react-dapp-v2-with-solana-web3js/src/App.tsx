@@ -49,7 +49,7 @@ export default function App() {
     disconnect,
     chain,
     accounts,
-    publicKey,
+    publicKeys,
     balances,
     chainData,
     isInitializing,
@@ -83,14 +83,22 @@ export default function App() {
     await ping();
   };
 
-  const testSignTransaction = async (): Promise<IFormattedRpcResponse> => {
-    if (!client || !publicKey || !session) {
+  const testSignTransaction = async (account: string): Promise<IFormattedRpcResponse> => {
+    if (!client || !publicKeys || !session) {
       throw new Error("WalletConnect Client not initialized properly.");
     }
 
-    const transaction = new Transaction({ feePayer: publicKey }).add(
+    const address = account.split(":").pop();
+
+    if (!address) {
+      throw new Error(`Could not derive Solana address from CAIP account: ${account}`);
+    }
+
+    const senderPublicKey = publicKeys[address];
+
+    const transaction = new Transaction({ feePayer: senderPublicKey }).add(
       SystemProgram.transfer({
-        fromPubkey: publicKey,
+        fromPubkey: senderPublicKey,
         toPubkey: Keypair.generate().publicKey,
         lamports: 1,
       }),
@@ -132,19 +140,21 @@ export default function App() {
   };
 
   const getSolanaActions = (): AccountAction[] => {
-    const wrapRpcRequest = (rpcRequest: () => Promise<IFormattedRpcResponse>) => async () => {
-      openRequestModal();
-      try {
-        setIsRpcRequestPending(true);
-        const result = await rpcRequest();
-        setRpcResult(result);
-      } catch (error) {
-        console.error("RPC request failed:", error);
-        setRpcResult({ result: error as string });
-      } finally {
-        setIsRpcRequestPending(false);
-      }
-    };
+    const wrapRpcRequest =
+      (rpcRequest: (account: string) => Promise<IFormattedRpcResponse>) =>
+      async (account: string) => {
+        openRequestModal();
+        try {
+          setIsRpcRequestPending(true);
+          const result = await rpcRequest(account);
+          setRpcResult(result);
+        } catch (error) {
+          console.error("RPC request failed:", error);
+          setRpcResult({ result: error as string });
+        } finally {
+          setIsRpcRequestPending(false);
+        }
+      };
 
     return [
       {

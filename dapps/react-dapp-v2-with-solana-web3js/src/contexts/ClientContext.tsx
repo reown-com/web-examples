@@ -21,11 +21,6 @@ import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../help
  * Types
  */
 
-export enum SolanaChainId {
-  Mainnet = "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
-  Devnet = "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
-}
-
 export enum SolanaRpcMethod {
   SOL_SIGN_TRANSACTION = "sol_signTransaction",
 }
@@ -36,7 +31,7 @@ interface IContext {
   isInitializing: boolean;
   chain: string;
   pairings: string[];
-  publicKey?: PublicKey;
+  publicKeys?: Record<string, PublicKey>;
   accounts: string[];
   balances: AccountBalances;
   chainData: ChainNamespaces;
@@ -61,7 +56,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
   const [balances, setBalances] = useState<AccountBalances>({});
   const [accounts, setAccounts] = useState<string[]>([]);
-  const [publicKey, setPublicKey] = useState<PublicKey>();
+  const [publicKeys, setPublicKeys] = useState<Record<string, PublicKey>>();
   const [chainData, setChainData] = useState<ChainNamespaces>({});
   const [chain, setChain] = useState<string>("");
 
@@ -69,7 +64,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     setPairings([]);
     setSession(undefined);
     setBalances({});
-    setPublicKey(undefined);
+    setPublicKeys(undefined);
     setAccounts([]);
     setChain("");
   };
@@ -94,17 +89,23 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   };
 
   const onSessionConnected = useCallback(async (_session: SessionTypes.Settled) => {
-    const account = _session.state.accounts[0].split(":").pop();
-    if (!account) {
-      throw new Error("Could not derive account address from `session.state.accounts`.");
-    }
-
-    const _publicKey = new PublicKey(account);
+    // Create a map of Solana address -> publicKey.
+    const _publicKeys = _session.state.accounts.reduce(
+      (publicKeysMap: Record<string, PublicKey>, account) => {
+        const address = account.split(":").pop();
+        if (!address) {
+          throw new Error(`Could not derive Solana address from CAIP account: ${account}`);
+        }
+        publicKeysMap[address] = new PublicKey(address);
+        return publicKeysMap;
+      },
+      {},
+    );
 
     setSession(_session);
     setChain(_session.permissions.blockchain.chains[0]);
     setAccounts(_session.state.accounts);
-    setPublicKey(_publicKey);
+    setPublicKeys(_publicKeys);
   }, []);
 
   const disconnect = useCallback(async () => {
@@ -236,7 +237,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       pairings,
       isInitializing,
       balances,
-      publicKey,
+      publicKeys,
       accounts,
       chain,
       client,
@@ -249,7 +250,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       pairings,
       isInitializing,
       balances,
-      publicKey,
+      publicKeys,
       accounts,
       chain,
       client,

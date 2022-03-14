@@ -120,7 +120,7 @@ function getBlockchainDisplayData(
 const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
   props: PropsWithChildren<BlockchainProps>,
 ) => {
-  const { fetching, chainId, address, onClick, balances, active, actions, isTestnet } = props;
+  const { fetching, address, onClick, balances, active, actions, isTestnet } = props;
 
   // if (!Object.keys(chainData).length) return null;
 
@@ -167,7 +167,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                   </Column>
                 </SFullWidthContainer>
               ) : null}
-              {!!actions && actions.length ? (
+              {address && !!actions && actions.length ? (
                 <SFullWidthContainer>
                   <h6>Methods</h6>
                   {actions.map(action => (
@@ -175,7 +175,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                       key={action.method}
                       left
                       rgb={chain.meta.rgb}
-                      onClick={() => action.callback(chainId)}
+                      onClick={() => action.callback(address)}
                     >
                       {action.method}
                     </SAction>
