@@ -2,20 +2,30 @@ import { Keypair, PublicKey, Transaction, TransactionInstructionCtorFields } fro
 import bs58 from 'bs58'
 import nacl from 'tweetnacl'
 
-export class Solana {
+/**
+ * Types
+ */
+interface IInitArguments {
+  secretKey?: Uint8Array
+}
+
+/**
+ * Library
+ */
+export default class SolanaLib {
   keypair: Keypair
 
   constructor(keypair: Keypair) {
     this.keypair = keypair
   }
 
-  static init(secretKey?: Uint8Array) {
+  static init({ secretKey }: IInitArguments) {
     const keypair = secretKey ? Keypair.fromSecretKey(secretKey) : Keypair.generate()
 
-    return new Solana(keypair)
+    return new SolanaLib(keypair)
   }
 
-  public async getAccount() {
+  public async getAddress() {
     return await this.keypair.publicKey.toBase58()
   }
 
@@ -48,8 +58,12 @@ export class Solana {
 
     await tx.sign(this.keypair)
 
-    const { signature } = tx.signatures[tx.signatures.length - 1]
+    if (!tx.signature) {
+      throw new Error('Missing signature!')
+    }
 
-    return { signature }
+    const bs58Signature = bs58.encode(tx.signature)
+
+    return { signature: bs58Signature }
   }
 }
