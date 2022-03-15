@@ -1,4 +1,4 @@
-import { Keypair, Transaction, TransactionInstructionCtorFields } from '@solana/web3.js'
+import { Keypair, PublicKey, Transaction, TransactionInstructionCtorFields } from '@solana/web3.js'
 import bs58 from 'bs58'
 import nacl from 'tweetnacl'
 
@@ -25,10 +25,18 @@ export class Solana {
     return signature
   }
 
-  public async signTransaction(transaction: TransactionInstructionCtorFields) {
-    const tx = new Transaction()
-    tx.add(transaction)
+  public async signTransaction(
+    feePayer: string,
+    recentBlockhash: string,
+    instructions: TransactionInstructionCtorFields
+  ) {
+    const tx = new Transaction({
+      feePayer: new PublicKey(feePayer),
+      recentBlockhash
+    })
+    tx.add(instructions)
     await tx.sign(this.keypair)
+    console.log(tx)
     const { signature } = tx.signatures[tx.signatures.length - 1]
 
     return signature
