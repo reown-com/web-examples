@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { version } from "@walletconnect/client/package.json";
-import { Keypair, SystemProgram, Transaction } from "@solana/web3.js";
+import { clusterApiUrl, Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
 
 import Banner from "./components/Banner";
@@ -96,7 +96,15 @@ export default function App() {
 
     const senderPublicKey = publicKeys[address];
 
-    const transaction = new Transaction({ feePayer: senderPublicKey }).add(
+    const connection = new Connection(clusterApiUrl(isTestnet ? "testnet" : "mainnet-beta"));
+    // Using deprecated `getRecentBlockhash` over `getLatestBlockhash` here, since `mainnet-beta`
+    // cluster only seems to support `connection.getRecentBlockhash` currently.
+    const { blockhash } = await connection.getRecentBlockhash();
+
+    const transaction = new Transaction({
+      feePayer: senderPublicKey,
+      recentBlockhash: blockhash,
+    }).add(
       SystemProgram.transfer({
         fromPubkey: senderPublicKey,
         toPubkey: Keypair.generate().publicKey,
@@ -111,6 +119,7 @@ export default function App() {
           method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
           params: {
             feePayer: transaction.feePayer!.toBase58(),
+            recentBlockhash: transaction.recentBlockhash,
             instructions: transaction.instructions.map(i => ({
               programId: i.programId.toBase58(),
               data: bs58.encode(i.data),
@@ -120,7 +129,6 @@ export default function App() {
                 pubkey: k.pubkey.toBase58(),
               })),
             })),
-            recentBlockhash: transaction.recentBlockhash,
           },
         },
       });
