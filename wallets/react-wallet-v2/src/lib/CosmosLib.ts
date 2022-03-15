@@ -3,12 +3,13 @@ import { fromHex } from '@cosmjs/encoding'
 import { DirectSecp256k1Wallet, makeSignBytes } from '@cosmjs/proto-signing'
 // @ts-expect-error
 import { SignDoc } from '@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx'
-import MnemonicKeyring from 'mnemonic-keyring'
+import Keyring from 'mnemonic-keyring'
 
 /**
  * Constants
  */
 const DEFAULT_PATH = "m/44'/118'/0'/0/0"
+const DEFAULT_PREFIX = 'cosmos'
 
 /**
  * Types
@@ -20,45 +21,39 @@ interface IInitArguments {
 }
 
 /**
- * Utility
+ * Library
  */
-export class Cosmos {
-  private keyring: MnemonicKeyring
+export default class CosmosLib {
+  private keyring: Keyring
   private directSigner: DirectSecp256k1Wallet
   private aminoSigner: Secp256k1Wallet
 
-  constructor(
-    keyring: MnemonicKeyring,
-    directSigner: DirectSecp256k1Wallet,
-    aminoSigner: Secp256k1Wallet
-  ) {
+  constructor(keyring: Keyring, directSigner: DirectSecp256k1Wallet, aminoSigner: Secp256k1Wallet) {
     this.directSigner = directSigner
     this.keyring = keyring
     this.aminoSigner = aminoSigner
   }
 
   static async init({ mnemonic, path, prefix }: IInitArguments) {
-    const keyring = await MnemonicKeyring.init({ mnemonic })
+    const keyring = await Keyring.init({ mnemonic: mnemonic ?? Keyring.generateMnemonic() })
     const privateKey = fromHex(keyring.getPrivateKey(path ?? DEFAULT_PATH))
-    const chainPrefix = prefix ?? 'cosmos'
-    const directSigner = await DirectSecp256k1Wallet.fromKey(privateKey, chainPrefix)
-    const aminoSigner = await Secp256k1Wallet.fromKey(privateKey, chainPrefix)
+    const directSigner = await DirectSecp256k1Wallet.fromKey(privateKey, prefix ?? DEFAULT_PREFIX)
+    const aminoSigner = await Secp256k1Wallet.fromKey(privateKey, prefix ?? DEFAULT_PREFIX)
 
-    return new Cosmos(keyring, directSigner, aminoSigner)
-  }
-
-  public async getAccount(number = 0) {
-    const account = await this.directSigner.getAccounts()
-
-    return account[number]
+    return new CosmosLib(keyring, directSigner, aminoSigner)
   }
 
   public getMnemonic() {
     return this.keyring.mnemonic
   }
 
+  public async getAccount() {
+    const account = await this.directSigner.getAccounts()
+
+    return account[0]
+  }
+
   public async signDirect(address: string, signDoc: SignDoc) {
-    console.log(signDoc)
     const signDocBytes = makeSignBytes(signDoc)
     // @ts-expect-error
     return await this.directSigner.signDirect(address, signDocBytes)
