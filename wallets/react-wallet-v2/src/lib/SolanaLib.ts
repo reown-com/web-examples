@@ -58,8 +58,12 @@ export default class SolanaLib {
 
     await tx.sign(this.keypair)
 
-    const { signature } = tx.signatures[tx.signatures.length - 1]
+    if (!tx.signature) {
+      throw new Error('Missing signature!')
+    }
 
-    return { signature }
+    const bs58Signature = bs58.encode(tx.signature)
+
+    return { signature: bs58Signature }
   }
 }
