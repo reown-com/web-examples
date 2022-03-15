@@ -138,7 +138,7 @@ export default function App() {
 
       return {
         method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
-        // address,
+        address,
         valid: true,
         result: signature,
       };
