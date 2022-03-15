@@ -29,6 +29,10 @@ export default class SolanaLib {
     return await this.keypair.publicKey.toBase58()
   }
 
+  public getSecretKey() {
+    return this.keypair.secretKey.toString()
+  }
+
   public async signMessage(message: string) {
     const signature = nacl.sign.detached(bs58.decode(message), this.keypair.secretKey)
 
