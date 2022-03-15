@@ -25,7 +25,7 @@ export default class SolanaLib {
     return new SolanaLib(keypair)
   }
 
-  public async getAccount() {
+  public async getAddress() {
     return await this.keypair.publicKey.toBase58()
   }
 

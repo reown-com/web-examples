@@ -18,16 +18,12 @@ export async function createOrRestoreSolanaWallet() {
   if (secretKey1 && secretKey2) {
     const secretArray1: number[] = Object.values(JSON.parse(secretKey1))
     const secretArray2: number[] = Object.values(JSON.parse(secretKey2))
-
     wallet1 = SolanaLib.init({ secretKey: Uint8Array.from(secretArray1) })
     wallet2 = SolanaLib.init({ secretKey: Uint8Array.from(secretArray2) })
-    address1 = await wallet1.getAccount()
-    address2 = await wallet2.getAccount()
   } else {
     wallet1 = SolanaLib.init({})
     wallet2 = SolanaLib.init({})
-    address1 = await wallet1.getAccount()
-    address2 = await wallet2.getAccount()
+
     // Don't store secretKey in local storage in a production project!
     localStorage.setItem(
       'SOLANA_SECRET_KEY_1',
@@ -38,6 +34,9 @@ export async function createOrRestoreSolanaWallet() {
       JSON.stringify(Array.from(wallet2.keypair.secretKey))
     )
   }
+
+  address1 = await wallet1.getAddress()
+  address2 = await wallet2.getAddress()
 
   solanaWallets = {
     [address1]: wallet1,
