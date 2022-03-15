@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { version } from "@walletconnect/client/package.json";
 import { clusterApiUrl, Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
+import nacl from "tweetnacl";
 
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";
@@ -97,6 +98,7 @@ export default function App() {
     const senderPublicKey = publicKeys[address];
 
     const connection = new Connection(clusterApiUrl(isTestnet ? "testnet" : "mainnet-beta"));
+
     // Using deprecated `getRecentBlockhash` over `getLatestBlockhash` here, since `mainnet-beta`
     // cluster only seems to support `connection.getRecentBlockhash` currently.
     const { blockhash } = await connection.getRecentBlockhash();
@@ -113,7 +115,7 @@ export default function App() {
     );
 
     try {
-      const result = await client.request({
+      const { signature } = await client.request({
         topic: session.topic,
         request: {
           method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
@@ -133,13 +135,17 @@ export default function App() {
         },
       });
 
-      // transaction.addSignature(senderPublicKey, bs58.decode(signature));
+      // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
+      // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
+      transaction.addSignature(senderPublicKey, Buffer.from(bs58.decode(signature)));
+
+      const valid = transaction.verifySignatures();
 
       return {
         method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
         address,
-        valid: true,
-        result: result.signature,
+        valid,
+        result: signature,
       };
     } catch (error: any) {
       throw new Error(error);
@@ -160,27 +166,33 @@ export default function App() {
     const senderPublicKey = publicKeys[address];
 
     // Encode message to `UInt8Array` first via `TextEncoder` so we can pass it to `bs58.encode`.
-    const message = bs58.encode(
-      new TextEncoder().encode(`This is an example message to be signed - ${Date.now()}`),
+    const message = new TextEncoder().encode(
+      `This is an example message to be signed - ${Date.now()}`,
     );
 
     try {
-      const result = await client.request({
+      const { signature } = await client.request({
         topic: session.topic,
         request: {
           method: SolanaRpcMethod.SOL_SIGN_MESSAGE,
           params: {
             pubkey: senderPublicKey.toBase58(),
-            message,
+            message: bs58.encode(message),
           },
         },
       });
 
+      const valid = nacl.sign.detached.verify(
+        message,
+        bs58.decode(signature),
+        senderPublicKey.toBytes(),
+      );
+
       return {
         method: SolanaRpcMethod.SOL_SIGN_MESSAGE,
         address,
-        valid: true,
-        result: result.signature,
+        valid,
+        result: signature,
       };
     } catch (error: any) {
       throw new Error(error);
