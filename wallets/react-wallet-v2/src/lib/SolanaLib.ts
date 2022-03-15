@@ -2,17 +2,27 @@ import { Keypair, PublicKey, Transaction, TransactionInstructionCtorFields } fro
 import bs58 from 'bs58'
 import nacl from 'tweetnacl'
 
-export class Solana {
+/**
+ * Types
+ */
+interface IInitArguments {
+  secretKey?: Uint8Array
+}
+
+/**
+ * Library
+ */
+export default class SolanaLib {
   keypair: Keypair
 
   constructor(keypair: Keypair) {
     this.keypair = keypair
   }
 
-  static init(secretKey?: Uint8Array) {
+  static init({ secretKey }: IInitArguments) {
     const keypair = secretKey ? Keypair.fromSecretKey(secretKey) : Keypair.generate()
 
-    return new Solana(keypair)
+    return new SolanaLib(keypair)
   }
 
   public async getAccount() {

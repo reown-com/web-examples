@@ -1,8 +1,8 @@
-import { Solana } from '@/lib/Solana'
+import SolanaLib from '@/lib/SolanaLib'
 
-export let wallet1: Solana
-export let wallet2: Solana
-export let solanaWallets: Record<string, Solana>
+export let wallet1: SolanaLib
+export let wallet2: SolanaLib
+export let solanaWallets: Record<string, SolanaLib>
 export let solanaAddresses: string[]
 
 let address1: string
@@ -19,13 +19,13 @@ export async function createOrRestoreSolanaWallet() {
     const secretArray1: number[] = Object.values(JSON.parse(secretKey1))
     const secretArray2: number[] = Object.values(JSON.parse(secretKey2))
 
-    wallet1 = Solana.init(Uint8Array.from(secretArray1))
-    wallet2 = Solana.init(Uint8Array.from(secretArray2))
+    wallet1 = SolanaLib.init({ secretKey: Uint8Array.from(secretArray1) })
+    wallet2 = SolanaLib.init({ secretKey: Uint8Array.from(secretArray2) })
     address1 = await wallet1.getAccount()
     address2 = await wallet2.getAccount()
   } else {
-    wallet1 = Solana.init()
-    wallet2 = Solana.init()
+    wallet1 = SolanaLib.init({})
+    wallet2 = SolanaLib.init({})
     address1 = await wallet1.getAccount()
     address2 = await wallet2.getAccount()
     // Don't store secretKey in local storage in a production project!
