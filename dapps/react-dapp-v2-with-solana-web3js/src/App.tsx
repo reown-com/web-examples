@@ -133,8 +133,7 @@ export default function App() {
         },
       });
 
-      // @ts-expect-error
-      transaction.addSignature(publicKey, bs58.decode(signature));
+      // transaction.addSignature(senderPublicKey, bs58.decode(signature));
 
       return {
         method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
