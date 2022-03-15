@@ -22,7 +22,7 @@ interface IInitArguments {
 /**
  * Utility
  */
-export class Cosmos {
+export class EIP155 {
   private keyring: MnemonicKeyring
   private directSigner: DirectSecp256k1Wallet
   private aminoSigner: Secp256k1Wallet
@@ -44,7 +44,7 @@ export class Cosmos {
     const directSigner = await DirectSecp256k1Wallet.fromKey(privateKey, chainPrefix)
     const aminoSigner = await Secp256k1Wallet.fromKey(privateKey, chainPrefix)
 
-    return new Cosmos(keyring, directSigner, aminoSigner)
+    return new EIP155(keyring, directSigner, aminoSigner)
   }
 
   public async getAccount(number = 0) {
