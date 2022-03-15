@@ -113,7 +113,7 @@ export default function App() {
     );
 
     try {
-      const signature = await client.request({
+      const result = await client.request({
         topic: session.topic,
         request: {
           method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
@@ -139,7 +139,7 @@ export default function App() {
         method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
         address,
         valid: true,
-        result: signature,
+        result: result.signature,
       };
     } catch (error: any) {
       throw new Error(error);
