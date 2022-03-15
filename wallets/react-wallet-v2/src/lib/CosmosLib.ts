@@ -47,10 +47,10 @@ export default class CosmosLib {
     return this.keyring.mnemonic
   }
 
-  public async getAccount() {
+  public async getAddress() {
     const account = await this.directSigner.getAccounts()
 
-    return account[0]
+    return account[0].address
   }
 
   public async signDirect(address: string, signDoc: SignDoc) {
