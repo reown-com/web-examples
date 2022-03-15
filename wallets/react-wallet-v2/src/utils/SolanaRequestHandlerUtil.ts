@@ -11,7 +11,7 @@ export async function approveSolanaRequest(requestEvent: RequestEvent) {
 
   switch (method) {
     case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
-      const signedMessage = await wallet.signMessage(params.signDoc)
+      const signedMessage = await wallet.signMessage(params.message)
       return formatJsonRpcResult(id, signedMessage)
 
     case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
