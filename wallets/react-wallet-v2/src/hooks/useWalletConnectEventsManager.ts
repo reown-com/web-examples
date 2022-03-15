@@ -28,9 +28,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     const { method } = request
     const requestSession = await walletConnectClient.session.get(topic)
 
-    console.log(requestEvent, requestSession)
-    console.log(method)
-
     switch (method) {
       case EIP155_SIGNING_METHODS.ETH_SIGN:
       case EIP155_SIGNING_METHODS.PERSONAL_SIGN:

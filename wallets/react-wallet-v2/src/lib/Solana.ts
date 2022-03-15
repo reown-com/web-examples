@@ -28,17 +28,28 @@ export class Solana {
   public async signTransaction(
     feePayer: string,
     recentBlockhash: string,
-    instructions: TransactionInstructionCtorFields
+    instructions: TransactionInstructionCtorFields[]
   ) {
     const tx = new Transaction({
       feePayer: new PublicKey(feePayer),
       recentBlockhash
     })
-    tx.add(instructions)
+
+    tx.add(
+      ...instructions.map(i => ({
+        programId: new PublicKey(i.programId),
+        data: i.data ? Buffer.from(i.data) : Buffer.from([]),
+        keys: i.keys.map(k => ({
+          ...k,
+          pubkey: new PublicKey(k.pubkey)
+        }))
+      }))
+    )
+
     await tx.sign(this.keypair)
-    console.log(tx)
+
     const { signature } = tx.signatures[tx.signatures.length - 1]
 
-    return signature
+    return { signature }
   }
 }

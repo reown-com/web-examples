@@ -58,7 +58,6 @@ export class EIP155 {
   }
 
   public async signDirect(address: string, signDoc: SignDoc) {
-    console.log(signDoc)
     const signDocBytes = makeSignBytes(signDoc)
     // @ts-expect-error
     return await this.directSigner.signDirect(address, signDocBytes)

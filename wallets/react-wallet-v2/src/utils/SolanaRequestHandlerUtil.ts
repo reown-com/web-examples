@@ -20,6 +20,7 @@ export async function approveSolanaRequest(requestEvent: RequestEvent) {
         params.recentBlockhash,
         params.instructions
       )
+
       return formatJsonRpcResult(id, signedTransaction)
 
     default:
