@@ -146,6 +146,47 @@ export default function App() {
     }
   };
 
+  const testSignMessage = async (account: string): Promise<IFormattedRpcResponse> => {
+    if (!client || !publicKeys || !session) {
+      throw new Error("WalletConnect Client not initialized properly.");
+    }
+
+    const address = account.split(":").pop();
+
+    if (!address) {
+      throw new Error(`Could not derive Solana address from CAIP account: ${account}`);
+    }
+
+    const senderPublicKey = publicKeys[address];
+
+    // Encode message to `UInt8Array` first via `TextEncoder` so we can pass it to `bs58.encode`.
+    const message = bs58.encode(
+      new TextEncoder().encode(`This is an example message to be signed - ${Date.now()}`),
+    );
+
+    try {
+      const result = await client.request({
+        topic: session.topic,
+        request: {
+          method: SolanaRpcMethod.SOL_SIGN_MESSAGE,
+          params: {
+            pubkey: senderPublicKey.toBase58(),
+            message,
+          },
+        },
+      });
+
+      return {
+        method: SolanaRpcMethod.SOL_SIGN_MESSAGE,
+        address,
+        valid: true,
+        result: result.signature,
+      };
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  };
+
   const getSolanaActions = (): AccountAction[] => {
     const wrapRpcRequest =
       (rpcRequest: (account: string) => Promise<IFormattedRpcResponse>) =>
@@ -167,6 +208,10 @@ export default function App() {
       {
         method: SolanaRpcMethod.SOL_SIGN_TRANSACTION,
         callback: wrapRpcRequest(testSignTransaction),
+      },
+      {
+        method: SolanaRpcMethod.SOL_SIGN_MESSAGE,
+        callback: wrapRpcRequest(testSignMessage),
       },
     ];
   };

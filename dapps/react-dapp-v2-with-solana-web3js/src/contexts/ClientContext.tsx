@@ -23,6 +23,7 @@ import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../help
 
 export enum SolanaRpcMethod {
   SOL_SIGN_TRANSACTION = "sol_signTransaction",
+  SOL_SIGN_MESSAGE = "sol_signMessage",
 }
 interface IContext {
   client: Client | undefined;
@@ -181,7 +182,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         const _session = await client.connect({
           permissions: {
             blockchain: { chains: [caipChainId] },
-            jsonrpc: { methods: [SolanaRpcMethod.SOL_SIGN_TRANSACTION] },
+            jsonrpc: {
+              methods: [SolanaRpcMethod.SOL_SIGN_TRANSACTION, SolanaRpcMethod.SOL_SIGN_MESSAGE],
+            },
           },
         });
         onSessionConnected(_session);
