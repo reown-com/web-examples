@@ -1,5 +1,6 @@
 import { COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
 import ModalStore from '@/store/ModalStore'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { CLIENT_EVENTS } from '@walletconnect/client'
@@ -27,6 +28,9 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     const { method } = request
     const requestSession = await walletConnectClient.session.get(topic)
 
+    console.log(requestEvent, requestSession)
+    console.log(method)
+
     switch (method) {
       case EIP155_SIGNING_METHODS.ETH_SIGN:
       case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
@@ -44,6 +48,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       case COSMOS_SIGNING_METHODS.COSMOS_SIGN_DIRECT:
       case COSMOS_SIGNING_METHODS.COSMOS_SIGN_AMINO:
         return ModalStore.open('SessionSignCosmosModal', { requestEvent, requestSession })
+
+      case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
+      case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
+        return ModalStore.open('SessionSignSolanaModal', { requestEvent, requestSession })
 
       default:
         return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
