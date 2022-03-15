@@ -22,8 +22,8 @@ import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../help
  */
 
 export enum SolanaRpcMethod {
-  SOL_SIGN_TRANSACTION = "sol_signTransaction",
-  SOL_SIGN_MESSAGE = "sol_signMessage",
+  SOL_SIGN_TRANSACTION = "solana_signTransaction",
+  SOL_SIGN_MESSAGE = "solana_signMessage",
 }
 interface IContext {
   client: Client | undefined;
