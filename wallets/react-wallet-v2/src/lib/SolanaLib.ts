@@ -35,8 +35,9 @@ export default class SolanaLib {
 
   public async signMessage(message: string) {
     const signature = nacl.sign.detached(bs58.decode(message), this.keypair.secretKey)
+    const bs58Signature = bs58.encode(signature)
 
-    return signature
+    return { signature: bs58Signature }
   }
 
   public async signTransaction(
