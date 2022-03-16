@@ -2,18 +2,24 @@ import { BigNumber, utils } from "ethers";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
 import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
+import bs58 from "bs58";
+import { verifyMessageSignature } from "solana-wallet";
 
 import {
   ChainNamespaces,
   eip712,
   formatTestTransaction,
   getAllChainNamespaces,
+  getLocalStorageTestnetFlag,
   hashPersonalMessage,
   verifySignature,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
 import { TypedDataField } from "@ethersproject/abstract-signer";
+import { DEFAULT_SOLANA_METHODS } from "../constants";
+import { clusterApiUrl, Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
+import { SolanaChainData } from "../chains/solana";
 
 /**
  * Types
@@ -45,9 +51,15 @@ interface IContext {
     testSignDirect: TRpcRequestCallback;
     testSignAmino: TRpcRequestCallback;
   };
+  solanaRpc: {
+    testSignMessage: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
+  };
   chainData: ChainNamespaces;
   rpcResult?: IRpcResult | null;
   isRpcRequestPending: boolean;
+  isTestnet: boolean;
+  setIsTestnet: (isTestnet: boolean) => void;
 }
 
 /**
@@ -62,8 +74,9 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<IRpcResult | null>();
   const [chainData, setChainData] = useState<ChainNamespaces>({});
+  const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
 
-  const { client, session, accounts, balances } = useWalletConnectClient();
+  const { client, session, accounts, balances, solanaPublicKeys } = useWalletConnectClient();
 
   useEffect(() => {
     loadChainData();
@@ -76,7 +89,11 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       namespaces.map(async namespace => {
         let chains: ChainsMap | undefined;
         try {
-          chains = await apiGetChainNamespace(namespace);
+          if (namespace === "solana") {
+            chains = SolanaChainData;
+          } else {
+            chains = await apiGetChainNamespace(namespace);
+          }
         } catch (e) {
           // ignore error
         }
@@ -85,6 +102,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         }
       }),
     );
+
     setChainData(chainData);
   };
 
@@ -437,6 +455,112 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
     }),
   };
 
+  // -------- SOLANA RPC METHODS --------
+
+  const solanaRpc = {
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        if (!solanaPublicKeys) {
+          throw new Error("Could not find Solana PublicKeys.");
+        }
+
+        const senderPublicKey = solanaPublicKeys[address];
+
+        const connection = new Connection(clusterApiUrl(isTestnet ? "testnet" : "mainnet-beta"));
+
+        // Using deprecated `getRecentBlockhash` over `getLatestBlockhash` here, since `mainnet-beta`
+        // cluster only seems to support `connection.getRecentBlockhash` currently.
+        const { blockhash } = await connection.getRecentBlockhash();
+
+        const transaction = new Transaction({
+          feePayer: senderPublicKey,
+          recentBlockhash: blockhash,
+        }).add(
+          SystemProgram.transfer({
+            fromPubkey: senderPublicKey,
+            toPubkey: Keypair.generate().publicKey,
+            lamports: 1,
+          }),
+        );
+
+        try {
+          const { signature } = await client!.request({
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
+              params: {
+                feePayer: transaction.feePayer!.toBase58(),
+                recentBlockhash: transaction.recentBlockhash,
+                instructions: transaction.instructions.map(i => ({
+                  programId: i.programId.toBase58(),
+                  data: bs58.encode(i.data),
+                  keys: i.keys.map(k => ({
+                    isSigner: k.isSigner,
+                    isWritable: k.isWritable,
+                    pubkey: k.pubkey.toBase58(),
+                  })),
+                })),
+              },
+            },
+          });
+
+          // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
+          // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
+          transaction.addSignature(senderPublicKey, Buffer.from(bs58.decode(signature)));
+
+          const valid = transaction.verifySignatures();
+
+          return {
+            method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
+            address,
+            valid,
+            result: signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        if (!solanaPublicKeys) {
+          throw new Error("Could not find Solana PublicKeys.");
+        }
+
+        const senderPublicKey = solanaPublicKeys[address];
+
+        // Encode message to `UInt8Array` first via `TextEncoder` so we can pass it to `bs58.encode`.
+        const message = bs58.encode(
+          new TextEncoder().encode(`This is an example message to be signed - ${Date.now()}`),
+        );
+
+        try {
+          const { signature } = await client!.request({
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
+              params: {
+                pubkey: senderPublicKey.toBase58(),
+                message,
+              },
+            },
+          });
+
+          const valid = verifyMessageSignature(senderPublicKey.toBase58(), signature, message);
+
+          return {
+            method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
+            address,
+            valid,
+            result: signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -444,8 +568,11 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         ping,
         ethereumRpc,
         cosmosRpc,
+        solanaRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
+        isTestnet,
+        setIsTestnet,
       }}
     >
       {children}

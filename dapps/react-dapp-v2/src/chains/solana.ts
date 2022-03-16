@@ -1,4 +1,23 @@
+import { ChainsMap } from "caip-api";
 import { NamespaceMetadata, ChainMetadata } from "../helpers";
+
+// TODO: add `solana` namespace to `caip-api` package to avoid manual specification here.
+export const SolanaChainData: ChainsMap = {
+  "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ": {
+    id: "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
+    name: "Solana Mainnet",
+    rpc: ["https://api.mainnet-beta.solana.com", "https://solana-api.projectserum.com"],
+    slip44: 501,
+    testnet: false,
+  },
+  "8E9rvCKLFQia2Y35HXjjpWzj8weVo44K": {
+    id: "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
+    name: "Solana Devnet",
+    rpc: ["https://api.devnet.solana.com"],
+    slip44: 501,
+    testnet: true,
+  },
+};
 
 export const SolanaMetadata: NamespaceMetadata = {
   // Solana Mainnet

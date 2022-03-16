@@ -6,8 +6,8 @@ import Blockchain from "./components/Blockchain";
 import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
-import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
-import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
+import { DEFAULT_MAIN_CHAINS, DEFAULT_SOLANA_METHODS, DEFAULT_TEST_CHAINS } from "./constants";
+import { AccountAction, setLocaleStorageTestnetFlag } from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
 import PairingModal from "./modals/PairingModal";
@@ -26,8 +26,6 @@ import { useWalletConnectClient } from "./contexts/ClientContext";
 import { useJsonRpc } from "./contexts/JsonRpcContext";
 
 export default function App() {
-  const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
-
   const [modal, setModal] = useState("");
 
   const closeModal = () => setModal("");
@@ -50,7 +48,17 @@ export default function App() {
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
-  const { chainData, ping, ethereumRpc, cosmosRpc, isRpcRequestPending, rpcResult } = useJsonRpc();
+  const {
+    chainData,
+    ping,
+    ethereumRpc,
+    cosmosRpc,
+    solanaRpc,
+    isRpcRequestPending,
+    rpcResult,
+    isTestnet,
+    setIsTestnet,
+  } = useJsonRpc();
 
   // Close the pairing modal after a session is established.
   useEffect(() => {
@@ -122,6 +130,21 @@ export default function App() {
     ];
   };
 
+  const getSolanaActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await solanaRpc.testSignTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await solanaRpc.testSignMessage(chainId, address);
+    };
+    return [
+      { method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION, callback: onSignTransaction },
+      { method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE, callback: onSignMessage },
+    ];
+  };
+
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
     switch (namespace) {
@@ -129,6 +152,8 @@ export default function App() {
         return getEthereumActions();
       case "cosmos":
         return getCosmosActions();
+      case "solana":
+        return getSolanaActions();
       default:
         break;
     }
