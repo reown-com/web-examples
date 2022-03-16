@@ -7,6 +7,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "eip155:42161",
   "eip155:42220",
   "cosmos:cosmoshub-4",
+  "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -16,6 +17,7 @@ export const DEFAULT_TEST_CHAINS = [
   "eip155:80001",
   "eip155:421611",
   "eip155:44787",
+  "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -33,6 +35,11 @@ export const DEFAULT_EIP155_METHODS = [
 ];
 
 export const DEFAULT_COSMOS_METHODS = ["cosmos_signDirect", "cosmos_signAmino"];
+
+export enum DEFAULT_SOLANA_METHODS {
+  SOL_SIGN_TRANSACTION = "solana_signTransaction",
+  SOL_SIGN_MESSAGE = "solana_signMessage",
+}
 
 export const DEFAULT_LOGGER = "debug";
 
