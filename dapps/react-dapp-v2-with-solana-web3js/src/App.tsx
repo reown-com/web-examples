@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { version } from "@walletconnect/client/package.json";
 import { clusterApiUrl, Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
-import nacl from "tweetnacl";
+import { verifyMessageSignature } from "solana-wallet";
 
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";
@@ -166,8 +166,8 @@ export default function App() {
     const senderPublicKey = publicKeys[address];
 
     // Encode message to `UInt8Array` first via `TextEncoder` so we can pass it to `bs58.encode`.
-    const message = new TextEncoder().encode(
-      `This is an example message to be signed - ${Date.now()}`,
+    const message = bs58.encode(
+      new TextEncoder().encode(`This is an example message to be signed - ${Date.now()}`),
     );
 
     try {
@@ -177,16 +177,12 @@ export default function App() {
           method: SolanaRpcMethod.SOL_SIGN_MESSAGE,
           params: {
             pubkey: senderPublicKey.toBase58(),
-            message: bs58.encode(message),
+            message,
           },
         },
       });
 
-      const valid = nacl.sign.detached.verify(
-        message,
-        bs58.decode(signature),
-        senderPublicKey.toBytes(),
-      );
+      const valid = verifyMessageSignature(senderPublicKey.toBase58(), signature, message);
 
       return {
         method: SolanaRpcMethod.SOL_SIGN_MESSAGE,

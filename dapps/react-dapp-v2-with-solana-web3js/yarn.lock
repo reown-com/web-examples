@@ -1851,7 +1851,7 @@
   dependencies:
     buffer "~6.0.3"
 
-"@solana/web3.js@^1.36.0":
+"@solana/web3.js@^1.35.1", "@solana/web3.js@^1.36.0":
   version "1.36.0"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.36.0.tgz#79d7d5217b49b80139f4de68953adc5b9a9a264f"
   integrity sha512-RNT1451iRR7TyW7EJKMCrH/0OXawIe4zVm0DWQASwXlR/u1jmW6FrmH0lujIh7cGTlfOVbH+2ZU9AVUPLBFzwA==
@@ -11480,6 +11480,15 @@ sockjs@^0.3.21:
     faye-websocket "^0.11.3"
     uuid "^8.3.2"
     websocket-driver "^0.7.4"
+
+solana-wallet@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/solana-wallet/-/solana-wallet-1.0.1.tgz#4e1bfebbb99640105ed42abd1445baab4f6e0b57"
+  integrity sha512-rkYu9gwayAdVMhWGdZSz6a+IaOJXs3TNtYXWuSQsdMJUndkQ+puy7cB9/u5pwZTjqzxtd1DN9cbAFKFH5648xQ==
+  dependencies:
+    "@solana/web3.js" "^1.35.1"
+    bs58 "^5.0.0"
+    tweetnacl "^1.0.3"
 
 sonic-boom@^1.0.2:
   version "1.4.1"
