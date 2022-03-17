@@ -877,7 +877,7 @@
   dependencies:
     buffer "~6.0.3"
 
-"@solana/web3.js@1.36.0":
+"@solana/web3.js@1.36.0", "@solana/web3.js@^1.35.1":
   version "1.36.0"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.36.0.tgz#79d7d5217b49b80139f4de68953adc5b9a9a264f"
   integrity sha512-RNT1451iRR7TyW7EJKMCrH/0OXawIe4zVm0DWQASwXlR/u1jmW6FrmH0lujIh7cGTlfOVbH+2ZU9AVUPLBFzwA==
@@ -1529,7 +1529,7 @@ brorand@^1.1.0:
   resolved "https://registry.yarnpkg.com/brorand/-/brorand-1.1.0.tgz#12c25efe40a45e3c323eb8675a0a0ce57b22371f"
   integrity sha1-EsJe/kCkXjwyPrhnWgoM5XsiNx8=
 
-bs58@5.0.0:
+bs58@5.0.0, bs58@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/bs58/-/bs58-5.0.0.tgz#865575b4d13c09ea2a84622df6c8cbeb54ffc279"
   integrity sha512-r+ihvQJvahgYT50JD05dyJNKlmmSlMoOGwn1lCcEzanPglg7TxYjioQUYehQ9mAR/+hOSd2jRc/Z2y5UxBymvQ==
@@ -3853,6 +3853,15 @@ slash@^3.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
+solana-wallet@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/solana-wallet/-/solana-wallet-1.0.1.tgz#4e1bfebbb99640105ed42abd1445baab4f6e0b57"
+  integrity sha512-rkYu9gwayAdVMhWGdZSz6a+IaOJXs3TNtYXWuSQsdMJUndkQ+puy7cB9/u5pwZTjqzxtd1DN9cbAFKFH5648xQ==
+  dependencies:
+    "@solana/web3.js" "^1.35.1"
+    bs58 "^5.0.0"
+    tweetnacl "^1.0.3"
+
 sonic-boom@^1.0.2:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/sonic-boom/-/sonic-boom-1.4.1.tgz#d35d6a74076624f12e6f917ade7b9d75e918f53e"
@@ -4140,7 +4149,7 @@ tunnel-agent@^0.6.0:
   dependencies:
     safe-buffer "^5.0.1"
 
-tweetnacl@^1.0.0:
+tweetnacl@^1.0.0, tweetnacl@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/tweetnacl/-/tweetnacl-1.0.3.tgz#ac0af71680458d8a6378d0d0d050ab1407d35596"
   integrity sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==
