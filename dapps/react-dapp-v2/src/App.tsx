@@ -30,6 +30,7 @@ import {
 } from "./components/app";
 import { useWalletConnectClient } from "./contexts/ClientContext";
 import { useJsonRpc } from "./contexts/JsonRpcContext";
+import { useChainData } from "./contexts/ChainDataContext";
 
 export default function App() {
   const [modal, setModal] = useState("");
@@ -55,7 +56,6 @@ export default function App() {
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
   const {
-    chainData,
     ping,
     ethereumRpc,
     cosmosRpc,
@@ -65,6 +65,8 @@ export default function App() {
     isTestnet,
     setIsTestnet,
   } = useJsonRpc();
+
+  const { chainData } = useChainData();
 
   // Close the pairing modal after a session is established.
   useEffect(() => {

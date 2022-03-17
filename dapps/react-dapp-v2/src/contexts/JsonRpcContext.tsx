@@ -1,29 +1,26 @@
 import { BigNumber, utils } from "ethers";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
+import { TypedDataField } from "@ethersproject/abstract-signer";
 import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
 import bs58 from "bs58";
 import { verifyMessageSignature } from "solana-wallet";
+import { clusterApiUrl, Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 
 import {
-  ChainNamespaces,
   eip712,
   formatTestTransaction,
-  getAllChainNamespaces,
   getLocalStorageTestnetFlag,
   hashPersonalMessage,
   verifySignature,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
-import { apiGetChainNamespace, ChainsMap } from "caip-api";
-import { TypedDataField } from "@ethersproject/abstract-signer";
 import {
   DEFAULT_COSMOS_METHODS,
   DEFAULT_EIP155_METHODS,
   DEFAULT_SOLANA_METHODS,
 } from "../constants";
-import { clusterApiUrl, Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
-import { SolanaChainData } from "../chains/solana";
+import { useChainData } from "./ChainDataContext";
 
 /**
  * Types
@@ -59,7 +56,6 @@ interface IContext {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
   };
-  chainData: ChainNamespaces;
   rpcResult?: IRpcResult | null;
   isRpcRequestPending: boolean;
   isTestnet: boolean;
@@ -77,38 +73,11 @@ export const JsonRpcContext = createContext<IContext>({} as IContext);
 export function JsonRpcContextProvider({ children }: { children: ReactNode | ReactNode[] }) {
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<IRpcResult | null>();
-  const [chainData, setChainData] = useState<ChainNamespaces>({});
   const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
 
   const { client, session, accounts, balances, solanaPublicKeys } = useWalletConnectClient();
 
-  useEffect(() => {
-    loadChainData();
-  }, []);
-
-  const loadChainData = async () => {
-    const namespaces = getAllChainNamespaces();
-    const chainData: ChainNamespaces = {};
-    await Promise.all(
-      namespaces.map(async namespace => {
-        let chains: ChainsMap | undefined;
-        try {
-          if (namespace === "solana") {
-            chains = SolanaChainData;
-          } else {
-            chains = await apiGetChainNamespace(namespace);
-          }
-        } catch (e) {
-          // ignore error
-        }
-        if (typeof chains !== "undefined") {
-          chainData[namespace] = chains;
-        }
-      }),
-    );
-
-    setChainData(chainData);
-  };
+  const { chainData } = useChainData();
 
   const _createJsonRpcRequestHandler =
     (rpcRequest: (chainId: string, address: string) => Promise<IFormattedRpcResponse>) =>
@@ -568,7 +537,6 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
   return (
     <JsonRpcContext.Provider
       value={{
-        chainData,
         ping,
         ethereumRpc,
         cosmosRpc,
