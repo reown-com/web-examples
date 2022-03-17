@@ -64,7 +64,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [solanaPublicKeys, setSolanaPublicKeys] = useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
 
-  const resetApp = () => {
+  const reset = () => {
     setPairings([]);
     setSession(undefined);
     setBalances({});
@@ -208,7 +208,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       _client.on(CLIENT_EVENTS.session.deleted, () => {
         console.log("EVENT", "session_deleted");
-        resetApp();
+        reset();
       });
     },
     [onSessionConnected],
