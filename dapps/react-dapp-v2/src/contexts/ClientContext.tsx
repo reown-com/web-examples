@@ -113,9 +113,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       .map(namespace => {
         switch (namespace) {
           case "eip155":
-            return DEFAULT_EIP155_METHODS;
+            return Object.values(DEFAULT_EIP155_METHODS);
           case "cosmos":
-            return DEFAULT_COSMOS_METHODS;
+            return Object.values(DEFAULT_COSMOS_METHODS);
           case "solana":
             return Object.values(DEFAULT_SOLANA_METHODS);
           default:

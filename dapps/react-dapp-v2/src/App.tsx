@@ -6,7 +6,13 @@ import Blockchain from "./components/Blockchain";
 import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
-import { DEFAULT_MAIN_CHAINS, DEFAULT_SOLANA_METHODS, DEFAULT_TEST_CHAINS } from "./constants";
+import {
+  DEFAULT_COSMOS_METHODS,
+  DEFAULT_EIP155_METHODS,
+  DEFAULT_MAIN_CHAINS,
+  DEFAULT_SOLANA_METHODS,
+  DEFAULT_TEST_CHAINS,
+} from "./constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
@@ -107,11 +113,11 @@ export default function App() {
     };
 
     return [
-      { method: "eth_sendTransaction", callback: onSendTransaction },
-      { method: "eth_signTransaction", callback: onSignTransaction },
-      { method: "personal_sign", callback: onSignPersonalMessage },
-      { method: "eth_sign (standard)", callback: onEthSign },
-      { method: "eth_signTypedData", callback: onSignTypedData },
+      { method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION, callback: onSendTransaction },
+      { method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION, callback: onSignTransaction },
+      { method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN, callback: onSignPersonalMessage },
+      { method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)", callback: onEthSign },
+      { method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA, callback: onSignTypedData },
     ];
   };
 
@@ -125,8 +131,8 @@ export default function App() {
       await cosmosRpc.testSignAmino(chainId, address);
     };
     return [
-      { method: "cosmos_signDirect", callback: onSignDirect },
-      { method: "cosmos_signAmino", callback: onSignAmino },
+      { method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT, callback: onSignDirect },
+      { method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO, callback: onSignAmino },
     ];
   };
 

@@ -17,7 +17,11 @@ import {
 import { useWalletConnectClient } from "./ClientContext";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
 import { TypedDataField } from "@ethersproject/abstract-signer";
-import { DEFAULT_SOLANA_METHODS } from "../constants";
+import {
+  DEFAULT_COSMOS_METHODS,
+  DEFAULT_EIP155_METHODS,
+  DEFAULT_SOLANA_METHODS,
+} from "../constants";
 import { clusterApiUrl, Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 import { SolanaChainData } from "../chains/solana";
 
@@ -174,7 +178,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const balance = BigNumber.from(balances[account][0].balance || "0");
       if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
         return {
-          method: "eth_sendTransaction",
+          method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
           address,
           valid: false,
           result: "Insufficient funds for intrinsic transaction cost",
@@ -185,14 +189,14 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         topic: session!.topic,
         chainId,
         request: {
-          method: "eth_sendTransaction",
+          method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
           params: [tx],
         },
       });
 
       // format displayed result
       return {
-        method: "eth_sendTransaction",
+        method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
         address,
         valid: true,
         result,
@@ -209,13 +213,13 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         topic: session!.topic,
         chainId,
         request: {
-          method: "eth_signTransaction",
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
           params: [tx],
         },
       });
 
       return {
-        method: "eth_signTransaction",
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
         address,
         valid: true,
         result,
@@ -237,7 +241,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
           topic: session!.topic,
           chainId,
           request: {
-            method: "personal_sign",
+            method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
             params,
           },
         });
@@ -259,7 +263,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
         // format displayed result
         return {
-          method: "personal_sign",
+          method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
           address,
           valid,
           result,
@@ -279,7 +283,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         topic: session!.topic,
         chainId,
         request: {
-          method: "eth_sign",
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN,
           params,
         },
       });
@@ -301,7 +305,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       // format displayed result
       return {
-        method: "eth_sign (standard)",
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
         address,
         valid,
         result,
@@ -318,7 +322,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         topic: session!.topic,
         chainId,
         request: {
-          method: "eth_signTypedData",
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
           params,
         },
       });
@@ -337,7 +341,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         ) === address;
 
       return {
-        method: "eth_signTypedData",
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
         address,
         valid,
         result: signature,
@@ -387,7 +391,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         topic: session!.topic,
         chainId,
         request: {
-          method: "cosmos_signDirect",
+          method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
           params,
         },
       });
@@ -403,7 +407,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       // format displayed result
       return {
-        method: "cosmos_signDirect",
+        method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
         address,
         valid,
         result: result.signature,
@@ -431,7 +435,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         topic: session!.topic,
         chainId,
         request: {
-          method: "cosmos_signAmino",
+          method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
           params,
         },
       });
@@ -447,7 +451,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       // format displayed result
       return {
-        method: "cosmos_signAmino",
+        method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
         address,
         valid,
         result: result.signature,
