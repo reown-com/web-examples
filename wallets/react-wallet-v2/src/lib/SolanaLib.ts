@@ -1,6 +1,7 @@
-import { Keypair, PublicKey, Transaction, TransactionInstructionCtorFields } from '@solana/web3.js'
+import { Keypair } from '@solana/web3.js'
 import bs58 from 'bs58'
 import nacl from 'tweetnacl'
+import SolanaWallet, { SolanaSignTransaction } from 'solana-wallet'
 
 /**
  * Types
@@ -14,9 +15,11 @@ interface IInitArguments {
  */
 export default class SolanaLib {
   keypair: Keypair
+  solanaWallet: SolanaWallet
 
   constructor(keypair: Keypair) {
     this.keypair = keypair
+    this.solanaWallet = new SolanaWallet(Buffer.from(keypair.secretKey))
   }
 
   static init({ secretKey }: IInitArguments) {
@@ -41,34 +44,18 @@ export default class SolanaLib {
   }
 
   public async signTransaction(
-    feePayer: string,
-    recentBlockhash: string,
-    instructions: TransactionInstructionCtorFields[]
+    feePayer: SolanaSignTransaction['feePayer'],
+    recentBlockhash: SolanaSignTransaction['recentBlockhash'],
+    instructions: SolanaSignTransaction['instructions'],
+    partialSignatures?: SolanaSignTransaction['partialSignatures']
   ) {
-    const tx = new Transaction({
-      feePayer: new PublicKey(feePayer),
-      recentBlockhash
+    const { signature } = await this.solanaWallet.signTransaction(feePayer, {
+      feePayer,
+      instructions,
+      recentBlockhash,
+      partialSignatures: partialSignatures ?? []
     })
 
-    tx.add(
-      ...instructions.map(i => ({
-        programId: new PublicKey(i.programId),
-        data: i.data ? Buffer.from(i.data) : Buffer.from([]),
-        keys: i.keys.map(k => ({
-          ...k,
-          pubkey: new PublicKey(k.pubkey)
-        }))
-      }))
-    )
-
-    await tx.sign(this.keypair)
-
-    if (!tx.signature) {
-      throw new Error('Missing signature!')
-    }
-
-    const bs58Signature = bs58.encode(tx.signature)
-
-    return { signature: bs58Signature }
+    return { signature }
   }
 }
