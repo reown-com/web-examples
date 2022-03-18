@@ -26,15 +26,10 @@ import { useChainData } from "./ChainDataContext";
  * Types
  */
 interface IFormattedRpcResponse {
-  method: string;
-  address: string;
+  method?: string;
+  address?: string;
   valid: boolean;
   result: string;
-}
-
-interface IRpcResult {
-  method: string;
-  valid: boolean;
 }
 
 type TRpcRequestCallback = (chainId: string, address: string) => Promise<void>;
@@ -56,7 +51,7 @@ interface IContext {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
   };
-  rpcResult?: IRpcResult | null;
+  rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
   isTestnet: boolean;
   setIsTestnet: (isTestnet: boolean) => void;
@@ -72,7 +67,7 @@ export const JsonRpcContext = createContext<IContext>({} as IContext);
  */
 export function JsonRpcContextProvider({ children }: { children: ReactNode | ReactNode[] }) {
   const [pending, setPending] = useState(false);
-  const [result, setResult] = useState<IRpcResult | null>();
+  const [result, setResult] = useState<IFormattedRpcResponse | null>();
   const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
 
   const { client, session, accounts, balances, solanaPublicKeys } = useWalletConnectClient();
@@ -93,9 +88,13 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         setPending(true);
         const result = await rpcRequest(chainId, address);
         setResult(result);
-      } catch (err) {
-        console.error(err);
-        setResult(null);
+      } catch (err: any) {
+        console.error("RPC request failed: ", err);
+        setResult({
+          address,
+          valid: false,
+          result: err?.message ?? err,
+        });
       } finally {
         setPending(false);
       }
@@ -125,6 +124,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       setResult({
         method: "ping",
         valid,
+        result: valid ? "Ping succeeded" : "Ping failed",
       });
     } catch (e) {
       console.error(e);
