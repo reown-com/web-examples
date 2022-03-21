@@ -7,13 +7,7 @@ import bs58 from "bs58";
 import { verifyMessageSignature } from "solana-wallet";
 import { clusterApiUrl, Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 
-import {
-  eip712,
-  formatTestTransaction,
-  getLocalStorageTestnetFlag,
-  hashPersonalMessage,
-  verifySignature,
-} from "../helpers";
+import { eip712, formatTestTransaction, getLocalStorageTestnetFlag } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
   DEFAULT_COSMOS_METHODS,
@@ -206,7 +200,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         const params = [hexMsg, address];
 
         // send message
-        const result: string = await client!.request({
+        const signature: string = await client!.request({
           topic: session!.topic,
           chainId,
           request: {
@@ -224,18 +218,14 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
           throw new Error(`Missing chain data for chainId: ${chainId}`);
         }
 
-        const rpcUrl = targetChainData.rpc[0];
-
-        // verify signature
-        const hash = hashPersonalMessage(message);
-        const valid = await verifySignature(address, result, hash, rpcUrl);
+        const valid = utils.verifyMessage(message, signature) === address;
 
         // format displayed result
         return {
           method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
           address,
           valid,
-          result,
+          result: signature,
         };
       },
     ),
@@ -248,7 +238,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = [address, hexMsg];
 
       // send message
-      const result: string = await client!.request({
+      const signature: string = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -266,18 +256,14 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         throw new Error(`Missing chain data for chainId: ${chainId}`);
       }
 
-      const rpcUrl = targetChainData.rpc[0];
-
-      // verify signature
-      const hash = hashPersonalMessage(message);
-      const valid = await verifySignature(address, result, hash, rpcUrl);
+      const valid = utils.verifyMessage(message, signature) === address;
 
       // format displayed result
       return {
         method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
         address,
         valid,
-        result,
+        result: signature,
       };
     }),
     testSignTypedData: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
