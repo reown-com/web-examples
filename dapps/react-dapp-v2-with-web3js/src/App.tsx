@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { version } from "@walletconnect/client/package.json";
 import * as encoding from "@walletconnect/encoding";
+import { utils } from "ethers";
+import { TypedDataField } from "@ethersproject/abstract-signer";
+import { Transaction } from "@ethereumjs/tx";
 
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";
@@ -27,8 +30,6 @@ import {
   SToggleContainer,
 } from "./components/app";
 import { useWalletConnectClient } from "./contexts/ClientContext";
-import { utils } from "ethers";
-import { TypedDataField } from "@ethersproject/abstract-signer";
 
 interface IFormattedRpcResponse {
   method: string;
@@ -129,13 +130,14 @@ export default function App() {
     };
 
     // The return signature here is `RLPEncodedTransaction` but it actually returns as string (?).
-    const result = (await web3Provider.eth.signTransaction(tx)) as unknown as string;
+    const signedTx = (await web3Provider.eth.signTransaction(tx)) as unknown as string;
+    const valid = Transaction.fromSerializedTx(signedTx as any).verifySignature();
 
     return {
       method: "eth_signTransaction",
       address,
-      valid: true,
-      result,
+      valid,
+      result: signedTx,
     };
   };
 

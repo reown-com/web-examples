@@ -28,6 +28,7 @@
     "react-error-overlay": "6.0.9"
   },
   "dependencies": {
+    "@ethereumjs/tx": "^3.5.0",
     "@walletconnect/client": "2.0.0-beta.23",
     "@walletconnect/ethereum-provider": "2.0.0-beta.23",
     "@walletconnect/qrcode-modal": "^1.7.1",

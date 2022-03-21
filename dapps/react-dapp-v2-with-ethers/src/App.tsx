@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { version } from "@walletconnect/client/package.json";
 import * as encoding from "@walletconnect/encoding";
+import { BigNumber, utils } from "ethers";
+import { TypedDataField } from "@ethersproject/abstract-signer";
+import { Transaction } from "@ethereumjs/tx";
 
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";
@@ -28,8 +31,6 @@ import {
   SToggleContainer,
 } from "./components/app";
 import { useWalletConnectClient } from "./contexts/ClientContext";
-import { BigNumber, utils } from "ethers";
-import { TypedDataField } from "@ethersproject/abstract-signer";
 
 interface IFormattedRpcResponse {
   method: string;
@@ -130,13 +131,14 @@ export default function App() {
     const [address] = await web3Provider.listAccounts();
 
     const tx = await formatTestTransaction("eip155:" + chainId + ":" + address);
+    const signedTx = await web3Provider.send("eth_signTransaction", [tx]);
+    const valid = Transaction.fromSerializedTx(signedTx as any).verifySignature();
 
-    const signature = await web3Provider.send("eth_signTransaction", [tx]);
     return {
       method: "eth_signTransaction",
       address,
-      valid: true,
-      result: signature,
+      valid,
+      result: signedTx,
     };
   };
 

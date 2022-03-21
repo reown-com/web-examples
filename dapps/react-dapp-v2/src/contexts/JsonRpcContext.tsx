@@ -2,10 +2,17 @@ import { BigNumber, utils } from "ethers";
 import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
 import { TypedDataField } from "@ethersproject/abstract-signer";
+import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
 import bs58 from "bs58";
 import { verifyMessageSignature } from "solana-wallet";
-import { clusterApiUrl, Connection, Keypair, SystemProgram, Transaction } from "@solana/web3.js";
+import {
+  clusterApiUrl,
+  Connection,
+  Keypair,
+  SystemProgram,
+  Transaction as SolanaTransaction,
+} from "@solana/web3.js";
 
 import { eip712, formatTestTransaction, getLocalStorageTestnetFlag } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
@@ -172,7 +179,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       const tx = await formatTestTransaction(account);
 
-      const result: string = await client!.request({
+      const signedTx: string = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -181,11 +188,13 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         },
       });
 
+      const valid = EthTransaction.fromSerializedTx(signedTx as any).verifySignature();
+
       return {
         method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
         address,
-        valid: true,
-        result,
+        valid,
+        result: signedTx,
       };
     }),
     testSignPersonalMessage: _createJsonRpcRequestHandler(
@@ -432,7 +441,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         // cluster only seems to support `connection.getRecentBlockhash` currently.
         const { blockhash } = await connection.getRecentBlockhash();
 
-        const transaction = new Transaction({
+        const transaction = new SolanaTransaction({
           feePayer: senderPublicKey,
           recentBlockhash: blockhash,
         }).add(
