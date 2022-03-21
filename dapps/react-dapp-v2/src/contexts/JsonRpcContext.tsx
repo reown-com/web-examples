@@ -284,6 +284,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
       // will throw due to "unused" `EIP712Domain` type.
+      // See: https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
       const { EIP712Domain, ...nonDomainTypes }: Record<string, TypedDataField[]> =
         eip712.example.types;
 
