@@ -175,10 +175,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         },
         client,
       });
-      // FIXME:
-      // Type 'EthereumProvider' is missing the following properties from type 'WebsocketProvider':
-      // isConnecting, requestQueue, responseQueue, connection, and 5 more.ts(2345)
-      // @ts-expect-error
+
       const web3Provider = new Web3(ethereumProvider);
 
       console.log(ethereumProvider);
