@@ -1,6 +1,6 @@
 # React dApp (with v2 CosmosProvider)
 
-🔗 Live dapp demo - https://react-dapp-v2-cosmos.vercel.app <br />
+🔗 Live dapp demo - https://react-dapp-v2-cosmos-provider.vercel.app/ <br />
 🔗 Live wallet demo - https://react-wallet-v2.vercel.app <br />
 📚 WalletConnect v2 Docs - https://docs.walletconnect.com/2.0
 
