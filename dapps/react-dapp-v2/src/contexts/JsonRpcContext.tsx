@@ -3,7 +3,12 @@ import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
 import { TypedDataField } from "@ethersproject/abstract-signer";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
-import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
+import {
+  formatDirectSignDoc,
+  stringifySignDocValues,
+  verifyAminoSignature,
+  verifyDirectSignature,
+} from "cosmos-wallet";
 import bs58 from "bs58";
 import { verifyMessageSignature } from "solana-wallet";
 import {
@@ -367,8 +372,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         throw new Error(`Missing chain data for chainId: ${chainId}`);
       }
 
-      // TODO: check if valid
-      const valid = true;
+      const valid = await verifyDirectSignature(address, result.signature, signDoc);
 
       // format displayed result
       return {
@@ -411,8 +415,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         throw new Error(`Missing chain data for chainId: ${chainId}`);
       }
 
-      // TODO: check if valid
-      const valid = true;
+      const valid = await verifyAminoSignature(address, result.signature, signDoc);
 
       // format displayed result
       return {

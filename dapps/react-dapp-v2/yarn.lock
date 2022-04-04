@@ -4685,10 +4685,10 @@ cosmiconfig@^7.0.0:
     path-type "^4.0.0"
     yaml "^1.10.0"
 
-cosmos-wallet@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/cosmos-wallet/-/cosmos-wallet-1.1.0.tgz#ca554d19fda1a1a7a8ee21fef4e0ef8f7fa9ef7b"
-  integrity sha512-jm5MFRYzvOCA/mhULObpaoE2Na0shBn3lrkv2GDedmRZfuoDvOa63WID4qMoIycteefjRKdxXf+26vDrgd79aQ==
+cosmos-wallet@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/cosmos-wallet/-/cosmos-wallet-1.2.0.tgz#1243066fe933cf5482de1aec0b96169cebe867c6"
+  integrity sha512-lMEpNhjN6FHU6c8l/lYi1hWU/74bOlTmo3pz0mwVpCHjNSe5u7sZCO7j0dndd3oV0tM8tj/u3eJa4NgZxG9a0Q==
   dependencies:
     "@cosmjs/amino" "^0.25.4"
     "@cosmjs/proto-signing" "^0.25.4"
