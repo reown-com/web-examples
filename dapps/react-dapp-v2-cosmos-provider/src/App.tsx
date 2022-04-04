@@ -123,6 +123,10 @@ export default function App() {
 
     const address = account.split(":").pop();
 
+    if (!address) {
+      throw new Error(`Could not derive address from account: ${account}`);
+    }
+
     // cosmos_signDirect params
     const params = {
       signerAddress: address,
@@ -160,6 +164,10 @@ export default function App() {
     };
 
     const address = account.split(":").pop();
+
+    if (!address) {
+      throw new Error(`Could not derive address from account: ${account}`);
+    }
 
     // cosmos_signAmino params
     const params = { signerAddress: address, signDoc };
