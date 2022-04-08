@@ -106,6 +106,9 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       }
     };
 
+  const _verifyEip155MessageSignature = (message: string, signature: string, address: string) =>
+    utils.verifyMessage(message, signature).toLowerCase() === address.toLowerCase();
+
   const ping = async () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
@@ -232,7 +235,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
           throw new Error(`Missing chain data for chainId: ${chainId}`);
         }
 
-        const valid = utils.verifyMessage(message, signature) === address;
+        const valid = _verifyEip155MessageSignature(message, signature, address);
 
         // format displayed result
         return {
@@ -270,7 +273,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         throw new Error(`Missing chain data for chainId: ${chainId}`);
       }
 
-      const valid = utils.verifyMessage(message, signature) === address;
+      const valid = _verifyEip155MessageSignature(message, signature, address);
 
       // format displayed result
       return {
@@ -303,12 +306,9 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         eip712.example.types;
 
       const valid =
-        utils.verifyTypedData(
-          eip712.example.domain,
-          nonDomainTypes,
-          eip712.example.message,
-          signature,
-        ) === address;
+        utils
+          .verifyTypedData(eip712.example.domain, nonDomainTypes, eip712.example.message, signature)
+          .toLowerCase() === address.toLowerCase();
 
       return {
         method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
