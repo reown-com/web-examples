@@ -65,6 +65,9 @@ export default function App() {
     web3Provider,
   } = useWalletConnectClient();
 
+  const verifyEip155MessageSignature = (message: string, signature: string, address: string) =>
+    utils.verifyMessage(message, signature).toLowerCase() === address.toLowerCase();
+
   const ping = async () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect Client is not initialized");
@@ -150,7 +153,7 @@ export default function App() {
     const hexMsg = encoding.utf8ToHex(msg, true);
     const [address] = await web3Provider.listAccounts();
     const signature = await web3Provider.send("personal_sign", [hexMsg, address]);
-    const valid = utils.verifyMessage(msg, signature) === address;
+    const valid = verifyEip155MessageSignature(msg, signature, address);
     return {
       method: "personal_sign",
       address,
@@ -167,7 +170,7 @@ export default function App() {
     const hexMsg = encoding.utf8ToHex(msg, true);
     const [address] = await web3Provider.listAccounts();
     const signature = await web3Provider.send("eth_sign", [address, hexMsg]);
-    const valid = utils.verifyMessage(msg, signature) === address;
+    const valid = verifyEip155MessageSignature(msg, signature, address);
     return {
       method: "eth_sign (standard)",
       address,
@@ -198,12 +201,9 @@ export default function App() {
       eip712.example.types;
 
     const valid =
-      utils.verifyTypedData(
-        eip712.example.domain,
-        nonDomainTypes,
-        eip712.example.message,
-        signature,
-      ) === address;
+      utils
+        .verifyTypedData(eip712.example.domain, nonDomainTypes, eip712.example.message, signature)
+        .toLowerCase() === address.toLowerCase();
     return {
       method: "eth_signTypedData",
       address,
