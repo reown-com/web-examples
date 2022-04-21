@@ -3,6 +3,7 @@ import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
 import * as eip155 from "./eip155";
 import * as cosmos from "./cosmos";
 import * as polkadot from "./polkadot";
+import * as solana from "./solana";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -15,6 +16,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return cosmos.getChainMetadata(chainId);
     case "polkadot":
       return polkadot.getChainMetadata(chainId);
+    case "solana":
+      return solana.getChainMetadata(chainId);
     default:
       throw new Error(`No metadata handler for namespace ${namespace}`);
   }

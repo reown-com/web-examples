@@ -12,8 +12,13 @@ export async function getGasPrice(chainId: string): Promise<string> {
 export async function formatTestTransaction(account: string) {
   const [namespace, reference, address] = account.split(":");
   const chainId = `${namespace}:${reference}`;
-  // nonce
-  const _nonce = await apiGetAccountNonce(address, chainId);
+
+  let _nonce;
+  try {
+    _nonce = await apiGetAccountNonce(address, chainId);
+  } catch (error) {
+    throw new Error(`Failed to fetch nonce for address ${address} on chain ${chainId}`);
+  }
 
   const nonce = encoding.sanitizeHex(encoding.numberToHex(_nonce));
 

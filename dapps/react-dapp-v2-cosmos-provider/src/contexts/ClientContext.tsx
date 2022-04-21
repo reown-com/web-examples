@@ -89,28 +89,42 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     await cosmosProvider.disconnect();
   }, [cosmosProvider]);
 
-  const _subscribeToClientEvents = useCallback(async (_client: Client) => {
-    if (typeof _client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-
-    _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
-      const { uri } = proposal.signal.params;
-      console.log("EVENT", "QR Code Modal open");
-      QRCodeModal.open(uri, () => {
-        console.log("EVENT", "QR Code Modal closed");
-      });
-    });
-
-    _client.on(CLIENT_EVENTS.pairing.created, async () => {
-      setPairings(_client.pairing.topics);
-    });
-
-    _client.on(CLIENT_EVENTS.session.deleted, () => {
-      console.log("EVENT", "session_deleted");
-      resetApp();
-    });
+  const onSessionConnected = useCallback(async (_session: SessionTypes.Settled) => {
+    setSession(_session);
+    setChain(_session.permissions.blockchain.chains[0]);
+    setAccounts(_session.state.accounts);
   }, []);
+
+  const _subscribeToClientEvents = useCallback(
+    async (_client: Client) => {
+      if (typeof _client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
+
+      _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
+        const { uri } = proposal.signal.params;
+        console.log("EVENT", "QR Code Modal open");
+        QRCodeModal.open(uri, () => {
+          console.log("EVENT", "QR Code Modal closed");
+        });
+      });
+
+      _client.on(CLIENT_EVENTS.pairing.created, async () => {
+        setPairings(_client.pairing.topics);
+      });
+
+      _client.on(CLIENT_EVENTS.session.updated, (updatedSession: SessionTypes.Settled) => {
+        console.log("EVENT", "session_updated");
+        onSessionConnected(updatedSession);
+      });
+
+      _client.on(CLIENT_EVENTS.session.deleted, () => {
+        console.log("EVENT", "session_deleted");
+        resetApp();
+      });
+    },
+    [onSessionConnected],
+  );
 
   const createClient = useCallback(async () => {
     try {
@@ -161,16 +175,13 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         return;
       }
 
-      const _accounts = cosmosProvider.accounts;
       const _session = await client.session.get(client.session.topics[0]);
 
-      setAccounts(_accounts);
-      setSession(_session);
-      setChain(caipChainId);
+      onSessionConnected(_session);
 
       QRCodeModal.close();
     },
-    [client],
+    [client, onSessionConnected],
   );
 
   const _checkForPersistedSession = useCallback(

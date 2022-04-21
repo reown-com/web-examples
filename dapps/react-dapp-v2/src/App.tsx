@@ -6,8 +6,14 @@ import Blockchain from "./components/Blockchain";
 import Column from "./components/Column";
 import Header from "./components/Header";
 import Modal from "./components/Modal";
-import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
-import { AccountAction, getLocalStorageTestnetFlag, setLocaleStorageTestnetFlag } from "./helpers";
+import {
+  DEFAULT_COSMOS_METHODS,
+  DEFAULT_EIP155_METHODS,
+  DEFAULT_MAIN_CHAINS,
+  DEFAULT_SOLANA_METHODS,
+  DEFAULT_TEST_CHAINS,
+} from "./constants";
+import { AccountAction, setLocaleStorageTestnetFlag } from "./helpers";
 import Toggle from "./components/Toggle";
 import RequestModal from "./modals/RequestModal";
 import PairingModal from "./modals/PairingModal";
@@ -24,10 +30,9 @@ import {
 } from "./components/app";
 import { useWalletConnectClient } from "./contexts/ClientContext";
 import { useJsonRpc } from "./contexts/JsonRpcContext";
+import { useChainData } from "./contexts/ChainDataContext";
 
 export default function App() {
-  const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
-
   const [modal, setModal] = useState("");
 
   const closeModal = () => setModal("");
@@ -50,7 +55,18 @@ export default function App() {
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
-  const { chainData, ping, ethereumRpc, cosmosRpc, isRpcRequestPending, rpcResult } = useJsonRpc();
+  const {
+    ping,
+    ethereumRpc,
+    cosmosRpc,
+    solanaRpc,
+    isRpcRequestPending,
+    rpcResult,
+    isTestnet,
+    setIsTestnet,
+  } = useJsonRpc();
+
+  const { chainData } = useChainData();
 
   // Close the pairing modal after a session is established.
   useEffect(() => {
@@ -99,11 +115,11 @@ export default function App() {
     };
 
     return [
-      { method: "eth_sendTransaction", callback: onSendTransaction },
-      { method: "eth_signTransaction", callback: onSignTransaction },
-      { method: "personal_sign", callback: onSignPersonalMessage },
-      { method: "eth_sign (standard)", callback: onEthSign },
-      { method: "eth_signTypedData", callback: onSignTypedData },
+      { method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION, callback: onSendTransaction },
+      { method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION, callback: onSignTransaction },
+      { method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN, callback: onSignPersonalMessage },
+      { method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)", callback: onEthSign },
+      { method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA, callback: onSignTypedData },
     ];
   };
 
@@ -117,8 +133,23 @@ export default function App() {
       await cosmosRpc.testSignAmino(chainId, address);
     };
     return [
-      { method: "cosmos_signDirect", callback: onSignDirect },
-      { method: "cosmos_signAmino", callback: onSignAmino },
+      { method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT, callback: onSignDirect },
+      { method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO, callback: onSignAmino },
+    ];
+  };
+
+  const getSolanaActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await solanaRpc.testSignTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await solanaRpc.testSignMessage(chainId, address);
+    };
+    return [
+      { method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION, callback: onSignTransaction },
+      { method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE, callback: onSignMessage },
     ];
   };
 
@@ -129,6 +160,8 @@ export default function App() {
         return getEthereumActions();
       case "cosmos":
         return getCosmosActions();
+      case "solana":
+        return getSolanaActions();
       default:
         break;
     }

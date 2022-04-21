@@ -155,7 +155,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                   </Column>
                 </SFullWidthContainer>
               ) : null}
-              {!!actions && actions.length ? (
+              {address && !!actions && actions.length ? (
                 <SFullWidthContainer>
                   <h6>Methods</h6>
                   {actions.map(action => (
@@ -163,7 +163,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                       key={action.method}
                       left
                       rgb={chain.meta.rgb}
-                      onClick={() => action.callback(chainId)}
+                      onClick={() => action.callback(address)}
                     >
                       {action.method}
                     </SAction>

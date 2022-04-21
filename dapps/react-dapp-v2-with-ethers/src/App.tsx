@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { version } from "@walletconnect/client/package.json";
 import * as encoding from "@walletconnect/encoding";
+import { BigNumber, utils } from "ethers";
+import { TypedDataField } from "@ethersproject/abstract-signer";
+import { Transaction } from "@ethereumjs/tx";
 
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";
@@ -28,8 +31,6 @@ import {
   SToggleContainer,
 } from "./components/app";
 import { useWalletConnectClient } from "./contexts/ClientContext";
-import { BigNumber, utils } from "ethers";
-import { TypedDataField } from "@ethersproject/abstract-signer";
 
 interface IFormattedRpcResponse {
   method: string;
@@ -63,6 +64,9 @@ export default function App() {
     onEnable,
     web3Provider,
   } = useWalletConnectClient();
+
+  const verifyEip155MessageSignature = (message: string, signature: string, address: string) =>
+    utils.verifyMessage(message, signature).toLowerCase() === address.toLowerCase();
 
   const ping = async () => {
     if (typeof client === "undefined") {
@@ -130,13 +134,14 @@ export default function App() {
     const [address] = await web3Provider.listAccounts();
 
     const tx = await formatTestTransaction("eip155:" + chainId + ":" + address);
+    const signedTx = await web3Provider.send("eth_signTransaction", [tx]);
+    const valid = Transaction.fromSerializedTx(signedTx as any).verifySignature();
 
-    const signature = await web3Provider.send("eth_signTransaction", [tx]);
     return {
       method: "eth_signTransaction",
       address,
-      valid: true,
-      result: signature,
+      valid,
+      result: signedTx,
     };
   };
 
@@ -148,7 +153,7 @@ export default function App() {
     const hexMsg = encoding.utf8ToHex(msg, true);
     const [address] = await web3Provider.listAccounts();
     const signature = await web3Provider.send("personal_sign", [hexMsg, address]);
-    const valid = utils.verifyMessage(msg, signature) === address;
+    const valid = verifyEip155MessageSignature(msg, signature, address);
     return {
       method: "personal_sign",
       address,
@@ -165,7 +170,7 @@ export default function App() {
     const hexMsg = encoding.utf8ToHex(msg, true);
     const [address] = await web3Provider.listAccounts();
     const signature = await web3Provider.send("eth_sign", [address, hexMsg]);
-    const valid = utils.verifyMessage(msg, signature) === address;
+    const valid = verifyEip155MessageSignature(msg, signature, address);
     return {
       method: "eth_sign (standard)",
       address,
@@ -191,16 +196,14 @@ export default function App() {
 
     // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
     // will throw due to "unused" `EIP712Domain` type.
+    // See: https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
     const { EIP712Domain, ...nonDomainTypes }: Record<string, TypedDataField[]> =
       eip712.example.types;
 
     const valid =
-      utils.verifyTypedData(
-        eip712.example.domain,
-        nonDomainTypes,
-        eip712.example.message,
-        signature,
-      ) === address;
+      utils
+        .verifyTypedData(eip712.example.domain, nonDomainTypes, eip712.example.message, signature)
+        .toLowerCase() === address.toLowerCase();
     return {
       method: "eth_signTypedData",
       address,

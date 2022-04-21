@@ -118,8 +118,11 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
 ) => {
   const { chainData, fetching, chainId, address, onClick, active, balances, actions } = props;
   if (!Object.keys(chainData).length) return null;
+
   const chain = getBlockchainDisplayData(chainId, chainData);
+
   if (typeof chain === "undefined") return null;
+
   const name = chain.meta.name || chain.data.name;
   const account = typeof address !== "undefined" ? `${chainId}:${address}` : undefined;
   const assets =

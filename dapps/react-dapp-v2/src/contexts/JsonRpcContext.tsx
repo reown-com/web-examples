@@ -1,33 +1,41 @@
 import { BigNumber, utils } from "ethers";
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
-import { formatDirectSignDoc, stringifySignDocValues } from "cosmos-wallet";
-
-import {
-  ChainNamespaces,
-  eip712,
-  formatTestTransaction,
-  getAllChainNamespaces,
-  hashPersonalMessage,
-  verifySignature,
-} from "../helpers";
-import { useWalletConnectClient } from "./ClientContext";
-import { apiGetChainNamespace, ChainsMap } from "caip-api";
 import { TypedDataField } from "@ethersproject/abstract-signer";
+import { Transaction as EthTransaction } from "@ethereumjs/tx";
+import {
+  formatDirectSignDoc,
+  stringifySignDocValues,
+  verifyAminoSignature,
+  verifyDirectSignature,
+} from "cosmos-wallet";
+import bs58 from "bs58";
+import { verifyMessageSignature } from "solana-wallet";
+import {
+  clusterApiUrl,
+  Connection,
+  Keypair,
+  SystemProgram,
+  Transaction as SolanaTransaction,
+} from "@solana/web3.js";
+
+import { eip712, formatTestTransaction, getLocalStorageTestnetFlag } from "../helpers";
+import { useWalletConnectClient } from "./ClientContext";
+import {
+  DEFAULT_COSMOS_METHODS,
+  DEFAULT_EIP155_METHODS,
+  DEFAULT_SOLANA_METHODS,
+} from "../constants";
+import { useChainData } from "./ChainDataContext";
 
 /**
  * Types
  */
 interface IFormattedRpcResponse {
-  method: string;
-  address: string;
+  method?: string;
+  address?: string;
   valid: boolean;
   result: string;
-}
-
-interface IRpcResult {
-  method: string;
-  valid: boolean;
 }
 
 type TRpcRequestCallback = (chainId: string, address: string) => Promise<void>;
@@ -45,9 +53,14 @@ interface IContext {
     testSignDirect: TRpcRequestCallback;
     testSignAmino: TRpcRequestCallback;
   };
-  chainData: ChainNamespaces;
-  rpcResult?: IRpcResult | null;
+  solanaRpc: {
+    testSignMessage: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
+  };
+  rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
+  isTestnet: boolean;
+  setIsTestnet: (isTestnet: boolean) => void;
 }
 
 /**
@@ -60,33 +73,12 @@ export const JsonRpcContext = createContext<IContext>({} as IContext);
  */
 export function JsonRpcContextProvider({ children }: { children: ReactNode | ReactNode[] }) {
   const [pending, setPending] = useState(false);
-  const [result, setResult] = useState<IRpcResult | null>();
-  const [chainData, setChainData] = useState<ChainNamespaces>({});
+  const [result, setResult] = useState<IFormattedRpcResponse | null>();
+  const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
 
-  const { client, session, accounts, balances } = useWalletConnectClient();
+  const { client, session, accounts, balances, solanaPublicKeys } = useWalletConnectClient();
 
-  useEffect(() => {
-    loadChainData();
-  }, []);
-
-  const loadChainData = async () => {
-    const namespaces = getAllChainNamespaces();
-    const chainData: ChainNamespaces = {};
-    await Promise.all(
-      namespaces.map(async namespace => {
-        let chains: ChainsMap | undefined;
-        try {
-          chains = await apiGetChainNamespace(namespace);
-        } catch (e) {
-          // ignore error
-        }
-        if (typeof chains !== "undefined") {
-          chainData[namespace] = chains;
-        }
-      }),
-    );
-    setChainData(chainData);
-  };
+  const { chainData } = useChainData();
 
   const _createJsonRpcRequestHandler =
     (rpcRequest: (chainId: string, address: string) => Promise<IFormattedRpcResponse>) =>
@@ -102,13 +94,20 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         setPending(true);
         const result = await rpcRequest(chainId, address);
         setResult(result);
-      } catch (err) {
-        console.error(err);
-        setResult(null);
+      } catch (err: any) {
+        console.error("RPC request failed: ", err);
+        setResult({
+          address,
+          valid: false,
+          result: err?.message ?? err,
+        });
       } finally {
         setPending(false);
       }
     };
+
+  const _verifyEip155MessageSignature = (message: string, signature: string, address: string) =>
+    utils.verifyMessage(message, signature).toLowerCase() === address.toLowerCase();
 
   const ping = async () => {
     if (typeof client === "undefined") {
@@ -134,6 +133,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       setResult({
         method: "ping",
         valid,
+        result: valid ? "Ping succeeded" : "Ping failed",
       });
     } catch (e) {
       console.error(e);
@@ -156,7 +156,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const balance = BigNumber.from(balances[account][0].balance || "0");
       if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
         return {
-          method: "eth_sendTransaction",
+          method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
           address,
           valid: false,
           result: "Insufficient funds for intrinsic transaction cost",
@@ -167,14 +167,14 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         topic: session!.topic,
         chainId,
         request: {
-          method: "eth_sendTransaction",
+          method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
           params: [tx],
         },
       });
 
       // format displayed result
       return {
-        method: "eth_sendTransaction",
+        method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
         address,
         valid: true,
         result,
@@ -187,20 +187,22 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       const tx = await formatTestTransaction(account);
 
-      const result: string = await client!.request({
+      const signedTx: string = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
-          method: "eth_signTransaction",
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
           params: [tx],
         },
       });
 
+      const valid = EthTransaction.fromSerializedTx(signedTx as any).verifySignature();
+
       return {
-        method: "eth_signTransaction",
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
         address,
-        valid: true,
-        result,
+        valid,
+        result: signedTx,
       };
     }),
     testSignPersonalMessage: _createJsonRpcRequestHandler(
@@ -215,11 +217,11 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         const params = [hexMsg, address];
 
         // send message
-        const result: string = await client!.request({
+        const signature: string = await client!.request({
           topic: session!.topic,
           chainId,
           request: {
-            method: "personal_sign",
+            method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
             params,
           },
         });
@@ -233,18 +235,14 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
           throw new Error(`Missing chain data for chainId: ${chainId}`);
         }
 
-        const rpcUrl = targetChainData.rpc[0];
-
-        // verify signature
-        const hash = hashPersonalMessage(message);
-        const valid = await verifySignature(address, result, hash, rpcUrl);
+        const valid = _verifyEip155MessageSignature(message, signature, address);
 
         // format displayed result
         return {
-          method: "personal_sign",
+          method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
           address,
           valid,
-          result,
+          result: signature,
         };
       },
     ),
@@ -257,11 +255,11 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = [address, hexMsg];
 
       // send message
-      const result: string = await client!.request({
+      const signature: string = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
-          method: "eth_sign",
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN,
           params,
         },
       });
@@ -275,18 +273,14 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         throw new Error(`Missing chain data for chainId: ${chainId}`);
       }
 
-      const rpcUrl = targetChainData.rpc[0];
-
-      // verify signature
-      const hash = hashPersonalMessage(message);
-      const valid = await verifySignature(address, result, hash, rpcUrl);
+      const valid = _verifyEip155MessageSignature(message, signature, address);
 
       // format displayed result
       return {
-        method: "eth_sign (standard)",
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
         address,
         valid,
-        result,
+        result: signature,
       };
     }),
     testSignTypedData: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
@@ -300,26 +294,24 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         topic: session!.topic,
         chainId,
         request: {
-          method: "eth_signTypedData",
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
           params,
         },
       });
 
       // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
       // will throw due to "unused" `EIP712Domain` type.
+      // See: https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
       const { EIP712Domain, ...nonDomainTypes }: Record<string, TypedDataField[]> =
         eip712.example.types;
 
       const valid =
-        utils.verifyTypedData(
-          eip712.example.domain,
-          nonDomainTypes,
-          eip712.example.message,
-          signature,
-        ) === address;
+        utils
+          .verifyTypedData(eip712.example.domain, nonDomainTypes, eip712.example.message, signature)
+          .toLowerCase() === address.toLowerCase();
 
       return {
-        method: "eth_signTypedData",
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
         address,
         valid,
         result: signature,
@@ -369,7 +361,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         topic: session!.topic,
         chainId,
         request: {
-          method: "cosmos_signDirect",
+          method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
           params,
         },
       });
@@ -380,12 +372,11 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         throw new Error(`Missing chain data for chainId: ${chainId}`);
       }
 
-      // TODO: check if valid
-      const valid = true;
+      const valid = await verifyDirectSignature(address, result.signature, signDoc);
 
       // format displayed result
       return {
-        method: "cosmos_signDirect",
+        method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
         address,
         valid,
         result: result.signature,
@@ -413,7 +404,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         topic: session!.topic,
         chainId,
         request: {
-          method: "cosmos_signAmino",
+          method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
           params,
         },
       });
@@ -424,12 +415,11 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         throw new Error(`Missing chain data for chainId: ${chainId}`);
       }
 
-      // TODO: check if valid
-      const valid = true;
+      const valid = await verifyAminoSignature(address, result.signature, signDoc);
 
       // format displayed result
       return {
-        method: "cosmos_signAmino",
+        method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
         address,
         valid,
         result: result.signature,
@@ -437,15 +427,123 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
     }),
   };
 
+  // -------- SOLANA RPC METHODS --------
+
+  const solanaRpc = {
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        if (!solanaPublicKeys) {
+          throw new Error("Could not find Solana PublicKeys.");
+        }
+
+        const senderPublicKey = solanaPublicKeys[address];
+
+        const connection = new Connection(clusterApiUrl(isTestnet ? "testnet" : "mainnet-beta"));
+
+        // Using deprecated `getRecentBlockhash` over `getLatestBlockhash` here, since `mainnet-beta`
+        // cluster only seems to support `connection.getRecentBlockhash` currently.
+        const { blockhash } = await connection.getRecentBlockhash();
+
+        const transaction = new SolanaTransaction({
+          feePayer: senderPublicKey,
+          recentBlockhash: blockhash,
+        }).add(
+          SystemProgram.transfer({
+            fromPubkey: senderPublicKey,
+            toPubkey: Keypair.generate().publicKey,
+            lamports: 1,
+          }),
+        );
+
+        try {
+          const { signature } = await client!.request({
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
+              params: {
+                feePayer: transaction.feePayer!.toBase58(),
+                recentBlockhash: transaction.recentBlockhash,
+                instructions: transaction.instructions.map(i => ({
+                  programId: i.programId.toBase58(),
+                  data: bs58.encode(i.data),
+                  keys: i.keys.map(k => ({
+                    isSigner: k.isSigner,
+                    isWritable: k.isWritable,
+                    pubkey: k.pubkey.toBase58(),
+                  })),
+                })),
+              },
+            },
+          });
+
+          // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
+          // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
+          transaction.addSignature(senderPublicKey, Buffer.from(bs58.decode(signature)));
+
+          const valid = transaction.verifySignatures();
+
+          return {
+            method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
+            address,
+            valid,
+            result: signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        if (!solanaPublicKeys) {
+          throw new Error("Could not find Solana PublicKeys.");
+        }
+
+        const senderPublicKey = solanaPublicKeys[address];
+
+        // Encode message to `UInt8Array` first via `TextEncoder` so we can pass it to `bs58.encode`.
+        const message = bs58.encode(
+          new TextEncoder().encode(`This is an example message to be signed - ${Date.now()}`),
+        );
+
+        try {
+          const { signature } = await client!.request({
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
+              params: {
+                pubkey: senderPublicKey.toBase58(),
+                message,
+              },
+            },
+          });
+
+          const valid = verifyMessageSignature(senderPublicKey.toBase58(), signature, message);
+
+          return {
+            method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
+            address,
+            valid,
+            result: signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
-        chainData,
         ping,
         ethereumRpc,
         cosmosRpc,
+        solanaRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
+        isTestnet,
+        setIsTestnet,
       }}
     >
       {children}
