@@ -6,10 +6,12 @@ import RequestModalContainer from '@/components/RequestModalContainer'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
+import { ELROND_CHAINS, TElrondChain } from '@/data/ElrondData'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { isCosmosChain, isEIP155Chain, isSolanaChain } from '@/utils/HelperUtil'
+import { elrondAddresses } from '@/utils/ElrondWalletUtil'
+import { isCosmosChain, isEIP155Chain, isSolanaChain, isElrondChain } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
@@ -19,7 +21,8 @@ export default function SessionProposalModal() {
   const [selectedEIP155, setSelectedEip155] = useState<string[]>([])
   const [selectedCosmos, setSelectedCosmos] = useState<string[]>([])
   const [selectedSolana, setSelectedSolana] = useState<string[]>([])
-  const allSelected = [...selectedEIP155, ...selectedCosmos, ...selectedSolana]
+  const [selectedElrond, setSelectedElrond] = useState<string[]>([])
+  const allSelected = [...selectedEIP155, ...selectedCosmos, ...selectedSolana, ...selectedElrond]
 
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
@@ -61,6 +64,16 @@ export default function SessionProposalModal() {
       setSelectedSolana(newAddresses)
     } else {
       setSelectedSolana([...selectedSolana, address])
+    }
+  }
+
+  // Add / remove address from Elrond selection
+  function onSelectElrond(address: string) {
+    if (selectedElrond.includes(address)) {
+      const newAddresses = selectedElrond.filter(a => a !== address)
+      setSelectedElrond(newAddresses)
+    } else {
+      setSelectedElrond([...selectedElrond, address])
     }
   }
 
@@ -127,6 +140,16 @@ export default function SessionProposalModal() {
                 addresses={solanaAddresses}
                 selectedAddresses={selectedSolana}
                 onSelect={onSelectSolana}
+                chain={chain}
+              />
+            )
+          } else if (isElrondChain(chain)) {
+            return (
+              <ProposalSelectSection
+                name={ELROND_CHAINS[chain as TElrondChain]?.name}
+                addresses={elrondAddresses}
+                selectedAddresses={selectedElrond}
+                onSelect={onSelectElrond}
                 chain={chain}
               />
             )

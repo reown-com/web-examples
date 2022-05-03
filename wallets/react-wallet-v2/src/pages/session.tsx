@@ -4,9 +4,11 @@ import SessionSelectSection from '@/components/SessionSelectSection'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
+import { ELROND_CHAINS, TElrondChain } from '@/data/ElrondData'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { isCosmosChain, isEIP155Chain, isSolanaChain } from '@/utils/HelperUtil'
+import { elrondAddresses } from '@/utils/ElrondWalletUtil'
+import { isCosmosChain, isEIP155Chain, isSolanaChain, isElrondChain } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Button, Col, Divider, Row, Text } from '@nextui-org/react'
@@ -110,6 +112,18 @@ export default function SessionPage() {
               chain={chain}
               name={SOLANA_CHAINS[chain as TSolanaChain]?.name}
               addresses={solanaAddresses}
+              selectedAddresses={accounts}
+              onDelete={onDeleteAccount}
+              onAdd={onAddAccount}
+            />
+          )
+        } else if (isElrondChain(chain)) {
+          return (
+            <SessionSelectSection
+              key={chain}
+              chain={chain}
+              name={ELROND_CHAINS[chain as TElrondChain]?.name}
+              addresses={elrondAddresses}
               selectedAddresses={accounts}
               onDelete={onDeleteAccount}
               onAdd={onAddAccount}

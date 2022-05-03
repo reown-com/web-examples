@@ -2,6 +2,7 @@ import SettingsStore from '@/store/SettingsStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
+import { elrondAddresses } from '@/utils/ElrondWalletUtil'
 import { useSnapshot } from 'valtio'
 
 export default function AccountPicker() {
@@ -13,6 +14,7 @@ export default function AccountPicker() {
     SettingsStore.setEIP155Address(eip155Addresses[account])
     SettingsStore.setCosmosAddress(cosmosAddresses[account])
     SettingsStore.setSolanaAddress(solanaAddresses[account])
+    SettingsStore.setElrondAddress(elrondAddresses[account])
   }
 
   return (
