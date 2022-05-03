@@ -90,3 +90,10 @@ export function isCosmosChain(chain: string) {
 export function isSolanaChain(chain: string) {
   return chain.includes('solana')
 }
+
+/**
+ * Check if chain is part of ELROND standard
+ */
+export function isElrondChain(chain: string) {
+  return chain.includes('elrond')
+}

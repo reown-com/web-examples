@@ -9,6 +9,7 @@ interface State {
   eip155Address: string
   cosmosAddress: string
   solanaAddress: string
+  elrondAddress: string
 }
 
 /**
@@ -19,7 +20,8 @@ const state = proxy<State>({
   account: 0,
   eip155Address: '',
   cosmosAddress: '',
-  solanaAddress: ''
+  solanaAddress: '',
+  elrondAddress: ''
 })
 
 /**
@@ -42,6 +44,10 @@ const SettingsStore = {
 
   setSolanaAddress(solanaAddress: string) {
     state.solanaAddress = solanaAddress
+  },
+
+  setElrondAddress(elrondAddress: string) {
+    state.elrondAddress = elrondAddress
   },
 
   toggleTestNets() {

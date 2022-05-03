@@ -1,6 +1,7 @@
 import { COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
+import { ELROND_SIGNING_METHODS } from '@/data/ElrondData'
 import ModalStore from '@/store/ModalStore'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { CLIENT_EVENTS } from '@walletconnect/client'
@@ -49,6 +50,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
       case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
         return ModalStore.open('SessionSignSolanaModal', { requestEvent, requestSession })
+
+      case ELROND_SIGNING_METHODS.ELROND_SIGN_MESSAGE:
+      case ELROND_SIGNING_METHODS.ELROND_SIGN_TRANSACTION:
+        return ModalStore.open('SessionSignElrondModal', { requestEvent, requestSession })
 
       default:
         return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
