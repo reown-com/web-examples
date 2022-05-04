@@ -1,4 +1,11 @@
-import { Transaction, Mnemonic, UserSecretKey, UserWallet, UserSigner } from '@elrondnetwork/erdjs'
+import {
+  Transaction,
+  Mnemonic,
+  UserSecretKey,
+  UserWallet,
+  UserSigner,
+  SignableMessage
+} from '@elrondnetwork/erdjs'
 
 /**
  * Types
@@ -44,17 +51,29 @@ export default class ElrondLib {
     return address
   }
 
-  signMessage(message: string) {
-    //return this.wallet.signMessage(message)
-  }
-
-  async signTransaction(transaction: Transaction) {
+  async signMessage(message: string) {
     const secretKey = UserWallet.decryptSecretKey(this.wallet.toJSON(), this.password)
     const secretKeyHex = secretKey.hex()
 
-    const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
-    await signer.sign(transaction)
+    const signMessage = new SignableMessage({
+      message: Buffer.from(message)
+    })
 
-    return transaction.getSignature().hex()
+    const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
+    await signer.sign(signMessage)
+
+    return { signature: signMessage.signature.hex() }
+  }
+
+  async signTransaction(transaction: any) {
+    const secretKey = UserWallet.decryptSecretKey(this.wallet.toJSON(), this.password)
+    const secretKeyHex = secretKey.hex()
+
+    const signTransaction = Transaction.fromPlainObject(transaction)
+
+    const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
+    await signer.sign(signTransaction)
+
+    return { signature: signTransaction.getSignature().hex() }
   }
 }

@@ -15,7 +15,8 @@ export async function approveElrondRequest(requestEvent: RequestEvent) {
       return formatJsonRpcResult(id, signedMessage)
 
     case ELROND_SIGNING_METHODS.ELROND_SIGN_TRANSACTION:
-      const signTransaction = params[0]
+      const signTransaction = params.transaction
+
       const signature = await wallet.signTransaction(signTransaction)
       return formatJsonRpcResult(id, signature)
 
