@@ -20,6 +20,7 @@ import {
   DEFAULT_PROJECT_ID,
   DEFAULT_RELAY_URL,
   DEFAULT_SOLANA_METHODS,
+  DEFAULT_ELROND_METHODS,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { ERROR, getAppMetadata } from "@walletconnect/utils";
@@ -118,6 +119,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
             return Object.values(DEFAULT_COSMOS_METHODS);
           case "solana":
             return Object.values(DEFAULT_SOLANA_METHODS);
+          case "elrond":
+            return Object.values(DEFAULT_ELROND_METHODS);
           default:
             throw new Error(`No default methods for namespace: ${namespace}`);
         }

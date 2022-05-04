@@ -19,12 +19,27 @@ import {
   Transaction as SolanaTransaction,
 } from "@solana/web3.js";
 
+import {
+  Transaction as ElrondTransaction,
+  TransactionPayload,
+  Nonce,
+  GasLimit,
+  GasPrice,
+  Balance,
+  ChainID,
+  Address,
+  SignableMessage,
+  UserVerifier,
+  UserPublicKey,
+} from "@elrondnetwork/erdjs";
+
 import { eip712, formatTestTransaction, getLocalStorageTestnetFlag } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
   DEFAULT_COSMOS_METHODS,
   DEFAULT_EIP155_METHODS,
   DEFAULT_SOLANA_METHODS,
+  DEFAULT_ELROND_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 
@@ -56,6 +71,10 @@ interface IContext {
   solanaRpc: {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
+  };
+  elrondRpc: {
+    testSignElrondMessage: TRpcRequestCallback;
+    testSignElrondTransaction: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -533,6 +552,88 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
     ),
   };
 
+  // -------- ELROND RPC METHODS --------
+
+  const elrondRpc = {
+    testSignElrondTransaction: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        const testTransaction = new ElrondTransaction({
+          nonce: new Nonce(8),
+          value: Balance.fromString("10000000000000000000"),
+          receiver: Address.fromBech32(address),
+          gasPrice: new GasPrice(1000000000),
+          gasLimit: new GasLimit(50000),
+          chainID: new ChainID(isTestnet ? "T" : "1"),
+          data: new TransactionPayload("testdata"),
+        });
+        const sender = new Address(address);
+        const transaction = testTransaction.toPlainObject(sender);
+
+        try {
+          const { signature } = await client!.request({
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
+              params: {
+                transaction,
+              },
+            },
+          });
+
+          const valid = true; // TODO check signature validity
+
+          return {
+            method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
+            address,
+            valid,
+            result: signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    ),
+    testSignElrondMessage: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        const userAddress = new Address(address);
+        const publicKey = new UserPublicKey(userAddress.pubkey());
+        const verifier = new UserVerifier(publicKey);
+
+        const testMessage = new SignableMessage({
+          message: Buffer.from(`Sign this message - ${Date.now()}`),
+        });
+
+        const message = testMessage.serializeForSigning().toString();
+
+        try {
+          const { signature } = await client!.request({
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE,
+              params: {
+                address,
+                message,
+              },
+            },
+          });
+
+          testMessage.applySignature(signature);
+
+          const valid = verifier.verify(testMessage);
+
+          return {
+            method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE,
+            address,
+            valid,
+            result: signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -540,6 +641,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         ethereumRpc,
         cosmosRpc,
         solanaRpc,
+        elrondRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,

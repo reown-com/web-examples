@@ -11,6 +11,7 @@ import {
   DEFAULT_EIP155_METHODS,
   DEFAULT_MAIN_CHAINS,
   DEFAULT_SOLANA_METHODS,
+  DEFAULT_ELROND_METHODS,
   DEFAULT_TEST_CHAINS,
 } from "./constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "./helpers";
@@ -60,6 +61,7 @@ export default function App() {
     ethereumRpc,
     cosmosRpc,
     solanaRpc,
+    elrondRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -153,6 +155,21 @@ export default function App() {
     ];
   };
 
+  const getElrondActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await elrondRpc.testSignElrondTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await elrondRpc.testSignElrondMessage(chainId, address);
+    };
+    return [
+      { method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION, callback: onSignTransaction },
+      { method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE, callback: onSignMessage },
+    ];
+  };
+
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
     switch (namespace) {
@@ -162,6 +179,8 @@ export default function App() {
         return getCosmosActions();
       case "solana":
         return getSolanaActions();
+      case "elrond":
+        return getElrondActions();
       default:
         break;
     }
