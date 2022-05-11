@@ -1,11 +1,5 @@
-import {
-  Transaction,
-  Mnemonic,
-  UserSecretKey,
-  UserWallet,
-  UserSigner,
-  SignableMessage
-} from '@elrondnetwork/erdjs'
+import { Transaction, SignableMessage } from '@elrondnetwork/erdjs'
+import { Mnemonic, UserSecretKey, UserWallet, UserSigner } from '@elrondnetwork/erdjs-walletcore'
 
 /**
  * Types
