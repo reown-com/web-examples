@@ -53,6 +53,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
       case ELROND_SIGNING_METHODS.ELROND_SIGN_MESSAGE:
       case ELROND_SIGNING_METHODS.ELROND_SIGN_TRANSACTION:
+      case ELROND_SIGNING_METHODS.ELROND_SIGN_TRANSACTIONS:
         return ModalStore.open('SessionSignElrondModal', { requestEvent, requestSession })
 
       default:

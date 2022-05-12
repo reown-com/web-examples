@@ -160,12 +160,17 @@ export default function App() {
       openRequestModal();
       await elrondRpc.testSignElrondTransaction(chainId, address);
     };
+    const onSignTransactions = async (chainId: string, address: string) => {
+      openRequestModal();
+      await elrondRpc.testSignElrondTransactions(chainId, address);
+    };
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
       await elrondRpc.testSignElrondMessage(chainId, address);
     };
     return [
       { method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION, callback: onSignTransaction },
+      { method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS, callback: onSignTransactions },
       { method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE, callback: onSignMessage },
     ];
   };
