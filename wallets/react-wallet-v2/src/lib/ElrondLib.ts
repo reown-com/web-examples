@@ -70,4 +70,21 @@ export default class ElrondLib {
 
     return { signature: signTransaction.getSignature().hex() }
   }
+
+  async signTransactions(transactions: any[]) {
+    const secretKey = UserWallet.decryptSecretKey(this.wallet.toJSON(), this.password)
+    const secretKeyHex = secretKey.hex()
+
+    const signatures = await Promise.all(
+      transactions.map(async (transaction: any): Promise<any> => {
+        const signTransaction = Transaction.fromPlainObject(transaction)
+        const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
+        await signer.sign(signTransaction)
+
+        return { signature: signTransaction.getSignature().hex() }
+      })
+    )
+
+    return { signatures }
+  }
 }

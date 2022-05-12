@@ -33,5 +33,6 @@ export const ELROND_CHAINS = { ...ELROND_MAINNET_CHAINS, ...ELROND_TEST_CHAINS }
  */
 export const ELROND_SIGNING_METHODS = {
   ELROND_SIGN_TRANSACTION: 'erd_signTransaction',
+  ELROND_SIGN_TRANSACTIONS: 'erd_signTransactions',
   ELROND_SIGN_MESSAGE: 'erd_signMessage'
 }

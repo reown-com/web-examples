@@ -48,6 +48,7 @@ export enum DEFAULT_SOLANA_METHODS {
 
 export enum DEFAULT_ELROND_METHODS {
   ELROND_SIGN_TRANSACTION = "erd_signTransaction",
+  ELROND_SIGN_TRANSACTIONS = "erd_signTransactions",
   ELROND_SIGN_MESSAGE = "erd_signMessage",
 }
 

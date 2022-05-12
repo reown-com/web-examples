@@ -20,6 +20,12 @@ export async function approveElrondRequest(requestEvent: RequestEvent) {
       const signature = await wallet.signTransaction(signTransaction)
       return formatJsonRpcResult(id, signature)
 
+    case ELROND_SIGNING_METHODS.ELROND_SIGN_TRANSACTIONS:
+      const signTransactions = params.transactions
+
+      const signatures = await wallet.signTransactions(signTransactions)
+      return formatJsonRpcResult(id, signatures)
+
     default:
       throw new Error(ERROR.UNKNOWN_JSONRPC_METHOD.format().message)
   }

@@ -75,6 +75,7 @@ interface IContext {
   elrondRpc: {
     testSignElrondMessage: TRpcRequestCallback;
     testSignElrondTransaction: TRpcRequestCallback;
+    testSignElrondTransactions: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -587,6 +588,65 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
             address,
             valid,
             result: signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    ),
+    testSignElrondTransactions: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        const testTransaction = new ElrondTransaction({
+          nonce: new Nonce(1),
+          value: Balance.fromString("10000000000000000000"),
+          receiver: Address.fromBech32(address),
+          gasPrice: new GasPrice(1000000000),
+          gasLimit: new GasLimit(50000),
+          chainID: new ChainID(isTestnet ? "T" : "1"),
+          data: new TransactionPayload("testdata"),
+        });
+        const testTransaction2 = new ElrondTransaction({
+          nonce: new Nonce(2),
+          value: Balance.fromString("20000000000000000000"),
+          receiver: Address.fromBech32(address),
+          gasPrice: new GasPrice(1000000000),
+          gasLimit: new GasLimit(50000),
+          chainID: new ChainID(isTestnet ? "T" : "1"),
+        });
+        const testTransaction3 = new ElrondTransaction({
+          nonce: new Nonce(2),
+          value: Balance.fromString("300000000000000000"),
+          receiver: Address.fromBech32(address),
+          gasPrice: new GasPrice(1000000000),
+          gasLimit: new GasLimit(50000),
+          chainID: new ChainID(isTestnet ? "T" : "1"),
+          data: new TransactionPayload("3"),
+        });
+        const sender = new Address(address);
+        const transactions = [testTransaction, testTransaction2, testTransaction3].map(
+          transaction => transaction.toPlainObject(sender),
+        );
+
+        try {
+          const { signatures } = await client!.request({
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS,
+              params: {
+                transactions,
+              },
+            },
+          });
+
+          const valid = true; // TODO check signature validity
+
+          const resultSignatures = signatures.map((signature: any) => signature.signature);
+
+          return {
+            method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS,
+            address,
+            valid,
+            result: resultSignatures.join(", "),
           };
         } catch (error: any) {
           throw new Error(error);
