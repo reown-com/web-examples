@@ -10,7 +10,7 @@ This example aims to demonstrate basic and advanced use cases enabled by WalletC
 
 ## Getting started
 
-Eexample is built atop of [NextJS](https://nextjs.org/) in order to abstract complexity of setting up bundlers, routing etc. So there are few steps you need to follow in order to set everything up
+Example is built atop of [NextJS](https://nextjs.org/) in order to abstract complexity of setting up bundlers, routing etc. So there are few steps you need to follow in order to set everything up
 
 1. Go to [WalletConnect Cloud](https://cloud.walletconnect.com/sign-in) and obtain a project id
 
