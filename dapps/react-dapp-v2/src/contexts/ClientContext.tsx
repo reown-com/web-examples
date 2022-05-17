@@ -150,7 +150,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       if (typeof client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
-      console.log("connect", pairing);
+      console.log("connect, pairing is:", pairing);
       try {
         const supportedNamespaces = getSupportedNamespaces();
         const methods = getSupportedMethods(supportedNamespaces);
@@ -211,6 +211,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       topic: session.topic,
       reason: ERROR.USER_DISCONNECTED.format(),
     });
+    // Reset app state after disconnect.
+    reset();
   }, [client, session]);
 
   const _subscribeToEvents = useCallback(
@@ -219,21 +221,16 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         throw new Error("WalletConnect is not initialized");
       }
 
-      // FIXME:
-      // _client.on(CLIENT_EVENTS.pairing.created, async () => {
-      //   setPairings(_client.pairing.topics);
-      // });
-
-      // FIXME:
+      // TODO: update session based on the update.
       _client.on(CLIENT_EVENTS.session_update, updatedSession => {
-        console.log("EVENT", "session_updated");
+        console.log("EVENT", "session_update");
         console.log(updatedSession);
 
         // onSessionConnected(updatedSession);
       });
 
       _client.on(CLIENT_EVENTS.session_delete, () => {
-        console.log("EVENT", "session_deleted");
+        console.log("EVENT", "session_delete");
         reset();
       });
     },
@@ -270,7 +267,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         logger: DEFAULT_LOGGER,
         relayUrl: DEFAULT_RELAY_URL,
         projectId: DEFAULT_PROJECT_ID,
-        metadata: DEFAULT_APP_METADATA,
+        metadata: getAppMetadata() || DEFAULT_APP_METADATA,
       });
 
       console.log("CREATED CLIENT: ", _client);
@@ -317,6 +314,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
           } catch (err) {
             throw err;
           }
+        });
+        _debugPeerClient.on(CLIENT_EVENTS.session_delete, () => {
+          console.log("PEER EVENT", "session_delete");
         });
 
         setDebugPeerClient(_debugPeerClient);
