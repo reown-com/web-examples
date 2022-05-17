@@ -123,7 +123,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       let valid = false;
 
       try {
-        await client.session.ping(session.topic);
+        await client.ping({ topic: session.topic });
         valid = true;
       } catch (e) {
         valid = false;
@@ -163,7 +163,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         };
       }
 
-      const result = await client!.request({
+      // TODO: resolve any type
+      const result: any = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -187,7 +188,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       const tx = await formatTestTransaction(account);
 
-      const signedTx: string = await client!.request({
+      // TODO: resolve any type
+      const signedTx: any = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -217,7 +219,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         const params = [hexMsg, address];
 
         // send message
-        const signature: string = await client!.request({
+        // TODO: resolve any type
+        const signature: any = await client!.request({
           topic: session!.topic,
           chainId,
           request: {
@@ -255,7 +258,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = [address, hexMsg];
 
       // send message
-      const signature: string = await client!.request({
+      // TODO: resolve any type
+      const signature: any = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -290,7 +294,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = [address, message];
 
       // send message
-      const signature = await client!.request({
+      // TODO: resolve any type
+      const signature: any = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -357,7 +362,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       };
 
       // send message
-      const result = await client!.request({
+      // TODO: resolve any type
+      const result: any = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -400,7 +406,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = { signerAddress: address, signDoc };
 
       // send message
-      const result = await client!.request({
+      // TODO: resolve any type
+      const result: any = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -456,7 +463,9 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         );
 
         try {
-          const { signature } = await client!.request({
+          // TODO: resolve any type
+          const { signature }: any = await client!.request({
+            chainId,
             topic: session!.topic,
             request: {
               method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
@@ -507,7 +516,9 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         );
 
         try {
-          const { signature } = await client!.request({
+          // TODO: resolve any type
+          const { signature }: any = await client!.request({
+            chainId,
             topic: session!.topic,
             request: {
               method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
