@@ -1,5 +1,5 @@
 import Client, { CLIENT_EVENTS } from "@walletconnect/client";
-import { PairingTypes, ProposalTypes, SessionTypes } from "@walletconnect/types";
+import { SessionTypes } from "@walletconnect/types";
 import QRCodeModal from "@walletconnect/legacy-modal";
 import {
   createContext,
@@ -188,7 +188,24 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
         console.log("session:", session);
 
-        onSessionConnected(session);
+        await onSessionConnected(session);
+
+        // After connecting the debug peer, immediately attempt a session update (adding Kovan account).
+        if (debugPeerClient) {
+          debugPeerClient.update({
+            topic: session.topic,
+            namespaces: {
+              eip155: {
+                accounts: [
+                  "eip155:1:0x3c582121909DE92Dc89A36898633C1aE4790382b",
+                  "eip155:42:0x3c582121909DE92Dc89A36898633C1aE4790382b",
+                ],
+                methods,
+                events: ["chainChanged", "accountsChanged"],
+              },
+            },
+          });
+        }
       } catch (e) {
         console.error(e);
         // ignore rejection
@@ -221,22 +238,19 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         throw new Error("WalletConnect is not initialized");
       }
 
-      // TODO: update session based on the update.
-      _client.on(CLIENT_EVENTS.session_update, updatedSession => {
-        console.log("EVENT", "session_update");
-        console.log(updatedSession);
-
-        // onSessionConnected(updatedSession);
+      _client.on("session_update", ({ topic, namespaces }) => {
+        console.log("EVENT", "session_update", { topic, namespaces });
+        const _session = _client.session.get(topic);
+        const updatedSession = { ..._session, namespaces };
+        onSessionConnected(updatedSession);
       });
 
-      _client.on(CLIENT_EVENTS.session_delete, () => {
+      _client.on("session_delete", () => {
         console.log("EVENT", "session_delete");
         reset();
       });
     },
-    [
-      /*onSessionConnected*/
-    ],
+    [onSessionConnected],
   );
 
   const _checkPersistedState = useCallback(
