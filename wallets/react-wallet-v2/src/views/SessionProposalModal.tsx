@@ -30,9 +30,8 @@ export default function SessionProposalModal() {
   }
 
   // Get required proposal data
-  const { proposer, permissions, relay } = proposal
-  const { chains } = permissions.blockchain
-  const { methods } = permissions.jsonrpc
+  const { proposer, requiredNamespaces, id, relays } = proposal
+  const namespaceKeys = Object.keys(requiredNamespaces)
 
   // Add / remove address from EIP155 selection
   function onSelectEIP155(address: string) {
@@ -68,12 +67,8 @@ export default function SessionProposalModal() {
   async function onApprove() {
     if (proposal) {
       const accounts = allSelected
-      const response = {
-        state: {
-          accounts
-        }
-      }
-      await walletConnectClient.approve({ proposal, response })
+
+      await walletConnectClient.approve({ id, relayProtocol: relays[0].protocol, namespaces: {} })
     }
     ModalStore.close()
   }

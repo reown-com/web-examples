@@ -9,10 +9,7 @@ export default function PairingsPage() {
   const [pairings, setPairings] = useState(walletConnectClient.pairing.values)
 
   async function onDelete(topic: string) {
-    await walletConnectClient.pairing.delete({
-      topic,
-      reason: ERROR.DELETED.format()
-    })
+    await walletConnectClient.disconnect({ topic, reason: ERROR.DELETED.format() })
     const newPairings = pairings.filter(pairing => pairing.topic !== topic)
     setPairings(newPairings)
   }
@@ -22,14 +19,14 @@ export default function PairingsPage() {
       <PageHeader title="Pairings" />
       {pairings.length ? (
         pairings.map(pairing => {
-          const { metadata } = pairing.state
+          const { peerMetadata } = pairing
 
           return (
             <PairingCard
               key={pairing.topic}
-              logo={metadata?.icons[0]}
-              url={metadata?.url}
-              name={metadata?.name}
+              logo={peerMetadata?.icons[0]}
+              url={peerMetadata?.url}
+              name={peerMetadata?.name}
               onDelete={() => onDelete(pairing.topic)}
             />
           )
