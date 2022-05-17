@@ -25,6 +25,8 @@ import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { ERROR, getAppMetadata } from "@walletconnect/utils";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 
+const USE_DEBUG_PEER_CLIENT = process.env.NODE_ENV !== "production";
+
 /**
  * Types
  */
@@ -63,6 +65,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [accounts, setAccounts] = useState<string[]>([]);
   const [solanaPublicKeys, setSolanaPublicKeys] = useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
+
+  // FIXME: remove debug peer
+  const [debugPeerClient, setDebugPeerClient] = useState<Client>();
 
   const reset = () => {
     setPairings([]);
@@ -128,12 +133,16 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   };
 
   const onSessionConnected = useCallback(async (_session: SessionTypes.Struct) => {
+    const allNamespaceAccounts = Object.values(_session.namespaces)
+      .map(namespace => namespace.accounts)
+      .flat();
+    const allNamespaceChains = Object.keys(_session.namespaces);
+
     setSession(_session);
-    // FIXME:
-    // setChains(_session.permissions.blockchain.chains);
-    // setAccounts(_session.accounts);
-    // setSolanaPublicKeys(getPublicKeysFromAccounts(_session.state.accounts));
-    // await getAccountBalances(_session.state.accounts);
+    setChains(allNamespaceChains);
+    setAccounts(allNamespaceAccounts);
+    setSolanaPublicKeys(getPublicKeysFromAccounts(allNamespaceAccounts));
+    await getAccountBalances(allNamespaceAccounts);
   }, []);
 
   const connect = useCallback(
@@ -162,17 +171,25 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
           },
         });
 
-        console.log("URI: ", uri);
-
         if (!uri) {
-          throw new Error("Could not get URI from `client.connect`");
+          throw new Error("Could not get URI from `Client.connect`");
         }
 
         QRCodeModal.open(uri, () => {
           console.log("EVENT", "QR Code Modal closed");
         });
 
+        // TODO: remove local debug pairing
+        if (debugPeerClient) {
+          console.warn("DEBUG: auto-pairing to local `debugPairClient`...");
+          const pairing = await debugPeerClient!.pair({ uri });
+          console.log("pairing:", pairing);
+        }
+        // -----
+
         const session = await approval();
+
+        console.log("session:", session);
 
         onSessionConnected(session);
       } catch (e) {
@@ -204,16 +221,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       if (typeof _client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
-
-      // FIXME: when is this triggered now?
-      _client.on(CLIENT_EVENTS.session_proposal, async (proposal: any) => {
-        console.log("CLIENT_EVENTS.session_proposal", proposal);
-        // const { uri } = proposal.signal.params;
-        // console.log("EVENT", "QR Code Modal open");
-        // QRCodeModal.open(uri, () => {
-        //   console.log("EVENT", "QR Code Modal closed");
-        // });
-      });
 
       // FIXME:
       // _client.on(CLIENT_EVENTS.pairing.created, async () => {
@@ -262,13 +269,56 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         logger: DEFAULT_LOGGER,
         relayUrl: DEFAULT_RELAY_URL,
         projectId: DEFAULT_PROJECT_ID,
+        metadata: {
+          name: "WalletConnect v2 Example Dapp",
+          description: "WalletConnect v2 Example Dapp",
+          url: "https://walletconnect.com",
+          icons: ["https://avatars.githubusercontent.com/u/37784886"],
+        },
       });
 
       console.log("CREATED CLIENT: ", _client);
-
       setClient(_client);
       await _subscribeToEvents(_client);
       // await _checkPersistedState(_client);
+
+      // TODO: remove debug peer client.
+      if (USE_DEBUG_PEER_CLIENT) {
+        const _debugPeerClient = await Client.init({
+          logger: DEFAULT_LOGGER,
+          relayUrl: DEFAULT_RELAY_URL,
+          projectId: DEFAULT_PROJECT_ID,
+          metadata: {
+            name: "Debug Peer Client (Responder)",
+            description: "",
+            url: "https://walletconnect.com",
+            icons: ["https://avatars.githubusercontent.com/u/37784886"],
+          },
+        });
+
+        console.log("CREATED DEBUG PEER: ", _debugPeerClient);
+
+        _debugPeerClient.on("session_proposal", async proposal => {
+          console.log("session_proposal", proposal);
+          try {
+            const { acknowledged } = await _debugPeerClient.approve({
+              id: proposal.id,
+              namespaces: {
+                eip155: {
+                  accounts: ["eip155:1:0x3c582121909DE92Dc89A36898633C1aE4790382b"],
+                  methods: proposal.requiredNamespaces["eip155"].methods,
+                  events: proposal.requiredNamespaces["eip155"].events,
+                },
+              },
+            });
+            await acknowledged();
+          } catch (err) {
+            throw err;
+          }
+        });
+
+        setDebugPeerClient(_debugPeerClient);
+      }
     } catch (err) {
       throw err;
     } finally {
