@@ -197,7 +197,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       // close modal in case it was open
       QRCodeModal.close();
     },
-    [chains, client, onSessionConnected, getSupportedNamespaces],
+    [chains, client, debugPeerClient, onSessionConnected, getSupportedNamespaces],
   );
 
   const disconnect = useCallback(async () => {
@@ -237,26 +237,30 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         reset();
       });
     },
-    [onSessionConnected],
+    [
+      /*onSessionConnected*/
+    ],
   );
 
-  // FIXME:
-  // const _checkPersistedState = useCallback(
-  //   async (_client: Client) => {
-  //     if (typeof _client === "undefined") {
-  //       throw new Error("WalletConnect is not initialized");
-  //     }
-  //     // populates existing pairings to state
-  //     setPairings(_client.pairing.topics);
-  //     if (typeof session !== "undefined") return;
-  //     // populates existing session to state (assume only the top one)
-  //     if (_client.session.topics.length) {
-  //       const _session = await _client.session.get(_client.session.topics[0]);
-  //       onSessionConnected(_session);
-  //     }
-  //   },
-  //   [session, onSessionConnected],
-  // );
+  const _checkPersistedState = useCallback(
+    async (_client: Client) => {
+      if (typeof _client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
+      // populates existing pairings to state
+      // setPairings(_client.pairing.topics);
+      if (typeof session !== "undefined") return;
+      // populates existing session to state (assume only the top one)
+      if (_client.session.length) {
+        const _session = _client.session.get(_client.session.keys[0]);
+        console.log("RESTORED SESSION:", _session);
+
+        await onSessionConnected(_session);
+        return _session;
+      }
+    },
+    [session, onSessionConnected],
+  );
 
   const createClient = useCallback(async () => {
     try {
@@ -272,7 +276,13 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       console.log("CREATED CLIENT: ", _client);
       setClient(_client);
       await _subscribeToEvents(_client);
-      // await _checkPersistedState(_client);
+
+      // TODO: re-enable session restore from persistence
+      // const _persistedSession = await _checkPersistedState(_client);
+
+      // if (_persistedSession) {
+      //   return;
+      // }
 
       // TODO: remove debug peer client.
       if (USE_DEBUG_PEER_CLIENT) {
@@ -316,7 +326,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     } finally {
       setIsInitializing(false);
     }
-  }, [/*_checkPersistedState,*/ _subscribeToEvents]);
+  }, [_checkPersistedState, _subscribeToEvents]);
 
   useEffect(() => {
     if (!client) {
