@@ -155,16 +155,13 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         const supportedNamespaces = getSupportedNamespaces();
         const methods = getSupportedMethods(supportedNamespaces);
 
-        // TODO: remove hardcoded config options here
+        console.log("SELECTED CHAINS:", chains);
+
+        // TODO: remove hardcoded chains here
         const { uri, approval } = await client.connect({
           requiredNamespaces: {
             eip155: {
-              methods: [
-                "eth_sendTransaction",
-                "eth_signTransaction",
-                "personal_sign",
-                "eth_signTypedData",
-              ],
+              methods,
               chains: ["eip155:1"],
               events: ["chainChanged", "accountsChanged"],
             },
@@ -269,12 +266,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         logger: DEFAULT_LOGGER,
         relayUrl: DEFAULT_RELAY_URL,
         projectId: DEFAULT_PROJECT_ID,
-        metadata: {
-          name: "WalletConnect v2 Example Dapp",
-          description: "WalletConnect v2 Example Dapp",
-          url: "https://walletconnect.com",
-          icons: ["https://avatars.githubusercontent.com/u/37784886"],
-        },
+        metadata: DEFAULT_APP_METADATA,
       });
 
       console.log("CREATED CLIENT: ", _client);
