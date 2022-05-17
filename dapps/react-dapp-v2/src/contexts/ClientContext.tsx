@@ -153,16 +153,16 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       console.log("connect, pairing is:", pairing);
       try {
         const supportedNamespaces = getSupportedNamespaces();
+        console.log("supported namespaces:", supportedNamespaces);
         const methods = getSupportedMethods(supportedNamespaces);
+        console.log("supported methods:", methods);
 
-        console.log("SELECTED CHAINS:", chains);
-
-        // TODO: remove hardcoded chains here
+        // TODO: Handle other non-EIP155 namespaces.
         const { uri, approval } = await client.connect({
           requiredNamespaces: {
             eip155: {
               methods,
-              chains: ["eip155:1"],
+              chains,
               events: ["chainChanged", "accountsChanged"],
             },
           },
@@ -190,15 +190,15 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
         await onSessionConnected(session);
 
-        // After connecting the debug peer, immediately attempt a session update (adding Kovan account).
+        // After connecting the debug peer, immediately attempt a session update (add ETH mainnet account).
         if (debugPeerClient) {
           debugPeerClient.update({
             topic: session.topic,
             namespaces: {
               eip155: {
                 accounts: [
+                  ...chains.map(chain => `${chain}:0x3c582121909DE92Dc89A36898633C1aE4790382b`),
                   "eip155:1:0x3c582121909DE92Dc89A36898633C1aE4790382b",
-                  "eip155:42:0x3c582121909DE92Dc89A36898633C1aE4790382b",
                 ],
                 methods,
                 events: ["chainChanged", "accountsChanged"],
