@@ -10,6 +10,7 @@ import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { walletConnectClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
+import { ERROR } from '@walletconnect/utils'
 import { Fragment, useState } from 'react'
 
 export default function SessionProposalModal() {
@@ -44,7 +45,7 @@ export default function SessionProposalModal() {
     }
   }
 
-  // Hanlde approve action
+  // Hanlde approve action, construct session namespace
   async function onApprove() {
     if (proposal) {
       const namespaces: SessionTypes.Namespaces = {}
@@ -52,15 +53,13 @@ export default function SessionProposalModal() {
         const accounts: string[] = []
         requiredNamespaces[key].chains.map(chain => {
           selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
-        }),
-          (namespaces[key] = {
-            accounts,
-            methods: requiredNamespaces[key].methods,
-            events: requiredNamespaces[key].events
-          })
+        })
+        namespaces[key] = {
+          accounts,
+          methods: requiredNamespaces[key].methods,
+          events: requiredNamespaces[key].events
+        }
       })
-
-      console.log(JSON.parse(JSON.stringify(namespaces)))
 
       const { acknowledged } = await walletConnectClient.approve({
         id,
@@ -75,7 +74,10 @@ export default function SessionProposalModal() {
   // Hanlde reject action
   async function onReject() {
     if (proposal) {
-      await walletConnectClient.reject({ id, reason: { code: 1, message: 'uh' } })
+      await walletConnectClient.reject({
+        id,
+        reason: ERROR.JSONRPC_REQUEST_METHOD_REJECTED.format()
+      })
     }
     ModalStore.close()
   }
@@ -117,7 +119,7 @@ export default function SessionProposalModal() {
       <RequestModalContainer title="Session Proposal">
         <ProjectInfoCard metadata={proposer.metadata} />
 
-        {/* TODO Relays selection */}
+        {/* TODO(ilja) Relays selection */}
 
         <Divider y={2} />
 
