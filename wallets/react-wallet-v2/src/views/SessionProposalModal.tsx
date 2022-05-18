@@ -1,8 +1,7 @@
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import ProposalSelectSection from '@/components/ProposalSelectSection'
-import RequesDetailsCard from '@/components/RequestDetalilsCard'
-import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
+import SessionProposalChainCard from '@/components/SessionProposalChainCard'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
@@ -31,7 +30,6 @@ export default function SessionProposalModal() {
 
   // Get required proposal data
   const { proposer, requiredNamespaces, id, relays } = proposal
-  const namespaceKeys = Object.keys(requiredNamespaces)
 
   // Add / remove address from EIP155 selection
   function onSelectEIP155(address: string) {
@@ -76,9 +74,43 @@ export default function SessionProposalModal() {
   // Hanlde reject action
   async function onReject() {
     if (proposal) {
-      await walletConnectClient.reject({ proposal })
+      await walletConnectClient.reject({ id, reason: { code: 1, message: 'uh' } })
     }
     ModalStore.close()
+  }
+
+  function renderAccountSelection(chain: string) {
+    if (isEIP155Chain(chain)) {
+      return (
+        <ProposalSelectSection
+          name={EIP155_CHAINS[chain as TEIP155Chain]?.name}
+          addresses={eip155Addresses}
+          selectedAddresses={selectedEIP155}
+          onSelect={onSelectEIP155}
+          chain={chain}
+        />
+      )
+    } else if (isCosmosChain(chain)) {
+      return (
+        <ProposalSelectSection
+          name={COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name}
+          addresses={cosmosAddresses}
+          selectedAddresses={selectedCosmos}
+          onSelect={onSelectCosmos}
+          chain={chain}
+        />
+      )
+    } else if (isSolanaChain(chain)) {
+      return (
+        <ProposalSelectSection
+          name={SOLANA_CHAINS[chain as TSolanaChain]?.name}
+          addresses={solanaAddresses}
+          selectedAddresses={selectedSolana}
+          onSelect={onSelectSolana}
+          chain={chain}
+        />
+      )
+    }
   }
 
   return (
@@ -88,44 +120,14 @@ export default function SessionProposalModal() {
 
         <Divider y={2} />
 
-        <RequesDetailsCard chains={chains} protocol={relay.protocol} />
-
-        <Divider y={2} />
-
-        <RequestMethodCard methods={methods} />
-
-        {chains.map(chain => {
-          if (isEIP155Chain(chain)) {
-            return (
-              <ProposalSelectSection
-                name={EIP155_CHAINS[chain as TEIP155Chain]?.name}
-                addresses={eip155Addresses}
-                selectedAddresses={selectedEIP155}
-                onSelect={onSelectEIP155}
-                chain={chain}
-              />
-            )
-          } else if (isCosmosChain(chain)) {
-            return (
-              <ProposalSelectSection
-                name={COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name}
-                addresses={cosmosAddresses}
-                selectedAddresses={selectedCosmos}
-                onSelect={onSelectCosmos}
-                chain={chain}
-              />
-            )
-          } else if (isSolanaChain(chain)) {
-            return (
-              <ProposalSelectSection
-                name={SOLANA_CHAINS[chain as TSolanaChain]?.name}
-                addresses={solanaAddresses}
-                selectedAddresses={selectedSolana}
-                onSelect={onSelectSolana}
-                chain={chain}
-              />
-            )
-          }
+        {Object.keys(requiredNamespaces).map(chain => {
+          return (
+            <Fragment key={chain}>
+              <SessionProposalChainCard requiredNamespace={requiredNamespaces[chain]} />
+              {renderAccountSelection(chain)}
+              <Divider y={2} />
+            </Fragment>
+          )
         })}
       </RequestModalContainer>
 

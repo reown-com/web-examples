@@ -1,3 +1,6 @@
+import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
+import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { utils } from 'ethers'
 
 /**
@@ -89,4 +92,16 @@ export function isCosmosChain(chain: string) {
  */
 export function isSolanaChain(chain: string) {
   return chain.includes('solana')
+}
+
+/**
+ * Formats chainId to its name
+ */
+export function formatChainName(chainId: string) {
+  return (
+    EIP155_CHAINS[chainId as TEIP155Chain]?.name ??
+    COSMOS_MAINNET_CHAINS[chainId as TCosmosChain]?.name ??
+    SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
+    chainId
+  )
 }

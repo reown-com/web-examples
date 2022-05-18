@@ -1,6 +1,5 @@
 import AccountSelectCard from '@/components/AccountSelectCard'
-import { Col, Divider, Row, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
+import { Col, Row, Text } from '@nextui-org/react'
 
 /**
  * Types
@@ -24,23 +23,19 @@ export default function ProposalSelectSection({
   onSelect
 }: IProps) {
   return (
-    <Fragment>
-      <Divider y={2} />
-
-      <Row>
-        <Col>
-          <Text h5>{`Select ${name} Accounts`}</Text>
-          {addresses.map((address, index) => (
-            <AccountSelectCard
-              key={address}
-              address={address}
-              index={index}
-              onSelect={() => onSelect(`${chain}:${address}`)}
-              selected={selectedAddresses.includes(`${chain}:${address}`)}
-            />
-          ))}
-        </Col>
-      </Row>
-    </Fragment>
+    <Row>
+      <Col>
+        <Text h5>{`Select ${chain.toUpperCase()} Accounts`}</Text>
+        {addresses.map((address, index) => (
+          <AccountSelectCard
+            key={address}
+            address={address}
+            index={index}
+            onSelect={() => onSelect(`${chain}:${address}`)}
+            selected={selectedAddresses.includes(`${chain}:${address}`)}
+          />
+        ))}
+      </Col>
+    </Row>
   )
 }
