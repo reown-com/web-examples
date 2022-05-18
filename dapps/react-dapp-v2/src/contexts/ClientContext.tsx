@@ -14,16 +14,14 @@ import { PublicKey } from "@solana/web3.js";
 
 import {
   DEFAULT_APP_METADATA,
-  DEFAULT_COSMOS_METHODS,
-  DEFAULT_EIP155_METHODS,
   DEFAULT_LOGGER,
   DEFAULT_PROJECT_ID,
   DEFAULT_RELAY_URL,
-  DEFAULT_SOLANA_METHODS,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { ERROR, getAppMetadata } from "@walletconnect/utils";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
+import { getRequiredNamespaces, getSupportedMethodsByNamespace } from "../helpers/namespaces";
 
 const USE_DEBUG_PEER_CLIENT = process.env.NODE_ENV !== "production";
 
@@ -101,37 +99,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }
   };
 
-  const getSupportedNamespaces = useCallback(() => {
-    const supportedNamespaces: string[] = [];
-    chains.forEach(chainId => {
-      const [namespace] = chainId.split(":");
-      if (!supportedNamespaces.includes(namespace)) {
-        supportedNamespaces.push(namespace);
-      }
-    });
-
-    return supportedNamespaces;
-  }, [chains]);
-
-  const getSupportedMethods = (namespaces: string[]) => {
-    const supportedMethods: string[] = namespaces
-      .map(namespace => {
-        switch (namespace) {
-          case "eip155":
-            return Object.values(DEFAULT_EIP155_METHODS);
-          case "cosmos":
-            return Object.values(DEFAULT_COSMOS_METHODS);
-          case "solana":
-            return Object.values(DEFAULT_SOLANA_METHODS);
-          default:
-            throw new Error(`No default methods for namespace: ${namespace}`);
-        }
-      })
-      .flat();
-
-    return supportedMethods;
-  };
-
   const onSessionConnected = useCallback(async (_session: SessionTypes.Struct) => {
     const allNamespaceAccounts = Object.values(_session.namespaces)
       .map(namespace => namespace.accounts)
@@ -152,20 +119,12 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       }
       console.log("connect, pairing is:", pairing);
       try {
-        const supportedNamespaces = getSupportedNamespaces();
-        console.log("supported namespaces:", supportedNamespaces);
-        const methods = getSupportedMethods(supportedNamespaces);
-        console.log("supported methods:", methods);
+        const requiredNamespaces = getRequiredNamespaces(chains);
+        console.log("requiredNamespaces config for connect:", requiredNamespaces);
 
-        // TODO: Handle other non-EIP155 namespaces.
+        // TODO: Handle namespace-specific event selection
         const { uri, approval } = await client.connect({
-          requiredNamespaces: {
-            eip155: {
-              methods,
-              chains,
-              events: ["chainChanged", "accountsChanged"],
-            },
-          },
+          requiredNamespaces,
         });
 
         if (!uri) {
@@ -200,7 +159,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
                   ...chains.map(chain => `${chain}:0x3c582121909DE92Dc89A36898633C1aE4790382b`),
                   "eip155:1:0x3c582121909DE92Dc89A36898633C1aE4790382b",
                 ],
-                methods,
+                methods: getSupportedMethodsByNamespace("eip155"),
                 events: ["chainChanged", "accountsChanged"],
               },
             },
@@ -214,7 +173,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       // close modal in case it was open
       QRCodeModal.close();
     },
-    [chains, client, debugPeerClient, onSessionConnected, getSupportedNamespaces],
+    [chains, client, debugPeerClient, onSessionConnected],
   );
 
   const disconnect = useCallback(async () => {
