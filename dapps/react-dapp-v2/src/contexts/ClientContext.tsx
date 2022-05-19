@@ -23,7 +23,8 @@ import { ERROR, getAppMetadata } from "@walletconnect/utils";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 import { getRequiredNamespaces, getSupportedMethodsByNamespace } from "../helpers/namespaces";
 
-const USE_DEBUG_PEER_CLIENT = process.env.NODE_ENV !== "production";
+// const USE_DEBUG_PEER_CLIENT = process.env.NODE_ENV !== "production";
+const USE_DEBUG_PEER_CLIENT = false;
 
 /**
  * Types
@@ -218,11 +219,13 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         throw new Error("WalletConnect is not initialized");
       }
       // populates existing pairings to state
+      // TODO: restore pairings from storage
       // setPairings(_client.pairing.topics);
       if (typeof session !== "undefined") return;
-      // populates existing session to state (assume only the top one)
+      // populates (the last) existing session to state
       if (_client.session.length) {
-        const _session = _client.session.get(_client.session.keys[0]);
+        const lastKeyIndex = _client.session.keys.length - 1;
+        const _session = _client.session.get(_client.session.keys[lastKeyIndex]);
         console.log("RESTORED SESSION:", _session);
 
         await onSessionConnected(_session);
@@ -247,12 +250,11 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       setClient(_client);
       await _subscribeToEvents(_client);
 
-      // TODO: re-enable session restore from persistence
-      // const _persistedSession = await _checkPersistedState(_client);
+      const _persistedSession = await _checkPersistedState(_client);
 
-      // if (_persistedSession) {
-      //   return;
-      // }
+      if (_persistedSession) {
+        return;
+      }
 
       // TODO: remove debug peer client.
       if (USE_DEBUG_PEER_CLIENT) {
