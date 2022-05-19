@@ -21,17 +21,18 @@ export default function SessionSignTypedDataModal() {
   }
 
   // Get required request data
-  const { method, params } = requestEvent.request
+  const { method, params } = requestEvent
+  const { request, topic, chainId } = params
 
   // Get data
-  const data = getSignTypedDataParamsData(params)
+  const data = getSignTypedDataParamsData(request.params)
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
     if (requestEvent) {
       const response = await approveEIP155Request(requestEvent)
       await walletConnectClient.respond({
-        topic: requestEvent.topic,
+        topic,
         response
       })
       ModalStore.close()
@@ -41,9 +42,9 @@ export default function SessionSignTypedDataModal() {
   // Handle reject action
   async function onReject() {
     if (requestEvent) {
-      const response = rejectEIP155Request(requestEvent.request)
+      const response = rejectEIP155Request(requestEvent)
       await walletConnectClient.respond({
-        topic: requestEvent.topic,
+        topic,
         response
       })
       ModalStore.close()
@@ -57,10 +58,7 @@ export default function SessionSignTypedDataModal() {
 
         <Divider y={2} />
 
-        <RequesDetailsCard
-          chains={[requestEvent.chainId ?? '']}
-          protocol={requestSession.relay.protocol}
-        />
+        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
         <Divider y={2} />
 

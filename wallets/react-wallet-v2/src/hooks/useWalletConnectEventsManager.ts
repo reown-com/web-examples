@@ -22,7 +22,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    *****************************************************************************/
   const onSessionRequest = useCallback(
     async (requestEvent: ClientTypes.EventArguments['request']) => {
-      const { topic, request } = requestEvent
+      const { topic, request } = requestEvent.params
       const { method } = request
       const requestSession = walletConnectClient.session.get(topic)
 

@@ -20,17 +20,20 @@ export default function SessionSignModal() {
   }
 
   // Get required request data
-  const { method, params } = requestEvent.request
+  const { method, params } = requestEvent
+  const { topic, request, chainId } = params
 
   // Get message, convert it to UTF8 string if it is valid hex
-  const message = getSignParamsMessage(params)
+  const message = getSignParamsMessage(request.params)
+
+  console.log(requestEvent)
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
     if (requestEvent) {
       const response = await approveEIP155Request(requestEvent)
       await walletConnectClient.respond({
-        topic: requestEvent.topic,
+        topic,
         response
       })
       ModalStore.close()
@@ -40,9 +43,9 @@ export default function SessionSignModal() {
   // Handle reject action
   async function onReject() {
     if (requestEvent) {
-      const response = rejectEIP155Request(requestEvent.request)
+      const response = rejectEIP155Request(requestEvent)
       await walletConnectClient.respond({
-        topic: requestEvent.topic,
+        topic,
         response
       })
       ModalStore.close()
@@ -56,10 +59,7 @@ export default function SessionSignModal() {
 
         <Divider y={2} />
 
-        <RequesDetailsCard
-          chains={[requestEvent.chainId ?? '']}
-          protocol={requestSession.relay.protocol}
-        />
+        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
         <Divider y={2} />
 

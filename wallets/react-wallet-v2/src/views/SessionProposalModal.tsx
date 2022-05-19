@@ -26,7 +26,8 @@ export default function SessionProposalModal() {
   }
 
   // Get required proposal data
-  const { proposer, requiredNamespaces, id, relays } = proposal
+  const { id, params } = proposal
+  const { proposer, requiredNamespaces, relays } = params
 
   // Add / remove address from EIP155 selection
   function onSelectAccount(chain: string, account: string) {

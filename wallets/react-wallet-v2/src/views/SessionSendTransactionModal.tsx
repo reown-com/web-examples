@@ -23,8 +23,9 @@ export default function SessionSendTransactionModal() {
 
   // Get required proposal data
 
-  const { method, params } = requestEvent.request
-  const transaction = params[0]
+  const { method, params } = requestEvent
+  const { topic, request, chainId } = params
+  const transaction = request.params[0]
 
   // Handle approve action
   async function onApprove() {
@@ -32,7 +33,7 @@ export default function SessionSendTransactionModal() {
       setLoading(true)
       const response = await approveEIP155Request(requestEvent)
       await walletConnectClient.respond({
-        topic: requestEvent.topic,
+        topic,
         response
       })
       ModalStore.close()
@@ -42,9 +43,9 @@ export default function SessionSendTransactionModal() {
   // Handle reject action
   async function onReject() {
     if (requestEvent) {
-      const response = rejectEIP155Request(requestEvent.request)
+      const response = rejectEIP155Request(requestEvent)
       await walletConnectClient.respond({
-        topic: requestEvent.topic,
+        topic,
         response
       })
       ModalStore.close()
@@ -62,10 +63,7 @@ export default function SessionSendTransactionModal() {
 
         <Divider y={2} />
 
-        <RequesDetailsCard
-          chains={[requestEvent.chainId ?? '']}
-          protocol={requestSession.relay.protocol}
-        />
+        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
         <Divider y={2} />
 
