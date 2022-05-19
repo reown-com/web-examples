@@ -108,37 +108,37 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   }, []);
 
   const connect = useCallback(
-    async (pairing?: { topic: string }) => {
+    async pairing => {
       if (typeof client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
-      console.log("connect, pairing is:", pairing);
+      console.log("connect, pairing topic is:", pairing?.topic);
       try {
         const requiredNamespaces = getRequiredNamespaces(chains);
         console.log("requiredNamespaces config for connect:", requiredNamespaces);
 
         const { uri, approval } = await client.connect({
+          pairingTopic: pairing?.topic,
           requiredNamespaces,
         });
 
-        if (!uri) {
-          throw new Error("Could not get URI from `Client.connect`");
+        // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
+        if (uri) {
+          QRCodeModal.open(uri, () => {
+            console.log("EVENT", "QR Code Modal closed");
+          });
         }
 
-        QRCodeModal.open(uri, () => {
-          console.log("EVENT", "QR Code Modal closed");
-        });
-
         const session = await approval();
-        console.log("session:", session);
+        console.log("Established session:", session);
         await onSessionConnected(session);
       } catch (e) {
         console.error(e);
         // ignore rejection
+      } finally {
+        // close modal in case it was open
+        QRCodeModal.close();
       }
-
-      // close modal in case it was open
-      QRCodeModal.close();
     },
     [chains, client, onSessionConnected],
   );

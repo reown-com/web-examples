@@ -80,12 +80,12 @@ export default function App() {
       throw new Error("WalletConnect is not initialized");
     }
     // Suggest existing pairings (if any).
-    // FIXME:
-    // if (client.pairing.topics.length) {
-    //   return openPairingModal();
-    // }
-    // If no existing pairings are available, trigger `WalletConnectClient.connect`.
-    connect();
+    if (client.pairing.values.length) {
+      openPairingModal();
+    } else {
+      // If no existing pairings are available, trigger `WalletConnectClient.connect`.
+      connect();
+    }
   };
 
   const onPing = async () => {
