@@ -1,4 +1,4 @@
-import Client, { CLIENT_EVENTS } from "@walletconnect/client";
+import Client from "@walletconnect/client";
 import { SessionTypes } from "@walletconnect/types";
 import QRCodeModal from "@walletconnect/legacy-modal";
 import {
@@ -21,10 +21,7 @@ import {
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { ERROR, getAppMetadata } from "@walletconnect/utils";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
-import { getRequiredNamespaces, getSupportedMethodsByNamespace } from "../helpers/namespaces";
-
-// const USE_DEBUG_PEER_CLIENT = process.env.NODE_ENV !== "production";
-const USE_DEBUG_PEER_CLIENT = false;
+import { getRequiredNamespaces } from "../helpers/namespaces";
 
 /**
  * Types
@@ -64,9 +61,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [accounts, setAccounts] = useState<string[]>([]);
   const [solanaPublicKeys, setSolanaPublicKeys] = useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
-
-  // FIXME: remove debug peer
-  const [debugPeerClient, setDebugPeerClient] = useState<Client>();
 
   const reset = () => {
     setPairings([]);
@@ -123,7 +117,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         const requiredNamespaces = getRequiredNamespaces(chains);
         console.log("requiredNamespaces config for connect:", requiredNamespaces);
 
-        // TODO: Handle namespace-specific event selection
         const { uri, approval } = await client.connect({
           requiredNamespaces,
         });
@@ -136,36 +129,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
           console.log("EVENT", "QR Code Modal closed");
         });
 
-        // TODO: remove local debug pairing
-        if (debugPeerClient) {
-          console.warn("DEBUG: auto-pairing to local `debugPairClient`...");
-          const pairing = await debugPeerClient!.pair({ uri });
-          console.log("pairing:", pairing);
-        }
-        // -----
-
         const session = await approval();
-
         console.log("session:", session);
-
         await onSessionConnected(session);
-
-        // After connecting the debug peer, immediately attempt a session update (add ETH mainnet account).
-        if (debugPeerClient) {
-          debugPeerClient.update({
-            topic: session.topic,
-            namespaces: {
-              eip155: {
-                accounts: [
-                  ...chains.map(chain => `${chain}:0x3c582121909DE92Dc89A36898633C1aE4790382b`),
-                  "eip155:1:0x3c582121909DE92Dc89A36898633C1aE4790382b",
-                ],
-                methods: getSupportedMethodsByNamespace("eip155"),
-                events: ["chainChanged", "accountsChanged"],
-              },
-            },
-          });
-        }
       } catch (e) {
         console.error(e);
         // ignore rejection
@@ -174,7 +140,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       // close modal in case it was open
       QRCodeModal.close();
     },
-    [chains, client, debugPeerClient, onSessionConnected],
+    [chains, client, onSessionConnected],
   );
 
   const disconnect = useCallback(async () => {
@@ -249,53 +215,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       console.log("CREATED CLIENT: ", _client);
       setClient(_client);
       await _subscribeToEvents(_client);
-
-      const _persistedSession = await _checkPersistedState(_client);
-
-      if (_persistedSession) {
-        return;
-      }
-
-      // TODO: remove debug peer client.
-      if (USE_DEBUG_PEER_CLIENT) {
-        const _debugPeerClient = await Client.init({
-          logger: DEFAULT_LOGGER,
-          relayUrl: DEFAULT_RELAY_URL,
-          projectId: DEFAULT_PROJECT_ID,
-          metadata: {
-            name: "Debug Peer Client (Responder)",
-            description: "",
-            url: "https://walletconnect.com",
-            icons: ["https://avatars.githubusercontent.com/u/37784886"],
-          },
-        });
-
-        console.log("CREATED DEBUG PEER: ", _debugPeerClient);
-
-        _debugPeerClient.on("session_proposal", async proposal => {
-          console.log("session_proposal", proposal);
-          try {
-            const { acknowledged } = await _debugPeerClient.approve({
-              id: proposal.id,
-              namespaces: {
-                eip155: {
-                  accounts: ["eip155:1:0x3c582121909DE92Dc89A36898633C1aE4790382b"],
-                  methods: proposal.requiredNamespaces["eip155"].methods,
-                  events: proposal.requiredNamespaces["eip155"].events,
-                },
-              },
-            });
-            await acknowledged();
-          } catch (err) {
-            throw err;
-          }
-        });
-        _debugPeerClient.on(CLIENT_EVENTS.session_delete, () => {
-          console.log("PEER EVENT", "session_delete");
-        });
-
-        setDebugPeerClient(_debugPeerClient);
-      }
+      await _checkPersistedState(_client);
     } catch (err) {
       throw err;
     } finally {
