@@ -20,14 +20,15 @@ export default function SessionSignSolanaModal() {
   }
 
   // Get required request data
-  const { method, params } = requestEvent.request
+  const { method, params } = requestEvent
+  const { topic, chainId } = params
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
     if (requestEvent) {
       const response = await approveSolanaRequest(requestEvent)
       await walletConnectClient.respond({
-        topic: requestEvent.topic,
+        topic,
         response
       })
       ModalStore.close()
@@ -37,9 +38,9 @@ export default function SessionSignSolanaModal() {
   // Handle reject action
   async function onReject() {
     if (requestEvent) {
-      const response = rejectSolanaRequest(requestEvent.request)
+      const response = rejectSolanaRequest(requestEvent)
       await walletConnectClient.respond({
-        topic: requestEvent.topic,
+        topic,
         response
       })
       ModalStore.close()
@@ -53,10 +54,7 @@ export default function SessionSignSolanaModal() {
 
         <Divider y={2} />
 
-        <RequesDetailsCard
-          chains={[requestEvent.chainId ?? '']}
-          protocol={requestSession.relay.protocol}
-        />
+        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
         <Divider y={2} />
 
