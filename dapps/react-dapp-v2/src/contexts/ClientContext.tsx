@@ -1,5 +1,5 @@
 import Client from "@walletconnect/client";
-import { SessionTypes } from "@walletconnect/types";
+import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import QRCodeModal from "@walletconnect/legacy-modal";
 import {
   createContext,
@@ -33,7 +33,7 @@ interface IContext {
   disconnect: () => Promise<void>;
   isInitializing: boolean;
   chains: string[];
-  pairings: string[];
+  pairings: PairingTypes.Struct[];
   accounts: string[];
   solanaPublicKeys?: Record<string, PublicKey>;
   balances: AccountBalances;
@@ -51,7 +51,7 @@ export const ClientContext = createContext<IContext>({} as IContext);
  */
 export function ClientContextProvider({ children }: { children: ReactNode | ReactNode[] }) {
   const [client, setClient] = useState<Client>();
-  const [pairings, setPairings] = useState<string[]>([]);
+  const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
   const [session, setSession] = useState<SessionTypes.Struct>();
 
   const [isFetchingBalances, setIsFetchingBalances] = useState(false);
@@ -185,15 +185,15 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         throw new Error("WalletConnect is not initialized");
       }
       // populates existing pairings to state
-      // TODO: restore pairings from storage
-      // setPairings(_client.pairing.topics);
+      setPairings(_client.pairing.values);
+      console.log("RESTORED PAIRINGS: ", _client.pairing.values);
+
       if (typeof session !== "undefined") return;
       // populates (the last) existing session to state
       if (_client.session.length) {
         const lastKeyIndex = _client.session.keys.length - 1;
         const _session = _client.session.get(_client.session.keys[lastKeyIndex]);
         console.log("RESTORED SESSION:", _session);
-
         await onSessionConnected(_session);
         return _session;
       }
