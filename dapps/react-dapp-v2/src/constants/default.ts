@@ -47,8 +47,8 @@ export enum DEFAULT_EIP155_METHODS {
 }
 
 export enum DEFAULT_EIP_155_EVENTS {
-  "chainChanged",
-  "accountsChanged",
+  ETH_CHAIN_CHANGED = "chainChanged",
+  ETH_ACCOUNTS_CHANGED = "accountsChanged",
 }
 
 /**
