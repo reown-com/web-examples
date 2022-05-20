@@ -1,11 +1,11 @@
 import { Avatar, Col, Link, Row, Text } from '@nextui-org/react'
-import { SessionTypes } from '@walletconnect/types'
+import { ClientTypes } from '@walletconnect/types'
 
 /**
  * Types
  */
 interface IProps {
-  metadata: SessionTypes.Participant['metadata']
+  metadata: ClientTypes.Metadata
 }
 
 /**
