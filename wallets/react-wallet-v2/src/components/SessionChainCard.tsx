@@ -31,6 +31,8 @@ interface IProps {
 export default function SessionChainCard({ namespace }: IProps) {
   const chains: string[] = []
 
+  // WIP
+
   namespace.accounts.forEach(account => {
     const [type, chain] = account.split(':')
     const chainId = `${type}:${chain}`
