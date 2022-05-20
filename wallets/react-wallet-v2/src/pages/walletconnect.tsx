@@ -31,6 +31,7 @@ export default function WalletConnectPage() {
       </Text>
 
       <Input
+        css={{ width: '100%' }}
         bordered
         aria-label="wc url connect input"
         placeholder="e.g. wc:a281567bb3e4..."

@@ -29,17 +29,29 @@ interface IProps {
  * Component
  */
 export default function SessionChainCard({ namespace }: IProps) {
+  const chains: string[] = []
+
+  namespace.accounts.forEach(account => {
+    const [type, chain] = account.split(':')
+    const chainId = `${type}:${chain}`
+    chains.push(chainId)
+  })
+
   return (
     <Fragment>
-      {namespace.accounts.map(account => {
+      {chains.map(chainId => {
         const extensionMethods: SessionTypes.Namespace['methods'] = []
         const extensionEvents: SessionTypes.Namespace['events'] = []
 
-        namespace.extension?.map(({ chains, methods, events }) => {
-          if (chains.includes(chainId)) {
-            extensionMethods.push(...methods)
-            extensionEvents.push(...events)
-          }
+        namespace.extension?.map(({ accounts, methods, events }) => {
+          accounts.forEach(account => {
+            const [type, chain] = account.split(':')
+            const chainId = `${type}:${chain}`
+            if (chains.includes(chainId)) {
+              extensionMethods.push(...methods)
+              extensionEvents.push(...events)
+            }
+          })
         })
 
         const allMethods = [...namespace.methods, ...extensionMethods]

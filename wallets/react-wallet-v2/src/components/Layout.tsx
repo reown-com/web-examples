@@ -49,6 +49,7 @@ export default function Layout({ children, initialized }: Props) {
             <RouteTransition>
               <Card.Body
                 css={{
+                  display: 'block',
                   paddingLeft: 2,
                   paddingRight: 2,
                   '@xs': {
@@ -69,6 +70,7 @@ export default function Layout({ children, initialized }: Props) {
                 justifyContent: 'flex-end',
                 alignItems: 'flex-end',
                 boxShadow: '0 -30px 20px #111111',
+                backgroundColor: '#111111',
                 zIndex: 200,
                 bottom: 0,
                 left: 0
