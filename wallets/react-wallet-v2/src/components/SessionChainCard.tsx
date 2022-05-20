@@ -61,6 +61,8 @@ export default function SessionChainCard({ namespace }: IProps) {
         // @ts-expect-error
         const rgb = CHAIN_METADATA[chainId]?.rgb
 
+        console.log(allEvents)
+
         return (
           <ChainCard key={chainId} rgb={rgb ?? ''} flexDirection="col" alignItems="flex-start">
             <Text h5 css={{ marginBottom: '$5' }}>
@@ -69,13 +71,13 @@ export default function SessionChainCard({ namespace }: IProps) {
             <Row>
               <Col>
                 <Text h6>Methods</Text>
-                <Text color="$gray300">{allMethods.join(', ')}</Text>
+                <Text color="$gray300">{allMethods.length ? allMethods.join(', ') : '-'}</Text>
               </Col>
             </Row>
             <Row css={{ marginTop: '$5' }}>
               <Col>
                 <Text h6>Events</Text>
-                <Text color="$gray300">{allEvents.join(', ')}</Text>
+                <Text color="$gray300">{allEvents.length ? allEvents.join(', ') : '-'}</Text>
               </Col>
             </Row>
           </ChainCard>
