@@ -6,11 +6,11 @@ import { ClientTypes } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
 
 export async function approveSolanaRequest(requestEvent: ClientTypes.EventArguments['request']) {
-  const { method, params, id } = requestEvent
+  const { params, id } = requestEvent
   const { request } = params
   const wallet = solanaWallets[getWalletAddressFromParams(solanaAddresses, params)]
 
-  switch (method) {
+  switch (request.method) {
     case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
       const signedMessage = await wallet.signMessage(request.params.message)
       return formatJsonRpcResult(id, signedMessage)

@@ -20,8 +20,8 @@ export default function SessionSignModal() {
   }
 
   // Get required request data
-  const { method, params } = requestEvent
-  const { topic, request, chainId } = params
+  const { topic, params } = requestEvent
+  const { request, chainId } = params
 
   // Get message, convert it to UTF8 string if it is valid hex
   const message = getSignParamsMessage(request.params)
@@ -72,7 +72,7 @@ export default function SessionSignModal() {
 
         <Divider y={2} />
 
-        <RequestMethodCard methods={[method]} />
+        <RequestMethodCard methods={[request.method]} />
       </RequestModalContainer>
 
       <Modal.Footer>

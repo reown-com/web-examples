@@ -21,8 +21,8 @@ export default function SessionSignTypedDataModal() {
   }
 
   // Get required request data
-  const { method, params } = requestEvent
-  const { request, topic, chainId } = params
+  const { topic, params } = requestEvent
+  const { request, chainId } = params
 
   // Get data
   const data = getSignTypedDataParamsData(request.params)
@@ -66,7 +66,7 @@ export default function SessionSignTypedDataModal() {
 
         <Divider y={2} />
 
-        <RequestMethodCard methods={[method]} />
+        <RequestMethodCard methods={[request.method]} />
       </RequestModalContainer>
 
       <Modal.Footer>

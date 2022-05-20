@@ -11,11 +11,11 @@ import { ERROR } from '@walletconnect/utils'
 import { providers } from 'ethers'
 
 export async function approveEIP155Request(requestEvent: ClientTypes.EventArguments['request']) {
-  const { method, params, id } = requestEvent
+  const { params, id } = requestEvent
   const { chainId, request } = params
   const wallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
 
-  switch (method) {
+  switch (request.method) {
     case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
     case EIP155_SIGNING_METHODS.ETH_SIGN:
       const message = getSignParamsMessage(request.params)

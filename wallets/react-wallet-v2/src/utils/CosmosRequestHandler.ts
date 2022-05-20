@@ -7,11 +7,11 @@ import { ERROR } from '@walletconnect/utils'
 import { parseSignDocValues } from 'cosmos-wallet'
 
 export async function approveCosmosRequest(requestEvent: ClientTypes.EventArguments['request']) {
-  const { method, params, id } = requestEvent
+  const { params, id } = requestEvent
   const { request } = params
   const wallet = cosmosWallets[getWalletAddressFromParams(cosmosAddresses, params)]
 
-  switch (method) {
+  switch (request.method) {
     case COSMOS_SIGNING_METHODS.COSMOS_SIGN_DIRECT:
       const signedDirect = await wallet.signDirect(
         request.params.signerAddress,

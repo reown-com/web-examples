@@ -20,8 +20,8 @@ export default function SessionSignCosmosModal() {
   }
 
   // Get required request data
-  const { method, params } = requestEvent
-  const { topic, chainId } = params
+  const { topic, params } = requestEvent
+  const { chainId, request } = params
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
@@ -62,7 +62,7 @@ export default function SessionSignCosmosModal() {
 
         <Divider y={2} />
 
-        <RequestMethodCard methods={[method]} />
+        <RequestMethodCard methods={[request.method]} />
       </RequestModalContainer>
 
       <Modal.Footer>

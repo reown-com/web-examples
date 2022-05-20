@@ -23,8 +23,8 @@ export default function SessionSendTransactionModal() {
 
   // Get required proposal data
 
-  const { method, params } = requestEvent
-  const { topic, request, chainId } = params
+  const { topic, params } = requestEvent
+  const { request, chainId } = params
   const transaction = request.params[0]
 
   // Handle approve action
@@ -67,7 +67,7 @@ export default function SessionSendTransactionModal() {
 
         <Divider y={2} />
 
-        <RequestMethodCard methods={[method]} />
+        <RequestMethodCard methods={[request.method]} />
       </RequestModalContainer>
 
       <Modal.Footer>

@@ -22,11 +22,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    *****************************************************************************/
   const onSessionRequest = useCallback(
     async (requestEvent: ClientTypes.EventArguments['request']) => {
-      const { topic, request } = requestEvent.params
-      const { method } = request
+      const { topic, params } = requestEvent
+      const { request } = params
       const requestSession = walletConnectClient.session.get(topic)
 
-      switch (method) {
+      switch (request.method) {
         case EIP155_SIGNING_METHODS.ETH_SIGN:
         case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
           return ModalStore.open('SessionSignModal', { requestEvent, requestSession })
