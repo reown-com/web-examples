@@ -28,10 +28,10 @@ export default function Layout({ children, initialized }: Props) {
       }}
     >
       <Card
-        className="layoutBody"
         bordered={{ '@initial': false, '@xs': true }}
         borderWeight={{ '@initial': 'light', '@xs': 'light' }}
         css={{
+          height: '100%',
           width: '100%',
           justifyContent: initialized ? 'normal' : 'center',
           alignItems: initialized ? 'normal' : 'center',

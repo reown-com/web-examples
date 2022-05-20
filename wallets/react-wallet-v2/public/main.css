@@ -25,11 +25,6 @@
   align-items: center;
 }
 
-.layoutBody {
-  height: 100vh !important;
-  height: -webkit-fill-available !important;
-}
-
 .qrVideoMask {
   width: 100%;
   border-radius: 15px;
