@@ -6,7 +6,9 @@ import { ClientTypes } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
 import { parseSignDocValues } from 'cosmos-wallet'
 
-export async function approveCosmosRequest(requestEvent: ClientTypes.EventArguments['request']) {
+export async function approveCosmosRequest(
+  requestEvent: ClientTypes.EventArguments['session_request']
+) {
   const { params, id } = requestEvent
   const { request } = params
   const wallet = cosmosWallets[getWalletAddressFromParams(cosmosAddresses, params)]
@@ -31,7 +33,7 @@ export async function approveCosmosRequest(requestEvent: ClientTypes.EventArgume
   }
 }
 
-export function rejectCosmosRequest(request: ClientTypes.EventArguments['request']) {
+export function rejectCosmosRequest(request: ClientTypes.EventArguments['session_request']) {
   const { id } = request
 
   return formatJsonRpcError(id, ERROR.JSONRPC_REQUEST_METHOD_REJECTED.format().message)

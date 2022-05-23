@@ -5,7 +5,9 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { ClientTypes } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
 
-export async function approveSolanaRequest(requestEvent: ClientTypes.EventArguments['request']) {
+export async function approveSolanaRequest(
+  requestEvent: ClientTypes.EventArguments['session_request']
+) {
   const { params, id } = requestEvent
   const { request } = params
   const wallet = solanaWallets[getWalletAddressFromParams(solanaAddresses, params)]
@@ -29,7 +31,7 @@ export async function approveSolanaRequest(requestEvent: ClientTypes.EventArgume
   }
 }
 
-export function rejectSolanaRequest(request: ClientTypes.EventArguments['request']) {
+export function rejectSolanaRequest(request: ClientTypes.EventArguments['session_request']) {
   const { id } = request
 
   return formatJsonRpcError(id, ERROR.JSONRPC_REQUEST_METHOD_REJECTED.format().message)

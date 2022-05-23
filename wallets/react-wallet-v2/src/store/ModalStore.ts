@@ -6,7 +6,7 @@ import { proxy } from 'valtio'
  */
 interface ModalData {
   proposal?: ClientTypes.EventArguments['session_proposal']
-  requestEvent?: ClientTypes.EventArguments['request']
+  requestEvent?: ClientTypes.EventArguments['session_request']
   requestSession?: SessionTypes.Struct
 }
 

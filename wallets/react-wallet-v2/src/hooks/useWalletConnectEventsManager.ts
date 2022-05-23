@@ -21,7 +21,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    * 3. Open request handling modal based on method that was used
    *****************************************************************************/
   const onSessionRequest = useCallback(
-    async (requestEvent: ClientTypes.EventArguments['request']) => {
+    async (requestEvent: ClientTypes.EventArguments['session_request']) => {
       const { topic, params } = requestEvent
       const { request } = params
       const requestSession = walletConnectClient.session.get(topic)
@@ -61,7 +61,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   useEffect(() => {
     if (initialized) {
       walletConnectClient.on('session_proposal', onSessionProposal)
-      walletConnectClient.on('request', onSessionRequest)
+      walletConnectClient.on('session_request', onSessionRequest)
     }
   }, [initialized, onSessionProposal, onSessionRequest])
 }

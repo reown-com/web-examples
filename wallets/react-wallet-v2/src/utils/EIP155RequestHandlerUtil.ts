@@ -10,7 +10,9 @@ import { ClientTypes } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
 import { providers } from 'ethers'
 
-export async function approveEIP155Request(requestEvent: ClientTypes.EventArguments['request']) {
+export async function approveEIP155Request(
+  requestEvent: ClientTypes.EventArguments['session_request']
+) {
   const { params, id } = requestEvent
   const { chainId, request } = params
   const wallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
@@ -48,7 +50,7 @@ export async function approveEIP155Request(requestEvent: ClientTypes.EventArgume
   }
 }
 
-export function rejectEIP155Request(request: ClientTypes.EventArguments['request']) {
+export function rejectEIP155Request(request: ClientTypes.EventArguments['session_request']) {
   const { id } = request
 
   return formatJsonRpcError(id, ERROR.JSONRPC_REQUEST_METHOD_REJECTED.format().message)
