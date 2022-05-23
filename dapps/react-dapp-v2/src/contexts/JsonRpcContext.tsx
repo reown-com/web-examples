@@ -1,6 +1,7 @@
 import { BigNumber, utils } from "ethers";
 import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
+import { JsonRpcResponse } from "@walletconnect/jsonrpc-types";
 import { TypedDataField } from "@ethersproject/abstract-signer";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import {
@@ -164,7 +165,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       }
 
       // FIXME: fix return type for client.request
-      const result: any = await client!.request({
+      // @ts-expect-error
+      const { result }: JsonRpcResponse<string> = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -189,7 +191,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const tx = await formatTestTransaction(account);
 
       // FIXME: fix return type for client.request
-      const signedTx: any = await client!.request({
+      // @ts-expect-error
+      const { result: signedTx }: JsonRpcResponse<string> = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -220,7 +223,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
         // send message
         // FIXME: fix return type for client.request
-        const signature: any = await client!.request({
+        // @ts-expect-error
+        const { result: signature }: JsonRpcResponse<string> = await client!.request({
           topic: session!.topic,
           chainId,
           request: {
@@ -259,7 +263,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       // send message
       // FIXME: fix return type for client.request
-      const signature: any = await client!.request({
+      // @ts-expect-error
+      const { result: signature }: JsonRpcResponse<string> = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -295,7 +300,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       // send message
       // FIXME: fix return type for client.request
-      const signature: any = await client!.request({
+      // @ts-expect-error
+      const { result: signature }: JsonRpcResponse<string> = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -363,7 +369,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       // send message
       // FIXME: fix return type for client.request
-      const result: any = await client!.request({
+      // @ts-expect-error
+      const { result }: JsonRpcResponse<any> = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -407,7 +414,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       // send message
       // FIXME: fix return type for client.request
-      const result: any = await client!.request({
+      // @ts-expect-error
+      const { result }: JsonRpcResponse<any> = await client!.request({
         topic: session!.topic,
         chainId,
         request: {
@@ -464,7 +472,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
         try {
           // FIXME: fix return type for client.request
-          const { signature }: any = await client!.request({
+          // @ts-expect-error
+          const { result }: JsonRpcResponse<any> = await client!.request({
             chainId,
             topic: session!.topic,
             request: {
@@ -487,7 +496,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
           // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
           // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
-          transaction.addSignature(senderPublicKey, Buffer.from(bs58.decode(signature)));
+          transaction.addSignature(senderPublicKey, Buffer.from(bs58.decode(result.signature)));
 
           const valid = transaction.verifySignatures();
 
@@ -495,7 +504,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
             method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
             address,
             valid,
-            result: signature,
+            result: result.signature,
           };
         } catch (error: any) {
           throw new Error(error);
@@ -517,7 +526,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
         try {
           // FIXME: fix return type for client.request
-          const { signature }: any = await client!.request({
+          // @ts-expect-error
+          const { result }: JsonRpcResponse<any> = await client!.request({
             chainId,
             topic: session!.topic,
             request: {
@@ -529,13 +539,17 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
             },
           });
 
-          const valid = verifyMessageSignature(senderPublicKey.toBase58(), signature, message);
+          const valid = verifyMessageSignature(
+            senderPublicKey.toBase58(),
+            result.signature,
+            message,
+          );
 
           return {
             method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
             address,
             valid,
-            result: signature,
+            result: result.signature,
           };
         } catch (error: any) {
           throw new Error(error);
