@@ -163,7 +163,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         };
       }
 
-      // TODO: resolve any type
+      // FIXME: fix return type for client.request
       const result: any = await client!.request({
         topic: session!.topic,
         chainId,
@@ -188,7 +188,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       const tx = await formatTestTransaction(account);
 
-      // TODO: resolve any type
+      // FIXME: fix return type for client.request
       const signedTx: any = await client!.request({
         topic: session!.topic,
         chainId,
@@ -219,7 +219,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         const params = [hexMsg, address];
 
         // send message
-        // TODO: resolve any type
+        // FIXME: fix return type for client.request
         const signature: any = await client!.request({
           topic: session!.topic,
           chainId,
@@ -258,7 +258,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = [address, hexMsg];
 
       // send message
-      // TODO: resolve any type
+      // FIXME: fix return type for client.request
       const signature: any = await client!.request({
         topic: session!.topic,
         chainId,
@@ -294,7 +294,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = [address, message];
 
       // send message
-      // TODO: resolve any type
+      // FIXME: fix return type for client.request
       const signature: any = await client!.request({
         topic: session!.topic,
         chainId,
@@ -362,7 +362,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       };
 
       // send message
-      // TODO: resolve any type
+      // FIXME: fix return type for client.request
       const result: any = await client!.request({
         topic: session!.topic,
         chainId,
@@ -406,7 +406,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = { signerAddress: address, signDoc };
 
       // send message
-      // TODO: resolve any type
+      // FIXME: fix return type for client.request
       const result: any = await client!.request({
         topic: session!.topic,
         chainId,
@@ -463,7 +463,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         );
 
         try {
-          // TODO: resolve any type
+          // FIXME: fix return type for client.request
           const { signature }: any = await client!.request({
             chainId,
             topic: session!.topic,
@@ -516,7 +516,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         );
 
         try {
-          // TODO: resolve any type
+          // FIXME: fix return type for client.request
           const { signature }: any = await client!.request({
             chainId,
             topic: session!.topic,
