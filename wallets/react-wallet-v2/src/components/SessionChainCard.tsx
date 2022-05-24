@@ -61,8 +61,6 @@ export default function SessionChainCard({ namespace }: IProps) {
         // @ts-expect-error
         const rgb = CHAIN_METADATA[chainId]?.rgb
 
-        console.log(allEvents)
-
         return (
           <ChainCard key={chainId} rgb={rgb ?? ''} flexDirection="col" alignItems="flex-start">
             <Text h5 css={{ marginBottom: '$5' }}>

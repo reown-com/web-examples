@@ -26,8 +26,6 @@ export default function SessionSignModal() {
   // Get message, convert it to UTF8 string if it is valid hex
   const message = getSignParamsMessage(request.params)
 
-  console.log(requestEvent)
-
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
     if (requestEvent) {

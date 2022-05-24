@@ -40,6 +40,40 @@ export default function SessionPage() {
     setLoading(false)
   }
 
+  async function onSessionPing() {
+    setLoading(true)
+    await walletConnectClient.ping({ topic })
+    setLoading(false)
+  }
+
+  async function onSessionEmit() {
+    setLoading(true)
+    await walletConnectClient.emit({
+      topic,
+      event: { name: 'chainChanged', data: 'Hello World' },
+      chainId: 'eip155:42'
+    })
+  }
+
+  const newNs = {
+    eip155: {
+      accounts: [
+        'eip155:1:0x70012948c348CBF00806A3C79E3c5DAdFaAa347B',
+        'eip155:137:0x70012948c348CBF00806A3C79E3c5DAdFaAa347B'
+      ],
+      methods: ['personal_sign', 'eth_signTypedData', 'eth_sendTransaction'],
+      events: []
+    }
+  }
+
+  async function onSessionUpdate() {
+    setLoading(true)
+    const { acknowledged } = await walletConnectClient.update({ topic, namespaces: newNs })
+    await acknowledged()
+    setUpdated(new Date())
+    setLoading(false)
+  }
+
   // function renderAccountSelection(chain: string) {
   //   if (isEIP155Chain(chain)) {
   //     return (
@@ -102,7 +136,25 @@ export default function SessionPage() {
 
       <Row css={{ marginTop: '$10' }}>
         <Button flat css={{ width: '100%' }} color="error" onClick={onDeleteSession}>
-          {loading ? <Loading size="sm" color="error" /> : 'Delete Session'}
+          {loading ? <Loading size="sm" color="error" /> : 'Delete'}
+        </Button>
+      </Row>
+
+      <Row css={{ marginTop: '$10' }}>
+        <Button flat css={{ width: '100%' }} color="primary" onClick={onSessionPing}>
+          {loading ? <Loading size="sm" color="primary" /> : 'Ping'}
+        </Button>
+      </Row>
+
+      <Row css={{ marginTop: '$10' }}>
+        <Button flat css={{ width: '100%' }} color="secondary" onClick={onSessionEmit}>
+          {loading ? <Loading size="sm" color="secondary" /> : 'Emit'}
+        </Button>
+      </Row>
+
+      <Row css={{ marginTop: '$10' }}>
+        <Button flat css={{ width: '100%' }} color="warning" onClick={onSessionUpdate}>
+          {loading ? <Loading size="sm" color="warning" /> : 'Update'}
         </Button>
       </Row>
     </Fragment>

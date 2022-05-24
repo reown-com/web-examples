@@ -62,6 +62,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     if (initialized) {
       walletConnectClient.on('session_proposal', onSessionProposal)
       walletConnectClient.on('session_request', onSessionRequest)
+      // TODOs
+      walletConnectClient.on('session_ping', data => console.log('ping', data))
+      walletConnectClient.on('session_event', data => console.log('event', data))
+      walletConnectClient.on('session_update', data => console.log('update', data))
+      walletConnectClient.on('session_delete', data => console.log('delete', data))
     }
   }, [initialized, onSessionProposal, onSessionRequest])
 }
