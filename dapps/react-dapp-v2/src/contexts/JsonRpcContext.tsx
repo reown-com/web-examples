@@ -164,9 +164,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         };
       }
 
-      // FIXME: fix return type for client.request
-      // @ts-expect-error
-      const { result }: JsonRpcResponse<string> = await client!.request({
+      const result = await client!.request<string>({
         topic: session!.topic,
         chainId,
         request: {
@@ -190,9 +188,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       const tx = await formatTestTransaction(account);
 
-      // FIXME: fix return type for client.request
-      // @ts-expect-error
-      const { result: signedTx }: JsonRpcResponse<string> = await client!.request({
+      const signedTx = await client!.request<string>({
         topic: session!.topic,
         chainId,
         request: {
@@ -222,9 +218,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         const params = [hexMsg, address];
 
         // send message
-        // FIXME: fix return type for client.request
-        // @ts-expect-error
-        const { result: signature }: JsonRpcResponse<string> = await client!.request({
+        const signature = await client!.request<string>({
           topic: session!.topic,
           chainId,
           request: {
@@ -262,9 +256,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = [address, hexMsg];
 
       // send message
-      // FIXME: fix return type for client.request
-      // @ts-expect-error
-      const { result: signature }: JsonRpcResponse<string> = await client!.request({
+      const signature = await client!.request<string>({
         topic: session!.topic,
         chainId,
         request: {
@@ -299,9 +291,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = [address, message];
 
       // send message
-      // FIXME: fix return type for client.request
-      // @ts-expect-error
-      const { result: signature }: JsonRpcResponse<string> = await client!.request({
+      const signature = await client!.request<string>({
         topic: session!.topic,
         chainId,
         request: {
@@ -368,9 +358,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       };
 
       // send message
-      // FIXME: fix return type for client.request
-      // @ts-expect-error
-      const { result }: JsonRpcResponse<any> = await client!.request({
+      const result = await client!.request<{ signature: string }>({
         topic: session!.topic,
         chainId,
         request: {
@@ -413,9 +401,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = { signerAddress: address, signDoc };
 
       // send message
-      // FIXME: fix return type for client.request
-      // @ts-expect-error
-      const { result }: JsonRpcResponse<any> = await client!.request({
+      const result = await client!.request<{ signature: string }>({
         topic: session!.topic,
         chainId,
         request: {
@@ -471,9 +457,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         );
 
         try {
-          // FIXME: fix return type for client.request
-          // @ts-expect-error
-          const { result }: JsonRpcResponse<any> = await client!.request({
+          const result = await client!.request<{ signature: string }>({
             chainId,
             topic: session!.topic,
             request: {
@@ -525,9 +509,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         );
 
         try {
-          // FIXME: fix return type for client.request
-          // @ts-expect-error
-          const { result }: JsonRpcResponse<any> = await client!.request({
+          const result = await client!.request<{ signature: string }>({
             chainId,
             topic: session!.topic,
             request: {
