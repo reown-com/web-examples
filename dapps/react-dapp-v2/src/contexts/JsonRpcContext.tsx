@@ -1,7 +1,6 @@
 import { BigNumber, utils } from "ethers";
 import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
-import { JsonRpcResponse } from "@walletconnect/jsonrpc-types";
 import { TypedDataField } from "@ethersproject/abstract-signer";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import {
