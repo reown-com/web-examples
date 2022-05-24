@@ -164,6 +164,10 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         throw new Error("WalletConnect is not initialized");
       }
 
+      _client.on("session_ping", args => {
+        console.log("EVENT", "session_ping", args);
+      });
+
       _client.on("session_update", ({ topic, params }) => {
         console.log("EVENT", "session_update", { topic, params });
         const { namespaces } = params;
