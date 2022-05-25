@@ -168,6 +168,10 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         console.log("EVENT", "session_ping", args);
       });
 
+      _client.on("session_event", args => {
+        console.log("EVENT", "session_event", args);
+      });
+
       _client.on("session_update", ({ topic, params }) => {
         console.log("EVENT", "session_update", { topic, params });
         const { namespaces } = params;
