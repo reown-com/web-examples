@@ -31,7 +31,7 @@ export default function Layout({ children, initialized }: Props) {
         bordered={{ '@initial': false, '@xs': true }}
         borderWeight={{ '@initial': 'light', '@xs': 'light' }}
         css={{
-          height: '100vh',
+          height: '100%',
           width: '100%',
           justifyContent: initialized ? 'normal' : 'center',
           alignItems: initialized ? 'normal' : 'center',
@@ -52,6 +52,7 @@ export default function Layout({ children, initialized }: Props) {
                   display: 'block',
                   paddingLeft: 2,
                   paddingRight: 2,
+                  paddingBottom: '40px',
                   '@xs': {
                     padding: '20px',
                     paddingBottom: '40px'

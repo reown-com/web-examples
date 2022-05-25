@@ -1,12 +1,12 @@
-import { ClientTypes, SessionTypes } from '@walletconnect/types'
+import { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
 
 /**
  * Types
  */
 interface ModalData {
-  proposal?: ClientTypes.EventArguments['session_proposal']
-  requestEvent?: ClientTypes.EventArguments['request']
+  proposal?: SignClientTypes.EventArguments['session_proposal']
+  requestEvent?: SignClientTypes.EventArguments['session_request']
   requestSession?: SessionTypes.Struct
 }
 

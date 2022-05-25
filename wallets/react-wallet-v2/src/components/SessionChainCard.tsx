@@ -31,6 +31,8 @@ interface IProps {
 export default function SessionChainCard({ namespace }: IProps) {
   const chains: string[] = []
 
+  // WIP
+
   namespace.accounts.forEach(account => {
     const [type, chain] = account.split(':')
     const chainId = `${type}:${chain}`
@@ -67,13 +69,13 @@ export default function SessionChainCard({ namespace }: IProps) {
             <Row>
               <Col>
                 <Text h6>Methods</Text>
-                <Text color="$gray300">{allMethods.join(', ')}</Text>
+                <Text color="$gray300">{allMethods.length ? allMethods.join(', ') : '-'}</Text>
               </Col>
             </Row>
             <Row css={{ marginTop: '$5' }}>
               <Col>
                 <Text h6>Events</Text>
-                <Text color="$gray300">{allEvents.join(', ')}</Text>
+                <Text color="$gray300">{allEvents.length ? allEvents.join(', ') : '-'}</Text>
               </Col>
             </Row>
           </ChainCard>

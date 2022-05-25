@@ -5,7 +5,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveCosmosRequest, rejectCosmosRequest } from '@/utils/CosmosRequestHandler'
-import { walletConnectClient } from '@/utils/WalletConnectUtil'
+import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -27,7 +27,7 @@ export default function SessionSignCosmosModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approveCosmosRequest(requestEvent)
-      await walletConnectClient.respond({
+      await signClient.respond({
         topic,
         response
       })
@@ -39,7 +39,7 @@ export default function SessionSignCosmosModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectCosmosRequest(requestEvent)
-      await walletConnectClient.respond({
+      await signClient.respond({
         topic,
         response
       })

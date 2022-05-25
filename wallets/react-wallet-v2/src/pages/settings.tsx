@@ -6,6 +6,7 @@ import { solanaWallets } from '@/utils/SolanaWalletUtil'
 import { Card, Divider, Row, Switch, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
+import packageJSON from '../../package.json'
 
 export default function SettingsPage() {
   const { testNets, eip155Address, cosmosAddress, solanaAddress } = useSnapshot(SettingsStore.state)
@@ -13,6 +14,24 @@ export default function SettingsPage() {
   return (
     <Fragment>
       <PageHeader title="Settings" />
+
+      <Text h4 css={{ marginBottom: '$5' }}>
+        Packages
+      </Text>
+      <Row justify="space-between" align="center">
+        <Text color="$gray400">@walletconnect/sign-client</Text>
+        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/sign-client']}</Text>
+      </Row>
+      <Row justify="space-between" align="center">
+        <Text color="$gray400">@walletconnect/utils</Text>
+        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/utils']}</Text>
+      </Row>
+      <Row justify="space-between" align="center">
+        <Text color="$gray400">@walletconnect/types</Text>
+        <Text color="$gray400">{packageJSON.devDependencies['@walletconnect/types']}</Text>
+      </Row>
+
+      <Divider y={2} />
 
       <Text h4 css={{ marginBottom: '$5' }}>
         Testnets

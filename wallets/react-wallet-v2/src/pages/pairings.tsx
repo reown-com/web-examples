@@ -1,15 +1,15 @@
 import PageHeader from '@/components/PageHeader'
 import PairingCard from '@/components/PairingCard'
-import { walletConnectClient } from '@/utils/WalletConnectUtil'
+import { signClient } from '@/utils/WalletConnectUtil'
 import { Text } from '@nextui-org/react'
 import { ERROR } from '@walletconnect/utils'
 import { Fragment, useState } from 'react'
 
 export default function PairingsPage() {
-  const [pairings, setPairings] = useState(walletConnectClient.pairing.values)
+  const [pairings, setPairings] = useState(signClient.pairing.values)
 
   async function onDelete(topic: string) {
-    await walletConnectClient.disconnect({ topic, reason: ERROR.DELETED.format() })
+    await signClient.disconnect({ topic, reason: ERROR.DELETED.format() })
     const newPairings = pairings.filter(pairing => pairing.topic !== topic)
     setPairings(newPairings)
   }
