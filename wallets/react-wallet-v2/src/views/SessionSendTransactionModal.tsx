@@ -5,7 +5,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
-import { walletConnectClient } from '@/utils/WalletConnectUtil'
+import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Loading, Modal, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
@@ -32,7 +32,7 @@ export default function SessionSendTransactionModal() {
     if (requestEvent) {
       setLoading(true)
       const response = await approveEIP155Request(requestEvent)
-      await walletConnectClient.respond({
+      await signClient.respond({
         topic,
         response
       })
@@ -44,7 +44,7 @@ export default function SessionSendTransactionModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectEIP155Request(requestEvent)
-      await walletConnectClient.respond({
+      await signClient.respond({
         topic,
         response
       })

@@ -7,7 +7,7 @@ import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { isCosmosChain, isEIP155Chain, isSolanaChain } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
-import { walletConnectClient } from '@/utils/WalletConnectUtil'
+import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
 import { ERROR } from '@walletconnect/utils'
@@ -62,7 +62,7 @@ export default function SessionProposalModal() {
         }
       })
 
-      const { acknowledged } = await walletConnectClient.approve({
+      const { acknowledged } = await signClient.approve({
         id,
         relayProtocol: relays[0].protocol,
         namespaces
@@ -75,7 +75,7 @@ export default function SessionProposalModal() {
   // Hanlde reject action
   async function onReject() {
     if (proposal) {
-      await walletConnectClient.reject({
+      await signClient.reject({
         id,
         reason: ERROR.JSONRPC_REQUEST_METHOD_REJECTED.format()
       })

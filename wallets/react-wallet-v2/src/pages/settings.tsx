@@ -19,8 +19,8 @@ export default function SettingsPage() {
         Packages
       </Text>
       <Row justify="space-between" align="center">
-        <Text color="$gray400">@walletconnect/client</Text>
-        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/client']}</Text>
+        <Text color="$gray400">@walletconnect/sign-client</Text>
+        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/sign-client']}</Text>
       </Row>
       <Row justify="space-between" align="center">
         <Text color="$gray400">@walletconnect/utils</Text>

@@ -1,11 +1,11 @@
 import PageHeader from '@/components/PageHeader'
 import SessionCard from '@/components/SessionCard'
-import { walletConnectClient } from '@/utils/WalletConnectUtil'
+import { signClient } from '@/utils/WalletConnectUtil'
 import { Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
 export default function SessionsPage() {
-  const [sessions, setSessions] = useState(walletConnectClient.session.values)
+  const [sessions, setSessions] = useState(signClient.session.values)
 
   return (
     <Fragment>

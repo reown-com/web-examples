@@ -1,7 +1,7 @@
 import PageHeader from '@/components/PageHeader'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import SessionChainCard from '@/components/SessionChainCard'
-import { walletConnectClient } from '@/utils/WalletConnectUtil'
+import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Loading, Row, Text } from '@nextui-org/react'
 import { ERROR } from '@walletconnect/utils'
 import { useRouter } from 'next/router'
@@ -22,7 +22,7 @@ export default function SessionPage() {
     }
   }, [query])
 
-  const session = walletConnectClient.session.values.find(s => s.topic === topic)
+  const session = signClient.session.values.find(s => s.topic === topic)
 
   if (!session) {
     return null
@@ -35,24 +35,26 @@ export default function SessionPage() {
   // Handle deletion of a session
   async function onDeleteSession() {
     setLoading(true)
-    await walletConnectClient.disconnect({ topic, reason: ERROR.DELETED.format() })
+    await signClient.disconnect({ topic, reason: ERROR.DELETED.format() })
     replace('/sessions')
     setLoading(false)
   }
 
   async function onSessionPing() {
     setLoading(true)
-    await walletConnectClient.ping({ topic })
+    await signClient.ping({ topic })
     setLoading(false)
   }
 
   async function onSessionEmit() {
     setLoading(true)
-    await walletConnectClient.emit({
+    console.log('baleg')
+    await signClient.emit({
       topic,
       event: { name: 'chainChanged', data: 'Hello World' },
-      chainId: 'eip155:42'
+      chainId: 'eip155:1'
     })
+    setLoading(false)
   }
 
   const newNs = {
@@ -68,7 +70,7 @@ export default function SessionPage() {
 
   async function onSessionUpdate() {
     setLoading(true)
-    const { acknowledged } = await walletConnectClient.update({ topic, namespaces: newNs })
+    const { acknowledged } = await signClient.update({ topic, namespaces: newNs })
     await acknowledged()
     setUpdated(new Date())
     setLoading(false)
