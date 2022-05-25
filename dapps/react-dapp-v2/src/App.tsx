@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { version } from "@walletconnect/client/package.json";
+import { version } from "@walletconnect/sign-client/package.json";
 
 import Banner from "./components/Banner";
 import Blockchain from "./components/Blockchain";

@@ -1,4 +1,4 @@
-import Client from "@walletconnect/client";
+import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import QRCodeModal from "@walletconnect/legacy-modal";
 import {
