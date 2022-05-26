@@ -123,7 +123,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       let valid = false;
 
       try {
-        await client.session.ping(session.topic);
+        await client.ping({ topic: session.topic });
         valid = true;
       } catch (e) {
         valid = false;
@@ -163,7 +163,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         };
       }
 
-      const result = await client!.request({
+      const result = await client!.request<string>({
         topic: session!.topic,
         chainId,
         request: {
@@ -187,7 +187,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
       const tx = await formatTestTransaction(account);
 
-      const signedTx: string = await client!.request({
+      const signedTx = await client!.request<string>({
         topic: session!.topic,
         chainId,
         request: {
@@ -217,7 +217,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         const params = [hexMsg, address];
 
         // send message
-        const signature: string = await client!.request({
+        const signature = await client!.request<string>({
           topic: session!.topic,
           chainId,
           request: {
@@ -255,7 +255,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = [address, hexMsg];
 
       // send message
-      const signature: string = await client!.request({
+      const signature = await client!.request<string>({
         topic: session!.topic,
         chainId,
         request: {
@@ -290,7 +290,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = [address, message];
 
       // send message
-      const signature = await client!.request({
+      const signature = await client!.request<string>({
         topic: session!.topic,
         chainId,
         request: {
@@ -357,7 +357,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       };
 
       // send message
-      const result = await client!.request({
+      const result = await client!.request<{ signature: string }>({
         topic: session!.topic,
         chainId,
         request: {
@@ -400,7 +400,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       const params = { signerAddress: address, signDoc };
 
       // send message
-      const result = await client!.request({
+      const result = await client!.request<{ signature: string }>({
         topic: session!.topic,
         chainId,
         request: {
@@ -456,7 +456,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         );
 
         try {
-          const { signature } = await client!.request({
+          const result = await client!.request<{ signature: string }>({
+            chainId,
             topic: session!.topic,
             request: {
               method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
@@ -478,7 +479,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
           // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
           // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
-          transaction.addSignature(senderPublicKey, Buffer.from(bs58.decode(signature)));
+          transaction.addSignature(senderPublicKey, Buffer.from(bs58.decode(result.signature)));
 
           const valid = transaction.verifySignatures();
 
@@ -486,7 +487,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
             method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
             address,
             valid,
-            result: signature,
+            result: result.signature,
           };
         } catch (error: any) {
           throw new Error(error);
@@ -507,7 +508,8 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         );
 
         try {
-          const { signature } = await client!.request({
+          const result = await client!.request<{ signature: string }>({
+            chainId,
             topic: session!.topic,
             request: {
               method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
@@ -518,13 +520,17 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
             },
           });
 
-          const valid = verifyMessageSignature(senderPublicKey.toBase58(), signature, message);
+          const valid = verifyMessageSignature(
+            senderPublicKey.toBase58(),
+            result.signature,
+            message,
+          );
 
           return {
             method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
             address,
             valid,
-            result: signature,
+            result: result.signature,
           };
         } catch (error: any) {
           throw new Error(error);

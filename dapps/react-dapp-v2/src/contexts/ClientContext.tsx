@@ -1,4 +1,4 @@
-import Client, { CLIENT_EVENTS } from "@walletconnect/client";
+import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import QRCodeModal from "@walletconnect/legacy-modal";
 import {
@@ -14,28 +14,26 @@ import { PublicKey } from "@solana/web3.js";
 
 import {
   DEFAULT_APP_METADATA,
-  DEFAULT_COSMOS_METHODS,
-  DEFAULT_EIP155_METHODS,
   DEFAULT_LOGGER,
   DEFAULT_PROJECT_ID,
   DEFAULT_RELAY_URL,
-  DEFAULT_SOLANA_METHODS,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { ERROR, getAppMetadata } from "@walletconnect/utils";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
+import { getRequiredNamespaces } from "../helpers/namespaces";
 
 /**
  * Types
  */
 interface IContext {
   client: Client | undefined;
-  session: SessionTypes.Created | undefined;
+  session: SessionTypes.Struct | undefined;
   connect: (pairing?: { topic: string }) => Promise<void>;
   disconnect: () => Promise<void>;
   isInitializing: boolean;
   chains: string[];
-  pairings: string[];
+  pairings: PairingTypes.Struct[];
   accounts: string[];
   solanaPublicKeys?: Record<string, PublicKey>;
   balances: AccountBalances;
@@ -53,8 +51,8 @@ export const ClientContext = createContext<IContext>({} as IContext);
  */
 export function ClientContextProvider({ children }: { children: ReactNode | ReactNode[] }) {
   const [client, setClient] = useState<Client>();
-  const [pairings, setPairings] = useState<string[]>([]);
-  const [session, setSession] = useState<SessionTypes.Created>();
+  const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
+  const [session, setSession] = useState<SessionTypes.Struct>();
 
   const [isFetchingBalances, setIsFetchingBalances] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
@@ -96,78 +94,53 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }
   };
 
-  const getSupportedNamespaces = useCallback(() => {
-    const supportedNamespaces: string[] = [];
-    chains.forEach(chainId => {
-      const [namespace] = chainId.split(":");
-      if (!supportedNamespaces.includes(namespace)) {
-        supportedNamespaces.push(namespace);
-      }
-    });
-
-    return supportedNamespaces;
-  }, [chains]);
-
-  const getSupportedMethods = (namespaces: string[]) => {
-    const supportedMethods: string[] = namespaces
-      .map(namespace => {
-        switch (namespace) {
-          case "eip155":
-            return Object.values(DEFAULT_EIP155_METHODS);
-          case "cosmos":
-            return Object.values(DEFAULT_COSMOS_METHODS);
-          case "solana":
-            return Object.values(DEFAULT_SOLANA_METHODS);
-          default:
-            throw new Error(`No default methods for namespace: ${namespace}`);
-        }
-      })
+  const onSessionConnected = useCallback(async (_session: SessionTypes.Struct) => {
+    const allNamespaceAccounts = Object.values(_session.namespaces)
+      .map(namespace => namespace.accounts)
       .flat();
+    const allNamespaceChains = Object.keys(_session.namespaces);
 
-    return supportedMethods;
-  };
-
-  const onSessionConnected = useCallback(async (_session: SessionTypes.Settled) => {
     setSession(_session);
-    setChains(_session.permissions.blockchain.chains);
-    setAccounts(_session.state.accounts);
-    setSolanaPublicKeys(getPublicKeysFromAccounts(_session.state.accounts));
-    await getAccountBalances(_session.state.accounts);
+    setChains(allNamespaceChains);
+    setAccounts(allNamespaceAccounts);
+    setSolanaPublicKeys(getPublicKeysFromAccounts(allNamespaceAccounts));
+    await getAccountBalances(allNamespaceAccounts);
   }, []);
 
   const connect = useCallback(
-    async (pairing?: { topic: string }) => {
+    async pairing => {
       if (typeof client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
-      console.log("connect", pairing);
+      console.log("connect, pairing topic is:", pairing?.topic);
       try {
-        const supportedNamespaces = getSupportedNamespaces();
-        const methods = getSupportedMethods(supportedNamespaces);
+        const requiredNamespaces = getRequiredNamespaces(chains);
+        console.log("requiredNamespaces config for connect:", requiredNamespaces);
 
-        const session = await client.connect({
-          metadata: getAppMetadata() || DEFAULT_APP_METADATA,
-          pairing,
-          permissions: {
-            blockchain: {
-              chains,
-            },
-            jsonrpc: {
-              methods,
-            },
-          },
+        const { uri, approval } = await client.connect({
+          pairingTopic: pairing?.topic,
+          requiredNamespaces,
         });
 
-        onSessionConnected(session);
+        // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
+        if (uri) {
+          QRCodeModal.open(uri, () => {
+            console.log("EVENT", "QR Code Modal closed");
+          });
+        }
+
+        const session = await approval();
+        console.log("Established session:", session);
+        await onSessionConnected(session);
       } catch (e) {
         console.error(e);
         // ignore rejection
+      } finally {
+        // close modal in case it was open
+        QRCodeModal.close();
       }
-
-      // close modal in case it was open
-      QRCodeModal.close();
     },
-    [chains, client, onSessionConnected, getSupportedNamespaces],
+    [chains, client, onSessionConnected],
   );
 
   const disconnect = useCallback(async () => {
@@ -181,6 +154,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       topic: session.topic,
       reason: ERROR.USER_DISCONNECTED.format(),
     });
+    // Reset app state after disconnect.
+    reset();
   }, [client, session]);
 
   const _subscribeToEvents = useCallback(
@@ -189,25 +164,24 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         throw new Error("WalletConnect is not initialized");
       }
 
-      _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
-        const { uri } = proposal.signal.params;
-        console.log("EVENT", "QR Code Modal open");
-        QRCodeModal.open(uri, () => {
-          console.log("EVENT", "QR Code Modal closed");
-        });
+      _client.on("session_ping", args => {
+        console.log("EVENT", "session_ping", args);
       });
 
-      _client.on(CLIENT_EVENTS.pairing.created, async () => {
-        setPairings(_client.pairing.topics);
+      _client.on("session_event", args => {
+        console.log("EVENT", "session_event", args);
       });
 
-      _client.on(CLIENT_EVENTS.session.updated, (updatedSession: SessionTypes.Settled) => {
-        console.log("EVENT", "session_updated");
+      _client.on("session_update", ({ topic, params }) => {
+        console.log("EVENT", "session_update", { topic, params });
+        const { namespaces } = params;
+        const _session = _client.session.get(topic);
+        const updatedSession = { ..._session, namespaces };
         onSessionConnected(updatedSession);
       });
 
-      _client.on(CLIENT_EVENTS.session.deleted, () => {
-        console.log("EVENT", "session_deleted");
+      _client.on("session_delete", () => {
+        console.log("EVENT", "session_delete");
         reset();
       });
     },
@@ -220,12 +194,17 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         throw new Error("WalletConnect is not initialized");
       }
       // populates existing pairings to state
-      setPairings(_client.pairing.topics);
+      setPairings(_client.pairing.values);
+      console.log("RESTORED PAIRINGS: ", _client.pairing.values);
+
       if (typeof session !== "undefined") return;
-      // populates existing session to state (assume only the top one)
-      if (_client.session.topics.length) {
-        const _session = await _client.session.get(_client.session.topics[0]);
-        onSessionConnected(_session);
+      // populates (the last) existing session to state
+      if (_client.session.length) {
+        const lastKeyIndex = _client.session.keys.length - 1;
+        const _session = _client.session.get(_client.session.keys[lastKeyIndex]);
+        console.log("RESTORED SESSION:", _session);
+        await onSessionConnected(_session);
+        return _session;
       }
     },
     [session, onSessionConnected],
@@ -239,8 +218,10 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         logger: DEFAULT_LOGGER,
         relayUrl: DEFAULT_RELAY_URL,
         projectId: DEFAULT_PROJECT_ID,
+        metadata: getAppMetadata() || DEFAULT_APP_METADATA,
       });
 
+      console.log("CREATED CLIENT: ", _client);
       setClient(_client);
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
