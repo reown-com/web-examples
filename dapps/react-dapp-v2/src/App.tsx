@@ -205,9 +205,10 @@ export default function App() {
     return !accounts.length && !Object.keys(balances).length ? (
       <SLanding center>
         <Banner />
-        <h6>
-          <span>{`Using v${version || "2.0.0-beta"}`}</span>
-        </h6>
+        <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
+        <span>
+          <b>(Compatible with 2.0.0-beta.100 wallets)</b>
+        </span>
         <SButtonContainer>
           <h6>Select chains:</h6>
           <SToggleContainer>
