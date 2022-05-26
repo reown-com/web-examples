@@ -1,10 +1,9 @@
-import WalletConnectClient from '@walletconnect/client'
+import SignClient from '@walletconnect/sign-client'
 
-export let walletConnectClient: WalletConnectClient
+export let signClient: SignClient
 
-export async function createWalletConnectClient() {
-  walletConnectClient = await WalletConnectClient.init({
-    controller: true,
+export async function createSignClient() {
+  signClient = await SignClient.init({
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
     relayUrl: process.env.NEXT_PUBLIC_RELAY_URL ?? 'wss://relay.walletconnect.com',
     metadata: {

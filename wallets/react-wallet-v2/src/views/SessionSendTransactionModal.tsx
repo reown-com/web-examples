@@ -5,7 +5,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
-import { walletConnectClient } from '@/utils/WalletConnectUtil'
+import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Loading, Modal, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
@@ -23,16 +23,17 @@ export default function SessionSendTransactionModal() {
 
   // Get required proposal data
 
-  const { method, params } = requestEvent.request
-  const transaction = params[0]
+  const { topic, params } = requestEvent
+  const { request, chainId } = params
+  const transaction = request.params[0]
 
   // Handle approve action
   async function onApprove() {
     if (requestEvent) {
       setLoading(true)
       const response = await approveEIP155Request(requestEvent)
-      await walletConnectClient.respond({
-        topic: requestEvent.topic,
+      await signClient.respond({
+        topic,
         response
       })
       ModalStore.close()
@@ -42,9 +43,9 @@ export default function SessionSendTransactionModal() {
   // Handle reject action
   async function onReject() {
     if (requestEvent) {
-      const response = rejectEIP155Request(requestEvent.request)
-      await walletConnectClient.respond({
-        topic: requestEvent.topic,
+      const response = rejectEIP155Request(requestEvent)
+      await signClient.respond({
+        topic,
         response
       })
       ModalStore.close()
@@ -62,14 +63,11 @@ export default function SessionSendTransactionModal() {
 
         <Divider y={2} />
 
-        <RequesDetailsCard
-          chains={[requestEvent.chainId ?? '']}
-          protocol={requestSession.relay.protocol}
-        />
+        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
         <Divider y={2} />
 
-        <RequestMethodCard methods={[method]} />
+        <RequestMethodCard methods={[request.method]} />
       </RequestModalContainer>
 
       <Modal.Footer>

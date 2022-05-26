@@ -5,7 +5,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveSolanaRequest, rejectSolanaRequest } from '@/utils/SolanaRequestHandlerUtil'
-import { walletConnectClient } from '@/utils/WalletConnectUtil'
+import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -20,14 +20,15 @@ export default function SessionSignSolanaModal() {
   }
 
   // Get required request data
-  const { method, params } = requestEvent.request
+  const { topic, params } = requestEvent
+  const { request, chainId } = params
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
     if (requestEvent) {
       const response = await approveSolanaRequest(requestEvent)
-      await walletConnectClient.respond({
-        topic: requestEvent.topic,
+      await signClient.respond({
+        topic,
         response
       })
       ModalStore.close()
@@ -37,9 +38,9 @@ export default function SessionSignSolanaModal() {
   // Handle reject action
   async function onReject() {
     if (requestEvent) {
-      const response = rejectSolanaRequest(requestEvent.request)
-      await walletConnectClient.respond({
-        topic: requestEvent.topic,
+      const response = rejectSolanaRequest(requestEvent)
+      await signClient.respond({
+        topic,
         response
       })
       ModalStore.close()
@@ -53,10 +54,7 @@ export default function SessionSignSolanaModal() {
 
         <Divider y={2} />
 
-        <RequesDetailsCard
-          chains={[requestEvent.chainId ?? '']}
-          protocol={requestSession.relay.protocol}
-        />
+        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
         <Divider y={2} />
 
@@ -64,7 +62,7 @@ export default function SessionSignSolanaModal() {
 
         <Divider y={2} />
 
-        <RequestMethodCard methods={[method]} />
+        <RequestMethodCard methods={[request.method]} />
       </RequestModalContainer>
 
       <Modal.Footer>
