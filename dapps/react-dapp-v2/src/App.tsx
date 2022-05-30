@@ -206,9 +206,6 @@ export default function App() {
       <SLanding center>
         <Banner />
         <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
-        <span>
-          <b>(Compatible with 2.0.0-beta.100 wallets)</b>
-        </span>
         <SButtonContainer>
           <h6>Select chains:</h6>
           <SToggleContainer>
