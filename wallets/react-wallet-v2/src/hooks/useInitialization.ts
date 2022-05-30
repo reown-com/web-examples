@@ -2,7 +2,7 @@ import SettingsStore from '@/store/SettingsStore'
 import { createOrRestoreCosmosWallet } from '@/utils/CosmosWalletUtil'
 import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
-import { createWalletConnectClient } from '@/utils/WalletConnectUtil'
+import { createSignClient } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useState } from 'react'
 
 export default function useInitialization() {
@@ -18,7 +18,7 @@ export default function useInitialization() {
       SettingsStore.setCosmosAddress(cosmosAddresses[0])
       SettingsStore.setSolanaAddress(solanaAddresses[0])
 
-      await createWalletConnectClient()
+      await createSignClient()
 
       setInitialized(true)
     } catch (err: unknown) {

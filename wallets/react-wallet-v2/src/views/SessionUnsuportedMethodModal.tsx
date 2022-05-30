@@ -17,7 +17,8 @@ export default function SessionUnsuportedMethodModal() {
   }
 
   // Get required request data
-  const { method } = requestEvent.request
+  const { topic, params } = requestEvent
+  const { chainId, request } = params
 
   return (
     <Fragment>
@@ -26,14 +27,11 @@ export default function SessionUnsuportedMethodModal() {
 
         <Divider y={2} />
 
-        <RequesDetailsCard
-          chains={[requestEvent.chainId ?? '']}
-          protocol={requestSession.relay.protocol}
-        />
+        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
         <Divider y={2} />
 
-        <RequestMethodCard methods={[method]} />
+        <RequestMethodCard methods={[request.method]} />
       </RequestModalContainer>
 
       <Modal.Footer>
