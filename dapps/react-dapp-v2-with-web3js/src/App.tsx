@@ -283,6 +283,16 @@ export default function App() {
         <Banner />
         <h6>
           <span>{`Using v${version || "2.0.0-beta"}`}</span>
+          <sup>
+            (
+            <a
+              style={{ textDecoration: "underline" }}
+              href="https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2-with-web3js"
+            >
+              outdated
+            </a>{" "}
+            ⚠️)
+          </sup>
         </h6>
         <SButtonContainer>
           <h6>Select an Ethereum chain:</h6>
