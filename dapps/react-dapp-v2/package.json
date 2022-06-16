@@ -1,6 +1,6 @@
 {
   "name": "react-dapp-v2",
-  "version": "2.0.0-beta.100",
+  "version": "2.0.0-beta.101",
   "private": true,
   "keywords": [
     "walletconnect",
@@ -30,10 +30,10 @@
   "dependencies": {
     "@ethereumjs/tx": "^3.5.0",
     "@solana/web3.js": "^1.36.0",
-    "@walletconnect/sign-client": "2.0.0-beta.100",
-    "@walletconnect/legacy-modal": "2.0.0-beta.100",
-    "@walletconnect/types": "2.0.0-beta.100",
-    "@walletconnect/utils": "2.0.0-beta.100",
+    "@walletconnect/sign-client": "2.0.0-beta.101",
+    "@walletconnect/legacy-modal": "2.0.0-beta.101",
+    "@walletconnect/types": "2.0.0-beta.101",
+    "@walletconnect/utils": "2.0.0-beta.101",
     "axios": "^0.21.1",
     "blockies-ts": "^1.0.0",
     "bs58": "^5.0.0",
