@@ -43,6 +43,7 @@ export default function App() {
   // Initialize the WalletConnect client.
   const {
     client,
+    pairings,
     session,
     connect,
     disconnect,
@@ -80,7 +81,7 @@ export default function App() {
       throw new Error("WalletConnect is not initialized");
     }
     // Suggest existing pairings (if any).
-    if (client.pairing.values.length) {
+    if (pairings.length) {
       openPairingModal();
     } else {
       // If no existing pairings are available, trigger `WalletConnectClient.connect`.
@@ -190,7 +191,7 @@ export default function App() {
         if (typeof client === "undefined") {
           throw new Error("WalletConnect is not initialized");
         }
-        return <PairingModal pairings={client.pairing.values} connect={connect} />;
+        return <PairingModal pairings={pairings} connect={connect} />;
       case "request":
         return <RequestModal pending={isRpcRequestPending} result={rpcResult} />;
       case "ping":

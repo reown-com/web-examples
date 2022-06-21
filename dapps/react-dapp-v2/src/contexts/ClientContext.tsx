@@ -63,7 +63,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [chains, setChains] = useState<string[]>([]);
 
   const reset = () => {
-    setPairings([]);
     setSession(undefined);
     setBalances({});
     setAccounts([]);
@@ -194,8 +193,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         throw new Error("WalletConnect is not initialized");
       }
       // populates existing pairings to state
-      setPairings(_client.pairing.values);
-      console.log("RESTORED PAIRINGS: ", _client.pairing.values);
+      setPairings(_client.pairing.getAll({ active: true }));
+      console.log("RESTORED PAIRINGS: ", _client.pairing.getAll({ active: true }));
 
       if (typeof session !== "undefined") return;
       // populates (the last) existing session to state
