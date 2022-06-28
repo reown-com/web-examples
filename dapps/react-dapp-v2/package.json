@@ -1,6 +1,6 @@
 {
-  "name": "react-dapp-v2",
-  "version": "2.0.0-beta.101",
+  "name": "staging-react-dapp-v2",
+  "version": "canary",
   "private": true,
   "keywords": [
     "walletconnect",
@@ -28,17 +28,14 @@
     "react-error-overlay": "6.0.9"
   },
   "dependencies": {
-    "@ethereumjs/tx": "^3.5.0",
-    "@solana/web3.js": "^1.36.0",
-    "@walletconnect/sign-client": "2.0.0-beta.101",
-    "@walletconnect/legacy-modal": "2.0.0-beta.101",
-    "@walletconnect/types": "2.0.0-beta.101",
-    "@walletconnect/utils": "2.0.0-beta.101",
+    "@walletconnect/client": "canary",
+    "@walletconnect/legacy-modal": "canary",
+    "@walletconnect/types": "canary",
+    "@walletconnect/utils": "canary",
     "axios": "^0.21.1",
     "blockies-ts": "^1.0.0",
-    "bs58": "^5.0.0",
     "caip-api": "^2.0.0-beta.1",
-    "cosmos-wallet": "^1.2.0",
+    "cosmos-wallet": "^1.1.0",
     "eth-sig-util": "^2.5.3",
     "ethereumjs-util": "^7.0.6",
     "ethers": "^5.3.0",
@@ -47,7 +44,6 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "^4.0.3",
-    "solana-wallet": "^1.0.1",
     "styled-components": "^5.2.0",
     "typescript": "^4.3.2",
     "web-vitals": "^0.2.4"
