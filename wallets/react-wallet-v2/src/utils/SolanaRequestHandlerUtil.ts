@@ -3,7 +3,7 @@ import { getWalletAddressFromParams } from '@/utils/HelperUtil'
 import { solanaAddresses, solanaWallets } from '@/utils/SolanaWalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
-import { ERROR } from '@walletconnect/utils'
+import { getSdkError } from '@walletconnect/utils'
 
 export async function approveSolanaRequest(
   requestEvent: SignClientTypes.EventArguments['session_request']
@@ -27,12 +27,12 @@ export async function approveSolanaRequest(
       return formatJsonRpcResult(id, signedTransaction)
 
     default:
-      throw new Error(ERROR.UNKNOWN_JSONRPC_METHOD.format().message)
+      throw new Error(getSdkError('INVALID_METHOD').message)
   }
 }
 
 export function rejectSolanaRequest(request: SignClientTypes.EventArguments['session_request']) {
   const { id } = request
 
-  return formatJsonRpcError(id, ERROR.JSONRPC_REQUEST_METHOD_REJECTED.format().message)
+  return formatJsonRpcError(id, getSdkError('USER_REJECTED_METHODS').message)
 }

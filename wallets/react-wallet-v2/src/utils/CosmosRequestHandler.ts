@@ -3,7 +3,7 @@ import { cosmosAddresses, cosmosWallets } from '@/utils/CosmosWalletUtil'
 import { getWalletAddressFromParams } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
-import { ERROR } from '@walletconnect/utils'
+import { getSdkError } from '@walletconnect/utils'
 import { parseSignDocValues } from 'cosmos-wallet'
 
 export async function approveCosmosRequest(
@@ -29,12 +29,12 @@ export async function approveCosmosRequest(
       return formatJsonRpcResult(id, signedAmino.signature)
 
     default:
-      throw new Error(ERROR.UNKNOWN_JSONRPC_METHOD.format().message)
+      throw new Error(getSdkError('INVALID_METHOD').message)
   }
 }
 
 export function rejectCosmosRequest(request: SignClientTypes.EventArguments['session_request']) {
   const { id } = request
 
-  return formatJsonRpcError(id, ERROR.JSONRPC_REQUEST_METHOD_REJECTED.format().message)
+  return formatJsonRpcError(id, getSdkError('USER_REJECTED_METHODS').message)
 }

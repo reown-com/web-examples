@@ -7,7 +7,7 @@ import {
 } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
-import { ERROR } from '@walletconnect/utils'
+import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
 
 export async function approveEIP155Request(
@@ -46,12 +46,12 @@ export async function approveEIP155Request(
       return formatJsonRpcResult(id, signature)
 
     default:
-      throw new Error(ERROR.UNKNOWN_JSONRPC_METHOD.format().message)
+      throw new Error(getSdkError('INVALID_METHOD').message)
   }
 }
 
 export function rejectEIP155Request(request: SignClientTypes.EventArguments['session_request']) {
   const { id } = request
 
-  return formatJsonRpcError(id, ERROR.JSONRPC_REQUEST_METHOD_REJECTED.format().message)
+  return formatJsonRpcError(id, getSdkError('USER_REJECTED_METHODS').message)
 }
