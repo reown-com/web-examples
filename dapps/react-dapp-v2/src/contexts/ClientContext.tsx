@@ -131,6 +131,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         const session = await approval();
         console.log("Established session:", session);
         await onSessionConnected(session);
+        // Update known pairings after session is connected.
+        setPairings(client.pairing.getAll({ active: true }));
       } catch (e) {
         console.error(e);
         // ignore rejection
