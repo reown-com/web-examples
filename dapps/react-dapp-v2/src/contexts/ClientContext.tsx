@@ -1,6 +1,6 @@
 import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import QRCodeModal from "@walletconnect/legacy-modal";
+import QRCodeModal from "@walletconnect/qrcode-modal";
 import {
   createContext,
   ReactNode,
@@ -19,7 +19,7 @@ import {
   DEFAULT_RELAY_URL,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
-import { ERROR, getAppMetadata } from "@walletconnect/utils";
+import { getAppMetadata, getSdkError } from "@walletconnect/utils";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 import { getRequiredNamespaces } from "../helpers/namespaces";
 
@@ -153,7 +153,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     }
     await client.disconnect({
       topic: session.topic,
-      reason: ERROR.USER_DISCONNECTED.format(),
+      reason: getSdkError("USER_DISCONNECTED"),
     });
     // Reset app state after disconnect.
     reset();
