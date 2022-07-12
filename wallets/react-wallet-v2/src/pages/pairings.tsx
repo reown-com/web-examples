@@ -2,14 +2,14 @@ import PageHeader from '@/components/PageHeader'
 import PairingCard from '@/components/PairingCard'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Text } from '@nextui-org/react'
-import { ERROR } from '@walletconnect/utils'
+import { getSdkError } from '@walletconnect/utils'
 import { Fragment, useState } from 'react'
 
 export default function PairingsPage() {
   const [pairings, setPairings] = useState(signClient.pairing.values)
 
   async function onDelete(topic: string) {
-    await signClient.disconnect({ topic, reason: ERROR.DELETED.format() })
+    await signClient.disconnect({ topic, reason: getSdkError('USER_DISCONNECTED') })
     const newPairings = pairings.filter(pairing => pairing.topic !== topic)
     setPairings(newPairings)
   }

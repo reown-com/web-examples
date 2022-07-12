@@ -3,7 +3,7 @@ import ProjectInfoCard from '@/components/ProjectInfoCard'
 import SessionChainCard from '@/components/SessionChainCard'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Loading, Row, Text } from '@nextui-org/react'
-import { ERROR } from '@walletconnect/utils'
+import { getSdkError } from '@walletconnect/utils'
 import { useRouter } from 'next/router'
 import { Fragment, useEffect, useState } from 'react'
 
@@ -35,7 +35,7 @@ export default function SessionPage() {
   // Handle deletion of a session
   async function onDeleteSession() {
     setLoading(true)
-    await signClient.disconnect({ topic, reason: ERROR.DELETED.format() })
+    await signClient.disconnect({ topic, reason: getSdkError('USER_DISCONNECTED') })
     replace('/sessions')
     setLoading(false)
   }
