@@ -57,20 +57,17 @@ export default function SessionPage() {
     setLoading(false)
   }
 
-  const newNs = {
-    eip155: {
-      accounts: [
-        'eip155:1:0x70012948c348CBF00806A3C79E3c5DAdFaAa347B',
-        'eip155:137:0x70012948c348CBF00806A3C79E3c5DAdFaAa347B'
-      ],
-      methods: ['personal_sign', 'eth_signTypedData', 'eth_sendTransaction'],
-      events: []
-    }
-  }
-
   async function onSessionUpdate() {
+    if (!session?.namespaces) return
+    const nextNamespaces = {
+      eip155: {
+        accounts: [...session.namespaces['eip155'].accounts],
+        methods: [...session.namespaces['eip155'].methods],
+        events: [...session.namespaces['eip155'].events, 'updatedEventMethod']
+      }
+    }
     setLoading(true)
-    const { acknowledged } = await signClient.update({ topic, namespaces: newNs })
+    const { acknowledged } = await signClient.update({ topic, namespaces: nextNamespaces })
     await acknowledged()
     setUpdated(new Date())
     setLoading(false)
