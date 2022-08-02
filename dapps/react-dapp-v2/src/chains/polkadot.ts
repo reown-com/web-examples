@@ -1,7 +1,18 @@
-import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
-import { BLOCKCHAIN_LOGO_BASE_URL } from "../constants";
-
+import { ChainsMap } from "caip-api";
 import { NamespaceMetadata, ChainMetadata, ChainRequestRender } from "../helpers";
+import { BLOCKCHAIN_LOGO_BASE_URL } from "../constants";
+import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
+
+// TODO: add `solana` namespace to `caip-api` package to avoid manual specification here.
+export const PolkadotChainData: ChainsMap = {
+  "91b171bb158e2d3848fa23a9f1c25182": {
+    id: "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+    name: "Polkadot Mainnet",
+    rpc: ["wss://rpc.polkadot.io", "light://substrate-connect/polkadot"],
+    slip44: 0,
+    testnet: false,
+  },
+};
 
 export const PolkadotMetadata: NamespaceMetadata = {
   // eslint-disable-next-line no-useless-computed-key

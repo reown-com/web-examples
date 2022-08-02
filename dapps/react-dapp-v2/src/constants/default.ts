@@ -8,6 +8,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "eip155:42220",
   "cosmos:cosmoshub-4",
   "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
+  "polkadot:91b171bb158e2d3848fa23a9f1c25182",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -70,3 +71,13 @@ export enum DEFAULT_SOLANA_METHODS {
 }
 
 export enum DEFAULT_SOLANA_EVENTS {}
+
+/**
+ * POLKADOT
+ */
+export enum DEFAULT_POLKADOT_METHODS {
+  POLKADOT_SIGN_TRANSACTION = "polkadot_signTransaction",
+  POLKADOT_SIGN_MESSAGE = "polkadot_signMessage",
+}
+
+export enum DEFAULT_POLKADOT_EVENTS {}

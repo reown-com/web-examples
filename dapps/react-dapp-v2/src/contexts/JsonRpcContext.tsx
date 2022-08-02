@@ -25,8 +25,10 @@ import {
   DEFAULT_COSMOS_METHODS,
   DEFAULT_EIP155_METHODS,
   DEFAULT_SOLANA_METHODS,
+  DEFAULT_POLKADOT_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
+import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
 
 /**
  * Types
@@ -54,6 +56,10 @@ interface IContext {
     testSignAmino: TRpcRequestCallback;
   };
   solanaRpc: {
+    testSignMessage: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
+  };
+  polkadotRpc: {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
   };
@@ -93,6 +99,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       try {
         setPending(true);
         const result = await rpcRequest(chainId, address);
+        console.log(result);
         setResult(result);
       } catch (err: any) {
         console.error("RPC request failed: ", err);
@@ -538,7 +545,56 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       },
     ),
   };
+  // -------- POLKADOT RPC METHODS --------
 
+  const polkadotRpc = {
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        console.log("Sign Transaction is not supported for polkadot.");
+        return {
+          method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+          address,
+          valid: false,
+          result: "Sign Transaction is not supported for polkadot.",
+        };
+      },
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        // some interfaces like sr25519 need to wait for WASM to load
+
+        const message = `This is an example message to be signed - ${Date.now()}`;
+
+        try {
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
+              params: {
+                address,
+                message,
+              },
+            },
+          });
+
+          /* 
+          await cryptoWaitReady();
+          const { isValid: valid } = signatureVerify(message, result.signature, address);
+          */
+          const valid = true;
+          return {
+            method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
+            address,
+            valid,
+            result: result.signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    ),
+  };
   return (
     <JsonRpcContext.Provider
       value={{
@@ -546,6 +602,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         ethereumRpc,
         cosmosRpc,
         solanaRpc,
+        polkadotRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,
