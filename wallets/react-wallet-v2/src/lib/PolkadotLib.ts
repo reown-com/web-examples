@@ -1,7 +1,7 @@
 import { Keyring } from '@polkadot/keyring'
 import { cryptoWaitReady, mnemonicGenerate } from '@polkadot/util-crypto'
 import { KeyringPair } from '@polkadot/keyring/types'
-import { stringToU8a } from '@polkadot/util'
+import { stringToU8a, u8aToHex } from '@polkadot/util'
 
 /**
  * Types
@@ -46,7 +46,10 @@ export default class PolkadotLib {
   public async signMessage(message: string) {
     // create the message, actual signature and verify
     const messageU8a = stringToU8a(message)
-    const signature = this.keypair.sign(messageU8a)
+    const sigU8a = this.keypair.sign(messageU8a)
+    const sigHexStr = u8aToHex(sigU8a)
+    const signature = { signature: sigHexStr }
+    console.log(signature)
     return signature
   }
 

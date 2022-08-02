@@ -5,7 +5,8 @@ import SessionProposalChainCard from '@/components/SessionProposalChainCard'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { isCosmosChain, isEIP155Chain, isSolanaChain } from '@/utils/HelperUtil'
+import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
+import { isCosmosChain, isEIP155Chain, isSolanaChain, isPolkadotChain } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
@@ -107,6 +108,15 @@ export default function SessionProposalModal() {
       return (
         <ProposalSelectSection
           addresses={solanaAddresses}
+          selectedAddresses={selectedAccounts[chain]}
+          onSelect={onSelectAccount}
+          chain={chain}
+        />
+      )
+    } else if (isPolkadotChain(chain)) {
+      return (
+        <ProposalSelectSection
+          addresses={polkadotAddresses}
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}

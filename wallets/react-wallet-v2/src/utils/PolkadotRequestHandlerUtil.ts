@@ -14,8 +14,8 @@ export async function approvePolkadotRequest(
 
   switch (request.method) {
     case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_MESSAGE:
-      const signedMessage = await wallet.signMessage(request.params.message)
-      return formatJsonRpcResult(id, signedMessage)
+      const signature = await wallet.signMessage(request.params.message)
+      return formatJsonRpcResult(id, signature)
 
     case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_TRANSACTION:
       /*const signedTransaction = await wallet.signTransaction(
