@@ -550,13 +550,36 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
   const polkadotRpc = {
     testSignTransaction: _createJsonRpcRequestHandler(
       async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
-        console.log("Sign Transaction is not supported for polkadot.");
-        return {
-          method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
-          address,
-          valid: false,
-          result: "Sign Transaction is not supported for polkadot.",
-        };
+        // Below example is a scale encoded payload for system.remark("this is a test wallet-connect remark") transaction.
+        // decode url: https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.polkadot.io#/extrinsics/decode/0x00019074686973206973206120746573742077616c6c65742d636f6e6e6563742072656d61726b
+        const transactionPayload =
+          "0x00019074686973206973206120746573742077616c6c65742d636f6e6e6563742072656d61726b05010000222400000d00000091b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3dc1f37ce7899cf20f63f5ea343f33e9e7b229c7e245049c2a7afc236861fc8b4";
+        try {
+          const result = await client!.request<{ payload: string; signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+              params: {
+                address,
+                transactionPayload,
+              },
+            },
+          });
+          /* 
+            await cryptoWaitReady();
+            const { isValid: valid } = signatureVerify(message, result.signature, address);
+          */
+          const valid = true;
+          return {
+            method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+            address,
+            valid,
+            result: result.signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
       },
     ),
     testSignMessage: _createJsonRpcRequestHandler(

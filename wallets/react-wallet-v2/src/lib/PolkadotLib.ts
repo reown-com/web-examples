@@ -1,7 +1,8 @@
 import { Keyring } from '@polkadot/keyring'
 import { cryptoWaitReady, mnemonicGenerate } from '@polkadot/util-crypto'
 import { KeyringPair } from '@polkadot/keyring/types'
-import { stringToU8a, u8aToHex } from '@polkadot/util'
+import { stringToU8a, u8aToHex, hexToU8a } from '@polkadot/util'
+import { HexString } from '@polkadot/util/types'
 
 /**
  * Types
@@ -47,25 +48,13 @@ export default class PolkadotLib {
     // create the message, actual signature and verify
     const messageU8a = stringToU8a(message)
     const sigU8a = this.keypair.sign(messageU8a)
-    const sigHexStr = u8aToHex(sigU8a)
-    const signature = { signature: sigHexStr }
-    console.log(signature)
-    return signature
+    const signature = u8aToHex(sigU8a)
+    return { signature }
   }
 
-  /*public async signTransaction(
-    feePayer: SolanaSignTransaction['feePayer'],
-    recentBlockhash: SolanaSignTransaction['recentBlockhash'],
-    instructions: SolanaSignTransaction['instructions'],
-    partialSignatures?: SolanaSignTransaction['partialSignatures']
-  ) {
-    const { signature } = await this.solanaWallet.signTransaction(feePayer, {
-      feePayer,
-      instructions,
-      recentBlockhash,
-      partialSignatures: partialSignatures ?? []
-    })
-
-    return { signature }
-  }*/
+  public async signTransaction(payload: HexString) {
+    const sigU8a = this.keypair.sign(hexToU8a(payload), { withType: true })
+    const signature = u8aToHex(sigU8a)
+    return { payload, signature }
+  }
 }

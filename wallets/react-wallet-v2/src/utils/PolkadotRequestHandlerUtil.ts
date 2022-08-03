@@ -18,14 +18,8 @@ export async function approvePolkadotRequest(
       return formatJsonRpcResult(id, signature)
 
     case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_TRANSACTION:
-      /*const signedTransaction = await wallet.signTransaction(
-        request.params.feePayer,
-        request.params.recentBlockhash,
-        request.params.instructions
-      )
-
-      return formatJsonRpcResult(id, signedTransaction)*/
-      return formatJsonRpcResult(id, 'Sign tx is not yet supported for Polkadot')
+      const signedTx = await wallet.signTransaction(request.params.transactionPayload)
+      return formatJsonRpcResult(id, signedTx)
 
     default:
       throw new Error(getSdkError('INVALID_METHOD').message)
