@@ -152,9 +152,9 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                 <SFullWidthContainer>
                   <h6>Balances</h6>
                   <Column center>
-                    {assets.map(asset => (
-                      <Asset key={asset.symbol} asset={asset} />
-                    ))}
+                    {assets.map(asset =>
+                      asset.symbol ? <Asset key={asset.symbol} asset={asset} /> : null,
+                    )}
                   </Column>
                 </SFullWidthContainer>
               ) : null}
