@@ -3,9 +3,9 @@ import styled from "styled-components";
 
 import Icon from "./Icon";
 
-import {AssetData, fromWad} from "../helpers";
+import { AssetData, fromWad } from "../helpers";
 
-import {getChainMetadata} from "../chains";
+import { getChainMetadata } from "../chains";
 
 const xdai = getChainMetadata("eip155:100").logo;
 const matic = getChainMetadata("eip155:137").logo;
@@ -34,39 +34,41 @@ const SAssetBalance = styled.div`
 `;
 
 function getAssetIcon(asset: AssetData): JSX.Element {
-	if (!!asset.contractAddress) {
-		const src = `https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/${asset.contractAddress.toLowerCase()}.png`;
-		return <Icon src={src} fallback={'/assets/erc20.svg'} />;
-	}
-	switch (asset.symbol.toLowerCase()) {
-		case "eth":
-			return <Icon src={'/assets/eth.svg'} />;
-		case "xdai":
-			return <Icon src={xdai} />;
-		case "matic":
-			return <Icon src={matic} />;
-		default:
-			return <Icon src={'/assets/eth20.svg'} />;
-	}
+  if (!!asset.contractAddress) {
+    const src = `https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/${asset.contractAddress.toLowerCase()}.png`;
+    return <Icon src={src} fallback={"/assets/erc20.svg"} />;
+  }
+  switch (asset.symbol.toLowerCase()) {
+    case "eth":
+      return <Icon src={"/assets/eth.svg"} />;
+    case "xdai":
+      return <Icon src={xdai} />;
+    case "matic":
+      return <Icon src={matic} />;
+    default:
+      return <Icon src={"/assets/eth20.svg"} />;
+  }
 }
 
 interface AssetProps {
-	asset: AssetData;
+  asset: AssetData;
 }
 
 const Asset = (props: AssetProps) => {
-	const {asset} = props;
-	return (
-		<SAsset {...props}>
-			<SAssetLeft>
-				{getAssetIcon(asset)}
-				<SAssetName>{asset.name}</SAssetName>
-			</SAssetLeft>
-			<SAssetRight>
-				<SAssetBalance>{`${fromWad(asset.balance || "0")} ${asset.symbol}`}</SAssetBalance>
-			</SAssetRight>
-		</SAsset>
-	);
+  const { asset } = props;
+  return (
+    <SAsset {...props}>
+      <SAssetLeft>
+        {getAssetIcon(asset)}
+        <SAssetName>{asset.name}</SAssetName>
+      </SAssetLeft>
+      <SAssetRight>
+        <SAssetBalance>{`${fromWad(asset.balance || "0")} ${
+          asset.symbol
+        }`}</SAssetBalance>
+      </SAssetRight>
+    </SAsset>
+  );
 };
 
 export default Asset;

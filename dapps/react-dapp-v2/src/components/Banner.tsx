@@ -16,9 +16,9 @@ const SBanner = styled.div`
 `;
 
 const Banner = () => (
-	<SBannerWrapper>
-		<SBanner />
-	</SBannerWrapper>
+  <SBannerWrapper>
+    <SBanner />
+  </SBannerWrapper>
 );
 
 export default Banner;

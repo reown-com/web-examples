@@ -19,7 +19,11 @@ import {
   Transaction as SolanaTransaction,
 } from "@solana/web3.js";
 
-import { eip712, formatTestTransaction, getLocalStorageTestnetFlag } from "../helpers";
+import {
+  eip712,
+  formatTestTransaction,
+  getLocalStorageTestnetFlag,
+} from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
   DEFAULT_COSMOS_METHODS,
@@ -71,17 +75,27 @@ export const JsonRpcContext = createContext<IContext>({} as IContext);
 /**
  * Provider
  */
-export function JsonRpcContextProvider({ children }: { children: ReactNode | ReactNode[] }) {
+export function JsonRpcContextProvider({
+  children,
+}: {
+  children: ReactNode | ReactNode[];
+}) {
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<IFormattedRpcResponse | null>();
   const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
 
-  const { client, session, accounts, balances, solanaPublicKeys } = useWalletConnectClient();
+  const { client, session, accounts, balances, solanaPublicKeys } =
+    useWalletConnectClient();
 
   const { chainData } = useChainData();
 
   const _createJsonRpcRequestHandler =
-    (rpcRequest: (chainId: string, address: string) => Promise<IFormattedRpcResponse>) =>
+    (
+      rpcRequest: (
+        chainId: string,
+        address: string
+      ) => Promise<IFormattedRpcResponse>
+    ) =>
     async (chainId: string, address: string) => {
       if (typeof client === "undefined") {
         throw new Error("WalletConnect is not initialized");
@@ -106,8 +120,13 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
       }
     };
 
-  const _verifyEip155MessageSignature = (message: string, signature: string, address: string) =>
-    utils.verifyMessage(message, signature).toLowerCase() === address.toLowerCase();
+  const _verifyEip155MessageSignature = (
+    message: string,
+    signature: string,
+    address: string
+  ) =>
+    utils.verifyMessage(message, signature).toLowerCase() ===
+    address.toLowerCase();
 
   const ping = async () => {
     if (typeof client === "undefined") {
@@ -146,65 +165,77 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
   // -------- ETHEREUM/EIP155 RPC METHODS --------
 
   const ethereumRpc = {
-    testSendTransaction: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
-      const caipAccountAddress = `${chainId}:${address}`;
-      const account = accounts.find(account => account === caipAccountAddress);
-      if (account === undefined) throw new Error(`Account for ${caipAccountAddress} not found`);
+    testSendTransaction: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        const caipAccountAddress = `${chainId}:${address}`;
+        const account = accounts.find(
+          (account) => account === caipAccountAddress
+        );
+        if (account === undefined)
+          throw new Error(`Account for ${caipAccountAddress} not found`);
 
-      const tx = await formatTestTransaction(account);
+        const tx = await formatTestTransaction(account);
 
-      const balance = BigNumber.from(balances[account][0].balance || "0");
-      if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
+        const balance = BigNumber.from(balances[account][0].balance || "0");
+        if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
+          return {
+            method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
+            address,
+            valid: false,
+            result: "Insufficient funds for intrinsic transaction cost",
+          };
+        }
+
+        const result = await client!.request<string>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
+            params: [tx],
+          },
+        });
+
+        // format displayed result
         return {
           method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
           address,
-          valid: false,
-          result: "Insufficient funds for intrinsic transaction cost",
+          valid: true,
+          result,
         };
       }
+    ),
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        const caipAccountAddress = `${chainId}:${address}`;
+        const account = accounts.find(
+          (account) => account === caipAccountAddress
+        );
+        if (account === undefined)
+          throw new Error(`Account for ${caipAccountAddress} not found`);
 
-      const result = await client!.request<string>({
-        topic: session!.topic,
-        chainId,
-        request: {
-          method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
-          params: [tx],
-        },
-      });
+        const tx = await formatTestTransaction(account);
 
-      // format displayed result
-      return {
-        method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
-        address,
-        valid: true,
-        result,
-      };
-    }),
-    testSignTransaction: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
-      const caipAccountAddress = `${chainId}:${address}`;
-      const account = accounts.find(account => account === caipAccountAddress);
-      if (account === undefined) throw new Error(`Account for ${caipAccountAddress} not found`);
+        const signedTx = await client!.request<string>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
+            params: [tx],
+          },
+        });
 
-      const tx = await formatTestTransaction(account);
+        const valid = EthTransaction.fromSerializedTx(
+          signedTx as any
+        ).verifySignature();
 
-      const signedTx = await client!.request<string>({
-        topic: session!.topic,
-        chainId,
-        request: {
+        return {
           method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
-          params: [tx],
-        },
-      });
-
-      const valid = EthTransaction.fromSerializedTx(signedTx as any).verifySignature();
-
-      return {
-        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
-        address,
-        valid,
-        result: signedTx,
-      };
-    }),
+          address,
+          valid,
+          result: signedTx,
+        };
+      }
+    ),
     testSignPersonalMessage: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
         // test message
@@ -235,7 +266,11 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
           throw new Error(`Missing chain data for chainId: ${chainId}`);
         }
 
-        const valid = _verifyEip155MessageSignature(message, signature, address);
+        const valid = _verifyEip155MessageSignature(
+          message,
+          signature,
+          address
+        );
 
         // format displayed result
         return {
@@ -244,201 +279,233 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
           valid,
           result: signature,
         };
-      },
-    ),
-    testEthSign: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
-      // test message
-      const message = `My email is john@doe.com - ${Date.now()}`;
-      // encode message (hex)
-      const hexMsg = encoding.utf8ToHex(message, true);
-      // eth_sign params
-      const params = [address, hexMsg];
-
-      // send message
-      const signature = await client!.request<string>({
-        topic: session!.topic,
-        chainId,
-        request: {
-          method: DEFAULT_EIP155_METHODS.ETH_SIGN,
-          params,
-        },
-      });
-
-      //  split chainId
-      const [namespace, reference] = chainId.split(":");
-
-      const targetChainData = chainData[namespace][reference];
-
-      if (typeof targetChainData === "undefined") {
-        throw new Error(`Missing chain data for chainId: ${chainId}`);
       }
+    ),
+    testEthSign: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        // test message
+        const message = `My email is john@doe.com - ${Date.now()}`;
+        // encode message (hex)
+        const hexMsg = encoding.utf8ToHex(message, true);
+        // eth_sign params
+        const params = [address, hexMsg];
 
-      const valid = _verifyEip155MessageSignature(message, signature, address);
+        // send message
+        const signature = await client!.request<string>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_EIP155_METHODS.ETH_SIGN,
+            params,
+          },
+        });
 
-      // format displayed result
-      return {
-        method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
-        address,
-        valid,
-        result: signature,
-      };
-    }),
-    testSignTypedData: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
-      const message = JSON.stringify(eip712.example);
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
 
-      // eth_signTypedData params
-      const params = [address, message];
+        const targetChainData = chainData[namespace][reference];
 
-      // send message
-      const signature = await client!.request<string>({
-        topic: session!.topic,
-        chainId,
-        request: {
+        if (typeof targetChainData === "undefined") {
+          throw new Error(`Missing chain data for chainId: ${chainId}`);
+        }
+
+        const valid = _verifyEip155MessageSignature(
+          message,
+          signature,
+          address
+        );
+
+        // format displayed result
+        return {
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
+          address,
+          valid,
+          result: signature,
+        };
+      }
+    ),
+    testSignTypedData: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        const message = JSON.stringify(eip712.example);
+
+        // eth_signTypedData params
+        const params = [address, message];
+
+        // send message
+        const signature = await client!.request<string>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
+            params,
+          },
+        });
+
+        // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
+        // will throw due to "unused" `EIP712Domain` type.
+        // See: https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
+        const {
+          EIP712Domain,
+          ...nonDomainTypes
+        }: Record<string, TypedDataField[]> = eip712.example.types;
+
+        const valid =
+          utils
+            .verifyTypedData(
+              eip712.example.domain,
+              nonDomainTypes,
+              eip712.example.message,
+              signature
+            )
+            .toLowerCase() === address.toLowerCase();
+
+        return {
           method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
-          params,
-        },
-      });
-
-      // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
-      // will throw due to "unused" `EIP712Domain` type.
-      // See: https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
-      const { EIP712Domain, ...nonDomainTypes }: Record<string, TypedDataField[]> =
-        eip712.example.types;
-
-      const valid =
-        utils
-          .verifyTypedData(eip712.example.domain, nonDomainTypes, eip712.example.message, signature)
-          .toLowerCase() === address.toLowerCase();
-
-      return {
-        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
-        address,
-        valid,
-        result: signature,
-      };
-    }),
+          address,
+          valid,
+          result: signature,
+        };
+      }
+    ),
   };
 
   // -------- COSMOS RPC METHODS --------
 
   const cosmosRpc = {
-    testSignDirect: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
-      // test direct sign doc inputs
-      const inputs = {
-        fee: [{ amount: "2000", denom: "ucosm" }],
-        pubkey: "AgSEjOuOr991QlHCORRmdE5ahVKeyBrmtgoYepCpQGOW",
-        gasLimit: 200000,
-        accountNumber: 1,
-        sequence: 1,
-        bodyBytes:
-          "0a90010a1c2f636f736d6f732e62616e6b2e763162657461312e4d736753656e6412700a2d636f736d6f7331706b707472653766646b6c366766727a6c65736a6a766878686c63337234676d6d6b38727336122d636f736d6f7331717970717870713971637273737a673270767871367273307a716733797963356c7a763778751a100a0575636f736d120731323334353637",
-        authInfoBytes:
-          "0a500a460a1f2f636f736d6f732e63727970746f2e736563703235366b312e5075624b657912230a21034f04181eeba35391b858633a765c4a0c189697b40d216354d50890d350c7029012040a020801180112130a0d0a0575636f736d12043230303010c09a0c",
-      };
+    testSignDirect: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        // test direct sign doc inputs
+        const inputs = {
+          fee: [{ amount: "2000", denom: "ucosm" }],
+          pubkey: "AgSEjOuOr991QlHCORRmdE5ahVKeyBrmtgoYepCpQGOW",
+          gasLimit: 200000,
+          accountNumber: 1,
+          sequence: 1,
+          bodyBytes:
+            "0a90010a1c2f636f736d6f732e62616e6b2e763162657461312e4d736753656e6412700a2d636f736d6f7331706b707472653766646b6c366766727a6c65736a6a766878686c63337234676d6d6b38727336122d636f736d6f7331717970717870713971637273737a673270767871367273307a716733797963356c7a763778751a100a0575636f736d120731323334353637",
+          authInfoBytes:
+            "0a500a460a1f2f636f736d6f732e63727970746f2e736563703235366b312e5075624b657912230a21034f04181eeba35391b858633a765c4a0c189697b40d216354d50890d350c7029012040a020801180112130a0d0a0575636f736d12043230303010c09a0c",
+        };
 
-      // split chainId
-      const [namespace, reference] = chainId.split(":");
+        // split chainId
+        const [namespace, reference] = chainId.split(":");
 
-      // format sign doc
-      const signDoc = formatDirectSignDoc(
-        inputs.fee,
-        inputs.pubkey,
-        inputs.gasLimit,
-        inputs.accountNumber,
-        inputs.sequence,
-        inputs.bodyBytes,
-        reference,
-      );
+        // format sign doc
+        const signDoc = formatDirectSignDoc(
+          inputs.fee,
+          inputs.pubkey,
+          inputs.gasLimit,
+          inputs.accountNumber,
+          inputs.sequence,
+          inputs.bodyBytes,
+          reference
+        );
 
-      // cosmos_signDirect params
-      const params = {
-        signerAddress: address,
-        signDoc: stringifySignDocValues(signDoc),
-      };
+        // cosmos_signDirect params
+        const params = {
+          signerAddress: address,
+          signDoc: stringifySignDocValues(signDoc),
+        };
 
-      // send message
-      const result = await client!.request<{ signature: string }>({
-        topic: session!.topic,
-        chainId,
-        request: {
+        // send message
+        const result = await client!.request<{ signature: string }>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
+            params,
+          },
+        });
+
+        const targetChainData = chainData[namespace][reference];
+
+        if (typeof targetChainData === "undefined") {
+          throw new Error(`Missing chain data for chainId: ${chainId}`);
+        }
+
+        const valid = await verifyDirectSignature(
+          address,
+          result.signature,
+          signDoc
+        );
+
+        // format displayed result
+        return {
           method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
-          params,
-        },
-      });
-
-      const targetChainData = chainData[namespace][reference];
-
-      if (typeof targetChainData === "undefined") {
-        throw new Error(`Missing chain data for chainId: ${chainId}`);
+          address,
+          valid,
+          result: result.signature,
+        };
       }
+    ),
+    testSignAmino: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        // split chainId
+        const [namespace, reference] = chainId.split(":");
 
-      const valid = await verifyDirectSignature(address, result.signature, signDoc);
+        // test amino sign doc
+        const signDoc = {
+          msgs: [],
+          fee: { amount: [], gas: "23" },
+          chain_id: "foochain",
+          memo: "hello, world",
+          account_number: "7",
+          sequence: "54",
+        };
 
-      // format displayed result
-      return {
-        method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
-        address,
-        valid,
-        result: result.signature,
-      };
-    }),
-    testSignAmino: _createJsonRpcRequestHandler(async (chainId: string, address: string) => {
-      // split chainId
-      const [namespace, reference] = chainId.split(":");
+        // cosmos_signAmino params
+        const params = { signerAddress: address, signDoc };
 
-      // test amino sign doc
-      const signDoc = {
-        msgs: [],
-        fee: { amount: [], gas: "23" },
-        chain_id: "foochain",
-        memo: "hello, world",
-        account_number: "7",
-        sequence: "54",
-      };
+        // send message
+        const result = await client!.request<{ signature: string }>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
+            params,
+          },
+        });
 
-      // cosmos_signAmino params
-      const params = { signerAddress: address, signDoc };
+        const targetChainData = chainData[namespace][reference];
 
-      // send message
-      const result = await client!.request<{ signature: string }>({
-        topic: session!.topic,
-        chainId,
-        request: {
+        if (typeof targetChainData === "undefined") {
+          throw new Error(`Missing chain data for chainId: ${chainId}`);
+        }
+
+        const valid = await verifyAminoSignature(
+          address,
+          result.signature,
+          signDoc
+        );
+
+        // format displayed result
+        return {
           method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
-          params,
-        },
-      });
-
-      const targetChainData = chainData[namespace][reference];
-
-      if (typeof targetChainData === "undefined") {
-        throw new Error(`Missing chain data for chainId: ${chainId}`);
+          address,
+          valid,
+          result: result.signature,
+        };
       }
-
-      const valid = await verifyAminoSignature(address, result.signature, signDoc);
-
-      // format displayed result
-      return {
-        method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
-        address,
-        valid,
-        result: result.signature,
-      };
-    }),
+    ),
   };
 
   // -------- SOLANA RPC METHODS --------
 
   const solanaRpc = {
     testSignTransaction: _createJsonRpcRequestHandler(
-      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
         if (!solanaPublicKeys) {
           throw new Error("Could not find Solana PublicKeys.");
         }
 
         const senderPublicKey = solanaPublicKeys[address];
 
-        const connection = new Connection(clusterApiUrl(isTestnet ? "testnet" : "mainnet-beta"));
+        const connection = new Connection(
+          clusterApiUrl(isTestnet ? "testnet" : "mainnet-beta")
+        );
 
         // Using deprecated `getRecentBlockhash` over `getLatestBlockhash` here, since `mainnet-beta`
         // cluster only seems to support `connection.getRecentBlockhash` currently.
@@ -452,7 +519,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
             fromPubkey: senderPublicKey,
             toPubkey: Keypair.generate().publicKey,
             lamports: 1,
-          }),
+          })
         );
 
         try {
@@ -464,10 +531,10 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
               params: {
                 feePayer: transaction.feePayer!.toBase58(),
                 recentBlockhash: transaction.recentBlockhash,
-                instructions: transaction.instructions.map(i => ({
+                instructions: transaction.instructions.map((i) => ({
                   programId: i.programId.toBase58(),
                   data: bs58.encode(i.data),
-                  keys: i.keys.map(k => ({
+                  keys: i.keys.map((k) => ({
                     isSigner: k.isSigner,
                     isWritable: k.isWritable,
                     pubkey: k.pubkey.toBase58(),
@@ -479,7 +546,10 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
           // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
           // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
-          transaction.addSignature(senderPublicKey, Buffer.from(bs58.decode(result.signature)));
+          transaction.addSignature(
+            senderPublicKey,
+            Buffer.from(bs58.decode(result.signature))
+          );
 
           const valid = transaction.verifySignatures();
 
@@ -492,10 +562,13 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         } catch (error: any) {
           throw new Error(error);
         }
-      },
+      }
     ),
     testSignMessage: _createJsonRpcRequestHandler(
-      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
         if (!solanaPublicKeys) {
           throw new Error("Could not find Solana PublicKeys.");
         }
@@ -504,7 +577,9 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
 
         // Encode message to `UInt8Array` first via `TextEncoder` so we can pass it to `bs58.encode`.
         const message = bs58.encode(
-          new TextEncoder().encode(`This is an example message to be signed - ${Date.now()}`),
+          new TextEncoder().encode(
+            `This is an example message to be signed - ${Date.now()}`
+          )
         );
 
         try {
@@ -523,7 +598,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
           const valid = verifyMessageSignature(
             senderPublicKey.toBase58(),
             result.signature,
-            message,
+            message
           );
 
           return {
@@ -535,7 +610,7 @@ export function JsonRpcContextProvider({ children }: { children: ReactNode | Rea
         } catch (error: any) {
           throw new Error(error);
         }
-      },
+      }
     ),
   };
 

@@ -38,7 +38,8 @@ const SToggle = styled.div<IToggleStyleProps>`
   }
   & div:after {
     transition: ${transitions.base};
-    box-shadow: inset 0 1px 0 rgb(${colors.grey}), 0px 2px 2px 1px rgba(${colors.black}, 0.2);
+    box-shadow: inset 0 1px 0 rgb(${colors.grey}),
+      0px 2px 2px 1px rgba(${colors.black}, 0.2);
     border-radius: 1rem;
     left: ${({ active }) => (active ? `20px` : `0`)};
     content: "";

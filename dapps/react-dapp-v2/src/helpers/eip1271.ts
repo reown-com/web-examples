@@ -35,13 +35,13 @@ async function isValidSignature(
   data: string,
   provider: providers.Provider,
   abi = eip1271.spec.abi,
-  magicValue = eip1271.spec.magicValue,
+  magicValue = eip1271.spec.magicValue
 ): Promise<boolean> {
   let returnValue;
   try {
     returnValue = await new Contract(address, abi, provider).isValidSignature(
       utils.arrayify(data),
-      sig,
+      sig
     );
   } catch (e) {
     return false;

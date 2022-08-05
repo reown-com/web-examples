@@ -2,7 +2,11 @@ import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
 
 import { BLOCKCHAIN_LOGO_BASE_URL } from "../constants";
 
-import { NamespaceMetadata, ChainMetadata, ChainRequestRender } from "../helpers";
+import {
+  NamespaceMetadata,
+  ChainMetadata,
+  ChainRequestRender,
+} from "../helpers";
 
 export const CosmosMetadata: NamespaceMetadata = {
   "cosmoshub-4": {
@@ -20,7 +24,9 @@ export function getChainMetadata(chainId: string): ChainMetadata {
   return metadata;
 }
 
-export function getChainRequestRender(request: JsonRpcRequest): ChainRequestRender[] {
+export function getChainRequestRender(
+  request: JsonRpcRequest
+): ChainRequestRender[] {
   let params = [{ label: "Method", value: request.method }];
 
   switch (request.method) {
