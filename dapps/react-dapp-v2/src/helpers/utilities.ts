@@ -1,10 +1,10 @@
-import { BigNumber, BigNumberish, providers, utils } from "ethers";
+import {BigNumber, BigNumberish, providers, utils} from "ethers";
 import * as encoding from "@walletconnect/encoding";
-import { TypedDataUtils } from "eth-sig-util";
+import {TypedDataUtils} from "eth-sig-util";
 import * as ethUtil from "ethereumjs-util";
 
-import { eip1271 } from "./eip1271";
-import { DEFAULT_CHAINS } from "../constants";
+import {eip1271} from "./eip1271";
+import {DEFAULT_CHAINS} from "../constants";
 
 export function capitalize(string: string): string {
   return string
@@ -186,10 +186,13 @@ export const LOCALSTORAGE_KEY_TESTNET = "TESTNET";
 export const INITIAL_STATE_TESTNET_DEFAULT = true;
 
 export function setLocaleStorageTestnetFlag(value: boolean): void {
-  window.localStorage.setItem(LOCALSTORAGE_KEY_TESTNET, `${value}`);
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(LOCALSTORAGE_KEY_TESTNET, `${value}`);
+  }
 }
 
 export function getLocalStorageTestnetFlag(): boolean {
+  if (typeof window === 'undefined') return false;
   let value = INITIAL_STATE_TESTNET_DEFAULT;
   const persisted = window.localStorage.getItem(LOCALSTORAGE_KEY_TESTNET);
   if (!persisted) {
