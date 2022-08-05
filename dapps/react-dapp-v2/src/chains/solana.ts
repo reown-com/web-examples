@@ -1,5 +1,5 @@
-import { ChainsMap } from "caip-api";
-import { NamespaceMetadata, ChainMetadata } from "../helpers";
+import {ChainsMap} from "caip-api";
+import {NamespaceMetadata, ChainMetadata} from "../helpers";
 
 // TODO: add `solana` namespace to `caip-api` package to avoid manual specification here.
 export const SolanaChainData: ChainsMap = {
@@ -22,12 +22,12 @@ export const SolanaChainData: ChainsMap = {
 export const SolanaMetadata: NamespaceMetadata = {
   // Solana Mainnet
   "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ": {
-    logo: "/solana_logo.png",
+    logo: "/assets/solana_logo.png",
     rgb: "0, 0, 0",
   },
   // Solana Devnet
   "8E9rvCKLFQia2Y35HXjjpWzj8weVo44K": {
-    logo: "/solana_logo.png",
+    logo: "/assets/solana_logo.png",
     rgb: "0, 0, 0",
   },
 };
