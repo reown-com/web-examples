@@ -99,7 +99,7 @@ interface BlockchainDisplayData {
 
 function getBlockchainDisplayData(
   chainId: string,
-  chainData: ChainNamespaces,
+  chainData: ChainNamespaces
 ): BlockchainDisplayData | undefined {
   const [namespace, reference] = chainId.split(":");
   let meta: ChainMetadata;
@@ -114,9 +114,18 @@ function getBlockchainDisplayData(
 }
 
 const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
-  props: PropsWithChildren<BlockchainProps>,
+  props: PropsWithChildren<BlockchainProps>
 ) => {
-  const { chainData, fetching, chainId, address, onClick, active, balances, actions } = props;
+  const {
+    chainData,
+    fetching,
+    chainId,
+    address,
+    onClick,
+    active,
+    balances,
+    actions,
+  } = props;
   if (!Object.keys(chainData).length) return null;
 
   const chain = getBlockchainDisplayData(chainId, chainData);
@@ -124,9 +133,12 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
   if (typeof chain === "undefined") return null;
 
   const name = chain.meta.name || chain.data.name;
-  const account = typeof address !== "undefined" ? `${chainId}:${address}` : undefined;
+  const account =
+    typeof address !== "undefined" ? `${chainId}:${address}` : undefined;
   const assets =
-    typeof account !== "undefined" && typeof balances !== "undefined" ? balances[account] : [];
+    typeof account !== "undefined" && typeof balances !== "undefined"
+      ? balances[account]
+      : [];
   return (
     <React.Fragment>
       <SAccount
@@ -152,8 +164,10 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                 <SFullWidthContainer>
                   <h6>Balances</h6>
                   <Column center>
-                    {assets.map(asset =>
-                      asset.symbol ? <Asset key={asset.symbol} asset={asset} /> : null,
+                    {assets.map((asset) =>
+                      asset.symbol ? (
+                        <Asset key={asset.symbol} asset={asset} />
+                      ) : null
                     )}
                   </Column>
                 </SFullWidthContainer>
@@ -161,7 +175,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
               {address && !!actions && actions.length ? (
                 <SFullWidthContainer>
                   <h6>Methods</h6>
-                  {actions.map(action => (
+                  {actions.map((action) => (
                     <SAction
                       key={action.method}
                       left

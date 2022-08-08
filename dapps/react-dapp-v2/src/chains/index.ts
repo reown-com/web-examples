@@ -25,7 +25,7 @@ export function getChainMetadata(chainId: string): ChainMetadata {
 
 export function getChainRequestRender(
   request: JsonRpcRequest,
-  chainId: string,
+  chainId: string
 ): ChainRequestRender[] {
   const namespace = chainId.split(":")[0];
   switch (namespace) {

@@ -83,7 +83,9 @@ export function getChainMetadata(chainId: string): ChainMetadata {
   return metadata;
 }
 
-export function getChainRequestRender(request: JsonRpcRequest): ChainRequestRender[] {
+export function getChainRequestRender(
+  request: JsonRpcRequest
+): ChainRequestRender[] {
   let params = [{ label: "Method", value: request.method }];
 
   switch (request.method) {
@@ -111,7 +113,9 @@ export function getChainRequestRender(request: JsonRpcRequest): ChainRequestRend
         },
         {
           label: "Value",
-          value: request.params[0].value ? convertHexToNumber(request.params[0].value) : "",
+          value: request.params[0].value
+            ? convertHexToNumber(request.params[0].value)
+            : "",
         },
         { label: "Data", value: request.params[0].data },
       ];

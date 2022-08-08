@@ -29,13 +29,13 @@ cp .env.local.example .env.local
 
 Your `.env.local` now contains the following environment variables:
 
-- `REACT_APP_PROJECT_ID` (placeholder) - You can generate your own ProjectId at https://cloud.walletconnect.com
-- `REACT_APP_RELAY_URL` (already set)
+- `PROJECT_ID` (placeholder) - You can generate your own ProjectId at https://cloud.walletconnect.com
+- `RELAY_URL` (already set)
 
 ## Develop
 
 ```bash
-yarn start
+yarn dev
 ```
 
 ## Test
@@ -49,3 +49,4 @@ yarn test
 ```bash
 yarn build
 ```
+

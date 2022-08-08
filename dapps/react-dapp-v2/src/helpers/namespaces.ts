@@ -10,7 +10,7 @@ import {
 
 export const getNamespacesFromChains = (chains: string[]) => {
   const supportedNamespaces: string[] = [];
-  chains.forEach(chainId => {
+  chains.forEach((chainId) => {
     const [namespace] = chainId.split(":");
     if (!supportedNamespaces.includes(namespace)) {
       supportedNamespaces.push(namespace);
@@ -46,18 +46,20 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
   }
 };
 
-export const getRequiredNamespaces = (chains: string[]): ProposalTypes.RequiredNamespaces => {
+export const getRequiredNamespaces = (
+  chains: string[]
+): ProposalTypes.RequiredNamespaces => {
   const selectedNamespaces = getNamespacesFromChains(chains);
   console.log("selected namespaces:", selectedNamespaces);
 
   return Object.fromEntries(
-    selectedNamespaces.map(namespace => [
+    selectedNamespaces.map((namespace) => [
       namespace,
       {
         methods: getSupportedMethodsByNamespace(namespace),
-        chains: chains.filter(chain => chain.startsWith(namespace)),
+        chains: chains.filter((chain) => chain.startsWith(namespace)),
         events: getSupportedEventsByNamespace(namespace) as any[],
       },
-    ]),
+    ])
   );
 };

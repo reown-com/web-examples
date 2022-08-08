@@ -22,9 +22,9 @@ export const DEFAULT_TEST_CHAINS = [
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
 
-export const DEFAULT_PROJECT_ID = process.env.REACT_APP_PROJECT_ID;
+export const DEFAULT_PROJECT_ID = process.env.PROJECT_ID;
 
-export const DEFAULT_RELAY_URL = process.env.REACT_APP_RELAY_URL;
+export const DEFAULT_RELAY_URL = process.env.RELAY_URL;
 
 export const DEFAULT_LOGGER = "debug";
 

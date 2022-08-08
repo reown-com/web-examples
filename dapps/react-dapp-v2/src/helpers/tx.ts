@@ -10,7 +10,9 @@ export async function formatTestTransaction(account: string) {
   try {
     _nonce = await apiGetAccountNonce(address, chainId);
   } catch (error) {
-    throw new Error(`Failed to fetch nonce for address ${address} on chain ${chainId}`);
+    throw new Error(
+      `Failed to fetch nonce for address ${address} on chain ${chainId}`
+    );
   }
 
   const nonce = encoding.sanitizeHex(encoding.numberToHex(_nonce));
@@ -27,7 +29,15 @@ export async function formatTestTransaction(account: string) {
   const _value = 0;
   const value = encoding.sanitizeHex(encoding.numberToHex(_value));
 
-  const tx = { from: address, to: address, data: "0x", nonce, gasPrice, gasLimit, value };
+  const tx = {
+    from: address,
+    to: address,
+    data: "0x",
+    nonce,
+    gasPrice,
+    gasLimit,
+    value,
+  };
 
   return tx;
 }

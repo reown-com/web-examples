@@ -101,7 +101,10 @@ const api: AxiosInstance = axios.create({
   },
 });
 
-export async function apiGetAccountBalance(address: string, chainId: string): Promise<AssetData> {
+export async function apiGetAccountBalance(
+  address: string,
+  chainId: string
+): Promise<AssetData> {
   const ethChainId = chainId.split(":")[1];
   const rpc = rpcProvidersByChainId[Number(ethChainId)];
   if (!rpc) {
@@ -119,7 +122,10 @@ export async function apiGetAccountBalance(address: string, chainId: string): Pr
   return { balance, ...token };
 }
 
-export const apiGetAccountNonce = async (address: string, chainId: string): Promise<number> => {
+export const apiGetAccountNonce = async (
+  address: string,
+  chainId: string
+): Promise<number> => {
   const ethChainId = chainId.split(":")[1];
   const { baseURL } = rpcProvidersByChainId[Number(ethChainId)];
   const response = await api.post(baseURL, {
