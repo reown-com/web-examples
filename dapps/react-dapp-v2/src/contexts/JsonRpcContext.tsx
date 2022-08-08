@@ -10,7 +10,7 @@ import {
   verifyDirectSignature,
 } from "cosmos-wallet";
 import bs58 from "bs58";
-import { verifyMessageSignature } from "solana-wallet";
+import { verifyMessageSignature } from "@jnwng/solana-wallet";
 import {
   clusterApiUrl,
   Connection,

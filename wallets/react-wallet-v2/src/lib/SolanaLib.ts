@@ -1,7 +1,7 @@
 import { Keypair } from '@solana/web3.js'
 import bs58 from 'bs58'
 import nacl from 'tweetnacl'
-import SolanaWallet, { SolanaSignTransaction } from 'solana-wallet'
+import SolanaWallet, { SolanaSignTransaction } from '@jnwng/solana-wallet'
 
 /**
  * Types

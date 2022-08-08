@@ -11,6 +11,7 @@
     "@cosmjs/amino": "0.28.4",
     "@cosmjs/encoding": "0.28.4",
     "@cosmjs/proto-signing": "0.28.4",
+    "@jnwng/solana-wallet": "^1.0.1-fix-program-decode.0",
     "@json-rpc-tools/utils": "1.7.6",
     "@nextui-org/react": "1.0.8-beta.5",
     "@solana/web3.js": "1.43.0",
@@ -26,7 +27,6 @@
     "react-code-blocks": "0.0.9-0",
     "react-dom": "17.0.2",
     "react-qr-reader-es6": "2.2.1-2",
-    "solana-wallet": "1.0.1",
     "valtio": "1.6.0"
   },
   "devDependencies": {
