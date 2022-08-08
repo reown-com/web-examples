@@ -1,34 +1,52 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# React dApp (with standalone v2 client)
 
-## Getting Started
+🔗 Live dapp demo - https://react-app.walletconnect.com/ <br />
+🔗 Live wallet demo - https://react-wallet.walletconnect.com/ <br />
+📚 WalletConnect v2 Docs - https://docs.walletconnect.com/2.0
 
-First, run the development server:
+## Overview
+
+This is an example implementation of a React dApp (generated via `create-react-app`) using the standalone
+client for WalletConnect v2 to:
+
+- handle pairings
+- manage sessions
+- send JSON-RPC requests to a paired wallet
+
+## Running locally
+
+Install the app's dependencies:
 
 ```bash
-npm run dev
-# or
+yarn
+```
+
+Set up your local environment variables by copying the example into your own `.env.local` file:
+
+```bash
+cp .env.local.example .env.local
+```
+
+Your `.env.local` now contains the following environment variables:
+
+- `PROJECT_ID` (placeholder) - You can generate your own ProjectId at https://cloud.walletconnect.com
+- `RELAY_URL` (already set)
+
+## Develop
+
+```bash
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Test
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+```bash
+yarn test
+```
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Build
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+```bash
+yarn build
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
