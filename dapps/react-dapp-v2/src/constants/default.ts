@@ -19,6 +19,7 @@ export const DEFAULT_TEST_CHAINS = [
   "eip155:421611",
   "eip155:44787",
   "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
+  "polkadot:e143f23803ac50e8f6f8e62695d1ce9e"
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];

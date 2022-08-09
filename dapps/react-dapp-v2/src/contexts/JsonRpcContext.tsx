@@ -641,6 +641,7 @@ export function JsonRpcContextProvider({
               },
             },
           });
+          // ToDo: add sig validation after upgrating cra scripts (needs react-scripts ^v5.0.0)
           /* 
             await cryptoWaitReady();
             const { isValid: valid } = signatureVerify(message, result.signature, address);
@@ -676,6 +677,7 @@ export function JsonRpcContextProvider({
             },
           });
 
+          // ToDo: add sig validation after upgrating cra scripts (needs react-scripts ^v5.0.0)
           /* 
           await cryptoWaitReady();
           const { isValid: valid } = signatureVerify(message, result.signature, address);

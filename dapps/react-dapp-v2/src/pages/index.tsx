@@ -211,6 +211,7 @@ const Home: NextPage = () => {
       case "solana":
         return getSolanaActions();
       case "polkadot":
+      case "westend":
         return getPolkadotActions();
       default:
         break;
