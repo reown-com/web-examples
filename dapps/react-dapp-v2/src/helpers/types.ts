@@ -3,8 +3,7 @@ import { ChainsMap } from "caip-api";
 export interface AssetData {
   symbol: string;
   name: string;
-  decimals: string;
-  contractAddress: string;
+  contractAddress?: string;
   balance?: string;
 }
 

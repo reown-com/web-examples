@@ -1,13 +1,6 @@
 import * as encoding from "@walletconnect/encoding";
 
-import { apiGetAccountNonce, apiGetGasPrices } from "./api";
-import { toWad } from "./utilities";
-
-export async function getGasPrice(chainId: string): Promise<string> {
-  if (chainId === "eip155:1") return toWad("20", 9).toHexString();
-  const gasPrices = await apiGetGasPrices();
-  return toWad(`${gasPrices.slow.price}`, 9).toHexString();
-}
+import { apiGetAccountNonce, apiGetGasPrice } from "./api";
 
 export async function formatTestTransaction(account: string) {
   const [namespace, reference, address] = account.split(":");
@@ -17,13 +10,15 @@ export async function formatTestTransaction(account: string) {
   try {
     _nonce = await apiGetAccountNonce(address, chainId);
   } catch (error) {
-    throw new Error(`Failed to fetch nonce for address ${address} on chain ${chainId}`);
+    throw new Error(
+      `Failed to fetch nonce for address ${address} on chain ${chainId}`
+    );
   }
 
   const nonce = encoding.sanitizeHex(encoding.numberToHex(_nonce));
 
   // gasPrice
-  const _gasPrice = await getGasPrice(chainId);
+  const _gasPrice = await apiGetGasPrice(chainId);
   const gasPrice = encoding.sanitizeHex(_gasPrice);
 
   // gasLimit
@@ -34,7 +29,15 @@ export async function formatTestTransaction(account: string) {
   const _value = 0;
   const value = encoding.sanitizeHex(encoding.numberToHex(_value));
 
-  const tx = { from: address, to: address, data: "0x", nonce, gasPrice, gasLimit, value };
+  const tx = {
+    from: address,
+    to: address,
+    data: "0x",
+    nonce,
+    gasPrice,
+    gasLimit,
+    value,
+  };
 
   return tx;
 }
