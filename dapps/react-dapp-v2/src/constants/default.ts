@@ -70,3 +70,6 @@ export enum DEFAULT_SOLANA_METHODS {
 }
 
 export enum DEFAULT_SOLANA_EVENTS {}
+
+export const DEFAULT_GITHUB_REPO_URL =
+  "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
