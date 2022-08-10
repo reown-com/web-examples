@@ -31,7 +31,7 @@ export default function HomePage() {
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={solanaAddress} />
       ))}
       {Object.values(POLKADOT_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={solanaAddress} />
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={polkadotAddress} />
       ))}
 
       {testNets ? (
