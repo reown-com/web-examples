@@ -113,7 +113,6 @@ export function JsonRpcContextProvider({
       try {
         setPending(true);
         const result = await rpcRequest(chainId, address);
-        console.log(result);
         setResult(result);
       } catch (err: any) {
         console.error("RPC request failed: ", err);
@@ -641,12 +640,11 @@ export function JsonRpcContextProvider({
               },
             },
           });
-          // ToDo: add sig validation after upgrating cra scripts (needs react-scripts ^v5.0.0)
-          /* 
-            await cryptoWaitReady();
-            const { isValid: valid } = signatureVerify(message, result.signature, address);
-          */
-          const valid = true;
+          
+          // sr25519 signatures need to wait for WASM to load
+          await cryptoWaitReady();
+          const { isValid: valid } = signatureVerify(transactionPayload, result.signature, address);
+          
           return {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
             address,
@@ -660,8 +658,7 @@ export function JsonRpcContextProvider({
     ),
     testSignMessage: _createJsonRpcRequestHandler(
       async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
-        // some interfaces like sr25519 need to wait for WASM to load
-
+        
         const message = `This is an example message to be signed - ${Date.now()}`;
 
         try {
@@ -677,12 +674,10 @@ export function JsonRpcContextProvider({
             },
           });
 
-          // ToDo: add sig validation after upgrating cra scripts (needs react-scripts ^v5.0.0)
-          /* 
+          // sr25519 signatures need to wait for WASM to load
           await cryptoWaitReady();
           const { isValid: valid } = signatureVerify(message, result.signature, address);
-          */
-          const valid = true;
+
           return {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
             address,
