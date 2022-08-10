@@ -4,6 +4,8 @@ import { SessionTypes } from "@walletconnect/types";
 
 import { fonts, responsive } from "../styles";
 import Button from "./Button";
+import Icon from "./Icon";
+import { DEFAULT_GITHUB_REPO_URL } from "../constants";
 
 const SHeader = styled.div`
   margin-top: -1px;
@@ -21,8 +23,8 @@ const SHeader = styled.div`
 
 const SHeaderActions = styled.div`
   display: flex;
-  & > button:first-child {
-    margin-right: 10px !important;
+  & button {
+    margin-left: 10px;
   }
 `;
 
@@ -31,6 +33,10 @@ const SActiveAccount = styled.div`
   align-items: center;
   position: relative;
   font-weight: 500;
+`;
+
+const GithubLogoContainer = styled.div`
+  padding-top: 8px;
 `;
 
 const SActiveSession = styled(SActiveAccount as any)`
@@ -64,6 +70,15 @@ const Header = (props: HeaderProps) => {
             <p>{session.peer.metadata.name}</p>
           </SActiveSession>
           <SHeaderActions>
+            <GithubLogoContainer>
+              <a
+                href={DEFAULT_GITHUB_REPO_URL}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Icon size={24} src={"/assets/githubLogo.svg"} />
+              </a>
+            </GithubLogoContainer>
             <Button outline color="black" onClick={ping}>
               {"Ping"}
             </Button>
