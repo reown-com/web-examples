@@ -11,7 +11,9 @@ import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 
 export default function HomePage() {
-  const { testNets, eip155Address, cosmosAddress, solanaAddress } = useSnapshot(SettingsStore.state)
+  const { testNets, eip155Address, cosmosAddress, solanaAddress, polkadotAddress } = useSnapshot(
+    SettingsStore.state
+  )
 
   return (
     <Fragment>
