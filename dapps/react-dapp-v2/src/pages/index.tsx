@@ -197,8 +197,14 @@ const Home: NextPage = () => {
       await polkadotRpc.testSignMessage(chainId, address);
     };
     return [
-      { method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION, callback: onSignTransaction },
-      { method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE, callback: onSignMessage },
+      {
+        method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
+        callback: onSignMessage,
+      },
     ];
   };
   const getBlockchainActions = (chainId: string) => {
@@ -211,7 +217,6 @@ const Home: NextPage = () => {
       case "solana":
         return getSolanaActions();
       case "polkadot":
-      case "westend":
         return getPolkadotActions();
       default:
         break;
