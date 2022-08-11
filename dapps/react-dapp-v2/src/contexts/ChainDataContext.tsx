@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { SolanaChainData } from "../chains/solana";
+import { PolkadotChainData } from "../chains/polkadot";
 
 import { ChainNamespaces, getAllChainNamespaces } from "../helpers";
 
@@ -41,6 +42,8 @@ export function ChainDataContextProvider({
         try {
           if (namespace === "solana") {
             chains = SolanaChainData;
+          } else if (namespace === "polkadot") {
+            chains = PolkadotChainData;
           } else {
             chains = await apiGetChainNamespace(namespace);
           }

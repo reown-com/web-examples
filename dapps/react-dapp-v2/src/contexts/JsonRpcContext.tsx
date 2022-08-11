@@ -29,8 +29,10 @@ import {
   DEFAULT_COSMOS_METHODS,
   DEFAULT_EIP155_METHODS,
   DEFAULT_SOLANA_METHODS,
+  DEFAULT_POLKADOT_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
+import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
 
 /**
  * Types
@@ -58,6 +60,10 @@ interface IContext {
     testSignAmino: TRpcRequestCallback;
   };
   solanaRpc: {
+    testSignMessage: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
+  };
+  polkadotRpc: {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
   };
@@ -613,7 +619,77 @@ export function JsonRpcContextProvider({
       }
     ),
   };
+  // -------- POLKADOT RPC METHODS --------
 
+  const polkadotRpc = {
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        // Below example is a scale encoded payload for system.remark("this is a test wallet-connect remark") transaction.
+        // decode url: https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.polkadot.io#/extrinsics/decode/0x00019074686973206973206120746573742077616c6c65742d636f6e6e6563742072656d61726b
+        const transactionPayload =
+          "0x00019074686973206973206120746573742077616c6c65742d636f6e6e6563742072656d61726b05010000222400000d00000091b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3dc1f37ce7899cf20f63f5ea343f33e9e7b229c7e245049c2a7afc236861fc8b4";
+        try {
+          const result = await client!.request<{ payload: string; signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+              params: {
+                address,
+                transactionPayload,
+              },
+            },
+          });
+          
+          // sr25519 signatures need to wait for WASM to load
+          await cryptoWaitReady();
+          const { isValid: valid } = signatureVerify(transactionPayload, result.signature, address);
+          
+          return {
+            method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+            address,
+            valid,
+            result: result.signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        
+        const message = `This is an example message to be signed - ${Date.now()}`;
+
+        try {
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
+              params: {
+                address,
+                message,
+              },
+            },
+          });
+
+          // sr25519 signatures need to wait for WASM to load
+          await cryptoWaitReady();
+          const { isValid: valid } = signatureVerify(message, result.signature, address);
+
+          return {
+            method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
+            address,
+            valid,
+            result: result.signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      },
+    ),
+  };
   return (
     <JsonRpcContext.Provider
       value={{
@@ -621,6 +697,7 @@ export function JsonRpcContextProvider({
         ethereumRpc,
         cosmosRpc,
         solanaRpc,
+        polkadotRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,

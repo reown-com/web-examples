@@ -1,11 +1,28 @@
-import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
+import { ChainsMap } from "caip-api";
 import { BLOCKCHAIN_LOGO_BASE_URL } from "../constants";
-
+import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
 import {
   NamespaceMetadata,
   ChainMetadata,
   ChainRequestRender,
 } from "../helpers";
+
+export const PolkadotChainData: ChainsMap = {
+  ["91b171bb158e2d3848fa23a9f1c25182"]: {
+    id: "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+    name: "Polkadot Mainnet",
+    rpc: ["wss://rpc.polkadot.io"],
+    slip44: 0,
+    testnet: false,
+  },
+  ["e143f23803ac50e8f6f8e62695d1ce9e"]: {
+    id: "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
+    name: "Polkadot Testnet (Westend)",
+    rpc: ["wss://westend-rpc.polkadot.io"],
+    slip44: 0,
+    testnet: false,
+  },
+};
 
 export const PolkadotMetadata: NamespaceMetadata = {
   // eslint-disable-next-line no-useless-computed-key
@@ -14,6 +31,10 @@ export const PolkadotMetadata: NamespaceMetadata = {
       BLOCKCHAIN_LOGO_BASE_URL +
       "polkadot:91b171bb158e2d3848fa23a9f1c25182.png",
     rgb: "230, 1, 122",
+  },
+  ["e143f23803ac50e8f6f8e62695d1ce9e"]: {
+    logo: "/assets/westend-logo.svg",
+    rgb: "218, 104, 167",
   },
 };
 

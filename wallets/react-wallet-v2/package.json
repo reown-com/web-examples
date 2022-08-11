@@ -13,6 +13,7 @@
     "@cosmjs/proto-signing": "0.28.4",
     "@json-rpc-tools/utils": "1.7.6",
     "@nextui-org/react": "1.0.8-beta.5",
+    "@polkadot/keyring": "^10.1.2",
     "@solana/web3.js": "1.43.0",
     "@walletconnect/sign-client": "2.0.0-rc.1",
     "@walletconnect/utils": "2.0.0-rc.1",
