@@ -6,7 +6,6 @@ import { useSnapshot } from 'valtio'
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
 
-  // {view === 'SessionProposalModal' && <SessionProposalModal />}
   return (
     <NextModal blur open={open} style={{ border: '1px solid rgba(139, 139, 139, 0.4)' }}>
       {view === 'AuthenticationRequest' && <AuthenticationRequestModal />}

@@ -13,7 +13,7 @@ import AuthClient from "@walletconnect/auth-client";
 import type { NextPage } from "next";
 import Link from "next/link";
 import Qrcode from "qrcode";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const Home: NextPage = () => {
   const [client, setClient] = useState<AuthClient | null>();
@@ -22,8 +22,21 @@ const Home: NextPage = () => {
   const toast = useToast();
   const canvasRef = useRef(null);
 
+  const onSignIn = useCallback(() => {
+    if (!client) return;
+    client
+      .request({
+        aud: "http://localhost:3000/",
+        domain: "localhost:3000",
+        chainId: "eip191:1",
+        type: "eip4361",
+        nonce: "nonce",
+        statement: "Sign in with wallet.",
+      })
+      .then(({ uri }) => setUri(uri));
+  }, [client, setUri]);
+
   useEffect(() => {
-    console.log({ url: process.env.NEXT_PUBLIC_RELAY_URL });
     AuthClient.init({
       relayUrl:
         process.env.NEXT_PUBLIC_RELAY_URL || "wss://relay.walletconnect.com",
@@ -45,8 +58,7 @@ const Home: NextPage = () => {
   }, [client]);
 
   useEffect(() => {
-    if (!(uri && canvasRef.current)) return;
-    Qrcode.toCanvas(canvasRef.current, uri);
+    if (uri && canvasRef.current) Qrcode.toCanvas(canvasRef.current, uri);
   }, [uri, canvasRef]);
   return (
     <Container>
@@ -73,19 +85,7 @@ const Home: NextPage = () => {
               <Button
                 p={2}
                 color={"black"}
-                onClick={() => {
-                  if (!client) return;
-                  client
-                    .request({
-                      aud: "http://localhost:3000/",
-                      domain: "localhost:3000",
-                      chainId: "eip191:1",
-                      type: "eip4361",
-                      nonce: "nonce",
-                      statement: "Sign in with wallet.",
-                    })
-                    .then(({ uri }) => setUri(uri));
-                }}
+                onClick={onSignIn}
                 leftIcon={<Image width={10} src="/walletconnect.png" />}
               >
                 Sign in with WalletConnect
