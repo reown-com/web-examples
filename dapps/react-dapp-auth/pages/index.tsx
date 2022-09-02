@@ -13,7 +13,7 @@ import AuthClient from "@walletconnect/auth-client";
 import type { NextPage } from "next";
 import Link from "next/link";
 import Qrcode from "qrcode";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
 const Home: NextPage = () => {
   const [client, setClient] = useState<AuthClient | null>();
@@ -91,18 +91,26 @@ const Home: NextPage = () => {
                 Sign in with WalletConnect
               </Button>
               {uri && (
-                <canvas
-                  onClick={() => {
-                    navigator.clipboard.writeText(uri).then(() => {
-                      toast({
-                        title: "URI copied to clipboard",
-                        status: "success",
-                        duration: 1000,
+                <Fragment>
+                  <canvas
+                    onClick={() => {
+                      navigator.clipboard.writeText(uri).then(() => {
+                        toast({
+                          title: "URI copied to clipboard",
+                          status: "success",
+                          duration: 1000,
+                        });
                       });
-                    });
-                  }}
-                  ref={canvasRef}
-                />
+                    }}
+                    ref={canvasRef}
+                  />
+                  <Text
+                    color="gray.400"
+                    style={{ fontStyle: "italic", fontSize: "0.75em" }}
+                  >
+                    (You can copy the URI by clicking the QR code above)
+                  </Text>
+                </Fragment>
               )}
             </Flex>
           </form>
