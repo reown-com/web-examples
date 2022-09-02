@@ -11,12 +11,6 @@ export default function Navigation() {
         </a>
       </Link>
 
-      <Link href="/sessions" passHref>
-        <a className="navLink">
-          <Image alt="sessions icon" src="/icons/sessions-icon.svg" width={27} height={27} />
-        </a>
-      </Link>
-
       <Link href="/walletconnect" passHref>
         <a className="navLink">
           <Avatar
