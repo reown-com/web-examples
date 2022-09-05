@@ -40,7 +40,7 @@ const Home: NextPage = () => {
     AuthClient.init({
       relayUrl:
         process.env.NEXT_PUBLIC_RELAY_URL || "wss://relay.walletconnect.com",
-      projectId: undefined,
+      projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
     })
       .then((v) => {
         setClient(v);
