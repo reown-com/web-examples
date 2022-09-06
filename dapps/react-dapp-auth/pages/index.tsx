@@ -28,7 +28,7 @@ const Home: NextPage = () => {
       .request({
         aud: "http://localhost:3000/",
         domain: "localhost:3000",
-        chainId: "eip191:1",
+        chainId: "1",
         type: "eip4361",
         nonce: "nonce",
         statement: "Sign in with wallet.",
