@@ -10,10 +10,13 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import AuthClient from "@walletconnect/auth-client";
+import { version } from "@walletconnect/auth-client/package.json";
 import type { NextPage } from "next";
 import Link from "next/link";
 import Qrcode from "qrcode";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+
+console.log(`AuthClient@${version}`);
 
 const Home: NextPage = () => {
   const [client, setClient] = useState<AuthClient | null>();
@@ -48,8 +51,8 @@ const Home: NextPage = () => {
         icons: [],
       },
     })
-      .then((v) => {
-        setClient(v);
+      .then((authClient) => {
+        setClient(authClient);
       })
       .catch(console.log);
   }, [setClient]);
