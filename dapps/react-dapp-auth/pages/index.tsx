@@ -12,15 +12,16 @@ import {
 import AuthClient from "@walletconnect/auth-client";
 import type { NextPage } from "next";
 import Link from "next/link";
-import Qrcode from "qrcode";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import DefaultView from "../views/DefaultView";
+import QrView from "../views/QrView";
+import SignedInView from "../views/SignedInView";
 
 const Home: NextPage = () => {
   const [client, setClient] = useState<AuthClient | null>();
   const [uri, setUri] = useState<string>("");
-  const [accepted, setAccepted] = useState<boolean>(false);
+  const [address, setAddress] = useState<string>("");
   const toast = useToast();
-  const canvasRef = useRef(null);
 
   const onSignIn = useCallback(() => {
     if (!client) return;
@@ -58,80 +59,26 @@ const Home: NextPage = () => {
     if (!client) return;
     client.on("auth_response", (res) => {
       if (res.params.code !== -1) {
-        setAccepted(true);
+        setAddress(res.params.result.payload.iss.split(":")[4]);
       }
     });
   }, [client]);
 
+  const [view, changeView] = useState<"default" | "qr" | "signedIn">("default");
+
   useEffect(() => {
-    if (uri && canvasRef.current) Qrcode.toCanvas(canvasRef.current, uri);
-  }, [uri, canvasRef]);
+    if (uri) changeView("qr");
+  }, [uri, changeView]);
+
+  useEffect(() => {
+    if (address) changeView("signedIn");
+  }, [address, changeView]);
+
   return (
     <Container>
-      <Flex gap={20} height={"100%"} direction="column">
-        <Flex
-          boxShadow={"inner"}
-          p={5}
-          backgroundColor={"gray.50"}
-          direction="column"
-          justifyContent="space-evenly"
-          borderRadius={10}
-          border={"solid 2px black"}
-        >
-          <Heading color={"black"} textAlign="center" mb={5}>
-            Sign In
-          </Heading>
-          <Divider mb={5}></Divider>
-          <Text color={"black"} textAlign="center" padding={5}>
-            Initiate the auth cycle by sending an auth request
-          </Text>
-          <form>
-            <Container></Container>
-            <Flex alignItems={"center"} gap={4} direction="column">
-              <Button
-                p={2}
-                color={"black"}
-                onClick={onSignIn}
-                leftIcon={<Image width={10} src="/walletconnect.png" />}
-              >
-                Sign in with WalletConnect
-              </Button>
-              {uri && (
-                <Fragment>
-                  <canvas
-                    onClick={() => {
-                      navigator.clipboard.writeText(uri).then(() => {
-                        toast({
-                          title: "URI copied to clipboard",
-                          status: "success",
-                          duration: 1000,
-                        });
-                      });
-                    }}
-                    ref={canvasRef}
-                  />
-                  <Text
-                    color="gray.400"
-                    style={{ fontStyle: "italic", fontSize: "0.75em" }}
-                  >
-                    (You can copy the URI by clicking the QR code above)
-                  </Text>
-                </Fragment>
-              )}
-            </Flex>
-          </form>
-          {accepted && (
-            <Button
-              _hover={{ cursor: "pointer" }}
-              p={10}
-              colorScheme="green"
-              isActive={false}
-            >
-              Authenticated
-            </Button>
-          )}
-        </Flex>
-      </Flex>
+      {view === "default" && <DefaultView onClick={onSignIn} />}
+      {view === "qr" && <QrView uri={uri} />}
+      {view === "signedIn" && <SignedInView address={address} />}
     </Container>
   );
 };

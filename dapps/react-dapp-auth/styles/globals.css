@@ -1,7 +1,13 @@
+:root {
+  --primary-bg: #1e1e1e;
+  --secondary-bg: #272a2a;
+  --qr-bg: #141414;
+  --text-color: white;
+}
+
 html,
 body {
-  background-color: #141414 !important;
-  color: white !important;
+  color: var(--text-color) !important;
   padding: 0;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
@@ -25,4 +31,22 @@ a {
     color: white;
     background: black;
   }
+}
+
+.bg-primary {
+  background: var(--primary-bg);
+}
+
+.bg-qr {
+  background: var(--qr-bg);
+}
+
+.bg-secondary {
+  background: var(--secondary-bg);
+}
+
+.wc-button {
+  background: #19324d !important;
+  border: solid 1px #0f4b8a;
+  color: #66b1ff !important;
 }
