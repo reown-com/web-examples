@@ -31,7 +31,7 @@ const Home: NextPage = () => {
       .request({
         aud: "http://localhost:3000/",
         domain: "localhost:3000",
-        chainId: "1",
+        chainId: "eip155:1",
         type: "eip4361",
         nonce: "nonce",
         statement: "Sign in with wallet.",
@@ -60,7 +60,7 @@ const Home: NextPage = () => {
   useEffect(() => {
     if (!client) return;
     client.on("auth_response", (res) => {
-      if (res.params.code !== -1) {
+      if (!!res.params.result.s) {
         setAccepted(true);
       }
     });
