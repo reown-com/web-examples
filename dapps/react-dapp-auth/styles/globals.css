@@ -3,6 +3,9 @@
   --secondary-bg: #272a2a;
   --qr-bg: #141414;
   --text-color: white;
+  --wc-btn-bg: #19324d;
+  --wc-btn-brdr: #0f4b8a;
+  --wc-btn-clr: #66b1ff;
 }
 
 html,
@@ -46,7 +49,7 @@ a {
 }
 
 .wc-button {
-  background: #19324d !important;
-  border: solid 1px #0f4b8a;
-  color: #66b1ff !important;
+  background: var(--wc-btn-bg) !important;
+  border: solid 1px var(--wc-btn-brdr);
+  color: var(--wc-btn-clr) !important;
 }

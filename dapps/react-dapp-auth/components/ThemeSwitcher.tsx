@@ -10,6 +10,9 @@ const ThemeSwitcher: React.FC = () => {
       "--secondary-bg": "#272a2a",
       "--qr-bg": "#141414",
       "--text-color": "white",
+      "--wc-btn-bg": "#19324d",
+      "--wc-btn-brdr": "#0f4b8a",
+      "--wc-btn-clr": "#66b1ff",
     }),
     []
   );
@@ -20,6 +23,9 @@ const ThemeSwitcher: React.FC = () => {
       "--secondary-bg": "white",
       "--qr-bg": "#c8d0d0",
       "--text-color": "black",
+      "--wc-btn-bg": "#E8F2FC",
+      "--wc-btn-brdr": "#CDE5FE",
+      "--wc-btn-clr": "#3396FF",
     }),
     []
   );
