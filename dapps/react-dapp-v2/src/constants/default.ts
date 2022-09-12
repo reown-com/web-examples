@@ -84,3 +84,23 @@ export enum DEFAULT_POLKADOT_EVENTS {}
 
 export const DEFAULT_GITHUB_REPO_URL =
   "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
+
+export const REGIONALIZED_RELAYER_ENDPOINTS = [
+  {
+    label: "Default",
+    value: DEFAULT_RELAY_URL,
+  },
+
+  {
+    label: "USA",
+    value: "wss://us-east-1.relay.walletconnect.com/",
+  },
+  {
+    label: "EU",
+    value: "wss://eu-central-1.relay.walletconnect.com/",
+  },
+  {
+    label: "Asia Pacific",
+    value: "wss://ap-southeast-east-1.relay.walletconnect.com/",
+  },
+];

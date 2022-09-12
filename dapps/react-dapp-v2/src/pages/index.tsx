@@ -82,8 +82,7 @@ const Home: NextPage = () => {
     if (session && modal === "pairing") {
       closeModal();
     }
-    console.log("relayerREgion", relayerRegion);
-  }, [session, modal, relayerRegion]);
+  }, [session, modal]);
 
   const onConnect = () => {
     if (typeof client === "undefined") {
@@ -242,11 +241,6 @@ const Home: NextPage = () => {
     }
   };
 
-  // Handle the Regional Relayer selection.
-  // const handleRelayerRegionChoice = (relayerRegion: string) => {
-  //   setRelayerRegion();
-  // };
-
   // Renders the appropriate model for the given request that is currently in-flight.
   const renderModal = () => {
     switch (modal) {
@@ -272,7 +266,9 @@ const Home: NextPage = () => {
       <SLanding center>
         <Banner />
         <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
-        <Dropdown setRelayerRegion={setRelayerRegion} />
+        <Dropdown
+          setRelayerRegion={setRelayerRegion}
+        />
         <SButtonContainer>
           <h6>Select chains:</h6>
           <SToggleContainer>

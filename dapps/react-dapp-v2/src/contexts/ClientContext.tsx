@@ -77,7 +77,7 @@ export function ClientContextProvider({
     setBalances({});
     setAccounts([]);
     setChains([]);
-    setRelayerRegion("wss://relay.walletconnect.com");
+    setRelayerRegion(DEFAULT_RELAY_URL);
   };
 
   const getAccountBalances = async (_accounts: string[]) => {
@@ -238,7 +238,7 @@ export function ClientContextProvider({
       setIsInitializing(true);
       const _client = await Client.init({
         logger: DEFAULT_LOGGER,
-        relayUrl: relayerRegion, // How do we change here // Shoudl be relayerRegion
+        relayUrl: relayerRegion || DEFAULT_RELAY_URL,
         projectId: DEFAULT_PROJECT_ID,
         metadata: getAppMetadata() || DEFAULT_APP_METADATA,
       });
@@ -254,13 +254,12 @@ export function ClientContextProvider({
     } finally {
       setIsInitializing(false);
     }
-  }, [_checkPersistedState, _subscribeToEvents, relayerRegion]);
+  }, [_checkPersistedState, _subscribeToEvents]);
 
   useEffect(() => {
     if (!client || relayerRegion !== DEFAULT_RELAY_URL) {
       createClient();
     }
-    // Create new client on new RelayerRegion
   }, [client, createClient, relayerRegion]);
 
   const value = useMemo(
