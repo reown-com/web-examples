@@ -3,22 +3,18 @@ import { REGIONALIZED_RELAYER_ENDPOINTS } from "../constants/default";
 import Select from "react-select";
 
 interface DropdownProps {
+  relayerRegion: string;
   setRelayerRegion?: (relayer: string) => void;
 }
 
 const Dropdown = (props: DropdownProps) => {
-  const { setRelayerRegion } = props;
+  const { relayerRegion, setRelayerRegion } = props;
+  console.log("Dropdown relayerRegion", relayerRegion);
 
   return (
     <div>
       <p>Relayer Region:</p>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-        }}
-      >
+      <div>
         <Select
           placeholder="Default"
           options={REGIONALIZED_RELAYER_ENDPOINTS}

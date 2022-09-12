@@ -267,6 +267,7 @@ const Home: NextPage = () => {
         <Banner />
         <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
         <Dropdown
+          relayerRegion={relayerRegion}
           setRelayerRegion={setRelayerRegion}
         />
         <SButtonContainer>
