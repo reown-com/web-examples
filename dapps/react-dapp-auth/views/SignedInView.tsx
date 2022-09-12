@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Container,
   Divider,
   Flex,
   Grid,
@@ -11,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import truncate from "smart-truncate";
 import { BigNumber, providers } from "ethers";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const SignedInView: React.FC<{ address: string }> = ({ address }) => {
   const [balance, setBalance] = useState<number>();
@@ -33,8 +32,12 @@ const SignedInView: React.FC<{ address: string }> = ({ address }) => {
     }
   }, [setBalance, address]);
 
+  const onSignOut = useCallback(() => {
+    window.location.reload();
+  }, []);
+
   return (
-    <Container className="bg-secondary" borderRadius={"24px"} padding="2em">
+    <Box className="bg-secondary" borderRadius={"24px"} padding="2em">
       <Flex flexDir={"column"} gap="5">
         <Flex justifyContent="space-between" gap="10">
           <Grid
@@ -97,12 +100,13 @@ const SignedInView: React.FC<{ address: string }> = ({ address }) => {
             className="wc-button"
             padding={"1.5em"}
             borderRadius={"16px"}
+            onClick={onSignOut}
           >
             Sign Out
           </Button>
         </Flex>
       </Flex>
-    </Container>
+    </Box>
   );
 };
 

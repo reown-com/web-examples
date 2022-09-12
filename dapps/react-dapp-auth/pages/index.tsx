@@ -1,4 +1,4 @@
-import { Container } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import AuthClient from "@walletconnect/auth-client";
 import { version } from "@walletconnect/auth-client/package.json";
 import type { NextPage } from "next";
@@ -49,7 +49,7 @@ const Home: NextPage = () => {
   useEffect(() => {
     if (!client) return;
     client.on("auth_response", (res) => {
-      if (res.params.code !== -1) {
+      if (res.params.result.s) {
         setAddress(res.params.result.p.iss.split(":")[4]);
       }
     });
@@ -66,11 +66,11 @@ const Home: NextPage = () => {
   }, [address, changeView]);
 
   return (
-    <Container>
+    <Box width="100%" height="100%">
       {view === "default" && <DefaultView onClick={onSignIn} />}
       {view === "qr" && <QrView uri={uri} />}
       {view === "signedIn" && <SignedInView address={address} />}
-    </Container>
+    </Box>
   );
 };
 

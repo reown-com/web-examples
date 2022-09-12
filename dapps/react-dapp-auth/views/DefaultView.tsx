@@ -1,8 +1,8 @@
-import { Box, Button, Container, Flex, Heading, Image } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, Image } from "@chakra-ui/react";
 
 const DefaultView: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   return (
-    <Container>
+    <Box>
       <Flex
         style={{ position: "relative", top: "1.5em" }}
         justifyContent="center"
@@ -32,7 +32,7 @@ const DefaultView: React.FC<{ onClick: () => void }> = ({ onClick }) => {
           </Flex>
         </Button>
       </Flex>
-    </Container>
+    </Box>
   );
 };
 

@@ -1,9 +1,9 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
+import { version } from "@walletconnect/auth-client/package.json";
 import {
-  Box,
   ChakraProvider,
-  Container,
+  Box,
   Flex,
   Grid,
   GridItem,
@@ -15,8 +15,9 @@ import ThemeSwitcher from "../components/ThemeSwitcher";
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider>
-      <Container
-        style={{ minWidth: "100vw", height: "100vh" }}
+      <Box
+        width="100vw"
+        style={{ width: "100vw", height: "100vh" }}
         className="bg-primary"
       >
         <Grid
@@ -50,7 +51,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                   src="/wc-bg.png"
                   alt="WC"
                 ></Image>
-                <span>V0.1.6</span>
+                <span>V{version}</span>
               </Flex>
             </Flex>
           </GridItem>
@@ -65,7 +66,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             </Flex>
           </GridItem>
         </Grid>
-      </Container>
+      </Box>
     </ChakraProvider>
   );
 }

@@ -1,6 +1,6 @@
 import {
   Text,
-  Container,
+  Box,
   Divider,
   Flex,
   Heading,
@@ -27,7 +27,7 @@ const QrView: React.FC<{ uri: string }> = ({ uri }) => {
   };
 
   return (
-    <Container>
+    <Box width="100%" height="100%" padding="1em">
       <Flex
         className="bg-secondary"
         alignItems="center"
@@ -46,12 +46,12 @@ const QrView: React.FC<{ uri: string }> = ({ uri }) => {
           <canvas
             onClick={onClick}
             ref={canvasRef}
-            height="20em"
-            width="20em"
+            height="20%"
+            width="20%"
             style={{
               borderRadius: "24px",
-              minWidth: "25em",
-              minHeight: "25em",
+              minWidth: "20%",
+              minHeight: "20%",
             }}
           />
         </Grid>
@@ -69,7 +69,7 @@ const QrView: React.FC<{ uri: string }> = ({ uri }) => {
           </Button>
         </Flex>
       </Flex>
-    </Container>
+    </Box>
   );
 };
 
