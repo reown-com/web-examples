@@ -57,3 +57,32 @@ a {
   border: solid 1px var(--wc-btn-brdr);
   color: var(--wc-btn-clr) !important;
 }
+
+.theme-switcher-dark > span > span {
+  background: url("/moon.svg") no-repeat #66b1ff !important;
+}
+
+.theme-switcher-light > span > span {
+  background: url("/sun.svg") no-repeat #66b1ff !important;
+}
+
+.theme-switcher > span {
+  border: solid 2px white;
+}
+
+.theme-switcher-light > span {
+  background: url("/moon.svg") no-repeat #3b4040 !important;
+  background-repeat: no-repeat !important;
+  background-position: 90% center !important;
+}
+
+.theme-switcher-dark > span {
+  background: url("/sun.svg") no-repeat #3b4040 !important;
+  background-repeat: no-repeat !important;
+  background-position: 10% center !important;
+}
+
+.theme-switcher > span > span {
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+}

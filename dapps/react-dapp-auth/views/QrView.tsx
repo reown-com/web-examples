@@ -7,6 +7,7 @@ import {
   useToast,
   Button,
   Grid,
+  Image,
 } from "@chakra-ui/react";
 import Qrcode from "qrcode";
 import { useEffect, useRef } from "react";
@@ -57,15 +58,21 @@ const QrView: React.FC<{ uri: string }> = ({ uri }) => {
         </Grid>
 
         <Flex gap="3" flexDir="column" alignItems="center" padding="2em">
-          <Text fontWeight={800} textAlign="center" fontSize="1.5em">
-            Scan with your phone
-          </Text>
+          <Flex gap="1em">
+            <Image src="/scan.svg" alt="scan" />
+            <Text fontWeight={800} textAlign="center" fontSize="1.5em">
+              Scan with your phone
+            </Text>
+          </Flex>
 
           <Text fontWeight={600} textAlign="center">
             Open your camera app or mobile wallet and scan the code to connect
           </Text>
-          <Button onClick={onClick} borderRadius="16px" className="wc-button">
-            Copy to clipboard
+          <Button onClick={onClick} borderRadius="20px" className="wc-button">
+            <Flex gap="1em">
+              <Image src="/copy.svg" alt="scan" />
+              <Text>Copy to clipboard</Text>
+            </Flex>
           </Button>
         </Flex>
       </Flex>

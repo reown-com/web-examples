@@ -1,8 +1,11 @@
 import { Flex, Switch } from "@chakra-ui/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import moon from "../public/moon.svg";
+import sun from "../public/sun.svg";
 
 const ThemeSwitcher: React.FC = () => {
   const [darkMode, setDarkMode] = useState(true);
+  const switchRef = useRef(null);
 
   const darkTheme = useMemo(
     () => ({
@@ -47,8 +50,10 @@ const ThemeSwitcher: React.FC = () => {
   return (
     <Switch
       size="lg"
+      ref={switchRef}
       isChecked={darkMode}
       colorScheme="blackAlpha"
+      className={`theme-switcher theme-switcher-${darkMode ? "dark" : "light"}`}
       onChange={({ target }) => {
         setDarkMode(target.checked);
       }}
