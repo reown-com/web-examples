@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Banner from "../components/Banner";
 import Blockchain from "../components/Blockchain";
 import Column from "../components/Column";
+import Dropdown from "../components/Dropdown";
 import Header from "../components/Header";
 import Modal from "../components/Modal";
 import {
@@ -52,11 +53,13 @@ const Home: NextPage = () => {
     connect,
     disconnect,
     chains,
+    relayerRegion,
     accounts,
     balances,
     isFetchingBalances,
     isInitializing,
     setChains,
+    setRelayerRegion,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -79,7 +82,8 @@ const Home: NextPage = () => {
     if (session && modal === "pairing") {
       closeModal();
     }
-  }, [session, modal]);
+    console.log("relayerREgion", relayerRegion);
+  }, [session, modal, relayerRegion]);
 
   const onConnect = () => {
     if (typeof client === "undefined") {
@@ -238,6 +242,11 @@ const Home: NextPage = () => {
     }
   };
 
+  // Handle the Regional Relayer selection.
+  // const handleRelayerRegionChoice = (relayerRegion: string) => {
+  //   setRelayerRegion();
+  // };
+
   // Renders the appropriate model for the given request that is currently in-flight.
   const renderModal = () => {
     switch (modal) {
@@ -263,6 +272,7 @@ const Home: NextPage = () => {
       <SLanding center>
         <Banner />
         <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
+        <Dropdown setRelayerRegion={setRelayerRegion} />
         <SButtonContainer>
           <h6>Select chains:</h6>
           <SToggleContainer>

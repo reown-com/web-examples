@@ -33,12 +33,14 @@ interface IContext {
   disconnect: () => Promise<void>;
   isInitializing: boolean;
   chains: string[];
+  relayerRegion: string;
   pairings: PairingTypes.Struct[];
   accounts: string[];
   solanaPublicKeys?: Record<string, PublicKey>;
   balances: AccountBalances;
   isFetchingBalances: boolean;
   setChains: any;
+  setRelayerRegion: any;
 }
 
 /**
@@ -66,12 +68,16 @@ export function ClientContextProvider({
   const [solanaPublicKeys, setSolanaPublicKeys] =
     useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
+  const [relayerRegion, setRelayerRegion] = useState<string>(
+    "wss://relay.walletconnect.com"
+  );
 
   const reset = () => {
     setSession(undefined);
     setBalances({});
     setAccounts([]);
     setChains([]);
+    setRelayerRegion("wss://relay.walletconnect.com");
   };
 
   const getAccountBalances = async (_accounts: string[]) => {
@@ -230,15 +236,16 @@ export function ClientContextProvider({
   const createClient = useCallback(async () => {
     try {
       setIsInitializing(true);
-
       const _client = await Client.init({
         logger: DEFAULT_LOGGER,
-        relayUrl: DEFAULT_RELAY_URL,
+        relayUrl: relayerRegion, // How do we change here // Shoudl be relayerRegion
         projectId: DEFAULT_PROJECT_ID,
         metadata: getAppMetadata() || DEFAULT_APP_METADATA,
       });
 
       console.log("CREATED CLIENT: ", _client);
+      // console.log("relayerRegion ", relayerRegion);
+      // console.log("CLIENT RELAYER: ", _client?.opts?.relayUrl);
       setClient(_client);
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
@@ -247,13 +254,14 @@ export function ClientContextProvider({
     } finally {
       setIsInitializing(false);
     }
-  }, [_checkPersistedState, _subscribeToEvents]);
+  }, [_checkPersistedState, _subscribeToEvents, relayerRegion]);
 
   useEffect(() => {
-    if (!client) {
+    if (!client || relayerRegion !== DEFAULT_RELAY_URL) {
       createClient();
     }
-  }, [client, createClient]);
+    // Create new client on new RelayerRegion
+  }, [client, createClient, relayerRegion]);
 
   const value = useMemo(
     () => ({
@@ -264,11 +272,13 @@ export function ClientContextProvider({
       accounts,
       solanaPublicKeys,
       chains,
+      relayerRegion,
       client,
       session,
       connect,
       disconnect,
       setChains,
+      setRelayerRegion,
     }),
     [
       pairings,
@@ -278,11 +288,13 @@ export function ClientContextProvider({
       accounts,
       solanaPublicKeys,
       chains,
+      relayerRegion,
       client,
       session,
       connect,
       disconnect,
       setChains,
+      setRelayerRegion,
     ]
   );
 
