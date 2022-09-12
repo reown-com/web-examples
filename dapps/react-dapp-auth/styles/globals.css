@@ -8,6 +8,10 @@
   --wc-btn-clr: #66b1ff;
 }
 
+* {
+  transition: background 0.25s ease-in-out;
+}
+
 html,
 body {
   color: var(--text-color) !important;
