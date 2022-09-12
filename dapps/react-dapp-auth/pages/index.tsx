@@ -1,10 +1,13 @@
 import { Container } from "@chakra-ui/react";
 import AuthClient from "@walletconnect/auth-client";
+import { version } from "@walletconnect/auth-client/package.json";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import DefaultView from "../views/DefaultView";
 import QrView from "../views/QrView";
 import SignedInView from "../views/SignedInView";
+
+console.log(`AuthClient@${version}`);
 
 const Home: NextPage = () => {
   const [client, setClient] = useState<AuthClient | null>();
@@ -17,7 +20,7 @@ const Home: NextPage = () => {
       .request({
         aud: "http://localhost:3000/",
         domain: "localhost:3000",
-        chainId: "1",
+        chainId: "eip155:1",
         type: "eip4361",
         nonce: "nonce",
         statement: "Sign in with wallet.",
@@ -37,8 +40,8 @@ const Home: NextPage = () => {
         icons: [],
       },
     })
-      .then((v) => {
-        setClient(v);
+      .then((authClient) => {
+        setClient(authClient);
       })
       .catch(console.log);
   }, [setClient]);
@@ -47,7 +50,6 @@ const Home: NextPage = () => {
     if (!client) return;
     client.on("auth_response", (res) => {
       if (res.params.code !== -1) {
-        console.log({ res });
         setAddress(res.params.result.p.iss.split(":")[4]);
       }
     });

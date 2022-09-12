@@ -1,4 +1,7 @@
 import AuthClient from '@walletconnect/auth-client'
+import pkg from '@walletconnect/auth-client/package.json'
+
+console.log(`AuthClient@${pkg.version}`)
 
 export let authClient: AuthClient
 
