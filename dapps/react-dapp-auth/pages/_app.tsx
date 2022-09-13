@@ -22,9 +22,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       >
         <Grid
           templateAreas={`
-					"header"
-					"main"
-					"footer"
+          "header"
+          "main"
+          "footer"
 				`}
           style={{ height: "100%", width: "100%" }}
           gridTemplateRows={"50px 3f 20px"}
