@@ -25,7 +25,7 @@ export const DEFAULT_TEST_CHAINS = [
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
 
 export const DEFAULT_PROJECT_ID = process.env.NEXT_PUBLIC_PROJECT_ID;
-export const DEFAULT_RELAY_URL = process.env.NEXT_PUBLIC_RELAY_URL; // set a conditional here ...
+export const DEFAULT_RELAY_URL = process.env.NEXT_PUBLIC_RELAY_URL;
 
 export const DEFAULT_LOGGER = "debug";
 
@@ -85,22 +85,27 @@ export enum DEFAULT_POLKADOT_EVENTS {}
 export const DEFAULT_GITHUB_REPO_URL =
   "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
 
-export const REGIONALIZED_RELAYER_ENDPOINTS = [
+type RelayerType = {
+  value: string;
+  label: string | undefined;
+};
+
+export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
   {
-    label: "Default",
     value: DEFAULT_RELAY_URL,
+    label: "Default",
   },
 
   {
-    label: "USA",
     value: "wss://us-east-1.relay.walletconnect.com/",
+    label: "US",
   },
   {
-    label: "EU",
     value: "wss://eu-central-1.relay.walletconnect.com/",
+    label: "EU",
   },
   {
-    label: "Asia Pacific",
     value: "wss://ap-southeast-east-1.relay.walletconnect.com/",
+    label: "Asia Pacific",
   },
 ];

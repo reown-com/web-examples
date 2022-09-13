@@ -9,6 +9,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
 import { PublicKey } from "@solana/web3.js";
 
@@ -62,6 +63,7 @@ export function ClientContextProvider({
 
   const [isFetchingBalances, setIsFetchingBalances] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const prevRelayerValue = useRef<string>("");
 
   const [balances, setBalances] = useState<AccountBalances>({});
   const [accounts, setAccounts] = useState<string[]>([]);
@@ -238,15 +240,16 @@ export function ClientContextProvider({
       setIsInitializing(true);
       const _client = await Client.init({
         logger: DEFAULT_LOGGER,
-        relayUrl: relayerRegion, // How do we change here // Shoudl be relayerRegion
+        relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
         metadata: getAppMetadata() || DEFAULT_APP_METADATA,
       });
 
       console.log("CREATED CLIENT: ", _client);
       console.log("relayerRegion ", relayerRegion);
-      // console.log("CLIENT RELAYER: ", _client?.opts?.relayUrl);
+
       setClient(_client);
+      prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
     } catch (err) {
@@ -257,11 +260,23 @@ export function ClientContextProvider({
   }, [_checkPersistedState, _subscribeToEvents, relayerRegion]);
 
   useEffect(() => {
-    if (!client || relayerRegion !== DEFAULT_RELAY_URL) {
+    if (!client || prevRelayerValue.current !== relayerRegion) {
       createClient();
     }
-    // Create new client on new RelayerRegion
   }, [client, createClient, relayerRegion]);
+
+  // const checkIfNewRelayerRegion = useCallback(async () => {
+  //   if (relayerRegion  "unfined") {
+  //     throw new Error("WalletConnect is not initialized");
+  //   }
+  //   if (typeof session === "undefined") {
+  //     throw new Error("Session is not connected");
+  //   }
+  //   await client.disconnect({
+  //     topic: session.topic,
+  //     reason: getSdkError("USER_DISCONNECTED"),
+  //   });
+  // }, [relayerRegion]);
 
   const value = useMemo(
     () => ({
