@@ -12,7 +12,7 @@
     "@chakra-ui/react": "^2.2.6",
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
-    "@walletconnect/auth-client": "^0.1.10",
+    "@walletconnect/auth-client": "^0.2.0",
     "better-sqlite3": "^7.6.2",
     "ethers": "^5.7.0",
     "events": "^3.3.0",
