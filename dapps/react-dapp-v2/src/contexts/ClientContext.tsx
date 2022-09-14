@@ -70,22 +70,16 @@ export function ClientContextProvider({
   const [solanaPublicKeys, setSolanaPublicKeys] =
     useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
-  // const [relayerRegion, setRelayerRegion] = useState<string>(DEFAULT_RELAY_URL);
   const [relayerRegion, setRelayerRegion] = useState<string>(
-    "wss://relay.walletconnect.com"
+    DEFAULT_RELAY_URL!
   );
-
-  type OptionType = {
-    value: string;
-    label: string;
-  };
 
   const reset = () => {
     setSession(undefined);
     setBalances({});
     setAccounts([]);
     setChains([]);
-    setRelayerRegion("wss://relay.walletconnect.com");
+    setRelayerRegion(DEFAULT_RELAY_URL!);
   };
 
   const getAccountBalances = async (_accounts: string[]) => {
@@ -253,7 +247,6 @@ export function ClientContextProvider({
 
       console.log("CREATED CLIENT: ", _client);
       console.log("relayerRegion ", relayerRegion);
-
       setClient(_client);
       prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
@@ -270,19 +263,6 @@ export function ClientContextProvider({
       createClient();
     }
   }, [client, createClient, relayerRegion]);
-
-  // const checkIfNewRelayerRegion = useCallback(async () => {
-  //   if (relayerRegion  "unfined") {
-  //     throw new Error("WalletConnect is not initialized");
-  //   }
-  //   if (typeof session === "undefined") {
-  //     throw new Error("Session is not connected");
-  //   }
-  //   await client.disconnect({
-  //     topic: session.topic,
-  //     reason: getSdkError("USER_DISCONNECTED"),
-  //   });
-  // }, [relayerRegion]);
 
   const value = useMemo(
     () => ({
