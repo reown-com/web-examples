@@ -21,6 +21,7 @@ interface State {
     | 'SessionSignCosmosModal'
     | 'SessionSignSolanaModal'
     | 'SessionSignPolkadotModal'
+    | 'SessionSignNearModal'
   data?: ModalData
 }
 

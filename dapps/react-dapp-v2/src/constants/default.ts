@@ -20,6 +20,7 @@ export const DEFAULT_TEST_CHAINS = [
   "eip155:44787",
   "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
   "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
+  "near:testnet"
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -81,6 +82,19 @@ export enum DEFAULT_POLKADOT_METHODS {
 }
 
 export enum DEFAULT_POLKADOT_EVENTS {}
+
+/**
+ * NEAR
+ */
+ export enum DEFAULT_NEAR_METHODS {
+  NEAR_SIGN_IN = 'near_signIn',
+  NEAR_SIGN_OUT = 'near_signOut',
+  NEAR_GET_ACCOUNTS = 'near_getAccounts',
+  NEAR_SIGN_AND_SEND_TRANSACTION = 'near_signAndSendTransaction',
+  NEAR_SIGN_AND_SEND_TRANSACTIONS = 'near_signAndSendTransactions',
+}
+
+export enum DEFAULT_NEAR_EVENTS {}
 
 export const DEFAULT_GITHUB_REPO_URL =
   "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
