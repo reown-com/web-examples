@@ -1,43 +1,45 @@
 import * as React from "react";
 import { REGIONALIZED_RELAYER_ENDPOINTS } from "../constants/default";
-import Select from "react-select";
+import styled from "styled-components";
 
 interface DropdownProps {
   relayerRegion: string;
   setRelayerRegion?: (relayer: string) => void;
 }
 
+const SelectContainer = styled.select`
+  width: 150px;
+  background: transparent;
+  color: black;
+  height: 30px;
+  border-radius: 4px;
+  padding: 2px;
+  font-size: "1.25em";
+`;
+
+const SelectOption = styled.option`
+  font-size: "1.25em";
+`;
+
 const Dropdown = (props: DropdownProps) => {
   const { relayerRegion, setRelayerRegion } = props;
 
-  const checkRelayerRegion = (value: string) => {
-    if (relayerRegion === REGIONALIZED_RELAYER_ENDPOINTS[0].value) {
-      return REGIONALIZED_RELAYER_ENDPOINTS[0].label;
-    }
-    if (relayerRegion === REGIONALIZED_RELAYER_ENDPOINTS[1].value) {
-      return REGIONALIZED_RELAYER_ENDPOINTS[1].label;
-    }
-    if (relayerRegion === REGIONALIZED_RELAYER_ENDPOINTS[2].value) {
-      return REGIONALIZED_RELAYER_ENDPOINTS[2].label;
-    }
-    if (relayerRegion === REGIONALIZED_RELAYER_ENDPOINTS[3].value) {
-      return REGIONALIZED_RELAYER_ENDPOINTS[3].label;
-    }
-  };
-
   return (
     <div>
-      <p>Relayer Region:</p>
+      <p style={{ textAlign: "center" }}>Relayer Region:</p>
       <div>
-        <Select
-          options={REGIONALIZED_RELAYER_ENDPOINTS}
-          placeholder={
-            checkRelayerRegion(relayerRegion) ||
-            REGIONALIZED_RELAYER_ENDPOINTS[0].label
-          }
+        <SelectContainer
           value={relayerRegion}
-          onChange={(e) => setRelayerRegion(e.value)}
-        />
+          onChange={(e) => setRelayerRegion?.(e?.target?.value)}
+        >
+          {REGIONALIZED_RELAYER_ENDPOINTS.map((e, i) => {
+            return (
+              <SelectOption key={i} value={e.value}>
+                {e.label}
+              </SelectOption>
+            );
+          })}
+        </SelectContainer>
       </div>
     </div>
   );

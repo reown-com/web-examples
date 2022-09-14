@@ -86,8 +86,8 @@ export const DEFAULT_GITHUB_REPO_URL =
   "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
 
 type RelayerType = {
-  value: string;
-  label: string | undefined;
+  value: string | undefined;
+  label: string;
 };
 
 export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [

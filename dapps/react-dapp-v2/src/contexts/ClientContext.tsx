@@ -70,9 +70,15 @@ export function ClientContextProvider({
   const [solanaPublicKeys, setSolanaPublicKeys] =
     useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
+  // const [relayerRegion, setRelayerRegion] = useState<string>(DEFAULT_RELAY_URL);
   const [relayerRegion, setRelayerRegion] = useState<string>(
     "wss://relay.walletconnect.com"
   );
+
+  type OptionType = {
+    value: string;
+    label: string;
+  };
 
   const reset = () => {
     setSession(undefined);
