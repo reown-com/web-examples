@@ -15,7 +15,7 @@
     "@nextui-org/react": "1.0.8-beta.5",
     "@polkadot/keyring": "^10.1.2",
     "@solana/web3.js": "1.43.0",
-    "@walletconnect/auth-client": "^0.2.0",
+    "@walletconnect/auth-client": "^0.3.0",
     "@walletconnect/utils": "2.0.0-rc.2",
     "bs58": "5.0.0",
     "cosmos-wallet": "1.2.0",
