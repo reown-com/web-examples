@@ -1,5 +1,5 @@
 import { Box } from "@chakra-ui/react";
-import AuthClient from "@walletconnect/auth-client";
+import AuthClient, { generateNonce } from "@walletconnect/auth-client";
 import { version } from "@walletconnect/auth-client/package.json";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
@@ -22,7 +22,7 @@ const Home: NextPage = () => {
         domain: "localhost:3000",
         chainId: "eip155:1",
         type: "eip4361",
-        nonce: "nonce",
+        nonce: generateNonce(),
         statement: "Sign in with wallet.",
       })
       .then(({ uri }) => setUri(uri));
