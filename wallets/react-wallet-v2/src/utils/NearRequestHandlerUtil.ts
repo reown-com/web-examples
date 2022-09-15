@@ -36,11 +36,11 @@ export async function approveNearRequest(
         throw new Error("Invalid chain id");
       }
 
-     const accounts = await nearWallet.signOut({
-       chainId,
-       topic,
-       accounts: request.params.accounts
-     });
+      const accounts = await nearWallet.signOut({
+        chainId,
+        topic,
+        accounts: request.params.accounts
+      });
 
       return formatJsonRpcResult(id, accounts);
     }
@@ -143,5 +143,5 @@ export async function approveNearRequest(
 export function rejectNearRequest(request: SignClientTypes.EventArguments['session_request']) {
   const { id } = request
 
-  return formatJsonRpcError(id, ERROR.JSONRPC_REQUEST_METHOD_REJECTED.format().message)
+  return formatJsonRpcError(id, getSdkError('USER_REJECTED_METHODS').message)
 }
