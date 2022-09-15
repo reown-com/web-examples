@@ -18,8 +18,8 @@ const Home: NextPage = () => {
     if (!client) return;
     client
       .request({
-        aud: "http://localhost:3000/",
-        domain: "localhost:3000",
+        aud: window.location.href,
+        domain: window.location.hostname.split(".").slice(-2).join("."),
         chainId: "eip155:1",
         type: "eip4361",
         nonce: generateNonce(),
