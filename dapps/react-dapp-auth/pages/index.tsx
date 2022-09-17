@@ -48,10 +48,16 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     if (!client) return;
-    client.on("auth_response", (res) => {
-      if (res.params.result.s) {
-        setAddress(res.params.result.p.iss.split(":")[4]);
+    client.on("auth_response", ({ params }) => {
+      if ("code" in params) {
+        console.error(params);
+        return;
       }
+      if ("error" in params) {
+        console.error(params.error);
+        return;
+      }
+      setAddress(params.result.p.iss.split(":")[4]);
     });
   }, [client]);
 
