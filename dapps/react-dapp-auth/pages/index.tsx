@@ -11,6 +11,7 @@ console.log(`AuthClient@${version}`);
 
 const Home: NextPage = () => {
   const [client, setClient] = useState<AuthClient | null>();
+  const [hasInitialized, setHasInitialized] = useState(false);
   const [uri, setUri] = useState<string>("");
   const [address, setAddress] = useState<string>("");
 
@@ -42,9 +43,10 @@ const Home: NextPage = () => {
     })
       .then((authClient) => {
         setClient(authClient);
+        setHasInitialized(true);
       })
-      .catch(console.log);
-  }, [setClient]);
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
     if (!client) return;
@@ -73,7 +75,9 @@ const Home: NextPage = () => {
 
   return (
     <Box width="100%" height="100%">
-      {view === "default" && <DefaultView onClick={onSignIn} />}
+      {view === "default" && (
+        <DefaultView onClick={onSignIn} hasInitialized={hasInitialized} />
+      )}
       {view === "qr" && <QrView uri={uri} />}
       {view === "signedIn" && <SignedInView address={address} />}
     </Box>
