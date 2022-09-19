@@ -105,7 +105,7 @@ export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
     label: "EU",
   },
   {
-    value: "wss://ap-southeast-east-1.relay.walletconnect.com/",
+    value: "wss://ap-southeast-1.relay.walletconnect.com/",
     label: "Asia Pacific",
   },
 ];

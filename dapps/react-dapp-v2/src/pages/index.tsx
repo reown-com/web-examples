@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import Banner from "../components/Banner";
 import Blockchain from "../components/Blockchain";
@@ -266,10 +266,6 @@ const Home: NextPage = () => {
       <SLanding center>
         <Banner />
         <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
-        <Dropdown
-          relayerRegion={relayerRegion}
-          setRelayerRegion={setRelayerRegion}
-        />
         <SButtonContainer>
           <h6>Select chains:</h6>
           <SToggleContainer>
@@ -288,6 +284,10 @@ const Home: NextPage = () => {
           <SConnectButton left onClick={onConnect} disabled={!chains.length}>
             {"Connect"}
           </SConnectButton>
+          <Dropdown
+          relayerRegion={relayerRegion}
+          setRelayerRegion={setRelayerRegion}
+        />
         </SButtonContainer>
       </SLanding>
     ) : (
