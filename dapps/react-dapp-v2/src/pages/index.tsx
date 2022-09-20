@@ -1,9 +1,10 @@
 import type { NextPage } from "next";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import Banner from "../components/Banner";
 import Blockchain from "../components/Blockchain";
 import Column from "../components/Column";
+import Dropdown from "../components/Dropdown";
 import Header from "../components/Header";
 import Modal from "../components/Modal";
 import {
@@ -52,11 +53,13 @@ const Home: NextPage = () => {
     connect,
     disconnect,
     chains,
+    relayerRegion,
     accounts,
     balances,
     isFetchingBalances,
     isInitializing,
     setChains,
+    setRelayerRegion,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -281,6 +284,10 @@ const Home: NextPage = () => {
           <SConnectButton left onClick={onConnect} disabled={!chains.length}>
             {"Connect"}
           </SConnectButton>
+          <Dropdown
+          relayerRegion={relayerRegion}
+          setRelayerRegion={setRelayerRegion}
+        />
         </SButtonContainer>
       </SLanding>
     ) : (
