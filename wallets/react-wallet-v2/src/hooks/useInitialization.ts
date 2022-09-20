@@ -9,11 +9,9 @@ import { useSnapshot } from 'valtio'
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
-  const prevRelayerURLValue = useRef<string>("");
+  const prevRelayerURLValue = useRef<string>('')
 
-  const { relayerRegionURL } = useSnapshot(
-    SettingsStore.state
-  )
+  const { relayerRegionURL } = useSnapshot(SettingsStore.state)
 
   const onInitialize = useCallback(async () => {
     try {
@@ -26,9 +24,9 @@ export default function useInitialization() {
       SettingsStore.setCosmosAddress(cosmosAddresses[0])
       SettingsStore.setSolanaAddress(solanaAddresses[0])
       SettingsStore.setPolkadotAddress(polkadotAddresses[0])
-
+      
       await createSignClient(relayerRegionURL)
-      prevRelayerURLValue.current = relayerRegionURL;
+      prevRelayerURLValue.current = relayerRegionURL
 
       setInitialized(true)
     } catch (err: unknown) {
@@ -40,7 +38,7 @@ export default function useInitialization() {
     if (!initialized) {
       onInitialize()
     }
-    if(prevRelayerURLValue.current !== relayerRegionURL){
+    if (prevRelayerURLValue.current !== relayerRegionURL) {
       setInitialized(false)
       onInitialize()
     }
