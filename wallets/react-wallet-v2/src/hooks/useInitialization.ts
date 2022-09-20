@@ -4,10 +4,14 @@ import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
 import { createSignClient } from '@/utils/WalletConnectUtil'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSnapshot } from 'valtio'
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
+  const prevRelayerURLValue = useRef<string>('')
+
+  const { relayerRegionURL } = useSnapshot(SettingsStore.state)
 
   const onInitialize = useCallback(async () => {
     try {
@@ -20,20 +24,25 @@ export default function useInitialization() {
       SettingsStore.setCosmosAddress(cosmosAddresses[0])
       SettingsStore.setSolanaAddress(solanaAddresses[0])
       SettingsStore.setPolkadotAddress(polkadotAddresses[0])
-
-      await createSignClient()
+      
+      await createSignClient(relayerRegionURL)
+      prevRelayerURLValue.current = relayerRegionURL
 
       setInitialized(true)
     } catch (err: unknown) {
       alert(err)
     }
-  }, [])
+  }, [relayerRegionURL])
 
   useEffect(() => {
     if (!initialized) {
       onInitialize()
     }
-  }, [initialized, onInitialize])
+    if (prevRelayerURLValue.current !== relayerRegionURL) {
+      setInitialized(false)
+      onInitialize()
+    }
+  }, [initialized, onInitialize, relayerRegionURL])
 
   return initialized
 }
