@@ -1,4 +1,5 @@
 import PageHeader from '@/components/PageHeader'
+import RelayRegionPicker from '@/components/RelayRegionPicker'
 import SettingsStore from '@/store/SettingsStore'
 import { cosmosWallets } from '@/utils/CosmosWalletUtil'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
@@ -39,6 +40,16 @@ export default function SettingsPage() {
       <Row justify="space-between" align="center">
         <Switch checked={testNets} onChange={SettingsStore.toggleTestNets} />
         <Text>{testNets ? 'Enabled' : 'Disabled'}</Text>
+      </Row>
+
+      <Divider y={2} />
+
+      
+      <Row justify="space-between" align="center">
+        <Text h4 css={{ marginBottom: '$5' }}>
+          Relayer Region
+        </Text>        
+        <RelayRegionPicker/>
       </Row>
 
       <Divider y={2} />

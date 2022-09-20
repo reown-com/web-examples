@@ -10,6 +10,7 @@ interface State {
   cosmosAddress: string
   solanaAddress: string
   polkadotAddress: string
+  relayerRegionURL: string
 }
 
 /**
@@ -21,7 +22,8 @@ const state = proxy<State>({
   eip155Address: '',
   cosmosAddress: '',
   solanaAddress: '',
-  polkadotAddress: ''
+  polkadotAddress: '',
+  relayerRegionURL: ''
 })
 
 /**
@@ -48,6 +50,10 @@ const SettingsStore = {
 
   setPolkadotAddress(polkadotAddress: string) {
     state.polkadotAddress = polkadotAddress
+  },
+
+  setRelayerRegionURL(relayerRegionURL: string) {
+    state.relayerRegionURL = relayerRegionURL
   },
 
   toggleTestNets() {
