@@ -1,6 +1,9 @@
 import { Box, Button, Flex, Heading, Image, position } from "@chakra-ui/react";
 
-const DefaultView: React.FC<{ onClick: () => void }> = ({ onClick }) => {
+const DefaultView: React.FC<{
+  onClick: () => void;
+  hasInitialized: boolean;
+}> = ({ onClick, hasInitialized }) => {
   return (
     <Box>
       <Box position={{ position: "relative" }}>
@@ -37,10 +40,13 @@ const DefaultView: React.FC<{ onClick: () => void }> = ({ onClick }) => {
           onClick={onClick}
           borderRadius={"16px"}
           background="#3396FF"
+          disabled={!hasInitialized}
         >
           <Flex gap="1em">
             <Image src="/wc.png" fit="scale-down" alt="WC" />
-            <span style={{ color: "white" }}>WalletConnect</span>
+            <span style={{ color: "white" }}>
+              {hasInitialized ? "WalletConnect" : "Initializing..."}
+            </span>
           </Flex>
         </Button>
       </Flex>

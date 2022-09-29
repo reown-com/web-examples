@@ -9,6 +9,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from "react";
 import { PublicKey } from "@solana/web3.js";
 
@@ -33,12 +34,14 @@ interface IContext {
   disconnect: () => Promise<void>;
   isInitializing: boolean;
   chains: string[];
+  relayerRegion: string;
   pairings: PairingTypes.Struct[];
   accounts: string[];
   solanaPublicKeys?: Record<string, PublicKey>;
   balances: AccountBalances;
   isFetchingBalances: boolean;
   setChains: any;
+  setRelayerRegion: any;
 }
 
 /**
@@ -60,18 +63,23 @@ export function ClientContextProvider({
 
   const [isFetchingBalances, setIsFetchingBalances] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const prevRelayerValue = useRef<string>("");
 
   const [balances, setBalances] = useState<AccountBalances>({});
   const [accounts, setAccounts] = useState<string[]>([]);
   const [solanaPublicKeys, setSolanaPublicKeys] =
     useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
+  const [relayerRegion, setRelayerRegion] = useState<string>(
+    DEFAULT_RELAY_URL!
+  );
 
   const reset = () => {
     setSession(undefined);
     setBalances({});
     setAccounts([]);
     setChains([]);
+    setRelayerRegion(DEFAULT_RELAY_URL!);
   };
 
   const getAccountBalances = async (_accounts: string[]) => {
@@ -230,16 +238,18 @@ export function ClientContextProvider({
   const createClient = useCallback(async () => {
     try {
       setIsInitializing(true);
-
+      
       const _client = await Client.init({
         logger: DEFAULT_LOGGER,
-        relayUrl: DEFAULT_RELAY_URL,
+        relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
         metadata: getAppMetadata() || DEFAULT_APP_METADATA,
       });
 
       console.log("CREATED CLIENT: ", _client);
+      console.log("relayerRegion ", relayerRegion);
       setClient(_client);
+      prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
     } catch (err) {
@@ -247,13 +257,13 @@ export function ClientContextProvider({
     } finally {
       setIsInitializing(false);
     }
-  }, [_checkPersistedState, _subscribeToEvents]);
+  }, [_checkPersistedState, _subscribeToEvents, relayerRegion]);
 
   useEffect(() => {
-    if (!client) {
+    if (!client || prevRelayerValue.current !== relayerRegion) {
       createClient();
     }
-  }, [client, createClient]);
+  }, [client, createClient, relayerRegion]);
 
   const value = useMemo(
     () => ({
@@ -264,11 +274,13 @@ export function ClientContextProvider({
       accounts,
       solanaPublicKeys,
       chains,
+      relayerRegion,
       client,
       session,
       connect,
       disconnect,
       setChains,
+      setRelayerRegion,
     }),
     [
       pairings,
@@ -278,11 +290,13 @@ export function ClientContextProvider({
       accounts,
       solanaPublicKeys,
       chains,
+      relayerRegion,
       client,
       session,
       connect,
       disconnect,
       setChains,
+      setRelayerRegion,
     ]
   );
 

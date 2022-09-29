@@ -1,5 +1,5 @@
 import { Box } from "@chakra-ui/react";
-import AuthClient from "@walletconnect/auth-client";
+import AuthClient, { generateNonce } from "@walletconnect/auth-client";
 import { version } from "@walletconnect/auth-client/package.json";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
@@ -11,6 +11,7 @@ console.log(`AuthClient@${version}`);
 
 const Home: NextPage = () => {
   const [client, setClient] = useState<AuthClient | null>();
+  const [hasInitialized, setHasInitialized] = useState(false);
   const [uri, setUri] = useState<string>("");
   const [address, setAddress] = useState<string>("");
 
@@ -18,11 +19,11 @@ const Home: NextPage = () => {
     if (!client) return;
     client
       .request({
-        aud: "http://localhost:3000/",
-        domain: "localhost:3000",
+        aud: window.location.href,
+        domain: window.location.hostname.split(".").slice(-2).join("."),
         chainId: "eip155:1",
         type: "eip4361",
-        nonce: "nonce",
+        nonce: generateNonce(),
         statement: "Sign in with wallet.",
       })
       .then(({ uri }) => setUri(uri));
@@ -42,16 +43,23 @@ const Home: NextPage = () => {
     })
       .then((authClient) => {
         setClient(authClient);
+        setHasInitialized(true);
       })
-      .catch(console.log);
-  }, [setClient]);
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
     if (!client) return;
-    client.on("auth_response", (res) => {
-      if (res.params.result.s) {
-        setAddress(res.params.result.p.iss.split(":")[4]);
+    client.on("auth_response", ({ params }) => {
+      if ("code" in params) {
+        console.error(params);
+        return;
       }
+      if ("error" in params) {
+        console.error(params.error);
+        return;
+      }
+      setAddress(params.result.p.iss.split(":")[4]);
     });
   }, [client]);
 
@@ -67,7 +75,9 @@ const Home: NextPage = () => {
 
   return (
     <Box width="100%" height="100%">
-      {view === "default" && <DefaultView onClick={onSignIn} />}
+      {view === "default" && (
+        <DefaultView onClick={onSignIn} hasInitialized={hasInitialized} />
+      )}
       {view === "qr" && <QrView uri={uri} />}
       {view === "signedIn" && <SignedInView address={address} />}
     </Box>
