@@ -1,9 +1,9 @@
-import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
+import { NEAR_SIGNING_METHODS, NEAR_TEST_CHAINS } from '@/data/NEARData'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { nearWallet } from '@/utils/NearWalletUtil'
-import { transactions } from "near-api-js";
+import { InMemorySigner, transactions, utils, Connection } from "near-api-js";
 import { createAction } from "@near-wallet-selector/wallet-utils";
 
 export async function approveNearRequest(
@@ -111,6 +111,52 @@ export async function approveNearRequest(
       });
 
       return formatJsonRpcResult(id, signedTxs.map((x) => x.encode()));
+    }
+    case NEAR_SIGNING_METHODS.NEAR_VERIFY_OWNER: {
+      console.log("approve", { id, params });
+
+      if (!chainId) {
+        throw new Error("Invalid chain id");
+      }
+
+      const accounts = await nearWallet.getAllAccounts();
+      const account = accounts.find(acc => acc.accountId === params.request.params.accountId);
+
+      if (!account) {
+        throw new Error(`Did not find account with id: ${params.request.params.accountId}`);
+      }
+
+      if (!NEAR_TEST_CHAINS[chainId]) {
+        throw new Error("Invalid chain id");
+      }
+
+      const signer = new InMemorySigner(nearWallet.getKeyStore());
+      const networkId = chainId.split(':')[1];
+      const connection = Connection.fromConfig({
+        networkId,
+        provider: { type: 'JsonRpcProvider', args: { url: NEAR_TEST_CHAINS[chainId].rpc } },
+        signer
+      });
+
+      const blockInfo = await connection.provider.block({ finality: 'final' });
+      const publicKey = utils.PublicKey.from(account.publicKey);
+
+      const data = {
+        accountId: account.accountId,
+        message: params.request.params.message,
+        blockId: blockInfo.header.hash,
+        publicKey: Buffer.from(publicKey.data).toString('base64'),
+        keyType: publicKey.keyType
+      };
+
+      const encoded = new Uint8Array(Buffer.from(JSON.stringify(data)));
+      const signed = await signer.signMessage(encoded, account.accountId, networkId);
+
+      return formatJsonRpcResult(id, {
+        ...data,
+        signature: Buffer.from(signed.signature).toString('base64'),
+        keyType: signed.publicKey.keyType
+      });
     }
     case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS: {
       console.log("approve", { id, params });

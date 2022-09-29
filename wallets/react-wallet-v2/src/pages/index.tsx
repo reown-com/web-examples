@@ -9,7 +9,7 @@ import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
-import { NEAR_TEST_CHAINS } from '@/data/NearData'
+import { NEAR_TEST_CHAINS } from '@/data/NEARData'
 
 export default function HomePage() {
   const { testNets, eip155Address, cosmosAddress, solanaAddress, polkadotAddress, nearAddress } = useSnapshot(
