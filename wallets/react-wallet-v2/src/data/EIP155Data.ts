@@ -19,6 +19,13 @@ export const EIP155_MAINNET_CHAINS = {
     rgb: '99, 125, 234',
     rpc: 'https://cloudflare-eth.com/'
   },
+  'eip155:10': {
+    chainId: 10,
+    name: 'Optimism',
+    logo: '/chain-logos/eip155-10.png',
+    rgb: '99, 125, 234',
+    rpc: 'https://mainnet.optimism.io'
+  },
   'eip155:43114': {
     chainId: 43114,
     name: 'Avalanche C-Chain',
@@ -36,12 +43,19 @@ export const EIP155_MAINNET_CHAINS = {
 }
 
 export const EIP155_TEST_CHAINS = {
-  'eip155:42': {
-    chainId: 42,
-    name: 'Ethereum Kovan',
+  'eip155:5': {
+    chainId: 5,
+    name: 'Ethereum Goerli',
     logo: '/chain-logos/eip155-1.png',
     rgb: '99, 125, 234',
-    rpc: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+    rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+  },
+  'eip155:420': {
+    chainId: 420,
+    name: 'Optimism Goerli',
+    logo: '/chain-logos/eip155-10.png',
+    rgb: '99, 125, 234',
+    rpc: 'https://goerli.optimism.io'
   },
   'eip155:43113': {
     chainId: 43113,
