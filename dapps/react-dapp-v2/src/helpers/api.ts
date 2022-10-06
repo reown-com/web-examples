@@ -10,9 +10,9 @@ const rpcProvidersByChainId: Record<number, any> = {
       symbol: "ETH",
     },
   },
-  42: {
-    name: "Ethereum Kovan",
-    baseURL: "https://kovan.infura.io/v3/5dc0df7abe4645dfb06a9a8c39ede422",
+  5: {
+    name: "Ethereum Goerli",
+    baseURL: "https://goerli.infura.io/v3/5dc0df7abe4645dfb06a9a8c39ede422",
     token: {
       name: "Ether",
       symbol: "ETH",
@@ -42,9 +42,9 @@ const rpcProvidersByChainId: Record<number, any> = {
       symbol: "ETH",
     },
   },
-  69: {
-    name: "Optimism Kovan",
-    baseURL: "https://kovan.optimism.io",
+  420: {
+    name: "Optimism Goerli",
+    baseURL: "https://goerli.optimism.io",
     token: {
       name: "Ether",
       symbol: "ETH",
