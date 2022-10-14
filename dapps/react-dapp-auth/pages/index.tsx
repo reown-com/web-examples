@@ -33,7 +33,7 @@ const Home: NextPage = () => {
     AuthClient.init({
       relayUrl:
         process.env.NEXT_PUBLIC_RELAY_URL || "wss://relay.walletconnect.com",
-      projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+      projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
       metadata: {
         name: "react-dapp-auth",
         description: "React Example Dapp for Auth",

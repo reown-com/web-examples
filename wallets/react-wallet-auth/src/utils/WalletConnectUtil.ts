@@ -7,7 +7,7 @@ export let authClient: AuthClient
 
 export async function createAuthClient(address: string) {
   authClient = await AuthClient.init({
-    projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+    projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
     relayUrl: process.env.NEXT_PUBLIC_RELAY_URL || 'wss://relay.walletconnect.com',
     iss: `did:pkh:eip155:1:${address}`,
     metadata: {
