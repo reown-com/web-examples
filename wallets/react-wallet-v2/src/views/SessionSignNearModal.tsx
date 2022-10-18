@@ -100,7 +100,7 @@ export default function SessionSignNearModal() {
           default:
             return {
               type: action.enum,
-              params: action[action.enum]
+              params: {}
             }
         }
       })

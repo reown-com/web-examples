@@ -6,7 +6,7 @@
 /**
  * Types
  */
-export type TNearChain = keyof typeof NEAR_CHAINS
+export type TNearChain = keyof typeof NEAR_TEST_CHAINS
 
 /**
  * Chains

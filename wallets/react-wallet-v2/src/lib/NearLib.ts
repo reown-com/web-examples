@@ -8,7 +8,7 @@ import {
 import { AccessKeyView } from "near-api-js/lib/providers/provider";
 
 import { signClient } from "@/utils/WalletConnectUtil";
-import { NEAR_CHAINS, TNearChain } from "@/data/NEARData";
+import { NEAR_TEST_CHAINS, TNearChain } from "@/data/NEARData";
 
 const MAX_ACCOUNTS = 2;
 
@@ -149,7 +149,7 @@ export class NearWallet {
   }
 
   async createTransactions({ chainId, transactions }: CreateTransactionsParams): Promise<Array<nearTransactions.Transaction>> {
-    const provider = new providers.JsonRpcProvider(NEAR_CHAINS[chainId as TNearChain].rpc);
+    const provider = new providers.JsonRpcProvider(NEAR_TEST_CHAINS[chainId as TNearChain].rpc);
     const txs: Array<nearTransactions.Transaction> = [];
 
     const [block, accounts] = await Promise.all([
@@ -316,7 +316,7 @@ export class NearWallet {
     topic,
     transaction
   }: SignAndSendTransactionParams): Promise<providers.FinalExecutionOutcome> {
-    const provider = new providers.JsonRpcProvider(NEAR_CHAINS[chainId as TNearChain].rpc);
+    const provider = new providers.JsonRpcProvider(NEAR_TEST_CHAINS[chainId as TNearChain].rpc);
     const [signedTx] = await this.signTransactions({
       chainId,
       topic,
@@ -331,7 +331,7 @@ export class NearWallet {
     topic,
     transactions
   }: SignAndSendTransactionsParams): Promise<Array<providers.FinalExecutionOutcome>> {
-    const provider = new providers.JsonRpcProvider(NEAR_CHAINS[chainId as TNearChain].rpc);
+    const provider = new providers.JsonRpcProvider(NEAR_TEST_CHAINS[chainId as TNearChain].rpc);
     const signedTxs = await this.signTransactions({ chainId, topic, transactions });
     const results: Array<providers.FinalExecutionOutcome> = [];
 

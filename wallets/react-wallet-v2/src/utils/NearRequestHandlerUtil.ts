@@ -4,6 +4,7 @@ import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { nearWallet } from '@/utils/NearWalletUtil'
 import { InMemorySigner, transactions, utils, Connection } from "near-api-js";
+import { Transaction } from "@near-wallet-selector/core";
 import { createAction } from "@near-wallet-selector/wallet-utils";
 
 export async function approveNearRequest(
@@ -167,7 +168,7 @@ export async function approveNearRequest(
 
       const transactions = await nearWallet.createTransactions({
         chainId,
-        transactions: params.request.params.transactions.map((transaction) => ({
+        transactions: params.request.params.transactions.map((transaction: Transaction) => ({
           ...transaction,
           actions: transaction.actions.map(createAction),
         }))
