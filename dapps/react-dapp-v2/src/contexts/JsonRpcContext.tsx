@@ -778,7 +778,7 @@ export function JsonRpcContextProvider({
           method,
           address,
           valid: true,
-          result: JSON.stringify(result),
+          result: JSON.stringify((result as any).map((r: any) => r.transaction)),
         };
       }
     ),
