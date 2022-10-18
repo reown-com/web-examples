@@ -628,13 +628,19 @@ export function JsonRpcContextProvider({
 
   const polkadotRpc = {
     testSignTransaction: _createJsonRpcRequestHandler(
-      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
         // Below example is a scale encoded payload for system.remark("this is a test wallet-connect remark") transaction.
         // decode url: https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.polkadot.io#/extrinsics/decode/0x00019074686973206973206120746573742077616c6c65742d636f6e6e6563742072656d61726b
         const transactionPayload =
           "0x00019074686973206973206120746573742077616c6c65742d636f6e6e6563742072656d61726b05010000222400000d00000091b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3dc1f37ce7899cf20f63f5ea343f33e9e7b229c7e245049c2a7afc236861fc8b4";
         try {
-          const result = await client!.request<{ payload: string; signature: string }>({
+          const result = await client!.request<{
+            payload: string;
+            signature: string;
+          }>({
             chainId,
             topic: session!.topic,
             request: {
@@ -645,11 +651,15 @@ export function JsonRpcContextProvider({
               },
             },
           });
-          
+
           // sr25519 signatures need to wait for WASM to load
           await cryptoWaitReady();
-          const { isValid: valid } = signatureVerify(transactionPayload, result.signature, address);
-          
+          const { isValid: valid } = signatureVerify(
+            transactionPayload,
+            result.signature,
+            address
+          );
+
           return {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
             address,
@@ -659,11 +669,13 @@ export function JsonRpcContextProvider({
         } catch (error: any) {
           throw new Error(error);
         }
-      },
+      }
     ),
     testSignMessage: _createJsonRpcRequestHandler(
-      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
-        
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
         const message = `This is an example message to be signed - ${Date.now()}`;
 
         try {
@@ -681,7 +693,11 @@ export function JsonRpcContextProvider({
 
           // sr25519 signatures need to wait for WASM to load
           await cryptoWaitReady();
-          const { isValid: valid } = signatureVerify(message, result.signature, address);
+          const { isValid: valid } = signatureVerify(
+            message,
+            result.signature,
+            address
+          );
 
           return {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
@@ -692,7 +708,7 @@ export function JsonRpcContextProvider({
         } catch (error: any) {
           throw new Error(error);
         }
-      },
+      }
     ),
   };
 
@@ -700,8 +716,11 @@ export function JsonRpcContextProvider({
 
   const nearRpc = {
     testSignAndSendTransaction: _createJsonRpcRequestHandler(
-      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION;
         const result = await client!.request({
           topic: session!.topic,
           chainId,
@@ -711,16 +730,18 @@ export function JsonRpcContextProvider({
               transaction: {
                 signerId: address,
                 receiverId: "guest-book.testnet",
-                actions: [{
-                  type: "FunctionCall",
-                  params: {
-                    methodName: "addMessage",
-                    args: { text: "Hello from Wallet Connect!" },
-                    gas: "30000000000000",
-                    deposit: "0",
-                  }
-                }]
-              }
+                actions: [
+                  {
+                    type: "FunctionCall",
+                    params: {
+                      methodName: "addMessage",
+                      args: { text: "Hello from Wallet Connect!" },
+                      gas: "30000000000000",
+                      deposit: "0",
+                    },
+                  },
+                ],
+              },
             },
           },
         });
@@ -734,8 +755,11 @@ export function JsonRpcContextProvider({
       }
     ),
     testSignAndSendTransactions: _createJsonRpcRequestHandler(
-      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS;
         const result = await client!.request({
           topic: session!.topic,
           chainId,
@@ -746,31 +770,35 @@ export function JsonRpcContextProvider({
                 {
                   signerId: address,
                   receiverId: "guest-book.testnet",
-                  actions: [{
-                    type: "FunctionCall",
-                    params: {
-                      methodName: "addMessage",
-                      args: { text: "Hello from Wallet Connect! (1/2)" },
-                      gas: "30000000000000",
-                      deposit: "0",
-                    }
-                  }]
+                  actions: [
+                    {
+                      type: "FunctionCall",
+                      params: {
+                        methodName: "addMessage",
+                        args: { text: "Hello from Wallet Connect! (1/2)" },
+                        gas: "30000000000000",
+                        deposit: "0",
+                      },
+                    },
+                  ],
                 },
                 {
                   signerId: address,
                   receiverId: "guest-book.testnet",
-                  actions: [{
-                    type: "FunctionCall",
-                    params: {
-                      methodName: "addMessage",
-                      args: { text: "Hello from Wallet Connect! (2/2)" },
-                      gas: "30000000000000",
-                      deposit: "0",
-                    }
-                  }]
-                }
+                  actions: [
+                    {
+                      type: "FunctionCall",
+                      params: {
+                        methodName: "addMessage",
+                        args: { text: "Hello from Wallet Connect! (2/2)" },
+                        gas: "30000000000000",
+                        deposit: "0",
+                      },
+                    },
+                  ],
+                },
               ],
-            }
+            },
           },
         });
 
@@ -778,7 +806,9 @@ export function JsonRpcContextProvider({
           method,
           address,
           valid: true,
-          result: JSON.stringify((result as any).map((r: any) => r.transaction)),
+          result: JSON.stringify(
+            (result as any).map((r: any) => r.transaction)
+          ),
         };
       }
     ),

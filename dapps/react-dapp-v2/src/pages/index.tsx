@@ -214,17 +214,29 @@ const Home: NextPage = () => {
   };
 
   const getNearActions = (): AccountAction[] => {
-    const onSignAndSendTransaction = async (chainId: string, address: string) => {
+    const onSignAndSendTransaction = async (
+      chainId: string,
+      address: string
+    ) => {
       openRequestModal();
       await nearRpc.testSignAndSendTransaction(chainId, address);
     };
-    const onSignAndSendTransactions = async (chainId: string, address: string) => {
+    const onSignAndSendTransactions = async (
+      chainId: string,
+      address: string
+    ) => {
       openRequestModal();
       await nearRpc.testSignAndSendTransactions(chainId, address);
     };
     return [
-      { method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION, callback: onSignAndSendTransaction },
-      { method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS, callback: onSignAndSendTransactions },
+      {
+        method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION,
+        callback: onSignAndSendTransaction,
+      },
+      {
+        method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS,
+        callback: onSignAndSendTransactions,
+      },
     ];
   };
 
@@ -305,9 +317,9 @@ const Home: NextPage = () => {
             {"Connect"}
           </SConnectButton>
           <Dropdown
-          relayerRegion={relayerRegion}
-          setRelayerRegion={setRelayerRegion}
-        />
+            relayerRegion={relayerRegion}
+            setRelayerRegion={setRelayerRegion}
+          />
         </SButtonContainer>
       </SLanding>
     ) : (

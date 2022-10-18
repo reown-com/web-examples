@@ -105,7 +105,7 @@ export function isPolkadotChain(chain: string) {
 /**
  * Check if chain is part of NEAR standard
  */
- export function isNearChain(chain: string) {
+export function isNearChain(chain: string) {
   return chain.includes('near')
 }
 

@@ -238,7 +238,7 @@ export function ClientContextProvider({
   const createClient = useCallback(async () => {
     try {
       setIsInitializing(true);
-      
+
       const _client = await Client.init({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,

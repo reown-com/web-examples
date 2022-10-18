@@ -44,12 +44,11 @@ export default function SettingsPage() {
 
       <Divider y={2} />
 
-      
       <Row justify="space-between" align="center">
         <Text h4 css={{ marginBottom: '$5' }}>
           Relayer Region
-        </Text>        
-        <RelayRegionPicker/>
+        </Text>
+        <RelayRegionPicker />
       </Row>
 
       <Divider y={2} />

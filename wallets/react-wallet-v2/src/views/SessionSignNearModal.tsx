@@ -6,8 +6,8 @@ import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveNearRequest, rejectNearRequest } from '@/utils/NearRequestHandlerUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
-import { NEAR_SIGNING_METHODS } from "@/data/NEARData";
-import { transactions } from "near-api-js";
+import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
+import { transactions } from 'near-api-js'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -26,76 +26,76 @@ export default function SessionSignNearModal() {
   const { request, chainId } = params
 
   const formatTransaction = (transaction: Uint8Array) => {
-    const tx = transactions.Transaction.decode(Buffer.from(transaction));
+    const tx = transactions.Transaction.decode(Buffer.from(transaction))
 
     return {
       signerId: tx.signerId,
       receiverId: tx.receiverId,
       publicKey: tx.publicKey.toString(),
-      actions: tx.actions.map((action) => {
+      actions: tx.actions.map(action => {
         switch (action.enum) {
-          case "createAccount": {
+          case 'createAccount': {
             return {
-              type: "CreateAccount",
+              type: 'CreateAccount',
               params: action.createAccount
-            };
+            }
           }
-          case "deployContract": {
+          case 'deployContract': {
             return {
-              type: "DeployContract",
+              type: 'DeployContract',
               params: {
                 ...action.deployContract,
-                args: Buffer.from(action.deployContract.code).toString(),
+                args: Buffer.from(action.deployContract.code).toString()
               }
-            };
+            }
           }
-          case "functionCall": {
+          case 'functionCall': {
             return {
-              type: "FunctionCall",
+              type: 'FunctionCall',
               params: {
                 ...action.functionCall,
-                args: JSON.parse(Buffer.from(action.functionCall.args).toString()),
+                args: JSON.parse(Buffer.from(action.functionCall.args).toString())
               }
-            };
+            }
           }
-          case "transfer": {
+          case 'transfer': {
             return {
-              type: "Transfer",
+              type: 'Transfer',
               params: action.transfer
-            };
+            }
           }
-          case "stake": {
+          case 'stake': {
             return {
-              type: "Stake",
+              type: 'Stake',
               params: {
                 ...action.stake,
                 publicKey: action.stake.publicKey.toString()
               }
-            };
+            }
           }
-          case "addKey": {
+          case 'addKey': {
             return {
-              type: "AddKey",
+              type: 'AddKey',
               params: {
                 ...action.addKey,
                 publicKey: action.addKey.publicKey.toString()
               }
-            };
+            }
           }
-          case "deleteKey": {
+          case 'deleteKey': {
             return {
-              type: "DeleteKey",
+              type: 'DeleteKey',
               params: {
                 ...action.deleteKey,
                 publicKey: action.deleteKey.publicKey.toString()
               }
-            };
+            }
           }
-          case "deleteAccount": {
+          case 'deleteAccount': {
             return {
-              type: "DeleteAccount",
+              type: 'DeleteAccount',
               params: action.deleteAccount
-            };
+            }
           }
           default:
             return {
@@ -116,7 +116,7 @@ export default function SessionSignNearModal() {
             ...params.request,
             params: {
               ...params.request.params,
-              transaction: formatTransaction(params.request.params.transaction),
+              transaction: formatTransaction(params.request.params.transaction)
             }
           }
         }
@@ -127,15 +127,14 @@ export default function SessionSignNearModal() {
             ...params.request,
             params: {
               ...params.request.params,
-              transactions: params.request.params.transactions.map(formatTransaction),
+              transactions: params.request.params.transactions.map(formatTransaction)
             }
           }
         }
       default:
-        return params;
+        return params
     }
   }
-
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
@@ -168,10 +167,7 @@ export default function SessionSignNearModal() {
 
         <Divider y={2} />
 
-        <RequestDetailsCard
-          chains={[chainId ?? '']}
-          protocol={requestSession.relay.protocol}
-        />
+        <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
         <Divider y={2} />
 

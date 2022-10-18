@@ -12,9 +12,8 @@ import { useSnapshot } from 'valtio'
 import { NEAR_TEST_CHAINS } from '@/data/NEARData'
 
 export default function HomePage() {
-  const { testNets, eip155Address, cosmosAddress, solanaAddress, polkadotAddress, nearAddress } = useSnapshot(
-    SettingsStore.state
-  )
+  const { testNets, eip155Address, cosmosAddress, solanaAddress, polkadotAddress, nearAddress } =
+    useSnapshot(SettingsStore.state)
 
   return (
     <Fragment>

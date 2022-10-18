@@ -16,17 +16,16 @@ export const NEAR_MAINNET_CHAINS = {
 }
 
 interface NearTestChains {
-  [key: string]: ChainMetadata;
+  [key: string]: ChainMetadata
 }
 
 type ChainMetadata = {
-  chainId: string;
-  name: string;
-  logo: string;
-  rgb: string;
-  rpc: string;
+  chainId: string
+  name: string
+  logo: string
+  rgb: string
+  rpc: string
 }
-
 
 export const NEAR_TEST_CHAINS: NearTestChains = {
   'near:testnet': {
@@ -35,7 +34,7 @@ export const NEAR_TEST_CHAINS: NearTestChains = {
     logo: '/chain-logos/near.png',
     rgb: '99, 125, 234',
     rpc: 'https://rpc.testnet.near.org'
-  },
+  }
 }
 
 export const NEAR_CHAINS = { ...NEAR_MAINNET_CHAINS, ...NEAR_TEST_CHAINS }
@@ -51,5 +50,5 @@ export const NEAR_SIGNING_METHODS = {
   NEAR_SIGN_AND_SEND_TRANSACTION: 'near_signAndSendTransaction',
   NEAR_SIGN_TRANSACTIONS: 'near_signTransactions',
   NEAR_SIGN_AND_SEND_TRANSACTIONS: 'near_signAndSendTransactions',
-  NEAR_VERIFY_OWNER: 'near_verifyOwner',
+  NEAR_VERIFY_OWNER: 'near_verifyOwner'
 }
