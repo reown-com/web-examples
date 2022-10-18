@@ -1,5 +1,6 @@
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { utils } from 'ethers'
 
@@ -102,6 +103,13 @@ export function isPolkadotChain(chain: string) {
 }
 
 /**
+ * Check if chain is part of NEAR standard
+ */
+ export function isNearChain(chain: string) {
+  return chain.includes('near')
+}
+
+/**
  * Formats chainId to its name
  */
 export function formatChainName(chainId: string) {
@@ -109,6 +117,7 @@ export function formatChainName(chainId: string) {
     EIP155_CHAINS[chainId as TEIP155Chain]?.name ??
     COSMOS_MAINNET_CHAINS[chainId as TCosmosChain]?.name ??
     SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
+    NEAR_TEST_CHAINS[chainId as TNearChain]?.name ??
     chainId
   )
 }

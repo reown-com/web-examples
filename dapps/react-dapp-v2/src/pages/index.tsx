@@ -14,6 +14,7 @@ import {
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_TEST_CHAINS,
+  DEFAULT_NEAR_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -69,6 +70,7 @@ const Home: NextPage = () => {
     cosmosRpc,
     solanaRpc,
     polkadotRpc,
+    nearRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -210,6 +212,22 @@ const Home: NextPage = () => {
       },
     ];
   };
+
+  const getNearActions = (): AccountAction[] => {
+    const onSignAndSendTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await nearRpc.testSignAndSendTransaction(chainId, address);
+    };
+    const onSignAndSendTransactions = async (chainId: string, address: string) => {
+      openRequestModal();
+      await nearRpc.testSignAndSendTransactions(chainId, address);
+    };
+    return [
+      { method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION, callback: onSignAndSendTransaction },
+      { method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS, callback: onSignAndSendTransactions },
+    ];
+  };
+
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
     switch (namespace) {
@@ -221,6 +239,8 @@ const Home: NextPage = () => {
         return getSolanaActions();
       case "polkadot":
         return getPolkadotActions();
+      case "near":
+        return getNearActions();
       default:
         break;
     }

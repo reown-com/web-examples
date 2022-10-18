@@ -8,6 +8,8 @@ import {
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_EVENTS,
   DEFAULT_POLKADOT_METHODS,
+  DEFAULT_NEAR_METHODS,
+  DEFAULT_NEAR_EVENTS,
 } from "../constants";
 
 export const getNamespacesFromChains = (chains: string[]) => {
@@ -32,6 +34,8 @@ export const getSupportedMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_SOLANA_METHODS);
     case "polkadot":
       return Object.values(DEFAULT_POLKADOT_METHODS);
+    case "near":
+      return Object.values(DEFAULT_NEAR_METHODS);
     default:
       throw new Error(`No default methods for namespace: ${namespace}`);
   }
@@ -47,6 +51,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_SOLANA_EVENTS);
     case "polkadot":
       return Object.values(DEFAULT_POLKADOT_EVENTS);
+    case "near":
+      return Object.values(DEFAULT_NEAR_EVENTS);
     default:
       throw new Error(`No default events for namespace: ${namespace}`);
   }

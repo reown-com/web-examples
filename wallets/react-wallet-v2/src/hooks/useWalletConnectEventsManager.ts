@@ -6,6 +6,8 @@ import ModalStore from '@/store/ModalStore'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
+import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
+import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -52,6 +54,20 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_MESSAGE:
         case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_TRANSACTION:
           return ModalStore.open('SessionSignPolkadotModal', { requestEvent, requestSession })
+        case NEAR_SIGNING_METHODS.NEAR_SIGN_IN:
+        case NEAR_SIGNING_METHODS.NEAR_SIGN_OUT:
+        case NEAR_SIGNING_METHODS.NEAR_SIGN_TRANSACTION:
+        case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION:
+        case NEAR_SIGNING_METHODS.NEAR_SIGN_TRANSACTIONS:
+        case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS:
+        case NEAR_SIGNING_METHODS.NEAR_VERIFY_OWNER:
+          return ModalStore.open('SessionSignNearModal', { requestEvent, requestSession })
+
+        case NEAR_SIGNING_METHODS.NEAR_GET_ACCOUNTS:
+          return signClient.respond({
+            topic,
+            response: await approveNearRequest(requestEvent)
+          })
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }

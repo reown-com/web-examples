@@ -4,6 +4,7 @@ import * as eip155 from "./eip155";
 import * as cosmos from "./cosmos";
 import * as polkadot from "./polkadot";
 import * as solana from "./solana";
+import * as near from "./near";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -18,6 +19,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return polkadot.getChainMetadata(chainId);
     case "solana":
       return solana.getChainMetadata(chainId);
+    case "near":
+      return near.getChainMetadata(chainId);
     default:
       throw new Error(`No metadata handler for namespace ${namespace}`);
   }
@@ -35,6 +38,8 @@ export function getChainRequestRender(
       return cosmos.getChainRequestRender(request);
     case "polkadot":
       return polkadot.getChainRequestRender(request);
+    case "near":
+      return near.getChainRequestRender(request);
     default:
       throw new Error(`No render handler for namespace ${namespace}`);
   }

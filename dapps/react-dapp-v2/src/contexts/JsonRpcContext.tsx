@@ -30,6 +30,7 @@ import {
   DEFAULT_EIP155_METHODS,
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_METHODS,
+  DEFAULT_NEAR_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
@@ -66,6 +67,10 @@ interface IContext {
   polkadotRpc: {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
+  };
+  nearRpc: {
+    testSignAndSendTransaction: TRpcRequestCallback;
+    testSignAndSendTransactions: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -690,6 +695,95 @@ export function JsonRpcContextProvider({
       },
     ),
   };
+
+  // -------- NEAR RPC METHODS --------
+
+  const nearRpc = {
+    testSignAndSendTransaction: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION
+        const result = await client!.request({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params: {
+              transaction: {
+                signerId: address,
+                receiverId: "guest-book.testnet",
+                actions: [{
+                  type: "FunctionCall",
+                  params: {
+                    methodName: "addMessage",
+                    args: { text: "Hello from Wallet Connect!" },
+                    gas: "30000000000000",
+                    deposit: "0",
+                  }
+                }]
+              }
+            },
+          },
+        });
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: JSON.stringify((result as any).transaction),
+        };
+      }
+    ),
+    testSignAndSendTransactions: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS
+        const result = await client!.request({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params: {
+              transactions: [
+                {
+                  signerId: address,
+                  receiverId: "guest-book.testnet",
+                  actions: [{
+                    type: "FunctionCall",
+                    params: {
+                      methodName: "addMessage",
+                      args: { text: "Hello from Wallet Connect! (1/2)" },
+                      gas: "30000000000000",
+                      deposit: "0",
+                    }
+                  }]
+                },
+                {
+                  signerId: address,
+                  receiverId: "guest-book.testnet",
+                  actions: [{
+                    type: "FunctionCall",
+                    params: {
+                      methodName: "addMessage",
+                      args: { text: "Hello from Wallet Connect! (2/2)" },
+                      gas: "30000000000000",
+                      deposit: "0",
+                    }
+                  }]
+                }
+              ],
+            }
+          },
+        });
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: JSON.stringify((result as any).map((r: any) => r.transaction)),
+        };
+      }
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -698,6 +792,7 @@ export function JsonRpcContextProvider({
         cosmosRpc,
         solanaRpc,
         polkadotRpc,
+        nearRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,

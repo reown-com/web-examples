@@ -3,6 +3,7 @@ import SessionProposalModal from '@/views/SessionProposalModal'
 import SessionSendTransactionModal from '@/views/SessionSendTransactionModal'
 import SessionSignCosmosModal from '@/views/SessionSignCosmosModal'
 import SessionRequestModal from '@/views/SessionSignModal'
+import SessionSignNearModal from '@/views/SessionSignNearModal'
 import SessionSignPolkadotModal from '@/views/SessionSignPolkadotModal'
 import SessionSignSolanaModal from '@/views/SessionSignSolanaModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
@@ -23,6 +24,7 @@ export default function Modal() {
       {view === 'SessionSignCosmosModal' && <SessionSignCosmosModal />}
       {view === 'SessionSignSolanaModal' && <SessionSignSolanaModal />}
       {view === 'SessionSignPolkadotModal' && <SessionSignPolkadotModal />}
+      {view === 'SessionSignNearModal' && <SessionSignNearModal />}
     </NextModal>
   )
 }
