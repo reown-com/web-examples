@@ -3063,10 +3063,10 @@
     "@walletconnect/window-metadata" "1.0.0"
     detect-browser "5.2.0"
 
-"@walletconnect/core@2.0.0-2cf22fb.0":
-  version "2.0.0-2cf22fb.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.0.0-2cf22fb.0.tgz#2504661e5907db1acd853d97fad7ecb7bf57f116"
-  integrity sha512-xNV3vZUjo90e0Ew2P1ZSnOqkpmfQIl0RXxbBLLLVit4J+v0E9Wv3Y1wMZTan7zLSU3/CjtmNt8rXDpksN3ewUA==
+"@walletconnect/core@2.0.0-8bbc6344.0":
+  version "2.0.0-8bbc6344.0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.0.0-8bbc6344.0.tgz#a2d1d9da108b5d036dca4373ffdff15f55649246"
+  integrity sha512-p3hygEkUyyncSWRBXM9JsQAmyX9YjenlV9IhBnGFtm3xIA5F+Sfe0JFKKdCzeRvWGl+CXJu3ETnnHPKxTOPVow==
   dependencies:
     "@walletconnect/heartbeat" "1.0.0"
     "@walletconnect/jsonrpc-provider" "1.0.5"
@@ -3078,8 +3078,8 @@
     "@walletconnect/relay-auth" "1.0.3"
     "@walletconnect/safe-json" "1.0.0"
     "@walletconnect/time" "1.0.1"
-    "@walletconnect/types" "2.0.0-2cf22fb.0"
-    "@walletconnect/utils" "2.0.0-2cf22fb.0"
+    "@walletconnect/types" "2.0.0-8bbc6344.0"
+    "@walletconnect/utils" "2.0.0-8bbc6344.0"
     lodash.isequal "4.5.0"
     pino "6.7.0"
     pino-pretty "4.3.0"
@@ -3208,20 +3208,20 @@
   resolved "https://registry.npmjs.org/@walletconnect/safe-json/-/safe-json-1.0.0.tgz"
   integrity sha512-QJzp/S/86sUAgWY6eh5MKYmSfZaRpIlmCJdi5uG4DJlKkZrHEF7ye7gA+VtbVzvTtpM/gRwO2plQuiooIeXjfg==
 
-"@walletconnect/sign-client@2.0.0-2cf22fb.0":
-  version "2.0.0-2cf22fb.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.0.0-2cf22fb.0.tgz#4c1bfe415a26bf655a1be561fd37390a576823e0"
-  integrity sha512-OVGsNMLqw2V9SCdOGniNF6x9hUdd+kfjMYM7tFENIfg7XyzxGXjBad57TNJqZ0QkcHReRy2fNk6Aeth/82MKwQ==
+"@walletconnect/sign-client@2.0.0-8bbc6344.0":
+  version "2.0.0-8bbc6344.0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.0.0-8bbc6344.0.tgz#d6d4c32077a7c048181d64a6fdcbe685f34c1160"
+  integrity sha512-OkbJtj+wlPfz2KcjpuJpdiqzg8z2WNXhLdPeXHe8CTdsp7Lpt1DwGF592vXIOgRBvbQmhpstVoZ/9w87EIURjA==
   dependencies:
-    "@walletconnect/core" "2.0.0-2cf22fb.0"
+    "@walletconnect/core" "2.0.0-8bbc6344.0"
     "@walletconnect/events" "1.0.0"
     "@walletconnect/heartbeat" "1.0.0"
     "@walletconnect/jsonrpc-provider" "1.0.5"
     "@walletconnect/jsonrpc-utils" "1.0.3"
     "@walletconnect/logger" "1.0.1"
     "@walletconnect/time" "1.0.1"
-    "@walletconnect/types" "2.0.0-2cf22fb.0"
-    "@walletconnect/utils" "2.0.0-2cf22fb.0"
+    "@walletconnect/types" "2.0.0-8bbc6344.0"
+    "@walletconnect/utils" "2.0.0-8bbc6344.0"
     pino "6.7.0"
     pino-pretty "4.3.0"
 
@@ -3230,10 +3230,10 @@
   resolved "https://registry.npmjs.org/@walletconnect/time/-/time-1.0.1.tgz"
   integrity sha512-LtNtHupTNranehLMh8Z/JN6xVySysSoJNjNCQ0ML+hOUkim5QX/VdvfovSpaX9qA2b95u7bIuTcq0O3UBk7Iyw==
 
-"@walletconnect/types@2.0.0-2cf22fb.0":
-  version "2.0.0-2cf22fb.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.0.0-2cf22fb.0.tgz#e98a66db8e55dc6c648b54ae98572eed74aecaff"
-  integrity sha512-qzfLkvmqlKImhbh5lTk7+rVN27oz3mjqQ4dsCezZV7ntSH3niZcs2HboCi6+qAn7TQn/ONP1EaNxKgeCBmGkOQ==
+"@walletconnect/types@2.0.0-8bbc6344.0":
+  version "2.0.0-8bbc6344.0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.0.0-8bbc6344.0.tgz#d9a6f71cacd59fe4007feb759835271c3d5eebeb"
+  integrity sha512-ctwjMaLYLZFAOmxfwkDhEprbBRrSgsmVySzA7WTsfWlRniTBmzYBXTlC3A++gjbBABCbDKXYSt5lURkQ6QGJ8w==
   dependencies:
     "@walletconnect/events" "1.0.0"
     "@walletconnect/heartbeat" "1.0.0"
@@ -3245,10 +3245,10 @@
   resolved "https://registry.npmjs.org/@walletconnect/types/-/types-1.8.0.tgz"
   integrity sha512-Cn+3I0V0vT9ghMuzh1KzZvCkiAxTq+1TR2eSqw5E5AVWfmCtECFkVZBP6uUJZ8YjwLqXheI+rnjqPy7sVM4Fyg==
 
-"@walletconnect/utils@2.0.0-2cf22fb.0":
-  version "2.0.0-2cf22fb.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.0.0-2cf22fb.0.tgz#2a0a87a195244bffce54d54508814abc72b00fe2"
-  integrity sha512-GdBw3Zdbjm/XnS/7S55iLtJtfjD4AHEL6lpSDDswCA6hO5AKun6s5CBkEiPh8GwsMBofSCSRI5FCeEDnMiJcNg==
+"@walletconnect/utils@2.0.0-8bbc6344.0":
+  version "2.0.0-8bbc6344.0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.0.0-8bbc6344.0.tgz#694719fb1f5401fb70b560f6aab090a9115f835d"
+  integrity sha512-T7Pz58uMWTYvxG5tA/38TRWPEK5rj5192fosZHtY0N0YCcO9lLaUqhMzytRZ/5ujPncwotM6iEog6oIdLvqkMQ==
   dependencies:
     "@stablelib/chacha20poly1305" "1.0.1"
     "@stablelib/hkdf" "1.0.1"
@@ -3259,7 +3259,7 @@
     "@walletconnect/relay-api" "1.0.6"
     "@walletconnect/safe-json" "1.0.0"
     "@walletconnect/time" "1.0.1"
-    "@walletconnect/types" "2.0.0-2cf22fb.0"
+    "@walletconnect/types" "2.0.0-8bbc6344.0"
     "@walletconnect/window-getters" "1.0.0"
     "@walletconnect/window-metadata" "1.0.0"
     detect-browser "5.3.0"
