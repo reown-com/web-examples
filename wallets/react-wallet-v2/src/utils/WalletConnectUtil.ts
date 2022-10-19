@@ -4,6 +4,7 @@ export let signClient: SignClient
 
 export async function createSignClient(relayerRegionURL: string) {
   signClient = await SignClient.init({
+    logger: 'debug',
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
     relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAYER_URL,
     metadata: {
