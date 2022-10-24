@@ -23,6 +23,8 @@ import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { getAppMetadata, getSdkError } from "@walletconnect/utils";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 import { getRequiredNamespaces } from "../helpers/namespaces";
+import { AuthClient, generateNonce } from "@walletconnect/auth-client";
+import { Core } from "@walletconnect/core";
 
 /**
  * Types
@@ -239,10 +241,14 @@ export function ClientContextProvider({
     try {
       setIsInitializing(true);
 
-      const _client = await Client.init({
+      const core = new Core({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
+      });
+
+      const _client = await Client.init({
+        core,
         metadata: getAppMetadata() || DEFAULT_APP_METADATA,
       });
 
@@ -252,6 +258,67 @@ export function ClientContextProvider({
       prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
+
+      AuthClient.init({
+        core,
+        projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
+        metadata: {
+          name: "react-dapp-auth",
+          description: "React Example Dapp for Auth",
+          url: window.location.host,
+          icons: [],
+        },
+      })
+        .then((authClient) => {
+          // setClient(authClient);
+          // setHasInitialized(true);
+
+          const activePairings = authClient.core.pairing
+            .getPairings()
+            .filter((pairing) => pairing.active);
+          console.log("AUTH CLIENT INIT: ", authClient);
+          console.log("activePairings", activePairings);
+
+          if (activePairings.length) {
+            const knownPairing = activePairings[activePairings.length - 1];
+            console.log("authClient has last known pairing:", knownPairing);
+            authClient
+              .request(
+                {
+                  aud: window.location.href,
+                  domain: window.location.hostname
+                    .split(".")
+                    .slice(-2)
+                    .join("."),
+                  chainId: "eip155:1",
+                  type: "eip4361",
+                  nonce: generateNonce(),
+                  statement: "Sign in with wallet.",
+                },
+                {
+                  topic:
+                    "2bceb66418fc74cd1cb74a3b06ff2199d6cd1a04ce5c871ebf859626ee99821d",
+                }
+              )
+              .then(({ uri }) => {
+                console.log("sent to known pairing: ", knownPairing.topic);
+              });
+          } else {
+            authClient
+              .request({
+                aud: window.location.href,
+                domain: window.location.hostname.split(".").slice(-2).join("."),
+                chainId: "eip155:1",
+                type: "eip4361",
+                nonce: generateNonce(),
+                statement: "Sign in with wallet.",
+              })
+              .then(({ uri }) => {
+                console.log(uri);
+              });
+          }
+        })
+        .catch(console.error);
     } catch (err) {
       throw err;
     } finally {

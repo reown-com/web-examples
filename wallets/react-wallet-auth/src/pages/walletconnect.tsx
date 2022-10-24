@@ -11,7 +11,7 @@ export default function WalletConnectPage() {
   async function onConnect(uri: string) {
     try {
       setLoading(true)
-      await authClient.pair({ uri })
+      await authClient.core.pairing.pair({ uri, activatePairing: true })
     } catch (err: unknown) {
       alert(err)
     } finally {

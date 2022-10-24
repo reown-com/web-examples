@@ -7,6 +7,7 @@ export let authClient: AuthClient
 
 export async function createAuthClient(address: string) {
   authClient = await AuthClient.init({
+    logger: 'debug',
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
     relayUrl: process.env.NEXT_PUBLIC_RELAY_URL || 'wss://relay.walletconnect.com',
     iss: `did:pkh:eip155:1:${address}`,
@@ -17,4 +18,6 @@ export async function createAuthClient(address: string) {
       icons: ['https://avatars.githubusercontent.com/u/37784886']
     }
   })
+
+  console.log(authClient)
 }
