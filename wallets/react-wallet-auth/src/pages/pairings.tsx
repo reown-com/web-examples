@@ -6,7 +6,7 @@ import { getSdkError } from '@walletconnect/utils'
 import { Fragment, useState } from 'react'
 
 export default function PairingsPage() {
-  const [pairings, setPairings] = useState(authClient.pairing.values)
+  const [pairings, setPairings] = useState(authClient.core.pairing.getPairings())
 
   async function onDelete(topic: string) {
     // await authClient.disconnect({ topic, reason: getSdkError('USER_DISCONNECTED') })
