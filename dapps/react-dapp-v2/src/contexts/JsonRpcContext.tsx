@@ -43,8 +43,10 @@ import {
   SignableMessage,
   ISignature,
 } from "@elrondnetwork/erdjs";
-import { UserVerifier, UserPublicKey } from "@elrondnetwork/erdjs-walletcore";
+
+import { UserVerifier } from "@elrondnetwork/erdjs-walletcore/out/userVerifier";
 import { Signature } from "@elrondnetwork/erdjs-walletcore/out/signature";
+import { IVerifiable } from "@elrondnetwork/erdjs-walletcore/out/interface";
 
 /**
  * Types
@@ -839,21 +841,25 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const reference = chainId.split(":")[1];
-        const sender = new Address(address);
+
+        const userAddress = new Address(address);
+        const verifier = UserVerifier.fromAddress(userAddress);
+        const transactionPayload = new TransactionPayload("testdata");
+
         const testTransaction = new ElrondTransaction({
           nonce: 1,
           value: "10000000000000000000",
           receiver: Address.fromBech32(address),
-          sender,
+          sender: userAddress,
           gasPrice: 1000000000,
           gasLimit: 50000,
           chainID: reference,
-          data: new TransactionPayload("testdata"),
+          data: transactionPayload,
         });
         const transaction = testTransaction.toPlainObject();
 
         try {
-          const result = await client!.request<{ signature: ISignature }>({
+          const result = await client!.request<{ signature: Buffer }>({
             chainId,
             topic: session!.topic,
             request: {
@@ -864,7 +870,12 @@ export function JsonRpcContextProvider({
             },
           });
 
-          const valid = true; // Implement transaction signature validity check once it is implemented in erdjs
+          testTransaction.applySignature(
+            new Signature(result.signature),
+            userAddress
+          );
+
+          const valid = verifier.verify(testTransaction as IVerifiable);
 
           return {
             method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
@@ -883,35 +894,43 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const reference = chainId.split(":")[1];
-        const sender = new Address(address);
+
+        const userAddress = new Address(address);
+        const verifier = UserVerifier.fromAddress(userAddress);
+        const testTransactionPayload = new TransactionPayload("testdata");
+
         const testTransaction = new ElrondTransaction({
           nonce: 1,
           value: "10000000000000000000",
           receiver: Address.fromBech32(address),
-          sender,
+          sender: userAddress,
           gasPrice: 1000000000,
           gasLimit: 50000,
           chainID: reference,
-          data: new TransactionPayload("first"),
+          data: testTransactionPayload,
         });
+
+        // no data for this Transaction
         const testTransaction2 = new ElrondTransaction({
           nonce: 2,
           value: "20000000000000000000",
           receiver: Address.fromBech32(address),
-          sender,
+          sender: userAddress,
           gasPrice: 1000000000,
           gasLimit: 50000,
           chainID: reference,
         });
+
+        const testTransaction3Payload = new TransactionPayload("third");
         const testTransaction3 = new ElrondTransaction({
           nonce: 3,
           value: "300000000000000000",
           receiver: Address.fromBech32(address),
-          sender,
+          sender: userAddress,
           gasPrice: 1000000000,
           gasLimit: 50000,
           chainID: reference,
-          data: new TransactionPayload("third"),
+          data: testTransaction3Payload,
         });
 
         const transactions = [
@@ -921,7 +940,9 @@ export function JsonRpcContextProvider({
         ].map((transaction) => transaction.toPlainObject());
 
         try {
-          const result = await client!.request<{ signatures: ISignature[] }>({
+          const result = await client!.request<{
+            signatures: { signature: Buffer }[];
+          }>({
             chainId,
             topic: session!.topic,
             request: {
@@ -932,7 +953,18 @@ export function JsonRpcContextProvider({
             },
           });
 
-          const valid = true; // Implement transaction signature validity check once it is implemented in erdjs
+          const valid = [
+            testTransaction,
+            testTransaction2,
+            testTransaction3,
+          ].reduce((acc, current, index) => {
+            current.applySignature(
+              new Signature(result.signatures[index].signature),
+              userAddress
+            );
+
+            return acc && verifier.verify(current as IVerifiable);
+          }, true);
 
           const resultSignatures = result.signatures.map(
             (signature: any) => signature.signature
@@ -955,8 +987,7 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const userAddress = new Address(address);
-        const publicKey = new UserPublicKey(userAddress.pubkey());
-        const verifier = new UserVerifier(publicKey);
+        const verifier = UserVerifier.fromAddress(userAddress);
 
         const testMessage = new SignableMessage({
           address: userAddress,
