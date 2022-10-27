@@ -10,6 +10,8 @@ import {
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_NEAR_METHODS,
   DEFAULT_NEAR_EVENTS,
+  DEFAULT_ELROND_EVENTS,
+  DEFAULT_ELROND_METHODS,
 } from "../constants";
 
 export const getNamespacesFromChains = (chains: string[]) => {
@@ -36,6 +38,8 @@ export const getSupportedMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_POLKADOT_METHODS);
     case "near":
       return Object.values(DEFAULT_NEAR_METHODS);
+    case "elrond":
+      return Object.values(DEFAULT_ELROND_METHODS);
     default:
       throw new Error(`No default methods for namespace: ${namespace}`);
   }
@@ -53,6 +57,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_POLKADOT_EVENTS);
     case "near":
       return Object.values(DEFAULT_NEAR_EVENTS);
+    case "elrond":
+      return Object.values(DEFAULT_ELROND_EVENTS);
     default:
       throw new Error(`No default events for namespace: ${namespace}`);
   }

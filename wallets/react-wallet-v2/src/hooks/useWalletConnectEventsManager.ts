@@ -2,6 +2,7 @@ import { COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
 import { POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
+import { ELROND_SIGNING_METHODS } from '@/data/ElrondData'
 import ModalStore from '@/store/ModalStore'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
@@ -51,9 +52,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
           return ModalStore.open('SessionSignSolanaModal', { requestEvent, requestSession })
+
         case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_MESSAGE:
         case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_TRANSACTION:
           return ModalStore.open('SessionSignPolkadotModal', { requestEvent, requestSession })
+
         case NEAR_SIGNING_METHODS.NEAR_SIGN_IN:
         case NEAR_SIGNING_METHODS.NEAR_SIGN_OUT:
         case NEAR_SIGNING_METHODS.NEAR_SIGN_TRANSACTION:
@@ -62,6 +65,12 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS:
         case NEAR_SIGNING_METHODS.NEAR_VERIFY_OWNER:
           return ModalStore.open('SessionSignNearModal', { requestEvent, requestSession })
+
+        case ELROND_SIGNING_METHODS.ELROND_SIGN_MESSAGE:
+        case ELROND_SIGNING_METHODS.ELROND_SIGN_TRANSACTION:
+        case ELROND_SIGNING_METHODS.ELROND_SIGN_TRANSACTIONS:
+        case ELROND_SIGNING_METHODS.ELROND_SIGN_LOGIN_TOKEN:
+          return ModalStore.open('SessionSignElrondModal', { requestEvent, requestSession })
 
         case NEAR_SIGNING_METHODS.NEAR_GET_ACCOUNTS:
           return signClient.respond({

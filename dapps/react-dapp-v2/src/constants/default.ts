@@ -9,6 +9,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "cosmos:cosmoshub-4",
   "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
   "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+  "elrond:1",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -21,6 +22,7 @@ export const DEFAULT_TEST_CHAINS = [
   "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
   "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
   "near:testnet",
+  "elrond:D",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -95,6 +97,18 @@ export enum DEFAULT_NEAR_METHODS {
 }
 
 export enum DEFAULT_NEAR_EVENTS {}
+
+/**
+ * ELROND
+ */
+export enum DEFAULT_ELROND_METHODS {
+  ELROND_SIGN_TRANSACTION = "erd_signTransaction",
+  ELROND_SIGN_TRANSACTIONS = "erd_signTransactions",
+  ELROND_SIGN_MESSAGE = "erd_signMessage",
+  ELROND_SIGN_LOGIN_TOKEN = "erd_signLoginToken",
+}
+
+export enum DEFAULT_ELROND_EVENTS {}
 
 export const DEFAULT_GITHUB_REPO_URL =
   "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";

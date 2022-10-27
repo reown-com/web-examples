@@ -10,6 +10,8 @@
     "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
   },
   "dependencies": {
+    "@elrondnetwork/erdjs": "11.1.1",
+    "@elrondnetwork/erdjs-walletcore": "2.1.0",
     "@ethereumjs/tx": "^3.5.0",
     "@polkadot/util-crypto": "^10.1.2",
     "@solana/web3.js": "^1.36.0",
