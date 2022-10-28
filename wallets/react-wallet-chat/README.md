@@ -4,8 +4,8 @@ This example aims to demonstrate use cases enabled by the WalletConnect Chat Alp
 
 # Useful links
 
-🔗 Chat Wallet Deployment - https://react-wallet-chat.vercel.app/ <br />
-🔗 Chat Wallet Peer Deployment - https://react-wallet-chat-peer.vercel.app/ <br />
+🔗 Chat Wallet Deployment - https://react-wallet-chat.walletconnect.com/ <br />
+🔗 Chat Wallet Peer Deployment - https://react-wallet-chat-peer.walletconnect.com/ <br />
 📚 WalletConnect docs - https://docs.walletconnect.com/2.0
 
 ## Getting started
