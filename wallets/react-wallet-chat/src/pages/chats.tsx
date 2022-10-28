@@ -21,11 +21,8 @@ export default function ChatsPage() {
 
   const [chatInvites, setChatInvites] = useState<any[]>([])
 
-  const { eip155Address } = useSnapshot(SettingsStore.state)
-
   const initChatClient = async () => {
     console.log(chatClient)
-    await chatClient.register({ account: `eip155:1:${eip155Address}` })
 
     console.log('chatInvites on load:', chatClient.chatInvites.getAll())
     console.log('chatThreads on load:', chatClient.chatThreads.getAll())

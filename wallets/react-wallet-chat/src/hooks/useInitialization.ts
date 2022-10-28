@@ -21,6 +21,8 @@ export default function useInitialization() {
       await createSignClient()
 
       await createChatClient()
+      await chatClient.register({ account: `eip155:1:${eip155Addresses[0]}` })
+      console.log('[Chat] registered address %s on keyserver', `eip155:1:${eip155Addresses[0]}`)
 
       setInitialized(true)
     } catch (err: unknown) {
