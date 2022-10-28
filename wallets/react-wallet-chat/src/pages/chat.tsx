@@ -9,6 +9,7 @@ import PageHeader from '@/components/PageHeader'
 import { demoAddressResolver } from '@/config/chatConstants'
 import SettingsStore from '@/store/SettingsStore'
 import { chatClient } from '@/utils/WalletConnectUtil'
+import { truncate } from '@/utils/HelperUtil'
 
 const ChatContainer = styled('div', {
   display: 'flex',
@@ -65,7 +66,7 @@ export default function ChatPage() {
   function getChatTitle() {
     if (typeof query.peerAccount !== 'string') return ''
 
-    return demoAddressResolver[query.peerAccount] ?? query.peerAccount
+    return demoAddressResolver[query.peerAccount] ?? truncate(query.peerAccount, 24)
   }
 
   useEffect(() => {

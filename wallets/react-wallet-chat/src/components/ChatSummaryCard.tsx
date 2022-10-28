@@ -1,4 +1,5 @@
 import { demoAddressResolver } from '@/config/chatConstants'
+import { truncate } from '@/utils/HelperUtil'
 import { Card, Text } from '@nextui-org/react'
 import Image from 'next/image'
 import NextLink from 'next/link'
@@ -40,7 +41,7 @@ export default function ChatSummaryCard({ peerAccount, topic, latestMessage }: I
           <ChatAvatar />
           <div style={{ flex: 1 }}>
             <Text h5 css={{ marginLeft: '$9' }}>
-              {demoAddressResolver[peerAccount] ?? peerAccount}
+              {demoAddressResolver[peerAccount] ?? truncate(peerAccount, 24)}
             </Text>
             <Text h6 weight="normal" css={{ marginLeft: '$9' }}>
               {latestMessage ?? ''}
