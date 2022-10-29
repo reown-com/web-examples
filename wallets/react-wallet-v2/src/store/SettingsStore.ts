@@ -11,6 +11,7 @@ interface State {
   solanaAddress: string
   polkadotAddress: string
   nearAddress: string
+  kadenaAddress: string
   relayerRegionURL: string
 }
 
@@ -25,6 +26,7 @@ const state = proxy<State>({
   solanaAddress: '',
   polkadotAddress: '',
   nearAddress: '',
+  kadenaAddress: '',
   relayerRegionURL: ''
 })
 
@@ -55,6 +57,9 @@ const SettingsStore = {
   },
   setNearAddress(nearAddress: string) {
     state.nearAddress = nearAddress
+  },
+  setKadenaAddress(kadenaAddress: string) {
+    state.kadenaAddress = kadenaAddress
   },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL

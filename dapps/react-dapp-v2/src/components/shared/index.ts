@@ -10,7 +10,7 @@ export const SContainer = styled.div`
   word-break: break-word;
 `;
 
-export const STable = styled(SContainer as any)`
+export const STable = styled(SContainer)`
   flex-direction: column;
   text-align: left;
 `;

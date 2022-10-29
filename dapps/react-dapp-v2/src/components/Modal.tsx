@@ -15,7 +15,7 @@ const SLightbox = styled.div<{
   margin-left: -50vw;
   top: ${({ offset }) => (offset ? `-${offset}px` : 0)};
   left: 50%;
-  z-index: 2;
+  z-index: 10;
   will-change: opacity;
   background-color: ${({ opacity }) => {
     let alpha = 0.4;
@@ -40,6 +40,7 @@ const SModalContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 10;
 `;
 
 const SHitbox = styled.div`
@@ -65,6 +66,7 @@ const SCloseButton = styled.div<CloseButtonStyleProps>`
   top: ${({ size }) => `${size / 1.6667}px`};
   opacity: 0.5;
   cursor: pointer;
+
   &:hover {
     opacity: 1;
   }
@@ -132,7 +134,7 @@ export default function Modal({ children, show, opacity, closeModal }: IProps) {
         <SHitbox onClick={closeModal} />
 
         <SCard>
-          <SCloseButton size={25} color={"dark"} onClick={closeModal} />
+          <SCloseButton size={25} color="dark" onClick={closeModal} />
           <SModalContent>{children}</SModalContent>
         </SCard>
       </SModalContainer>
