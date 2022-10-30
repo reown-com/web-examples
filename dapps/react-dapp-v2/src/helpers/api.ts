@@ -105,6 +105,10 @@ export async function apiGetAccountBalance(
   address: string,
   chainId: string
 ): Promise<AssetData> {
+  const namespace = chainId.split(":")[0];  
+  if (namespace !== 'eip155') {
+    return { balance: "", symbol: "", name: "" };
+  }
   const ethChainId = chainId.split(":")[1];
   const rpc = rpcProvidersByChainId[Number(ethChainId)];
   if (!rpc) {
