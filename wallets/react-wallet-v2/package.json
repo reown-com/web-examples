@@ -12,6 +12,8 @@
     "@cosmjs/amino": "0.28.4",
     "@cosmjs/encoding": "0.28.4",
     "@cosmjs/proto-signing": "0.28.4",
+    "@elrondnetwork/erdjs": "11.1.1",
+    "@elrondnetwork/erdjs-walletcore": "2.1.0",
     "@json-rpc-tools/utils": "1.7.6",
     "@near-wallet-selector/wallet-utils": "^7.0.2",
     "@nextui-org/react": "1.0.8-beta.5",

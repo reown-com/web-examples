@@ -5,6 +5,7 @@ import * as cosmos from "./cosmos";
 import * as polkadot from "./polkadot";
 import * as solana from "./solana";
 import * as near from "./near";
+import * as elrond from "./elrond";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -21,6 +22,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return solana.getChainMetadata(chainId);
     case "near":
       return near.getChainMetadata(chainId);
+    case "elrond":
+      return elrond.getChainMetadata(chainId);
     default:
       throw new Error(`No metadata handler for namespace ${namespace}`);
   }
