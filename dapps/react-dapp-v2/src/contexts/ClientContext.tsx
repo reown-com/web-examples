@@ -152,6 +152,12 @@ export function ClientContextProvider({
         await onSessionConnected(session);
         // Update known pairings after session is connected.
         setPairings(client.pairing.getAll({ active: true }));
+
+        await client.core.relayer.transportClose();
+        console.log("DISCONN >>>>>");
+
+        await client.core.relayer.transportOpen();
+        console.log(">>>>>> RECONN");
       } catch (e) {
         console.error(e);
         // ignore rejection
