@@ -1,6 +1,7 @@
+import { parseUri } from '@walletconnect/utils'
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { createLegacySignClient, legacySignClient, signClient } from '@/utils/WalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
@@ -11,7 +12,14 @@ export default function WalletConnectPage() {
   async function onConnect(uri: string) {
     try {
       setLoading(true)
-      await signClient.pair({ uri })
+
+      const { version } = parseUri(uri)
+
+      if (version === 1) {
+        createLegacySignClient({ uri })
+      } else {
+        await signClient.pair({ uri })
+      }
     } catch (err: unknown) {
       alert(err)
     } finally {

@@ -9,6 +9,7 @@ import SessionSignSolanaModal from '@/views/SessionSignSolanaModal'
 import SessionSignElrondModal from '@/views/SessionSignElrondModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
+import LegacySessionProposalModal from '@/views/LegacySessionProposalModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
 
@@ -27,6 +28,7 @@ export default function Modal() {
       {view === 'SessionSignPolkadotModal' && <SessionSignPolkadotModal />}
       {view === 'SessionSignNearModal' && <SessionSignNearModal />}
       {view === 'SessionSignElrondModal' && <SessionSignElrondModal />}
+      {view === 'LegacySessionProposalModal' && <LegacySessionProposalModal />}
     </NextModal>
   )
 }
