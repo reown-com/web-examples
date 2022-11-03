@@ -47,7 +47,7 @@ export default function LegacySessionProposalModal() {
     if (proposal) {
       legacySignClient.approveSession({
         accounts: selectedAccounts['eip155'],
-        chainId
+        chainId: chainId ?? 1
       })
     }
     ModalStore.close()

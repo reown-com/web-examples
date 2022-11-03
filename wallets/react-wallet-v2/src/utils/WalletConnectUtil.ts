@@ -48,22 +48,8 @@ export function createLegacySignClient({ uri }: { uri: string }) {
       throw new Error(`legacySignClient > call_request failed: ${error}`)
     }
 
+    console.log('legacySignClient > call_request: ', payload)
+
     // handleCallRequest(payload)
   })
-
-  // legacySignClient.on('session_request', (error, payload) => {
-  //   if (error) {
-  //     throw error
-  //   }
-
-  //   console.log('session_request:', payload)
-
-  //   legacySignClient.approveSession({
-  //     accounts: [
-  //       // required
-  //       '0xa34Bf1DF3DB9844b9Ed48a1E16d984afba7d1b8C'
-  //     ],
-  //     chainId: 1 // required
-  //   })
-  // })
 }
