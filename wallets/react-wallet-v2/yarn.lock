@@ -1917,7 +1917,7 @@
     superstruct "^0.14.2"
     tweetnacl "^1.0.0"
 
-"@solana/web3.js@^1.32.0", "@solana/web3.js@^1.35.1":
+"@solana/web3.js@^1.32.0", "@solana/web3.js@^1.66.2":
   version "1.66.2"
   resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-1.66.2.tgz#80b43c5868b846124fe3ebac7d3943930c3fa60c"
   integrity sha512-RyaHMR2jGmaesnYP045VLeBGfR/gAW3cvZHzMFGg7bkO+WOYOYp1nEllf0/la4U4qsYGKCsO9eEevR5fhHiVHg==
@@ -5188,12 +5188,12 @@ slash@^3.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
-solana-wallet@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/solana-wallet/-/solana-wallet-1.0.1.tgz#4e1bfebbb99640105ed42abd1445baab4f6e0b57"
-  integrity sha512-rkYu9gwayAdVMhWGdZSz6a+IaOJXs3TNtYXWuSQsdMJUndkQ+puy7cB9/u5pwZTjqzxtd1DN9cbAFKFH5648xQ==
+solana-wallet@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/solana-wallet/-/solana-wallet-1.0.2.tgz#1b8157974a0ec5228ac45d8414c656dcb3a94d47"
+  integrity sha512-oZnLJvwBFnQ0Hf0vTuAUFizq59AhxDfoMpdDUuqo02seNsV7AbYl3QGJZBJ1uCr36cRJnXFr2NqI3RM2IDq62Q==
   dependencies:
-    "@solana/web3.js" "^1.35.1"
+    "@solana/web3.js" "^1.66.2"
     bs58 "^5.0.0"
     tweetnacl "^1.0.3"
 
