@@ -1,26 +1,13 @@
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import ProposalSelectSection from '@/components/ProposalSelectSection'
 import RequestModalContainer from '@/components/RequestModalContainer'
-import SessionProposalChainCard from '@/components/SessionProposalChainCard'
 import ModalStore from '@/store/ModalStore'
-import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
-import { elrondAddresses } from '@/utils/ElrondWalletUtil'
-import {
-  isCosmosChain,
-  isEIP155Chain,
-  isSolanaChain,
-  isPolkadotChain,
-  isNearChain,
-  isElrondChain
-} from '@/utils/HelperUtil'
-import { solanaAddresses } from '@/utils/SolanaWalletUtil'
+import { isEIP155Chain } from '@/utils/HelperUtil'
 import { legacySignClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { getSdkError } from '@walletconnect/utils'
 import { Fragment, useState } from 'react'
-import { nearAddresses } from '@/utils/NearWalletUtil'
 
 export default function LegacySessionProposalModal() {
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string[]>>({})
@@ -58,24 +45,8 @@ export default function LegacySessionProposalModal() {
   // Hanlde approve action, construct session namespace
   async function onApprove() {
     if (proposal) {
-      // const namespaces: SessionTypes.Namespaces = {}
-      // Object.keys(requiredNamespaces).forEach(key => {
-      //   const accounts: string[] = []
-      //   requiredNamespaces[key].chains.map(chain => {
-      //     selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
-      //   })
-      //   namespaces[key] = {
-      //     accounts,
-      //     methods: requiredNamespaces[key].methods,
-      //     events: requiredNamespaces[key].events
-      //   }
-      // })
-
       legacySignClient.approveSession({
-        accounts: [
-          // required
-          '0xa34Bf1DF3DB9844b9Ed48a1E16d984afba7d1b8C'
-        ],
+        accounts: selectedAccounts['eip155'],
         chainId
       })
     }
@@ -101,51 +72,6 @@ export default function LegacySessionProposalModal() {
           chain={chain}
         />
       )
-    } else if (isCosmosChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={cosmosAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isSolanaChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={solanaAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isPolkadotChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={polkadotAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isNearChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={nearAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isElrondChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={elrondAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
     }
   }
 
@@ -153,19 +79,9 @@ export default function LegacySessionProposalModal() {
     <Fragment>
       <RequestModalContainer title="Session Proposal">
         <ProjectInfoCard metadata={peerMeta} />
-
         <Divider y={2} />
-
-        {/* {Object.keys(requiredNamespaces).map(chain => {
-          return (
-            <Fragment key={chain}>
-              <Text h4 css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-              <SessionProposalChainCard requiredNamespace={requiredNamespaces[chain]} />
-              {renderAccountSelection(chain)}
-              <Divider y={2} />
-            </Fragment>
-          )
-        })} */}
+        {renderAccountSelection('eip155')}
+        <Divider y={2} />
       </RequestModalContainer>
 
       <Modal.Footer>
@@ -178,8 +94,8 @@ export default function LegacySessionProposalModal() {
           flat
           color="success"
           onClick={onApprove}
-          // disabled={!hasSelected}
-          // css={{ opacity: hasSelected ? 1 : 0.4 }}
+          disabled={!hasSelected}
+          css={{ opacity: hasSelected ? 1 : 0.4 }}
         >
           Approve
         </Button>
