@@ -1,7 +1,8 @@
 import { parseUri } from '@walletconnect/utils'
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
-import { createLegacySignClient, legacySignClient, signClient } from '@/utils/WalletConnectUtil'
+import { signClient } from '@/utils/WalletConnectUtil'
+import { createLegacySignClient } from '@/utils/LegacyWalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
