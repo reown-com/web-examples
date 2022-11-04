@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { version } from "@walletconnect/client/package.json";
+import { version } from "@walletconnect/universal-provider/package.json";
 import * as encoding from "@walletconnect/encoding";
 import { BigNumber, utils } from "ethers";
 import { TypedDataField } from "@ethersproject/abstract-signer";
@@ -61,7 +61,7 @@ export default function App() {
     chainData,
     isFetchingBalances,
     isInitializing,
-    onEnable,
+    connect,
     web3Provider,
   } = useWalletConnectClient();
 
@@ -73,10 +73,13 @@ export default function App() {
       throw new Error("WalletConnect Client is not initialized");
     }
 
+    if (typeof session === "undefined") {
+      throw new Error("Session is not connected");
+    }
+
     try {
       setIsRpcRequestPending(true);
-      const _session = await client.session.get(client.session.topics[0]);
-      await client.session.ping(_session.topic);
+      await client.ping({ topic: session.topic });
       setRpcResult({
         address: "",
         method: "ping",
@@ -292,7 +295,7 @@ export default function App() {
             <Toggle active={isTestnet} onClick={toggleTestnets} />
           </SToggleContainer>
           {chainOptions.map(chainId => (
-            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onEnable} />
+            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={connect} />
           ))}
         </SButtonContainer>
       </SLanding>

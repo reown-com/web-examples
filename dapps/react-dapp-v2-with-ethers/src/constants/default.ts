@@ -27,6 +27,11 @@ export const DEFAULT_RELAY_URL = process.env.REACT_APP_RELAY_URL;
 
 export const DEFAULT_EIP155_METHODS = ["eth_sendTransaction", "personal_sign", "eth_signTypedData"];
 
+export enum DEFAULT_EIP_155_EVENTS {
+  ETH_CHAIN_CHANGED = "chainChanged",
+  ETH_ACCOUNTS_CHANGED = "accountsChanged",
+}
+
 export const DEFAULT_LOGGER = "debug";
 
 export const DEFAULT_APP_METADATA = {

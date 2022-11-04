@@ -29,11 +29,11 @@
   },
   "dependencies": {
     "@ethereumjs/tx": "^3.5.0",
-    "@walletconnect/client": "2.0.0-beta.26",
-    "@walletconnect/ethereum-provider": "2.0.0-beta.26",
+    "@walletconnect/encoding": "^1.0.1",
     "@walletconnect/qrcode-modal": "^1.7.1",
-    "@walletconnect/types": "2.0.0-beta.26",
-    "@walletconnect/utils": "2.0.0-beta.26",
+    "@walletconnect/types": "^2.1.1",
+    "@walletconnect/universal-provider": "^2.1.1",
+    "@walletconnect/utils": "^2.1.1",
     "axios": "^0.21.1",
     "blockies-ts": "^1.0.0",
     "caip-api": "^2.0.0-beta.1",
@@ -51,6 +51,7 @@
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.19.4",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
@@ -72,16 +73,9 @@
       "react-app/jest"
     ]
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ]
 }
