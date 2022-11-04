@@ -13,9 +13,9 @@ export default function WalletConnectPage() {
   async function onConnect(uri: string) {
     try {
       setLoading(true)
-
       const { version } = parseUri(uri)
 
+      // Route the provided URI to the v1 SignClient if URI version indicates it, else use v2.
       if (version === 1) {
         createLegacySignClient({ uri })
       } else {

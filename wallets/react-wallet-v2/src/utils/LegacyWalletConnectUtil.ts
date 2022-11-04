@@ -16,6 +16,7 @@ export function createLegacySignClient({ uri }: { uri?: string } = {}) {
   } else {
     return
   }
+
   console.log('legacySignClient init: ', legacySignClient)
 
   legacySignClient.on('session_request', (error, payload) => {
@@ -38,7 +39,6 @@ export function createLegacySignClient({ uri }: { uri?: string } = {}) {
     if (error) {
       throw new Error(`legacySignClient > call_request failed: ${error}`)
     }
-
     console.log('legacySignClient > call_request: ', payload)
     onCallRequest(payload)
   })

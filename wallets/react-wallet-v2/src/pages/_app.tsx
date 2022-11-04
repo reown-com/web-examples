@@ -14,6 +14,7 @@ export default function App({ Component, pageProps }: AppProps) {
   // Step 2 - Once initialized, set up wallet connect event manager
   useWalletConnectEventsManager(initialized)
 
+  // Backwards compatibility only - create a legacy v1 SignClient instance.
   createLegacySignClient()
 
   return (
