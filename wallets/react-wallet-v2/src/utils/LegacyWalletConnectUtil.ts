@@ -11,15 +11,12 @@ export function createLegacySignClient({ uri }: { uri?: string } = {}) {
   if (uri) {
     legacySignClient = new LegacySignClient({ uri })
   } else if (!legacySignClient && getCachedLegacySession()) {
-    //
     const session = getCachedLegacySession()
     legacySignClient = new LegacySignClient({ session })
   } else {
     return
   }
-  console.log('legacySignClient: ', legacySignClient)
-
-  console.log('BIND LEGACY LISTENERS')
+  console.log('legacySignClient init: ', legacySignClient)
 
   legacySignClient.on('session_request', (error, payload) => {
     if (error) {
@@ -43,7 +40,6 @@ export function createLegacySignClient({ uri }: { uri?: string } = {}) {
     }
 
     console.log('legacySignClient > call_request: ', payload)
-
     onCallRequest(payload)
   })
 
@@ -54,8 +50,6 @@ export function createLegacySignClient({ uri }: { uri?: string } = {}) {
 }
 
 const onCallRequest = async (payload: { id: number; method: string; params: any[] }) => {
-  // const requestSession = signClient.session.get(topic)
-
   switch (payload.method) {
     case EIP155_SIGNING_METHODS.ETH_SIGN:
     case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
