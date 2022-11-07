@@ -109,11 +109,13 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
     // Subscribe to session ping
     _client.on("session_ping", ({ id, topic }: { id: number; topic: string }) => {
+      console.log("EVENT", "session_ping");
       console.log(id, topic);
     });
 
     // Subscribe to session event
     _client.on("session_event", ({ event, chainId }: { event: any; chainId: string }) => {
+      console.log("EVENT", "session_event");
       console.log(event, chainId);
     });
 
@@ -128,8 +130,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
     // Subscribe to session delete
     _client.on("session_delete", ({ id, topic }: { id: number; topic: string }) => {
-      console.log(id, topic);
       console.log("EVENT", "session_deleted");
+      console.log(id, topic);
       resetApp();
     });
   }, []);
