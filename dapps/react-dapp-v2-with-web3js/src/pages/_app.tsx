@@ -8,6 +8,8 @@ const GlobalStyle = createGlobalStyle`
   ${globalStyle}
 `;
 
+console.log("Trigger New Build");
+
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
