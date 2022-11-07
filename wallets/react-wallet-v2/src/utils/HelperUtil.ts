@@ -67,7 +67,7 @@ export function getWalletAddressFromParams(addresses: string[], params: any) {
   let address = ''
 
   addresses.forEach(addr => {
-    if (paramsString.includes(addr)) {
+    if (paramsString.toLowerCase().includes(addr.toLowerCase())) {
       address = addr
     }
   })
