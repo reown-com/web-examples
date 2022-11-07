@@ -158,7 +158,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
   const createWeb3Provider = useCallback((ethereumProvider: UniversalProvider) => {
     const web3Provider = new providers.Web3Provider(ethereumProvider);
-    console.log("ethereumProvider", ethereumProvider);
     setWeb3Provider(web3Provider);
   }, []);
 
@@ -179,8 +178,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         },
         {},
       );
-
-      console.log("customRpcs: ", customRpcs);
 
       const session = await ethereumProvider.connect({
         namespaces: {
@@ -215,13 +212,12 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const onSessionConnected = useCallback(
     async (_session: SessionTypes.Struct) => {
       if (!ethereumProvider) {
-        throw new ReferenceError("WalletConnect Client is not initialized.");
+        throw new ReferenceError("EthereumProvider is not initialized.");
       }
       const allNamespaceAccounts = Object.values(_session.namespaces)
         .map(namespace => namespace.accounts)
         .flat();
       const allNamespaceChains = Object.keys(_session.namespaces);
-      console.log("allNamespaceChains", allNamespaceChains);
 
       const chainData = allNamespaceAccounts[0].split(":");
       const caipChainId = `${chainData[0]}:${chainData[1]}`;
