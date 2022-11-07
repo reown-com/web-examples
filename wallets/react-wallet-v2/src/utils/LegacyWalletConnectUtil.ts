@@ -18,13 +18,10 @@ export function createLegacySignClient({ uri }: { uri?: string } = {}) {
     return
   }
 
-  console.log('legacySignClient init: ', legacySignClient)
-
   legacySignClient.on('session_request', (error, payload) => {
     if (error) {
       throw new Error(`legacySignClient > session_request failed: ${error}`)
     }
-    console.log('legacySignClient > session_request:', payload)
     ModalStore.open('LegacySessionProposalModal', { legacyProposal: payload })
   })
 
@@ -40,12 +37,10 @@ export function createLegacySignClient({ uri }: { uri?: string } = {}) {
     if (error) {
       throw new Error(`legacySignClient > call_request failed: ${error}`)
     }
-    console.log('legacySignClient > call_request: ', payload)
     onCallRequest(payload)
   })
 
   legacySignClient.on('disconnect', async () => {
-    console.log('legacySignClient > disconnect')
     deleteCachedLegacySession()
   })
 }
