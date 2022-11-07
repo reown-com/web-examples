@@ -43,6 +43,9 @@ export const ClientContext = createContext<IContext>({} as IContext);
 /**
  * Provider
  */
+/**
+ * Provider
+ */
 export function ClientContextProvider({ children }: { children: ReactNode | ReactNode[] }) {
   const [client, setClient] = useState<Client>();
   const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
