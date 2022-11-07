@@ -5,21 +5,21 @@ import { utils } from "ethers";
 import { TypedDataField } from "@ethersproject/abstract-signer";
 import { Transaction } from "@ethereumjs/tx";
 
-import Banner from "./components/Banner";
-import Blockchain from "./components/Blockchain";
-import Column from "./components/Column";
-import Header from "./components/Header";
-import Modal from "./components/Modal";
-import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
+import Banner from "./../components/Banner";
+import Blockchain from "./../components/Blockchain";
+import Column from "./../components/Column";
+import Header from "./../components/Header";
+import Modal from "./../components/Modal";
+import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./../constants";
 import {
   AccountAction,
   eip712,
   getLocalStorageTestnetFlag,
   setLocaleStorageTestnetFlag,
-} from "./helpers";
-import Toggle from "./components/Toggle";
-import RequestModal from "./modals/RequestModal";
-import PingModal from "./modals/PingModal";
+} from "./../helpers";
+import Toggle from "./../components/Toggle";
+import RequestModal from "./../modals/RequestModal";
+import PingModal from "./../modals/PingModal";
 import {
   SAccounts,
   SAccountsContainer,
@@ -28,8 +28,8 @@ import {
   SLanding,
   SLayout,
   SToggleContainer,
-} from "./components/app";
-import { useWalletConnectClient } from "./contexts/ClientContext";
+} from "./../components/app";
+import { useWalletConnectClient } from "./../contexts/ClientContext";
 
 interface IFormattedRpcResponse {
   method: string;
