@@ -9,6 +9,7 @@ export function createLegacySignClient({ uri }: { uri?: string } = {}) {
   // If URI is passed always create a new session,
   // otherwise fall back to cached session if client isn't already instantiated.
   if (uri) {
+    deleteCachedLegacySession()
     legacySignClient = new LegacySignClient({ uri })
   } else if (!legacySignClient && getCachedLegacySession()) {
     const session = getCachedLegacySession()
