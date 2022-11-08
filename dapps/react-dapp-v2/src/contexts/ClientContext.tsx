@@ -1,9 +1,6 @@
 import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import { ConfigCtrl as ModalConfigCtrl, ModalCtrl } from "@web3modal/core";
-import type { W3mModal } from "@web3modal/ui";
-import "@web3modal/ui";
-
+import QRCodeModal from "@walletconnect/qrcode-modal";
 import {
   createContext,
   ReactNode,
@@ -51,14 +48,6 @@ interface IContext {
  * Context
  */
 export const ClientContext = createContext<IContext>({} as IContext);
-
-/**
- * Web3Modal Config
- */
-ModalConfigCtrl.setConfig({
-  projectId: DEFAULT_PROJECT_ID,
-  theme: "light" as const,
-});
 
 /**
  * Provider
@@ -153,11 +142,9 @@ export function ClientContextProvider({
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
         if (uri) {
-          // Create a flat array of all requested chains across namespaces.
-          const standaloneChains = Object.values(requiredNamespaces)
-            .map((namespace) => namespace.chains)
-            .flat();
-          ModalCtrl.open({ uri, standaloneChains });
+          QRCodeModal.open(uri, () => {
+            console.log("EVENT", "QR Code Modal closed");
+          });
         }
 
         const session = await approval();
@@ -170,7 +157,7 @@ export function ClientContextProvider({
         // ignore rejection
       } finally {
         // close modal in case it was open
-        ModalCtrl.close();
+        QRCodeModal.close();
       }
     },
     [chains, client, onSessionConnected]
@@ -319,21 +306,9 @@ export function ClientContextProvider({
         ...value,
       }}
     >
-      <>
-        {children}
-        <w3m-modal></w3m-modal>
-      </>
+      {children}
     </ClientContext.Provider>
   );
-}
-
-// Let Typescript know about the custom w3m-modal dom / webcomponent element
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      "w3m-modal": Partial<W3mModal>;
-    }
-  }
 }
 
 export function useWalletConnectClient() {
