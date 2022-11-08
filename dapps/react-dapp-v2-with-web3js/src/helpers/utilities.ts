@@ -190,6 +190,7 @@ export function setLocaleStorageTestnetFlag(value: boolean): void {
 }
 
 export function getLocalStorageTestnetFlag(): boolean {
+  if (typeof window === "undefined") return false;
   let value = INITIAL_STATE_TESTNET_DEFAULT;
   const persisted = window.localStorage.getItem(LOCALSTORAGE_KEY_TESTNET);
   if (!persisted) {

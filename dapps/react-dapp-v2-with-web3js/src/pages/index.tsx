@@ -1,25 +1,25 @@
 import React, { useState } from "react";
-import { version } from "@walletconnect/client/package.json";
+import { version } from "@walletconnect/universal-provider/package.json";
 import * as encoding from "@walletconnect/encoding";
 import { utils } from "ethers";
 import { TypedDataField } from "@ethersproject/abstract-signer";
 import { Transaction } from "@ethereumjs/tx";
 
-import Banner from "./components/Banner";
-import Blockchain from "./components/Blockchain";
-import Column from "./components/Column";
-import Header from "./components/Header";
-import Modal from "./components/Modal";
-import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./constants";
+import Banner from "./../components/Banner";
+import Blockchain from "./../components/Blockchain";
+import Column from "./../components/Column";
+import Header from "./../components/Header";
+import Modal from "./../components/Modal";
+import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./../constants";
 import {
   AccountAction,
   eip712,
   getLocalStorageTestnetFlag,
   setLocaleStorageTestnetFlag,
-} from "./helpers";
-import Toggle from "./components/Toggle";
-import RequestModal from "./modals/RequestModal";
-import PingModal from "./modals/PingModal";
+} from "./../helpers";
+import Toggle from "./../components/Toggle";
+import RequestModal from "./../modals/RequestModal";
+import PingModal from "./../modals/PingModal";
 import {
   SAccounts,
   SAccountsContainer,
@@ -28,8 +28,8 @@ import {
   SLanding,
   SLayout,
   SToggleContainer,
-} from "./components/app";
-import { useWalletConnectClient } from "./contexts/ClientContext";
+} from "./../components/app";
+import { useWalletConnectClient } from "./../contexts/ClientContext";
 
 interface IFormattedRpcResponse {
   method: string;
@@ -60,7 +60,7 @@ export default function App() {
     chainData,
     isFetchingBalances,
     isInitializing,
-    onEnable,
+    connect,
     web3Provider,
   } = useWalletConnectClient();
 
@@ -72,10 +72,13 @@ export default function App() {
       throw new Error("WalletConnect Client is not initialized");
     }
 
+    if (typeof session === "undefined") {
+      throw new Error("Session is not connected");
+    }
+
     try {
       setIsRpcRequestPending(true);
-      const _session = await client.session.get(client.session.topics[0]);
-      await client.session.ping(_session.topic);
+      await client.ping({ topic: session.topic });
       setRpcResult({
         address: "",
         method: "ping",
@@ -124,7 +127,6 @@ export default function App() {
     }
 
     const [address] = await web3Provider.eth.getAccounts();
-
     const tx = {
       from: address,
       to: address,
@@ -283,16 +285,6 @@ export default function App() {
         <Banner />
         <h6>
           <span>{`Using v${version || "2.0.0-beta"}`}</span>
-          <sup>
-            (
-            <a
-              style={{ textDecoration: "underline" }}
-              href="https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2-with-web3js"
-            >
-              outdated
-            </a>{" "}
-            ⚠️)
-          </sup>
         </h6>
         <SButtonContainer>
           <h6>Select an Ethereum chain:</h6>
@@ -301,7 +293,7 @@ export default function App() {
             <Toggle active={isTestnet} onClick={toggleTestnets} />
           </SToggleContainer>
           {chainOptions.map(chainId => (
-            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={onEnable} />
+            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={connect} />
           ))}
         </SButtonContainer>
       </SLanding>

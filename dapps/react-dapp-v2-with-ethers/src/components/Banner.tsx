@@ -1,6 +1,5 @@
 import * as React from "react";
 import styled from "styled-components";
-import logo from "../assets/walletconnect.png";
 
 const SBannerWrapper = styled.div`
   display: flex;
@@ -11,7 +10,7 @@ const SBannerWrapper = styled.div`
 const SBanner = styled.div`
   width: 275px;
   height: 45px;
-  background: url(${logo}) no-repeat;
+  background: url(/assets/walletconnect.png) no-repeat;
   background-size: cover;
   background-position: center;
 `;
