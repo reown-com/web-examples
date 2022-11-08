@@ -7,7 +7,7 @@ import { globalStyle } from "../styles";
 const GlobalStyle = createGlobalStyle`
   ${globalStyle}
 `;
-console.log("trigger deploy");
+
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
@@ -18,4 +18,5 @@ function MyApp({ Component, pageProps }: AppProps) {
     </>
   );
 }
+
 export default MyApp;
