@@ -1,10 +1,10 @@
 # WalletConnect v2 Examples
 
-Catalogue of various wallet and dapp examples implementing WalletConnect **v2**. Each example contains its own README with further instructions and explanations.
+Catalogue of various wallet and dapp examples implementing WalletConnect **Sign v2**. Each example contains its own README with further instructions and explanations.
 
 **Wallets:**
 
-- [React Wallet Ethers - v2](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-v2) ([Demo](https://react-wallet.walletconnect.com/))
+- [React Wallet (Sign v1 + v2)](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-v2) ([Demo](https://react-wallet.walletconnect.com/))
 - [React Auth
   Wallet](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-auth) ([Demo](https://react-auth-wallet.vercel.app))
 
