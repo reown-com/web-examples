@@ -562,7 +562,7 @@ export function JsonRpcContextProvider({
                 recentBlockhash: transaction.recentBlockhash,
                 instructions: transaction.instructions.map((i) => ({
                   programId: i.programId.toBase58(),
-                  data: bs58.encode(i.data),
+                  data: Array.from(i.data),
                   keys: i.keys.map((k) => ({
                     isSigner: k.isSigner,
                     isWritable: k.isWritable,
