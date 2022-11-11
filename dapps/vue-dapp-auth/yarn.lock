@@ -448,7 +448,7 @@
   dependencies:
     "@ethersproject/bignumber" "^5.7.0"
 
-"@ethersproject/contracts@5.7.0", "@ethersproject/contracts@^5.7.0":
+"@ethersproject/contracts@5.7.0":
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/contracts/-/contracts-5.7.0.tgz#c305e775abd07e48aa590e1a877ed5c316f8bd1e"
   integrity sha512-5GJbzEU3X+d33CdfPhcyS+z8MzsTrBGk/sc+G+59+tPa9yFkl6HQ9D6L0QMgNTA9q8dT0XKxxkyp883XsQvbbg==
@@ -551,7 +551,7 @@
   dependencies:
     "@ethersproject/logger" "^5.7.0"
 
-"@ethersproject/providers@5.7.2", "@ethersproject/providers@^5.7.1":
+"@ethersproject/providers@5.7.2":
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/@ethersproject/providers/-/providers-5.7.2.tgz#f8b1a4f275d7ce58cf0a2eec222269a08beb18cb"
   integrity sha512-g34EWZ1WWAVgr4aptGlVBF8mhl3VWjv+8hoAnzStu8Ah22VHBsuGzP17eb6xDVRzw895G4W7vvx60lFFur/1Rg==
@@ -1567,15 +1567,12 @@
   dependencies:
     vue-demi "*"
 
-"@walletconnect/auth-client@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/auth-client/-/auth-client-1.0.0.tgz#e598ece8e61ef742e1335b925ce88eb7770a869e"
-  integrity sha512-O2vaaMqILtkSvj0ZGXba4fn0qNFfFEhVPkBkjygo9IpUqwUE9zbhl3yJZ1F5KrOQCVTBZeHEvkIz8GEV2YPzPw==
+"@walletconnect/auth-client@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/auth-client/-/auth-client-1.0.1.tgz#bffd454c8dbc0caf7f63376303e3dfb3a7a34a90"
+  integrity sha512-5gCec83TZ8t5Wp+wvlcxaaedIZUvUedLDneAojVQl4Ho5ew3IerOhfF/i4QYYlJm94mT1LAPNhemC/TrgfnLQA==
   dependencies:
-    "@ethersproject/bytes" "^5.7.0"
-    "@ethersproject/contracts" "^5.7.0"
     "@ethersproject/hash" "^5.7.0"
-    "@ethersproject/providers" "^5.7.1"
     "@ethersproject/transactions" "^5.7.0"
     "@stablelib/random" "1.0.2"
     "@walletconnect/core" "2.0.0"
@@ -1587,6 +1584,7 @@
     "@walletconnect/time" "1.0.1"
     "@walletconnect/utils" "2.0.0"
     events "^3.3.0"
+    isomorphic-unfetch "^3.1.0"
     pino "6.7.0"
     pino-pretty "4.3.0"
 
@@ -4455,6 +4453,14 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
+isomorphic-unfetch@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/isomorphic-unfetch/-/isomorphic-unfetch-3.1.0.tgz#87341d5f4f7b63843d468438128cb087b7c3e98f"
+  integrity sha512-geDJjpoZ8N0kWexiwkX8F9NkTsXhetLPVbZFQ+JTW239QNOwvB0gniuR1Wc6f0AMTn7/mFGyXvHTifrCp/GH8Q==
+  dependencies:
+    node-fetch "^2.6.1"
+    unfetch "^4.2.0"
+
 jest-worker@^26.2.1:
   version "26.6.2"
   resolved "https://registry.yarnpkg.com/jest-worker/-/jest-worker-26.6.2.tgz#7f72cbc4d643c365e27b9fd775f9d0eaa9c7a8ed"
@@ -5165,7 +5171,7 @@ node-fetch-native@^0.1.4, node-fetch-native@^0.1.8:
   resolved "https://registry.yarnpkg.com/node-fetch-native/-/node-fetch-native-0.1.8.tgz#19e2eaf6d86ac14e711ebd2612f40517c3468f2a"
   integrity sha512-ZNaury9r0NxaT2oL65GvdGDy+5PlSaHTovT6JV5tOW07k1TQmgC0olZETa4C9KZg0+6zBr99ctTYa3Utqj9P/Q==
 
-node-fetch@^2.6.7:
+node-fetch@^2.6.1, node-fetch@^2.6.7:
   version "2.6.7"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
   integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
@@ -7044,6 +7050,11 @@ unenv@^0.6.2:
     mime "^3.0.0"
     node-fetch-native "^0.1.4"
     pathe "^0.3.5"
+
+unfetch@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/unfetch/-/unfetch-4.2.0.tgz#7e21b0ef7d363d8d9af0fb929a5555f6ef97a3be"
+  integrity sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==
 
 unimport@^0.7.0:
   version "0.7.0"
