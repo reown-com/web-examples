@@ -18,3 +18,10 @@
     </footer>
   </main>
 </template>
+
+<script setup lang="ts">
+const { authClientVersion } = useRuntimeConfig()
+
+// eslint-disable-next-line no-console
+console.log(`AuthClient@${authClientVersion}`)
+</script>
