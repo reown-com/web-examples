@@ -29,7 +29,7 @@ export default defineNuxtConfig({
       WALLETCONNECT_PROJECT_ID: process.env.WALLETCONNECT_PROJECT_ID ?? '',
       WALLETCONNECT_RELAY_URL: process.env.WALLETCONNECT_RELAY_URL ?? 'wss://relay.walletconnect.com',
 
-      authClientVersion
+      authClientVersion,
     },
   },
 })

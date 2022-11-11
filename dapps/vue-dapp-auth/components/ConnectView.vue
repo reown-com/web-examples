@@ -11,12 +11,14 @@
       class="tw-absolute tw--top-14 tw-size-20 tw-blur-px"
     >
 
-    <div class="tw-shadow-card tw-text-center tw-w-full tw-max-w-xs tw-rounded-lg tw-bg-dim-1 tw-p-8 sm:tw-px-12">
-      <h2 class="tw-mt-2.5">Sign in</h2>
+    <div class="tw-card tw-text-center tw-w-full tw-max-w-xs">
+      <h2 class="tw-mt-2.5">
+        Sign in
+      </h2>
 
       <button
         class="tw-button-primary tw-text-xl tw-justify-between tw-w-full sm:tw-min-w-[11em]"
-        :disabled="!initialized"
+        :disabled="!initialized || isLoading"
         @click="requestConnection()"
       >
         <img src="/img/wc.png" alt="WalletConnect logo" class="tw-h-4 tw-w-auto tw-mx-auto">
@@ -30,7 +32,7 @@
         </span>
       </button>
 
-      <p v-if="error">
+      <p v-if="error" class="tw-text-sm tw-text-state-error">
         {{ error }}
       </p>
     </div>
@@ -38,10 +40,17 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
+import { storeToRefs } from 'pinia'
 import { useConnectionStore } from '../stores'
 
 const connectionStore = useConnectionStore()
-const { requestConnection } = connectionStore
 const { error, initialized } = storeToRefs(connectionStore)
+
+const isLoading = ref(false)
+
+const requestConnection = async () => {
+  isLoading.value = true
+  await connectionStore.requestConnection()
+  isLoading.value = false
+}
 </script>

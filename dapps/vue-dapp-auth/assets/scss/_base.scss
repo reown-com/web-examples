@@ -11,6 +11,10 @@
     @apply tw-cursor-pointer;
   }
 
+  hr {
+    @apply tw-text-divider;
+  }
+
   input,
   button {
     outline: none !important;

@@ -40,7 +40,7 @@ module.exports = {
         'sans-serif',
         '"Apple Color Emoji"',
         '"Segoe UI Emoji"',
-        '"Segoe UI Symbol"'
+        '"Segoe UI Symbol"',
       ],
       mono: ['monospace'],
     },
@@ -54,29 +54,37 @@ module.exports = {
     colors: {
       black: co('--c-black'),
       white: co('--c-white'),
+      divider: co('--c-divider'),
+      muted: co('--c-divider-muted'),
       accent: {
         primary: co('--c-accent-primary'),
         secondary: co('--c-accent-secondary'),
       },
+      state: {
+        error: co('--c-state-error'),
+        success: co('--c-state-success'),
+      },
     },
     textColor: theme => ({
       ...theme('colors'),
-      custom: co('--text-color'),
-      base: co('--c-text-base'),
+      'custom': co('--text-color'),
+      'base': co('--c-text-base'),
       'dim-1': co('--c-text-dim-1'),
       'dim-2': co('--c-text-dim-2'),
       'dim-3': co('--c-text-dim-3'),
-      bg: co('--c-bg-base'),
+      'bg': co('--c-bg-base'),
     }),
     backgroundColor: theme => ({
       ...theme('colors'),
-      custom: co('--bg-color'),
-      base: co('--c-bg-base'),
+      'custom': co('--bg-color'),
+      'base': co('--c-bg-base'),
       'dim-1': co('--c-bg-dim-1'),
+      'placeholder': co('--c-bg-placeholder'),
     }),
     borderColor: theme => ({
       ...theme('colors'),
       base: co('--c-text-base'),
+      transparent: 'transparent',
       custom: co('--border-color'),
     }),
     fill: theme => ({
@@ -118,7 +126,7 @@ module.exports = {
     },
     borderRadius: {
       0: '0',
-      sm: '0.25rem',
+      sm: '0.75rem',
       DEFAULT: '1rem',
       lg: '1.5rem',
       full: '9999px',

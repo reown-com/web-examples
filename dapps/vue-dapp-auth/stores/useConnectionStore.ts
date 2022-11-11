@@ -1,4 +1,4 @@
-import { acceptHMRUpdate, defineStore } from 'pinia'
+import { acceptHMRUpdate, defineStore, skipHydrate } from 'pinia'
 import AuthClient, { generateNonce } from '@walletconnect/auth-client'
 
 export const useConnectionStore = defineStore('connection', () => {
@@ -17,9 +17,8 @@ export const useConnectionStore = defineStore('connection', () => {
   }
 
   // Init client and listen to auth events
-  // as soon as the owner component is mounted
   const config = useRuntimeConfig()
-  onMounted(() => {
+  const init = () => {
     AuthClient.init({
       relayUrl: config.WALLETCONNECT_RELAY_URL,
       projectId: config.WALLETCONNECT_PROJECT_ID,
@@ -30,14 +29,16 @@ export const useConnectionStore = defineStore('connection', () => {
         icons: [`${window.location.origin}/img/wc-bg.png`],
       },
     })
-    .then(authClient => {
-      client.value = authClient
-    })
-    .catch(setError)
-  })
+      .then((authClient) => {
+        client.value = authClient
+      })
+      .catch(setError)
+  }
 
   watch(client, () => {
-    if (!client.value) return
+    if (!client.value) {
+      return
+    }
     client.value.on('auth_response', ({ params }) => {
       if ('code' in params) {
         return setError(params.message)
@@ -49,29 +50,36 @@ export const useConnectionStore = defineStore('connection', () => {
     })
   })
 
-  // Reset in case if the address is removed from the localStorage side
-  watch(address, () => {
-    if (!address.value) {
-      reset()
-    }
-  })
-
   const reset = () => {
     address.value = null
     connectUri.value = null
     error.value = null
   }
 
+  // In case if the address is removed from the localStorage side,
+  // clear all the connection vars
+  watch(address, (newAddress, oldAddress) => {
+    if (oldAddress && !newAddress) {
+      reset()
+    }
+  })
+
   return {
-    address,
+    // Skip hydration from init state
+    // as need to init only on the client side from localStorage
+    address: skipHydrate(address),
+
     connectUri,
     initialized,
     error,
 
+    init,
     reset,
 
     async requestConnection() {
-      if (!client.value) return
+      if (!client.value) {
+        return
+      }
       const { uri } = await client.value.request({
         aud: window.location.href,
         domain: window.location.hostname.split('.').slice(-2).join('.'),
@@ -81,7 +89,7 @@ export const useConnectionStore = defineStore('connection', () => {
         statement: 'Sign in with wallet.',
       })
       connectUri.value = uri
-    }
+    },
   }
 })
 

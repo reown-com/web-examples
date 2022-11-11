@@ -1,9 +1,14 @@
 @layer components {
   .tw-section {
-    @apply tw-py-20;
+    @apply tw-py-8;
     @screen md {
-      @apply tw-py-28;
+      @apply tw-py-12;
     }
+  }
+
+  // Cards
+  .tw-card {
+    @apply tw-shadow-card tw-rounded-lg tw-bg-dim-1 tw-p-8 sm:tw-px-10;
   }
 
   // Buttons
@@ -14,7 +19,7 @@
   }
   .tw-button {
     @apply tw-clickable;
-    @apply tw-text-custom tw-bg-custom tw-bg-opacity-custom;
+    @apply tw-text-custom tw-leading-xs tw-bg-custom tw-bg-opacity-custom;
     @apply tw-text-sm tw-h-[2.5em] tw-p-[0.75em];
     @apply tw-relative before:tw-absolute before:tw-inset-0 before:tw-border before:tw-border-solid before:tw-border-custom before:tw-border-opacity-custom;
     @apply before:tw-duration-fast before:tw-rounded;

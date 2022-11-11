@@ -18,8 +18,3 @@
     </footer>
   </main>
 </template>
-
-<script setup lang="ts">
-const { authClientVersion } = useRuntimeConfig()
-console.log(`AuthClient@${authClientVersion}`);
-</script>
