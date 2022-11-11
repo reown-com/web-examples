@@ -6,7 +6,7 @@
 - 🍍 Pinia
 - 🟦 TypeScript
 - 💨 TailwindCSS
-- 🔗 Ethereum
+- 🔗 ethers.js
 
 
 ## Overview
