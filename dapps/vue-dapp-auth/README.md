@@ -20,7 +20,7 @@ This example aims to demonstrate dapp-facing use cases enabled by WalletConnect 
 Install the app's dependencies:
 
 ```bash
-yarn i
+yarn
 ```
 
 Set up your local environment variables by copying the example into your own `.env` file:
@@ -41,7 +41,7 @@ Also, the default relay server `WALLETCONNECT_RELAY_URL` is set. You can change 
 Start the development server on http://localhost:3000
 
 ```bash
-yarn run dev
+yarn dev
 ```
 
 ## Production
