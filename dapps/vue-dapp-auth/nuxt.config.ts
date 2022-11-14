@@ -17,11 +17,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       /**
-       * Override in .env
-       * NOTE:
-       * - Could use Nuxt's native auto-injected NUXT_* env vars, but framework-specific prefixes are not cool
-       * https://v3.nuxtjs.org/guide/features/runtime-config/#environment-variables
-       * - PLEASE, use `.env` file, not `.env.local` or whatever
+       * Avoiding framework-specific prefixes for env vars
+       * see https://v3.nuxtjs.org/guide/features/runtime-config/#environment-variables
        */
       WALLETCONNECT_PROJECT_ID: process.env.WALLETCONNECT_PROJECT_ID ?? '',
       WALLETCONNECT_RELAY_URL: process.env.WALLETCONNECT_RELAY_URL ?? 'wss://relay.walletconnect.com',
