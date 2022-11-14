@@ -15,6 +15,7 @@ import {
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_TEST_CHAINS,
   DEFAULT_NEAR_METHODS,
+  DEFAULT_KADENA_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -34,17 +35,21 @@ import {
 import { useWalletConnectClient } from "../contexts/ClientContext";
 import { useJsonRpc } from "../contexts/JsonRpcContext";
 import { useChainData } from "../contexts/ChainDataContext";
+import DataModal from "../modals/DataModal";
+import { blake2AsHex } from "@polkadot/util-crypto";
 
 // Normal import does not work here
 const { version } = require("@walletconnect/sign-client/package.json");
 
 const Home: NextPage = () => {
   const [modal, setModal] = useState("");
+  const [requestData, setRequestData] = useState("");
 
   const closeModal = () => setModal("");
   const openPairingModal = () => setModal("pairing");
   const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
+  const openDataModal = () => setModal("data");
 
   // Initialize the WalletConnect client.
   const {
@@ -71,6 +76,7 @@ const Home: NextPage = () => {
     solanaRpc,
     polkadotRpc,
     nearRpc,
+    kadenaRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -240,6 +246,58 @@ const Home: NextPage = () => {
     ];
   };
 
+  const deferred = () => {
+    let resolve!: (value: string | PromiseLike<string>) => void;
+    let reject!: (reason?: any) => void;
+    const promise = new Promise<string>((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+
+    return {
+      resolve,
+      reject,
+      promise,
+    };
+  };
+
+  let { promise, resolve } = deferred();
+
+  const getKadenaActions = (): AccountAction[] => {
+    const testSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await kadenaRpc.testSignTransaction(chainId, address);
+    };
+
+    const testSignPersonalMessage = async (
+      chainId: string,
+      address: string
+    ) => {
+      // const deferThing = deferred();
+
+      // console.log(deferThing);
+      // promise = deferThing.promise;
+      // resolve = deferThing.resolve;
+      // openDataModal();
+      // console.log(promise);
+      // await promise;
+
+      openRequestModal();
+      await kadenaRpc.testSignPersonalMessage(chainId, address, requestData);
+    };
+
+    return [
+      {
+        method: DEFAULT_KADENA_METHODS.KADENA_SIGN_TRANSACTION,
+        callback: testSignTransaction,
+      },
+      {
+        method: DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN_TRANSACTION,
+        callback: testSignPersonalMessage,
+      },
+    ];
+  };
+
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
     switch (namespace) {
@@ -253,6 +311,8 @@ const Home: NextPage = () => {
         return getPolkadotActions();
       case "near":
         return getNearActions();
+      case "kadena":
+        return getKadenaActions();
       default:
         break;
     }
@@ -287,6 +347,15 @@ const Home: NextPage = () => {
         );
       case "ping":
         return <PingModal pending={isRpcRequestPending} result={rpcResult} />;
+      case "data":
+        return (
+          <DataModal
+            submit={(value) => {
+              setRequestData(value);
+              resolve(value);
+            }}
+          />
+        );
       default:
         return null;
     }
@@ -294,6 +363,7 @@ const Home: NextPage = () => {
 
   const renderContent = () => {
     const chainOptions = isTestnet ? DEFAULT_TEST_CHAINS : DEFAULT_MAIN_CHAINS;
+
     return !accounts.length && !Object.keys(balances).length ? (
       <SLanding center>
         <Banner />

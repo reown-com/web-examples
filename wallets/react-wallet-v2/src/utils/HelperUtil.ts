@@ -2,6 +2,7 @@ import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
+import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData';
 import { utils } from 'ethers'
 
 /**
@@ -110,6 +111,13 @@ export function isNearChain(chain: string) {
 }
 
 /**
+ * Check if chain is part of KADENA standard
+ */
+ export function isKadenaChain(chain: string) {
+  return chain.includes('kadena')
+}
+
+/**
  * Formats chainId to its name
  */
 export function formatChainName(chainId: string) {
@@ -118,6 +126,7 @@ export function formatChainName(chainId: string) {
     COSMOS_MAINNET_CHAINS[chainId as TCosmosChain]?.name ??
     SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
     NEAR_TEST_CHAINS[chainId as TNearChain]?.name ??
+    KADENA_CHAINS[chainId as TKadenaChain]?.name ??
     chainId
   )
 }

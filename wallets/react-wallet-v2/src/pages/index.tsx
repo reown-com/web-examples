@@ -5,15 +5,23 @@ import { COSMOS_MAINNET_CHAINS } from '@/data/COSMOSData'
 import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
 import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { POLKADOT_MAINNET_CHAINS, POLKADOT_TEST_CHAINS } from '@/data/PolkadotData'
+import { KADENA_MAINNET_CHAINS, KADENA_TEST_CHAINS } from '@/data/KadenaData'
+import { NEAR_TEST_CHAINS } from '@/data/NEARData'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
-import { NEAR_TEST_CHAINS } from '@/data/NEARData'
 
 export default function HomePage() {
-  const { testNets, eip155Address, cosmosAddress, solanaAddress, polkadotAddress, nearAddress } =
-    useSnapshot(SettingsStore.state)
+  const {
+    testNets,
+    eip155Address,
+    cosmosAddress,
+    solanaAddress,
+    polkadotAddress,
+    nearAddress,
+    kadenaAddress
+  } = useSnapshot(SettingsStore.state)
 
   return (
     <Fragment>
@@ -35,6 +43,9 @@ export default function HomePage() {
       {Object.values(POLKADOT_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={polkadotAddress} />
       ))}
+      {Object.values(KADENA_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={kadenaAddress} />
+      ))}
 
       {testNets ? (
         <Fragment>
@@ -52,6 +63,9 @@ export default function HomePage() {
           ))}
           {Object.values(NEAR_TEST_CHAINS).map(({ name, logo, rgb }) => (
             <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={nearAddress} />
+          ))}
+          {Object.values(KADENA_TEST_CHAINS).map(({ name, logo, rgb }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={kadenaAddress} />
           ))}
         </Fragment>
       ) : null}

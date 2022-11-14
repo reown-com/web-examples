@@ -8,6 +8,7 @@ import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
+import { KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -29,6 +30,8 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       const { topic, params } = requestEvent
       const { request } = params
       const requestSession = signClient.session.get(topic)
+
+      console.log(request.method)
 
       switch (request.method) {
         case EIP155_SIGNING_METHODS.ETH_SIGN:
@@ -54,6 +57,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_MESSAGE:
         case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_TRANSACTION:
           return ModalStore.open('SessionSignPolkadotModal', { requestEvent, requestSession })
+
         case NEAR_SIGNING_METHODS.NEAR_SIGN_IN:
         case NEAR_SIGNING_METHODS.NEAR_SIGN_OUT:
         case NEAR_SIGNING_METHODS.NEAR_SIGN_TRANSACTION:
@@ -68,6 +72,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
             topic,
             response: await approveNearRequest(requestEvent)
           })
+
+        case KADENA_SIGNING_METHODS.KADENA_SIGN_TRANSACTION:
+        case KADENA_SIGNING_METHODS.KADENA_QUICKSIGN_TRANSACTION:
+          return ModalStore.open('SessionSignKadenaModal', { requestEvent, requestSession })
+
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }

@@ -1,4 +1,6 @@
 import axios, { AxiosInstance } from "axios";
+import Pact from "pact-lang-api";
+
 import { AssetData } from "./types";
 
 const rpcProvidersByChainId: Record<number, any> = {
@@ -90,6 +92,14 @@ const rpcProvidersByChainId: Record<number, any> = {
       symbol: "CELO",
     },
   },
+  111111: {
+    name: "Kadena",
+    baseURL: "https://api.chainweb.com",
+    token: {
+      name: "KDA",
+      symbol: "KDA",
+    },
+  },
 };
 
 const api: AxiosInstance = axios.create({
@@ -101,10 +111,55 @@ const api: AxiosInstance = axios.create({
   },
 });
 
+async function apiGetKadenaAccountBalance(address: string, networkId: string) {
+  const CHAIN_ID = "0";
+  const API_HOST = `https://api.testnet.chainweb.com/chainweb/0.0/${networkId}/chain/${CHAIN_ID}/pact`;
+
+  const KEY_PAIR = {
+    publicKey: address,
+    secretKey: "",
+  };
+
+  const cmd = {
+    networkId,
+    keyPairs: KEY_PAIR,
+    pactCode: `(coin.get-balance "${address}")`,
+    envData: {},
+    meta: {
+      creationTime: Math.round(new Date().getTime() / 1000),
+      ttl: 28000,
+      gasLimit: 600,
+      chainId: CHAIN_ID,
+      gasPrice: 0.0000001,
+      sender: KEY_PAIR.publicKey,
+    },
+  };
+
+  try {
+    const result = await Pact.fetch.local(cmd, API_HOST);
+
+    console.log(result);
+  } catch (e) {
+    console.log(e);
+  }
+
+  return { balance: "100000000000000000000000", symbol: "KDA", name: "KDA" };
+}
+
 export async function apiGetAccountBalance(
   address: string,
   chainId: string
 ): Promise<AssetData> {
+  console.log({ chainId });
+  const [namespace, networkId] = chainId.split(":");
+
+  console.log(namespace);
+
+  if (namespace === "kadena") {
+    console.log("in");
+    return apiGetKadenaAccountBalance(address, networkId);
+  }
+
   const ethChainId = chainId.split(":")[1];
   const rpc = rpcProvidersByChainId[Number(ethChainId)];
   if (!rpc) {

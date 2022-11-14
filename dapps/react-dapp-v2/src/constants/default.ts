@@ -9,6 +9,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "cosmos:cosmoshub-4",
   "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
   "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+  "kadena:mainnet01",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -21,6 +22,7 @@ export const DEFAULT_TEST_CHAINS = [
   "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
   "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
   "near:testnet",
+  "kadena:testnet04",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -103,6 +105,16 @@ type RelayerType = {
   value: string | undefined;
   label: string;
 };
+
+/**
+ * KADENA
+ */
+export enum DEFAULT_KADENA_METHODS {
+  KADENA_SIGN_TRANSACTION = "kadena_sign_v1",
+  KADENA_QUICKSIGN_TRANSACTION = "kadena_quicksign_v1",
+}
+
+export enum DEFAULT_KADENA_EVENTS {}
 
 export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
   {

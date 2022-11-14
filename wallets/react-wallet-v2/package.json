@@ -13,6 +13,8 @@
     "@cosmjs/encoding": "0.28.4",
     "@cosmjs/proto-signing": "0.28.4",
     "@json-rpc-tools/utils": "1.7.6",
+    "@kadena/client": "^0.0.1",
+    "@kadena/cryptography-utils": "^0.0.4",
     "@near-wallet-selector/wallet-utils": "^7.0.2",
     "@nextui-org/react": "1.0.8-beta.5",
     "@polkadot/keyring": "^10.1.2",

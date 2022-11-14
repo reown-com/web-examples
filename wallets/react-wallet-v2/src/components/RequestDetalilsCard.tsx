@@ -1,5 +1,6 @@
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { Col, Divider, Row, Text } from '@nextui-org/react'
@@ -16,7 +17,7 @@ interface IProps {
 /**
  * Component
  */
-export default function RequesDetailsCard({ chains, protocol }: IProps) {
+export default function RequestDetailsCard({ chains, protocol }: IProps) {
   return (
     <Fragment>
       <Row>
@@ -30,6 +31,7 @@ export default function RequesDetailsCard({ chains, protocol }: IProps) {
                   COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name ??
                   SOLANA_CHAINS[chain as TSolanaChain]?.name ??
                   NEAR_TEST_CHAINS[chain as TNearChain]?.name ??
+                  KADENA_CHAINS[chain as TKadenaChain]?.name ??
                   chain
               )
               .join(', ')}

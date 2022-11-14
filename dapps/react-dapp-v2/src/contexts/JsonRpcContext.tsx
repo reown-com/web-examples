@@ -31,9 +31,12 @@ import {
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_NEAR_METHODS,
+  DEFAULT_KADENA_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
+import { signAndSubmitWithChainweaver } from "@kadena/client";
+import { IChainweaverSignBody } from "../kadena-client/src/chainweaver-api/v1/sign";
 
 /**
  * Types
@@ -45,7 +48,11 @@ interface IFormattedRpcResponse {
   result: string;
 }
 
-type TRpcRequestCallback = (chainId: string, address: string) => Promise<void>;
+type TRpcRequestCallback = (
+  chainId: string,
+  address: string,
+  message?: string
+) => Promise<void>;
 
 interface IContext {
   ping: () => Promise<void>;
@@ -71,6 +78,10 @@ interface IContext {
   nearRpc: {
     testSignAndSendTransaction: TRpcRequestCallback;
     testSignAndSendTransactions: TRpcRequestCallback;
+  };
+  kadenaRpc: {
+    testSignTransaction: TRpcRequestCallback;
+    testSignPersonalMessage: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -814,6 +825,121 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  // -------- KADENA RPC METHODS --------
+
+  const kadenaRpc = {
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (
+        chainId: string, // @TODO rename WCnwID
+        address: string // @TODO rename to pubkey
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_KADENA_METHODS.KADENA_SIGN_TRANSACTION;
+        const [namespace, networkId] = chainId.split(":");
+
+        const body = {
+          code: `(coin.transfer "k:${address}" "doug" 2.0)`,
+          data: {},
+          caps: [] as any,
+          type: "exec",
+          publicMeta: {
+            chainId: "1",
+            sender: "",
+            gasLimit: 1000,
+            gasPrice: 0.000001,
+            ttl: 28800,
+          },
+          signers: [{ pubKey: "", caps: [] }],
+          networkId,
+        };
+
+        body.signers.forEach((signer) => {
+          signer.caps.forEach((cap: any) => {
+            body.caps.push({
+              role: cap.name,
+              description: `cap for ${cap.name}`,
+              cap: {
+                name: cap.name,
+                args: cap.args,
+              },
+            });
+          });
+        });
+
+        // signAndSubmitWithChainweaver({
+        //   code: `(coin.transfer "k:${address}" "doug" 2.0)`,
+        //   data: {},
+        //   type: "exec",
+        //   publicMeta: {
+        //     chainId: "1",
+        //     sender: "",
+        //     gasLimit: 1000,
+        //     gasPrice: 0.000001,
+        //     ttl: 28800,
+        //   },
+        //   signers: [{ pubKey: "", caps: [] }],
+        //   networkId,
+        // });
+
+        const result = await client!.request({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params: [JSON.stringify(body)],
+          },
+        });
+
+        console.log(result);
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: JSON.stringify(
+            (result as any).map((r: any) => r.transaction)
+          ),
+        };
+      }
+    ),
+    testSignPersonalMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+        message?: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_KADENA_METHODS.KADENA_SIGN_TRANSACTION;
+
+        // test message
+        // @ TODO remove(?)
+        message = message || `This is a Kadena message - ${Date.now()}`;
+
+        // encode message (hex)
+        const hexMsg = encoding.utf8ToHex(message, true);
+
+        // personal_sign params
+        const params = [hexMsg, address];
+
+        const result = await client!.request({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params,
+          },
+        });
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: JSON.stringify(
+            (result as any).map((r: any) => r.transaction)
+          ),
+        };
+      }
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -823,6 +949,7 @@ export function JsonRpcContextProvider({
         solanaRpc,
         polkadotRpc,
         nearRpc,
+        kadenaRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,

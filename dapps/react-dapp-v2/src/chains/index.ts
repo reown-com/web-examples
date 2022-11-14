@@ -5,6 +5,7 @@ import * as cosmos from "./cosmos";
 import * as polkadot from "./polkadot";
 import * as solana from "./solana";
 import * as near from "./near";
+import * as kadena from "./kadena";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -21,6 +22,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return solana.getChainMetadata(chainId);
     case "near":
       return near.getChainMetadata(chainId);
+    case "kadena":
+      return kadena.getChainMetadata(chainId);
     default:
       throw new Error(`No metadata handler for namespace ${namespace}`);
   }
@@ -40,6 +43,8 @@ export function getChainRequestRender(
       return polkadot.getChainRequestRender(request);
     case "near":
       return near.getChainRequestRender(request);
+    case "kadena":
+      return kadena.getChainRequestRender(request);
     default:
       throw new Error(`No render handler for namespace ${namespace}`);
   }

@@ -11,6 +11,7 @@ import { PolkadotChainData } from "../chains/polkadot";
 
 import { ChainNamespaces, getAllChainNamespaces } from "../helpers";
 import { NearChainData } from "../chains/near";
+import { KadenaChainData } from "../chains/kadena";
 
 /**
  * Types
@@ -47,6 +48,8 @@ export function ChainDataContextProvider({
             chains = PolkadotChainData;
           } else if (namespace === "near") {
             chains = NearChainData;
+          } else if (namespace === "kadena") {
+            chains = KadenaChainData;
           } else {
             chains = await apiGetChainNamespace(namespace);
           }
