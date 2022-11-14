@@ -64,6 +64,21 @@ export const useConnectionStore = defineStore('connection', () => {
     }
   })
 
+  const requestConnection = async () => {
+    if (!client.value) {
+      return
+    }
+    const { uri } = await client.value.request({
+      aud: window.location.href,
+      domain: window.location.hostname.split('.').slice(-2).join('.'),
+      chainId: 'eip155:1',
+      type: 'eip4361',
+      nonce: generateNonce(),
+      statement: 'Sign in with wallet.',
+    })
+    connectUri.value = uri
+  }
+
   return {
     // Skip hydration from init state
     // as need to init only on the client side from localStorage
@@ -76,20 +91,7 @@ export const useConnectionStore = defineStore('connection', () => {
     init,
     reset,
 
-    async requestConnection() {
-      if (!client.value) {
-        return
-      }
-      const { uri } = await client.value.request({
-        aud: window.location.href,
-        domain: window.location.hostname.split('.').slice(-2).join('.'),
-        chainId: 'eip155:1',
-        type: 'eip4361',
-        nonce: generateNonce(),
-        statement: 'Sign in with wallet.',
-      })
-      connectUri.value = uri
-    },
+    requestConnection,
   }
 })
 
