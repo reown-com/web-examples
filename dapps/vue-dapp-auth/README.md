@@ -49,13 +49,13 @@ yarn dev
 Build the application for production:
 
 ```bash
-yarn run build
+yarn build
 ```
 
 Locally preview production build:
 
 ```bash
-yarn run preview
+yarn preview
 ```
 
 Checkout the [deployment documentation](https://v3.nuxtjs.org/guide/deploy/presets) for more information.
