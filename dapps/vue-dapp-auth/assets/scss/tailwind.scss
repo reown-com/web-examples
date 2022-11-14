@@ -1,0 +1,22 @@
+@use 'themes';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'palette';
+@import 'base';
+@import 'components';
+
+@layer base {
+  :root {
+    /* COMMON PALETTE */
+    @include palette;
+
+    // Default: light mode
+    @include themes.light-mode;
+  }
+  .dark-mode {
+    @include themes.dark-mode;
+  }
+}

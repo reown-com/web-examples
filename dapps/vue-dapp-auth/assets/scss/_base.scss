@@ -1,0 +1,22 @@
+@layer base {
+  html {
+    font-size: 16px; // 1rem
+    @apply tw-font-main tw-leading-sm tw-bg-base tw-text-base;
+  }
+  ::selection {
+    @apply tw-bg-accent-secondary tw-text-bg;
+  }
+
+  a {
+    @apply tw-cursor-pointer;
+  }
+
+  hr {
+    @apply tw-text-divider;
+  }
+
+  input,
+  button {
+    outline: none !important;
+  }
+}
