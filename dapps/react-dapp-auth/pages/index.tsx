@@ -4,10 +4,18 @@ import { version } from "@walletconnect/auth-client/package.json";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import DefaultView from "../views/DefaultView";
-import QrView from "../views/QrView";
 import SignedInView from "../views/SignedInView";
+import type { W3mModal } from "@web3modal/ui";
+import { ModalCtrl } from "@web3modal/core";
+import "@web3modal/ui";
 
-console.log(`AuthClient@${version}`);
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      "w3m-modal": Partial<W3mModal>;
+    }
+  }
+}
 
 const Home: NextPage = () => {
   const [client, setClient] = useState<AuthClient | null>();
@@ -66,11 +74,16 @@ const Home: NextPage = () => {
   const [view, changeView] = useState<"default" | "qr" | "signedIn">("default");
 
   useEffect(() => {
-    if (uri) changeView("qr");
-  }, [uri, changeView]);
+    if (uri) {
+      ModalCtrl.open({ uri, standaloneChains: ["eip155:1"] });
+    }
+  }, [uri]);
 
   useEffect(() => {
-    if (address) changeView("signedIn");
+    if (address) {
+      ModalCtrl.close();
+      changeView("signedIn");
+    }
   }, [address, changeView]);
 
   return (
@@ -78,8 +91,8 @@ const Home: NextPage = () => {
       {view === "default" && (
         <DefaultView onClick={onSignIn} hasInitialized={hasInitialized} />
       )}
-      {view === "qr" && <QrView uri={uri} />}
       {view === "signedIn" && <SignedInView address={address} />}
+      <w3m-modal></w3m-modal>
     </Box>
   );
 };
