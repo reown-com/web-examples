@@ -31,4 +31,4 @@ Catalogue of various wallet and dapp examples implementing WalletConnect's **Sig
 
 **Wallets:**
 
-- [React Chat Wallet](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-chat) ([Demo](https://react-wallet-chat.walletconnect.com/)
+- [React Chat Wallet](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-chat) ([Demo](https://react-wallet-chat.walletconnect.com/))
