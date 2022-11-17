@@ -25,3 +25,10 @@ Catalogue of various wallet and dapp examples implementing WalletConnect's **Sig
 
 - [React Auth dApp](https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-auth) ([Demo](https://react-auth-dapp.walletconnect.com/))
 - [Vue Auth dApp](https://github.com/WalletConnect/web-examples/tree/main/dapps/vue-dapp-auth) ([Demo](https://vue-dapp-auth.vercel.app/))
+
+
+### Chat SDK
+
+**Wallets:**
+
+- [React Chat Wallet](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-chat) ([Demo](https://react-wallet-chat.walletconnect.com/))
