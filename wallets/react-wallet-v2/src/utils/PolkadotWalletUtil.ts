@@ -12,8 +12,7 @@ let address2: string
 /**
  * Utilities
  */
-export function getPolkadotWallets(address: string) {
-  Object.entries(polkadotWallets)
+export function getPolkadotWallet(address: string) {
   let wallet = Object.entries(polkadotWallets).find(([walletAddress, _]) => {
     return addressEq(address, walletAddress)
   })
