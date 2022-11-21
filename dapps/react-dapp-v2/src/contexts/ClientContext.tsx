@@ -23,6 +23,7 @@ import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { getAppMetadata, getSdkError } from "@walletconnect/utils";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 import { getRequiredNamespaces } from "../helpers/namespaces";
+import { getKadenaChainAmount } from "../helpers/kadena";
 
 /**
  * Types
@@ -82,14 +83,21 @@ export function ClientContextProvider({
     setRelayerRegion(DEFAULT_RELAY_URL!);
   };
 
-  const getAccountBalances = async (_accounts: string[]) => {
+  const getAccountBalances = async (
+    _accounts: string[],
+    kadenaNumberOfChains: number
+  ) => {
     setIsFetchingBalances(true);
     try {
       const arr = await Promise.all(
         _accounts.map(async (account) => {
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
-          const assets = await apiGetAccountBalance(address, chainId);
+          const assets = await apiGetAccountBalance(
+            address,
+            chainId,
+            kadenaNumberOfChains
+          );
           return { account, assets: [assets] };
         })
       );
@@ -117,7 +125,9 @@ export function ClientContextProvider({
       setChains(allNamespaceChains);
       setAccounts(allNamespaceAccounts);
       setSolanaPublicKeys(getPublicKeysFromAccounts(allNamespaceAccounts));
-      await getAccountBalances(allNamespaceAccounts);
+
+      const numChains = await getKadenaChainAmount(allNamespaceAccounts);
+      await getAccountBalances(allNamespaceAccounts, numChains);
     },
     []
   );

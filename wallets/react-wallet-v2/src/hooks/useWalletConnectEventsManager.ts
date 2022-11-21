@@ -31,6 +31,8 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       const { request } = params
       const requestSession = signClient.session.get(topic)
 
+      console.log(request.method)
+
       switch (request.method) {
         case EIP155_SIGNING_METHODS.ETH_SIGN:
         case EIP155_SIGNING_METHODS.PERSONAL_SIGN:

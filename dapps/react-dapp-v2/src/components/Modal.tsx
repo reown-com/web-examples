@@ -13,7 +13,7 @@ const SLightbox = styled.div<{
   width: 100vw;
   height: 100%;
   margin-left: -50vw;
-  top: ${({ offset }) => (offset ? `-${offset}px` : 0)};
+  top: 0;
   left: 50%;
   z-index: 10;
   will-change: opacity;
@@ -132,7 +132,6 @@ export default function Modal({ children, show, opacity, closeModal }: IProps) {
     <SLightbox show={show} offset={offset} opacity={opacity} ref={lightboxRef}>
       <SModalContainer>
         <SHitbox onClick={closeModal} />
-
         <SCard>
           <SCloseButton size={25} color="dark" onClick={closeModal} />
           <SModalContent>{children}</SModalContent>

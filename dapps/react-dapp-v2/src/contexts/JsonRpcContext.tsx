@@ -35,8 +35,6 @@ import {
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
-import { signAndSubmitWithChainweaver } from "@kadena/client";
-import { IChainweaverSignBody } from "../kadena-client/src/chainweaver-api/v1/sign";
 
 /**
  * Types
@@ -882,7 +880,7 @@ export function JsonRpcContextProvider({
 
         const result = await client!.request({
           topic: session!.topic,
-          chainId,
+          chainId: WCNetworkId,
           request: {
             method,
             params: [JSON.stringify(body)],
@@ -893,7 +891,7 @@ export function JsonRpcContextProvider({
 
         return {
           method,
-          address,
+          address: publicKey,
           valid: true,
           result: JSON.stringify(
             (result as any).map((r: any) => r.transaction)
