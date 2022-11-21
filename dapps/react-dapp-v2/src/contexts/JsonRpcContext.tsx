@@ -18,7 +18,6 @@ import {
   SystemProgram,
   Transaction as SolanaTransaction,
 } from "@solana/web3.js";
-
 import {
   eip712,
   formatTestTransaction,
@@ -642,18 +641,38 @@ export function JsonRpcContextProvider({
       }
     ),
   };
-  // -------- POLKADOT RPC METHODS --------
 
+  // -------- POLKADOT RPC METHODS --------
   const polkadotRpc = {
     testSignTransaction: _createJsonRpcRequestHandler(
       async (
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        // Below example is a scale encoded payload for system.remark("this is a test wallet-connect remark") transaction.
-        // decode url: https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.polkadot.io#/extrinsics/decode/0x00019074686973206973206120746573742077616c6c65742d636f6e6e6563742072656d61726b
-        const transactionPayload =
-          "0x00019074686973206973206120746573742077616c6c65742d636f6e6e6563742072656d61726b05010000222400000d00000091b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3dc1f37ce7899cf20f63f5ea343f33e9e7b229c7e245049c2a7afc236861fc8b4";
+        const transactionPayload = {
+          specVersion: "0x00002468",
+          transactionVersion: "0x0000000e",
+          address: `${address}`,
+          blockHash: "0x554d682a74099d05e8b7852d19c93b527b5fae1e9e1969f6e1b82a2f09a14cc9",
+          blockNumber: "0x00cb539c",
+          era: "0xc501",
+          genesisHash: "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+          method: "0x0001784920616d207369676e696e672074686973207472616e73616374696f6e21",
+          nonce: "0x00000000",
+          signedExtensions: [
+            "CheckNonZeroSender",
+            "CheckSpecVersion",
+            "CheckTxVersion",
+            "CheckGenesis",
+            "CheckMortality",
+            "CheckNonce",
+            "CheckWeight",
+            "ChargeTransactionPayment"
+          ],
+          tip: "0x00000000000000000000000000000000",
+          version: 4
+        }
+
         try {
           const result = await client!.request<{
             payload: string;
@@ -669,19 +688,11 @@ export function JsonRpcContextProvider({
               },
             },
           });
-
-          // sr25519 signatures need to wait for WASM to load
-          await cryptoWaitReady();
-          const { isValid: valid } = signatureVerify(
-            transactionPayload,
-            result.signature,
-            address
-          );
-
+          
           return {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
             address,
-            valid,
+            valid: true,
             result: result.signature,
           };
         } catch (error: any) {

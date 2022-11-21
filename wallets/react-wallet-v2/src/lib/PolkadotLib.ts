@@ -1,8 +1,9 @@
 import { Keyring } from '@polkadot/keyring'
 import { cryptoWaitReady, mnemonicGenerate } from '@polkadot/util-crypto'
 import { KeyringPair } from '@polkadot/keyring/types'
-import { stringToU8a, u8aToHex, hexToU8a } from '@polkadot/util'
-import { HexString } from '@polkadot/util/types'
+import { u8aToHex } from '@polkadot/util'
+import { SignerPayloadJSON } from '@polkadot/types/types'
+import { TypeRegistry } from '@polkadot/types'
 
 /**
  * Types
@@ -17,10 +18,12 @@ interface IInitArguments {
 export default class PolkadotLib {
   keypair: KeyringPair
   mnemonic: string
+  registry: TypeRegistry
 
   constructor(keypair: KeyringPair, mnemonic: string) {
     this.keypair = keypair
     this.mnemonic = mnemonic
+    this.registry = new TypeRegistry()
   }
 
   static async init({ mnemonic }: IInitArguments) {
@@ -45,16 +48,18 @@ export default class PolkadotLib {
   }
 
   public async signMessage(message: string) {
-    // create the message, actual signature and verify
-    const messageU8a = stringToU8a(message)
-    const sigU8a = this.keypair.sign(messageU8a)
-    const signature = u8aToHex(sigU8a)
-    return { signature }
+    return {
+      signature: u8aToHex(this.keypair.sign(message))
+    }
   }
 
-  public async signTransaction(payload: HexString) {
-    const sigU8a = this.keypair.sign(hexToU8a(payload), { withType: true })
-    const signature = u8aToHex(sigU8a)
-    return { payload, signature }
+  public async signTransaction(payload: SignerPayloadJSON) {
+    this.registry.setSignedExtensions(payload.signedExtensions)
+    const txPayload = this.registry.createType('ExtrinsicPayload', payload, {
+      version: payload.version
+    })
+
+    const { signature } = txPayload.sign(this.keypair)
+    return { signature }
   }
 }
