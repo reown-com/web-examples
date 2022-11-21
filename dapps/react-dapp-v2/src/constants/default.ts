@@ -1,3 +1,6 @@
+if (!process.env.NEXT_PUBLIC_PROJECT_ID)
+  throw new Error("`NEXT_PUBLIC_PROJECT_ID` env variable is missing.");
+
 export const DEFAULT_MAIN_CHAINS = [
   // mainnets
   "eip155:1",

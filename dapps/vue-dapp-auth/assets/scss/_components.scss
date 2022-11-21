@@ -1,0 +1,65 @@
+@layer components {
+  .tw-section {
+    @apply tw-py-8;
+    @screen md {
+      @apply tw-py-12;
+    }
+  }
+
+  // Cards
+  .tw-card {
+    @apply tw-shadow-card tw-rounded-lg tw-bg-dim-1 tw-p-8 sm:tw-px-10;
+  }
+
+  // Buttons
+  .tw-clickable {
+    @apply tw-cursor-pointer tw-gap-1 tw-rounded tw-font-medium tw-inline-flex tw-items-center tw-justify-center tw-duration-onhover-fast;
+    @apply active:tw-scale-click;
+    @apply disabled:tw-pointer-events-none disabled:tw-opacity-muted;
+  }
+  .tw-button {
+    @apply tw-clickable;
+    @apply tw-text-custom tw-leading-xs tw-bg-custom tw-bg-opacity-custom;
+    @apply tw-text-sm tw-h-[2.5em] tw-p-[0.75em];
+    @apply tw-relative before:tw-absolute before:tw-inset-0 before:tw-border before:tw-border-solid before:tw-border-custom before:tw-border-opacity-custom;
+    @apply before:tw-duration-fast before:tw-rounded;
+    @apply focus:tw-ring-2 focus:tw-ring-accent-primary focus:tw-ring-opacity-outline;
+    &::before {
+      mask-image: linear-gradient(to right, rgba(white, 0.5), rgba(white, 1), rgba(white, 0.5));
+    }
+    &:hover {
+      --bg-opacity: var(--bg-opacity-hover);
+      &::before {
+        --border-opacity: var(--border-opacity-hover);
+      }
+    }
+  }
+  .tw-button-primary {
+    @apply tw-button;
+    --text-color: var(--c-button-primary-color);
+    --bg-color: var(--c-button-primary-bg);
+    --border-color: var(--c-button-primary-border);
+    --bg-opacity: var(--o-button-primary-bg);
+    --border-opacity: var(--o-button-primary-border);
+    --bg-opacity-hover: var(--o-button-primary-bg-hover);
+    --border-opacity-hover: var(--o-button-primary-border-hover);
+  }
+  .tw-button-secondary {
+    @apply tw-button;
+    --text-color: var(--c-button-secondary-color);
+    --bg-color: var(--c-button-secondary-bg);
+    --border-color: var(--c-button-secondary-border);
+    --bg-opacity: var(--o-button-secondary-bg);
+    --border-opacity: var(--o-button-secondary-border);
+    --bg-opacity-hover: var(--o-button-secondary-bg-hover);
+    --border-opacity-hover: var(--o-button-secondary-border-hover);
+  }
+
+  // radio
+  .tw-radio-option {
+    @apply tw-size-6 tw-flex tw-items-center tw-justify-center tw-text-dim-3 hover:tw-text-dim-2 tw-duration-onhover-fast;
+    &.checked {
+      @apply tw-text-dim-1;
+    }
+  }
+}

@@ -1,0 +1,38 @@
+@mixin light-mode {
+  /* text */
+  --c-text-base: 5, 5, 6;
+  --c-text-dim-1: 69, 77, 84;
+  --c-text-dim-2: 133, 144, 153;
+  --c-text-dim-3: 179, 185, 189;
+
+  /* bg */
+  --c-bg-base: 230, 235, 242;
+  --c-bg-dim-1: 249, 249, 255;
+  --c-bg-placeholder: 230, 235, 242;
+
+  --c-divider: 209, 215, 219;
+  --c-divider-muted: 230, 235, 242;
+
+  --c-state-error: 255, 71, 117;
+  --c-state-success: 71, 255, 197;
+
+  /* buttons */
+  // primary
+  --c-button-primary-color: var(--c-white);
+  --c-button-primary-bg: var(--c-accent-primary);
+  --c-button-primary-border: var(--c-accent-primary);
+  --o-button-primary-bg: 1;
+  --o-button-primary-bg-hover: 0.9;
+  --o-button-primary-border: 1;
+  --o-button-primary-border-hover: 1;
+  // secondary
+  --c-button-secondary-color: var(--c-accent-primary);
+  --c-button-secondary-bg: var(--c-accent-primary);
+  --c-button-secondary-border: var(--c-accent-primary);
+  --o-button-secondary-bg: 0.2;
+  --o-button-secondary-bg-hover: 0.25;
+  --o-button-secondary-border: 0.5;
+  --o-button-secondary-border-hover: 1;
+
+  --o-outline: 0.1;
+}
