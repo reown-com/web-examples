@@ -7,6 +7,7 @@ import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { POLKADOT_MAINNET_CHAINS, POLKADOT_TEST_CHAINS } from '@/data/PolkadotData'
 import { KADENA_MAINNET_CHAINS, KADENA_TEST_CHAINS } from '@/data/KadenaData'
 import { NEAR_TEST_CHAINS } from '@/data/NEARData'
+import { ELROND_MAINNET_CHAINS, ELROND_TEST_CHAINS } from '@/data/ElrondData'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
@@ -20,7 +21,8 @@ export default function HomePage() {
     solanaAddress,
     polkadotAddress,
     nearAddress,
-    kadenaAddress
+    kadenaAddress,
+    elrondAddress
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -46,6 +48,9 @@ export default function HomePage() {
       {Object.values(KADENA_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={kadenaAddress} />
       ))}
+      {Object.values(ELROND_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} />
+      ))}
 
       {testNets ? (
         <Fragment>
@@ -66,6 +71,9 @@ export default function HomePage() {
           ))}
           {Object.values(KADENA_TEST_CHAINS).map(({ name, logo, rgb }) => (
             <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={kadenaAddress} />
+          ))}
+          {Object.values(ELROND_TEST_CHAINS).map(({ name, logo, rgb }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} />
           ))}
         </Fragment>
       ) : null}

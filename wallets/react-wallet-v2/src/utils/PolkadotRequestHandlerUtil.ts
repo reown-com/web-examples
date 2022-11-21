@@ -1,6 +1,6 @@
 import { POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
 import { getWalletAddressFromParams } from '@/utils/HelperUtil'
-import { polkadotAddresses, polkadotWallets } from '@/utils/PolkadotWalletUtil'
+import { getPolkadotWallet, polkadotAddresses, polkadotWallets } from '@/utils/PolkadotWalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
@@ -10,7 +10,12 @@ export async function approvePolkadotRequest(
 ) {
   const { params, id } = requestEvent
   const { request } = params
-  const wallet = polkadotWallets[getWalletAddressFromParams(polkadotAddresses, params)]
+  const address = request.params?.address
+  const wallet = getPolkadotWallet(address)
+
+  if (!wallet) {
+    throw new Error('Polkadot wallet does not exist')
+  }
 
   switch (request.method) {
     case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_MESSAGE:
@@ -18,7 +23,7 @@ export async function approvePolkadotRequest(
       return formatJsonRpcResult(id, signature)
 
     case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_TRANSACTION:
-      const signedTx = await wallet.signTransaction(request.params.transactionPayload)
+      const signedTx = await wallet?.signTransaction(request.params.transactionPayload)
       return formatJsonRpcResult(id, signedTx)
 
     default:

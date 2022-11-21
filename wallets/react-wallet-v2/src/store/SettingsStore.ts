@@ -12,6 +12,7 @@ interface State {
   polkadotAddress: string
   nearAddress: string
   kadenaAddress: string
+  elrondAddress: string
   relayerRegionURL: string
 }
 
@@ -27,6 +28,7 @@ const state = proxy<State>({
   polkadotAddress: '',
   nearAddress: '',
   kadenaAddress: '',
+  elrondAddress: '',
   relayerRegionURL: ''
 })
 
@@ -63,6 +65,10 @@ const SettingsStore = {
   },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL
+  },
+
+  setElrondAddress(elrondAddress: string) {
+    state.elrondAddress = elrondAddress
   },
 
   toggleTestNets() {

@@ -1,4 +1,5 @@
 import PolkadotLib from '@/lib/PolkadotLib'
+import { addressEq } from '@polkadot/util-crypto'
 
 export let wallet1: PolkadotLib
 export let wallet2: PolkadotLib
@@ -11,6 +12,13 @@ let address2: string
 /**
  * Utilities
  */
+export function getPolkadotWallet(address: string) {
+  let wallet = Object.entries(polkadotWallets).find(([walletAddress, _]) => {
+    return addressEq(address, walletAddress)
+  })
+  return wallet?.[1]
+}
+
 export async function createOrRestorePolkadotWallet() {
   const mnemonic1 = localStorage.getItem('POLKADOT_MNEMONIC_1')
   const mnemonic2 = localStorage.getItem('POLKADOT_MNEMONIC_2')

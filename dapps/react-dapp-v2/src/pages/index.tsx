@@ -13,6 +13,7 @@ import {
   DEFAULT_MAIN_CHAINS,
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_METHODS,
+  DEFAULT_ELROND_METHODS,
   DEFAULT_TEST_CHAINS,
   DEFAULT_NEAR_METHODS,
   DEFAULT_KADENA_METHODS,
@@ -76,6 +77,7 @@ const Home: NextPage = () => {
     polkadotRpc,
     nearRpc,
     kadenaRpc,
+    elrondRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -245,23 +247,6 @@ const Home: NextPage = () => {
     ];
   };
 
-  const deferred = () => {
-    let resolve!: (value: string | PromiseLike<string>) => void;
-    let reject!: (reason?: any) => void;
-    const promise = new Promise<string>((res, rej) => {
-      resolve = res;
-      reject = rej;
-    });
-
-    return {
-      resolve,
-      reject,
-      promise,
-    };
-  };
-
-  let { promise, resolve } = deferred();
-
   const getKadenaActions = (): AccountAction[] => {
     const testSignTransaction = async (chainId: string, address: string) => {
       openRequestModal();
@@ -272,15 +257,6 @@ const Home: NextPage = () => {
       chainId: string,
       address: string
     ) => {
-      // const deferThing = deferred();
-
-      // console.log(deferThing);
-      // promise = deferThing.promise;
-      // resolve = deferThing.resolve;
-      // openDataModal();
-      // console.log(promise);
-      // await promise;
-
       openRequestModal();
       await kadenaRpc.testSignPersonalMessage(chainId, address, requestData);
     };
@@ -293,6 +269,35 @@ const Home: NextPage = () => {
       {
         method: DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN_TRANSACTION,
         callback: testSignPersonalMessage,
+      },
+    ];
+  };
+
+  const getElrondActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await elrondRpc.testSignTransaction(chainId, address);
+    };
+    const onSignTransactions = async (chainId: string, address: string) => {
+      openRequestModal();
+      await elrondRpc.testSignTransactions(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await elrondRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS,
+        callback: onSignTransactions,
+      },
+      {
+        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE,
+        callback: onSignMessage,
       },
     ];
   };
@@ -312,6 +317,8 @@ const Home: NextPage = () => {
         return getNearActions();
       case "kadena":
         return getKadenaActions();
+      case "elrond":
+        return getElrondActions();
       default:
         break;
     }

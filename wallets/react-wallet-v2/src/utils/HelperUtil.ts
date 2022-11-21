@@ -2,7 +2,8 @@ import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
-import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData';
+import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
+import { ELROND_CHAINS, TElrondChain } from '@/data/ElrondData'
 import { utils } from 'ethers'
 
 /**
@@ -67,7 +68,7 @@ export function getWalletAddressFromParams(addresses: string[], params: any) {
   let address = ''
 
   addresses.forEach(addr => {
-    if (paramsString.includes(addr)) {
+    if (paramsString.toLowerCase().includes(addr.toLowerCase())) {
       address = addr
     }
   })
@@ -113,8 +114,14 @@ export function isNearChain(chain: string) {
 /**
  * Check if chain is part of KADENA standard
  */
- export function isKadenaChain(chain: string) {
+export function isKadenaChain(chain: string) {
   return chain.includes('kadena')
+}
+
+/** Check if chain is part of ELROND standard
+ */
+export function isElrondChain(chain: string) {
+  return chain.includes('elrond')
 }
 
 /**
@@ -127,6 +134,7 @@ export function formatChainName(chainId: string) {
     SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
     NEAR_TEST_CHAINS[chainId as TNearChain]?.name ??
     KADENA_CHAINS[chainId as TKadenaChain]?.name ??
+    ELROND_CHAINS[chainId as TElrondChain]?.name ??
     chainId
   )
 }

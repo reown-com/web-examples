@@ -5,6 +5,7 @@ import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
 import { createOrRestoreNearWallet } from '@/utils/NearWalletUtil'
 import { createOrRestoreKadenaWallet } from '@/utils/KadenaWalletUtil'
+import { createOrRestoreElrondWallet } from '@/utils/ElrondWalletUtil'
 import { createSignClient } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
@@ -23,6 +24,7 @@ export default function useInitialization() {
       const { polkadotAddresses } = await createOrRestorePolkadotWallet()
       const { nearAddresses } = await createOrRestoreNearWallet()
       const { kadenaAddresses } = await createOrRestoreKadenaWallet()
+      const { elrondAddresses } = await createOrRestoreElrondWallet()
 
       SettingsStore.setEIP155Address(eip155Addresses[0])
       SettingsStore.setCosmosAddress(cosmosAddresses[0])
@@ -30,6 +32,7 @@ export default function useInitialization() {
       SettingsStore.setPolkadotAddress(polkadotAddresses[0])
       SettingsStore.setNearAddress(nearAddresses[0])
       SettingsStore.setKadenaAddress(kadenaAddresses[0])
+      SettingsStore.setElrondAddress(elrondAddresses[0])
 
       await createSignClient(relayerRegionURL)
       prevRelayerURLValue.current = relayerRegionURL

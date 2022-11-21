@@ -18,7 +18,7 @@ interface IProps {
  */
 export default function SessionCard({ logo, name, url, topic }: IProps) {
   return (
-    <NextLink href={`/session?topic=${topic}`} passHref>
+    <NextLink href={topic ? `/session?topic=${topic}` : '#'} passHref>
       <Card
         clickable
         bordered

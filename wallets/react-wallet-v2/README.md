@@ -1,6 +1,12 @@
 # Wallet Example (React, Typescript, Ethers, NextJS, Cosmos)
 
-This example aims to demonstrate basic and advanced use cases enabled by WalletConnect. Please only use this for refference and development purposes, otherwise you are at risk of loosing your funds.
+This example aims to demonstrate basic and advanced use cases enabled by WalletConnect's Sign SDK.
+
+**The wallet implements Sign v1 and v2 side-by-side**, to serve as a reference for wallet developers
+aiming to support both major versions for backwards compatibility. **All files containing code for the legacy
+v1 implementation are prefixed with `Legacy...`.**
+
+Please only use this for reference and development purposes, otherwise you are at risk of losing your funds.
 
 # Useful links
 
@@ -35,9 +41,9 @@ Your `.env.local` now contains the following environment variables:
 
 1. Initial setup and initializations happen in [_app.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/pages/_app.tsx) file
 2. WalletConnect client, ethers and cosmos wallets are initialized in [useInitialization.ts ](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/hooks/useInitialization.ts) hook
-3. Subscription and handling of WalletConnect events happens in [useWalletConnectEventsManager.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/hooks/useWalletConnectEventsManager.ts) hook, that oppens related [Modal views](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-v2/src/views) and passes them all necesary data
+3. Subscription and handling of WalletConnect events happens in [useWalletConnectEventsManager.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/hooks/useWalletConnectEventsManager.ts) hook, that opens related [Modal views](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-v2/src/views) and passes them all necessary data
 4. [Modal views](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-wallet-v2/src/views) are responsible for data display and handling approval or rejection actions
-5. Uppon approval or rejection modals pass request data to [RequestHandlerUtil.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/utils/RequestHandlerUtil.ts) that performs all necesary work based on request method and returns formated json rpc result data that can be then used for WallteConnect client responses
+5. Upon approval or rejection, modals pass the request data to [RequestHandlerUtil.ts](https://github.com/WalletConnect/web-examples/blob/main/wallets/react-wallet-v2/src/utils/RequestHandlerUtil.ts) that performs all necessary work based on the request method and returns formated json rpc result data that can be then used for WalletConnect client responses
 
 ## Preview of wallet and dapp examples in action
 

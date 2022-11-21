@@ -1,6 +1,6 @@
+import { CoreTypes } from "@walletconnect/types";
 import * as React from "react";
 import styled from "styled-components";
-import { AppMetadata } from "@walletconnect/types";
 import { colors, fonts } from "../styles";
 
 const SPeerOneLiner = styled.div`
@@ -53,7 +53,7 @@ const SName = styled(SCenter as any)`
 
 interface PeerProps {
   oneLiner?: boolean;
-  metadata: AppMetadata;
+  metadata: CoreTypes.Metadata;
 }
 
 const Peer = (props: PeerProps) =>

@@ -2,6 +2,7 @@ import Layout from '@/components/Layout'
 import Modal from '@/components/Modal'
 import useInitialization from '@/hooks/useInitialization'
 import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
+import { createLegacySignClient } from '@/utils/LegacyWalletConnectUtil'
 import { createTheme, NextUIProvider } from '@nextui-org/react'
 import { AppProps } from 'next/app'
 import '../../public/main.css'
@@ -12,6 +13,9 @@ export default function App({ Component, pageProps }: AppProps) {
 
   // Step 2 - Once initialized, set up wallet connect event manager
   useWalletConnectEventsManager(initialized)
+
+  // Backwards compatibility only - create a legacy v1 SignClient instance.
+  createLegacySignClient()
 
   return (
     <NextUIProvider theme={createTheme({ type: 'dark' })}>

@@ -114,6 +114,10 @@ export async function apiGetAccountBalance(
     return apiGetKadenaAccountBalance(address, networkId, numberOfChains);
   }
 
+  if (namespace !== "eip155") {
+    return { balance: "", symbol: "", name: "" };
+  }
+
   const ethChainId = chainId.split(":")[1];
   const rpc = rpcProvidersByChainId[Number(ethChainId)];
   if (!rpc) {

@@ -7,15 +7,18 @@ import SessionSignNearModal from '@/views/SessionSignNearModal'
 import SessionSignPolkadotModal from '@/views/SessionSignPolkadotModal'
 import SessionSignSolanaModal from '@/views/SessionSignSolanaModal'
 import SessionSignKadenaModal from '@/views/SessionSignKadenaModal'
+import SessionSignElrondModal from '@/views/SessionSignElrondModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
+import LegacySessionProposalModal from '@/views/LegacySessionProposalModal'
+import LegacySessionSignModal from '@/views/LegacySessionSignModal'
+import LegacySessionSignTypedDataModal from '@/views/LegacySessionSignTypedDataModal'
+import LegacySessionSendTransactionModal from '@/views/LegacySessionSendTransactionModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
-
-  console.log(view)
 
   return (
     <NextModal blur open={open} style={{ border: '1px solid rgba(139, 139, 139, 0.4)' }}>
@@ -29,6 +32,11 @@ export default function Modal() {
       {view === 'SessionSignPolkadotModal' && <SessionSignPolkadotModal />}
       {view === 'SessionSignNearModal' && <SessionSignNearModal />}
       {view === 'SessionSignKadenaModal' && <SessionSignKadenaModal />}
+      {view === 'SessionSignElrondModal' && <SessionSignElrondModal />}
+      {view === 'LegacySessionProposalModal' && <LegacySessionProposalModal />}
+      {view === 'LegacySessionSignModal' && <LegacySessionSignModal />}
+      {view === 'LegacySessionSignTypedDataModal' && <LegacySessionSignTypedDataModal />}
+      {view === 'LegacySessionSendTransactionModal' && <LegacySessionSendTransactionModal />}
     </NextModal>
   )
 }

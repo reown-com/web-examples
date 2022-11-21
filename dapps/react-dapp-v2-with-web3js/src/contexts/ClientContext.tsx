@@ -1,7 +1,3 @@
-import Client, { CLIENT_EVENTS } from "@walletconnect/client";
-import EthereumProvider from "@walletconnect/ethereum-provider";
-import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import QRCodeModal from "@walletconnect/qrcode-modal";
 import {
   createContext,
   ReactNode,
@@ -11,33 +7,31 @@ import {
   useMemo,
   useState,
 } from "react";
-import Web3 from "web3";
+
+import QRCodeModal from "@walletconnect/qrcode-modal";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
-
-import {
-  DEFAULT_INFURA_ID,
-  DEFAULT_LOGGER,
-  DEFAULT_PROJECT_ID,
-  DEFAULT_RELAY_URL,
-} from "../constants";
-import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../helpers";
+import UniversalProvider from "@walletconnect/universal-provider";
+import Client from "@walletconnect/sign-client";
+import Web3 from "web3";
+import { DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from "../constants";
 import { utils } from "ethers";
-
+import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../helpers";
+import { PairingTypes, SessionTypes } from "@walletconnect/types";
 /**
  * Types
  */
 interface IContext {
   client: Client | undefined;
-  session: SessionTypes.Created | undefined;
+  session: SessionTypes.Struct | undefined;
+  connect: (caipChainId: string, pairing?: { topic: string }) => Promise<void>;
   disconnect: () => Promise<void>;
   isInitializing: boolean;
   chain: string;
-  pairings: string[];
+  pairings: PairingTypes.Struct[];
   accounts: string[];
   balances: AccountBalances;
   isFetchingBalances: boolean;
   chainData: ChainNamespaces;
-  onEnable: (chainId: string) => Promise<void>;
   web3Provider?: Web3;
 }
 
@@ -51,10 +45,10 @@ export const ClientContext = createContext<IContext>({} as IContext);
  */
 export function ClientContextProvider({ children }: { children: ReactNode | ReactNode[] }) {
   const [client, setClient] = useState<Client>();
-  const [pairings, setPairings] = useState<string[]>([]);
-  const [session, setSession] = useState<SessionTypes.Created>();
+  const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
+  const [session, setSession] = useState<SessionTypes.Struct>();
 
-  const [ethereumProvider, setEthereumProvider] = useState<EthereumProvider>();
+  const [ethereumProvider, setEthereumProvider] = useState<UniversalProvider>();
   const [web3Provider, setWeb3Provider] = useState<Web3>();
 
   const [isFetchingBalances, setIsFetchingBalances] = useState(false);
@@ -98,33 +92,46 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       throw new Error("ethereumProvider is not initialized");
     }
     await ethereumProvider.disconnect();
+    resetApp();
   }, [ethereumProvider]);
 
-  const _subscribeToClientEvents = useCallback(async (_client: Client) => {
+  const _subscribeToProviderEvents = useCallback(async (_client: UniversalProvider) => {
     if (typeof _client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
 
-    _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
-      const { uri } = proposal.signal.params;
+    _client.on("display_uri", async (uri: string) => {
       console.log("EVENT", "QR Code Modal open");
       QRCodeModal.open(uri, () => {
         console.log("EVENT", "QR Code Modal closed");
       });
     });
 
-    _client.on(CLIENT_EVENTS.pairing.created, async () => {
-      setPairings(_client.pairing.topics);
+    // Subscribe to session ping
+    _client.on("session_ping", ({ id, topic }: { id: number; topic: string }) => {
+      console.log("EVENT", "session_ping");
+      console.log(id, topic);
     });
 
-    _client.on(CLIENT_EVENTS.session.updated, (updatedSession: SessionTypes.Settled) => {
-      console.log("EVENT", "session_updated");
-      setAccounts(updatedSession.state.accounts);
-      setSession(updatedSession);
+    // Subscribe to session event
+    _client.on("session_event", ({ event, chainId }: { event: any; chainId: string }) => {
+      console.log("EVENT", "session_event");
+      console.log(event, chainId);
     });
 
-    _client.on(CLIENT_EVENTS.session.deleted, () => {
+    // Subscribe to session update
+    _client.on(
+      "session_update",
+      ({ topic, session }: { topic: string; session: SessionTypes.Struct }) => {
+        console.log("EVENT", "session_updated");
+        setSession(session);
+      },
+    );
+
+    // Subscribe to session delete
+    _client.on("session_delete", ({ id, topic }: { id: number; topic: string }) => {
       console.log("EVENT", "session_deleted");
+      console.log(id, topic);
       resetApp();
     });
   }, []);
@@ -133,24 +140,30 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     try {
       setIsInitializing(true);
 
-      const _client = await Client.init({
+      const provider = await UniversalProvider.init({
+        projectId: DEFAULT_PROJECT_ID,
         logger: DEFAULT_LOGGER,
         relayUrl: DEFAULT_RELAY_URL,
-        projectId: DEFAULT_PROJECT_ID,
       });
 
-      setClient(_client);
-      await _subscribeToClientEvents(_client);
+      setEthereumProvider(provider);
+      setClient(provider.client);
+      await _subscribeToProviderEvents(provider);
     } catch (err) {
       throw err;
     } finally {
       setIsInitializing(false);
     }
-  }, [_subscribeToClientEvents]);
+  }, [_subscribeToProviderEvents]);
 
-  const onEnable = useCallback(
-    async (caipChainId: string) => {
-      if (!client) {
+  const createWeb3Provider = useCallback((ethereumProvider: UniversalProvider) => {
+    const web3Provider = new Web3(ethereumProvider);
+    setWeb3Provider(web3Provider);
+  }, []);
+
+  const connect = useCallback(
+    async (caipChainId: string, pairing?: { topic: string }) => {
+      if (!ethereumProvider) {
         throw new ReferenceError("WalletConnect Client is not initialized.");
       }
 
@@ -166,35 +179,97 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         {},
       );
 
-      //  Create WalletConnect Provider
-      const ethereumProvider = new EthereumProvider({
-        chainId: Number(chainId),
-        rpc: {
-          infuraId: DEFAULT_INFURA_ID,
-          custom: customRpcs,
+      const session = await ethereumProvider.connect({
+        namespaces: {
+          eip155: {
+            methods: [
+              "eth_sendTransaction",
+              "eth_signTransaction",
+              "eth_sign",
+              "personal_sign",
+              "eth_signTypedData",
+            ],
+            chains: [`eip155:${chainId}`],
+            events: ["chainChanged", "accountsChanged"],
+            rpcMap: customRpcs,
+          },
         },
-        client,
+        pairingTopic: pairing?.topic,
       });
 
-      const web3Provider = new Web3(ethereumProvider);
-
-      console.log(ethereumProvider);
-      console.log(web3Provider);
-
-      setEthereumProvider(ethereumProvider);
-      setWeb3Provider(web3Provider);
-
+      createWeb3Provider(ethereumProvider);
       const _accounts = await ethereumProvider.enable();
-      const _session = await client.session.get(client.session.topics[0]);
-
+      console.log("_accounts", _accounts);
       setAccounts(_accounts);
-      setSession(_session);
+      setSession(session);
       setChain(caipChainId);
+
+      QRCodeModal.close();
+    },
+    [ethereumProvider, chainData.eip155, createWeb3Provider],
+  );
+
+  const onSessionConnected = useCallback(
+    async (_session: SessionTypes.Struct) => {
+      if (!ethereumProvider) {
+        throw new ReferenceError("EthereumProvider is not initialized.");
+      }
+      const allNamespaceAccounts = Object.values(_session.namespaces)
+        .map(namespace => namespace.accounts)
+        .flat();
+      const allNamespaceChains = Object.keys(_session.namespaces);
+
+      const chainData = allNamespaceAccounts[0].split(":");
+      const caipChainId = `${chainData[0]}:${chainData[1]}`;
+      console.log("restored caipChainId", caipChainId);
+      setChain(caipChainId);
+      setSession(_session);
+      setAccounts(allNamespaceAccounts.map(account => account.split(":")[2]));
+      console.log("RESTORED", allNamespaceChains, allNamespaceAccounts);
+      createWeb3Provider(ethereumProvider);
+    },
+    [ethereumProvider, createWeb3Provider],
+  );
+
+  const _checkForPersistedSession = useCallback(
+    async (provider: UniversalProvider) => {
+      if (typeof provider === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
+      const pairings = provider.client.pairing.getAll({ active: true });
+      // populates existing pairings to state
+      setPairings(pairings);
+      console.log("RESTORED PAIRINGS: ", pairings);
+      if (typeof session !== "undefined") return;
+      // populates (the last) existing session to state
+      if (ethereumProvider?.session) {
+        const _session = ethereumProvider?.session;
+        console.log("RESTORED SESSION:", _session);
+        await onSessionConnected(_session);
+        return _session;
+      }
+    },
+    [session, ethereumProvider, onSessionConnected],
+  );
+
+  useEffect(() => {
+    loadChainData();
+  }, []);
+
+  useEffect(() => {
+    if (!client) {
+      createClient();
+    }
+  }, [client, createClient]);
+
+  useEffect(() => {
+    const fetchBalances = async () => {
+      if (!web3Provider || !accounts) return;
 
       try {
         setIsFetchingBalances(true);
         const _balances = await Promise.all(
-          _accounts.map(async account => {
+          accounts.map(async account => {
             const balance = await web3Provider.eth.getBalance(account);
             return {
               account,
@@ -216,51 +291,22 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       } finally {
         setIsFetchingBalances(false);
       }
+    };
 
-      QRCodeModal.close();
-    },
-    [client, chainData.eip155],
-  );
-
-  const _checkForPersistedSession = useCallback(
-    async (_client: Client) => {
-      if (typeof _client === "undefined") {
-        throw new Error("WalletConnect is not initialized");
-      }
-      // populates existing pairings to state
-      setPairings(_client.pairing.topics);
-      if (typeof session !== "undefined") return;
-      // populates existing session to state (assume only the top one)
-      if (_client.session.topics.length) {
-        const _session = await _client.session.get(_client.session.topics[0]);
-        const [namespace, chainId] = _session.state.accounts[0].split(":");
-        const caipChainId = `${namespace}:${chainId}`;
-        onEnable(caipChainId);
-      }
-    },
-    [session, onEnable],
-  );
-
-  useEffect(() => {
-    loadChainData();
-  }, []);
-
-  useEffect(() => {
-    if (!client) {
-      createClient();
-    }
-  }, [client, createClient]);
+    fetchBalances();
+  }, [web3Provider, accounts]);
 
   useEffect(() => {
     const getPersistedSession = async () => {
-      if (client && !hasCheckedPersistedSession) {
-        await _checkForPersistedSession(client);
-        setHasCheckedPersistedSession(true);
-      }
+      if (!ethereumProvider) return;
+      await _checkForPersistedSession(ethereumProvider);
+      setHasCheckedPersistedSession(true);
     };
 
-    getPersistedSession();
-  }, [client, _checkForPersistedSession, hasCheckedPersistedSession]);
+    if (ethereumProvider && chainData && !hasCheckedPersistedSession) {
+      getPersistedSession();
+    }
+  }, [ethereumProvider, chainData, _checkForPersistedSession, hasCheckedPersistedSession]);
 
   const value = useMemo(
     () => ({
@@ -273,8 +319,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       client,
       session,
       disconnect,
+      connect,
       chainData,
-      onEnable,
       web3Provider,
     }),
     [
@@ -287,8 +333,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       client,
       session,
       disconnect,
+      connect,
       chainData,
-      onEnable,
       web3Provider,
     ],
   );
