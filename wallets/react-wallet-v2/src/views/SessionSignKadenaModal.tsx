@@ -25,7 +25,7 @@ export default function SessionSignKadenaModal() {
   const { request, chainId } = params
 
   // Get message, convert it to UTF8 string if it is valid hex
-  const message = getSignParamsMessage(request.params)
+  const message = request.params.message?.toString()
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {

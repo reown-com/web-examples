@@ -19,7 +19,7 @@ export async function getKadenaChainAmount(
     const json = await response.json();
     return json.nodeNumberOfChains;
   } catch (e) {
-    console.error("Error fetching Kadena info", e);
+    console.error("Error fetching Kadena chain info", e);
     return 0;
   }
 }

@@ -13,9 +13,9 @@ const SLightbox = styled.div<{
   width: 100vw;
   height: 100%;
   margin-left: -50vw;
-  top: 0;
+  top: ${({ offset }) => (offset ? `-${offset}px` : 0)};
   left: 50%;
-  z-index: 10;
+  z-index: 2;
   will-change: opacity;
   background-color: ${({ opacity }) => {
     let alpha = 0.4;
@@ -40,7 +40,6 @@ const SModalContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
 `;
 
 const SHitbox = styled.div`

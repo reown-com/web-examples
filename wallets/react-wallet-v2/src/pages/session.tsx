@@ -48,7 +48,6 @@ export default function SessionPage() {
 
   async function onSessionEmit() {
     setLoading(true)
-    console.log('baleg')
     await signClient.emit({
       topic,
       event: { name: 'chainChanged', data: 'Hello World' },

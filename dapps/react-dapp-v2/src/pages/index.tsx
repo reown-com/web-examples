@@ -23,7 +23,6 @@ import Toggle from "../components/Toggle";
 import RequestModal from "../modals/RequestModal";
 import PairingModal from "../modals/PairingModal";
 import PingModal from "../modals/PingModal";
-import DataModal from "../modals/DataModal";
 import {
   SAccounts,
   SAccountsContainer,
@@ -43,13 +42,11 @@ const { version } = require("@walletconnect/sign-client/package.json");
 
 const Home: NextPage = () => {
   const [modal, setModal] = useState("");
-  const [requestData, setRequestData] = useState("");
 
   const closeModal = () => setModal("");
   const openPairingModal = () => setModal("pairing");
   const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
-  const openDataModal = () => setModal("data");
 
   // Initialize the WalletConnect client.
   const {
@@ -253,12 +250,12 @@ const Home: NextPage = () => {
       await kadenaRpc.testSignTransaction(chainId, address);
     };
 
-    const testSignPersonalMessage = async (
+    const testQuickSignTransaction = async (
       chainId: string,
       address: string
     ) => {
       openRequestModal();
-      await kadenaRpc.testSignPersonalMessage(chainId, address, requestData);
+      await kadenaRpc.testQuickSignTransaction(chainId, address);
     };
 
     return [
@@ -268,7 +265,7 @@ const Home: NextPage = () => {
       },
       {
         method: DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN_TRANSACTION,
-        callback: testSignPersonalMessage,
+        callback: testQuickSignTransaction,
       },
     ];
   };
@@ -353,15 +350,6 @@ const Home: NextPage = () => {
         );
       case "ping":
         return <PingModal pending={isRpcRequestPending} result={rpcResult} />;
-      case "data":
-        return (
-          <DataModal
-            submit={(value) => {
-              setRequestData(value);
-              resolve(value);
-            }}
-          />
-        );
       default:
         return null;
     }

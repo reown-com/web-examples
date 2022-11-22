@@ -91,7 +91,7 @@ interface IContext {
   };
   kadenaRpc: {
     testSignTransaction: TRpcRequestCallback;
-    testSignPersonalMessage: TRpcRequestCallback;
+    testQuickSignTransaction: TRpcRequestCallback;
   };
   elrondRpc: {
     testSignMessage: TRpcRequestCallback;
@@ -864,7 +864,7 @@ export function JsonRpcContextProvider({
         publicKey: string
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_KADENA_METHODS.KADENA_SIGN_TRANSACTION;
-        const [namespace, networkId] = WCNetworkId.split(":");
+        const [_, networkId] = WCNetworkId.split(":");
 
         const body = {
           code: `(coin.transfer "k:${publicKey}" "doug" 2.0)`,
@@ -878,7 +878,7 @@ export function JsonRpcContextProvider({
             gasPrice: 0.000001,
             ttl: 28800,
           },
-          signers: [{ pubKey: "", caps: [] }],
+          signers: [{ pubKey: publicKey, caps: [] }],
           networkId,
         };
 
@@ -886,7 +886,7 @@ export function JsonRpcContextProvider({
           signer.caps.forEach((cap: any) => {
             body.caps.push({
               role: cap.name,
-              description: `cap for ${cap.name}`,
+              description: `CAP for ${cap.name}`,
               cap: {
                 name: cap.name,
                 args: cap.args,
@@ -895,53 +895,31 @@ export function JsonRpcContextProvider({
           });
         });
 
-        // signAndSubmitWithChainweaver({
-        //   code: `(coin.transfer "k:${address}" "doug" 2.0)`,
-        //   data: {},
-        //   type: "exec",
-        //   publicMeta: {
-        //     chainId: "1",
-        //     sender: "",
-        //     gasLimit: 1000,
-        //     gasPrice: 0.000001,
-        //     ttl: 28800,
-        //   },
-        //   signers: [{ pubKey: "", caps: [] }],
-        //   networkId,
-        // });
-
-        const result = await client!.request({
+        const result = await client!.request<{ signature: string }>({
           topic: session!.topic,
           chainId: WCNetworkId,
           request: {
             method,
-            params: [JSON.stringify(body)],
+            params: { transaction: body },
           },
         });
-
-        console.log(result);
 
         return {
           method,
           address: publicKey,
           valid: true,
-          result: JSON.stringify(
-            (result as any).map((r: any) => r.transaction)
-          ),
+          result: result.signature,
         };
       }
     ),
-    testSignPersonalMessage: _createJsonRpcRequestHandler(
+    testQuickSignTransaction: _createJsonRpcRequestHandler(
       async (
         chainId: string,
-        address: string,
-        message?: string
+        address: string
       ): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_KADENA_METHODS.KADENA_SIGN_TRANSACTION;
+        const method = DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN_TRANSACTION;
 
-        // test message
-        // @ TODO remove(?)
-        message = message || `This is a Kadena message - ${Date.now()}`;
+        const message = `This is a Kadena message - ${Date.now()}`;
 
         // encode message (hex)
         const hexMsg = encoding.utf8ToHex(message, true);
@@ -954,7 +932,10 @@ export function JsonRpcContextProvider({
           chainId,
           request: {
             method,
-            params,
+            params: {
+              transaction: null,
+              message,
+            },
           },
         });
 
