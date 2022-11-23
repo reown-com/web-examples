@@ -91,7 +91,7 @@ interface IContext {
   };
   kadenaRpc: {
     testSignTransaction: TRpcRequestCallback;
-    testQuickSignTransaction: TRpcRequestCallback;
+    testSignMessage: TRpcRequestCallback;
   };
   elrondRpc: {
     testSignMessage: TRpcRequestCallback;
@@ -866,8 +866,8 @@ export function JsonRpcContextProvider({
         const method = DEFAULT_KADENA_METHODS.KADENA_SIGN_TRANSACTION;
         const [_, networkId] = WCNetworkId.split(":");
 
-        const body = {
-          code: `(coin.transfer "k:${publicKey}" "doug" 2.0)`,
+        const transaction = {
+          code: `(coin.transfer "k:${publicKey}" "k:c0f35670c3ae8c0f4927e5d456dfd237195fc05d752fdb59379fd2d04f259b44" 2.0)`,
           data: {},
           caps: [] as any,
           type: "exec",
@@ -882,9 +882,9 @@ export function JsonRpcContextProvider({
           networkId,
         };
 
-        body.signers.forEach((signer) => {
+        transaction.signers.forEach((signer) => {
           signer.caps.forEach((cap: any) => {
-            body.caps.push({
+            transaction.caps.push({
               role: cap.name,
               description: `CAP for ${cap.name}`,
               cap: {
@@ -900,7 +900,7 @@ export function JsonRpcContextProvider({
           chainId: WCNetworkId,
           request: {
             method,
-            params: { transaction: body },
+            params: { transaction },
           },
         });
 
@@ -912,29 +912,26 @@ export function JsonRpcContextProvider({
         };
       }
     ),
-    testQuickSignTransaction: _createJsonRpcRequestHandler(
+    testSignMessage: _createJsonRpcRequestHandler(
       async (
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN_TRANSACTION;
+        const method = DEFAULT_KADENA_METHODS.KADENA_SIGN_MESSAGE;
 
         const message = `This is a Kadena message - ${Date.now()}`;
 
         // encode message (hex)
         const hexMsg = encoding.utf8ToHex(message, true);
 
-        // personal_sign params
-        const params = [hexMsg, address];
-
-        const result = await client!.request({
+        const result = await client!.request<{ signature: string }>({
           topic: session!.topic,
           chainId,
           request: {
             method,
             params: {
-              transaction: null,
-              message,
+              address,
+              message: hexMsg,
             },
           },
         });
@@ -943,9 +940,7 @@ export function JsonRpcContextProvider({
           method,
           address,
           valid: true,
-          result: JSON.stringify(
-            (result as any).map((r: any) => r.transaction)
-          ),
+          result: result.signature,
         };
       }
     ),

@@ -4,7 +4,7 @@ import RequestDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
-import { getSignParamsMessage } from '@/utils/HelperUtil'
+import { convertHexToUtf8, getSignParamsMessage } from '@/utils/HelperUtil'
 import { approveKadenaRequest, rejectKadenaRequest } from '@/utils/KadenaRequestHandlerUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Col, Divider, Modal, Row, Text } from '@nextui-org/react'
@@ -25,7 +25,7 @@ export default function SessionSignKadenaModal() {
   const { request, chainId } = params
 
   // Get message, convert it to UTF8 string if it is valid hex
-  const message = request.params.message?.toString()
+  const message = convertHexToUtf8(request.params.message)
 
   // Handle approve action (logic varies based on request method)
   async function onApprove() {

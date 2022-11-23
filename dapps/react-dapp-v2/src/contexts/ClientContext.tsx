@@ -94,21 +94,14 @@ export function ClientContextProvider({
     setRelayerRegion(DEFAULT_RELAY_URL!);
   };
 
-  const getAccountBalances = async (
-    _accounts: string[],
-    kadenaNumberOfChains: number
-  ) => {
+  const getAccountBalances = async (_accounts: string[]) => {
     setIsFetchingBalances(true);
     try {
       const arr = await Promise.all(
         _accounts.map(async (account) => {
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
-          const assets = await apiGetAccountBalance(
-            address,
-            chainId,
-            kadenaNumberOfChains
-          );
+          const assets = await apiGetAccountBalance(address, chainId);
           return { account, assets: [assets] };
         })
       );
@@ -137,8 +130,7 @@ export function ClientContextProvider({
       setAccounts(allNamespaceAccounts);
       setSolanaPublicKeys(getPublicKeysFromAccounts(allNamespaceAccounts));
 
-      const numChains = await getKadenaChainAmount(allNamespaceAccounts);
-      await getAccountBalances(allNamespaceAccounts, numChains);
+      await getAccountBalances(allNamespaceAccounts);
     },
     []
   );

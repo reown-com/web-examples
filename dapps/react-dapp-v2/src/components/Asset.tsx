@@ -46,7 +46,7 @@ function getAssetIcon(asset: AssetData): JSX.Element {
       return <Icon src={xdaiLogo} />;
     case "matic":
       return <Icon src={maticLogo} />;
-    case "kadena":
+    case "kda":
       return <Icon src={kadenaLogo} />;
     default:
       return <Icon src={"/assets/eth20.svg"} />;
@@ -59,6 +59,7 @@ interface AssetProps {
 
 const Asset = (props: AssetProps) => {
   const { asset } = props;
+  const decimals = asset.name === "KDA" ? 12 : undefined;
   return (
     <SAsset {...props}>
       <SAssetLeft>
@@ -67,9 +68,7 @@ const Asset = (props: AssetProps) => {
       </SAssetLeft>
       <SAssetRight>
         <SAssetBalance>
-          {asset.name === "kadena"
-            ? asset.balance
-            : `${fromWad(asset.balance || "0")} ${asset.symbol}`}
+          {fromWad(asset.balance || "0", decimals)} {asset.symbol}
         </SAssetBalance>
       </SAssetRight>
     </SAsset>

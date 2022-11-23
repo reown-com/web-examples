@@ -15,7 +15,11 @@ export async function approveKadenaRequest(
 
   switch (request.method) {
     case KADENA_SIGNING_METHODS.KADENA_SIGN_TRANSACTION:
-      const signedMessage = wallet.signRequest(request.params.transaction)
+      const signedRequest = wallet.signRequest(request.params.transaction)
+      return formatJsonRpcResult(id, signedRequest)
+
+    case KADENA_SIGNING_METHODS.KADENA_SIGN_MESSAGE:
+      const signedMessage = wallet.signRequest(request.params.message)
       return formatJsonRpcResult(id, signedMessage)
 
     default:

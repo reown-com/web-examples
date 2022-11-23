@@ -250,12 +250,9 @@ const Home: NextPage = () => {
       await kadenaRpc.testSignTransaction(chainId, address);
     };
 
-    const testQuickSignTransaction = async (
-      chainId: string,
-      address: string
-    ) => {
+    const testSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
-      await kadenaRpc.testQuickSignTransaction(chainId, address);
+      await kadenaRpc.testSignMessage(chainId, address);
     };
 
     return [
@@ -264,8 +261,8 @@ const Home: NextPage = () => {
         callback: testSignTransaction,
       },
       {
-        method: DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN_TRANSACTION,
-        callback: testQuickSignTransaction,
+        method: DEFAULT_KADENA_METHODS.KADENA_SIGN_MESSAGE,
+        callback: testSignMessage,
       },
     ];
   };

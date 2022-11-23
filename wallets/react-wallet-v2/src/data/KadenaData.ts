@@ -30,6 +30,6 @@ export const KADENA_CHAINS = { ...KADENA_MAINNET_CHAINS, ...KADENA_TEST_CHAINS }
  * Methods
  */
 export const KADENA_SIGNING_METHODS = {
-  KADENA_SIGN_TRANSACTION: 'kadena_sign_v1',
-  KADENA_QUICKSIGN_TRANSACTION: 'kadena_quicksign_v1'
+  KADENA_SIGN_TRANSACTION: 'kadena_signTransaction',
+  KADENA_SIGN_MESSAGE: 'kadena_signMessage'
 }

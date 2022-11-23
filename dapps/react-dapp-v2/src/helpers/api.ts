@@ -105,13 +105,12 @@ const api: AxiosInstance = axios.create({
 
 export async function apiGetAccountBalance(
   address: string,
-  chainId: string,
-  numberOfChains: number
+  chainId: string
 ): Promise<AssetData> {
   const [namespace, networkId] = chainId.split(":");
 
   if (namespace === "kadena") {
-    return apiGetKadenaAccountBalance(address, networkId, numberOfChains);
+    return apiGetKadenaAccountBalance(address, networkId);
   }
 
   if (namespace !== "eip155") {

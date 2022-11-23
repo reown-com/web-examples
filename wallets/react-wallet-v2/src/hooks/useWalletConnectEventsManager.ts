@@ -80,7 +80,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           })
 
         case KADENA_SIGNING_METHODS.KADENA_SIGN_TRANSACTION:
-        case KADENA_SIGNING_METHODS.KADENA_QUICKSIGN_TRANSACTION:
+        case KADENA_SIGNING_METHODS.KADENA_SIGN_MESSAGE:
           return ModalStore.open('SessionSignKadenaModal', { requestEvent, requestSession })
 
         default:
