@@ -10,6 +10,8 @@ import {
   verifyDirectSignature,
 } from "cosmos-wallet";
 import bs58 from "bs58";
+
+import { makeSignDoc as makeAminoSignDoc } from "@cosmjs/amino";
 import { verifyMessageSignature } from "solana-wallet";
 import {
   clusterApiUrl,
@@ -18,6 +20,7 @@ import {
   SystemProgram,
   Transaction as SolanaTransaction,
 } from "@solana/web3.js";
+
 import {
   eip712,
   formatTestTransaction,
@@ -46,6 +49,7 @@ import {
 import { UserVerifier } from "@elrondnetwork/erdjs-walletcore/out/userVerifier";
 import { Signature } from "@elrondnetwork/erdjs-walletcore/out/signature";
 import { IVerifiable } from "@elrondnetwork/erdjs-walletcore/out/interface";
+import axios from "axios";
 
 /**
  * Types
@@ -472,14 +476,8 @@ export function JsonRpcContextProvider({
         const [namespace, reference] = chainId.split(":");
 
         // test amino sign doc
-        const signDoc = {
-          msgs: [],
-          fee: { amount: [], gas: "23" },
-          chain_id: "foochain",
-          memo: "hello, world",
-          account_number: "7",
-          sequence: "54",
-        };
+
+        const signDoc = await makeSignTx(address);
 
         // cosmos_signAmino params
         const params = { signerAddress: address, signDoc };
@@ -517,6 +515,46 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  async function makeSignTx(address: string) {
+    const LCD_ENDPOINT = "https://lcd-cosmoshub.blockapsis.com/";
+    const DENOM = "uatom";
+    const to = address;
+    const url = `${LCD_ENDPOINT}/cosmos/auth/v1beta1/accounts/${address}`;
+    const data = (await axios.get(url)).data;
+    const accountNumber = data.account.account_number;
+    const sequence = data.account.sequence;
+    const message = makeAminoSendMessage(address, to, "10", DENOM);
+    const fee = { amount: [{ denom: DENOM, amount: "1000" }], gas: "80000" };
+    return makeAminoSignDoc(
+      [message],
+      fee,
+      "cosmoshub-4",
+      "",
+      accountNumber,
+      sequence
+    );
+  }
+
+  function makeAminoSendMessage(
+    from: string,
+    to: string,
+    amount: string,
+    denom: string
+  ) {
+    return {
+      type: "cosmos-sdk/MsgSend",
+      value: {
+        amount: [
+          {
+            amount: String(amount),
+            denom: denom,
+          },
+        ],
+        from_address: from,
+        to_address: to,
+      },
+    };
+  }
   // -------- SOLANA RPC METHODS --------
 
   const solanaRpc = {
