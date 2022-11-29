@@ -10,19 +10,26 @@ export default function useInitialization() {
 
   const onInitialize = useCallback(async () => {
     try {
+      const accountId = parseInt(
+        new URLSearchParams(window.location.search).get('accountId') ?? '0'
+      )
       const { eip155Addresses } = createOrRestoreEIP155Wallet()
       const { cosmosAddresses } = await createOrRestoreCosmosWallet()
       const { solanaAddresses } = await createOrRestoreSolanaWallet()
 
-      SettingsStore.setEIP155Address(eip155Addresses[0])
-      SettingsStore.setCosmosAddress(cosmosAddresses[0])
-      SettingsStore.setSolanaAddress(solanaAddresses[0])
+      SettingsStore.setAccount(accountId)
+      SettingsStore.setEIP155Address(eip155Addresses[accountId])
+      SettingsStore.setCosmosAddress(cosmosAddresses[accountId])
+      SettingsStore.setSolanaAddress(solanaAddresses[accountId])
 
       await createSignClient()
 
       await createChatClient()
-      await chatClient.register({ account: `eip155:1:${eip155Addresses[0]}` })
-      console.log('[Chat] registered address %s on keyserver', `eip155:1:${eip155Addresses[0]}`)
+      await chatClient.register({ account: `eip155:1:${eip155Addresses[accountId]}` })
+      console.log(
+        '[Chat] registered address %s on keyserver',
+        `eip155:1:${eip155Addresses[accountId]}`
+      )
 
       setInitialized(true)
     } catch (err: unknown) {
