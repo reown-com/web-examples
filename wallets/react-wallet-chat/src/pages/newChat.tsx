@@ -46,7 +46,7 @@ export default function NewChatPage() {
   )
 
   const inviteQrCode = useCallback(async (addressToInvite: string) => {
-    const uri = `${window.location.origin}/newChat?accountId=1&target=${addressToInvite}`
+    const uri = `${window.location.origin}/newChat?accountId=1&target=${SettingsStore.state.eip155Address}`
     web3modal.openModal({ uri })
   }, [])
 
