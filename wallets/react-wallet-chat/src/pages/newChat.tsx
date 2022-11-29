@@ -45,8 +45,8 @@ export default function NewChatPage() {
     [setAddress, createInvite]
   )
 
-  const inviteQrCode = useCallback(async (addressToInvite: string) => {
-    const uri = `${window.location.origin}/newChat?accountId=1&target=${SettingsStore.state.eip155Address}`
+  const inviteQrCode = useCallback(async () => {
+    const uri = `${window.location.origin}/newChat?accountId=1&target=eip155:1:${SettingsStore.state.eip155Address}`
     web3modal.openModal({ uri })
   }, [])
 
@@ -66,7 +66,7 @@ export default function NewChatPage() {
         backButtonHref="/chats"
         ctaButton={
           <Row justify="space-evenly">
-            <ChatPrimaryCTAButton icon={<HiQrcode />} onClick={() => inviteQrCode(address)} />
+            <ChatPrimaryCTAButton icon={<HiQrcode />} onClick={inviteQrCode} />
             <ChatPrimaryCTAButton icon={<FiArrowRight />} onClick={() => onInvite(address)} />
           </Row>
         }
