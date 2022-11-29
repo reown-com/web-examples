@@ -30,6 +30,7 @@ interface State {
     | 'SessionSignPolkadotModal'
     | 'SessionSignNearModal'
     | 'SessionSignElrondModal'
+    | 'SessionSignTronModal'
     | 'LegacySessionProposalModal'
     | 'LegacySessionSignModal'
     | 'LegacySessionSignTypedDataModal'

@@ -5,13 +5,14 @@ import { cosmosWallets } from '@/utils/CosmosWalletUtil'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { solanaWallets } from '@/utils/SolanaWalletUtil'
 import { elrondWallets } from '@/utils/ElrondWalletUtil'
+import { tronWallets } from '@/utils/TronWalletUtil'
 import { Card, Divider, Row, Switch, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 import packageJSON from '../../package.json'
 
 export default function SettingsPage() {
-  const { testNets, eip155Address, cosmosAddress, solanaAddress, elrondAddress } = useSnapshot(
+  const { testNets, eip155Address, cosmosAddress, solanaAddress, elrondAddress, tronAddress } = useSnapshot(
     SettingsStore.state
   )
 
@@ -87,6 +88,13 @@ export default function SettingsPage() {
       </Text>
       <Card bordered borderWeight="light" css={{ minHeight: '215px', wordWrap: 'break-word' }}>
         <Text css={{ fontFamily: '$mono' }}>{elrondWallets[elrondAddress].getMnemonic()}</Text>
+      </Card>
+
+      <Text h4 css={{ marginTop: '$10', marginBottom: '$5' }}>
+        Tron Private Key
+      </Text>
+      <Card bordered borderWeight="light" css={{ minHeight: '100px', wordWrap: 'break-word' }}>
+        <Text css={{ fontFamily: '$mono' }}>{tronWallets[tronAddress].privateKey}</Text>
       </Card>
     </Fragment>
   )

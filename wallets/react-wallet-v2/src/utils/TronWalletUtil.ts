@@ -1,0 +1,48 @@
+import TronLib from '@/lib/TronLib'
+
+export let tronWeb1: TronLib
+export let tronWeb2: TronLib
+export let tronWallets: Record<string, TronLib>
+export let tronAddresses: string[]
+
+let address1: string
+let address2: string
+
+/**
+ * Utilities
+ */
+export async function createOrRestoreTronWallet() {
+  const privateKey1 = localStorage.getItem('TRON_PrivateKey_1')
+  const privateKey2 = localStorage.getItem('TRON_PrivateKey_2')
+
+  if (privateKey1 && privateKey2) {
+    tronWeb1 = await TronLib.init({ privateKey: privateKey1 })
+    tronWeb2 = await TronLib.init({ privateKey: privateKey2 })
+  } else {
+    tronWeb1 = await TronLib.init({ privateKey: '' })
+    tronWeb2 = await TronLib.init({ privateKey: '' })
+
+    const account1 = await tronWeb1.createAccount()
+    const account2 = await tronWeb2.createAccount()
+    // Don't store privateKey in local storage in a production project!
+    localStorage.setItem('TRON_PrivateKey_1', account1.privateKey)
+    localStorage.setItem('TRON_PrivateKey_2', account2.privateKey)
+  }
+
+  // @ts-ignore
+  address1 = tronWeb1.getAddress()
+  // @ts-ignore
+  address2 = tronWeb2.getAddress()
+
+  tronWallets = {
+    [address1]: tronWeb1,
+    [address2]: tronWeb2
+  }
+
+  tronAddresses = Object.keys(tronWallets)
+
+  return {
+    tronWallets,
+    tronAddresses
+  }
+}
