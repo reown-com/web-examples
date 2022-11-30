@@ -42,6 +42,7 @@ export default function ChatsPage() {
 
     chatClient.on('chat_invite', async args => {
       console.log('chat_invite:', args)
+			web3modal.closeModal();
       console.log(chatClient.chatInvites.getAll())
       setChatInvites(chatClient.chatInvites.getAll())
     })

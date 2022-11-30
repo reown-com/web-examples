@@ -5,7 +5,7 @@ import useInitialization from '@/hooks/useInitialization'
 import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
 import { createTheme, NextUIProvider } from '@nextui-org/react'
 import { AppProps } from 'next/app'
-import { Fragment, useEffect } from 'react'
+import { Fragment } from 'react'
 import '../../public/main.css'
 
 const theme = createTheme({
