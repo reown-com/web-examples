@@ -26,7 +26,8 @@ export default function ChatsPage() {
   const [chatInvites, setChatInvites] = useState<any[]>([])
 
   const inviteQrCode = useCallback(async () => {
-    const uri = `${window.location.origin}/newChat?accountId=1&target=eip155:1:${SettingsStore.state.eip155Address}`
+    const idx = SettingsStore.state.account === 0 ? 1 : 0
+    const uri = `${window.location.origin}/newChat?accountIndex=${idx}&target=eip155:1:${SettingsStore.state.eip155Address}`
 
     web3modal.openModal({ uri })
   }, [])
@@ -42,7 +43,7 @@ export default function ChatsPage() {
 
     chatClient.on('chat_invite', async args => {
       console.log('chat_invite:', args)
-			web3modal.closeModal();
+      web3modal.closeModal()
       console.log(chatClient.chatInvites.getAll())
       setChatInvites(chatClient.chatInvites.getAll())
     })
