@@ -1,8 +1,8 @@
 import SignClient from '@walletconnect/sign-client'
-import { ChatClient } from '@walletconnect/chat-client'
+import { ChatClient, IChatClient } from '@walletconnect/chat-client'
 
 export let signClient: SignClient
-export let chatClient: ChatClient
+export let chatClient: IChatClient
 
 export async function createSignClient() {
   signClient = await SignClient.init({
