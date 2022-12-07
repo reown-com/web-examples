@@ -15,7 +15,7 @@
     "@json-rpc-tools/utils": "1.7.6",
     "@nextui-org/react": "1.0.8-beta.5",
     "@solana/web3.js": "1.43.0",
-    "@walletconnect/chat-client": "^0.1.6",
+    "@walletconnect/chat-client": "0.1.7",
     "@walletconnect/sign-client": "2.0.0-rc.4",
     "@walletconnect/utils": "2.0.0-rc.4",
     "@web3modal/core": "^2.0.0-beta.7",
