@@ -29,9 +29,7 @@ export async function createOrRestoreTronWallet() {
     localStorage.setItem('TRON_PrivateKey_2', account2.privateKey)
   }
 
-  // @ts-ignore
   address1 = tronWeb1.getAddress()
-  // @ts-ignore
   address2 = tronWeb2.getAddress()
 
   tronWallets = {

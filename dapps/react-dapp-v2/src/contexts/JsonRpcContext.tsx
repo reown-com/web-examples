@@ -18,7 +18,7 @@ import {
   SystemProgram,
   Transaction as SolanaTransaction,
 } from "@solana/web3.js";
-// @ts-ignore
+// @ts-expect-error
 import TronWeb from 'tronweb';
 import {
   eip712,
@@ -1048,12 +1048,21 @@ export function JsonRpcContextProvider({
     testSignTransaction: _createJsonRpcRequestHandler(
       async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
         // Nile TestNet, if you want to use in MainNet, change the fullHost to 'https://api.trongrid.io'
+        const fullHost = isTestnet ? "https://nile.trongrid.io/" : "https://api.trongrid.io/";
+        
         const tronWeb = new TronWeb({
-          fullHost: 'https://nile.trongrid.io/',
+          fullHost,
         })
 
+
+        // Take USDT as an example: 
+        // Nile TestNet: https://nile.tronscan.org/#/token20/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf
+        // MainNet: https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+
+
+        const testContract = isTestnet ? "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf" : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
         const testTransaction = await tronWeb.transactionBuilder.triggerSmartContract(
-          'TXLAQ63Xg1NAzckPwKHvzw7CSEmLMEqcdj',
+          testContract,
           'approve(address,uint256)',
           { feeLimit: 200000000 },
           [
@@ -1092,7 +1101,7 @@ export function JsonRpcContextProvider({
     testSignMessage: _createJsonRpcRequestHandler(
       async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
 
-        var message = 'TestTronString';
+        const message = 'This is a message to be signed for Tron';
 
         try {
           const result = await client!.request<{ signature: string }>({

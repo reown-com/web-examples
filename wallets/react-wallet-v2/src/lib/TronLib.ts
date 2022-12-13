@@ -25,8 +25,6 @@ export default class TronLib {
   }
 
   static async init({ privateKey }: IInitArguments) {
-    // wait till  WASM is initialized, in case it is not initialized already (WASM is required for 'sr25519').
-
     return new TronLib(privateKey)
   }
 
@@ -38,8 +36,12 @@ export default class TronLib {
     return this.tronWeb.createAccount()
   }
 
+  public setFullNode(node: string) {
+    return this.tronWeb.setFullNode(node)
+  }
+
   public async signMessage(message: string) {
-    const signedtxn = await this.tronWeb.trx.sign(TronWeb.toHex(message))
+    const signedtxn = await this.tronWeb.trx.signMessageV2(message)
     return signedtxn
   }
 
