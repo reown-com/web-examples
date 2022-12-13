@@ -3,6 +3,7 @@ import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
 import { TypedDataField } from "@ethersproject/abstract-signer";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
+import { recoverTransaction } from "@celo/wallet-base";
 import {
   formatDirectSignDoc,
   stringifySignDocValues,
@@ -252,9 +253,17 @@ export function JsonRpcContextProvider({
           },
         });
 
-        const valid = EthTransaction.fromSerializedTx(
-          signedTx as any
-        ).verifySignature();
+        let valid = false;
+        const [, reference] = chainId.split(":");
+        if (reference === "44787" || reference === "42220") {
+          // Verify Celo transaction
+          const [, signer] = recoverTransaction(signedTx);
+          valid = signer.toLowerCase() === address.toLowerCase();
+        } else {
+          valid = EthTransaction.fromSerializedTx(
+            signedTx as any
+          ).verifySignature();
+        }
 
         return {
           method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
