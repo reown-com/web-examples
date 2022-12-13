@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { Row, Text } from '@nextui-org/react'
 import { useRouter } from 'next/router'
 import { FiPlus } from 'react-icons/fi'
@@ -10,6 +10,10 @@ import ChatRequestsButton from '@/components/ChatRequestsButton'
 import { chatClient } from '@/utils/WalletConnectUtil'
 import ChatPrimaryCTAButton from '@/components/ChatPrimaryCTAButton'
 import SettingsStore from '@/store/SettingsStore'
+import { Web3Modal } from '@web3modal/standalone'
+import { HiQrcode } from 'react-icons/hi'
+
+const web3modal = new Web3Modal({})
 
 export default function ChatsPage() {
   const router = useRouter()
@@ -20,6 +24,13 @@ export default function ChatsPage() {
   >([])
 
   const [chatInvites, setChatInvites] = useState<any[]>([])
+
+  const inviteQrCode = useCallback(async () => {
+    const idx = SettingsStore.state.account === 0 ? 1 : 0
+    const uri = `${window.location.origin}/newChat?accountIndex=${idx}&target=eip155:1:${SettingsStore.state.eip155Address}`
+
+    web3modal.openModal({ uri })
+  }, [])
 
   const initChatClient = async () => {
     console.log(chatClient)
@@ -32,6 +43,7 @@ export default function ChatsPage() {
 
     chatClient.on('chat_invite', async args => {
       console.log('chat_invite:', args)
+      web3modal.closeModal()
       console.log(chatClient.chatInvites.getAll())
       setChatInvites(chatClient.chatInvites.getAll())
     })
@@ -54,7 +66,10 @@ export default function ChatsPage() {
       <PageHeader
         title="Chat"
         ctaButton={
-          <ChatPrimaryCTAButton icon={<FiPlus />} onClick={() => router.push('/newChat')} />
+          <Row justify="space-evenly">
+            <ChatPrimaryCTAButton icon={<HiQrcode />} onClick={inviteQrCode} />
+            <ChatPrimaryCTAButton icon={<FiPlus />} onClick={() => router.push('/newChat')} />
+          </Row>
         }
       />
 
