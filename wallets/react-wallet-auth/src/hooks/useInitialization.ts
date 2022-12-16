@@ -9,11 +9,8 @@ export default function useInitialization() {
   const onInitialize = useCallback(async () => {
     try {
       const { eip155Addresses } = createOrRestoreEIP155Wallet()
-
       SettingsStore.setEIP155Address(eip155Addresses[0])
-
-      await createAuthClient(eip155Addresses[0])
-
+      await createAuthClient()
       setInitialized(true)
     } catch (err: unknown) {
       alert(err)
