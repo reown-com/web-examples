@@ -64,6 +64,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case NEAR_SIGNING_METHODS.NEAR_SIGN_TRANSACTIONS:
         case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS:
         case NEAR_SIGNING_METHODS.NEAR_VERIFY_OWNER:
+        case NEAR_SIGNING_METHODS.NEAR_SIGN_MESSAGE:
           return ModalStore.open('SessionSignNearModal', { requestEvent, requestSession })
 
         case ELROND_SIGNING_METHODS.ELROND_SIGN_MESSAGE:

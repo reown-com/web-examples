@@ -6,6 +6,7 @@ import { nearWallet } from '@/utils/NearWalletUtil'
 import { InMemorySigner, transactions, utils, Connection } from 'near-api-js'
 import { Transaction } from '@near-wallet-selector/core'
 import { createAction } from '@near-wallet-selector/wallet-utils'
+import { sha256 } from 'js-sha256'
 
 export async function approveNearRequest(
   requestEvent: SignClientTypes.EventArguments['session_request']
@@ -160,6 +161,41 @@ export async function approveNearRequest(
         ...data,
         signature: Buffer.from(signed.signature).toString('base64'),
         keyType: signed.publicKey.keyType
+      })
+    }
+    case NEAR_SIGNING_METHODS.NEAR_SIGN_MESSAGE: {
+      console.log('approve', { id, params })
+
+      if (!chainId) {
+        throw new Error('Invalid chain id')
+      }
+
+      const accounts = await nearWallet.getAllAccounts()
+      const account = accounts.find(acc => acc.accountId === params.request.params.accountId)
+
+      if (!account) {
+        throw new Error(`Did not find account with id: ${params.request.params.accountId}`)
+      }
+
+      if (!NEAR_TEST_CHAINS[chainId]) {
+        throw new Error('Invalid chain id')
+      }
+
+      const signer = new InMemorySigner(nearWallet.getKeyStore())
+      const networkId = chainId.split(':')[1]
+
+      const encoded = sha256.array(`NEP0413:` + JSON.stringify({
+        message: params.request.params.message,
+        receiver: params.request.params.receiver,
+        nonce: params.request.params.nonce.data,
+      }));
+
+      const signature = await signer.signMessage(Uint8Array.from(encoded), account.accountId, networkId)
+
+      return formatJsonRpcResult(id, {
+        accountId: account.accountId,
+        signature: Buffer.from(signature.signature).toString("base64"),
+        publicKey: signature.publicKey.toString()
       })
     }
     case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS: {
