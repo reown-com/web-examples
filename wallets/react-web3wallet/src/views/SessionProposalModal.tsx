@@ -16,7 +16,7 @@ import {
   isElrondChain
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
@@ -72,12 +72,11 @@ export default function SessionProposalModal() {
         }
       })
 
-      const { acknowledged } = await signClient.approve({
+      await web3wallet.approveSession({
         id,
         relayProtocol: relays[0].protocol,
         namespaces
       })
-      await acknowledged()
     }
     ModalStore.close()
   }
@@ -85,7 +84,7 @@ export default function SessionProposalModal() {
   // Hanlde reject action
   async function onReject() {
     if (proposal) {
-      await signClient.reject({
+      await web3wallet.rejectSession({
         id,
         reason: getSdkError('USER_REJECTED_METHODS')
       })

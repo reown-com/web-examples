@@ -5,7 +5,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveNearRequest, rejectNearRequest } from '@/utils/NearRequestHandlerUtil'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { transactions } from 'near-api-js'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
@@ -140,7 +140,7 @@ export default function SessionSignNearModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approveNearRequest(requestEvent)
-      await signClient.respond({
+      await web3wallet.respondSessionRequest({
         topic,
         response
       })
@@ -152,7 +152,7 @@ export default function SessionSignNearModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectNearRequest(requestEvent)
-      await signClient.respond({
+      await web3wallet.respondSessionRequest({
         topic,
         response
       })

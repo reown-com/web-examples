@@ -1,7 +1,7 @@
 import PageHeader from '@/components/PageHeader'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import SessionChainCard from '@/components/SessionChainCard'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Loading, Row, Text } from '@nextui-org/react'
 import { getSdkError } from '@walletconnect/utils'
 import { useRouter } from 'next/router'
@@ -22,7 +22,7 @@ export default function SessionPage() {
     }
   }, [query])
 
-  const session = signClient.session.values.find(s => s.topic === topic)
+  const session = web3wallet.getActiveSessions()[topic]
 
   if (!session) {
     return null
@@ -35,21 +35,21 @@ export default function SessionPage() {
   // Handle deletion of a session
   async function onDeleteSession() {
     setLoading(true)
-    await signClient.disconnect({ topic, reason: getSdkError('USER_DISCONNECTED') })
+    await web3wallet.disconnectSession({ topic, reason: getSdkError('USER_DISCONNECTED') })
     replace('/sessions')
     setLoading(false)
   }
 
   async function onSessionPing() {
     setLoading(true)
-    await signClient.ping({ topic })
+    await web3wallet.engine.signClient.ping({ topic })
     setLoading(false)
   }
 
   async function onSessionEmit() {
     setLoading(true)
     console.log('baleg')
-    await signClient.emit({
+    await web3wallet.emitSessionEvent({
       topic,
       event: { name: 'chainChanged', data: 'Hello World' },
       chainId: 'eip155:1'
@@ -70,42 +70,10 @@ export default function SessionPage() {
 
   async function onSessionUpdate() {
     setLoading(true)
-    const { acknowledged } = await signClient.update({ topic, namespaces: newNs })
-    await acknowledged()
+    await web3wallet.updateSession({ topic, namespaces: newNs })
     setUpdated(new Date())
     setLoading(false)
   }
-
-  // function renderAccountSelection(chain: string) {
-  //   if (isEIP155Chain(chain)) {
-  //     return (
-  //       <ProposalSelectSection
-  //         addresses={eip155Addresses}
-  //         selectedAddresses={selectedAccounts[chain]}
-  //         onSelect={onSelectAccount}
-  //         chain={chain}
-  //       />
-  //     )
-  //   } else if (isCosmosChain(chain)) {
-  //     return (
-  //       <ProposalSelectSection
-  //         addresses={cosmosAddresses}
-  //         selectedAddresses={selectedAccounts[chain]}
-  //         onSelect={onSelectAccount}
-  //         chain={chain}
-  //       />
-  //     )
-  //   } else if (isSolanaChain(chain)) {
-  //     return (
-  //       <ProposalSelectSection
-  //         addresses={solanaAddresses}
-  //         selectedAddresses={selectedAccounts[chain]}
-  //         onSelect={onSelectAccount}
-  //         chain={chain}
-  //       />
-  //     )
-  //   }
-  // }
 
   return (
     <Fragment>

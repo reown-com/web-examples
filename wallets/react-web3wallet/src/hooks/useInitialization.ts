@@ -4,7 +4,7 @@ import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
 import { createOrRestoreElrondWallet } from '@/utils/ElrondWalletUtil'
-import { createSignClient } from '@/utils/WalletConnectUtil'
+import { createWeb3Wallet } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { createOrRestoreNearWallet } from '@/utils/NearWalletUtil'
@@ -30,9 +30,9 @@ export default function useInitialization() {
       SettingsStore.setPolkadotAddress(polkadotAddresses[0])
       SettingsStore.setNearAddress(nearAddresses[0])
       SettingsStore.setElrondAddress(elrondAddresses[0])
-
-      await createSignClient(relayerRegionURL)
       prevRelayerURLValue.current = relayerRegionURL
+
+      await createWeb3Wallet(relayerRegionURL)
 
       setInitialized(true)
     } catch (err: unknown) {

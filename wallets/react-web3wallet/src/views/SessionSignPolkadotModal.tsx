@@ -5,7 +5,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approvePolkadotRequest, rejectPolkadotRequest } from '@/utils/PolkadotRequestHandlerUtil'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -27,7 +27,7 @@ export default function SessionSignPolkadotModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approvePolkadotRequest(requestEvent)
-      await signClient.respond({
+      await web3wallet.respondSessionRequest({
         topic,
         response
       })
@@ -39,7 +39,7 @@ export default function SessionSignPolkadotModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectPolkadotRequest(requestEvent)
-      await signClient.respond({
+      await web3wallet.respondSessionRequest({
         topic,
         response
       })
