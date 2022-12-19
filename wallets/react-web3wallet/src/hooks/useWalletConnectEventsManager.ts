@@ -9,6 +9,7 @@ import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
+import { Web3WalletTypes } from '@walletconnect/web3wallet'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -20,6 +21,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     },
     []
   )
+
+  const onAuthRequest = useCallback((request: Web3WalletTypes.AuthRequest) => {
+    ModalStore.open('AuthRequestModal', { request })
+  }, [])
 
   /******************************************************************************
    * 3. Open request handling modal based on method that was used
@@ -90,10 +95,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    *****************************************************************************/
   useEffect(() => {
     if (initialized) {
+      // sign
       web3wallet.on('session_proposal', onSessionProposal)
       web3wallet.on('session_request', onSessionRequest)
-
-      web3wallet.on('auth_request', data => console.log('auth_request', data))
+      // auth
+      web3wallet.on('auth_request', onAuthRequest)
 
       // TODOs
       // signClient.on('session_ping', data => console.log('ping', data))
@@ -101,5 +107,5 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       // signClient.on('session_update', data => console.log('update', data))
       // signClient.on('session_delete', data => console.log('delete', data))
     }
-  }, [initialized, onSessionProposal, onSessionRequest])
+  }, [initialized, onSessionProposal, onSessionRequest, onAuthRequest])
 }
