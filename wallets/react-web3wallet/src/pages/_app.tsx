@@ -13,6 +13,7 @@ export default function App({ Component, pageProps }: AppProps) {
   // Step 2 - Once initialized, set up wallet connect event manager
   useWalletConnectEventsManager(initialized)
 
+  // render app
   return (
     <NextUIProvider theme={createTheme({ type: 'dark' })}>
       <Layout initialized={initialized}>
