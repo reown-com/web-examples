@@ -2,7 +2,7 @@
 
 This example aims to demonstrate basic and advanced use cases enabled by WalletConnect's Web3Wallet SDK.
 
-**This Web3Wallet example implementation** is to serve as a reference for wallet developers
+**This Web3Wallet example implementation** is to serve as a reference for wallet developers.
 
 Please only use this for reference and development purposes, otherwise you are at risk of losing your funds.
 
@@ -48,13 +48,20 @@ Your `.env.local` now contains the following environment variables:
 
 1. Initialization
 ```javascript
+    // metadata of your app
+    const metadata = {
+        name: "Demo app",
+        description: "Demo Client as Wallet/Peer",
+        url: "www.walletconnect.com",
+        icons: [],
+    };
+    
     /* old */
     import { SignClient } from "@walletconnect/sign-client";
 
     const signClient = await SignClient.init({
         projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-        relayUrl: process.env.NEXT_PUBLIC_RELAY_URL,
-        metadata: `${metaData}`
+        metadata,
     })
 
     /* new */
@@ -167,13 +174,21 @@ Your `.env.local` now contains the following environment variables:
 1. Initialization
 
 ```javascript
+
+    // metadata of your app
+    const metadata = {
+        name: "Demo app",
+        description: "Demo Client as Wallet/Peer",
+        url: "www.walletconnect.com",
+        icons: [],
+    };
+
     /* old */
     import { AuthClient } from "@walletconnect/auth-client";
 
     const authClient = await AuthClient.init({
         projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-        relayUrl: process.env.NEXT_PUBLIC_RELAY_URL,
-        metadata: `${metaData}`
+        metadata,
     })
 
     /* new */
