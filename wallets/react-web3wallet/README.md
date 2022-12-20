@@ -85,7 +85,7 @@ Your `.env.local` now contains the following environment variables:
 
     /* new */
     web3wallet.on("session_proposal", async (proposal) => {
-        const session = await wallet.approveSession({
+        const session = await web3wallet.approveSession({
             id: proposal.id,
             namespaces,
         });
