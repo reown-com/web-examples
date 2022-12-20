@@ -253,10 +253,15 @@ export function JsonRpcContextProvider({
           },
         });
 
+        const CELO_ALFAJORES_CHAIN_ID = 44787;
+        const CELO_MAINNET_CHAIN_ID = 42220;
+
         let valid = false;
         const [, reference] = chainId.split(":");
-        if (reference === "44787" || reference === "42220") {
-          // Verify Celo transaction
+        if (
+          reference === CELO_ALFAJORES_CHAIN_ID.toString() ||
+          reference === CELO_MAINNET_CHAIN_ID.toString()
+        ) {
           const [, signer] = recoverTransaction(signedTx);
           valid = signer.toLowerCase() === address.toLowerCase();
         } else {
