@@ -70,7 +70,6 @@ Your `.env.local` now contains the following environment variables:
 
     const core = new Core({
         projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-        relayUrl: process.env.NEXT_PUBLIC_RELAY_URL
     })
 
     const web3wallet = await Web3Wallet.init({
@@ -197,7 +196,6 @@ Your `.env.local` now contains the following environment variables:
 
     const core = new Core({
         projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-        relayUrl: process.env.NEXT_PUBLIC_RELAY_URL
     })
 
     const web3wallet = await Web3Wallet.init({
