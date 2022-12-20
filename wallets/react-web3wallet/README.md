@@ -130,7 +130,7 @@ Your `.env.local` now contains the following environment variables:
     await signClient.extend({ topic });
 
     /* new */
-    await wallet.extendSession({ topic });
+    await web3wallet.extendSession({ topic });
 ```
 
 6. Disconnect from a session
