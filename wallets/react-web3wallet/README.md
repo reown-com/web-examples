@@ -96,7 +96,7 @@ Your `.env.local` now contains the following environment variables:
 
 ```javascript
     /* old */
-    signClient.on("session_request", (event) => {
+    signClient.on("session_request", async (event) => {
         // process the request 
         const params = ...
         // respond
@@ -104,7 +104,7 @@ Your `.env.local` now contains the following environment variables:
     });
 
     /* new */
-    web3wallet.on("session_request", (event) => {
+    web3wallet.on("session_request", async (event) => {
         // process the request 
         const params = ...
         // respond
