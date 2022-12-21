@@ -22,11 +22,9 @@ export async function createOrRestoreTronWallet() {
     tronWeb1 = await TronLib.init({ privateKey: '' })
     tronWeb2 = await TronLib.init({ privateKey: '' })
 
-    const account1 = await tronWeb1.createAccount()
-    const account2 = await tronWeb2.createAccount()
     // Don't store privateKey in local storage in a production project!
-    localStorage.setItem('TRON_PrivateKey_1', account1.privateKey)
-    localStorage.setItem('TRON_PrivateKey_2', account2.privateKey)
+    localStorage.setItem('TRON_PrivateKey_1', tronWeb1.privateKey)
+    localStorage.setItem('TRON_PrivateKey_2', tronWeb2.privateKey)
   }
 
   address1 = tronWeb1.getAddress()
