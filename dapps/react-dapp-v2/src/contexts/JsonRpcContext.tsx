@@ -19,6 +19,8 @@ import {
   SystemProgram,
   Transaction as SolanaTransaction,
 } from "@solana/web3.js";
+// @ts-expect-error
+import TronWeb from 'tronweb';
 import {
   eip712,
   formatTestTransaction,
@@ -32,6 +34,7 @@ import {
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_NEAR_METHODS,
   DEFAULT_ELROND_METHODS,
+  DEFAULT_TRON_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
@@ -89,6 +92,10 @@ interface IContext {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
     testSignTransactions: TRpcRequestCallback;
+  };
+  tronRpc: {
+    testSignMessage: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -1049,6 +1056,94 @@ export function JsonRpcContextProvider({
     ),
   };
 
+   // -------- TRON RPC METHODS --------
+
+  const tronRpc = {
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+        // Nile TestNet, if you want to use in MainNet, change the fullHost to 'https://api.trongrid.io'
+        const fullHost = isTestnet ? "https://nile.trongrid.io/" : "https://api.trongrid.io/";
+        
+        const tronWeb = new TronWeb({
+          fullHost,
+        })
+
+
+        // Take USDT as an example: 
+        // Nile TestNet: https://nile.tronscan.org/#/token20/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf
+        // MainNet: https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+
+
+        const testContract = isTestnet ? "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf" : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+        const testTransaction = await tronWeb.transactionBuilder.triggerSmartContract(
+          testContract,
+          'approve(address,uint256)',
+          { feeLimit: 200000000 },
+          [
+            { type: 'address', value: address },
+            { type: 'uint256', value: 0 }
+          ],
+          address
+        );
+
+        try {
+          const { result } = await client!.request<{ result: any }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
+              params: {
+                address,
+                transaction:{
+                  ...testTransaction
+                }
+              }
+            }
+          });
+          
+          return {
+            method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
+            address,
+            valid: true,
+            result: result.signature
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      }
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+
+        const message = 'This is a message to be signed for Tron';
+
+        try {
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
+              params: {
+                address,
+                message
+              }
+            }
+          });
+
+          return {
+            method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
+            address,
+            valid: true,
+            result: result.signature
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      }
+    )
+  };
+
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -1059,6 +1154,7 @@ export function JsonRpcContextProvider({
         polkadotRpc,
         nearRpc,
         elrondRpc,
+        tronRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,
