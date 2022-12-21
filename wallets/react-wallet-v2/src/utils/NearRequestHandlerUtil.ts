@@ -184,13 +184,14 @@ export async function approveNearRequest(
       const signer = new InMemorySigner(nearWallet.getKeyStore())
       const networkId = chainId.split(':')[1]
 
-      const encoded = sha256.array(`NEP0413:` + JSON.stringify({
+      const hash = sha256.array(`NEP0413:` + JSON.stringify({
         message: params.request.params.message,
         receiver: params.request.params.receiver,
-        nonce: params.request.params.nonce.data,
+        nonce: Array.from(params.request.params.nonce.data),
       }));
 
-      const signature = await signer.signMessage(Uint8Array.from(encoded), account.accountId, networkId)
+      const key = await signer.keyStore.getKey(networkId, account.accountId);
+      const signature = key.sign(Uint8Array.from(hash))
 
       return formatJsonRpcResult(id, {
         accountId: account.accountId,
