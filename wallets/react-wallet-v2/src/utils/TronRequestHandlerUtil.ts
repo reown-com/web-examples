@@ -11,12 +11,6 @@ export async function approveTronRequest(
   const { params, id } = requestEvent
   const { request } = params
 
-  const testNet = localStorage.getItem('TEST_NETS')
-
-  if(!testNet && TRON_TEST_CHAINS[params.chainId]){
-    throw new Error('Please enable Testnets in your wallet')
-  }
-
   const wallet = tronWallets[getWalletAddressFromParams(tronAddresses, params)]
 
   if(TRON_MAINNET_CHAINS[params.chainId]){
