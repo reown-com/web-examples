@@ -182,12 +182,18 @@ export function ClientContextProvider({
     if (typeof session === "undefined") {
       throw new Error("Session is not connected");
     }
-    await client.disconnect({
-      topic: session.topic,
-      reason: getSdkError("USER_DISCONNECTED"),
-    });
-    // Reset app state after disconnect.
-    reset();
+
+    try {
+      await client.disconnect({
+        topic: session.topic,
+        reason: getSdkError("USER_DISCONNECTED"),
+      });
+    } catch (error) {
+      console.error("SignClient.disconnect failed:", error);
+    } finally {
+      // Reset app state after disconnect.
+      reset();
+    }
   }, [client, session]);
 
   const _subscribeToEvents = useCallback(
