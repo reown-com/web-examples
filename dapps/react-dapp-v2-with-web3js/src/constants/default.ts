@@ -28,7 +28,7 @@ export const DEFAULT_EIP155_METHODS = ["eth_sendTransaction", "personal_sign", "
 export const DEFAULT_LOGGER = "debug";
 
 export const DEFAULT_APP_METADATA = {
-  name: "React App",
+  name: "React App with web3",
   description: "React App for WalletConnect",
   url: "https://walletconnect.com/",
   icons: ["https://avatars.githubusercontent.com/u/37784886"],

@@ -1,5 +1,6 @@
 import type { AppProps } from "next/app";
 import { createGlobalStyle } from "styled-components";
+import Metadata from "../components/Metadata";
 
 import { ClientContextProvider } from "../contexts/ClientContext";
 
@@ -11,6 +12,7 @@ const GlobalStyle = createGlobalStyle`
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
+      <Metadata />
       <GlobalStyle />
       <ClientContextProvider>
         <Component {...pageProps} />
