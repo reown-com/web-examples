@@ -186,8 +186,8 @@ export async function approveNearRequest(
 
       const hash = sha256.array(`NEP0413:` + JSON.stringify({
         message: params.request.params.message,
-        receiver: params.request.params.receiver,
         nonce: Array.from(params.request.params.nonce.data),
+        receiver: params.request.params.receiver,
       }));
 
       const key = await signer.keyStore.getKey(networkId, account.accountId);
