@@ -2,7 +2,6 @@
 
 Catalogue of various wallet and dapp examples implementing WalletConnect's **SDKs and APIs**. Each example contains its own README with further instructions and explanations.
 
-
 ### Web3Wallet SDK
 
 **Wallets:**
