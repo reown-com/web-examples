@@ -2264,7 +2264,7 @@
     "@walletconnect/types" "^1.8.0"
     "@walletconnect/utils" "^1.8.0"
 
-"@walletconnect/core@2.1.4":
+"@walletconnect/core@2.1.4", "@walletconnect/core@^2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.1.4.tgz#871a1e6b80b14fc3a755763b2cdce0c334e41536"
   integrity sha512-pEGTbysRwxJJhOYoRmBy8WQ2z7iYrNYsKvdGN/BNoXGuOT9PqKNqiRtVs2E4W79Nwq7ZoM1zohh5VLgbKguSUQ==
@@ -2426,6 +2426,16 @@
     pino "7.11.0"
     tslib "1.14.1"
 
+"@walletconnect/push-client@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/push-client/-/push-client-0.3.0.tgz#d860e0c4775a8c3e91233396a071852948a70e7e"
+  integrity sha512-U1wGXlIwZ72L5JGlTvtOMm2s71R0ByP9Ig79OQ7LI+68LsxBZbO3TPWBVfYxjqHwQIeI6g7iyYI5Ospm//G/2Q==
+  dependencies:
+    "@walletconnect/core" "^2.1.4"
+    "@walletconnect/jsonrpc-utils" "^1.0.4"
+    "@walletconnect/types" "^2.1.4"
+    "@walletconnect/utils" "^2.1.4"
+
 "@walletconnect/randombytes@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@walletconnect/randombytes/-/randombytes-1.0.2.tgz#95c644251a15e6675f58fbffc9513a01486da49c"
@@ -2500,7 +2510,7 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/types@2.1.4":
+"@walletconnect/types@2.1.4", "@walletconnect/types@^2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.1.4.tgz#0db77adbaffd3a9bdf7e9d710d7e7352de542b16"
   integrity sha512-n9fIk0z2fiGFlPgQcpurQ8WH7XF/blYaDIpr2ai3qdoo1N10yCsX1vj65L8t3zJAmSeHFoVJI9YVrSDj5eWjWw==
@@ -2517,7 +2527,7 @@
   resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-1.8.0.tgz#3f5e85b2d6b149337f727ab8a71b8471d8d9a195"
   integrity sha512-Cn+3I0V0vT9ghMuzh1KzZvCkiAxTq+1TR2eSqw5E5AVWfmCtECFkVZBP6uUJZ8YjwLqXheI+rnjqPy7sVM4Fyg==
 
-"@walletconnect/utils@2.1.4":
+"@walletconnect/utils@2.1.4", "@walletconnect/utils@^2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.1.4.tgz#992442d175f71cf7a685c5568d12bf25d719600e"
   integrity sha512-g3XRGAgETQbwbZleQS1f4ZFl8X6jb+CaWVNM+vtVO9EvIUJAzE8TLq3H70v+KawRMaLXjgRc0z0W7Wg6bvct7g==

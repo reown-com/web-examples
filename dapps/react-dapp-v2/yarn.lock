@@ -3163,7 +3163,7 @@
     "@typescript-eslint/types" "5.43.0"
     eslint-visitor-keys "^3.3.0"
 
-"@walletconnect/core@2.1.4":
+"@walletconnect/core@2.1.4", "@walletconnect/core@^2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.1.4.tgz#871a1e6b80b14fc3a755763b2cdce0c334e41536"
   integrity sha512-pEGTbysRwxJJhOYoRmBy8WQ2z7iYrNYsKvdGN/BNoXGuOT9PqKNqiRtVs2E4W79Nwq7ZoM1zohh5VLgbKguSUQ==
@@ -3269,6 +3269,16 @@
     pino "7.11.0"
     tslib "1.14.1"
 
+"@walletconnect/push-client@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/push-client/-/push-client-0.3.0.tgz#d860e0c4775a8c3e91233396a071852948a70e7e"
+  integrity sha512-U1wGXlIwZ72L5JGlTvtOMm2s71R0ByP9Ig79OQ7LI+68LsxBZbO3TPWBVfYxjqHwQIeI6g7iyYI5Ospm//G/2Q==
+  dependencies:
+    "@walletconnect/core" "^2.1.4"
+    "@walletconnect/jsonrpc-utils" "^1.0.4"
+    "@walletconnect/types" "^2.1.4"
+    "@walletconnect/utils" "^2.1.4"
+
 "@walletconnect/relay-api@^1.0.7":
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@walletconnect/relay-api/-/relay-api-1.0.7.tgz#e7aed03cbaff99ecdf2c8d32280c0b5d673bb419"
@@ -3320,7 +3330,7 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/types@2.1.4":
+"@walletconnect/types@2.1.4", "@walletconnect/types@^2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.1.4.tgz#0db77adbaffd3a9bdf7e9d710d7e7352de542b16"
   integrity sha512-n9fIk0z2fiGFlPgQcpurQ8WH7XF/blYaDIpr2ai3qdoo1N10yCsX1vj65L8t3zJAmSeHFoVJI9YVrSDj5eWjWw==
@@ -3332,7 +3342,7 @@
     "@walletconnect/logger" "^2.0.1"
     events "^3.3.0"
 
-"@walletconnect/utils@2.1.4":
+"@walletconnect/utils@2.1.4", "@walletconnect/utils@^2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.1.4.tgz#992442d175f71cf7a685c5568d12bf25d719600e"
   integrity sha512-g3XRGAgETQbwbZleQS1f4ZFl8X6jb+CaWVNM+vtVO9EvIUJAzE8TLq3H70v+KawRMaLXjgRc0z0W7Wg6bvct7g==

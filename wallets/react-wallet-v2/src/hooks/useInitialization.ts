@@ -1,10 +1,11 @@
+import { Core } from '@walletconnect/core'
 import SettingsStore from '@/store/SettingsStore'
 import { createOrRestoreCosmosWallet } from '@/utils/CosmosWalletUtil'
 import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
 import { createOrRestoreElrondWallet } from '@/utils/ElrondWalletUtil'
-import { createSignClient } from '@/utils/WalletConnectUtil'
+import { createPushClient, createSignClient } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { createOrRestoreNearWallet } from '@/utils/NearWalletUtil'
@@ -31,7 +32,14 @@ export default function useInitialization() {
       SettingsStore.setNearAddress(nearAddresses[0])
       SettingsStore.setElrondAddress(elrondAddresses[0])
 
-      await createSignClient(relayerRegionURL)
+      const core = new Core({
+        logger: 'debug',
+        projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
+        relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL
+      })
+
+      await createSignClient(core)
+      await createPushClient(core)
       prevRelayerURLValue.current = relayerRegionURL
 
       setInitialized(true)

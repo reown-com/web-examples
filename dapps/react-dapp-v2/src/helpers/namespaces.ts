@@ -1,4 +1,4 @@
-import { ProposalTypes } from "@walletconnect/types";
+import { ProposalTypes, SessionTypes } from "@walletconnect/types";
 import {
   DEFAULT_COSMOS_EVENTS,
   DEFAULT_COSMOS_METHODS,
@@ -81,3 +81,8 @@ export const getRequiredNamespaces = (
     ])
   );
 };
+
+export const getAllNamespaceAccounts = (namespaces: SessionTypes.Namespaces) =>
+  Object.values(namespaces)
+    .map((namespace) => namespace.accounts)
+    .flat();

@@ -1,4 +1,6 @@
 import Client from "@walletconnect/sign-client";
+import { DappClient as PushDappClient } from "@walletconnect/push-client";
+import { Core } from "@walletconnect/core";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import { Web3Modal } from "@web3modal/standalone";
 
@@ -21,7 +23,12 @@ import {
   DEFAULT_RELAY_URL,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
-import { getAppMetadata, getSdkError } from "@walletconnect/utils";
+import {
+  getAccountsFromNamespaces,
+  getAddressesFromAccounts,
+  getAppMetadata,
+  getSdkError,
+} from "@walletconnect/utils";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 import { getRequiredNamespaces } from "../helpers/namespaces";
 
@@ -43,6 +50,7 @@ interface IContext {
   isFetchingBalances: boolean;
   setChains: any;
   setRelayerRegion: any;
+  pushClient: PushDappClient | undefined;
 }
 
 /**
@@ -82,6 +90,9 @@ export function ClientContextProvider({
   const [relayerRegion, setRelayerRegion] = useState<string>(
     DEFAULT_RELAY_URL!
   );
+
+  // Push Client state
+  const [pushClient, setPushClient] = useState<PushDappClient>();
 
   const reset = () => {
     setSession(undefined);
@@ -131,10 +142,36 @@ export function ClientContextProvider({
     []
   );
 
+  const requestPushSubscription = useCallback(
+    async (_session: SessionTypes.Struct) => {
+      if (typeof pushClient === "undefined") {
+        throw new Error("PushDappClient is not initialized");
+      }
+      const pairings = pushClient.core.pairing.getPairings();
+      const latestPairing = pairings[pairings.length - 1];
+      console.log("latestPairing", latestPairing);
+
+      const accounts = getAccountsFromNamespaces(_session.namespaces);
+
+      console.log("[PUSH DEMO] Sending push request with params:", {
+        account: accounts[0],
+        pairingTopic: latestPairing.topic,
+      });
+
+      const id = await pushClient.request({
+        account: accounts[0],
+        pairingTopic: latestPairing.topic,
+      });
+      console.log("push.request id:", id);
+      console.log(pushClient.requests.getAll());
+    },
+    [pushClient]
+  );
+
   const connect = useCallback(
     async (pairing: any) => {
       if (typeof client === "undefined") {
-        throw new Error("WalletConnect is not initialized");
+        throw new Error("SignClient is not initialized");
       }
       console.log("connect, pairing topic is:", pairing?.topic);
       try {
@@ -164,6 +201,9 @@ export function ClientContextProvider({
         await onSessionConnected(session);
         // Update known pairings after session is connected.
         setPairings(client.pairing.getAll({ active: true }));
+
+        // Immediately request push subscription after session is connected.
+        await requestPushSubscription(session);
       } catch (e) {
         console.error(e);
         // ignore rejection
@@ -172,7 +212,7 @@ export function ClientContextProvider({
         web3Modal.closeModal();
       }
     },
-    [chains, client, onSessionConnected]
+    [chains, client, onSessionConnected, requestPushSubscription]
   );
 
   const disconnect = useCallback(async () => {
@@ -251,19 +291,36 @@ export function ClientContextProvider({
     try {
       setIsInitializing(true);
 
-      const _client = await Client.init({
+      const core = new Core({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
+      });
+
+      console.log("CREATED SHARED CORE: ", core);
+
+      const _client = await Client.init({
+        core,
         metadata: getAppMetadata() || DEFAULT_APP_METADATA,
       });
 
-      console.log("CREATED CLIENT: ", _client);
+      console.log("CREATED SIGN CLIENT: ", _client);
       console.log("relayerRegion ", relayerRegion);
       setClient(_client);
       prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
+
+      // Push Dapp Client setup
+      const _pushClient = await PushDappClient.init({
+        core,
+        metadata: DEFAULT_APP_METADATA,
+      });
+      console.log("CREATED PUSH CLIENT:", _pushClient);
+      _pushClient.on("push_response", (args) => {
+        console.log("EVENT", "push_response", args);
+      });
+      setPushClient(_pushClient);
     } catch (err) {
       throw err;
     } finally {
@@ -293,6 +350,7 @@ export function ClientContextProvider({
       disconnect,
       setChains,
       setRelayerRegion,
+      pushClient,
     }),
     [
       pairings,
@@ -309,6 +367,7 @@ export function ClientContextProvider({
       disconnect,
       setChains,
       setRelayerRegion,
+      pushClient,
     ]
   );
 

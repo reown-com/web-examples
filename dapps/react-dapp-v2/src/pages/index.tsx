@@ -62,6 +62,7 @@ const Home: NextPage = () => {
     isInitializing,
     setChains,
     setRelayerRegion,
+    pushClient,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -104,6 +105,30 @@ const Home: NextPage = () => {
   const onPing = async () => {
     openPingModal();
     await ping();
+  };
+
+  const onSendPushNotification = async () => {
+    if (typeof pushClient === "undefined") {
+      throw new Error("PushClient is not initialized");
+    }
+
+    const message = {
+      title: "Push Notification Test",
+      body: "Hello from the react example dapp 👋",
+      icon: "",
+      url: "",
+    };
+
+    // TODO: replace with `.getActiveSubscriptions` call.
+    const subscriptions = pushClient.subscriptions.getAll();
+    const latestSubscription = subscriptions[subscriptions.length - 1];
+
+    console.log(
+      "[PUSH DEMO] Sending push_message on subscription: ",
+      latestSubscription
+    );
+
+    await pushClient.notify({ topic: latestSubscription.topic, message });
   };
 
   const getEthereumActions = (): AccountAction[] => {
@@ -383,7 +408,12 @@ const Home: NextPage = () => {
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={onPing} disconnect={disconnect} session={session} />
+        <Header
+          sendPushMessage={onSendPushNotification}
+          ping={onPing}
+          disconnect={disconnect}
+          session={session}
+        />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>
