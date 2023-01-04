@@ -52,3 +52,5 @@ export const NEAR_SIGNING_METHODS = {
   NEAR_SIGN_AND_SEND_TRANSACTIONS: 'near_signAndSendTransactions',
   NEAR_VERIFY_OWNER: 'near_verifyOwner'
 }
+
+export enum NEAR_EVENTS {}

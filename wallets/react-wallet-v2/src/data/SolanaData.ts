@@ -35,3 +35,5 @@ export const SOLANA_SIGNING_METHODS = {
   SOLANA_SIGN_TRANSACTION: 'solana_signTransaction',
   SOLANA_SIGN_MESSAGE: 'solana_signMessage'
 }
+
+export enum SOLANA_EVENTS {}

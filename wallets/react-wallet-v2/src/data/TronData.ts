@@ -47,3 +47,5 @@ export const TRON_SIGNING_METHODS = {
   TRON_SIGN_TRANSACTION: 'tron_signTransaction',
   TRON_SIGN_MESSAGE: 'tron_signMessage'
 }
+
+export enum TRON_EVENTS {}

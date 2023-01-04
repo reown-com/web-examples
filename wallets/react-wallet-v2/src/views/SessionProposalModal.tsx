@@ -22,15 +22,30 @@ import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
-import { Fragment, useState } from 'react'
+import { Fragment, useCallback, useState } from 'react'
 import { nearAddresses } from '@/utils/NearWalletUtil'
+import { getSupportedNamespaces } from '@/utils/NamespacesUtil'
 
 export default function SessionProposalModal() {
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string[]>>({})
   const hasSelected = Object.keys(selectedAccounts).length
+  const [selectedChains, setSelectedChains] = useState<string[]>([])
 
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
+
+  const onSelectChain = useCallback(
+    (chain: string) => {
+      if (selectedChains.includes(chain)) {
+        const newSelectedChains = selectedChains.filter(c => c !== chain)
+        setSelectedChains(newSelectedChains)
+      } else {
+        const newSelectedChains = [...selectedChains, chain]
+        setSelectedChains(newSelectedChains)
+      }
+    },
+    [selectedChains]
+  )
 
   // Ensure proposal is defined
   if (!proposal) {
@@ -39,7 +54,11 @@ export default function SessionProposalModal() {
 
   // Get required proposal data
   const { id, params } = proposal
-  const { proposer, requiredNamespaces, relays } = params
+  let { proposer, requiredNamespaces, relays } = params
+
+  if (!Object.values(requiredNamespaces).length) {
+    requiredNamespaces = getSupportedNamespaces()
+  }
 
   // Add / remove address from EIP155 selection
   function onSelectAccount(chain: string, account: string) {
@@ -62,18 +81,20 @@ export default function SessionProposalModal() {
   async function onApprove() {
     if (proposal) {
       const namespaces: SessionTypes.Namespaces = {}
-      Object.keys(requiredNamespaces).forEach(key => {
-        const accounts: string[] = []
-        requiredNamespaces[key].chains.map(chain => {
-          selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
-        })
-        namespaces[key] = {
-          accounts,
-          methods: requiredNamespaces[key].methods,
-          events: requiredNamespaces[key].events
+      selectedChains.forEach(selectedChain => {
+        const key = selectedChain.split(':')[0]
+        if (selectedAccounts[key]) {
+          const accounts: string[] = []
+          requiredNamespaces[key].chains.map(chain => {
+            selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
+          })
+          namespaces[key] = {
+            accounts,
+            methods: requiredNamespaces[key].methods,
+            events: requiredNamespaces[key].events
+          }
         }
       })
-
       const { acknowledged } = await signClient.approve({
         id,
         relayProtocol: relays[0].protocol,
@@ -176,7 +197,11 @@ export default function SessionProposalModal() {
           return (
             <Fragment key={chain}>
               <Text h4 css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-              <SessionProposalChainCard requiredNamespace={requiredNamespaces[chain]} />
+              <SessionProposalChainCard
+                requiredNamespace={requiredNamespaces[chain]}
+                onSelect={onSelectChain}
+                selectedChains={selectedChains}
+              />
               {renderAccountSelection(chain)}
               <Divider y={2} />
             </Fragment>

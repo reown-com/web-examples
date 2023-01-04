@@ -45,3 +45,5 @@ export const ELROND_SIGNING_METHODS = {
   ELROND_SIGN_MESSAGE: 'erd_signMessage',
   ELROND_SIGN_LOGIN_TOKEN: 'erd_signLoginToken'
 }
+
+export enum ELROND_EVENTS {}

@@ -31,12 +31,13 @@ const CHAIN_METADATA = {
  */
 interface IProps {
   namespace: SessionTypes.Namespace
+  selected: boolean
 }
 
 /**
  * Component
  */
-export default function SessionChainCard({ namespace }: IProps) {
+export default function SessionChainCard({ namespace, selected, onSelect }: IProps) {
   const chains: string[] = []
 
   // WIP
@@ -70,7 +71,14 @@ export default function SessionChainCard({ namespace }: IProps) {
         const rgb = CHAIN_METADATA[chainId]?.rgb
 
         return (
-          <ChainCard key={chainId} rgb={rgb ?? ''} flexDirection="col" alignItems="flex-start">
+          <ChainCard
+            key={chainId}
+            rgb={rgb ?? ''}
+            flexDirection="col"
+            alignItems="flex-start"
+            selected={selected}
+            onSelect={onSelect}
+          >
             <Text h5 css={{ marginBottom: '$5' }}>
               {formatChainName(chainId)}
             </Text>

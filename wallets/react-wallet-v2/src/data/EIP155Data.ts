@@ -88,3 +88,8 @@ export const EIP155_SIGNING_METHODS = {
   ETH_SEND_RAW_TRANSACTION: 'eth_sendRawTransaction',
   ETH_SEND_TRANSACTION: 'eth_sendTransaction'
 }
+
+export enum EIP_155_EVENTS {
+  ETH_CHAIN_CHANGED = 'chainChanged',
+  ETH_ACCOUNTS_CHANGED = 'accountsChanged'
+}

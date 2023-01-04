@@ -21,7 +21,13 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
   }
 
   return (
-    <ChainCard rgb={rgb} flexDirection="row" alignItems="center">
+    <ChainCard
+      rgb={rgb}
+      flexDirection="row"
+      alignItems="center"
+      selected={false}
+      onSelect={() => {}}
+    >
       <Avatar src={logo} />
       <div style={{ flex: 1 }}>
         <Text h5 css={{ marginLeft: '$9' }}>

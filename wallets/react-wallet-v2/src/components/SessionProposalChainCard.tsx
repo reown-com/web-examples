@@ -31,12 +31,18 @@ const CHAIN_METADATA = {
  */
 interface IProps {
   requiredNamespace: ProposalTypes.RequiredNamespace
+  onSelect: Function
+  selectedChains: string[]
 }
 
 /**
  * Component
  */
-export default function SessionProposalChainCard({ requiredNamespace }: IProps) {
+export default function SessionProposalChainCard({
+  requiredNamespace,
+  selectedChains,
+  onSelect
+}: IProps) {
   return (
     <Fragment>
       {requiredNamespace.chains.map(chainId => {
@@ -54,9 +60,16 @@ export default function SessionProposalChainCard({ requiredNamespace }: IProps) 
         const allEvents = [...requiredNamespace.events, ...extensionEvents]
         // @ts-expect-error
         const rgb = CHAIN_METADATA[chainId]?.rgb
-
+        console.log('chainId', chainId)
         return (
-          <ChainCard key={chainId} rgb={rgb ?? ''} flexDirection="col" alignItems="flex-start">
+          <ChainCard
+            key={chainId}
+            rgb={rgb ?? ''}
+            flexDirection="col"
+            alignItems="flex-start"
+            selected={selectedChains.includes(chainId)}
+            onSelect={() => onSelect(chainId)}
+          >
             <Text h5 css={{ marginBottom: '$5' }}>
               {formatChainName(chainId)}
             </Text>

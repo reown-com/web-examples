@@ -33,3 +33,5 @@ export const POLKADOT_SIGNING_METHODS = {
   POLKADOT_SIGN_TRANSACTION: 'polkadot_signTransaction',
   POLKADOT_SIGN_MESSAGE: 'polkadot_signMessage'
 }
+
+export enum POLKADOT_EVENTS {}
