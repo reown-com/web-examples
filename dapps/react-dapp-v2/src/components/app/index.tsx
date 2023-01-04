@@ -21,9 +21,14 @@ export const SLanding = styled(Column as any)`
   /* height: 600px; */
 `;
 
+export const SVersionTag = styled.p`
+  font-weight: bold;
+  font-size: 20px;
+`;
+
 export const SButtonContainer = styled(Column as any)`
   width: 250px;
-  margin: 50px 0;
+  margin: 20px 0 50px 0;
 `;
 
 export const SConnectButton = styled(Button as any)`

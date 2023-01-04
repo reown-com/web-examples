@@ -31,13 +31,12 @@ import {
   SLanding,
   SLayout,
   SToggleContainer,
+  SVersionTag,
 } from "../components/app";
 import { useWalletConnectClient } from "../contexts/ClientContext";
 import { useJsonRpc } from "../contexts/JsonRpcContext";
 import { useChainData } from "../contexts/ChainDataContext";
-
-// Normal import does not work here
-const { version } = require("@walletconnect/sign-client/package.json");
+import packageJson from "../../package.json";
 
 const Home: NextPage = () => {
   const [modal, setModal] = useState("");
@@ -355,7 +354,10 @@ const Home: NextPage = () => {
     return !accounts.length && !Object.keys(balances).length ? (
       <SLanding center>
         <Banner />
-        <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
+        <div>
+          <SVersionTag>{`SignClient v${packageJson.dependencies["@walletconnect/sign-client"]}`}</SVersionTag>
+          <SVersionTag>{`PushClient v${packageJson.dependencies["@walletconnect/push-client"]}`}</SVersionTag>
+        </div>
         <SButtonContainer>
           <h6>Select chains:</h6>
           <SToggleContainer>
