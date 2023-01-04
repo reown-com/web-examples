@@ -1,4 +1,4 @@
-import { SignClient } from "@walletconnect/sign-client";
+import SignClient from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import { Web3Modal } from "@web3modal/standalone";
 
@@ -198,7 +198,7 @@ export function ClientContextProvider({
   }, [client, session]);
 
   const _subscribeToEvents = useCallback(
-    async (_client: Client) => {
+    async (_client: SignClient) => {
       if (typeof _client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
