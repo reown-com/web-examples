@@ -32,6 +32,7 @@ const CHAIN_METADATA = {
 interface IProps {
   namespace: SessionTypes.Namespace
   selected: boolean
+  onSelect: Function
 }
 
 /**
