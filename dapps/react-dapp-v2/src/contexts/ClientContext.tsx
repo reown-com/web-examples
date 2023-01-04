@@ -1,4 +1,4 @@
-import Client from "@walletconnect/sign-client";
+import { SignClient } from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import { Web3Modal } from "@web3modal/standalone";
 
@@ -29,7 +29,7 @@ import { getRequiredNamespaces } from "../helpers/namespaces";
  * Types
  */
 interface IContext {
-  client: Client | undefined;
+  client: SignClient | undefined;
   session: SessionTypes.Struct | undefined;
   connect: (pairing?: { topic: string }) => Promise<void>;
   disconnect: () => Promise<void>;
@@ -66,7 +66,7 @@ export function ClientContextProvider({
 }: {
   children: ReactNode | ReactNode[];
 }) {
-  const [client, setClient] = useState<Client>();
+  const [client, setClient] = useState<SignClient>();
   const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
   const [session, setSession] = useState<SessionTypes.Struct>();
 
@@ -138,7 +138,8 @@ export function ClientContextProvider({
       }
       console.log("connect, pairing topic is:", pairing?.topic);
       try {
-        const requiredNamespaces = getRequiredNamespaces(chains);
+        let requiredNamespaces = {};
+        if (chains.length) requiredNamespaces = getRequiredNamespaces(chains);
         console.log(
           "requiredNamespaces config for connect:",
           requiredNamespaces
@@ -227,7 +228,7 @@ export function ClientContextProvider({
   );
 
   const _checkPersistedState = useCallback(
-    async (_client: Client) => {
+    async (_client: SignClient) => {
       if (typeof _client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
@@ -257,7 +258,7 @@ export function ClientContextProvider({
     try {
       setIsInitializing(true);
 
-      const _client = await Client.init({
+      const _client = await SignClient.init({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
