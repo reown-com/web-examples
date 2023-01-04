@@ -119,7 +119,7 @@ export default function SessionPage() {
         return (
           <Fragment key={chain}>
             <Text h4 css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-            <SessionChainCard namespace={namespaces[chain]} />
+            <SessionChainCard namespace={namespaces[chain]} selected={false} onSelect={() => {}} />
             {/* {renderAccountSelection(chain)} */}
             <Divider y={2} />
           </Fragment>
