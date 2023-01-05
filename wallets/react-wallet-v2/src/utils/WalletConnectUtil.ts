@@ -5,8 +5,8 @@ export let signClient: SignClient
 export async function createSignClient(relayerRegionURL: string) {
   signClient = await SignClient.init({
     logger: 'debug',
-    projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-    relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL,
+    projectId: '3aad49d31f1fd2fcbc6b3b066e08fccc',
+    relayUrl: 'wss://relay.walletconnect.com',
     metadata: {
       name: 'React Wallet',
       description: 'React Wallet for WalletConnect',
