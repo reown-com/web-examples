@@ -29,6 +29,7 @@ export default function SessionProposalModal() {
 
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
+  console.log('ModalStore.state.data', ModalStore.state.data)
 
   // Ensure proposal is defined
   if (!proposal) {
@@ -72,11 +73,22 @@ export default function SessionProposalModal() {
         }
       })
 
-      await web3wallet.approveSession({
+      // await web3wallet.approveSession({
+      //   id,
+      //   relayProtocol: relays[0].protocol,
+      //   namespaces
+      // })
+
+      const session = await web3wallet.approveSession({
         id,
         relayProtocol: relays[0].protocol,
         namespaces
       })
+      console.log('session: ', session)
+      console.log('id: ', id)
+      console.log('relayProtocol: ', relays[0].protocol)
+
+      console.log('in SessionProposalModal: namespaces', namespaces)
     }
     ModalStore.close()
   }

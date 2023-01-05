@@ -6,7 +6,7 @@ Catalogue of various wallet and dapp examples implementing WalletConnect's **SDK
 
 **Wallets:**
 
-- [React Web3Wallet SDK](https://github.com/WalletConnect/web-examples/tree/refactor/fix-readme-typo/wallets/react-web3wallet) ([Demo](https://react-web3wallet.vercel.app))
+- [React Web3Wallet SDK](https://github.com/WalletConnect/web-examples/tree/main/wallets/react-web3wallet) ([Demo](https://react-web3wallet.vercel.app))
 
 ### Sign API
 
