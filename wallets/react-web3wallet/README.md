@@ -75,7 +75,7 @@ Your `.env.local` now contains the following environment variables:
 ```javascript
     /* old */
     signClient.on("session_proposal", async (proposal) => {
-        const { acknowledged } = await signClient.approve({
+        const { acknowledged } = await B.approve({
             id: proposal.id,
             namespaces,
         });
@@ -225,7 +225,7 @@ Your `.env.local` now contains the following environment variables:
     const iss = `did:pkh:eip155:1:${address}`;
     web3wallet.on("auth_request", async (event) => {
         // format the payload
-        const message = web3wallet.formatMessage(event.params.cacaoPayload, iss);
+        const message = authClient.formatMessage(event.params.cacaoPayload, iss);
         // prompt the user to sign the message
         const signature = await wallet.signMessage(message);
         // respond

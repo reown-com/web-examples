@@ -60,34 +60,28 @@ export default function SessionProposalModal() {
 
   // Hanlde approve action, construct session namespace
   async function onApprove() {
-    signClient.on("session_proposal", (event: any) => {
+    if (proposal) {
+      const namespaces: SessionTypes.Namespaces = {}
+      Object.keys(requiredNamespaces).forEach(key => {
+        const accounts: string[] = []
+        requiredNamespaces[key].chains.map(chain => {
+          selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
+        })
+        namespaces[key] = {
+          accounts,
+          methods: requiredNamespaces[key].methods,
+          events: requiredNamespaces[key].events
+        }
+      })
 
-      console.log(event)
-      console.log('testttt')
-
-    });
-    // if (proposal) {
-    //   const namespaces: SessionTypes.Namespaces = {}
-    //   Object.keys(requiredNamespaces).forEach(key => {
-    //     const accounts: string[] = []
-    //     requiredNamespaces[key].chains.map(chain => {
-    //       selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
-    //     })
-    //     namespaces[key] = {
-    //       accounts,
-    //       methods: requiredNamespaces[key].methods,
-    //       events: requiredNamespaces[key].events
-    //     }
-    //   })
-
-    //   const { acknowledged } = await signClient.approve({
-    //     id,
-    //     relayProtocol: relays[0].protocol,
-    //     namespaces
-    //   })
-    //   await acknowledged()
-    // }
-    // ModalStore.close()
+      const { acknowledged } = await signClient.approve({
+        id,
+        relayProtocol: relays[0].protocol,
+        namespaces
+      })
+      await acknowledged()
+    }
+    ModalStore.close()
   }
 
   // Hanlde reject action
