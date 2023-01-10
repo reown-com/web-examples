@@ -8,7 +8,6 @@ export let pushClient: PushWalletClient
 export async function createSignClient(core: ICore) {
   signClient = await SignClient.init({
     core,
-    logger: 'debug',
     metadata: {
       name: 'React Wallet',
       description: 'React Wallet for WalletConnect',
@@ -22,7 +21,6 @@ export async function createPushClient(core: ICore) {
   // Set up the client
   pushClient = await PushWalletClient.init({
     core,
-    logger: 'debug',
     metadata: {
       name: 'React Wallet',
       description: 'React Wallet for WalletConnect',
