@@ -1,3 +1,4 @@
+import { PushClientTypes } from '@walletconnect/push-client/dist/types/types'
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import { IClientMeta, IWalletConnectSession } from '@walletconnect/legacy-types'
 import { proxy } from 'valtio'
@@ -15,6 +16,7 @@ interface ModalData {
   }
   legacyCallRequestEvent?: { id: number; method: string; params: any[] }
   legacyRequestSession?: IWalletConnectSession
+  pushRequestEvent?: PushClientTypes.EventArguments['push_request']
 }
 
 interface State {
@@ -34,6 +36,7 @@ interface State {
     | 'LegacySessionSignModal'
     | 'LegacySessionSignTypedDataModal'
     | 'LegacySessionSendTransactionModal'
+    | 'PushSubscriptionRequestModal'
   data?: ModalData
 }
 

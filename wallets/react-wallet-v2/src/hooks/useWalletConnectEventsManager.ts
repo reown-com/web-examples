@@ -4,15 +4,16 @@ import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
 import { POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
 import { ELROND_SIGNING_METHODS } from '@/data/ElrondData'
 import ModalStore from '@/store/ModalStore'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { pushClient, signClient } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
+import { PushClientTypes } from '@walletconnect/push-client/dist/types/types'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
-   * 1. Open session proposal modal for confirmation / rejection
+   * Sign SDK Event Handlers
    *****************************************************************************/
   const onSessionProposal = useCallback(
     (proposal: SignClientTypes.EventArguments['session_proposal']) => {
@@ -21,9 +22,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     []
   )
 
-  /******************************************************************************
-   * 3. Open request handling modal based on method that was used
-   *****************************************************************************/
   const onSessionRequest = useCallback(
     async (requestEvent: SignClientTypes.EventArguments['session_request']) => {
       console.log('session_request', requestEvent)
@@ -85,7 +83,18 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   )
 
   /******************************************************************************
-   * Set up WalletConnect event listeners
+   * Push SDK Event Handlers
+   *****************************************************************************/
+
+  const onPushRequest = useCallback(
+    (pushRequestEvent: PushClientTypes.EventArguments['push_request']) => {
+      ModalStore.open('PushSubscriptionRequestModal', { pushRequestEvent })
+    },
+    []
+  )
+
+  /******************************************************************************
+   * Set up event listeners
    *****************************************************************************/
   useEffect(() => {
     if (initialized) {
@@ -98,4 +107,21 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       signClient.on('session_delete', data => console.log('delete', data))
     }
   }, [initialized, onSessionProposal, onSessionRequest])
+
+  useEffect(() => {
+    if (initialized) {
+      // Listen for relevant push events
+      pushClient.on('push_request', event => {
+        console.log('[PUSH DEMO] Got push subscription request with id: ' + event.id, event)
+        onPushRequest(event)
+      })
+      pushClient.on('push_message', async event => {
+        console.log('[PUSH DEMO] Received push message event: ', event)
+        const {
+          params: { message }
+        } = event
+        new Notification(message.title, { body: message.body, icon: message.icon })
+      })
+    }
+  }, [initialized, onPushRequest])
 }

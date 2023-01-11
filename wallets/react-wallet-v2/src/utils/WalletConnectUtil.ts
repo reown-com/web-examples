@@ -29,19 +29,6 @@ export async function createPushClient(core: ICore) {
     }
   })
 
-  // Listen for relevant push events
-  pushClient.on('push_request', async ({ id, topic, params }) => {
-    await pushClient.approve({ id })
-    console.log('[PUSH DEMO] Auto-approved push request with id: ' + id)
-  })
-  pushClient.on('push_message', async args => {
-    console.log('[PUSH DEMO] Received push message: ', args)
-    const {
-      params: { message }
-    } = args
-    new Notification(message.title, { body: message.body, icon: message.icon })
-  })
-
   // -- Web Notifications API --
 
   // Check if the browser supports the Web Notification API
