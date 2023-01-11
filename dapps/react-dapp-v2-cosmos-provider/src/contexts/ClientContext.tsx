@@ -11,7 +11,12 @@ import {
   useMemo,
   useState,
 } from "react";
-import { DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from "../constants";
+import {
+  DEFAULT_COSMOS_METHODS,
+  DEFAULT_LOGGER,
+  DEFAULT_PROJECT_ID,
+  DEFAULT_RELAY_URL,
+} from "../constants";
 import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../helpers";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
 
@@ -153,7 +158,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       const session = await cosmosProvider.connect({
         namespaces: {
           cosmos: {
-            methods: ["cosmos_signDirect", "cosmos_signAmino"],
+            methods: DEFAULT_COSMOS_METHODS,
             chains: [caipChainId],
             events: ["chainChanged", "accountsChanged"],
           },
