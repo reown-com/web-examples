@@ -9,7 +9,7 @@ import { STable } from "../components/shared";
 import { SModalContainer, SModalTitle } from "./shared";
 
 interface PairingModalProps {
-  pairings: PairingTypes.Settled[];
+  pairings: PairingTypes.Struct[];
   connect: (pairing?: { topic: string }) => Promise<void>;
 }
 

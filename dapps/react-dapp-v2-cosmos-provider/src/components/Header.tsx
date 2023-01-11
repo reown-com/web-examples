@@ -50,7 +50,7 @@ const SActiveSession = styled(SActiveAccount as any)`
 interface HeaderProps {
   ping: () => Promise<void>;
   disconnect: () => Promise<void>;
-  session: SessionTypes.Created | undefined;
+  session: SessionTypes.Struct | undefined;
 }
 
 const Header = (props: HeaderProps) => {
