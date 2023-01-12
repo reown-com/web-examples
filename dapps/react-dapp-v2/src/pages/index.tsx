@@ -62,6 +62,7 @@ const Home: NextPage = () => {
     setChains,
     setRelayerRegion,
     pushClient,
+    activePushSubscription,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -118,12 +119,11 @@ const Home: NextPage = () => {
       url: "",
     };
 
-    // TODO: replace with `.getActiveSubscriptions` call.
-    const subscriptions = pushClient.subscriptions.getAll();
+    const subscriptions = Object.values(pushClient.getActiveSubscriptions());
     const latestSubscription = subscriptions[subscriptions.length - 1];
 
     console.log(
-      "[PUSH DEMO] Sending push_message on subscription: ",
+      "[PUSH DEMO] Sending push_message on latest subscription: ",
       latestSubscription
     );
 
@@ -415,6 +415,9 @@ const Home: NextPage = () => {
           ping={onPing}
           disconnect={disconnect}
           session={session}
+          hasActivePushSubscription={
+            typeof activePushSubscription !== "undefined"
+          }
         />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>

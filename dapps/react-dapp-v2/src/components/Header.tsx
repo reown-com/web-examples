@@ -54,6 +54,7 @@ const SActiveSession = styled(SActiveAccount as any)`
 `;
 
 interface HeaderProps {
+  hasActivePushSubscription: boolean;
   sendPushMessage: () => Promise<void>;
   ping: () => Promise<void>;
   disconnect: () => Promise<void>;
@@ -61,7 +62,13 @@ interface HeaderProps {
 }
 
 const Header = (props: HeaderProps) => {
-  const { sendPushMessage, ping, disconnect, session } = props;
+  const {
+    ping,
+    disconnect,
+    session,
+    hasActivePushSubscription,
+    sendPushMessage,
+  } = props;
   return (
     <SHeader {...props}>
       {session ? (
@@ -80,8 +87,15 @@ const Header = (props: HeaderProps) => {
                 <Icon size={24} src={"/assets/githubLogo.svg"} />
               </a>
             </GithubLogoContainer>
-            <Button outline color="black" onClick={sendPushMessage}>
-              {"🔔 Push Test"}
+            <Button
+              outline
+              color="black"
+              onClick={sendPushMessage}
+              disabled={!hasActivePushSubscription}
+            >
+              {hasActivePushSubscription
+                ? "🔔 Push Test"
+                : "🔕 No Push Subscription"}
             </Button>
             <Button outline color="black" onClick={ping}>
               {"Ping"}
