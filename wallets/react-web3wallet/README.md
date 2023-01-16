@@ -67,7 +67,7 @@ Your `.env.local` now contains the following environment variables:
 
     const web3wallet = await Web3Wallet.init({
         core, // <- pass the shared `core` instance
-        metadata: `${metaData}`
+        metadata
     })
 ```
 2. Pair with a dapp
@@ -193,7 +193,7 @@ Your `.env.local` now contains the following environment variables:
 
     const web3wallet = await Web3Wallet.init({
         core, // <- pass the shared `core` instance
-        metadata: `${metaData}`
+        metadata
     })
 ```
 2. Authenticate with a dapp
