@@ -310,12 +310,12 @@ const Home: NextPage = () => {
     return [
       {
         method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
-        callback: onSignTransaction
+        callback: onSignTransaction,
       },
       {
         method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
-        callback: onSignMessage
-      }
+        callback: onSignMessage,
+      },
     ];
   };
 

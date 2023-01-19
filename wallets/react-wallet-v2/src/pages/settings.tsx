@@ -13,9 +13,15 @@ import { useSnapshot } from 'valtio'
 import packageJSON from '../../package.json'
 
 export default function SettingsPage() {
-  const { testNets, eip155Address, cosmosAddress, solanaAddress,  kadenaAddress, elrondAddress, tronAddress } = useSnapshot(
-    SettingsStore.state
-  )
+  const {
+    testNets,
+    eip155Address,
+    cosmosAddress,
+    solanaAddress,
+    elrondAddress,
+    kadenaAddress,
+    tronAddress
+  } = useSnapshot(SettingsStore.state)
 
   return (
     <Fragment>
