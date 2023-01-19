@@ -1,6 +1,6 @@
 {
   "name": "react-dapp-v2-next",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,6 +10,7 @@
     "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
   },
   "dependencies": {
+    "@celo/wallet-base": "^3.0.1",
     "@elrondnetwork/erdjs": "11.1.1",
     "@elrondnetwork/erdjs-walletcore": "2.1.0",
     "@ethereumjs/tx": "^3.5.0",
@@ -20,12 +21,10 @@
     "@polkadot/util-crypto": "^10.1.2",
     "@solana/web3.js": "^1.36.0",
     "@walletconnect/encoding": "^1.0.1",
-    "@walletconnect/sign-client": "2.1.4",
-    "@walletconnect/types": "2.1.4",
-    "@walletconnect/utils": "2.1.4",
-    "@web3modal/core": "2.0.0-beta.4",
-    "@web3modal/ethereum": "2.0.0-beta.4",
-    "@web3modal/ui": "2.0.0-beta.4",
+    "@walletconnect/sign-client": "2.2.0",
+    "@walletconnect/types": "2.2.0",
+    "@walletconnect/utils": "2.2.0",
+    "@web3modal/standalone": "2.0.0-beta.8",
     "axios": "^0.21.1",
     "blockies-ts": "^1.0.0",
     "bs58": "^5.0.0",
@@ -34,6 +33,7 @@
     "eth-sig-util": "^2.5.3",
     "ethereumjs-util": "^7.0.6",
     "ethers": "^5.3.0",
+    "fp-ts": "^2.13.1",
     "next": "12.2.4",
     "prop-types": "^15.7.2",
     "qr-image": "^3.2.0",
@@ -42,6 +42,7 @@
     "react-scripts": "^4.0.3",
     "solana-wallet": "^1.0.1",
     "styled-components": "^5.2.0",
+    "tronweb": "^4.4.0",
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {

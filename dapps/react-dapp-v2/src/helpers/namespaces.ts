@@ -14,6 +14,8 @@ import {
   DEFAULT_KADENA_EVENTS,
   DEFAULT_ELROND_EVENTS,
   DEFAULT_ELROND_METHODS,
+  DEFAULT_TRON_METHODS,
+  DEFAULT_TRON_EVENTS,
 } from "../constants";
 
 export const getNamespacesFromChains = (chains: string[]) => {
@@ -44,6 +46,8 @@ export const getSupportedMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_KADENA_METHODS);
     case "elrond":
       return Object.values(DEFAULT_ELROND_METHODS);
+    case 'tron':
+      return Object.values(DEFAULT_TRON_METHODS);
     default:
       throw new Error(`No default methods for namespace: ${namespace}`);
   }
@@ -65,6 +69,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_KADENA_EVENTS);
     case "elrond":
       return Object.values(DEFAULT_ELROND_EVENTS);
+    case "tron":
+      return Object.values(DEFAULT_TRON_EVENTS);
     default:
       throw new Error(`No default events for namespace: ${namespace}`);
   }

@@ -8,6 +8,7 @@ import { POLKADOT_MAINNET_CHAINS, POLKADOT_TEST_CHAINS } from '@/data/PolkadotDa
 import { KADENA_MAINNET_CHAINS, KADENA_TEST_CHAINS } from '@/data/KadenaData'
 import { NEAR_TEST_CHAINS } from '@/data/NEARData'
 import { ELROND_MAINNET_CHAINS, ELROND_TEST_CHAINS } from '@/data/ElrondData'
+import { TRON_MAINNET_CHAINS, TRON_TEST_CHAINS } from '@/data/TronData'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
@@ -22,7 +23,8 @@ export default function HomePage() {
     polkadotAddress,
     nearAddress,
     kadenaAddress,
-    elrondAddress
+    elrondAddress,
+    tronAddress
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -51,6 +53,9 @@ export default function HomePage() {
       {Object.values(ELROND_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} />
       ))}
+      {Object.values(TRON_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} />
+      ))}
 
       {testNets ? (
         <Fragment>
@@ -74,6 +79,9 @@ export default function HomePage() {
           ))}
           {Object.values(ELROND_TEST_CHAINS).map(({ name, logo, rgb }) => (
             <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} />
+          ))}
+          {Object.values(TRON_TEST_CHAINS).map(({ name, logo, rgb }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} />
           ))}
         </Fragment>
       ) : null}

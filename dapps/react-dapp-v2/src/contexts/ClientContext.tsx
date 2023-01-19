@@ -1,8 +1,6 @@
 import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import { ConfigCtrl as ModalConfigCtrl, ModalCtrl } from "@web3modal/core";
-import type { W3mModal } from "@web3modal/ui";
-import "@web3modal/ui";
+import { Web3Modal } from "@web3modal/standalone";
 
 import {
   createContext,
@@ -56,9 +54,9 @@ export const ClientContext = createContext<IContext>({} as IContext);
 /**
  * Web3Modal Config
  */
-ModalConfigCtrl.setConfig({
+const web3Modal = new Web3Modal({
   projectId: DEFAULT_PROJECT_ID,
-  theme: "light" as const,
+  themeMode: "light",
 });
 
 /**
@@ -160,7 +158,7 @@ export function ClientContextProvider({
             .map((namespace) => namespace.chains)
             .flat();
 
-          ModalCtrl.open({ uri, standaloneChains });
+          web3Modal.openModal({ uri, standaloneChains });
         }
 
         const session = await approval();
@@ -173,7 +171,7 @@ export function ClientContextProvider({
         // ignore rejection
       } finally {
         // close modal in case it was open
-        ModalCtrl.close();
+        web3Modal.closeModal();
       }
     },
     [chains, client, onSessionConnected]
@@ -186,12 +184,18 @@ export function ClientContextProvider({
     if (typeof session === "undefined") {
       throw new Error("Session is not connected");
     }
-    await client.disconnect({
-      topic: session.topic,
-      reason: getSdkError("USER_DISCONNECTED"),
-    });
-    // Reset app state after disconnect.
-    reset();
+
+    try {
+      await client.disconnect({
+        topic: session.topic,
+        reason: getSdkError("USER_DISCONNECTED"),
+      });
+    } catch (error) {
+      console.error("SignClient.disconnect failed:", error);
+    } finally {
+      // Reset app state after disconnect.
+      reset();
+    }
   }, [client, session]);
 
   const _subscribeToEvents = useCallback(
@@ -322,21 +326,9 @@ export function ClientContextProvider({
         ...value,
       }}
     >
-      <>
-        {children}
-        <w3m-modal></w3m-modal>
-      </>
+      {children}
     </ClientContext.Provider>
   );
-}
-
-// Let Typescript know about the custom w3m-modal dom / webcomponent element
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      "w3m-modal": Partial<W3mModal>;
-    }
-  }
 }
 
 export function useWalletConnectClient() {

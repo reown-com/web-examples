@@ -7,6 +7,7 @@ import * as solana from "./solana";
 import * as near from "./near";
 import * as kadena from "./kadena";
 import * as elrond from "./elrond";
+import * as tron from './tron';
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -27,6 +28,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return kadena.getChainMetadata(chainId);
     case "elrond":
       return elrond.getChainMetadata(chainId);
+    case 'tron':
+      return tron.getChainMetadata(chainId);
     default:
       throw new Error(`No metadata handler for namespace ${namespace}`);
   }

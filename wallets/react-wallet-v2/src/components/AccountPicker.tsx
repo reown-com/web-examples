@@ -5,6 +5,7 @@ import { nearAddresses } from '@/utils/NearWalletUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { elrondAddresses } from '@/utils/ElrondWalletUtil'
+import { tronAddresses } from '@/utils/TronWalletUtil'
 import { useSnapshot } from 'valtio'
 
 export default function AccountPicker() {
@@ -19,6 +20,7 @@ export default function AccountPicker() {
     SettingsStore.setNearAddress(nearAddresses[account])
     SettingsStore.setKadenaAddress(kadenaAddresses[account])
     SettingsStore.setElrondAddress(elrondAddresses[account])
+    SettingsStore.setTronAddress(tronAddresses[account])
   }
 
   return (

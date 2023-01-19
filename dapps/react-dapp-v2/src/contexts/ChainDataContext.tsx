@@ -9,6 +9,7 @@ import {
 import { SolanaChainData } from "../chains/solana";
 import { PolkadotChainData } from "../chains/polkadot";
 import { ElrondChainData } from "../chains/elrond";
+import { TronChainData } from '../chains/tron';
 
 import { ChainNamespaces, getAllChainNamespaces } from "../helpers";
 import { NearChainData } from "../chains/near";
@@ -52,7 +53,9 @@ export function ChainDataContextProvider({
           } else if (namespace === "kadena") {
             chains = KadenaChainData;
           } else if (namespace === "elrond") {
-            chains = ElrondChainData;
+            chains = ElrondChainData;  
+          } else if (namespace === 'tron') {
+            chains = TronChainData;
           } else {
             chains = await apiGetChainNamespace(namespace);
           }
