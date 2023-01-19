@@ -2427,10 +2427,10 @@
     pino "7.11.0"
     tslib "1.14.1"
 
-"@walletconnect/push-client@0.4.5":
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/@walletconnect/push-client/-/push-client-0.4.5.tgz#1d26b4b2afc9745cf92f90deae5aea827efae275"
-  integrity sha512-vt7pP9SRT64385JpG3xdHDJfgGYIYFpp38eWrE5txTHYY+Q0KgvMmJo9KzAtNyA16zmEGUXJrcqnUDJfww5djQ==
+"@walletconnect/push-client@0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/push-client/-/push-client-0.5.0.tgz#0f39be2ee7afdca436ab598c6f65c91968edbef0"
+  integrity sha512-bXXlruWL8y9PIcoTtXqrXW4xAKDCZvuWCC6wlSfzugCNbkOzd881McfNoW4yCakjYq2xG3/xfB6Bi986zczWdw==
   dependencies:
     "@walletconnect/core" "2.2.1"
     "@walletconnect/jsonrpc-utils" "^1.0.4"

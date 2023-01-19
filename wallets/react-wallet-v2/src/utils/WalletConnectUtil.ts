@@ -21,13 +21,12 @@ export async function createPushClient(core: ICore) {
   // Set up the client
   pushClient = await PushWalletClient.init({
     core,
-    metadata: {
-      name: 'React Wallet',
-      description: 'React Wallet for WalletConnect',
-      url: 'https://walletconnect.com/',
-      icons: ['https://avatars.githubusercontent.com/u/37784886']
-    }
+    logger: 'debug'
   })
+
+  console.log('[PUSH DEMO] restored requests: ', pushClient.requests.getAll())
+  console.log('[PUSH DEMO] restored subscriptions: ', pushClient.subscriptions.getAll())
+  console.log('[PUSH DEMO] restored messages: ', pushClient.messages.getAll())
 
   // -- Web Notifications API --
 
