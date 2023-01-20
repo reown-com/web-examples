@@ -1,6 +1,4 @@
-import { pact } from "@kadena/chainweb-node-client";
-import { hash } from "@kadena/cryptography-utils";
-import { ChainId, ICommandPayload, ICommandResult } from "@kadena/types";
+import { PactCommand } from "@kadena/client";
 
 export async function getKadenaChainAmount(
   WCNetworkId: string
@@ -24,46 +22,18 @@ async function getKadenaBalanceForChain(
   publicKey: string,
   WCNetworkId: string,
   kadenaChainID: string
-) {
+): Promise<number> {
   const ENDPOINT = WCNetworkId === "testnet04" ? "testnet." : "";
   const API_HOST = `https://api.${ENDPOINT}chainweb.com/chainweb/0.0/${WCNetworkId}/chain/${kadenaChainID}/pact`;
 
-  const cmd: ICommandPayload = {
-    networkId: WCNetworkId,
-    payload: {
-      exec: {
-        data: {},
-        code: `(coin.get-balance "k:1c131be8d83f1d712b33ae0c7afd60bca0db80f362f5de9ba8792c6f4e7df488")`,
-      },
-    },
-    signers: [],
-    meta: {
-      creationTime: Math.round(new Date().getTime() / 1000),
-      ttl: 28000,
-      gasLimit: 2500,
-      chainId: kadenaChainID as ChainId,
-      gasPrice: 1e-8,
-      sender: "",
-    },
-    nonce: "1",
-  };
-
-  const stringifiedCmd = JSON.stringify(cmd);
-
-  const requestBody = {
-    cmd: stringifiedCmd,
-    hash: hash(stringifiedCmd),
-    sigs: [],
-  };
-
-  const { result } = (await pact.local(
-    requestBody,
-    API_HOST
-  )) as ICommandResult;
+  // This request will fail if there is no on-chain activity for the given account yet
+  const command = new PactCommand();
+  command.code = `(coin.get-balance "k:${publicKey}")`;
+  const { result } = await command.local(API_HOST);
 
   if (result.status !== "success") return 0;
 
-  return result.data;
+  return result.data as number;
 }
 
 const kadenaNumberOfChains: Record<string, number> = {
