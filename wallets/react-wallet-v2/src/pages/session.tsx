@@ -63,8 +63,14 @@ export default function SessionPage() {
         'eip155:1:0x70012948c348CBF00806A3C79E3c5DAdFaAa347B',
         'eip155:137:0x70012948c348CBF00806A3C79E3c5DAdFaAa347B'
       ],
-      methods: ['personal_sign', 'eth_signTypedData', 'eth_sendTransaction'],
-      events: []
+      methods: [
+        'eth_sendTransaction',
+        'eth_signTransaction',
+        'eth_sign',
+        'personal_sign',
+        'eth_signTypedData'
+      ],
+      events: ['chainChanged', 'accountsChanged']
     }
   }
 
