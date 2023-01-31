@@ -1,5 +1,6 @@
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
+import { truncate } from '@/utils/HelperUtil'
 import { pushClient } from '@/utils/WalletConnectUtil'
 
 import { Avatar, Button, Col, Divider, Modal, Row, Text, Link } from '@nextui-org/react'
@@ -16,7 +17,7 @@ export default function PushSubscriptionRequestModal() {
 
   // Get required proposal data
   const { id, topic, params } = pushRequestEvent
-  const { metadata } = params
+  const { metadata, account } = params
 
   async function onApprove() {
     await pushClient.approve({ id })
@@ -46,6 +47,10 @@ export default function PushSubscriptionRequestModal() {
         <Row align="center">
           {metadata.name} ({metadata.url}) is requesting to establish a Push subscription with your
           wallet.
+        </Row>
+        <Divider y={2} />
+        <Row align="center">
+          <Text h5>Account: {truncate(account, 28)}</Text>
         </Row>
       </RequestModalContainer>
 
