@@ -50,22 +50,6 @@ export default function SessionChainCard({ namespace }: IProps) {
   return (
     <Fragment>
       {chains.map(chainId => {
-        const extensionMethods: SessionTypes.Namespace['methods'] = []
-        const extensionEvents: SessionTypes.Namespace['events'] = []
-
-        namespace.extension?.map(({ accounts, methods, events }) => {
-          accounts.forEach(account => {
-            const [type, chain] = account.split(':')
-            const chainId = `${type}:${chain}`
-            if (chains.includes(chainId)) {
-              extensionMethods.push(...methods)
-              extensionEvents.push(...events)
-            }
-          })
-        })
-
-        const allMethods = [...namespace.methods, ...extensionMethods]
-        const allEvents = [...namespace.events, ...extensionEvents]
         // @ts-expect-error
         const rgb = CHAIN_METADATA[chainId]?.rgb
 
@@ -77,13 +61,17 @@ export default function SessionChainCard({ namespace }: IProps) {
             <Row>
               <Col>
                 <Text h6>Methods</Text>
-                <Text color="$gray300">{allMethods.length ? allMethods.join(', ') : '-'}</Text>
+                <Text color="$gray300">
+                  {namespace.methods.length ? namespace.methods.join(', ') : '-'}
+                </Text>
               </Col>
             </Row>
             <Row css={{ marginTop: '$5' }}>
               <Col>
                 <Text h6>Events</Text>
-                <Text color="$gray300">{allEvents.length ? allEvents.join(', ') : '-'}</Text>
+                <Text color="$gray300">
+                  {namespace.events.length ? namespace.events.join(', ') : '-'}
+                </Text>
               </Col>
             </Row>
           </ChainCard>
