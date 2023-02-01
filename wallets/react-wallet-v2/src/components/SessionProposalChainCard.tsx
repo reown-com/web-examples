@@ -43,13 +43,6 @@ export default function SessionProposalChainCard({ requiredNamespace }: IProps) 
         const extensionMethods: ProposalTypes.RequiredNamespace['methods'] = []
         const extensionEvents: ProposalTypes.RequiredNamespace['events'] = []
 
-        requiredNamespace.extension?.map(({ chains, methods, events }) => {
-          if (chains.includes(chainId)) {
-            extensionMethods.push(...methods)
-            extensionEvents.push(...events)
-          }
-        })
-
         const allMethods = [...requiredNamespace.methods, ...extensionMethods]
         const allEvents = [...requiredNamespace.events, ...extensionEvents]
         // @ts-expect-error

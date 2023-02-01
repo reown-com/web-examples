@@ -31,7 +31,10 @@ export default function LegacySessionSignModal() {
       const { result } = await approveEIP155Request({
         id,
         topic: '',
-        params: { request: { method, params }, chainId: '1' }
+        params: { request: { method, params }, chainId: '1' },
+        context: {
+          verified: { validation: 'UNKNOWN', verifyUrl: '', origin: '' }
+        }
       })
 
       legacySignClient.approveRequest({
@@ -48,7 +51,10 @@ export default function LegacySessionSignModal() {
       const { error } = rejectEIP155Request({
         id,
         topic: '',
-        params: { request: { method, params }, chainId: '1' }
+        params: { request: { method, params }, chainId: '1' },
+        context: {
+          verified: { validation: 'UNKNOWN', verifyUrl: '', origin: '' }
+        }
       })
       legacySignClient.rejectRequest({
         id,

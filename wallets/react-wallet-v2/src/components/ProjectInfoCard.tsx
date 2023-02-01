@@ -8,7 +8,7 @@ import { useMemo } from 'react'
  */
 interface IProps {
   metadata: SignClientTypes.Metadata
-  context: Verify.Context
+  context?: Verify.Context
 }
 
 /**
