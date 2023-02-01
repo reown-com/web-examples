@@ -21,7 +21,7 @@ export default function SessionSignTypedDataModal() {
   }
 
   // Get required request data
-  const { topic, params } = requestEvent
+  const { topic, params, context } = requestEvent
   const { request, chainId } = params
 
   // Get data
@@ -54,7 +54,7 @@ export default function SessionSignTypedDataModal() {
   return (
     <Fragment>
       <RequestModalContainer title="Sign Typed Data">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} />
+        <ProjectInfoCard metadata={requestSession.peer.metadata} context={context} />
 
         <Divider y={2} />
 

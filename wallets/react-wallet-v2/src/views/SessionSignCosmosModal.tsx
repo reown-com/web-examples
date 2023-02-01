@@ -20,7 +20,7 @@ export default function SessionSignCosmosModal() {
   }
 
   // Get required request data
-  const { topic, params } = requestEvent
+  const { topic, params, context } = requestEvent
   const { chainId, request } = params
 
   // Handle approve action (logic varies based on request method)
@@ -50,7 +50,7 @@ export default function SessionSignCosmosModal() {
   return (
     <Fragment>
       <RequestModalContainer title="Sign Message">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} />
+        <ProjectInfoCard metadata={requestSession.peer.metadata} context={context} />
 
         <Divider y={2} />
 

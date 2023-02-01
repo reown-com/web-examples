@@ -23,7 +23,7 @@ export default function SessionSendTransactionModal() {
 
   // Get required proposal data
 
-  const { topic, params } = requestEvent
+  const { topic, params, context } = requestEvent
   const { request, chainId } = params
   const transaction = request.params[0]
 
@@ -55,7 +55,7 @@ export default function SessionSendTransactionModal() {
   return (
     <Fragment>
       <RequestModalContainer title="Send / Sign Transaction">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} />
+        <ProjectInfoCard metadata={requestSession.peer.metadata} context={context} />
 
         <Divider y={2} />
 

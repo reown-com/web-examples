@@ -20,7 +20,7 @@ export default function SessionSignModal() {
   }
 
   // Get required request data
-  const { topic, params } = requestEvent
+  const { topic, params, context } = requestEvent
   const { request, chainId } = params
 
   // Get message, convert it to UTF8 string if it is valid hex
@@ -53,7 +53,7 @@ export default function SessionSignModal() {
   return (
     <Fragment>
       <RequestModalContainer title="Sign Message">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} />
+        <ProjectInfoCard metadata={requestSession.peer.metadata} context={context} />
 
         <Divider y={2} />
 

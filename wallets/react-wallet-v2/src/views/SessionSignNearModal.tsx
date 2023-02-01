@@ -22,7 +22,7 @@ export default function SessionSignNearModal() {
   }
 
   // Get required request data
-  const { topic, params } = requestEvent
+  const { topic, params, context } = requestEvent
   const { request, chainId } = params
 
   const formatTransaction = (transaction: Uint8Array) => {
@@ -163,7 +163,7 @@ export default function SessionSignNearModal() {
   return (
     <Fragment>
       <RequestModalContainer title="NEAR">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} />
+        <ProjectInfoCard metadata={requestSession.peer.metadata} context={context} />
 
         <Divider y={2} />
 

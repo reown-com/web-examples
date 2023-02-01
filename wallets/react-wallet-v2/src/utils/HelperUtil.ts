@@ -5,6 +5,7 @@ import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { ELROND_CHAINS, TElrondChain } from '@/data/ElrondData'
 import { TRON_CHAINS, TTronChain } from '@/data/TronData'
 import { utils } from 'ethers'
+import { Verify } from '@walletconnect/types'
 
 /**
  * Truncates string (in the middle) via given lenght value
@@ -121,7 +122,7 @@ export function isElrondChain(chain: string) {
 /**
  * Check if chain is part of TRON standard
  */
- export function isTronChain(chain: string) {
+export function isTronChain(chain: string) {
   return chain.includes('tron')
 }
 
@@ -138,4 +139,16 @@ export function formatChainName(chainId: string) {
     TRON_CHAINS[chainId as TTronChain]?.name ??
     chainId
   )
+}
+
+export function getVerifyStatus(context?: Verify.Context) {
+  if (!context) return ''
+  switch (context.verified.validation) {
+    case 'VALID':
+      return '✅ Verified'
+    case 'INVALID':
+      return '❌ Origin does not match'
+    case 'UNKNOWN':
+      return '❓ Unknown'
+  }
 }
