@@ -41,7 +41,10 @@ export const DEFAULT_APP_METADATA = {
   name: "React App",
   description: "React App for WalletConnect",
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
-  url: window.location.origin,
+  url:
+    typeof window !== "undefined"
+      ? window.location.origin
+      : "https://walletconnect.com/",
   verifyUrl: "https://verify.walletconnect.com",
 };
 
