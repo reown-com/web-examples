@@ -261,7 +261,7 @@ export function ClientContextProvider({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
-        metadata: getAppMetadata() || DEFAULT_APP_METADATA,
+        metadata: DEFAULT_APP_METADATA,
       });
 
       console.log("CREATED CLIENT: ", _client);
