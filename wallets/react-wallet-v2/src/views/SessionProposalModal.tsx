@@ -22,7 +22,7 @@ import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 
 export default function SessionProposalModal() {
@@ -31,6 +31,9 @@ export default function SessionProposalModal() {
 
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
+  useEffect(() => {
+    console.log('selectedAccounts', selectedAccounts)
+  }, [selectedAccounts])
 
   // Ensure proposal is defined
   if (!proposal) {
@@ -39,7 +42,9 @@ export default function SessionProposalModal() {
 
   // Get required proposal data
   const { id, params } = proposal
-  const { proposer, requiredNamespaces, relays } = params
+
+  const { proposer, requiredNamespaces, optionalNamespaces, sessionProperties, relays } = params
+  console.log('proposal', params, requiredNamespaces, optionalNamespaces, sessionProperties)
 
   // Add / remove address from EIP155 selection
   function onSelectAccount(chain: string, account: string) {
@@ -61,18 +66,46 @@ export default function SessionProposalModal() {
   // Hanlde approve action, construct session namespace
   async function onApprove() {
     if (proposal) {
-      const namespaces: SessionTypes.Namespaces = {}
-      Object.keys(requiredNamespaces).forEach(key => {
-        const accounts: string[] = []
-        requiredNamespaces[key].chains.map(chain => {
-          selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
-        })
-        namespaces[key] = {
-          accounts,
-          methods: requiredNamespaces[key].methods,
-          events: requiredNamespaces[key].events
+      let namespaces: SessionTypes.Namespaces = {}
+      const selectedOptionalNamespaces = []
+      for (const [chain, account] of Object.entries(selectedAccounts)) {
+        if (chain.includes('optional')) {
+          selectedOptionalNamespaces.push(chain.split(':')[1])
         }
-      })
+      }
+
+      console.log('selectedOptionalNamespaces', selectedOptionalNamespaces)
+
+      Object.keys(requiredNamespaces)
+        .concat(selectedOptionalNamespaces)
+        .forEach(key => {
+          const accounts: string[] = []
+          if (requiredNamespaces[key]) {
+            requiredNamespaces[key].chains.map(chain => {
+              selectedAccounts[`required:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
+            })
+            namespaces[key] = {
+              accounts,
+              methods: requiredNamespaces[key].methods,
+              events: requiredNamespaces[key].events,
+              chains: requiredNamespaces[key].chains
+            }
+          }
+          if (optionalNamespaces[key] && selectedAccounts[`optional:${key}`]) {
+            optionalNamespaces[key].chains.map(chain => {
+              selectedAccounts[`optional:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
+            })
+            namespaces[key] = {
+              ...namespaces[key],
+              accounts,
+              methods: optionalNamespaces[key].methods,
+              events: optionalNamespaces[key].events,
+              chains: namespaces[key].chains.concat(optionalNamespaces[key].chains)
+            }
+          }
+        })
+
+      console.log('namespaces', namespaces)
 
       const { acknowledged } = await signClient.approve({
         id,
@@ -171,17 +204,32 @@ export default function SessionProposalModal() {
         {/* TODO(ilja) Relays selection */}
 
         <Divider y={2} />
-
+        {Object.keys(requiredNamespaces).length != 0 ? <Text h4>Required Namespaces</Text> : null}
         {Object.keys(requiredNamespaces).map(chain => {
           return (
             <Fragment key={chain}>
-              <Text h4 css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
+              <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
               <SessionProposalChainCard requiredNamespace={requiredNamespaces[chain]} />
-              {renderAccountSelection(chain)}
+              {renderAccountSelection(`required:${chain}`)}
               <Divider y={2} />
             </Fragment>
           )
         })}
+        {optionalNamespaces && Object.keys(optionalNamespaces).length != 0 ? (
+          <Text h4>Optional Namespaces</Text>
+        ) : null}
+        {optionalNamespaces &&
+          Object.keys(optionalNamespaces).length != 0 &&
+          Object.keys(optionalNamespaces).map(chain => {
+            return (
+              <Fragment key={chain}>
+                <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
+                <SessionProposalChainCard requiredNamespace={optionalNamespaces[chain]} />
+                {renderAccountSelection(`optional:${chain}`)}
+                <Divider y={2} />
+              </Fragment>
+            )
+          })}
       </RequestModalContainer>
 
       <Modal.Footer>
