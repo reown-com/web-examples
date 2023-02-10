@@ -136,17 +136,29 @@ export function ClientContextProvider({
       if (typeof client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
-      console.log("connect, pairing topic is:", pairing?.topic);
+      console.log("connect, pairing topic is:", pairing?.topic, chains);
       try {
-        const requiredNamespaces = getRequiredNamespaces(chains);
+        const requiredNamespaces = getRequiredNamespaces([chains[0]]);
+        const optionalChains = chains.slice(1);
+
+        const optional = getRequiredNamespaces(optionalChains) || {};
         console.log(
           "requiredNamespaces config for connect:",
-          requiredNamespaces
+          requiredNamespaces,
+          "optionalNamespaces config for connect:",
+          optional
         );
+        // some session properties
+        const sessionProperties = {
+          "@context": "https://www.w3.org/2018/credentials/v1",
+          type: "SessionCredential",
+        };
 
         const { uri, approval } = await client.connect({
           pairingTopic: pairing?.topic,
           requiredNamespaces,
+          optionalNamespaces: optional,
+          sessionProperties,
         });
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
