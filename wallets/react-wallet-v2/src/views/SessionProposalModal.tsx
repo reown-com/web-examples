@@ -80,8 +80,8 @@ export default function SessionProposalModal() {
         .concat(selectedOptionalNamespaces)
         .forEach(key => {
           const accounts: string[] = []
-          if (requiredNamespaces[key]) {
-            requiredNamespaces[key].chains.map(chain => {
+          if (requiredNamespaces[key].chains) {
+            requiredNamespaces[key].chains?.map(chain => {
               selectedAccounts[`required:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
             })
             namespaces[key] = {
@@ -92,7 +92,7 @@ export default function SessionProposalModal() {
             }
           }
           if (optionalNamespaces[key] && selectedAccounts[`optional:${key}`]) {
-            optionalNamespaces[key].chains.map(chain => {
+            optionalNamespaces[key].chains?.map(chain => {
               selectedAccounts[`optional:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
             })
             namespaces[key] = {
@@ -100,7 +100,7 @@ export default function SessionProposalModal() {
               accounts,
               methods: optionalNamespaces[key].methods,
               events: optionalNamespaces[key].events,
-              chains: namespaces[key].chains.concat(optionalNamespaces[key].chains)
+              chains: namespaces[key].chains?.concat(optionalNamespaces[key].chains || [])
             }
           }
         })
