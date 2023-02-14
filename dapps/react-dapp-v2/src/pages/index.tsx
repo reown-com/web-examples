@@ -115,7 +115,7 @@ const Home: NextPage = () => {
     
     await client.emit({
       topic: session?.topic || '',
-      event: { name: 'chainChanged', data: 'Hello World' },
+      event: { name: 'chainChanged' },
       chainId: 'eip155:5'
     })
   }
