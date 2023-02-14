@@ -25,13 +25,11 @@ export default function NewChatPage() {
 
   const createInvite = useCallback(
     async (targetAddress: string) => {
-      const invite: ChatClientTypes.PartialInvite = {
-        message: "hey let's chat",
-        account: `eip155:1:${eip155Address}`
-      }
       await chatClient.invite({
-        account: targetAddress,
-        invite
+        inviteeAccount: targetAddress,
+        inviterAccount: `eip155:1:${eip155Address}`,
+        message: "hey let's message",
+        inviteePublicKey: await chatClient.resolve({ account: targetAddress })
       })
     },
     [eip155Address]
