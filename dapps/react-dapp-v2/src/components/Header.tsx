@@ -83,11 +83,11 @@ const Header = (props: HeaderProps) => {
             <Button outline color="black" onClick={ping}>
               {"Ping"}
             </Button>
+            <Button outline color="black" onClick={emit}>
+              {"Emit"}
+            </Button>
             <Button outline color="red" onClick={disconnect}>
               {"Disconnect"}
-            </Button>
-            <Button outline color="red" onClick={emit}>
-              {"Emit"}
             </Button>
           </SHeaderActions>
         </>
