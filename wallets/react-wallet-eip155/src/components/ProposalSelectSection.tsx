@@ -24,7 +24,8 @@ export default function ProposalSelectSection({
     <Row>
       <Col>
         <Text h4 css={{ marginTop: '$5' }}>{`Choose ${chain} accounts`}</Text>
-        {addresses.map((address, index) => (
+        {/* TODO(ilja) re-implement when duplicate optional namespaces are fixed */}
+        {/* {addresses.map((address, index) => (
           <AccountSelectCard
             key={address}
             address={address}
@@ -32,7 +33,15 @@ export default function ProposalSelectSection({
             onSelect={() => onSelect(chain, address)}
             selected={selectedAddresses?.includes(address) ?? false}
           />
-        ))}
+        ))} */}
+
+        <AccountSelectCard
+          key={addresses[0]}
+          address={addresses[0]}
+          index={1}
+          onSelect={() => onSelect(chain, addresses[0])}
+          selected={selectedAddresses?.includes(addresses[0]) ?? false}
+        />
       </Col>
     </Row>
   )

@@ -31,6 +31,8 @@ export default function SessionProposalModal() {
 
   const { proposer, requiredNamespaces, optionalNamespaces, sessionProperties, relays } = params
   console.log('proposal', params, requiredNamespaces, optionalNamespaces, sessionProperties)
+  const requiredNamespaceKeys = requiredNamespaces ? Object.keys(requiredNamespaces) : []
+  const optionalNamespaceKeys = optionalNamespaces ? Object.keys(optionalNamespaces) : []
 
   // Add / remove address from EIP155 selection
   function onSelectAccount(chain: string, account: string) {
@@ -62,34 +64,32 @@ export default function SessionProposalModal() {
 
       console.log('selectedOptionalNamespaces', selectedOptionalNamespaces)
 
-      Object.keys(requiredNamespaces)
-        .concat(selectedOptionalNamespaces)
-        .forEach(key => {
-          const accounts: string[] = []
-          if (requiredNamespaces[key].chains) {
-            requiredNamespaces[key].chains?.map(chain => {
-              selectedAccounts[`required:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
-            })
-            namespaces[key] = {
-              accounts,
-              methods: requiredNamespaces[key].methods,
-              events: requiredNamespaces[key].events,
-              chains: requiredNamespaces[key].chains
-            }
+      requiredNamespaceKeys.concat(selectedOptionalNamespaces).forEach(key => {
+        const accounts: string[] = []
+        if (requiredNamespaces[key].chains) {
+          requiredNamespaces[key].chains?.map(chain => {
+            selectedAccounts[`required:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
+          })
+          namespaces[key] = {
+            accounts,
+            methods: requiredNamespaces[key].methods,
+            events: requiredNamespaces[key].events,
+            chains: requiredNamespaces[key].chains
           }
-          if (optionalNamespaces[key] && selectedAccounts[`optional:${key}`]) {
-            optionalNamespaces[key].chains?.map(chain => {
-              selectedAccounts[`optional:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
-            })
-            namespaces[key] = {
-              ...namespaces[key],
-              accounts,
-              methods: optionalNamespaces[key].methods,
-              events: optionalNamespaces[key].events,
-              chains: namespaces[key].chains?.concat(optionalNamespaces[key].chains || [])
-            }
+        }
+        if (optionalNamespaces[key] && selectedAccounts[`optional:${key}`]) {
+          optionalNamespaces[key].chains?.map(chain => {
+            selectedAccounts[`optional:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
+          })
+          namespaces[key] = {
+            ...namespaces[key],
+            accounts,
+            methods: optionalNamespaces[key].methods,
+            events: optionalNamespaces[key].events,
+            chains: namespaces[key].chains?.concat(optionalNamespaces[key].chains || [])
           }
-        })
+        }
+      })
 
       console.log('namespaces', namespaces)
 
@@ -132,11 +132,10 @@ export default function SessionProposalModal() {
       <RequestModalContainer title="Session Proposal">
         <ProjectInfoCard metadata={proposer.metadata} />
 
-        {/* TODO(ilja) Relays selection */}
-
         <Divider y={2} />
-        {Object.keys(requiredNamespaces).length != 0 ? <Text h4>Required Namespaces</Text> : null}
-        {Object.keys(requiredNamespaces).map(chain => {
+
+        {requiredNamespaceKeys.length ? <Text h4>Required Namespaces</Text> : null}
+        {requiredNamespaceKeys.map(chain => {
           return (
             <Fragment key={chain}>
               <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
@@ -146,12 +145,9 @@ export default function SessionProposalModal() {
             </Fragment>
           )
         })}
-        {optionalNamespaces && Object.keys(optionalNamespaces).length != 0 ? (
-          <Text h4>Optional Namespaces</Text>
-        ) : null}
-        {optionalNamespaces &&
-          Object.keys(optionalNamespaces).length != 0 &&
-          Object.keys(optionalNamespaces).map(chain => {
+        {optionalNamespaceKeys ? <Text h4>Optional Namespaces</Text> : null}
+        {optionalNamespaceKeys.length &&
+          optionalNamespaceKeys.map(chain => {
             return (
               <Fragment key={chain}>
                 <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>

@@ -6,7 +6,7 @@ export let web3wallet: InstanceType<typeof Web3Wallet>
 export let core: InstanceType<typeof Core>
 
 export async function createWeb3Wallet() {
-  if (!SettingsStore.state.web3WalletReady) {
+  if (!SettingsStore.state.web3WalletReady && typeof window !== 'undefined') {
     core = new Core({
       projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
       logger: 'debug'
