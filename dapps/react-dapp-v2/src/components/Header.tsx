@@ -55,12 +55,13 @@ const SActiveSession = styled(SActiveAccount as any)`
 
 interface HeaderProps {
   ping: () => Promise<void>;
+  emit: () => Promise<void>;
   disconnect: () => Promise<void>;
   session: SessionTypes.Struct | undefined;
 }
 
 const Header = (props: HeaderProps) => {
-  const { ping, disconnect, session } = props;
+  const { ping, disconnect, session, emit } = props;
   return (
     <SHeader {...props}>
       {session ? (
@@ -81,6 +82,9 @@ const Header = (props: HeaderProps) => {
             </GithubLogoContainer>
             <Button outline color="black" onClick={ping}>
               {"Ping"}
+            </Button>
+            <Button outline color="black" onClick={emit}>
+              {"Emit"}
             </Button>
             <Button outline color="red" onClick={disconnect}>
               {"Disconnect"}

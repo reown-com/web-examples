@@ -108,6 +108,18 @@ const Home: NextPage = () => {
     await ping();
   };
 
+  async function emit() {
+    if (typeof client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
+    }
+    
+    await client.emit({
+      topic: session?.topic || '',
+      event: { name: 'chainChanged', data: {} },
+      chainId: 'eip155:5'
+    })
+  }
+
   const getEthereumActions = (): AccountAction[] => {
     const onSendTransaction = async (chainId: string, address: string) => {
       openRequestModal();
@@ -408,7 +420,7 @@ const Home: NextPage = () => {
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={onPing} disconnect={disconnect} session={session} />
+        <Header ping={onPing} disconnect={disconnect} session={session} emit={emit}/>
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>
