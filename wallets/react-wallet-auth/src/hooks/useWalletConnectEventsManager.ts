@@ -10,6 +10,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   useEffect(() => {
     if (initialized) {
       authClient.on('auth_request', ({ id, params }) => {
+        console.log('auth_request', { id, params })
         ModalStore.open('AuthenticationRequest', {
           authenticationRequest: {
             id,
