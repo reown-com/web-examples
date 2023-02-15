@@ -1,5 +1,5 @@
 {
-  "name": "react-wallet-v2",
+  "name": "react-wallet-eip155",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
