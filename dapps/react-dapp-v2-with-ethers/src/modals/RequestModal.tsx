@@ -19,16 +19,20 @@ const RequestModal = (props: RequestModalProps) => {
           <SModalTitle>{"Pending JSON-RPC Request"}</SModalTitle>
           <SContainer>
             <Loader />
-            <SModalParagraph>{"Approve or reject request using your wallet"}</SModalParagraph>
+            <SModalParagraph>
+              {"Approve or reject request using your wallet"}
+            </SModalParagraph>
           </SContainer>
         </SModalContainer>
       ) : result ? (
         <SModalContainer>
           <SModalTitle>
-            {result.valid ? "JSON-RPC Request Approved" : "JSON-RPC Request Failed"}
+            {result.valid
+              ? "JSON-RPC Request Approved"
+              : "JSON-RPC Request Failed"}
           </SModalTitle>
           <STable>
-            {Object.keys(result).map(key => (
+            {Object.keys(result).map((key) => (
               <SRow key={key}>
                 <SKey>{key}</SKey>
                 <SValue>{result[key].toString()}</SValue>

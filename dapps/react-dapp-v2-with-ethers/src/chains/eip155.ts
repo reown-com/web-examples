@@ -26,8 +26,8 @@ export const EIP155Metadata: NamespaceMetadata = {
     rgb: EIP155Colors.ethereum,
   },
   "5": {
-    logo: BLOCKCHAIN_LOGO_BASE_URL + "eip155:5.png",
-    rgb: EIP155Colors.goerli,
+    logo: BLOCKCHAIN_LOGO_BASE_URL + "eip155:1.png",
+    rgb: EIP155Colors.ethereum,
   },
   "10": {
     name: "Optimism",
@@ -38,8 +38,8 @@ export const EIP155Metadata: NamespaceMetadata = {
     logo: BLOCKCHAIN_LOGO_BASE_URL + "eip155:42.png",
     rgb: EIP155Colors.ethereum,
   },
-  "69": {
-    logo: BLOCKCHAIN_LOGO_BASE_URL + "eip155:69.png",
+  "420": {
+    logo: BLOCKCHAIN_LOGO_BASE_URL + "eip155:420.png",
     rgb: EIP155Colors.optimism,
   },
   "100": {
@@ -83,7 +83,9 @@ export function getChainMetadata(chainId: string): ChainMetadata {
   return metadata;
 }
 
-export function getChainRequestRender(request: JsonRpcRequest): ChainRequestRender[] {
+export function getChainRequestRender(
+  request: JsonRpcRequest
+): ChainRequestRender[] {
   let params = [{ label: "Method", value: request.method }];
 
   switch (request.method) {
@@ -111,7 +113,9 @@ export function getChainRequestRender(request: JsonRpcRequest): ChainRequestRend
         },
         {
           label: "Value",
-          value: request.params[0].value ? convertHexToNumber(request.params[0].value) : "",
+          value: request.params[0].value
+            ? convertHexToNumber(request.params[0].value)
+            : "",
         },
         { label: "Data", value: request.params[0].data },
       ];

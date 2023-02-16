@@ -1,10 +1,10 @@
 import { ChainsMap } from "caip-api";
 
 export interface AssetData {
-  account: string;
   symbol: string;
-  balance: string;
+  name: string;
   contractAddress?: string;
+  balance?: string;
 }
 
 export interface ChainData {
@@ -150,9 +150,9 @@ export interface ChainNamespaces {
 
 export interface AccountAction {
   method: string;
-  callback: (chainId: string) => Promise<void>;
+  callback: (chainId: string, address: string) => Promise<void>;
 }
 
 export interface AccountBalances {
-  [account: string]: AssetData;
+  [account: string]: AssetData[];
 }

@@ -3,10 +3,8 @@ import styled from "styled-components";
 
 import Icon from "./Icon";
 
-import { AssetData } from "../helpers";
+import { AssetData, fromWad } from "../helpers";
 
-import eth from "../assets/eth.svg";
-import erc20 from "../assets/erc20.svg";
 import { getChainMetadata } from "../chains";
 
 const xdai = getChainMetadata("eip155:100").logo;
@@ -35,26 +33,25 @@ const SAssetBalance = styled.div`
   display: flex;
 `;
 
-// eslint-disable-next-line
 function getAssetIcon(asset: AssetData): JSX.Element {
   if (!!asset.contractAddress) {
     const src = `https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/${asset.contractAddress.toLowerCase()}.png`;
-    return <Icon src={src} fallback={erc20} />;
+    return <Icon src={src} fallback={"/assets/erc20.svg"} />;
   }
   switch (asset.symbol.toLowerCase()) {
     case "eth":
-      return <Icon src={eth} />;
+      return <Icon src={"/assets/eth.svg"} />;
     case "xdai":
       return <Icon src={xdai} />;
     case "matic":
       return <Icon src={matic} />;
     default:
-      return <Icon src={erc20} />;
+      return <Icon src={"/assets/eth20.svg"} />;
   }
 }
 
 interface AssetProps {
-  asset: { symbol: string; balance: string };
+  asset: AssetData;
 }
 
 const Asset = (props: AssetProps) => {
@@ -62,11 +59,13 @@ const Asset = (props: AssetProps) => {
   return (
     <SAsset {...props}>
       <SAssetLeft>
-        {/* {getAssetIcon(asset)} */}
-        <SAssetName>{asset.symbol}</SAssetName>
+        {getAssetIcon(asset)}
+        <SAssetName>{asset.name}</SAssetName>
       </SAssetLeft>
       <SAssetRight>
-        <SAssetBalance>{`${asset.balance}`}</SAssetBalance>
+        <SAssetBalance>{`${fromWad(asset.balance || "0")} ${
+          asset.symbol
+        }`}</SAssetBalance>
       </SAssetRight>
     </SAsset>
   );

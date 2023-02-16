@@ -19,7 +19,7 @@ const PairingModal = (props: PairingModalProps) => {
     <SModalContainer>
       <SModalTitle>{"Select available pairing or create new one"}</SModalTitle>
       <STable>
-        {pairings.map(pairing => (
+        {pairings.map((pairing) => (
           <Pairing
             key={pairing.topic}
             pairing={pairing}

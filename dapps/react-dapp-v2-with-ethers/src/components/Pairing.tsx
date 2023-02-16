@@ -23,7 +23,7 @@ const Pairing = (props: PairingProps) => {
         {typeof peerMetadata !== "undefined" ? (
           <Peer oneLiner metadata={peerMetadata} />
         ) : (
-          <div>{`Unknown`}</div>
+          <div>{`Unknown Wallet`}</div>
         )}
       </div>
     </SPairingContainer>

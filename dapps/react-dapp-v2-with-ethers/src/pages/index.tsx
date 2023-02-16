@@ -1,96 +1,105 @@
 import type { NextPage } from "next";
-import React, { useState } from "react";
-import { version } from "@walletconnect/universal-provider/package.json";
-import * as encoding from "@walletconnect/encoding";
-import { BigNumber, utils } from "ethers";
-import { TypedDataField } from "@ethersproject/abstract-signer";
-import { Transaction } from "@ethereumjs/tx";
+import React, { useEffect, useRef, useState } from "react";
 
-import Banner from "./../components/Banner";
-import Blockchain from "./../components/Blockchain";
-import Column from "./../components/Column";
-import Header from "./../components/Header";
-import Modal from "./../components/Modal";
-import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./../constants";
+import Banner from "../components/Banner";
+import Blockchain from "../components/Blockchain";
+import Column from "../components/Column";
+import Dropdown from "../components/Dropdown";
+import Header from "../components/Header";
+import Modal from "../components/Modal";
 import {
-  AccountAction,
-  eip712,
-  formatTestTransaction,
-  getLocalStorageTestnetFlag,
-  setLocaleStorageTestnetFlag,
-} from "./../helpers";
-import Toggle from "./../components/Toggle";
-import RequestModal from "./../modals/RequestModal";
-import PingModal from "./../modals/PingModal";
+  DEFAULT_COSMOS_METHODS,
+  DEFAULT_EIP155_METHODS,
+  DEFAULT_MAIN_CHAINS,
+  DEFAULT_SOLANA_METHODS,
+  DEFAULT_POLKADOT_METHODS,
+  DEFAULT_ELROND_METHODS,
+  DEFAULT_TEST_CHAINS,
+  DEFAULT_NEAR_METHODS,
+  DEFAULT_TRON_METHODS,
+} from "../constants";
+import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
+import Toggle from "../components/Toggle";
+import RequestModal from "../modals/RequestModal";
+import PairingModal from "../modals/PairingModal";
+import PingModal from "../modals/PingModal";
 import {
   SAccounts,
   SAccountsContainer,
   SButtonContainer,
+  SConnectButton,
   SContent,
   SLanding,
   SLayout,
   SToggleContainer,
-} from "./../components/app";
-import { useWalletConnectClient } from "./../contexts/ClientContext";
+} from "../components/app";
+import { useWalletConnectClient } from "../contexts/ClientContext";
+import { useJsonRpc } from "../contexts/JsonRpcContext";
+import { useChainData } from "../contexts/ChainDataContext";
 
-interface IFormattedRpcResponse {
-  method: string;
-  address: string;
-  valid: boolean;
-  result: string;
-}
+// Normal import does not work here
+const { version } = require("@walletconnect/sign-client/package.json");
 
 const Home: NextPage = () => {
-  const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
-  const [isRpcRequestPending, setIsRpcRequestPending] = useState(false);
-  const [rpcResult, setRpcResult] = useState<IFormattedRpcResponse | null>();
-
   const [modal, setModal] = useState("");
 
   const closeModal = () => setModal("");
+  const openPairingModal = () => setModal("pairing");
   const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
 
   // Initialize the WalletConnect client.
   const {
     client,
+    pairings,
     session,
+    connect,
     disconnect,
-    chain,
+    chains,
+    relayerRegion,
     accounts,
     balances,
-    chainData,
     isFetchingBalances,
     isInitializing,
-    connect,
-    web3Provider,
+    setChains,
+    setRelayerRegion,
   } = useWalletConnectClient();
 
-  const verifyEip155MessageSignature = (message: string, signature: string, address: string) =>
-    utils.verifyMessage(message, signature).toLowerCase() === address.toLowerCase();
+  // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
+  const {
+    ping,
+    ethereumRpc,
+    cosmosRpc,
+    solanaRpc,
+    polkadotRpc,
+    nearRpc,
+    elrondRpc,
+    tronRpc,
+    isRpcRequestPending,
+    rpcResult,
+    isTestnet,
+    setIsTestnet,
+  } = useJsonRpc();
 
-  const ping = async () => {
+  const { chainData } = useChainData();
+
+  // Close the pairing modal after a session is established.
+  useEffect(() => {
+    if (session && modal === "pairing") {
+      closeModal();
+    }
+  }, [session, modal]);
+
+  const onConnect = () => {
     if (typeof client === "undefined") {
-      throw new Error("WalletConnect Client is not initialized");
+      throw new Error("WalletConnect is not initialized");
     }
-
-    if (typeof session === "undefined") {
-      throw new Error("Session is not connected");
-    }
-
-    try {
-      setIsRpcRequestPending(true);
-      await client.ping({ topic: session.topic });
-      setRpcResult({
-        address: "",
-        method: "ping",
-        valid: true,
-        result: "success",
-      });
-    } catch (error) {
-      console.error("RPC request failed:", error);
-    } finally {
-      setIsRpcRequestPending(false);
+    // Suggest existing pairings (if any).
+    if (pairings.length) {
+      openPairingModal();
+    } else {
+      // If no existing pairings are available, trigger `WalletConnectClient.connect`.
+      connect();
     }
   };
 
@@ -99,144 +108,201 @@ const Home: NextPage = () => {
     await ping();
   };
 
-  const testSendTransaction: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
-      throw new Error("web3Provider not connected");
+  async function emit() {
+    if (typeof client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
     }
-
-    const { chainId } = await web3Provider.getNetwork();
-    const [address] = await web3Provider.listAccounts();
-    const balance = await web3Provider.getBalance(address);
-
-    const tx = await formatTestTransaction("eip155:" + chainId + ":" + address);
-
-    if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
-      return {
-        method: "eth_sendTransaction",
-        address,
-        valid: false,
-        result: "Insufficient funds for intrinsic transaction cost",
-      };
-    }
-
-    const txHash = await web3Provider.send("eth_sendTransaction", [tx]);
-
-    return {
-      method: "eth_sendTransaction",
-      address,
-      valid: true,
-      result: txHash,
-    };
-  };
-
-  const testSignTransaction: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
-      throw new Error("web3Provider not connected");
-    }
-
-    const { chainId } = await web3Provider.getNetwork();
-    const [address] = await web3Provider.listAccounts();
-
-    const tx = await formatTestTransaction("eip155:" + chainId + ":" + address);
-    const signedTx = await web3Provider.send("eth_signTransaction", [tx]);
-    const valid = Transaction.fromSerializedTx(signedTx as any).verifySignature();
-
-    return {
-      method: "eth_signTransaction",
-      address,
-      valid,
-      result: signedTx,
-    };
-  };
-
-  const testSignMessage: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
-      throw new Error("web3Provider not connected");
-    }
-    const msg = "hello world";
-    const hexMsg = encoding.utf8ToHex(msg, true);
-    const [address] = await web3Provider.listAccounts();
-    const signature = await web3Provider.send("personal_sign", [hexMsg, address]);
-    const valid = verifyEip155MessageSignature(msg, signature, address);
-    return {
-      method: "personal_sign",
-      address,
-      valid,
-      result: signature,
-    };
-  };
-
-  const testEthSign: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
-      throw new Error("web3Provider not connected");
-    }
-    const msg = "hello world";
-    const hexMsg = encoding.utf8ToHex(msg, true);
-    const [address] = await web3Provider.listAccounts();
-    const signature = await web3Provider.send("eth_sign", [address, hexMsg]);
-    const valid = verifyEip155MessageSignature(msg, signature, address);
-    return {
-      method: "eth_sign (standard)",
-      address,
-      valid,
-      result: signature,
-    };
-  };
-
-  const testSignTypedData: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
-      throw new Error("web3Provider not connected");
-    }
-
-    const message = JSON.stringify(eip712.example);
-
-    const [address] = await web3Provider.listAccounts();
-
-    // eth_signTypedData params
-    const params = [address, message];
-
-    // send message
-    const signature = await web3Provider.send("eth_signTypedData", params);
-
-    // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
-    // will throw due to "unused" `EIP712Domain` type.
-    // See: https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
-    const { EIP712Domain, ...nonDomainTypes }: Record<string, TypedDataField[]> =
-      eip712.example.types;
-
-    const valid =
-      utils
-        .verifyTypedData(eip712.example.domain, nonDomainTypes, eip712.example.message, signature)
-        .toLowerCase() === address.toLowerCase();
-    return {
-      method: "eth_signTypedData",
-      address,
-      valid,
-      result: signature,
-    };
-  };
+    
+    await client.emit({
+      topic: session?.topic || '',
+      event: { name: 'chainChanged', data: {} },
+      chainId: 'eip155:5'
+    })
+  }
 
   const getEthereumActions = (): AccountAction[] => {
-    const wrapRpcRequest = (rpcRequest: () => Promise<IFormattedRpcResponse>) => async () => {
+    const onSendTransaction = async (chainId: string, address: string) => {
       openRequestModal();
-      try {
-        setIsRpcRequestPending(true);
-        const result = await rpcRequest();
-        setRpcResult(result);
-      } catch (error) {
-        console.error("RPC request failed:", error);
-        setRpcResult(null);
-      } finally {
-        setIsRpcRequestPending(false);
-      }
+      await ethereumRpc.testSendTransaction(chainId, address);
+    };
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await ethereumRpc.testSignTransaction(chainId, address);
+    };
+    const onSignPersonalMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await ethereumRpc.testSignPersonalMessage(chainId, address);
+    };
+    const onEthSign = async (chainId: string, address: string) => {
+      openRequestModal();
+      await ethereumRpc.testEthSign(chainId, address);
+    };
+    const onSignTypedData = async (chainId: string, address: string) => {
+      openRequestModal();
+      await ethereumRpc.testSignTypedData(chainId, address);
     };
 
     return [
-      { method: "eth_sendTransaction", callback: wrapRpcRequest(testSendTransaction) },
-      { method: "eth_signTransaction", callback: wrapRpcRequest(testSignTransaction) },
-      { method: "personal_sign", callback: wrapRpcRequest(testSignMessage) },
-      { method: "eth_sign (standard)", callback: wrapRpcRequest(testEthSign) },
-      { method: "eth_signTypedData", callback: wrapRpcRequest(testSignTypedData) },
+      {
+        method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
+        callback: onSendTransaction,
+      },
+      {
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
+        callback: onSignPersonalMessage,
+      },
+      {
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
+        callback: onEthSign,
+      },
+      {
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
+        callback: onSignTypedData,
+      },
+    ];
+  };
+
+  const getCosmosActions = (): AccountAction[] => {
+    const onSignDirect = async (chainId: string, address: string) => {
+      openRequestModal();
+      await cosmosRpc.testSignDirect(chainId, address);
+    };
+    const onSignAmino = async (chainId: string, address: string) => {
+      openRequestModal();
+      await cosmosRpc.testSignAmino(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
+        callback: onSignDirect,
+      },
+      {
+        method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
+        callback: onSignAmino,
+      },
+    ];
+  };
+
+  const getSolanaActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await solanaRpc.testSignTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await solanaRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
+        callback: onSignMessage,
+      },
+    ];
+  };
+
+  const getPolkadotActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await polkadotRpc.testSignTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await polkadotRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
+        callback: onSignMessage,
+      },
+    ];
+  };
+
+  const getNearActions = (): AccountAction[] => {
+    const onSignAndSendTransaction = async (
+      chainId: string,
+      address: string
+    ) => {
+      openRequestModal();
+      await nearRpc.testSignAndSendTransaction(chainId, address);
+    };
+    const onSignAndSendTransactions = async (
+      chainId: string,
+      address: string
+    ) => {
+      openRequestModal();
+      await nearRpc.testSignAndSendTransactions(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION,
+        callback: onSignAndSendTransaction,
+      },
+      {
+        method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS,
+        callback: onSignAndSendTransactions,
+      },
+    ];
+  };
+
+  const getElrondActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await elrondRpc.testSignTransaction(chainId, address);
+    };
+    const onSignTransactions = async (chainId: string, address: string) => {
+      openRequestModal();
+      await elrondRpc.testSignTransactions(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await elrondRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS,
+        callback: onSignTransactions,
+      },
+      {
+        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE,
+        callback: onSignMessage,
+      },
+    ];
+  };
+
+  const getTronActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tronRpc.testSignTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tronRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
+        callback: onSignTransaction
+      },
+      {
+        method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
+        callback: onSignMessage
+      }
     ];
   };
 
@@ -246,7 +312,17 @@ const Home: NextPage = () => {
       case "eip155":
         return getEthereumActions();
       case "cosmos":
-        return [];
+        return getCosmosActions();
+      case "solana":
+        return getSolanaActions();
+      case "polkadot":
+        return getPolkadotActions();
+      case "near":
+        return getNearActions();
+      case "elrond":
+        return getElrondActions();
+      case "tron":
+        return getTronActions();
       default:
         break;
     }
@@ -259,11 +335,26 @@ const Home: NextPage = () => {
     setLocaleStorageTestnetFlag(nextIsTestnetState);
   };
 
+  const handleChainSelectionClick = (chainId: string) => {
+    if (chains.includes(chainId)) {
+      setChains(chains.filter((chain) => chain !== chainId));
+    } else {
+      setChains([...chains, chainId]);
+    }
+  };
+
   // Renders the appropriate model for the given request that is currently in-flight.
   const renderModal = () => {
     switch (modal) {
+      case "pairing":
+        if (typeof client === "undefined") {
+          throw new Error("WalletConnect is not initialized");
+        }
+        return <PairingModal pairings={pairings} connect={connect} />;
       case "request":
-        return <RequestModal pending={isRpcRequestPending} result={rpcResult} />;
+        return (
+          <RequestModal pending={isRpcRequestPending} result={rpcResult} />
+        );
       case "ping":
         return <PingModal pending={isRpcRequestPending} result={rpcResult} />;
       default:
@@ -276,35 +367,48 @@ const Home: NextPage = () => {
     return !accounts.length && !Object.keys(balances).length ? (
       <SLanding center>
         <Banner />
-        <h6>
-          <span>{`Using v${version || "2.0.0-beta"}`}</span>
-        </h6>
+        <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
         <SButtonContainer>
-          <h6>Select an Ethereum chain:</h6>
+          <h6>Select chains:</h6>
           <SToggleContainer>
             <p>Testnets Only?</p>
             <Toggle active={isTestnet} onClick={toggleTestnets} />
           </SToggleContainer>
-          {chainOptions.map(chainId => (
-            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={connect} />
+          {chainOptions.map((chainId) => (
+            <Blockchain
+              key={chainId}
+              chainId={chainId}
+              chainData={chainData}
+              onClick={handleChainSelectionClick}
+              active={chains.includes(chainId)}
+            />
           ))}
+          <SConnectButton left onClick={onConnect} disabled={!chains.length}>
+            {"Connect"}
+          </SConnectButton>
+          <Dropdown
+            relayerRegion={relayerRegion}
+            setRelayerRegion={setRelayerRegion}
+          />
         </SButtonContainer>
       </SLanding>
     ) : (
       <SAccountsContainer>
-        <h3>Account</h3>
+        <h3>Accounts</h3>
         <SAccounts>
-          {accounts.map(account => {
+          {accounts.map((account) => {
+            const [namespace, reference, address] = account.split(":");
+            const chainId = `${namespace}:${reference}`;
             return (
               <Blockchain
                 key={account}
                 active={true}
                 chainData={chainData}
                 fetching={isFetchingBalances}
-                address={account}
-                chainId={chain}
+                address={address}
+                chainId={chainId}
                 balances={balances}
-                actions={getBlockchainActions(chain)}
+                actions={getBlockchainActions(chainId)}
               />
             );
           })}
@@ -316,7 +420,7 @@ const Home: NextPage = () => {
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={onPing} disconnect={disconnect} session={session} />
+        <Header ping={onPing} disconnect={disconnect} session={session} emit={emit}/>
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>

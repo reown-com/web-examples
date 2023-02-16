@@ -11,9 +11,9 @@ import { getChainMetadata } from "../chains";
 import {
   AccountAction,
   ellipseAddress,
+  AccountBalances,
   ChainMetadata,
   ChainNamespaces,
-  AccountBalances,
 } from "../helpers";
 import { fonts } from "../styles";
 
@@ -99,7 +99,7 @@ interface BlockchainDisplayData {
 
 function getBlockchainDisplayData(
   chainId: string,
-  chainData: ChainNamespaces,
+  chainData: ChainNamespaces
 ): BlockchainDisplayData | undefined {
   const [namespace, reference] = chainId.split(":");
   let meta: ChainMetadata;
@@ -114,18 +114,31 @@ function getBlockchainDisplayData(
 }
 
 const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
-  props: PropsWithChildren<BlockchainProps>,
+  props: PropsWithChildren<BlockchainProps>
 ) => {
-  const { chainData, fetching, chainId, address, onClick, balances, active, actions } = props;
-
+  const {
+    chainData,
+    fetching,
+    chainId,
+    address,
+    onClick,
+    active,
+    balances,
+    actions,
+  } = props;
   if (!Object.keys(chainData).length) return null;
 
   const chain = getBlockchainDisplayData(chainId, chainData);
-  if (typeof chain === "undefined") {
-    return null;
-  }
-  const name = chain.meta.name || chain.data.name;
 
+  if (typeof chain === "undefined") return null;
+
+  const name = chain.meta.name || chain.data.name;
+  const account =
+    typeof address !== "undefined" ? `${chainId}:${address}` : undefined;
+  const assets =
+    typeof account !== "undefined" && typeof balances !== "undefined"
+      ? balances[account]
+      : [];
   return (
     <React.Fragment>
       <SAccount
@@ -147,23 +160,27 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
             </Column>
           ) : (
             <>
-              {!!address && !!balances && balances[address] ? (
+              {!!assets && assets.length ? (
                 <SFullWidthContainer>
                   <h6>Balances</h6>
                   <Column center>
-                    <Asset key={balances[address].symbol} asset={balances[address]} />
+                    {assets.map((asset) =>
+                      asset.symbol ? (
+                        <Asset key={asset.symbol} asset={asset} />
+                      ) : null
+                    )}
                   </Column>
                 </SFullWidthContainer>
               ) : null}
-              {!!actions && actions.length ? (
+              {address && !!actions && actions.length ? (
                 <SFullWidthContainer>
                   <h6>Methods</h6>
-                  {actions.map(action => (
+                  {actions.map((action) => (
                     <SAction
                       key={action.method}
                       left
                       rgb={chain.meta.rgb}
-                      onClick={() => action.callback(chainId)}
+                      onClick={() => action.callback(chainId, address)}
                     >
                       {action.method}
                     </SAction>

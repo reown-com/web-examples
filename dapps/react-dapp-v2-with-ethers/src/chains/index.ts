@@ -3,6 +3,10 @@ import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
 import * as eip155 from "./eip155";
 import * as cosmos from "./cosmos";
 import * as polkadot from "./polkadot";
+import * as solana from "./solana";
+import * as near from "./near";
+import * as elrond from "./elrond";
+import * as tron from './tron';
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -15,6 +19,14 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return cosmos.getChainMetadata(chainId);
     case "polkadot":
       return polkadot.getChainMetadata(chainId);
+    case "solana":
+      return solana.getChainMetadata(chainId);
+    case "near":
+      return near.getChainMetadata(chainId);
+    case "elrond":
+      return elrond.getChainMetadata(chainId);
+    case 'tron':
+      return tron.getChainMetadata(chainId);
     default:
       throw new Error(`No metadata handler for namespace ${namespace}`);
   }
@@ -22,7 +34,7 @@ export function getChainMetadata(chainId: string): ChainMetadata {
 
 export function getChainRequestRender(
   request: JsonRpcRequest,
-  chainId: string,
+  chainId: string
 ): ChainRequestRender[] {
   const namespace = chainId.split(":")[0];
   switch (namespace) {
@@ -32,6 +44,8 @@ export function getChainRequestRender(
       return cosmos.getChainRequestRender(request);
     case "polkadot":
       return polkadot.getChainRequestRender(request);
+    case "near":
+      return near.getChainRequestRender(request);
     default:
       throw new Error(`No render handler for namespace ${namespace}`);
   }
