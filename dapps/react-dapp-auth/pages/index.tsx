@@ -26,7 +26,11 @@ const Home: NextPage = () => {
         nonce: generateNonce(),
         statement: "Sign in with wallet.",
       })
-      .then(({ uri }) => setUri(uri));
+      .then(({ uri }) => {
+        if (uri) {
+          setUri(uri);
+        }
+      });
   }, [client, setUri]);
 
   useEffect(() => {

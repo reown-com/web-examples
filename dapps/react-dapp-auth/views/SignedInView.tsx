@@ -9,7 +9,8 @@ import {
   Text,
 } from "@chakra-ui/react";
 import truncate from "smart-truncate";
-import { BigNumber, providers } from "ethers";
+import { providers } from "ethers";
+
 import { useCallback, useEffect, useState } from "react";
 
 const SignedInView: React.FC<{ address: string }> = ({ address }) => {
@@ -20,7 +21,9 @@ const SignedInView: React.FC<{ address: string }> = ({ address }) => {
   useEffect(() => {
     const innerEffect = async (address: string) => {
       setLoading(true);
-      const provider = providers.getDefaultProvider();
+      const provider = new providers.JsonRpcProvider(
+        `https://rpc.walletconnect.com/v1/?chainId=eip155:1&projectId=${process.env.NEXT_PUBLIC_PROJECT_ID}`
+      );
       const avatar = await provider.getAvatar(address);
       const balance = await provider.getBalance(address);
       setAvatar(avatar);
