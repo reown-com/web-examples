@@ -1,5 +1,5 @@
-import { Transaction, SignableMessage } from '@elrondnetwork/erdjs'
-import { Mnemonic, UserSecretKey, UserWallet, UserSigner } from '@elrondnetwork/erdjs-walletcore'
+import { Transaction, SignableMessage } from '@multiversx/sdk-core'
+import { Mnemonic, UserSecretKey, UserWallet, UserSigner } from '@multiversx/sdk-wallet'
 
 /**
  * Types
@@ -11,7 +11,7 @@ interface IInitArgs {
 /**
  * Library
  */
-export default class ElrondLib {
+export default class MultiversxLib {
   wallet: UserWallet
   mnemonic: Mnemonic
   password: string
@@ -20,16 +20,16 @@ export default class ElrondLib {
     this.mnemonic = mnemonic
     this.password = 'password' // test purposes only
 
-    const secretKey = mnemonic.deriveKey(0)
-    const secretKeyHex = secretKey.hex()
-    let fromHex = UserSecretKey.fromString(secretKeyHex)
-    this.wallet = new UserWallet(fromHex, this.password)
+    this.wallet = UserWallet.fromMnemonic({
+      password: this.password,
+      mnemonic: mnemonic.toString()
+    })
   }
 
   static init({ mnemonic }: IInitArgs) {
     const mnemonicObj = mnemonic ? Mnemonic.fromString(mnemonic) : Mnemonic.generate()
 
-    return new ElrondLib(mnemonicObj)
+    return new MultiversxLib(mnemonicObj)
   }
 
   getMnemonic() {

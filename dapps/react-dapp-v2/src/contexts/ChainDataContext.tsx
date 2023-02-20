@@ -8,7 +8,7 @@ import {
 } from "react";
 import { SolanaChainData } from "../chains/solana";
 import { PolkadotChainData } from "../chains/polkadot";
-import { ElrondChainData } from "../chains/elrond";
+import { MultiversxChainData } from "../chains/multiversx";
 import { TronChainData } from '../chains/tron';
 
 import { ChainNamespaces, getAllChainNamespaces } from "../helpers";
@@ -49,8 +49,8 @@ export function ChainDataContextProvider({
             chains = PolkadotChainData;
           } else if (namespace === "near") {
             chains = NearChainData;
-          } else if (namespace === "elrond") {
-            chains = ElrondChainData;  
+          } else if (namespace === "multiversx") {
+            chains = MultiversxChainData;  
           } else if (namespace === 'tron') {
             chains = TronChainData;
           } else {

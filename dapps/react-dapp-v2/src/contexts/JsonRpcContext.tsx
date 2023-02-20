@@ -33,23 +33,22 @@ import {
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_NEAR_METHODS,
-  DEFAULT_ELROND_METHODS,
+  DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TRON_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
 
 import {
-  Transaction as ElrondTransaction,
+  Transaction as MultiversxTransaction,
   TransactionPayload,
   Address,
   SignableMessage,
-  ISignature,
-} from "@elrondnetwork/erdjs";
+} from "@multiversx/sdk-core";
 
-import { UserVerifier } from "@elrondnetwork/erdjs-walletcore/out/userVerifier";
-import { Signature } from "@elrondnetwork/erdjs-walletcore/out/signature";
-import { IVerifiable } from "@elrondnetwork/erdjs-walletcore/out/interface";
+import { UserVerifier } from "@multiversx/sdk-wallet/out/userVerifier";
+import { Signature } from "@multiversx/sdk-wallet/out/signature";
+import { IVerifiable } from "@multiversx/sdk-wallet/out/interface";
 
 /**
  * Types
@@ -88,7 +87,7 @@ interface IContext {
     testSignAndSendTransaction: TRpcRequestCallback;
     testSignAndSendTransactions: TRpcRequestCallback;
   };
-  elrondRpc: {
+  multiversxRpc: {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
     testSignTransactions: TRpcRequestCallback;
@@ -864,9 +863,9 @@ export function JsonRpcContextProvider({
     ),
   };
 
-  // -------- ELROND RPC METHODS --------
+  // -------- MULTIVERSX RPC METHODS --------
 
-  const elrondRpc = {
+  const multiversxRpc = {
     testSignTransaction: _createJsonRpcRequestHandler(
       async (
         chainId: string,
@@ -878,7 +877,7 @@ export function JsonRpcContextProvider({
         const verifier = UserVerifier.fromAddress(userAddress);
         const transactionPayload = new TransactionPayload("testdata");
 
-        const testTransaction = new ElrondTransaction({
+        const testTransaction = new MultiversxTransaction({
           nonce: 1,
           value: "10000000000000000000",
           receiver: Address.fromBech32(address),
@@ -895,7 +894,7 @@ export function JsonRpcContextProvider({
             chainId,
             topic: session!.topic,
             request: {
-              method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
+              method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTION,
               params: {
                 transaction,
               },
@@ -910,7 +909,7 @@ export function JsonRpcContextProvider({
           const valid = verifier.verify(testTransaction as IVerifiable);
 
           return {
-            method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
+            method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTION,
             address,
             valid,
             result: result.signature.toString(),
@@ -931,7 +930,7 @@ export function JsonRpcContextProvider({
         const verifier = UserVerifier.fromAddress(userAddress);
         const testTransactionPayload = new TransactionPayload("testdata");
 
-        const testTransaction = new ElrondTransaction({
+        const testTransaction = new MultiversxTransaction({
           nonce: 1,
           value: "10000000000000000000",
           receiver: Address.fromBech32(address),
@@ -943,7 +942,7 @@ export function JsonRpcContextProvider({
         });
 
         // no data for this Transaction
-        const testTransaction2 = new ElrondTransaction({
+        const testTransaction2 = new MultiversxTransaction({
           nonce: 2,
           value: "20000000000000000000",
           receiver: Address.fromBech32(address),
@@ -954,7 +953,7 @@ export function JsonRpcContextProvider({
         });
 
         const testTransaction3Payload = new TransactionPayload("third");
-        const testTransaction3 = new ElrondTransaction({
+        const testTransaction3 = new MultiversxTransaction({
           nonce: 3,
           value: "300000000000000000",
           receiver: Address.fromBech32(address),
@@ -978,7 +977,7 @@ export function JsonRpcContextProvider({
             chainId,
             topic: session!.topic,
             request: {
-              method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS,
+              method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTIONS,
               params: {
                 transactions,
               },
@@ -1003,7 +1002,7 @@ export function JsonRpcContextProvider({
           );
 
           return {
-            method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS,
+            method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTIONS,
             address,
             valid,
             result: resultSignatures.join(", "),
@@ -1031,7 +1030,7 @@ export function JsonRpcContextProvider({
             chainId,
             topic: session!.topic,
             request: {
-              method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE,
+              method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_MESSAGE,
               params: {
                 address,
                 message: testMessage.message.toString(),
@@ -1044,7 +1043,7 @@ export function JsonRpcContextProvider({
           const valid = verifier.verify(testMessage);
 
           return {
-            method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE,
+            method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_MESSAGE,
             address,
             valid,
             result: result.signature.toString(),
@@ -1153,7 +1152,7 @@ export function JsonRpcContextProvider({
         solanaRpc,
         polkadotRpc,
         nearRpc,
-        elrondRpc,
+        multiversxRpc,
         tronRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
