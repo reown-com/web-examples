@@ -6,6 +6,7 @@ import { fonts, responsive } from "../styles";
 import Button from "./Button";
 import Icon from "./Icon";
 import { DEFAULT_GITHUB_REPO_URL } from "../constants";
+import CastConfigDropdown from "./CastConfigDropdown";
 
 const SHeader = styled.div`
   margin-top: -1px;
@@ -36,7 +37,7 @@ const SActiveAccount = styled.div`
 `;
 
 const GithubLogoContainer = styled.div`
-  padding-top: 8px;
+  padding-top: 4px;
 `;
 
 const SActiveSession = styled(SActiveAccount as any)`
@@ -56,6 +57,9 @@ const SActiveSession = styled(SActiveAccount as any)`
 interface HeaderProps {
   hasActivePushSubscription: boolean;
   sendPushMessage: () => Promise<void>;
+  sendCastNotify: () => Promise<void>;
+  castAccounts: string[];
+  setCastAccounts: React.Dispatch<React.SetStateAction<string[]>>;
   ping: () => Promise<void>;
   disconnect: () => Promise<void>;
   session: SessionTypes.Struct | undefined;
@@ -68,6 +72,9 @@ const Header = (props: HeaderProps) => {
     session,
     hasActivePushSubscription,
     sendPushMessage,
+    sendCastNotify,
+    castAccounts,
+    setCastAccounts,
   } = props;
   return (
     <SHeader {...props}>
@@ -87,6 +94,18 @@ const Header = (props: HeaderProps) => {
                 <Icon size={24} src={"/assets/githubLogo.svg"} />
               </a>
             </GithubLogoContainer>
+            <CastConfigDropdown
+              castAccounts={castAccounts}
+              setCastAccounts={setCastAccounts}
+            />
+            <Button
+              outline
+              color="black"
+              onClick={sendCastNotify}
+              disabled={!hasActivePushSubscription}
+            >
+              {`${hasActivePushSubscription ? "🔊" : "🔇"} Cast Notify`}
+            </Button>
             <Button
               outline
               color="black"

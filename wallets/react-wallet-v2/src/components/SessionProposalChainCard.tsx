@@ -36,7 +36,7 @@ interface IProps {
 export default function SessionProposalChainCard({ requiredNamespace }: IProps) {
   return (
     <Fragment>
-      {requiredNamespace.chains.map(chainId => {
+      {requiredNamespace?.chains?.map(chainId => {
         // @ts-expect-error
         const rgb = CHAIN_METADATA[chainId]?.rgb
 

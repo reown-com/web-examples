@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import Banner from "../components/Banner";
 import Blockchain from "../components/Blockchain";
 import Column from "../components/Column";
-import Dropdown from "../components/Dropdown";
 import Header from "../components/Header";
 import Modal from "../components/Modal";
 import {
@@ -16,6 +15,7 @@ import {
   DEFAULT_ELROND_METHODS,
   DEFAULT_TEST_CHAINS,
   DEFAULT_NEAR_METHODS,
+  DEFAULT_PROJECT_ID,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -37,9 +37,11 @@ import { useWalletConnectClient } from "../contexts/ClientContext";
 import { useJsonRpc } from "../contexts/JsonRpcContext";
 import { useChainData } from "../contexts/ChainDataContext";
 import packageJson from "../../package.json";
+import RelayerRegionDropdown from "../components/RelayerRegionDropdown";
 
 const Home: NextPage = () => {
   const [modal, setModal] = useState("");
+  const [castAccounts, setCastAccounts] = useState<string[]>([]);
 
   const closeModal = () => setModal("");
   const openPairingModal = () => setModal("pairing");
@@ -128,6 +130,46 @@ const Home: NextPage = () => {
     );
 
     await pushClient.notify({ topic: latestSubscription.topic, message });
+  };
+
+  const onSendCastNotify = async () => {
+    if (typeof pushClient === "undefined") {
+      throw new Error("PushClient is not initialized");
+    }
+
+    const subscriptions = Object.values(pushClient.getActiveSubscriptions());
+    const latestSubscription = subscriptions[subscriptions.length - 1];
+    const accounts = castAccounts.length
+      ? castAccounts
+      : [latestSubscription.account];
+
+    const notifyBody = JSON.stringify({
+      notification: {
+        title: "WalletConnect Push Dapp",
+        body: "Cast Notify Test",
+        url: "https://walletconnect.com",
+        icon: "",
+      },
+      accounts,
+    });
+
+    console.log(
+      `[PUSH DEMO] POST'ing to ${pushClient.castUrl}/notify with body: `,
+      notifyBody
+    );
+
+    const response = await fetch(
+      `${pushClient.castUrl}/${DEFAULT_PROJECT_ID}/notify`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: notifyBody,
+      }
+    );
+    const data = await response.json();
+    console.log(`[PUSH DEMO] ${pushClient.castUrl}/notify result:`, data);
   };
 
   const getEthereumActions = (): AccountAction[] => {
@@ -376,7 +418,7 @@ const Home: NextPage = () => {
           <SConnectButton left onClick={onConnect} disabled={!chains.length}>
             {"Connect"}
           </SConnectButton>
-          <Dropdown
+          <RelayerRegionDropdown
             relayerRegion={relayerRegion}
             setRelayerRegion={setRelayerRegion}
           />
@@ -412,12 +454,15 @@ const Home: NextPage = () => {
       <Column maxWidth={1000} spanHeight>
         <Header
           sendPushMessage={onSendPushNotification}
+          sendCastNotify={onSendCastNotify}
           ping={onPing}
           disconnect={disconnect}
           session={session}
           hasActivePushSubscription={
             typeof activePushSubscription !== "undefined"
           }
+          castAccounts={castAccounts}
+          setCastAccounts={setCastAccounts}
         />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
