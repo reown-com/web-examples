@@ -56,6 +56,7 @@ export const ClientContext = createContext<IContext>({} as IContext);
 const web3Modal = new Web3Modal({
   projectId: DEFAULT_PROJECT_ID,
   themeMode: "light",
+  walletConnectVersion: 2,
 });
 
 /**
