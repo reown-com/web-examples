@@ -28,7 +28,7 @@ const SelectOption = styled.option`
   font-size: "1.25em";
 `;
 
-const Dropdown = (props: DropdownProps) => {
+const RelayerRegionDropdown = (props: DropdownProps) => {
   const { relayerRegion, setRelayerRegion } = props;
   const [openSelect, setOpenSelect] = useState(false);
   const selectRef = React.createRef();
@@ -71,4 +71,4 @@ const Dropdown = (props: DropdownProps) => {
   );
 };
 
-export default Dropdown;
+export default RelayerRegionDropdown;
