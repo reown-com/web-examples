@@ -3306,10 +3306,10 @@
     pino "7.11.0"
     tslib "1.14.1"
 
-"@walletconnect/push-client@0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/push-client/-/push-client-0.6.0.tgz#cdf3d5a8024924b8449019a90c7ccb92fa21bbc0"
-  integrity sha512-Iasa6LVkPLwntRIhvpvvC6gT9LBHVYk1AyUaSCrX7E2OUWCwdr+e4ljh8H6haVhVC9mpI0vSLBBvc/JVB7Bx+g==
+"@walletconnect/push-client@0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/push-client/-/push-client-0.6.1.tgz#4a13586955a18076ed7fa4d49f1148e20b25002c"
+  integrity sha512-lG/YsksEnuqvd0tCO3h3YgpJDGZZ3eTRH+eIdrMQ1rLiEpBla6J9ofUbUH2JjZYHQmW5QlfTQ8J04lgzTJ4mQw==
   dependencies:
     "@walletconnect/core" "2.4.4"
     "@walletconnect/jsonrpc-utils" "^1.0.4"
