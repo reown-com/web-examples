@@ -1,6 +1,5 @@
 import React, { PropsWithChildren, FC } from "react";
 import styled from "styled-components";
-import { ChainData } from "caip-api";
 
 import Asset from "./Asset";
 import Button from "./Button";
@@ -14,6 +13,7 @@ import {
   AccountBalances,
   ChainMetadata,
   ChainNamespaces,
+  ChainData,
 } from "../helpers";
 import { fonts } from "../styles";
 

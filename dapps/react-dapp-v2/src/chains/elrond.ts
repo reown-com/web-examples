@@ -1,7 +1,5 @@
-import { ChainsMap } from "caip-api";
-import { NamespaceMetadata, ChainMetadata } from "../helpers";
+import { NamespaceMetadata, ChainMetadata, ChainsMap } from "../helpers";
 
-// TODO: add `elrond` namespace to `caip-api` package to avoid manual specification here.
 export const ElrondChainData: ChainsMap = {
   "1": {
     id: "elrond:1",
