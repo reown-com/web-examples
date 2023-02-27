@@ -54,7 +54,7 @@ export default function ChatsPage() {
       setChatInvites(chatClient.getReceivedInvites({ account: `eip155:1:${eip155Address}` }))
     })
 
-    chatClient.on('chat_joined', async args => {
+    chatClient.on('chat_invite_accepted', async args => {
       console.log('chat_joined:', args)
       console.log(chatClient.chatThreads.getAll())
       setChatThreads(chatClient.chatThreads.getAll())
