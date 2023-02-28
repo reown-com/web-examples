@@ -21,6 +21,7 @@ export async function createSignClient() {
 export async function createChatClient() {
   chatClient = await ChatClient.init({
     logger: 'debug',
+    keyseverUrl: 'https://keys.walletconnect.com',
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
     relayUrl: process.env.NEXT_PUBLIC_RELAY_URL ?? 'wss://relay.walletconnect.com'
   })

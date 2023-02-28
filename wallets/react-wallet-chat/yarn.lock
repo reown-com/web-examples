@@ -2129,10 +2129,10 @@
     "@typescript-eslint/types" "5.51.0"
     eslint-visitor-keys "^3.3.0"
 
-"@walletconnect/chat-client@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@walletconnect/chat-client/-/chat-client-0.2.2.tgz#0a7807f1d606ec740eef5aad7646e4a65a57f74d"
-  integrity sha512-L1s1fCotRrbJBpJQ5Ky63D+JzH9d0DxQtgJVTs/b7bxI6q9akWfGUIeLQJLgu0dZiBFizK+ilMf4Sn8S93W35g==
+"@walletconnect/chat-client@^0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@walletconnect/chat-client/-/chat-client-0.3.2.tgz#6fc4ceb7ef1207ed821d1a0ea1451f7affa96965"
+  integrity sha512-xs84upGbLtMn9Ev4z+S8e2o5bYr070gCDwK84K5AgBM8BKhAexz956aVRUq90sKBMuKl0cCCp5lzm13eGIFKJA==
   dependencies:
     "@noble/ed25519" "^1.7.1"
     "@walletconnect/core" "^2.3.3"
