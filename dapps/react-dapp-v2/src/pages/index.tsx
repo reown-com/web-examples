@@ -38,15 +38,19 @@ import { useJsonRpc } from "../contexts/JsonRpcContext";
 import { useChainData } from "../contexts/ChainDataContext";
 import packageJson from "../../package.json";
 import RelayerRegionDropdown from "../components/RelayerRegionDropdown";
+import PushMessageModal from "../modals/PushMessageModal";
 
 const Home: NextPage = () => {
   const [modal, setModal] = useState("");
   const [castAccounts, setCastAccounts] = useState<string[]>([]);
+  const [isSendingPushMessage, setIsSendingPushMessage] =
+    useState<boolean>(false);
 
   const closeModal = () => setModal("");
   const openPairingModal = () => setModal("pairing");
   const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
+  const openPushMessageModal = () => setModal("push");
 
   // Initialize the WalletConnect client.
   const {
@@ -114,22 +118,34 @@ const Home: NextPage = () => {
       throw new Error("PushClient is not initialized");
     }
 
-    const message = {
-      title: "Push Notification Test",
-      body: "Hello from the react example dapp 👋",
-      icon: "",
-      url: "",
-    };
+    try {
+      setIsSendingPushMessage(true);
+      openPushMessageModal();
 
-    const subscriptions = Object.values(pushClient.getActiveSubscriptions());
-    const latestSubscription = subscriptions[subscriptions.length - 1];
+      const message = {
+        title: "Push Notification Test",
+        body: "Hello from the react example dapp 👋",
+        icon: "",
+        url: "",
+      };
 
-    console.log(
-      "[PUSH DEMO] Sending push_message on latest subscription: ",
-      latestSubscription
-    );
+      const subscriptions = Object.values(pushClient.getActiveSubscriptions());
+      const latestSubscription = subscriptions[subscriptions.length - 1];
 
-    await pushClient.notify({ topic: latestSubscription.topic, message });
+      console.log(
+        "[PUSH DEMO] Sending push_message on latest subscription: ",
+        latestSubscription
+      );
+
+      await pushClient.notify({ topic: latestSubscription.topic, message });
+    } catch (error) {
+      console.error(
+        "[PUSH DEMO] Error sending Push Message via Websocket: ",
+        error
+      );
+    } finally {
+      setIsSendingPushMessage(false);
+    }
   };
 
   const onSendCastNotify = async () => {
@@ -137,39 +153,48 @@ const Home: NextPage = () => {
       throw new Error("PushClient is not initialized");
     }
 
-    const subscriptions = Object.values(pushClient.getActiveSubscriptions());
-    const latestSubscription = subscriptions[subscriptions.length - 1];
-    const accounts = castAccounts.length
-      ? castAccounts
-      : [latestSubscription.account];
+    try {
+      setIsSendingPushMessage(true);
+      openPushMessageModal();
 
-    const notifyBody = JSON.stringify({
-      notification: {
-        title: "WalletConnect Push Dapp",
-        body: "Cast Notify Test",
-        url: "https://walletconnect.com",
-        icon: "",
-      },
-      accounts,
-    });
+      const subscriptions = Object.values(pushClient.getActiveSubscriptions());
+      const latestSubscription = subscriptions[subscriptions.length - 1];
+      const accounts = castAccounts.length
+        ? castAccounts
+        : [latestSubscription.account];
 
-    console.log(
-      `[PUSH DEMO] POST'ing to ${pushClient.castUrl}/notify with body: `,
-      notifyBody
-    );
-
-    const response = await fetch(
-      `${pushClient.castUrl}/${DEFAULT_PROJECT_ID}/notify`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const notifyBody = JSON.stringify({
+        notification: {
+          title: "WalletConnect Push Dapp",
+          body: "Cast Notify Test",
+          url: "https://walletconnect.com",
+          icon: "",
         },
-        body: notifyBody,
-      }
-    );
-    const data = await response.json();
-    console.log(`[PUSH DEMO] ${pushClient.castUrl}/notify result:`, data);
+        accounts,
+      });
+
+      console.log(
+        `[PUSH DEMO] POST'ing to ${pushClient.castUrl}/notify with body: `,
+        notifyBody
+      );
+
+      const response = await fetch(
+        `${pushClient.castUrl}/${DEFAULT_PROJECT_ID}/notify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: notifyBody,
+        }
+      );
+      const data = await response.json();
+      console.log(`[PUSH DEMO] ${pushClient.castUrl}/notify result:`, data);
+    } catch (error) {
+      console.error("[PUSH DEMO] Sending PushMessage via Cast failed: ", error);
+    } finally {
+      setIsSendingPushMessage(false);
+    }
   };
 
   const getEthereumActions = (): AccountAction[] => {
@@ -386,6 +411,8 @@ const Home: NextPage = () => {
         );
       case "ping":
         return <PingModal pending={isRpcRequestPending} result={rpcResult} />;
+      case "push":
+        return <PushMessageModal pending={isSendingPushMessage} />;
       default:
         return null;
     }
