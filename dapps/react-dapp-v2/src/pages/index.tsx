@@ -17,6 +17,7 @@ import {
   DEFAULT_TEST_CHAINS,
   DEFAULT_NEAR_METHODS,
   DEFAULT_TRON_METHODS,
+  DEFAULT_TEZOS_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -75,6 +76,7 @@ const Home: NextPage = () => {
     nearRpc,
     elrondRpc,
     tronRpc,
+    tezosRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -112,12 +114,12 @@ const Home: NextPage = () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
-    
+
     await client.emit({
-      topic: session?.topic || '',
-      event: { name: 'chainChanged', data: {} },
-      chainId: 'eip155:5'
-    })
+      topic: session?.topic || "",
+      event: { name: "chainChanged", data: {} },
+      chainId: "eip155:5",
+    });
   }
 
   const getEthereumActions = (): AccountAction[] => {
@@ -297,12 +299,41 @@ const Home: NextPage = () => {
     return [
       {
         method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
-        callback: onSignTransaction
+        callback: onSignTransaction,
       },
       {
         method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
-        callback: onSignMessage
-      }
+        callback: onSignMessage,
+      },
+    ];
+  };
+
+  const getTezosActions = (): AccountAction[] => {
+    const onGetAccounts = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testGetAccounts(chainId, address);
+    };
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+        callback: onGetAccounts,
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+        callback: onSignMessage,
+      },
     ];
   };
 
@@ -323,6 +354,8 @@ const Home: NextPage = () => {
         return getElrondActions();
       case "tron":
         return getTronActions();
+      case "tezos":
+        return getTezosActions();
       default:
         break;
     }
@@ -420,7 +453,12 @@ const Home: NextPage = () => {
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={onPing} disconnect={disconnect} session={session} emit={emit}/>
+        <Header
+          ping={onPing}
+          disconnect={disconnect}
+          session={session}
+          emit={emit}
+        />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>

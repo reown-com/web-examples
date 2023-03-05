@@ -13,7 +13,8 @@ export const DEFAULT_MAIN_CHAINS = [
   "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
   "polkadot:91b171bb158e2d3848fa23a9f1c25182",
   "elrond:1",
-  'tron:0x2b6653dc',
+  "tron:0x2b6653dc",
+  "tezos:mainnet",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -27,7 +28,8 @@ export const DEFAULT_TEST_CHAINS = [
   "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
   "near:testnet",
   "elrond:D",
-  'tron:0xcd8690dc',
+  "tron:0xcd8690dc",
+  "tezos:testnet",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -118,12 +120,23 @@ export enum DEFAULT_ELROND_EVENTS {}
 /**
  * TRON
  */
- export enum DEFAULT_TRON_METHODS {
-  TRON_SIGN_TRANSACTION = 'tron_signTransaction',
-  TRON_SIGN_MESSAGE = 'tron_signMessage'
+export enum DEFAULT_TRON_METHODS {
+  TRON_SIGN_TRANSACTION = "tron_signTransaction",
+  TRON_SIGN_MESSAGE = "tron_signMessage",
 }
 
 export enum DEFAULT_TRON_EVENTS {}
+
+/**
+ * TEZOS
+ */
+export enum DEFAULT_TEZOS_METHODS {
+  TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
+  TEZOS_SEND = "tezos_send",
+  TEZOS_SIGN = "tezos_sign",
+}
+
+export enum DEFAULT_TEZOS_EVENTS {}
 
 export const DEFAULT_GITHUB_REPO_URL =
   "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
