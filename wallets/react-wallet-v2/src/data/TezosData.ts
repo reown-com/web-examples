@@ -18,7 +18,7 @@ export const TEZOS_MAINNET_CHAINS: Record<string, ChainMetadata> = {
   'tezos:mainnet': {
     chainId: 'mainnet',
     name: 'Tezos',
-    logo: '/chain-logos/tezos.png',
+    logo: '/chain-logos/tezos.svg',
     rgb: '44, 125, 247',
     rpc: ''
   }
@@ -28,7 +28,7 @@ export const TEZOS_TEST_CHAINS: Record<string, ChainMetadata> = {
   'tezos:testnet': {
     chainId: 'testnet',
     name: 'Tezos Testnet',
-    logo: '/chain-logos/tezos.png',
+    logo: '/chain-logos/tezos.svg',
     rgb: '44, 125, 247',
     rpc: ''
   }

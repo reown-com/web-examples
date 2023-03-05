@@ -9,11 +9,11 @@ import {
 
 export const TezosMetadata: NamespaceMetadata = {
   mainnet: {
-    logo: "/chain-logos/tezos.png",
+    logo: "/assets/tezos.svg",
     rgb: "44, 125, 247",
   },
   testnet: {
-    logo: "/chain-logos/tezos.png",
+    logo: "/assets/tezos.svg",
     rgb: "44, 125, 247",
   },
 };
