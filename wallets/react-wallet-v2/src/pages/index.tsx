@@ -12,6 +12,7 @@ import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 import { NEAR_TEST_CHAINS } from '@/data/NEARData'
+import { TEZOS_MAINNET_CHAINS, TEZOS_TEST_CHAINS } from '@/data/TezosData'
 
 export default function HomePage() {
   const {
@@ -22,7 +23,8 @@ export default function HomePage() {
     polkadotAddress,
     nearAddress,
     elrondAddress,
-    tronAddress
+    tronAddress,
+    tezosAddress
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -51,6 +53,9 @@ export default function HomePage() {
       {Object.values(TRON_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} />
       ))}
+      {Object.values(TEZOS_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tezosAddress} />
+      ))}
 
       {testNets ? (
         <Fragment>
@@ -74,6 +79,9 @@ export default function HomePage() {
           ))}
           {Object.values(TRON_TEST_CHAINS).map(({ name, logo, rgb }) => (
             <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} />
+          ))}
+          {Object.values(TEZOS_TEST_CHAINS).map(({ name, logo, rgb }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tezosAddress} />
           ))}
         </Fragment>
       ) : null}

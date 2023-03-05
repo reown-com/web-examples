@@ -121,8 +121,15 @@ export function isElrondChain(chain: string) {
 /**
  * Check if chain is part of TRON standard
  */
- export function isTronChain(chain: string) {
+export function isTronChain(chain: string) {
   return chain.includes('tron')
+}
+
+/**
+ * Check if chain is part of Tezos standard
+ */
+export function isTezosChain(chain: string) {
+  return chain.includes('tezos')
 }
 
 /**

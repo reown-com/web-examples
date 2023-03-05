@@ -8,6 +8,7 @@ import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { elrondAddresses } from '@/utils/ElrondWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
+import { tezosAddresses } from '@/utils/TezosWalletUtil'
 import {
   isCosmosChain,
   isEIP155Chain,
@@ -15,7 +16,8 @@ import {
   isPolkadotChain,
   isNearChain,
   isElrondChain,
-  isTronChain
+  isTronChain,
+  isTezosChain
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
@@ -43,6 +45,7 @@ export default function SessionProposalModal() {
 
   // Add / remove address from EIP155 selection
   function onSelectAccount(chain: string, account: string) {
+    console.log('ACCOUNT SELECTED', chain, account)
     if (selectedAccounts[chain]?.includes(account)) {
       const newSelectedAccounts = selectedAccounts[chain]?.filter(a => a !== account)
       setSelectedAccounts(prev => ({
@@ -155,6 +158,15 @@ export default function SessionProposalModal() {
       return (
         <ProposalSelectSection
           addresses={tronAddresses}
+          selectedAddresses={selectedAccounts[chain]}
+          onSelect={onSelectAccount}
+          chain={chain}
+        />
+      )
+    } else if (isTezosChain(chain)) {
+      return (
+        <ProposalSelectSection
+          addresses={tezosAddresses}
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}
