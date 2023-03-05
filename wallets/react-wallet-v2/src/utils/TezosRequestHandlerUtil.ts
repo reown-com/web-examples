@@ -10,17 +10,18 @@ export async function approveTezosRequest(
 ) {
   const { params, id } = requestEvent
   const { request } = params
-  const wallet = tezosWallets[getWalletAddressFromParams(tezosAddresses, params)]
+
+  const wallet = tezosWallets[Object.keys(tezosWallets)[0]] // TODO: Select correct wallet
 
   switch (request.method) {
     case TEZOS_SIGNING_METHODS.TEZOS_GET_ACCOUNTS:
-      console.log('approve', { id, params })
-
-      return formatJsonRpcResult(id, {
-        algo: wallet.getCurve(),
-        address: wallet.getAddress(),
-        pubkey: wallet.getPublicKey()
-      })
+      return formatJsonRpcResult(id, [
+        {
+          algo: wallet.getCurve(),
+          address: wallet.getAddress(),
+          pubkey: wallet.getPublicKey()
+        }
+      ])
 
     case TEZOS_SIGNING_METHODS.TEZOS_SEND:
       const signedDirect = await wallet.signTransaction(request.params.signerAddress)
