@@ -1,8 +1,7 @@
 import { TezosToolkit } from '@taquito/taquito'
 import { InMemorySigner } from '@taquito/signer'
+import { localForger } from '@taquito/local-forging'
 import Keyring from 'mnemonic-keyring'
-
-const Tezos = new TezosToolkit('https://limanet.ecadinfra.com')
 
 /**
  * Constants
@@ -23,6 +22,7 @@ interface IInitArguments {
  * Library
  */
 export default class TezosLib {
+  tezos: TezosToolkit
   signer: InMemorySigner
   mnemonic: string
   secretKey: string
@@ -31,6 +31,7 @@ export default class TezosLib {
   curve: 'ed25519' | 'secp256k1'
 
   constructor(
+    tezos: TezosToolkit,
     mnemonic: string,
     signer: InMemorySigner,
     secretKey: string,
@@ -38,6 +39,7 @@ export default class TezosLib {
     address: string,
     curve: 'ed25519' | 'secp256k1'
   ) {
+    this.tezos = tezos
     this.mnemonic = mnemonic
     this.signer = signer
     this.secretKey = secretKey
@@ -52,13 +54,18 @@ export default class TezosLib {
       derivationPath: path ?? DEFAULT_PATH,
       curve: curve ?? DEFAULT_CURVE
     }
+
+    const Tezos = new TezosToolkit('https://mainnet.api.tez.ie')
+
     const signer = InMemorySigner.fromMnemonic(params)
+
     Tezos.setSignerProvider(signer)
+
     const secretKey = await signer.secretKey()
     const publicKey = await signer.publicKey()
     const address = await signer.publicKeyHash()
 
-    return new TezosLib(params.mnemonic, signer, secretKey, publicKey, address, params.curve)
+    return new TezosLib(Tezos, params.mnemonic, signer, secretKey, publicKey, address, params.curve)
   }
 
   public getMnemonic() {
@@ -78,7 +85,22 @@ export default class TezosLib {
   }
 
   public async signTransaction(transaction: any) {
-    return await this.signer.sign(transaction)
+    const prepared = await this.tezos.prepare.batch(
+      transaction.map((tx: any) => ({
+        amount: tx.amount,
+        to: tx.destination,
+        kind: tx.kind,
+        mutez: true
+      }))
+    )
+
+    const forged = await localForger.forge(prepared.opOb)
+
+    const tx = await this.signer.sign(forged, new Uint8Array([3]))
+
+    const hash = await this.tezos.rpc.injectOperation(tx.sbytes)
+
+    return hash
   }
 
   public async signPayload(payload: any) {

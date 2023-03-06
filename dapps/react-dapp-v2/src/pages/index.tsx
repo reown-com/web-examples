@@ -326,14 +326,14 @@ const Home: NextPage = () => {
         method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
         callback: onGetAccounts,
       },
-      // {
-      //   method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
-      //   callback: onSignTransaction,
-      // },
-      // {
-      //   method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
-      //   callback: onSignMessage,
-      // },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+        callback: onSignMessage,
+      },
     ];
   };
 

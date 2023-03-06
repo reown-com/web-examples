@@ -1178,8 +1178,6 @@ export function JsonRpcContextProvider({
             },
           });
 
-          console.log("RESULT", result);
-
           return {
             method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
             address,
@@ -1187,7 +1185,7 @@ export function JsonRpcContextProvider({
             result: JSON.stringify(result, null, 2),
           };
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error.message);
         }
       }
     ),
@@ -1196,31 +1194,34 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        throw new Error("Not implemented");
-        // try {
-        //   const { result } = await client!.request<{ result: any }>({
-        //     chainId,
-        //     topic: session!.topic,
-        //     request: {
-        //       method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
-        //       params: {
-        //         address,
-        //         transaction: {
-        //           ...testTransaction,
-        //         },
-        //       },
-        //     },
-        //   });
+        try {
+          const result = await client!.request<{ hash: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+              params: {
+                account: address,
+                operations: [
+                  {
+                    kind: "transaction",
+                    amount: "1", // 1 mutez, smallest unit
+                    destination: address, // send to ourselves
+                  },
+                ],
+              },
+            },
+          });
 
-        //   return {
-        //     method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
-        //     address,
-        //     valid: true,
-        //     result: result.signature,
-        //   };
-        // } catch (error: any) {
-        //   throw new Error(error);
-        // }
+          return {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+            address,
+            valid: true,
+            result: result.hash,
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
       }
     ),
     testSignMessage: _createJsonRpcRequestHandler(
@@ -1228,7 +1229,7 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const message = "This is a message to be signed";
+        const payload = "05010000004254";
 
         try {
           const result = await client!.request<{ signature: string }>({
@@ -1237,8 +1238,8 @@ export function JsonRpcContextProvider({
             request: {
               method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
               params: {
-                address,
-                message,
+                account: address,
+                payload,
               },
             },
           });
@@ -1250,7 +1251,7 @@ export function JsonRpcContextProvider({
             result: result.signature,
           };
         } catch (error: any) {
-          throw new Error(error);
+          throw new Error(error.message);
         }
       }
     ),
