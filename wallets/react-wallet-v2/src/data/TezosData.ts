@@ -20,7 +20,7 @@ export const TEZOS_MAINNET_CHAINS: Record<string, ChainMetadata> = {
     name: 'Tezos',
     logo: '/chain-logos/tezos.svg',
     rgb: '44, 125, 247',
-    rpc: ''
+    rpc: 'https://mainnet.api.tez.ie'
   }
 }
 
@@ -30,7 +30,7 @@ export const TEZOS_TEST_CHAINS: Record<string, ChainMetadata> = {
     name: 'Tezos Testnet',
     logo: '/chain-logos/tezos.svg',
     rgb: '44, 125, 247',
-    rpc: ''
+    rpc: 'https://ghostnet.ecadinfra.com'
   }
 }
 
