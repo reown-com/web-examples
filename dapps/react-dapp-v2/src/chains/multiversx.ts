@@ -1,7 +1,5 @@
-import { ChainsMap } from "caip-api";
-import { NamespaceMetadata, ChainMetadata } from "../helpers";
+import { NamespaceMetadata, ChainMetadata, ChainsMap } from "../helpers";
 
-// TODO: add `multiversx` namespace to `caip-api` package to avoid manual specification here.
 export const MultiversxChainData: ChainsMap = {
   "1": {
     id: "multiversx:1",

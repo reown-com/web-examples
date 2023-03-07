@@ -9,7 +9,7 @@ export type TMultiversxChain = keyof typeof MULTIVERSX_MAINNET_CHAINS
 export const MULTIVERSX_MAINNET_CHAINS = {
   'multiversx:1': {
     chainId: '1',
-    name: 'Multiversx',
+    name: 'MultiversX',
     logo: '/chain-logos/multiversx-1.svg',
     rgb: '43, 45, 46',
     rpc: ''
@@ -19,7 +19,7 @@ export const MULTIVERSX_MAINNET_CHAINS = {
 export const MULTIVERSX_TEST_CHAINS = {
   'multiversx:D': {
     chainId: 'D',
-    name: 'Multiversx Devnet',
+    name: 'MultiversX Devnet',
     logo: '/chain-logos/multiversx-1.svg',
     rgb: '43, 45, 46',
     rpc: ''

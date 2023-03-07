@@ -1,10 +1,10 @@
-import { ChainsMap } from "caip-api";
 import { BLOCKCHAIN_LOGO_BASE_URL } from "../constants";
 import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
 import {
   NamespaceMetadata,
   ChainMetadata,
   ChainRequestRender,
+  ChainsMap,
 } from "../helpers";
 
 export const PolkadotChainData: ChainsMap = {
