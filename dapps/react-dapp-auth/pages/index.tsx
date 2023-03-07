@@ -1,5 +1,6 @@
-import { Box } from "@chakra-ui/react";
+import { Box, useToast } from "@chakra-ui/react";
 import AuthClient, { generateNonce } from "@walletconnect/auth-client";
+import { PairingTypes } from "@walletconnect/types/dist/types/core/pairing";
 import { version } from "@walletconnect/auth-client/package.json";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
@@ -14,24 +15,52 @@ const Home: NextPage = () => {
   const [hasInitialized, setHasInitialized] = useState(false);
   const [uri, setUri] = useState<string>("");
   const [address, setAddress] = useState<string>("");
+  const toast = useToast();
+  const [pairings, setPairings] = useState<PairingTypes.Struct[]>();
 
-  const onSignIn = useCallback(() => {
+  useEffect(() => {
     if (!client) return;
-    client
-      .request({
-        aud: window.location.href,
-        domain: window.location.hostname.split(".").slice(-2).join("."),
-        chainId: "eip155:1",
-        type: "eip4361",
-        nonce: generateNonce(),
-        statement: "Sign in with wallet.",
-      })
-      .then(({ uri }) => {
-        if (uri) {
-          setUri(uri);
-        }
-      });
-  }, [client, setUri]);
+    const pairings = client.core.pairing.getPairings();
+    setPairings(pairings);
+  }, [client]);
+
+  const onSignIn = useCallback(
+    (existingPairingTopic?: string) => {
+      const nonce = generateNonce();
+      if (!client) return;
+      client
+        .request(
+          {
+            aud: window.location.href,
+            domain: window.location.hostname.split(".").slice(-2).join("."),
+            chainId: "eip155:1",
+            type: "eip4361",
+            nonce,
+            statement: "Sign in with wallet.",
+          },
+          existingPairingTopic
+            ? {
+                topic: existingPairingTopic,
+              }
+            : undefined
+        )
+        .then(({ uri, id }) => {
+          if (uri) {
+            setUri(uri);
+          }
+          if (id && !uri) {
+            toast({
+              status: "info",
+              title: "Existing pairing request",
+              duration: 8000,
+              description:
+                "You need to approve the signature request on your wallet",
+            });
+          }
+        });
+    },
+    [client, setUri, toast]
+  );
 
   useEffect(() => {
     AuthClient.init({
@@ -80,7 +109,11 @@ const Home: NextPage = () => {
   return (
     <Box width="100%" height="100%">
       {view === "default" && (
-        <DefaultView onClick={onSignIn} hasInitialized={hasInitialized} />
+        <DefaultView
+          onSignIn={onSignIn}
+          hasInitialized={hasInitialized}
+          pairings={pairings}
+        />
       )}
       {view === "qr" && <QrView uri={uri} />}
       {view === "signedIn" && <SignedInView address={address} />}

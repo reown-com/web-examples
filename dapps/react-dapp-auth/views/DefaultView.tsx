@@ -1,9 +1,24 @@
-import { Box, Button, Flex, Heading, Image, position } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Image,
+  SimpleGrid,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+} from "@chakra-ui/react";
+import { PairingTypes } from "@walletconnect/types/dist/types/core/pairing";
 
 const DefaultView: React.FC<{
-  onClick: () => void;
+  onSignIn: (topic?: string) => void;
   hasInitialized: boolean;
-}> = ({ onClick, hasInitialized }) => {
+  pairings?: PairingTypes.Struct[];
+}> = ({ onSignIn, hasInitialized, pairings }) => {
   return (
     <Box>
       <Box position={{ position: "relative" }}>
@@ -27,28 +42,81 @@ const DefaultView: React.FC<{
       <Flex
         flexDir={"column"}
         gap="5"
-        padding="2em 3em"
+        padding="2em 0em"
         borderRadius={"24px"}
         className="bg-secondary"
         alignItems={"center"}
       >
-        <Heading>Sign in</Heading>
-        <Button
-          minW="80%"
-          paddingY="1.25em"
-          fontSize={"1.25em"}
-          onClick={onClick}
-          borderRadius={"16px"}
-          background="#3396FF"
-          disabled={!hasInitialized}
-        >
-          <Flex gap="1em">
-            <Image src="/wc.png" fit="scale-down" alt="WC" />
-            <span style={{ color: "white" }}>
-              {hasInitialized ? "WalletConnect" : "Initializing..."}
-            </span>
-          </Flex>
-        </Button>
+        <Tabs>
+          <TabList>
+            <Tab>Sign In</Tab>
+            <Tab key="existing-pairings">Existing Pairings</Tab>
+          </TabList>
+
+          <TabPanels w="100%">
+            <TabPanel key="sign-in">
+              <Flex
+                flexDir={"column"}
+                gap="5"
+                w="100%"
+                padding="2em 3em"
+                borderRadius={"24px"}
+                className="bg-secondary"
+                alignItems={"center"}
+              >
+                <Heading>Sign in</Heading>
+                <Button
+                  w="full"
+                  paddingY="1.25em"
+                  fontSize={"1.25em"}
+                  onClick={() => onSignIn()}
+                  borderRadius={"16px"}
+                  background="#3396FF"
+                  disabled={!hasInitialized}
+                >
+                  <Flex gap="1em">
+                    <Image src="/wc.png" fit="scale-down" alt="WC" />
+                    <Text color="white">
+                      {hasInitialized ? "WalletConnect" : "Initializing..."}
+                    </Text>
+                  </Flex>
+                </Button>
+              </Flex>
+            </TabPanel>
+            <TabPanel key="existing">
+              <Flex
+                flexDir={"column"}
+                gap="5"
+                padding="2em 0em"
+                borderRadius={"24px"}
+                className="bg-secondary"
+                alignItems={"center"}
+              >
+                <Heading>Existing pairings</Heading>
+                <SimpleGrid column={1} gap={2}>
+                  {pairings?.length &&
+                    pairings.length > 0 &&
+                    pairings.map((pairing) => (
+                      <Button
+                        key={pairing.topic}
+                        minW="80%"
+                        paddingY="1.25em"
+                        fontSize={"1.25em"}
+                        onClick={() => onSignIn(pairing.topic)}
+                        borderRadius={"16px"}
+                        background="#3396FF"
+                      >
+                        <Text>
+                          {pairing.topic.slice(0, 8)}...
+                          {pairing.topic.slice(56, 64)}
+                        </Text>
+                      </Button>
+                    ))}
+                </SimpleGrid>
+              </Flex>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </Flex>
     </Box>
   );
