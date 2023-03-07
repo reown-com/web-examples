@@ -15,10 +15,11 @@ export default function AuthenticationRequestModal() {
   useEffect(() => {
     if (message) return
     const address = eip155Addresses[0]
-    const iss = `did:pkh:eip155:1:${address}`
+    const chainId = authenticationRequest.params.cacaoPayload.chainId.split(':')[1] ?? 1
+    const iss = `did:pkh:eip155:${chainId}:${address}`
     setMessage(authClient.formatMessage(authenticationRequest.params.cacaoPayload, iss))
     setIss(iss)
-  }, [authenticationRequest.params.cacaoPayload, eip155Addresses, message])
+  }, [authenticationRequest.params.cacaoPayload, params.chainId, eip155Addresses, message])
 
   const onApprove = useCallback(async () => {
     if (authenticationRequest && iss && message) {
