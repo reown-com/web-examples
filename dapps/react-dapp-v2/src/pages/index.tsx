@@ -13,7 +13,7 @@ import {
   DEFAULT_MAIN_CHAINS,
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_METHODS,
-  DEFAULT_ELROND_METHODS,
+  DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TEST_CHAINS,
   DEFAULT_NEAR_METHODS,
   DEFAULT_TRON_METHODS,
@@ -73,7 +73,7 @@ const Home: NextPage = () => {
     solanaRpc,
     polkadotRpc,
     nearRpc,
-    elrondRpc,
+    multiversxRpc,
     tronRpc,
     isRpcRequestPending,
     rpcResult,
@@ -256,30 +256,30 @@ const Home: NextPage = () => {
     ];
   };
 
-  const getElrondActions = (): AccountAction[] => {
+  const getMultiversxActions = (): AccountAction[] => {
     const onSignTransaction = async (chainId: string, address: string) => {
       openRequestModal();
-      await elrondRpc.testSignTransaction(chainId, address);
+      await multiversxRpc.testSignTransaction(chainId, address);
     };
     const onSignTransactions = async (chainId: string, address: string) => {
       openRequestModal();
-      await elrondRpc.testSignTransactions(chainId, address);
+      await multiversxRpc.testSignTransactions(chainId, address);
     };
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
-      await elrondRpc.testSignMessage(chainId, address);
+      await multiversxRpc.testSignMessage(chainId, address);
     };
     return [
       {
-        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
+        method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTION,
         callback: onSignTransaction,
       },
       {
-        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS,
+        method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTIONS,
         callback: onSignTransactions,
       },
       {
-        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE,
+        method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_MESSAGE,
         callback: onSignMessage,
       },
     ];
@@ -319,8 +319,8 @@ const Home: NextPage = () => {
         return getPolkadotActions();
       case "near":
         return getNearActions();
-      case "elrond":
-        return getElrondActions();
+      case "multiversx":
+        return getMultiversxActions();
       case "tron":
         return getTronActions();
       default:

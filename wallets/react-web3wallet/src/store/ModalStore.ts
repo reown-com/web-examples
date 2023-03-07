@@ -24,7 +24,7 @@ interface State {
     | 'SessionSignSolanaModal'
     | 'SessionSignPolkadotModal'
     | 'SessionSignNearModal'
-    | 'SessionSignElrondModal'
+    | 'SessionSignMultiversxModal'
     | 'AuthRequestModal'
   data?: ModalData
 }
