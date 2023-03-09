@@ -14,4 +14,5 @@ export async function createSignClient(relayerRegionURL: string) {
       icons: ['https://avatars.githubusercontent.com/u/37784886']
     }
   })
+  console.log(signClient)
 }

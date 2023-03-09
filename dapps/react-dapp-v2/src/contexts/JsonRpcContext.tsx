@@ -212,15 +212,15 @@ export function JsonRpcContextProvider({
 
         const tx = await formatTestTransaction(account);
 
-        const balance = BigNumber.from(balances[account][0].balance || "0");
-        if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
-          return {
-            method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
-            address,
-            valid: false,
-            result: "Insufficient funds for intrinsic transaction cost",
-          };
-        }
+        // const balance = BigNumber.from(balances[account][0].balance || "0");
+        // if (balance.lt(BigNumber.from(tx.gasPrice).mul(tx.gasLimit))) {
+        //   return {
+        //     method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
+        //     address,
+        //     valid: false,
+        //     result: "Insufficient funds for intrinsic transaction cost",
+        //   };
+        // }
 
         const result = await client!.request<string>({
           topic: session!.topic,
