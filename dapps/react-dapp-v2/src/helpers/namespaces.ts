@@ -42,7 +42,7 @@ export const getSupportedMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_NEAR_METHODS);
     case "elrond":
       return Object.values(DEFAULT_ELROND_METHODS);
-    case 'tron':
+    case "tron":
       return Object.values(DEFAULT_TRON_METHODS);
     default:
       throw new Error(`No default methods for namespace: ${namespace}`);

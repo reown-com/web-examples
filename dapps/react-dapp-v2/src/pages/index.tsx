@@ -112,12 +112,12 @@ const Home: NextPage = () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
-    
+
     await client.emit({
-      topic: session?.topic || '',
-      event: { name: 'chainChanged', data: {} },
-      chainId: 'eip155:5'
-    })
+      topic: session?.topic || "",
+      event: { name: "chainChanged", data: {} },
+      chainId: "eip155:5",
+    });
   }
 
   const getEthereumActions = (): AccountAction[] => {
@@ -297,12 +297,12 @@ const Home: NextPage = () => {
     return [
       {
         method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
-        callback: onSignTransaction
+        callback: onSignTransaction,
       },
       {
         method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
-        callback: onSignMessage
-      }
+        callback: onSignMessage,
+      },
     ];
   };
 
@@ -420,7 +420,12 @@ const Home: NextPage = () => {
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={onPing} disconnect={disconnect} session={session} emit={emit}/>
+        <Header
+          ping={onPing}
+          disconnect={disconnect}
+          session={session}
+          emit={emit}
+        />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>
