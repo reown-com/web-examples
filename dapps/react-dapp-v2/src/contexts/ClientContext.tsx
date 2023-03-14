@@ -2,6 +2,7 @@ import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import { Web3Modal } from "@web3modal/standalone";
 
+import { PublicKey } from "@solana/web3.js";
 import {
   createContext,
   ReactNode,
@@ -9,11 +10,11 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
   useRef,
+  useState,
 } from "react";
-import { PublicKey } from "@solana/web3.js";
 
+import { getAppMetadata, getSdkError } from "@walletconnect/utils";
 import {
   DEFAULT_APP_METADATA,
   DEFAULT_LOGGER,
@@ -21,9 +22,8 @@ import {
   DEFAULT_RELAY_URL,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
-import { getAppMetadata, getSdkError } from "@walletconnect/utils";
-import { getPublicKeysFromAccounts } from "../helpers/solana";
 import { getRequiredNamespaces } from "../helpers/namespaces";
+import { getPublicKeysFromAccounts } from "../helpers/solana";
 
 /**
  * Types
@@ -56,6 +56,7 @@ export const ClientContext = createContext<IContext>({} as IContext);
 const web3Modal = new Web3Modal({
   projectId: DEFAULT_PROJECT_ID,
   themeMode: "light",
+  walletConnectVersion: 2,
 });
 
 /**
