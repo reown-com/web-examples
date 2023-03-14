@@ -155,7 +155,7 @@ export function ClientContextProvider({
           // Create a flat array of all requested chains across namespaces.
           const standaloneChains = Object.values(requiredNamespaces)
             .map((namespace) => namespace.chains)
-            .flat();
+            .flat() as string[];
 
           web3Modal.openModal({ uri, standaloneChains });
         }
