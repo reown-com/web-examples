@@ -3529,28 +3529,28 @@
     "@walletconnect/window-getters" "^1.0.1"
     tslib "1.14.1"
 
-"@web3modal/core@2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@web3modal/core/-/core-2.1.1.tgz#e1ebe8faaae6e4b74df911fd5ac6023f280b12c1"
-  integrity sha512-GAZAvfkPHoX2/fghQmf+y36uDspk9wBJxG7qLPUNTHzvIfRoNHWbTt3iEvRdPmUZwbTGDn1jvz9z0uU67gvZdw==
+"@web3modal/core@2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@web3modal/core/-/core-2.2.0.tgz#847459e1ab1766f312c39715270a7ca0fe831666"
+  integrity sha512-Kafg/KtK6S9x0Ofcaq9hj7dRK5/541nM+LnayPmHxx4fSrDgcM9YYhL12fI4BG1xGOJwkeZjgFOtS0qf123Cjw==
   dependencies:
     buffer "6.0.3"
     valtio "1.9.0"
 
-"@web3modal/standalone@2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@web3modal/standalone/-/standalone-2.1.1.tgz#e496e54af5ecf6e282ff7f287eebce7f1ac90bd2"
-  integrity sha512-K06VkZqltLIBKpnLeM2oszRDSdLnwXJWCcItWEOkH4LDFQIiq8lSeLhcamuadRxRKF4ZyTSLHHJ5MFcMfZEHQQ==
+"@web3modal/standalone@2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@web3modal/standalone/-/standalone-2.2.0.tgz#9f81ed976dd16bd795f902503065f75c9160eab3"
+  integrity sha512-cLFW4VamSJ7L4sM5OGmr1SHK3FgyLUMEaacvHsCA3XSvUF0LxbMC+N4uBsONrW4c0JyIjTdeii1GqG4B3jwn7Q==
   dependencies:
-    "@web3modal/core" "2.1.1"
-    "@web3modal/ui" "2.1.1"
+    "@web3modal/core" "2.2.0"
+    "@web3modal/ui" "2.2.0"
 
-"@web3modal/ui@2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@web3modal/ui/-/ui-2.1.1.tgz#300dceeee8a54be70aad74fb4a781ac22439eded"
-  integrity sha512-0jRDxgPc/peaE5KgqnzzriXhdVu5xNyCMP5Enqdpd77VkknJIs7h16MYKidxgFexieyHpCOssWySsryWcP2sXA==
+"@web3modal/ui@2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@web3modal/ui/-/ui-2.2.0.tgz#2837da46706f1a3fcdf2f2c22e7ed029e235a3ab"
+  integrity sha512-jcV5C9AuMdsFdf6Ljsr0v2lInu8FJJyXcZPaMHkgYNIczzgMEpDE+UOA7hLnyCTUxM9R0AgRcgfTyMWb9H8Ssw==
   dependencies:
-    "@web3modal/core" "2.1.1"
+    "@web3modal/core" "2.2.0"
     lit "2.6.1"
     motion "10.15.5"
     qrcode "1.5.1"
