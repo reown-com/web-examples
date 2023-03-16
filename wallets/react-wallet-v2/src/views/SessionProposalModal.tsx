@@ -45,7 +45,6 @@ export default function SessionProposalModal() {
 
   // Add / remove address from EIP155 selection
   function onSelectAccount(chain: string, account: string) {
-    console.log('ACCOUNT SELECTED', chain, account)
     if (selectedAccounts[chain]?.includes(account)) {
       const newSelectedAccounts = selectedAccounts[chain]?.filter(a => a !== account)
       setSelectedAccounts(prev => ({
