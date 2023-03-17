@@ -57,25 +57,23 @@ export default function SessionPage() {
     setLoading(false)
   }
 
-  const newNs = {
-    eip155: {
-      accounts: [
-        'eip155:1:0x70012948c348CBF00806A3C79E3c5DAdFaAa347B',
-        'eip155:137:0x70012948c348CBF00806A3C79E3c5DAdFaAa347B'
-      ]
-    }
-  }
-
   async function onSessionUpdate() {
     setLoading(true)
     const session = signClient.session.get(topic)
+    const baseAddress = '0x70012948c348CBF00806A3C79E3c5DAdFaAa347'
+    const namespaceKeyToUpdate = Object.keys(session?.namespaces)[0]
+    const namespaceToUpdate = session?.namespaces[namespaceKeyToUpdate]
     const { acknowledged } = await signClient.update({
       topic,
       namespaces: {
         ...session?.namespaces,
-        ['eip155']: {
-          ...session?.namespaces?.eip155,
-          accounts: session?.namespaces?.eip155?.accounts?.concat(newNs.eip155.accounts)
+        [namespaceKeyToUpdate]: {
+          ...session?.namespaces[namespaceKeyToUpdate],
+          accounts: namespaceToUpdate.accounts.concat(
+            `${namespaceToUpdate.chains?.[0]}:${baseAddress}${Math.floor(
+              Math.random() * (9 - 1 + 1) + 0
+            )}`
+          ) // generates random number between 0 and 9
         }
       }
     })
