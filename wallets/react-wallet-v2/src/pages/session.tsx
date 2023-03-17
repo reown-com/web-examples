@@ -62,21 +62,23 @@ export default function SessionPage() {
       accounts: [
         'eip155:1:0x70012948c348CBF00806A3C79E3c5DAdFaAa347B',
         'eip155:137:0x70012948c348CBF00806A3C79E3c5DAdFaAa347B'
-      ],
-      methods: [
-        'eth_sendTransaction',
-        'eth_signTransaction',
-        'eth_sign',
-        'personal_sign',
-        'eth_signTypedData'
-      ],
-      events: ['chainChanged', 'accountsChanged']
+      ]
     }
   }
 
   async function onSessionUpdate() {
     setLoading(true)
-    const { acknowledged } = await signClient.update({ topic, namespaces: newNs })
+    const session = signClient.session.get(topic)
+    const { acknowledged } = await signClient.update({
+      topic,
+      namespaces: {
+        ...session?.namespaces,
+        ['eip155']: {
+          ...session?.namespaces?.eip155,
+          accounts: session?.namespaces?.eip155?.accounts?.concat(newNs.eip155.accounts)
+        }
+      }
+    })
     await acknowledged()
     setUpdated(new Date())
     setLoading(false)
