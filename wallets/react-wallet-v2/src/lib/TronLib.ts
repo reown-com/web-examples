@@ -51,8 +51,17 @@ export default class TronLib {
     return signedtxn
   }
 
-  public async signTransaction(transaction: any) {
-    const signedtxn = await this.tronWeb.trx.sign(transaction.transaction)
+  public async signTransaction(transaction: any, expirationTime?:number) {
+    let signedtxn;
+    if(expirationTime){
+      const transactionObj = await this.tronWeb.transactionBuilder.extendExpiration(
+        transaction.transaction,
+        expirationTime
+      );
+      signedtxn = await this.tronWeb.trx.sign(transactionObj)
+    } else {
+      signedtxn = await this.tronWeb.trx.sign(transaction.transaction)
+    }
     return signedtxn
   }
 }

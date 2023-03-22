@@ -4,6 +4,8 @@ import { tronAddresses, tronWallets } from '@/utils/TronWalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
+// @ts-ignore
+import TronWeb from 'tronweb'
 
 export async function approveTronRequest(
   requestEvent: SignClientTypes.EventArguments['session_request']
@@ -31,11 +33,23 @@ export async function approveTronRequest(
       return formatJsonRpcResult(id, res)
 
     case TRON_SIGNING_METHODS.TRON_SIGN_TRANSACTION:
-      const signedTransaction = await wallet.signTransaction(request.params.transaction)
-      const resData = {
-        result: signedTransaction
+      const transaction = request.params.transaction.transaction
+      const txPb = TronWeb.utils.transaction.txJsonToPb(transaction)
+      const rawDataBytes = txPb.getRawData().serializeBinary()
+      const rawDataHex = TronWeb.utils.bytes.byteArray2hexStr(rawDataBytes)
+      const txID = TronWeb.utils.transaction.txPbToTxID(txPb)
+      if (
+        rawDataHex.toLowerCase() === transaction.raw_data_hex.toLowerCase() && txID.replace(/^0x/, '').toLowerCase() ===
+        transaction.txID.replace(/^0x/, '').toLowerCase()
+      ) {
+        const signedTransaction = await wallet.signTransaction(request.params.transaction)
+        const resData = {
+          result: signedTransaction
+        }
+        return formatJsonRpcResult(id, resData)
+      } else {
+        throw new Error('Invalid transaction')
       }
-      return formatJsonRpcResult(id, resData)
 
     default:
       throw new Error(getSdkError('INVALID_METHOD').message)
