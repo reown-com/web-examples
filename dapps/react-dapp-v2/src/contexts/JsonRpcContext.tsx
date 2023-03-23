@@ -1,4 +1,4 @@
-import { BigNumber, utils } from "ethers";
+import { BigNumber, getDefaultProvider, utils } from "ethers";
 import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
 import { TypedDataField } from "@ethersproject/abstract-signer";
@@ -25,6 +25,8 @@ import {
   eip712,
   formatTestTransaction,
   getLocalStorageTestnetFlag,
+  hashPersonalMessage,
+  verifySignature,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
@@ -46,6 +48,8 @@ import {
   SignableMessage,
   ISignature,
 } from "@elrondnetwork/erdjs";
+
+import {rpcProvidersByChainId} from "../../src/helpers/api"
 
 import { UserVerifier } from "@elrondnetwork/erdjs-walletcore/out/userVerifier";
 import { Signature } from "@elrondnetwork/erdjs-walletcore/out/signature";
@@ -292,10 +296,10 @@ export function JsonRpcContextProvider({
 
         // encode message (hex)
         const hexMsg = encoding.utf8ToHex(message, true);
-
+        const hashMsg = hashPersonalMessage(message)
         // personal_sign params
         const params = [hexMsg, address];
-
+        const rpc = rpcProvidersByChainId[Number(chainId.toString().split(":")[1])]; 
         // send message
         const signature = await client!.request<string>({
           topic: session!.topic,
@@ -315,10 +319,12 @@ export function JsonRpcContextProvider({
           throw new Error(`Missing chain data for chainId: ${chainId}`);
         }
 
-        const valid = _verifyEip155MessageSignature(
-          message,
+        const valid = await verifySignature(
+          address,
           signature,
-          address
+          hashMsg,
+          rpc.baseURL
+
         );
 
         // format displayed result
