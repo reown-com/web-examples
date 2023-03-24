@@ -180,14 +180,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       console.log("Enabling EthereumProvider for chainId: ", chainId);
 
-      const customRpcs = Object.keys(chainData.eip155).reduce(
-        (rpcs: Record<string, string>, chainId) => {
-          rpcs[chainId] = chainData.eip155[chainId].rpc[0];
-          return rpcs;
-        },
-        {},
-      );
-
       const session = await ethereumProvider.connect({
         namespaces: {
           eip155: {
@@ -200,7 +192,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
             ],
             chains: [`eip155:${chainId}`],
             events: ["chainChanged", "accountsChanged"],
-            rpcMap: customRpcs,
+            rpcMap: {},
           },
         },
         pairingTopic: pairing?.topic,
