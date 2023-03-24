@@ -145,6 +145,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     try {
       setIsInitializing(true);
 
+      if (!DEFAULT_PROJECT_ID) return;
+
       const provider = await UniversalProvider.init({
         projectId: DEFAULT_PROJECT_ID,
         logger: DEFAULT_LOGGER,
@@ -153,6 +155,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
 
       const web3Modal = new Web3Modal({
         projectId: DEFAULT_PROJECT_ID,
+        walletConnectVersion: 2,
       });
 
       setEthereumProvider(provider);
