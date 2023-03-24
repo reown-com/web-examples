@@ -15,7 +15,7 @@ export default function AuthenticationRequestModal() {
   useEffect(() => {
     if (message) return
     const address = eip155Addresses[0]
-    const iss = `did:pkh:eip155:1:${address}`
+    const iss = `did:pkh:${authenticationRequest.params.cacaoPayload.chainId}:${address}`
     setMessage(authClient.formatMessage(authenticationRequest.params.cacaoPayload, iss))
     setIss(iss)
   }, [authenticationRequest.params.cacaoPayload, eip155Addresses, message])
