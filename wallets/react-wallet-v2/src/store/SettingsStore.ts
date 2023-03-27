@@ -11,7 +11,7 @@ interface State {
   solanaAddress: string
   polkadotAddress: string
   nearAddress: string
-  elrondAddress: string
+  multiversxAddress: string
   tronAddress: string
   relayerRegionURL: string
 }
@@ -27,7 +27,7 @@ const state = proxy<State>({
   solanaAddress: '',
   polkadotAddress: '',
   nearAddress: '',
-  elrondAddress: '',
+  multiversxAddress: '',
   tronAddress: '',
   relayerRegionURL: ''
 })
@@ -64,8 +64,8 @@ const SettingsStore = {
     state.relayerRegionURL = relayerRegionURL
   },
 
-  setElrondAddress(elrondAddress: string) {
-    state.elrondAddress = elrondAddress
+  setMultiversxAddress(multiversxAddress: string) {
+    state.multiversxAddress = multiversxAddress
   },
 
   setTronAddress(tronAddress: string) {

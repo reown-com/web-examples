@@ -1,5 +1,5 @@
-import { Transaction, SignableMessage } from '@elrondnetwork/erdjs'
-import { Mnemonic, UserSecretKey, UserWallet, UserSigner } from '@elrondnetwork/erdjs-walletcore'
+import { Transaction, SignableMessage } from '@multiversx/sdk-core'
+import { Mnemonic, UserSecretKey, UserWallet, UserSigner } from '@multiversx/sdk-wallet'
 
 /**
  * Types
@@ -11,7 +11,7 @@ interface IInitArgs {
 /**
  * Library
  */
-export default class ElrondLib {
+export default class MultiversxLib {
   wallet: UserWallet
   mnemonic: Mnemonic
   password: string
@@ -20,16 +20,16 @@ export default class ElrondLib {
     this.mnemonic = mnemonic
     this.password = 'password' // test purposes only
 
-    const secretKey = mnemonic.deriveKey(0)
-    const secretKeyHex = secretKey.hex()
-    let fromHex = UserSecretKey.fromString(secretKeyHex)
-    this.wallet = new UserWallet(fromHex, this.password)
+    this.wallet = UserWallet.fromMnemonic({
+      password: this.password,
+      mnemonic: mnemonic.toString()
+    })
   }
 
   static init({ mnemonic }: IInitArgs) {
     const mnemonicObj = mnemonic ? Mnemonic.fromString(mnemonic) : Mnemonic.generate()
 
-    return new ElrondLib(mnemonicObj)
+    return new MultiversxLib(mnemonicObj)
   }
 
   getMnemonic() {
@@ -54,9 +54,9 @@ export default class ElrondLib {
     })
 
     const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
-    await signer.sign(signMessage)
+    const signature = await signer.sign(signMessage.serializeForSigning())
 
-    return { signature: signMessage.signature.hex() }
+    return { signature: signature.toString('hex') }
   }
 
   async signTransaction(transaction: any) {
@@ -66,9 +66,9 @@ export default class ElrondLib {
     const signTransaction = Transaction.fromPlainObject(transaction)
 
     const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
-    await signer.sign(signTransaction)
+    const signature = await signer.sign(signTransaction.serializeForSigning(signer.getAddress()))
 
-    return { signature: signTransaction.getSignature().hex() }
+    return { signature: signature.toString('hex') }
   }
 
   async signTransactions(transactions: any[]) {
@@ -79,9 +79,11 @@ export default class ElrondLib {
       transactions.map(async (transaction: any): Promise<any> => {
         const signTransaction = Transaction.fromPlainObject(transaction)
         const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
-        await signer.sign(signTransaction)
+        const signature = await signer.sign(
+          signTransaction.serializeForSigning(signer.getAddress())
+        )
 
-        return { signature: signTransaction.getSignature().hex() }
+        return { signature: signature.toString('hex') }
       })
     )
 
