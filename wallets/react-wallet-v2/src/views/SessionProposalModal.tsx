@@ -69,6 +69,7 @@ export default function SessionProposalModal() {
         })
         namespaces[key] = {
           accounts,
+          chains: key.includes(':') ? [key] : requiredNamespaces[key].chains,
           methods: requiredNamespaces[key].methods,
           events: requiredNamespaces[key].events
         }
