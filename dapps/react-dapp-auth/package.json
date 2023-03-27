@@ -12,10 +12,11 @@
     "@chakra-ui/react": "^2.2.6",
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
+    "@walletconnect/auth-client": "2.0.4",
     "@web3modal/core": "^2.0.0-beta.4",
     "@web3modal/ethereum": "^2.0.0-beta.4",
+    "@web3modal/standalone": "^2.2.2",
     "@web3modal/ui": "^2.0.0-beta.4",
-    "@walletconnect/auth-client": "2.0.4",
     "better-sqlite3": "^7.6.2",
     "ethers": "^5.7.0",
     "events": "^3.3.0",
@@ -24,8 +25,7 @@
     "qr-scanner": "^1.4.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "smart-truncate": "^1.0.1",
-    "wagmi": "^0.12.6"
+    "smart-truncate": "^1.0.1"
   },
   "devDependencies": {
     "@types/node": "18.6.4",

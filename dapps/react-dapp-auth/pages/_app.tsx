@@ -1,6 +1,5 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
-import { ConfigCtrl } from "@web3modal/core";
 import { version } from "@walletconnect/auth-client/package.json";
 import {
   ChakraProvider,
@@ -9,15 +8,10 @@ import {
   Grid,
   GridItem,
   Image,
-  Text,
 } from "@chakra-ui/react";
 import ThemeSwitcher from "../components/ThemeSwitcher";
-import { useEffect } from "react";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  useEffect(() => {
-    ConfigCtrl.setConfig({ projectId: process.env.NEXT_PUBLIC_PROJECT_ID! });
-  }, []);
   return (
     <ChakraProvider>
       <Box

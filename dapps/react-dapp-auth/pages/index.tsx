@@ -1,12 +1,11 @@
 import { Box } from "@chakra-ui/react";
 import AuthClient, { generateNonce } from "@walletconnect/auth-client";
-import { version } from "@walletconnect/auth-client/package.json";
+import { Web3Modal } from "@web3modal/standalone";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import DefaultView from "../views/DefaultView";
 import SignedInView from "../views/SignedInView";
 import type { W3mModal } from "@web3modal/ui";
-import { ModalCtrl } from "@web3modal/core";
 import "@web3modal/ui";
 
 declare global {
@@ -16,6 +15,18 @@ declare global {
     }
   }
 }
+
+// 1. Get projectID at https://cloud.walletconnect.com
+const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
+if (!projectId) {
+  throw new Error("You need to provide NEXT_PUBLIC_PROJECT_ID env variable");
+}
+
+// 2. Configure web3Modal
+const web3Modal = new Web3Modal({
+  projectId,
+  walletConnectVersion: 2,
+});
 
 const Home: NextPage = () => {
   const [client, setClient] = useState<AuthClient | null>();
@@ -78,14 +89,20 @@ const Home: NextPage = () => {
   const [view, changeView] = useState<"default" | "qr" | "signedIn">("default");
 
   useEffect(() => {
-    if (uri) {
-      ModalCtrl.open({ uri, standaloneChains: ["eip155:1"] });
+    async function handleOpenModal() {
+      if (uri) {
+        await web3Modal.openModal({
+          uri,
+          standaloneChains: ["eip155:1"],
+        });
+      }
     }
+    handleOpenModal();
   }, [uri]);
 
   useEffect(() => {
     if (address) {
-      ModalCtrl.close();
+      web3Modal.closeModal();
       changeView("signedIn");
     }
   }, [address, changeView]);
