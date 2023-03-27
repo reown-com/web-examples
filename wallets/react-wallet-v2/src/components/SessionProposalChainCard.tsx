@@ -4,6 +4,7 @@ import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
 import { NEAR_TEST_CHAINS } from '@/data/NEARData'
 import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { ELROND_MAINNET_CHAINS, ELROND_TEST_CHAINS } from '@/data/ElrondData'
+import { TRON_MAINNET_CHAINS, TRON_TEST_CHAINS } from '@/data/TronData'
 import { formatChainName } from '@/utils/HelperUtil'
 import { Col, Row, Text } from '@nextui-org/react'
 import { ProposalTypes } from '@walletconnect/types'
@@ -16,11 +17,13 @@ const CHAIN_METADATA = {
   ...COSMOS_MAINNET_CHAINS,
   ...SOLANA_MAINNET_CHAINS,
   ...ELROND_MAINNET_CHAINS,
+  ...TRON_MAINNET_CHAINS,
   ...EIP155_MAINNET_CHAINS,
   ...EIP155_TEST_CHAINS,
   ...SOLANA_TEST_CHAINS,
   ...NEAR_TEST_CHAINS,
-  ...ELROND_TEST_CHAINS
+  ...ELROND_TEST_CHAINS,
+  ...TRON_TEST_CHAINS
 }
 
 /**
@@ -36,19 +39,7 @@ interface IProps {
 export default function SessionProposalChainCard({ requiredNamespace }: IProps) {
   return (
     <Fragment>
-      {requiredNamespace.chains.map(chainId => {
-        const extensionMethods: ProposalTypes.RequiredNamespace['methods'] = []
-        const extensionEvents: ProposalTypes.RequiredNamespace['events'] = []
-
-        requiredNamespace.extension?.map(({ chains, methods, events }) => {
-          if (chains.includes(chainId)) {
-            extensionMethods.push(...methods)
-            extensionEvents.push(...events)
-          }
-        })
-
-        const allMethods = [...requiredNamespace.methods, ...extensionMethods]
-        const allEvents = [...requiredNamespace.events, ...extensionEvents]
+      {requiredNamespace.chains?.map(chainId => {
         // @ts-expect-error
         const rgb = CHAIN_METADATA[chainId]?.rgb
 
@@ -60,13 +51,17 @@ export default function SessionProposalChainCard({ requiredNamespace }: IProps) 
             <Row>
               <Col>
                 <Text h6>Methods</Text>
-                <Text color="$gray300">{allMethods.length ? allMethods.join(', ') : '-'}</Text>
+                <Text color="$gray300">
+                  {requiredNamespace.methods.length ? requiredNamespace.methods.join(', ') : '-'}
+                </Text>
               </Col>
             </Row>
             <Row css={{ marginTop: '$5' }}>
               <Col>
                 <Text h6>Events</Text>
-                <Text color="$gray300">{allEvents.length ? allEvents.join(', ') : '-'}</Text>
+                <Text color="$gray300">
+                  {requiredNamespace.events.length ? requiredNamespace.events.join(', ') : '-'}
+                </Text>
               </Col>
             </Row>
           </ChainCard>

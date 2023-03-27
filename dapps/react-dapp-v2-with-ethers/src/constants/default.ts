@@ -10,7 +10,7 @@ export const DEFAULT_MAIN_CHAINS = [
 
 export const DEFAULT_TEST_CHAINS = [
   // testnets
-  "eip155:42",
+  "eip155:5",
   "eip155:69",
   "eip155:80001",
   "eip155:421611",
@@ -33,7 +33,7 @@ export enum DEFAULT_EIP_155_EVENTS {
 export const DEFAULT_LOGGER = "debug";
 
 export const DEFAULT_APP_METADATA = {
-  name: "React App",
+  name: "React App with ethers",
   description: "React App for WalletConnect",
   url: "https://walletconnect.com/",
   icons: ["https://avatars.githubusercontent.com/u/37784886"],

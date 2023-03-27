@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { version } from "@walletconnect/client/package.json";
+import { version } from "@walletconnect/sign-client/package.json";
 import {
   formatDirectSignDoc,
   stringifySignDocValues,
@@ -7,15 +7,15 @@ import {
   verifyDirectSignature,
 } from "cosmos-wallet";
 
-import Banner from "./components/Banner";
-import Blockchain from "./components/Blockchain";
-import Column from "./components/Column";
-import Header from "./components/Header";
-import Modal from "./components/Modal";
-import { DEFAULT_MAIN_CHAINS } from "./constants";
-import { AccountAction } from "./helpers";
-import RequestModal from "./modals/RequestModal";
-import PingModal from "./modals/PingModal";
+import Banner from "./../components/Banner";
+import Blockchain from "./../components/Blockchain";
+import Column from "./../components/Column";
+import Header from "./../components/Header";
+import Modal from "./../components/Modal";
+import { DEFAULT_MAIN_CHAINS } from "./../constants";
+import { AccountAction } from "./../helpers";
+import RequestModal from "./../modals/RequestModal";
+import PingModal from "./../modals/PingModal";
 import {
   SAccounts,
   SAccountsContainer,
@@ -23,8 +23,8 @@ import {
   SContent,
   SLanding,
   SLayout,
-} from "./components/app";
-import { useWalletConnectClient } from "./contexts/ClientContext";
+} from "./../components/app";
+import { useWalletConnectClient } from "./../contexts/ClientContext";
 
 interface IFormattedRpcResponse {
   method?: string;
@@ -72,8 +72,9 @@ export default function App() {
 
     try {
       setIsRpcRequestPending(true);
-      const _session = await client.session.get(client.session.topics[0]);
-      await client.session.ping(_session.topic);
+      const session = cosmosProvider?.session;
+      if (!session) return;
+      await cosmosProvider.client?.ping({ topic: session.topic! });
       setRpcResult({
         address: "",
         method: "ping",
@@ -198,7 +199,7 @@ export default function App() {
           setRpcResult(result);
         } catch (error) {
           console.error("RPC request failed:", error);
-          setRpcResult({ result: error as string });
+          setRpcResult({ result: (error as Error).message as string });
         } finally {
           setIsRpcRequestPending(false);
         }
@@ -228,17 +229,7 @@ export default function App() {
       <SLanding center>
         <Banner />
         <h6>
-          <span>{`Using v${version || "2.0.0-beta"}`}</span>
-          <sup>
-            (
-            <a
-              style={{ textDecoration: "underline" }}
-              href="https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2-cosmos-provider"
-            >
-              outdated
-            </a>{" "}
-            ⚠️)
-          </sup>
+          <span>{`Using v${version}`}</span>
         </h6>
         <SButtonContainer>
           <h6>Select Cosmos chain:</h6>

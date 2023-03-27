@@ -1,7 +1,7 @@
-import Client, { CLIENT_EVENTS } from "@walletconnect/client";
-import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import CosmosProvider from "@walletconnect/cosmos-provider";
-import QRCodeModal from "@walletconnect/qrcode-modal";
+import SignClient from "@walletconnect/sign-client";
+import { ISignClient, PairingTypes, SessionTypes } from "@walletconnect/types";
+import UniversalProvider, { IUniversalProvider } from "@walletconnect/universal-provider";
+import { Web3Modal } from "@web3modal/standalone";
 import {
   createContext,
   ReactNode,
@@ -11,7 +11,12 @@ import {
   useMemo,
   useState,
 } from "react";
-import { DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from "../constants";
+import {
+  DEFAULT_COSMOS_METHODS,
+  DEFAULT_LOGGER,
+  DEFAULT_PROJECT_ID,
+  DEFAULT_RELAY_URL,
+} from "../constants";
 import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../helpers";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
 
@@ -19,17 +24,17 @@ import { apiGetChainNamespace, ChainsMap } from "caip-api";
  * Types
  */
 interface IContext {
-  client: Client | undefined;
-  session: SessionTypes.Created | undefined;
+  client: ISignClient | undefined;
+  session: SessionTypes.Struct | undefined;
   disconnect: () => Promise<void>;
   isInitializing: boolean;
   chain: string;
-  pairings: string[];
+  pairings: PairingTypes.Struct[];
   accounts: string[];
   balances: AccountBalances;
   chainData: ChainNamespaces;
   onEnable: (chainId: string) => Promise<void>;
-  cosmosProvider?: CosmosProvider;
+  cosmosProvider?: IUniversalProvider;
 }
 
 /**
@@ -41,11 +46,12 @@ export const ClientContext = createContext<IContext>({} as IContext);
  * Provider
  */
 export function ClientContextProvider({ children }: { children: ReactNode | ReactNode[] }) {
-  const [client, setClient] = useState<Client>();
-  const [pairings, setPairings] = useState<string[]>([]);
-  const [session, setSession] = useState<SessionTypes.Created>();
+  const [client, setClient] = useState<ISignClient>();
+  const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
+  const [session, setSession] = useState<SessionTypes.Struct>();
+  const [web3Modal, setWeb3Modal] = useState<Web3Modal>();
 
-  const [cosmosProvider, setCosmosProvider] = useState<CosmosProvider>();
+  const [cosmosProvider, setCosmosProvider] = useState<UniversalProvider>();
 
   const [isInitializing, setIsInitializing] = useState(false);
   const [hasCheckedPersistedSession, setHasCheckedPersistedSession] = useState(false);
@@ -86,68 +92,57 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     if (typeof cosmosProvider === "undefined") {
       throw new Error("cosmosProvider is not initialized");
     }
-    await cosmosProvider.disconnect();
+    cosmosProvider.disconnect();
+    resetApp();
   }, [cosmosProvider]);
 
-  const onSessionConnected = useCallback(async (_session: SessionTypes.Settled) => {
+  const onSessionConnected = useCallback(async (_session: SessionTypes.Struct) => {
     setSession(_session);
-    setChain(_session.permissions.blockchain.chains[0]);
-    setAccounts(_session.state.accounts);
   }, []);
 
-  const _subscribeToClientEvents = useCallback(
-    async (_client: Client) => {
-      if (typeof _client === "undefined") {
-        throw new Error("WalletConnect is not initialized");
-      }
-
-      _client.on(CLIENT_EVENTS.pairing.proposal, async (proposal: PairingTypes.Proposal) => {
-        const { uri } = proposal.signal.params;
-        console.log("EVENT", "QR Code Modal open");
-        QRCodeModal.open(uri, () => {
-          console.log("EVENT", "QR Code Modal closed");
-        });
+  const _subscribeToProviderEvents = useCallback(
+    async (provider: UniversalProvider) => {
+      provider.on("display_uri", async (uri: string) => {
+        console.log("EVENT", "QR Code Modal open", uri);
+        web3Modal?.openModal({ uri });
       });
 
-      _client.on(CLIENT_EVENTS.pairing.created, async () => {
-        setPairings(_client.pairing.topics);
-      });
-
-      _client.on(CLIENT_EVENTS.session.updated, (updatedSession: SessionTypes.Settled) => {
-        console.log("EVENT", "session_updated");
-        onSessionConnected(updatedSession);
-      });
-
-      _client.on(CLIENT_EVENTS.session.deleted, () => {
+      provider.on("session_delete", () => {
         console.log("EVENT", "session_deleted");
         resetApp();
       });
     },
-    [onSessionConnected],
+    [web3Modal],
   );
 
   const createClient = useCallback(async () => {
     try {
       setIsInitializing(true);
 
-      const _client = await Client.init({
+      const provider = await UniversalProvider.init({
+        projectId: DEFAULT_PROJECT_ID,
         logger: DEFAULT_LOGGER,
         relayUrl: DEFAULT_RELAY_URL,
+      });
+
+      setCosmosProvider(provider);
+      setClient(provider.client);
+
+      const web3Modal = new Web3Modal({
         projectId: DEFAULT_PROJECT_ID,
       });
 
-      setClient(_client);
-      await _subscribeToClientEvents(_client);
+      setWeb3Modal(web3Modal);
     } catch (err) {
       throw err;
     } finally {
       setIsInitializing(false);
     }
-  }, [_subscribeToClientEvents]);
+  }, []);
 
   const onEnable = useCallback(
     async (caipChainId: string) => {
-      if (!client) {
+      if (!cosmosProvider) {
         throw new ReferenceError("WalletConnect Client is not initialized.");
       }
 
@@ -160,47 +155,50 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       console.log("Enabling cosmosProvider for chainId: ", chainId);
 
       //  Create WalletConnect Provider
-      const cosmosProvider = new CosmosProvider({
-        chains: [chainId],
-        client,
+      const session = await cosmosProvider.connect({
+        namespaces: {
+          cosmos: {
+            methods: DEFAULT_COSMOS_METHODS,
+            chains: [caipChainId],
+            events: ["chainChanged", "accountsChanged"],
+          },
+        },
       });
 
-      console.log(cosmosProvider);
-      setCosmosProvider(cosmosProvider);
+      const _accounts = await cosmosProvider.enable();
+      setAccounts(_accounts);
+      setSession(session);
+      onSessionConnected(session!);
+      setChain(caipChainId);
 
-      try {
-        await cosmosProvider.connect();
-      } catch (error) {
-        console.error(error);
-        return;
-      }
-
-      const _session = await client.session.get(client.session.topics[0]);
-
-      onSessionConnected(_session);
-
-      QRCodeModal.close();
+      web3Modal?.closeModal();
     },
-    [client, onSessionConnected],
+    [cosmosProvider, onSessionConnected, web3Modal],
   );
 
   const _checkForPersistedSession = useCallback(
-    async (_client: Client) => {
-      if (typeof _client === "undefined") {
-        throw new Error("WalletConnect is not initialized");
+    async (provider: IUniversalProvider) => {
+      if (!provider) {
+        throw new Error("Universal Provider is not initialized");
       }
       // populates existing pairings to state
-      setPairings(_client.pairing.topics);
+      setPairings(provider.client!.pairing.getAll({ active: true }));
       if (typeof session !== "undefined") return;
       // populates existing session to state (assume only the top one)
-      if (_client.session.topics.length) {
-        const _session = await _client.session.get(_client.session.topics[0]);
-        const [namespace, chainId] = _session.state.accounts[0].split(":");
+      if (provider.session) {
+        console.log("provider.session", provider.session);
+        const session = provider.session;
+
+        const accounts = session.namespaces[Object.keys(session.namespaces)[0]].accounts;
+        const [namespace, chainId] = accounts[0].split(":");
         const caipChainId = `${namespace}:${chainId}`;
-        onEnable(caipChainId);
+        setAccounts(accounts);
+        setSession(session);
+        setChain(caipChainId);
+        onSessionConnected(session!);
       }
     },
-    [session, onEnable],
+    [session, onSessionConnected],
   );
 
   useEffect(() => {
@@ -214,15 +212,19 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   }, [client, createClient]);
 
   useEffect(() => {
+    if (cosmosProvider && web3Modal) _subscribeToProviderEvents(cosmosProvider);
+  }, [_subscribeToProviderEvents, cosmosProvider, web3Modal]);
+
+  useEffect(() => {
     const getPersistedSession = async () => {
-      if (client && !hasCheckedPersistedSession) {
-        await _checkForPersistedSession(client);
+      if (cosmosProvider && !hasCheckedPersistedSession) {
+        await _checkForPersistedSession(cosmosProvider);
         setHasCheckedPersistedSession(true);
       }
     };
 
     getPersistedSession();
-  }, [client, _checkForPersistedSession, hasCheckedPersistedSession]);
+  }, [cosmosProvider, _checkForPersistedSession, hasCheckedPersistedSession]);
 
   const value = useMemo(
     () => ({

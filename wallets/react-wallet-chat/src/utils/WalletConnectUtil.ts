@@ -1,8 +1,8 @@
 import SignClient from '@walletconnect/sign-client'
-import { ChatClient } from '@walletconnect/chat-client'
+import { ChatClient, IChatClient } from '@walletconnect/chat-client'
 
 export let signClient: SignClient
-export let chatClient: ChatClient
+export let chatClient: IChatClient
 
 export async function createSignClient() {
   signClient = await SignClient.init({
@@ -21,6 +21,7 @@ export async function createSignClient() {
 export async function createChatClient() {
   chatClient = await ChatClient.init({
     logger: 'debug',
+    keyseverUrl: 'https://keys.walletconnect.com',
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
     relayUrl: process.env.NEXT_PUBLIC_RELAY_URL ?? 'wss://relay.walletconnect.com'
   })

@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 
-import QRCodeModal from "@walletconnect/qrcode-modal";
+import { Web3Modal } from "@web3modal/standalone";
 import { apiGetChainNamespace, ChainsMap } from "caip-api";
 import UniversalProvider from "@walletconnect/universal-provider";
 import Client from "@walletconnect/sign-client";
@@ -59,6 +59,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
   const [accounts, setAccounts] = useState<string[]>([]);
   const [chainData, setChainData] = useState<ChainNamespaces>({});
   const [chain, setChain] = useState<string>("");
+  const [web3Modal, setWeb3Modal] = useState<Web3Modal>();
 
   const resetApp = () => {
     setPairings([]);
@@ -95,46 +96,47 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     resetApp();
   }, [ethereumProvider]);
 
-  const _subscribeToProviderEvents = useCallback(async (_client: UniversalProvider) => {
-    if (typeof _client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
+  const _subscribeToProviderEvents = useCallback(
+    async (_client: UniversalProvider) => {
+      if (typeof _client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
 
-    _client.on("display_uri", async (uri: string) => {
-      console.log("EVENT", "QR Code Modal open");
-      QRCodeModal.open(uri, () => {
-        console.log("EVENT", "QR Code Modal closed");
+      _client.on("display_uri", async (uri: string) => {
+        console.log("EVENT", "QR Code Modal open");
+        web3Modal?.openModal({ uri });
       });
-    });
 
-    // Subscribe to session ping
-    _client.on("session_ping", ({ id, topic }: { id: number; topic: string }) => {
-      console.log("EVENT", "session_ping");
-      console.log(id, topic);
-    });
+      // Subscribe to session ping
+      _client.on("session_ping", ({ id, topic }: { id: number; topic: string }) => {
+        console.log("EVENT", "session_ping");
+        console.log(id, topic);
+      });
 
-    // Subscribe to session event
-    _client.on("session_event", ({ event, chainId }: { event: any; chainId: string }) => {
-      console.log("EVENT", "session_event");
-      console.log(event, chainId);
-    });
+      // Subscribe to session event
+      _client.on("session_event", ({ event, chainId }: { event: any; chainId: string }) => {
+        console.log("EVENT", "session_event");
+        console.log(event, chainId);
+      });
 
-    // Subscribe to session update
-    _client.on(
-      "session_update",
-      ({ topic, session }: { topic: string; session: SessionTypes.Struct }) => {
-        console.log("EVENT", "session_updated");
-        setSession(session);
-      },
-    );
+      // Subscribe to session update
+      _client.on(
+        "session_update",
+        ({ topic, session }: { topic: string; session: SessionTypes.Struct }) => {
+          console.log("EVENT", "session_updated");
+          setSession(session);
+        },
+      );
 
-    // Subscribe to session delete
-    _client.on("session_delete", ({ id, topic }: { id: number; topic: string }) => {
-      console.log("EVENT", "session_deleted");
-      console.log(id, topic);
-      resetApp();
-    });
-  }, []);
+      // Subscribe to session delete
+      _client.on("session_delete", ({ id, topic }: { id: number; topic: string }) => {
+        console.log("EVENT", "session_deleted");
+        console.log(id, topic);
+        resetApp();
+      });
+    },
+    [web3Modal],
+  );
 
   const createClient = useCallback(async () => {
     try {
@@ -146,15 +148,19 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
         relayUrl: DEFAULT_RELAY_URL,
       });
 
+      const web3Modal = new Web3Modal({
+        projectId: DEFAULT_PROJECT_ID,
+      });
+
       setEthereumProvider(provider);
       setClient(provider.client);
-      await _subscribeToProviderEvents(provider);
+      setWeb3Modal(web3Modal);
     } catch (err) {
       throw err;
     } finally {
       setIsInitializing(false);
     }
-  }, [_subscribeToProviderEvents]);
+  }, []);
 
   const createWeb3Provider = useCallback((ethereumProvider: UniversalProvider) => {
     const web3Provider = new Web3(ethereumProvider);
@@ -204,9 +210,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       setSession(session);
       setChain(caipChainId);
 
-      QRCodeModal.close();
+      web3Modal?.closeModal();
     },
-    [ethereumProvider, chainData.eip155, createWeb3Provider],
+    [ethereumProvider, chainData.eip155, createWeb3Provider, web3Modal],
   );
 
   const onSessionConnected = useCallback(
@@ -261,6 +267,10 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       createClient();
     }
   }, [client, createClient]);
+
+  useEffect(() => {
+    if (ethereumProvider && web3Modal) _subscribeToProviderEvents(ethereumProvider);
+  }, [_subscribeToProviderEvents, ethereumProvider, web3Modal]);
 
   useEffect(() => {
     const fetchBalances = async () => {

@@ -7,13 +7,15 @@ import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { elrondAddresses } from '@/utils/ElrondWalletUtil'
+import { tronAddresses } from '@/utils/TronWalletUtil'
 import {
   isCosmosChain,
   isEIP155Chain,
   isSolanaChain,
   isPolkadotChain,
   isNearChain,
-  isElrondChain
+  isElrondChain,
+  isTronChain
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
@@ -62,11 +64,12 @@ export default function SessionProposalModal() {
       const namespaces: SessionTypes.Namespaces = {}
       Object.keys(requiredNamespaces).forEach(key => {
         const accounts: string[] = []
-        requiredNamespaces[key].chains.map(chain => {
+        requiredNamespaces[key].chains?.map(chain => {
           selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
         })
         namespaces[key] = {
           accounts,
+          chains: key.includes(':') ? [key] : requiredNamespaces[key].chains,
           methods: requiredNamespaces[key].methods,
           events: requiredNamespaces[key].events
         }
@@ -144,6 +147,15 @@ export default function SessionProposalModal() {
       return (
         <ProposalSelectSection
           addresses={elrondAddresses}
+          selectedAddresses={selectedAccounts[chain]}
+          onSelect={onSelectAccount}
+          chain={chain}
+        />
+      )
+    } else if (isTronChain(chain)) {
+      return (
+        <ProposalSelectSection
+          addresses={tronAddresses}
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}

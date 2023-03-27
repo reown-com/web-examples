@@ -5,6 +5,7 @@ import { createGlobalStyle } from "styled-components";
 import { ClientContextProvider } from "../contexts/ClientContext";
 import { JsonRpcContextProvider } from "../contexts/JsonRpcContext";
 import { ChainDataContextProvider } from "../contexts/ChainDataContext";
+import Metadata from "../components/Metadata";
 
 import { globalStyle } from "../styles";
 const GlobalStyle = createGlobalStyle`
@@ -14,6 +15,7 @@ const GlobalStyle = createGlobalStyle`
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
+      <Metadata />
       <GlobalStyle />
       <ChainDataContextProvider>
         <ClientContextProvider>

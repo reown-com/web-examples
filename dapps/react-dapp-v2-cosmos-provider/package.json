@@ -11,10 +11,10 @@
   "author": "WalletConnect, Inc. <walletconnect.com>",
   "license": "MIT",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "prettier": "prettier --check '**/*.{js,ts,jsx,tsx}'"
   },
   "repository": {
@@ -28,11 +28,8 @@
     "react-error-overlay": "6.0.9"
   },
   "dependencies": {
-    "@walletconnect/client": "2.0.0-beta.26",
-    "@walletconnect/cosmos-provider": "2.0.0-beta.26",
-    "@walletconnect/qrcode-modal": "^1.7.1",
-    "@walletconnect/types": "2.0.0-beta.26",
-    "@walletconnect/utils": "2.0.0-beta.26",
+    "@walletconnect/types": "2.3.0",
+    "@walletconnect/utils": "2.3.0",
     "axios": "^0.21.1",
     "blockies-ts": "^1.0.0",
     "caip-api": "^2.0.0-beta.1",
@@ -47,7 +44,12 @@
     "react-scripts": "^4.0.3",
     "styled-components": "^5.2.0",
     "typescript": "^4.3.2",
-    "web-vitals": "^0.2.4"
+    "web-vitals": "^0.2.4",
+    "next": "12.2.4",
+    "@ethereumjs/tx": "^3.5.0",
+    "@walletconnect/encoding": "^1.0.1",
+    "@walletconnect/universal-provider": "2.3.0",
+    "@web3modal/standalone": "^2.0.0-beta.10"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.1",
@@ -60,10 +62,11 @@
     "@types/pino": "^7.0.5",
     "@types/prop-types": "^15.7.4",
     "@types/qr-image": "^3.2.5",
-    "@types/react": "^17.0.38",
-    "@types/react-dom": "^17.0.11",
+    "@types/react": "18.0.15",
+    "@types/react-dom": "18.0.6",
     "@types/styled-components": "^5.1.21",
-    "prettier": "^2.5.1"
+    "prettier": "^2.5.1",
+    "eslint-config-next": "12.2.4"
   },
   "eslintConfig": {
     "extends": [

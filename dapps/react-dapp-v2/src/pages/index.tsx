@@ -16,6 +16,7 @@ import {
   DEFAULT_ELROND_METHODS,
   DEFAULT_TEST_CHAINS,
   DEFAULT_NEAR_METHODS,
+  DEFAULT_TRON_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -73,6 +74,7 @@ const Home: NextPage = () => {
     polkadotRpc,
     nearRpc,
     elrondRpc,
+    tronRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -105,6 +107,18 @@ const Home: NextPage = () => {
     openPingModal();
     await ping();
   };
+
+  async function emit() {
+    if (typeof client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
+    }
+
+    await client.emit({
+      topic: session?.topic || "",
+      event: { name: "chainChanged", data: {} },
+      chainId: "eip155:5",
+    });
+  }
 
   const getEthereumActions = (): AccountAction[] => {
     const onSendTransaction = async (chainId: string, address: string) => {
@@ -271,6 +285,27 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getTronActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tronRpc.testSignTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tronRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
+        callback: onSignMessage,
+      },
+    ];
+  };
+
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
     switch (namespace) {
@@ -286,6 +321,8 @@ const Home: NextPage = () => {
         return getNearActions();
       case "elrond":
         return getElrondActions();
+      case "tron":
+        return getTronActions();
       default:
         break;
     }
@@ -383,7 +420,12 @@ const Home: NextPage = () => {
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={onPing} disconnect={disconnect} session={session} />
+        <Header
+          ping={onPing}
+          disconnect={disconnect}
+          session={session}
+          emit={emit}
+        />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>

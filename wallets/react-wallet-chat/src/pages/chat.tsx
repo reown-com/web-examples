@@ -47,11 +47,10 @@ export default function ChatPage() {
   async function onOutgoingMessage(outgoingMessage: string) {
     await chatClient.message({
       topic,
-      payload: {
-        message: outgoingMessage,
-        authorAccount: fullEip155Address,
-        timestamp: Date.now()
-      }
+
+      message: outgoingMessage,
+      authorAccount: fullEip155Address,
+      timestamp: Date.now()
     })
 
     if (chatClient.getMessages({ topic }).length) {
