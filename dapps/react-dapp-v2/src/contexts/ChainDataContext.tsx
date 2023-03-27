@@ -14,6 +14,7 @@ import { ChainNamespaces, ChainsMap, getAllChainNamespaces } from "../helpers";
 import { NearChainData } from "../chains/near";
 import { CosmosChainData } from "../chains/cosmos";
 import { EIP155ChainData } from "../chains/eip155";
+import { StarkNetChainData } from "../chains/starknet";
 
 /**
  * Types
@@ -46,6 +47,9 @@ export function ChainDataContextProvider({
         switch (namespace) {
           case "solana":
             chains = SolanaChainData;
+            break;
+          case "starknet":
+            chains = StarkNetChainData;
             break;
           case "polkadot":
             chains = PolkadotChainData;

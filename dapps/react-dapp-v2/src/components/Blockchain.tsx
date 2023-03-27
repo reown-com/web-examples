@@ -103,8 +103,10 @@ function getBlockchainDisplayData(
 ): BlockchainDisplayData | undefined {
   const [namespace, reference] = chainId.split(":");
   let meta: ChainMetadata;
+  console.log({ chainId });
   try {
     meta = getChainMetadata(chainId);
+    console.log({ meta });
   } catch (e) {
     return undefined;
   }

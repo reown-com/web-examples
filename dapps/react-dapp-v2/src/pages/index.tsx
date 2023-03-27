@@ -12,6 +12,7 @@ import {
   DEFAULT_EIP155_METHODS,
   DEFAULT_MAIN_CHAINS,
   DEFAULT_SOLANA_METHODS,
+  DEFAULT_STARKNET_METHODS,
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_ELROND_METHODS,
   DEFAULT_TEST_CHAINS,
@@ -72,6 +73,7 @@ const Home: NextPage = () => {
     cosmosRpc,
     solanaRpc,
     polkadotRpc,
+    starknetRpc,
     nearRpc,
     elrondRpc,
     tronRpc,
@@ -229,6 +231,27 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getStarknetActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await starknetRpc.testSignTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await starknetRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_STARKNET_METHODS.STARKNET_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_STARKNET_METHODS.STARKNET_SIGN_MESSAGE,
+        callback: onSignMessage,
+      },
+    ];
+  };
+
   const getNearActions = (): AccountAction[] => {
     const onSignAndSendTransaction = async (
       chainId: string,
@@ -317,6 +340,8 @@ const Home: NextPage = () => {
         return getSolanaActions();
       case "polkadot":
         return getPolkadotActions();
+      case "starknet":
+        return getStarknetActions();
       case "near":
         return getNearActions();
       case "elrond":

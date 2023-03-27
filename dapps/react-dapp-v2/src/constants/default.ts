@@ -11,6 +11,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "eip155:42220",
   "cosmos:cosmoshub-4",
   "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
+  "starknet:SN_MAIN",
   "polkadot:91b171bb158e2d3848fa23a9f1c25182",
   "elrond:1",
   "tron:0x2b6653dc",
@@ -24,6 +25,7 @@ export const DEFAULT_TEST_CHAINS = [
   "eip155:421611",
   "eip155:44787",
   "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
+  "starknet:SN_GOERLI",
   "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
   "near:testnet",
   "elrond:D",
@@ -79,6 +81,15 @@ export enum DEFAULT_SOLANA_METHODS {
 }
 
 export enum DEFAULT_SOLANA_EVENTS {}
+
+/**
+ * STARKNET
+ */
+export enum DEFAULT_STARKNET_METHODS {
+  STARKNET_SIGN_TRANSACTION = "starknet_requestAddInvokeTransaction",
+  STARKNET_SIGN_MESSAGE = "starknet_signTypedData",
+}
+export enum DEFAULT_STARKNET_EVENTS {}
 
 /**
  * POLKADOT

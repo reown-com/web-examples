@@ -35,6 +35,7 @@ import {
   DEFAULT_NEAR_METHODS,
   DEFAULT_ELROND_METHODS,
   DEFAULT_TRON_METHODS,
+  DEFAULT_STARKNET_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
@@ -77,6 +78,10 @@ interface IContext {
     testSignAmino: TRpcRequestCallback;
   };
   solanaRpc: {
+    testSignMessage: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
+  };
+  starkNetRpc: {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
   };
@@ -663,6 +668,148 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  // -------- STARKNET RPC METHODS --------
+  const starkNetRpc = {
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const accountAddress =
+          address ??
+          "0x003a8278a26f32452f156260d81b93efb0eca126b44df7b005a5b27e2bbc4a64";
+        const transactionPayload = {
+          accountAddress,
+          executionRequest: {
+            calls: [
+              {
+                contractAddress:
+                  "0x003a8278a26f32452f156260d81b93efb0eca126b44df7b005a5b27e2bbc4a64",
+                entrypoint:
+                  "0x555278a26f32452f156260d81b93efb0eca126b44df7b005a5b27e2bbc4a64",
+                calldata: ["0x003", "0xa82705a5b27e2bbc4a64"],
+              },
+              {
+                contractAddress:
+                  "0x00111178a26f32452f156260d81b93efb0eca126b44df7b005a5b27e2bbc4a64",
+                entrypoint:
+                  "0x0022228a26f32452f156260d81b93efb0eca126b44df7b005a5b27e2bbc4a64",
+              },
+            ],
+            abis: [
+              {
+                inputs: [{ name: "amount", type: "felt" }],
+                name: "set_balance",
+                outputs: [],
+                type: "function",
+              },
+            ],
+          },
+        };
+
+        try {
+          const result = await client!.request<{
+            payload: string;
+            signature: string;
+          }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_STARKNET_METHODS.STARKNET_SIGN_TRANSACTION,
+              params: transactionPayload,
+            },
+          });
+
+          return {
+            method: DEFAULT_STARKNET_METHODS.STARKNET_SIGN_TRANSACTION,
+            address: accountAddress,
+            valid: true,
+            result: result.signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      }
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const accountAddress =
+          address ??
+          "0x003a8278a26f32452f156260d81b93efb0eca126b44df7b005a5b27e2bbc4a64";
+        const messagePayload = {
+          accountAddress,
+          typedData: {
+            types: {
+              "StarkNetDomain ": [
+                { name: "name", type: "felt" },
+                { name: "version", type: "felt" },
+                { name: "chainId", type: "felt" },
+              ],
+              Person: [
+                { name: "name", type: "felt" },
+                { name: "wallet", type: "felt" },
+              ],
+              Mail: [
+                { name: "from", type: "Person" },
+                { name: "to", type: "Person" },
+                { name: "contents", type: "felt" },
+              ],
+            },
+            primaryType: "Mail",
+            domain: {
+              name: "StarkNet Mail",
+              version: "1",
+              chainId: 1,
+            },
+            message: {
+              from: {
+                name: "Cow",
+                wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
+              },
+              to: {
+                name: "Bob",
+                wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+              },
+              contents: "Hello, Bob!",
+            },
+          },
+        };
+
+        try {
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_STARKNET_METHODS.STARKNET_SIGN_MESSAGE,
+              params: [accountAddress, messagePayload],
+            },
+          });
+
+          // TODO: verify Signature
+          // // sr25519 signatures need to wait for WASM to load
+          // await cryptoWaitReady();
+          // const { isValid: valid } = signatureVerify(
+          //   message,
+          //   result.signature,
+          //   address
+          // );
+
+          return {
+            method: DEFAULT_STARKNET_METHODS.STARKNET_SIGN_MESSAGE,
+            address: accountAddress,
+            valid: true,
+            result: result.signature,
+          };
+        } catch (error: any) {
+          throw new Error(error);
+        }
+      }
+    ),
+  };
+
   // -------- POLKADOT RPC METHODS --------
   const polkadotRpc = {
     testSignTransaction: _createJsonRpcRequestHandler(
@@ -1161,6 +1308,7 @@ export function JsonRpcContextProvider({
         ethereumRpc,
         cosmosRpc,
         solanaRpc,
+        starkNetRpc,
         polkadotRpc,
         nearRpc,
         elrondRpc,

@@ -4,16 +4,18 @@ import {
   DEFAULT_COSMOS_METHODS,
   DEFAULT_EIP155_METHODS,
   DEFAULT_EIP_155_EVENTS,
-  DEFAULT_SOLANA_EVENTS,
-  DEFAULT_SOLANA_METHODS,
-  DEFAULT_POLKADOT_EVENTS,
-  DEFAULT_POLKADOT_METHODS,
-  DEFAULT_NEAR_METHODS,
-  DEFAULT_NEAR_EVENTS,
   DEFAULT_ELROND_EVENTS,
   DEFAULT_ELROND_METHODS,
-  DEFAULT_TRON_METHODS,
+  DEFAULT_NEAR_EVENTS,
+  DEFAULT_NEAR_METHODS,
+  DEFAULT_POLKADOT_EVENTS,
+  DEFAULT_POLKADOT_METHODS,
+  DEFAULT_SOLANA_EVENTS,
+  DEFAULT_SOLANA_METHODS,
+  DEFAULT_STARKNET_EVENTS,
+  DEFAULT_STARKNET_METHODS,
   DEFAULT_TRON_EVENTS,
+  DEFAULT_TRON_METHODS,
 } from "../constants";
 
 export const getNamespacesFromChains = (chains: string[]) => {
@@ -36,6 +38,8 @@ export const getSupportedMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_COSMOS_METHODS);
     case "solana":
       return Object.values(DEFAULT_SOLANA_METHODS);
+    case "starknet":
+      return Object.values(DEFAULT_STARKNET_METHODS);
     case "polkadot":
       return Object.values(DEFAULT_POLKADOT_METHODS);
     case "near":
@@ -59,6 +63,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_SOLANA_EVENTS);
     case "polkadot":
       return Object.values(DEFAULT_POLKADOT_EVENTS);
+    case "starknet":
+      return Object.values(DEFAULT_STARKNET_EVENTS);
     case "near":
       return Object.values(DEFAULT_NEAR_EVENTS);
     case "elrond":

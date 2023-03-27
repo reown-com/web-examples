@@ -1,11 +1,12 @@
 import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
 
-import * as eip155 from "./eip155";
 import * as cosmos from "./cosmos";
+import * as eip155 from "./eip155";
+import * as elrond from "./elrond";
+import * as near from "./near";
 import * as polkadot from "./polkadot";
 import * as solana from "./solana";
-import * as near from "./near";
-import * as elrond from "./elrond";
+import * as starknet from "./starknet";
 import * as tron from "./tron";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
@@ -21,6 +22,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return polkadot.getChainMetadata(chainId);
     case "solana":
       return solana.getChainMetadata(chainId);
+    case "starknet":
+      return starknet.getChainMetadata(chainId);
     case "near":
       return near.getChainMetadata(chainId);
     case "elrond":
