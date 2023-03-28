@@ -5,16 +5,6 @@ import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import DefaultView from "../views/DefaultView";
 import SignedInView from "../views/SignedInView";
-import type { W3mModal } from "@web3modal/ui";
-import "@web3modal/ui";
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      "w3m-modal": Partial<W3mModal>;
-    }
-  }
-}
 
 // 1. Get projectID at https://cloud.walletconnect.com
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
@@ -113,7 +103,6 @@ const Home: NextPage = () => {
         <DefaultView onClick={onSignIn} hasInitialized={hasInitialized} />
       )}
       {view === "signedIn" && <SignedInView address={address} />}
-      <w3m-modal></w3m-modal>
     </Box>
   );
 };
