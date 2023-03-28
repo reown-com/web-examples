@@ -1,6 +1,7 @@
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
-import { truncate } from '@/utils/HelperUtil'
+import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
+import { getWalletAddressFromParams, truncate } from '@/utils/HelperUtil'
 import { pushClient } from '@/utils/WalletConnectUtil'
 
 import { Avatar, Button, Col, Divider, Modal, Row, Text, Link } from '@nextui-org/react'
@@ -20,13 +21,24 @@ export default function PushSubscriptionRequestModal() {
   const { metadata, account } = params
 
   async function onApprove() {
-    await pushClient.approve({ id })
+    await pushClient.approve({ id, onSign: onPushSign })
     ModalStore.close()
   }
 
   async function onReject() {
     await pushClient.reject({ id, reason: 'User rejected push subscription request' })
     ModalStore.close()
+  }
+
+  async function onPushSign(message: string) {
+    console.log('onPushSign > params.account:', account)
+
+    const wallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, account)]
+    console.log('onPushSign wallet found: ', wallet)
+    const signedMessage = await wallet.signMessage(message)
+    console.log('onPushSign signedMessage: ', signedMessage)
+
+    return signedMessage
   }
 
   return (
