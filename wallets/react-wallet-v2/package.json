@@ -23,7 +23,7 @@
     "@walletconnect/client": "1.8.0",
     "@walletconnect/core": "2.5.1",
     "@walletconnect/legacy-types": "^2.0.0-rc.0",
-    "@walletconnect/push-client": "0.6.3",
+    "@walletconnect/push-client": "0.6.3-c6ba483",
     "@walletconnect/sign-client": "2.5.1",
     "@walletconnect/utils": "2.5.1",
     "bs58": "5.0.0",
