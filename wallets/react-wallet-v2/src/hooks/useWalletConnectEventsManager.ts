@@ -88,7 +88,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
   const onPushRequest = useCallback(
     (pushRequestEvent: PushClientTypes.EventArguments['push_request']) => {
-      ModalStore.open('PushSubscriptionRequestModal', { pushRequestEvent })
+      // Avoid edge case race condition between Sign approve modal close action and open action here.
+      setTimeout(() => {
+        ModalStore.open('PushSubscriptionRequestModal', { pushRequestEvent })
+      }, 500)
     },
     []
   )
