@@ -1,6 +1,5 @@
 import { TEZOS_SIGNING_METHODS } from '@/data/TezosData'
-import { tezosAddresses, tezosWallets } from '@/utils/TezosWalletUtil'
-import { getWalletAddressFromParams } from '@/utils/HelperUtil'
+import { tezosWallets } from '@/utils/TezosWalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
@@ -11,17 +10,19 @@ export async function approveTezosRequest(
   const { params, id } = requestEvent
   const { request } = params
 
-  const wallet = tezosWallets[request.params.account ?? Object.keys(tezosWallets)[0]] // TODO: Select correct wallet
+  const wallet = tezosWallets[request.params.account ?? Object.keys(tezosWallets)[0]]
+  const allWallets = Object.keys(tezosWallets).map(key => tezosWallets[key])
 
   switch (request.method) {
     case TEZOS_SIGNING_METHODS.TEZOS_GET_ACCOUNTS:
-      return formatJsonRpcResult(id, [
-        {
+      return formatJsonRpcResult(
+        id,
+        allWallets.map(wallet => ({
           algo: wallet.getCurve(),
           address: wallet.getAddress(),
           pubkey: wallet.getPublicKey()
-        }
-      ])
+        }))
+      )
 
     case TEZOS_SIGNING_METHODS.TEZOS_SEND:
       const sendResponse = await wallet.signTransaction(request.params.operations)
