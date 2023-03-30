@@ -16,7 +16,7 @@
     "@polkadot/keyring": "^10.1.2",
     "@solana/web3.js": "1.43.0",
     "@walletconnect/auth-client": "2.0.4",
-    "@walletconnect/push-client": "^0.6.3",
+    "@walletconnect/push-client": "^0.6.4",
     "@walletconnect/utils": "2.5.1",
     "bs58": "5.0.0",
     "cosmos-wallet": "1.2.0",
