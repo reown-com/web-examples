@@ -15,34 +15,27 @@ export default function NotificationsPage() {
   }, [])
 
   useEffect(() => {
-    pushClient.on('push_message', async newNotification => {
-      if (notifications.find(notif => notif.id === newNotification.id)) {
-        return
-      }
-
+    pushClient.on('push_message', () => {
       setNotifications(
         pushClient.messages.getAll().flatMap(message => Object.values(message.messages))
       )
     })
-  }, [notifications])
+  }, [])
 
   return (
     <Fragment>
       <PageHeader title="Notifications" />
       {notifications.length ? (
-        notifications.map(({ id, message }) => {
-          console.log(message.url)
-          return (
-            <NotificationItem
-              key={id}
-              logo={message.icon}
-              url={message.url}
-              title={message.title}
-              body={message.body}
-              onDelete={() => handleDeleteNotification(id)}
-            />
-          )
-        })
+        notifications.map(({ id, message }) => (
+          <NotificationItem
+            key={id}
+            logo={message.icon}
+            url={message.url}
+            title={message.title}
+            body={message.body}
+            onDelete={() => handleDeleteNotification(id)}
+          />
+        ))
       ) : (
         <Text css={{ opacity: '0.5', textAlign: 'center', marginTop: '$20' }}>
           No notifications
