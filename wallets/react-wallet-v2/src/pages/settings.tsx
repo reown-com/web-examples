@@ -10,11 +10,18 @@ import { Card, Divider, Row, Switch, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 import packageJSON from '../../package.json'
+import { tezosWallets } from '@/utils/TezosWalletUtil'
 
 export default function SettingsPage() {
-  const { testNets, eip155Address, cosmosAddress, solanaAddress, elrondAddress, tronAddress } = useSnapshot(
-    SettingsStore.state
-  )
+  const {
+    testNets,
+    eip155Address,
+    cosmosAddress,
+    solanaAddress,
+    elrondAddress,
+    tronAddress,
+    tezosAddress
+  } = useSnapshot(SettingsStore.state)
 
   return (
     <Fragment>
@@ -95,6 +102,13 @@ export default function SettingsPage() {
       </Text>
       <Card bordered borderWeight="light" css={{ minHeight: '100px', wordWrap: 'break-word' }}>
         <Text css={{ fontFamily: '$mono' }}>{tronWallets[tronAddress].privateKey}</Text>
+      </Card>
+
+      <Text h4 css={{ marginTop: '$10', marginBottom: '$5' }}>
+        Tezos Mnemonic
+      </Text>
+      <Card bordered borderWeight="light" css={{ minHeight: '100px', wordWrap: 'break-word' }}>
+        <Text css={{ fontFamily: '$mono' }}>{tezosWallets[tezosAddress].getMnemonic()}</Text>
       </Card>
     </Fragment>
   )

@@ -14,6 +14,7 @@ import { ChainNamespaces, ChainsMap, getAllChainNamespaces } from "../helpers";
 import { NearChainData } from "../chains/near";
 import { CosmosChainData } from "../chains/cosmos";
 import { EIP155ChainData } from "../chains/eip155";
+import { TezosChainData } from "../chains/tezos";
 
 /**
  * Types
@@ -64,6 +65,9 @@ export function ChainDataContextProvider({
             break;
           case "eip155":
             chains = EIP155ChainData;
+            break;
+          case "tezos":
+            chains = TezosChainData;
             break;
           default:
             console.error("Unknown chain namespace: ", namespace);

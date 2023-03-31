@@ -7,6 +7,7 @@ import * as solana from "./solana";
 import * as near from "./near";
 import * as elrond from "./elrond";
 import * as tron from "./tron";
+import * as tezos from "./tezos";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -27,6 +28,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return elrond.getChainMetadata(chainId);
     case "tron":
       return tron.getChainMetadata(chainId);
+    case "tezos":
+      return tezos.getChainMetadata(chainId);
     default:
       throw new Error(`No metadata handler for namespace ${namespace}`);
   }
@@ -46,6 +49,8 @@ export function getChainRequestRender(
       return polkadot.getChainRequestRender(request);
     case "near":
       return near.getChainRequestRender(request);
+    case "tezos":
+      return tezos.getChainRequestRender(request);
     default:
       throw new Error(`No render handler for namespace ${namespace}`);
   }

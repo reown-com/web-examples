@@ -13,6 +13,7 @@ interface State {
   nearAddress: string
   elrondAddress: string
   tronAddress: string
+  tezosAddress: string
   relayerRegionURL: string
 }
 
@@ -29,6 +30,7 @@ const state = proxy<State>({
   nearAddress: '',
   elrondAddress: '',
   tronAddress: '',
+  tezosAddress: '',
   relayerRegionURL: ''
 })
 
@@ -70,6 +72,10 @@ const SettingsStore = {
 
   setTronAddress(tronAddress: string) {
     state.tronAddress = tronAddress
+  },
+
+  setTezosAddress(tezosAddress: string) {
+    state.tezosAddress = tezosAddress
   },
 
   toggleTestNets() {

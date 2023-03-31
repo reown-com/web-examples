@@ -17,6 +17,7 @@ import {
   DEFAULT_TEST_CHAINS,
   DEFAULT_NEAR_METHODS,
   DEFAULT_TRON_METHODS,
+  DEFAULT_TEZOS_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -75,6 +76,7 @@ const Home: NextPage = () => {
     nearRpc,
     elrondRpc,
     tronRpc,
+    tezosRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -306,6 +308,35 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getTezosActions = (): AccountAction[] => {
+    const onGetAccounts = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testGetAccounts(chainId, address);
+    };
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+        callback: onGetAccounts,
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+        callback: onSignMessage,
+      },
+    ];
+  };
+
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
     switch (namespace) {
@@ -323,6 +354,8 @@ const Home: NextPage = () => {
         return getElrondActions();
       case "tron":
         return getTronActions();
+      case "tezos":
+        return getTezosActions();
       default:
         break;
     }

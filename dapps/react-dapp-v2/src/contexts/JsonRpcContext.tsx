@@ -35,6 +35,7 @@ import {
   DEFAULT_NEAR_METHODS,
   DEFAULT_ELROND_METHODS,
   DEFAULT_TRON_METHODS,
+  DEFAULT_TEZOS_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
@@ -94,6 +95,11 @@ interface IContext {
     testSignTransactions: TRpcRequestCallback;
   };
   tronRpc: {
+    testSignMessage: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
+  };
+  tezosRpc: {
+    testGetAccounts: TRpcRequestCallback;
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
   };
@@ -1154,6 +1160,103 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  // -------- TEZOS RPC METHODS --------
+
+  const tezosRpc = {
+    testGetAccounts: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        try {
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+              params: {},
+            },
+          });
+
+          return {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+            address,
+            valid: true,
+            result: JSON.stringify(result, null, 2),
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        try {
+          const result = await client!.request<{ hash: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+              params: {
+                account: address,
+                operations: [
+                  {
+                    kind: "transaction",
+                    amount: "1", // 1 mutez, smallest unit
+                    destination: address, // send to ourselves
+                  },
+                ],
+              },
+            },
+          });
+
+          return {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+            address,
+            valid: true,
+            result: result.hash,
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const payload = "05010000004254";
+
+        try {
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+              params: {
+                account: address,
+                payload,
+              },
+            },
+          });
+
+          return {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+            address,
+            valid: true,
+            result: result.signature,
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -1165,6 +1268,7 @@ export function JsonRpcContextProvider({
         nearRpc,
         elrondRpc,
         tronRpc,
+        tezosRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,
