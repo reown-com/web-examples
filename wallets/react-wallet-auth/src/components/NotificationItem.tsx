@@ -10,13 +10,21 @@ interface IProps {
   title?: string
   body?: string
   url?: string
+  publishedAt?: number
   onDelete: () => Promise<void>
 }
 
 /**
  * Component
  */
-export default function NotificationItem({ logo, title, body, url, onDelete }: IProps) {
+export default function NotificationItem({
+  logo,
+  title,
+  body,
+  url,
+  publishedAt,
+  onDelete
+}: IProps) {
   return (
     <Card
       bordered
@@ -40,9 +48,18 @@ export default function NotificationItem({ logo, title, body, url, onDelete }: I
           <Text h5 css={{ marginLeft: '$9' }}>
             {title}
           </Text>
+          {/* <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            
+          </div> */}
           <Text h6 css={{ marginLeft: '$9' }}>
             {body}
           </Text>
+          {publishedAt && (
+            <Text span css={{ marginLeft: '$9', fontSize: '12px' }}>
+              {new Date(publishedAt).toLocaleDateString()} -{' '}
+              {new Date(publishedAt).toLocaleTimeString()}
+            </Text>
+          )}
           <Link href={url} css={{ marginLeft: '$9' }} target="_blank" rel="noopener noreferrer">
             {url}
           </Link>
