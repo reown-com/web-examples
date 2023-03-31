@@ -24,6 +24,8 @@ export async function createAuthClient() {
       icons: ['https://avatars.githubusercontent.com/u/37784886']
     }
   })
+  const authClientId = await authClient.core.crypto.getClientId()
+  console.log({ authClientId })
 }
 
 export async function createPushClient() {
@@ -32,4 +34,6 @@ export async function createPushClient() {
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
     relayUrl: process.env.NEXT_PUBLIC_RELAY_URL || 'wss://relay.walletconnect.com'
   })
+  const pushClientId = await pushClient.core.crypto.getClientId()
+  console.log({ pushClientId })
 }
