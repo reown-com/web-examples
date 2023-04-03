@@ -1,6 +1,6 @@
 import NotificationItem from '@/components/NotificationItem'
 import PageHeader from '@/components/PageHeader'
-import { pushClient } from '@/utils/WalletConnectUtil'
+import { getAndFormatAllPushMessages, pushClient } from '@/utils/WalletConnectUtil'
 import { Text } from '@nextui-org/react'
 import { PushClientTypes } from '@walletconnect/push-client'
 import { Fragment, useCallback, useEffect, useState } from 'react'
@@ -15,17 +15,16 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     pushClient.on('push_message', () => {
-      setNotifications(
-        pushClient.messages.getAll().flatMap(message => Object.values(message.messages))
-      )
+      const formattedMessages = getAndFormatAllPushMessages()
+      setNotifications(formattedMessages)
     })
   }, [])
 
   // Get notifications for the initial state
   useEffect(() => {
-    setNotifications(
-      pushClient.messages.getAll().flatMap(message => Object.values(message.messages))
-    )
+    const formattedMessages = getAndFormatAllPushMessages()
+
+    setNotifications(formattedMessages)
   }, [])
 
   return (

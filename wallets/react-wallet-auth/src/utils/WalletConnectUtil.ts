@@ -37,3 +37,16 @@ export async function createPushClient() {
   const pushClientId = await pushClient.core.crypto.getClientId()
   console.log({ pushClientId })
 }
+
+export const getAndFormatAllPushMessages = () => {
+  const activeSubscriptions = pushClient.getActiveSubscriptions()
+  const allTopics = Object.keys(activeSubscriptions)
+
+  const allMessages = allTopics.map(topic =>
+    pushClient.getMessageHistory({
+      topic
+    })
+  )
+
+  return allMessages.flatMap(messages => Object.values(messages))
+}
