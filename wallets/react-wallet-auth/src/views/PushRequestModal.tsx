@@ -4,6 +4,7 @@ import ModalStore from '@/store/ModalStore'
 import { Button, Col, Link, Modal, Row, Text } from '@nextui-org/react'
 import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { pushClient } from '@/utils/WalletConnectUtil'
+import EIP155Lib from '@/lib/EIP155Lib'
 
 export default function PushRequestModal() {
   const pushRequest = ModalStore.state.data?.pushRequest
@@ -15,14 +16,20 @@ export default function PushRequestModal() {
     setIss(iss)
   }, [pushRequest.params.account, eip155Addresses])
 
+  const onSign = useCallback(
+    async (message: string) => {
+      const signature = await eip155Wallets[eip155Addresses[0]].signMessage(message)
+      return signature
+    },
+    [eip155Wallets, eip155Addresses]
+  )
+
   const onApprove = useCallback(async () => {
     if (pushRequest && iss) {
-      console.log({ eip155Wallets })
-
-      await pushClient.approve({ id })
+      await pushClient.approve({ id, onSign })
       ModalStore.close()
     }
-  }, [pushRequest, eip155Wallets, id, iss])
+  }, [pushRequest, id, iss, onSign])
 
   if (!pushRequest) {
     return <Text>Missing push request</Text>
