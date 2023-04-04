@@ -4,7 +4,7 @@ import ModalStore from '@/store/ModalStore'
 import { Button, Col, Link, Modal, Row, Text } from '@nextui-org/react'
 import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { pushClient } from '@/utils/WalletConnectUtil'
-import EIP155Lib from '@/lib/EIP155Lib'
+import { getWalletAddressFromParams } from '@/utils/HelperUtil'
 
 export default function PushRequestModal() {
   const pushRequest = ModalStore.state.data?.pushRequest
@@ -18,10 +18,11 @@ export default function PushRequestModal() {
 
   const onSign = useCallback(
     async (message: string) => {
-      const signature = await eip155Wallets[eip155Addresses[0]].signMessage(message)
+      const wallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params.account)]
+      const signature = await wallet.signMessage(message)
       return signature
     },
-    [eip155Wallets, eip155Addresses]
+    [eip155Wallets, eip155Addresses, params.account]
   )
 
   const onApprove = useCallback(async () => {
