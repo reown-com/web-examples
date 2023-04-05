@@ -1,4 +1,4 @@
-import { Box } from "@chakra-ui/react";
+import { Box, useToast } from "@chakra-ui/react";
 import AuthClient, { generateNonce } from "@walletconnect/auth-client";
 import { Web3Modal } from "@web3modal/standalone";
 import type { NextPage } from "next";
@@ -23,6 +23,7 @@ const Home: NextPage = () => {
   const [hasInitialized, setHasInitialized] = useState(false);
   const [uri, setUri] = useState<string>("");
   const [address, setAddress] = useState<string>("");
+  const toast = useToast();
 
   const onSignIn = useCallback(() => {
     if (!client) return;
@@ -66,15 +67,26 @@ const Home: NextPage = () => {
     client.on("auth_response", ({ params }) => {
       if ("code" in params) {
         console.error(params);
-        return;
+        return web3Modal.closeModal();
       }
       if ("error" in params) {
         console.error(params.error);
-        return;
+        if ("message" in params.error) {
+          toast({
+            status: "error",
+            title: params.error.message,
+          });
+        }
+        return web3Modal.closeModal();
       }
+      toast({
+        status: "success",
+        title: "Auth request successfully approved",
+        colorScheme: "whatsapp",
+      });
       setAddress(params.result.p.iss.split(":")[4]);
     });
-  }, [client]);
+  }, [client, toast]);
 
   const [view, changeView] = useState<"default" | "qr" | "signedIn">("default");
 
