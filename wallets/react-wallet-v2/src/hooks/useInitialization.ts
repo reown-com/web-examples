@@ -10,6 +10,7 @@ import { createSignClient } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { createOrRestoreNearWallet } from '@/utils/NearWalletUtil'
+import { getBigIntRpcId } from '@walletconnect/jsonrpc-utils'
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
@@ -38,6 +39,8 @@ export default function useInitialization() {
       SettingsStore.setTezosAddress(tezosAddresses[0])
       await createSignClient(relayerRegionURL)
       prevRelayerURLValue.current = relayerRegionURL
+
+      console.log('getBigIntRpcId:', getBigIntRpcId)
 
       setInitialized(true)
     } catch (err: unknown) {
