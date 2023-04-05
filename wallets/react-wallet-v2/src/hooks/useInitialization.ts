@@ -5,6 +5,7 @@ import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
 import { createOrRestoreMultiversxWallet } from '@/utils/MultiversxWalletUtil'
 import { createOrRestoreTronWallet } from '@/utils/TronWalletUtil'
+import { createOrRestoreTezosWallet } from '@/utils/TezosWalletUtil'
 import { createSignClient } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
@@ -25,6 +26,7 @@ export default function useInitialization() {
       const { nearAddresses } = await createOrRestoreNearWallet()
       const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
       const { tronAddresses } = await createOrRestoreTronWallet()
+      const { tezosAddresses } = await createOrRestoreTezosWallet()
 
       SettingsStore.setEIP155Address(eip155Addresses[0])
       SettingsStore.setCosmosAddress(cosmosAddresses[0])
@@ -33,6 +35,7 @@ export default function useInitialization() {
       SettingsStore.setNearAddress(nearAddresses[0])
       SettingsStore.setMultiversxAddress(multiversxAddresses[0])
       SettingsStore.setTronAddress(tronAddresses[0])
+      SettingsStore.setTezosAddress(tezosAddresses[0])
       await createSignClient(relayerRegionURL)
       prevRelayerURLValue.current = relayerRegionURL
 

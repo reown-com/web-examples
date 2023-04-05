@@ -8,6 +8,7 @@ import SessionSignPolkadotModal from '@/views/SessionSignPolkadotModal'
 import SessionSignSolanaModal from '@/views/SessionSignSolanaModal'
 import SessionSignMultiversxModal from '@/views/SessionSignMultiversxModal'
 import SessionSignTronModal from '@/views/SessionSignTronModal'
+import SessionSignTezosModal from '@/views/SessionSignTezosModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
 import LegacySessionProposalModal from '@/views/LegacySessionProposalModal'
@@ -33,6 +34,7 @@ export default function Modal() {
       {view === 'SessionSignNearModal' && <SessionSignNearModal />}
       {view === 'SessionSignMultiversxModal' && <SessionSignMultiversxModal />}
       {view === 'SessionSignTronModal' && <SessionSignTronModal />}
+      {view === 'SessionSignTezosModal' && <SessionSignTezosModal />}
       {view === 'LegacySessionProposalModal' && <LegacySessionProposalModal />}
       {view === 'LegacySessionSignModal' && <LegacySessionSignModal />}
       {view === 'LegacySessionSignTypedDataModal' && <LegacySessionSignTypedDataModal />}
