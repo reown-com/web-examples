@@ -1,6 +1,5 @@
 import type { NextPage } from "next";
 import React, { useState } from "react";
-import { version } from "@walletconnect/universal-provider/package.json";
 import * as encoding from "@walletconnect/encoding";
 import { BigNumber, utils } from "ethers";
 import { TypedDataField } from "@ethersproject/abstract-signer";
@@ -32,7 +31,7 @@ import {
   SToggleContainer,
 } from "./../components/app";
 import { useWalletConnectClient } from "./../contexts/ClientContext";
-
+import { version } from "../../node_modules/@walletconnect/universal-provider/package.json";
 interface IFormattedRpcResponse {
   method: string;
   address: string;

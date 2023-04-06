@@ -88,23 +88,21 @@ export class NearWallet {
     const accountId = `dev-${Date.now()}-${randomNumber}`
     const publicKey = keyPair.getPublicKey().toString()
 
-    return fetch(`https://helper.testnet.near.org/account`, {
+    fetch(`https://helper.testnet.near.org/account`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         newAccountId: accountId,
         newAccountPublicKey: publicKey
       })
-    }).then(res => {
-      if (res.ok) {
-        return {
-          accountId,
-          keyPair
-        }
-      }
-
-      throw new Error('Failed to create NEAR dev account')
+    }).catch(error => {
+      console.error('Failed to create NEAR dev account: ', error)
     })
+
+    return {
+      accountId,
+      keyPair
+    }
   }
 
   private constructor(networkId: string, keyStore: nearKeyStores.KeyStore) {

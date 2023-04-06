@@ -31,6 +31,7 @@ interface State {
     | 'SessionSignNearModal'
     | 'SessionSignElrondModal'
     | 'SessionSignTronModal'
+    | 'SessionSignTezosModal'
     | 'LegacySessionProposalModal'
     | 'LegacySessionSignModal'
     | 'LegacySessionSignTypedDataModal'

@@ -31,7 +31,7 @@ export default function LegacySessionSendTransactionModal() {
   // Handle approve action
   async function onApprove() {
     if (requestEvent) {
-      const { result } = await approveEIP155Request({
+      const response = await approveEIP155Request({
         id,
         topic: '',
         params: { request: { method, params }, chainId: '1' },
@@ -40,10 +40,18 @@ export default function LegacySessionSendTransactionModal() {
         }
       })
 
-      legacySignClient.approveRequest({
-        id,
-        result
-      })
+      if ('error' in response) {
+        legacySignClient.rejectRequest({
+          id,
+          error: response.error
+        })
+      } else {
+        legacySignClient.approveRequest({
+          id,
+          result: response.result
+        })
+      }
+
       ModalStore.close()
     }
   }

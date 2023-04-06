@@ -20,7 +20,7 @@ import {
   Transaction as SolanaTransaction,
 } from "@solana/web3.js";
 // @ts-expect-error
-import TronWeb from 'tronweb';
+import TronWeb from "tronweb";
 import {
   eip712,
   formatTestTransaction,
@@ -35,6 +35,7 @@ import {
   DEFAULT_NEAR_METHODS,
   DEFAULT_ELROND_METHODS,
   DEFAULT_TRON_METHODS,
+  DEFAULT_TEZOS_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
@@ -94,6 +95,11 @@ interface IContext {
     testSignTransactions: TRpcRequestCallback;
   };
   tronRpc: {
+    testSignMessage: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
+  };
+  tezosRpc: {
+    testGetAccounts: TRpcRequestCallback;
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
   };
@@ -674,11 +680,14 @@ export function JsonRpcContextProvider({
           specVersion: "0x00002468",
           transactionVersion: "0x0000000e",
           address: `${address}`,
-          blockHash: "0x554d682a74099d05e8b7852d19c93b527b5fae1e9e1969f6e1b82a2f09a14cc9",
+          blockHash:
+            "0x554d682a74099d05e8b7852d19c93b527b5fae1e9e1969f6e1b82a2f09a14cc9",
           blockNumber: "0x00cb539c",
           era: "0xc501",
-          genesisHash: "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
-          method: "0x0001784920616d207369676e696e672074686973207472616e73616374696f6e21",
+          genesisHash:
+            "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+          method:
+            "0x0001784920616d207369676e696e672074686973207472616e73616374696f6e21",
           nonce: "0x00000000",
           signedExtensions: [
             "CheckNonZeroSender",
@@ -688,11 +697,11 @@ export function JsonRpcContextProvider({
             "CheckMortality",
             "CheckNonce",
             "CheckWeight",
-            "ChargeTransactionPayment"
+            "ChargeTransactionPayment",
           ],
           tip: "0x00000000000000000000000000000000",
-          version: 4
-        }
+          version: 4,
+        };
 
         try {
           const result = await client!.request<{
@@ -709,7 +718,7 @@ export function JsonRpcContextProvider({
               },
             },
           });
-          
+
           return {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
             address,
@@ -1056,35 +1065,41 @@ export function JsonRpcContextProvider({
     ),
   };
 
-   // -------- TRON RPC METHODS --------
+  // -------- TRON RPC METHODS --------
 
   const tronRpc = {
     testSignTransaction: _createJsonRpcRequestHandler(
-      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
         // Nile TestNet, if you want to use in MainNet, change the fullHost to 'https://api.trongrid.io'
-        const fullHost = isTestnet ? "https://nile.trongrid.io/" : "https://api.trongrid.io/";
-        
+        const fullHost = isTestnet
+          ? "https://nile.trongrid.io/"
+          : "https://api.trongrid.io/";
+
         const tronWeb = new TronWeb({
           fullHost,
-        })
+        });
 
-
-        // Take USDT as an example: 
+        // Take USDT as an example:
         // Nile TestNet: https://nile.tronscan.org/#/token20/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf
         // MainNet: https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
 
-
-        const testContract = isTestnet ? "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf" : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
-        const testTransaction = await tronWeb.transactionBuilder.triggerSmartContract(
-          testContract,
-          'approve(address,uint256)',
-          { feeLimit: 200000000 },
-          [
-            { type: 'address', value: address },
-            { type: 'uint256', value: 0 }
-          ],
-          address
-        );
+        const testContract = isTestnet
+          ? "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
+          : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+        const testTransaction =
+          await tronWeb.transactionBuilder.triggerSmartContract(
+            testContract,
+            "approve(address,uint256)",
+            { feeLimit: 200000000 },
+            [
+              { type: "address", value: address },
+              { type: "uint256", value: 0 },
+            ],
+            address
+          );
 
         try {
           const { result } = await client!.request<{ result: any }>({
@@ -1094,18 +1109,18 @@ export function JsonRpcContextProvider({
               method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
               params: {
                 address,
-                transaction:{
-                  ...testTransaction
-                }
-              }
-            }
+                transaction: {
+                  ...testTransaction,
+                },
+              },
+            },
           });
-          
+
           return {
             method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
             address,
             valid: true,
-            result: result.signature
+            result: result.signature,
           };
         } catch (error: any) {
           throw new Error(error);
@@ -1113,9 +1128,11 @@ export function JsonRpcContextProvider({
       }
     ),
     testSignMessage: _createJsonRpcRequestHandler(
-      async (chainId: string, address: string): Promise<IFormattedRpcResponse> => {
-
-        const message = 'This is a message to be signed for Tron';
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const message = "This is a message to be signed for Tron";
 
         try {
           const result = await client!.request<{ signature: string }>({
@@ -1125,24 +1142,120 @@ export function JsonRpcContextProvider({
               method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
               params: {
                 address,
-                message
-              }
-            }
+                message,
+              },
+            },
           });
 
           return {
             method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
             address,
             valid: true,
-            result: result.signature
+            result: result.signature,
           };
         } catch (error: any) {
           throw new Error(error);
         }
       }
-    )
+    ),
   };
 
+  // -------- TEZOS RPC METHODS --------
+
+  const tezosRpc = {
+    testGetAccounts: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        try {
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+              params: {},
+            },
+          });
+
+          return {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+            address,
+            valid: true,
+            result: JSON.stringify(result, null, 2),
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        try {
+          const result = await client!.request<{ hash: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+              params: {
+                account: address,
+                operations: [
+                  {
+                    kind: "transaction",
+                    amount: "1", // 1 mutez, smallest unit
+                    destination: address, // send to ourselves
+                  },
+                ],
+              },
+            },
+          });
+
+          return {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+            address,
+            valid: true,
+            result: result.hash,
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const payload = "05010000004254";
+
+        try {
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+              params: {
+                account: address,
+                payload,
+              },
+            },
+          });
+
+          return {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+            address,
+            valid: true,
+            result: result.signature,
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+  };
 
   return (
     <JsonRpcContext.Provider
@@ -1155,6 +1268,7 @@ export function JsonRpcContextProvider({
         nearRpc,
         elrondRpc,
         tronRpc,
+        tezosRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,

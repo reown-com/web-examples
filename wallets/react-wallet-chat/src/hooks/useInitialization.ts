@@ -1,6 +1,6 @@
 import SettingsStore from '@/store/SettingsStore'
 import { createOrRestoreCosmosWallet } from '@/utils/CosmosWalletUtil'
-import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
+import { createOrRestoreEIP155Wallet, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { chatClient, createChatClient, createSignClient } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useState } from 'react'
@@ -25,7 +25,12 @@ export default function useInitialization() {
       await createSignClient()
 
       await createChatClient()
-      await chatClient.register({ account: `eip155:1:${eip155Addresses[accountIndex]}` })
+      await chatClient.register({
+        account: `eip155:1:${eip155Addresses[accountIndex]}`,
+        onSign: async message => {
+          return eip155Wallets[eip155Addresses[accountIndex]].signMessage(message)
+        }
+      })
       console.log(
         '[Chat] registered address %s on keyserver',
         `eip155:1:${eip155Addresses[accountIndex]}`

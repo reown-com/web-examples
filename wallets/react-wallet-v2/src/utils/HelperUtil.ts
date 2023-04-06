@@ -127,6 +127,13 @@ export function isTronChain(chain: string) {
 }
 
 /**
+ * Check if chain is part of Tezos standard
+ */
+export function isTezosChain(chain: string) {
+  return chain.includes('tezos')
+}
+
+/**
  * Formats chainId to its name
  */
 export function formatChainName(chainId: string) {
