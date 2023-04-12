@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
-import { Button, Col, Divider, Modal, Row, Text } from '@nextui-org/react'
+import { Button, Col, Modal, Row, Text } from '@nextui-org/react'
 import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { authClient } from '@/utils/WalletConnectUtil'
 

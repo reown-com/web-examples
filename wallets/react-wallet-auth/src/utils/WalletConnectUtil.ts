@@ -38,15 +38,21 @@ export async function createPushClient() {
   console.log({ pushClientId })
 }
 
-export const getAndFormatAllPushMessages = () => {
+export const getAndFormatNotifications = () => {
+  if (!pushClient) {
+    return []
+  }
   const activeSubscriptions = pushClient.getActiveSubscriptions()
-  const allTopics = Object.keys(activeSubscriptions)
+  const allMessagesWithSubscription = Object.entries(activeSubscriptions)
+    .map(([topic, subscription]) => ({
+      subscription,
+      messages: Object.values(
+        pushClient.getMessageHistory({
+          topic
+        })
+      )
+    }))
+    .reverse()
 
-  const allMessages = allTopics.map(topic =>
-    pushClient.getMessageHistory({
-      topic
-    })
-  )
-
-  return allMessages.flatMap(messages => Object.values(messages))
+  return allMessagesWithSubscription
 }
