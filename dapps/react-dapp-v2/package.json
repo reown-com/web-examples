@@ -18,6 +18,7 @@
     "@solana/web3.js": "^1.36.0",
     "@walletconnect/encoding": "^1.0.1",
     "@walletconnect/sign-client": "2.6.2",
+    "@walletconnect/core": "2.6.2-rc-1",
     "@walletconnect/types": "2.6.2",
     "@walletconnect/utils": "2.6.2",
     "@web3modal/standalone": "2.2.0",
