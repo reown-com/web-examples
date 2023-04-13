@@ -2564,10 +2564,10 @@
     pino "7.11.0"
     uint8arrays "^3.1.0"
 
-"@walletconnect/core@2.6.2-rc-2":
-  version "2.6.2-rc-2"
-  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.6.2-rc-2.tgz#0136cb53c58dcfc7e8a6f3b1133163590ff40252"
-  integrity sha512-WXMzb7dCmWeuA/CpQudRKNHk82S1SK5Wb1rir3th65RVSNWeBd1EXWF5Cy4KB2sugmYThzr9Zg/mwY1pwzuHmw==
+"@walletconnect/core@2.6.2-rc-3":
+  version "2.6.2-rc-3"
+  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.6.2-rc-3.tgz#6cfc6348fabb6f1c4efd5f064a29cb4186bd25e8"
+  integrity sha512-CTHpeeHibici+7UqBob4DecrBYTV1fQV2u5PUkKSfZ8+VQuB5rJfiAtrUclZjA/QGnKX8npYgJ1eaUsMhnx0/w==
   dependencies:
     "@walletconnect/heartbeat" "1.2.0"
     "@walletconnect/jsonrpc-provider" "^1.0.12-rc-1"
