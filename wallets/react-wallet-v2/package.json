@@ -25,7 +25,7 @@
     "@walletconnect/client": "1.8.0",
     "@walletconnect/legacy-types": "^2.0.0-rc.0",
     "@walletconnect/sign-client": "2.6.2",
-    "@walletconnect/core": "2.6.2-rc-1",
+    "@walletconnect/core": "2.6.2-rc-2",
     "@walletconnect/utils": "2.6.2",
     "bs58": "5.0.0",
     "cosmos-wallet": "1.2.0",
