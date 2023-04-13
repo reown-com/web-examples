@@ -6,7 +6,7 @@ import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
 import { createOrRestoreElrondWallet } from '@/utils/ElrondWalletUtil'
 import { createOrRestoreTronWallet } from '@/utils/TronWalletUtil'
 import { createOrRestoreTezosWallet } from '@/utils/TezosWalletUtil'
-import { createSignClient } from '@/utils/WalletConnectUtil'
+import { createSignClient, signClient } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { createOrRestoreNearWallet } from '@/utils/NearWalletUtil'
@@ -37,9 +37,17 @@ export default function useInitialization() {
       SettingsStore.setTronAddress(tronAddresses[0])
       SettingsStore.setTezosAddress(tezosAddresses[0])
       await createSignClient(relayerRegionURL)
-      prevRelayerURLValue.current = relayerRegionURL
-
       setInitialized(true)
+    } catch (err: unknown) {
+      alert(err)
+    }
+  }, [relayerRegionURL])
+
+  // restart transport if relayer region changes
+  const onRelayerRegionChange = useCallback(() => {
+    try {
+      signClient.core.relayer.restartTransport(relayerRegionURL)
+      prevRelayerURLValue.current = relayerRegionURL
     } catch (err: unknown) {
       alert(err)
     }
@@ -50,10 +58,9 @@ export default function useInitialization() {
       onInitialize()
     }
     if (prevRelayerURLValue.current !== relayerRegionURL) {
-      setInitialized(false)
-      onInitialize()
+      onRelayerRegionChange()
     }
-  }, [initialized, onInitialize, relayerRegionURL])
+  }, [initialized, onInitialize, relayerRegionURL, onRelayerRegionChange])
 
   return initialized
 }
