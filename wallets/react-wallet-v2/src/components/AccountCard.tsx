@@ -1,23 +1,39 @@
 import ChainCard from '@/components/ChainCard'
+import SettingsStore from '@/store/SettingsStore'
+import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { truncate } from '@/utils/HelperUtil'
 import { Avatar, Button, Text, Tooltip } from '@nextui-org/react'
 import Image from 'next/image'
 import { useState } from 'react'
+import { useSnapshot } from 'valtio'
 
 interface Props {
   name: string
   logo: string
   rgb: string
   address: string
+  chainId: string
 }
 
-export default function AccountCard({ name, logo, rgb, address }: Props) {
+export default function AccountCard({ name, logo, rgb, address, chainId }: Props) {
   const [copied, setCopied] = useState(false)
-
+  const { activeChainId, account, activeSession } = useSnapshot(
+    SettingsStore.state,
+  );
   function onCopy() {
     navigator?.clipboard?.writeText(address)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+  }
+
+  async function onChainChanged(_chainId: string) {
+    SettingsStore.setActiveChainId(_chainId);
+    console.log(`onChainChanged: ${_chainId}`);
+    // await web3wallet.updateSession({
+    //   accounts: [eip155Addresses[account]],
+    //   chainId: _chainId,
+    //   topic: activeSession,
+    // });
   }
 
   return (
@@ -46,6 +62,19 @@ export default function AccountCard({ name, logo, rgb, address }: Props) {
           />
         </Button>
       </Tooltip>
+    <Button
+        size="sm"
+        css={{
+          minWidth: "auto",
+          backgroundColor: "rgba(255, 255, 255, 0.15)",
+          marginLeft: "$5",
+        }}
+        onPress={() => {
+          onChainChanged(chainId);
+        }}
+      >
+        {activeChainId === chainId ? `✅` : `🔄`}
+      </Button>
     </ChainCard>
   )
 }

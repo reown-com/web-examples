@@ -35,26 +35,26 @@ export default function HomePage() {
       <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets
       </Text>
-      {Object.values(EIP155_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={eip155Address} />
+      {Object.values(EIP155_MAINNET_CHAINS).map(({ name, logo, rgb, chainId }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={eip155Address} chainId={chainId.toString()}/>
       ))}
-      {Object.values(COSMOS_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={cosmosAddress} />
+      {Object.values(COSMOS_MAINNET_CHAINS).map(({ name, logo, rgb, chainId }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={cosmosAddress} chainId={chainId}/>
       ))}
-      {Object.values(SOLANA_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={solanaAddress} />
+      {Object.values(SOLANA_MAINNET_CHAINS).map(({ name, logo, rgb, chainId }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={solanaAddress} chainId={chainId}/>
       ))}
-      {Object.values(POLKADOT_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={polkadotAddress} />
+      {Object.values(POLKADOT_MAINNET_CHAINS).map(({ name, logo, rgb, chainId }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={polkadotAddress} chainId={chainId}/>
       ))}
-      {Object.values(ELROND_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} />
+      {Object.values(ELROND_MAINNET_CHAINS).map(({ name, logo, rgb, chainId }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} chainId={chainId}/>
       ))}
-      {Object.values(TRON_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} />
+      {Object.values(TRON_MAINNET_CHAINS).map(({ name, logo, rgb, chainId }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} chainId={chainId}/>
       ))}
-      {Object.values(TEZOS_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tezosAddress} />
+      {Object.values(TEZOS_MAINNET_CHAINS).map(({ name, logo, rgb, chainId }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tezosAddress} chainId={chainId}/>
       ))}
 
       {testNets ? (
@@ -62,26 +62,26 @@ export default function HomePage() {
           <Text h4 css={{ marginBottom: '$5' }}>
             Testnets
           </Text>
-          {Object.values(EIP155_TEST_CHAINS).map(({ name, logo, rgb }) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={eip155Address} />
+          {Object.values(EIP155_TEST_CHAINS).map(({ name, logo, rgb, chainId }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={eip155Address} chainId={chainId.toString()}/>
           ))}
-          {Object.values(SOLANA_TEST_CHAINS).map(({ name, logo, rgb }) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={solanaAddress} />
+          {Object.values(SOLANA_TEST_CHAINS).map(({ name, logo, rgb, chainId }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={solanaAddress} chainId={chainId}/>
           ))}
-          {Object.values(POLKADOT_TEST_CHAINS).map(({ name, logo, rgb }) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={polkadotAddress} />
+          {Object.values(POLKADOT_TEST_CHAINS).map(({ name, logo, rgb, chainId }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={polkadotAddress} chainId={chainId}/>
           ))}
-          {Object.values(NEAR_TEST_CHAINS).map(({ name, logo, rgb }) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={nearAddress} />
+          {Object.values(NEAR_TEST_CHAINS).map(({ name, logo, rgb, chainId }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={nearAddress} chainId={chainId}/>
           ))}
-          {Object.values(ELROND_TEST_CHAINS).map(({ name, logo, rgb }) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} />
+          {Object.values(ELROND_TEST_CHAINS).map(({ name, logo, rgb, chainId }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} chainId={chainId}/>
           ))}
-          {Object.values(TRON_TEST_CHAINS).map(({ name, logo, rgb }) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} />
+          {Object.values(TRON_TEST_CHAINS).map(({ name, logo, rgb, chainId }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} chainId={chainId}/>
           ))}
-          {Object.values(TEZOS_TEST_CHAINS).map(({ name, logo, rgb }) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tezosAddress} />
+          {Object.values(TEZOS_TEST_CHAINS).map(({ name, logo, rgb, chainId }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tezosAddress} chainId={chainId}/>
           ))}
         </Fragment>
       ) : null}
