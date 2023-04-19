@@ -34,6 +34,7 @@ export async function approveMultiversxRequest(
       return formatJsonRpcResult(id, signatures)
 
     case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_LOGIN_TOKEN:
+    case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_NATIVE_AUTH_TOKEN:
       // Sometimes a dApp (and its backend) might want to reliably assign an off-chain user identity to a MultiversX address.
       // On this purpose, the signing providers allow a login token to be used within the login flow  - this token is signed using the wallet of the user.
       // Afterwards, a backend application would normally verify the signature of the token
