@@ -15,7 +15,7 @@ interface State {
   tronAddress: string
   tezosAddress: string
   relayerRegionURL: string
-  activeChainId: string
+  activeChainId: number
   activeSession: string
 }
 
@@ -25,7 +25,7 @@ interface State {
 const state = proxy<State>({
   testNets: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem('TEST_NETS')) : true,
   account: 0,
-  activeChainId: '1',
+  activeChainId: 1,
   activeSession: '',
   eip155Address: '',
   cosmosAddress: '',
@@ -82,7 +82,7 @@ const SettingsStore = {
     state.tezosAddress = tezosAddress
   },
 
-  setActiveChainId(value: string) {
+  setActiveChainId(value: number) {
     state.activeChainId = value
   },
 

@@ -12,7 +12,7 @@ interface Props {
   logo: string
   rgb: string
   address: string
-  chainId: string
+  chainId: number
 }
 
 export default function AccountCard({ name, logo, rgb, address, chainId }: Props) {
@@ -26,7 +26,7 @@ export default function AccountCard({ name, logo, rgb, address, chainId }: Props
     setTimeout(() => setCopied(false), 1500)
   }
 
-  async function onChainChanged(_chainId: string) {
+  async function onChainChanged(_chainId: number) {
     SettingsStore.setActiveChainId(_chainId);
     console.log(`onChainChanged: ${_chainId}`);
     // await web3wallet.updateSession({
