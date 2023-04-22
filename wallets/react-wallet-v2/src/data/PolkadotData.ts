@@ -26,6 +26,11 @@ export const POLKADOT_TEST_CHAINS = {
   }
 }
 
+export const POLKADOT_CHAINS = {
+  ...POLKADOT_MAINNET_CHAINS,
+  ...POLKADOT_TEST_CHAINS
+}
+
 /**
  * Methods
  */

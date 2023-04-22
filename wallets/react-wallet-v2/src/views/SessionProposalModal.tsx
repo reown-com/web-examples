@@ -22,173 +22,196 @@ import {
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
-import { SessionTypes } from '@walletconnect/types'
-import { getSdkError } from '@walletconnect/utils'
-import { Fragment, useState } from 'react'
+import { ProposalTypes } from '@walletconnect/types'
+import {
+  BuildApprovedNamespacesParams,
+  buildApprovedNamespaces,
+  getSdkError
+} from '@walletconnect/utils'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { nearAddresses } from '@/utils/NearWalletUtil'
+import { getSupportedNamespaces } from '@/data/shared'
 
 export default function SessionProposalModal() {
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string[]>>({})
+  const [proposal, setProposal] = useState<ProposalTypes.Struct>()
+  const [supportedNamespaces, setSupportedNamespaces] = useState<
+    BuildApprovedNamespacesParams['supportedNamespaces']
+  >({})
   const hasSelected = Object.keys(selectedAccounts).length
 
   // Get proposal data and wallet address from store
-  const proposal = ModalStore.state.data?.proposal
+  const event = ModalStore.state.data?.proposal
+  // // Ensure proposal is defined
 
-  // Ensure proposal is defined
-  if (!proposal) {
-    return <Text>Missing proposal data</Text>
-  }
+  useEffect(() => {
+    if (event) {
+      setProposal(event.params)
+    }
+  }, [event])
 
-  // Get required proposal data
-  const { id, params } = proposal
-  const { proposer, requiredNamespaces, relays } = params
+  useMemo(async () => {
+    const supportedNamespaces = await getSupportedNamespaces(selectedAccounts)
+    setSupportedNamespaces(supportedNamespaces)
+    console.log('supportedNamespaces', JSON.parse(JSON.stringify(supportedNamespaces)))
+  }, [selectedAccounts])
 
   // Add / remove address from EIP155 selection
-  function onSelectAccount(chain: string, account: string) {
-    if (selectedAccounts[chain]?.includes(account)) {
-      const newSelectedAccounts = selectedAccounts[chain]?.filter(a => a !== account)
-      setSelectedAccounts(prev => ({
-        ...prev,
-        [chain]: newSelectedAccounts
-      }))
-    } else {
-      const prevChainAddresses = selectedAccounts[chain] ?? []
-      setSelectedAccounts(prev => ({
-        ...prev,
-        [chain]: [...prevChainAddresses, account]
-      }))
-    }
-  }
+  const onSelectAccount = useCallback(
+    (chain: string, account: string) => {
+      if (selectedAccounts[chain]?.includes(account)) {
+        const newSelectedAccounts = selectedAccounts[chain]?.filter(a => a !== account)
+        setSelectedAccounts(prev => ({
+          ...prev,
+          [chain]: newSelectedAccounts
+        }))
+      } else {
+        const prevChainAddresses = selectedAccounts[chain] ?? []
+        setSelectedAccounts(prev => ({
+          ...prev,
+          [chain]: [...prevChainAddresses, account]
+        }))
+      }
+    },
+    [selectedAccounts]
+  )
 
   // Hanlde approve action, construct session namespace
-  async function onApprove() {
-    if (proposal) {
-      const namespaces: SessionTypes.Namespaces = {}
-      Object.keys(requiredNamespaces).forEach(key => {
-        const accounts: string[] = []
-        requiredNamespaces[key].chains?.map(chain => {
-          selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
-        })
-        namespaces[key] = {
-          accounts,
-          chains: key.includes(':') ? [key] : requiredNamespaces[key].chains,
-          methods: requiredNamespaces[key].methods,
-          events: requiredNamespaces[key].events
-        }
+  const onApprove = useCallback(async () => {
+    console.log(
+      'onApprove',
+      selectedAccounts,
+      supportedNamespaces,
+      console.log('proposal', JSON.parse(JSON.stringify(proposal)), supportedNamespaces),
+      buildApprovedNamespaces({
+        proposal,
+        supportedNamespaces
       })
+    )
 
+    if (proposal) {
+      const namespaces = buildApprovedNamespaces({
+        proposal,
+        supportedNamespaces
+      })
       const { acknowledged } = await signClient.approve({
-        id,
-        relayProtocol: relays[0].protocol,
+        id: proposal.id,
+        relayProtocol: proposal.relays[0].protocol,
         namespaces
       })
       await acknowledged()
     }
     ModalStore.close()
-  }
+  }, [proposal, supportedNamespaces, selectedAccounts])
 
   // Hanlde reject action
-  async function onReject() {
+  const onReject = useCallback(async () => {
     if (proposal) {
       await signClient.reject({
-        id,
+        id: proposal.id,
         reason: getSdkError('USER_REJECTED_METHODS')
       })
     }
     ModalStore.close()
-  }
+  }, [proposal])
 
   // Render account selection checkboxes based on chain
-  function renderAccountSelection(chain: string) {
-    if (isEIP155Chain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={eip155Addresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isCosmosChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={cosmosAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isSolanaChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={solanaAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isPolkadotChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={polkadotAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isNearChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={nearAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isElrondChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={elrondAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isTronChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={tronAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    } else if (isTezosChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={tezosAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-        />
-      )
-    }
+  const renderAccountSelection = useCallback(
+    (chain: string) => {
+      if (isEIP155Chain(chain)) {
+        return (
+          <ProposalSelectSection
+            addresses={eip155Addresses}
+            selectedAddresses={selectedAccounts[chain]}
+            onSelect={onSelectAccount}
+            chain={chain}
+          />
+        )
+      } else if (isCosmosChain(chain)) {
+        return (
+          <ProposalSelectSection
+            addresses={cosmosAddresses}
+            selectedAddresses={selectedAccounts[chain]}
+            onSelect={onSelectAccount}
+            chain={chain}
+          />
+        )
+      } else if (isSolanaChain(chain)) {
+        return (
+          <ProposalSelectSection
+            addresses={solanaAddresses}
+            selectedAddresses={selectedAccounts[chain]}
+            onSelect={onSelectAccount}
+            chain={chain}
+          />
+        )
+      } else if (isPolkadotChain(chain)) {
+        return (
+          <ProposalSelectSection
+            addresses={polkadotAddresses}
+            selectedAddresses={selectedAccounts[chain]}
+            onSelect={onSelectAccount}
+            chain={chain}
+          />
+        )
+      } else if (isNearChain(chain)) {
+        return (
+          <ProposalSelectSection
+            addresses={nearAddresses}
+            selectedAddresses={selectedAccounts[chain]}
+            onSelect={onSelectAccount}
+            chain={chain}
+          />
+        )
+      } else if (isElrondChain(chain)) {
+        return (
+          <ProposalSelectSection
+            addresses={elrondAddresses}
+            selectedAddresses={selectedAccounts[chain]}
+            onSelect={onSelectAccount}
+            chain={chain}
+          />
+        )
+      } else if (isTronChain(chain)) {
+        return (
+          <ProposalSelectSection
+            addresses={tronAddresses}
+            selectedAddresses={selectedAccounts[chain]}
+            onSelect={onSelectAccount}
+            chain={chain}
+          />
+        )
+      } else if (isTezosChain(chain)) {
+        return (
+          <ProposalSelectSection
+            addresses={tezosAddresses}
+            selectedAddresses={selectedAccounts[chain]}
+            onSelect={onSelectAccount}
+            chain={chain}
+          />
+        )
+      }
+    },
+    [onSelectAccount, selectedAccounts]
+  )
+  if (!proposal) {
+    return <Text>Missing proposal data</Text>
   }
 
   return (
     <Fragment>
       <RequestModalContainer title="Session Proposal">
-        <ProjectInfoCard metadata={proposer.metadata} />
+        <ProjectInfoCard metadata={proposal.proposer.metadata} />
 
         {/* TODO(ilja) Relays selection */}
 
         <Divider y={2} />
 
-        {Object.keys(requiredNamespaces).map(chain => {
+        {Object.keys(proposal.requiredNamespaces).map(chain => {
           return (
             <Fragment key={chain}>
               <Text h4 css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-              <SessionProposalChainCard requiredNamespace={requiredNamespaces[chain]} />
+              <SessionProposalChainCard requiredNamespace={proposal.requiredNamespaces[chain]} />
               {renderAccountSelection(chain)}
               <Divider y={2} />
             </Fragment>
