@@ -21,12 +21,17 @@ export async function updateSignClientChainId(chainId: string, address: string) 
   for (const session of sessions) {
     const fullChainName = getFullChainName(chainId)
     const chain = fullChainName.substring(0, fullChainName.indexOf(':'))
+    const accounts = session.namespaces[chain] ? session.namespaces[chain].accounts : []
+    const new_account = `${fullChainName}:${address}`
+
+    // ensures no dup namespace accounts get added
+    if (!accounts.includes(new_account)) {
+      accounts.push(new_account)
+    }
+
     const newNamespace = {
       [chain]: {
-        accounts: [
-          `${fullChainName}:${address}`,
-          ...(session.namespaces[chain] ? session.namespaces[chain].accounts : [])
-        ],
+        accounts: accounts,
         methods: [
           'eth_sendTransaction',
           'eth_signTransaction',
