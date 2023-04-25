@@ -13,7 +13,7 @@ interface Props {
   logo: string
   rgb: string
   address: string
-  chainId: number
+  chainId: string
 }
 
 export default function AccountCard({ name, logo, rgb, address, chainId }: Props) {
@@ -27,8 +27,8 @@ export default function AccountCard({ name, logo, rgb, address, chainId }: Props
     setTimeout(() => setCopied(false), 1500)
   }
 
-  async function onChainChanged(chainId: number, address: string) {
-    SettingsStore.setActiveChainId(chainId);    
+  async function onChainChanged(chainId: string, address: string) {
+    SettingsStore.setActiveChainId(chainId);
     await updateSignClientChainId(chainId.toString(), address);
   }
 
