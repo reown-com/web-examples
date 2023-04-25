@@ -2,6 +2,7 @@ import ChainCard from '@/components/ChainCard'
 import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { truncate } from '@/utils/HelperUtil'
+import { updateSignClientChainId } from '@/utils/WalletConnectUtil'
 import { Avatar, Button, Text, Tooltip } from '@nextui-org/react'
 import Image from 'next/image'
 import { useState } from 'react'
@@ -17,7 +18,7 @@ interface Props {
 
 export default function AccountCard({ name, logo, rgb, address, chainId }: Props) {
   const [copied, setCopied] = useState(false)
-  const { activeChainId, account, activeSession } = useSnapshot(
+  const { activeChainId, account } = useSnapshot(
     SettingsStore.state,
   );
   function onCopy() {
@@ -26,14 +27,9 @@ export default function AccountCard({ name, logo, rgb, address, chainId }: Props
     setTimeout(() => setCopied(false), 1500)
   }
 
-  async function onChainChanged(_chainId: number) {
-    SettingsStore.setActiveChainId(_chainId);
-    console.log(`onChainChanged: ${_chainId}`);
-    // await web3wallet.updateSession({
-    //   accounts: [eip155Addresses[account]],
-    //   chainId: _chainId,
-    //   topic: activeSession,
-    // });
+  async function onChainChanged(chainId: number, address: string) {
+    SettingsStore.setActiveChainId(chainId);    
+    await updateSignClientChainId(chainId.toString(), address);
   }
 
   return (
@@ -70,7 +66,7 @@ export default function AccountCard({ name, logo, rgb, address, chainId }: Props
           marginLeft: "$5",
         }}
         onPress={() => {
-          onChainChanged(chainId);
+          onChainChanged(chainId, address);
         }}
       >
         {activeChainId === chainId ? `✅` : `🔄`}
