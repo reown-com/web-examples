@@ -310,16 +310,15 @@ export function JsonRpcContextProvider({
 
         //  split chainId
         const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
 
-        const targetChainData = chainData[namespace][reference];
-
-        if (typeof targetChainData === "undefined") {
-          throw new Error(`Missing chain data for chainId: ${chainId}`);
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
         }
 
         const hashMsg = hashPersonalMessage(message);
-        const rpc =
-          rpcProvidersByChainId[Number(chainId.toString().split(":")[1])];
         const valid = await verifySignature(
           address,
           signature,
@@ -357,16 +356,15 @@ export function JsonRpcContextProvider({
 
         //  split chainId
         const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
 
-        const targetChainData = chainData[namespace][reference];
-
-        if (typeof targetChainData === "undefined") {
-          throw new Error(`Missing chain data for chainId: ${chainId}`);
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
         }
 
         const hashMsg = hashPersonalMessage(message);
-        const rpc =
-          rpcProvidersByChainId[Number(chainId.toString().split(":")[1])];
         const valid = await verifySignature(
           address,
           signature,
@@ -400,9 +398,17 @@ export function JsonRpcContextProvider({
           },
         });
 
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
+
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
+        }
+
         const hashedTypedData = hashTypedDataMessage(message);
-        const rpc =
-          rpcProvidersByChainId[Number(chainId.toString().split(":")[1])];
         const valid = await verifySignature(
           address,
           signature,
