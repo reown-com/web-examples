@@ -1,7 +1,6 @@
-import { BigNumber, getDefaultProvider, utils } from "ethers";
+import { BigNumber, utils } from "ethers";
 import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
-import { TypedDataField } from "@ethersproject/abstract-signer";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import { recoverTransaction } from "@celo/wallet-base";
 import {
@@ -26,6 +25,7 @@ import {
   formatTestTransaction,
   getLocalStorageTestnetFlag,
   hashPersonalMessage,
+  hashTypedDataMessage,
   verifySignature,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
@@ -39,6 +39,7 @@ import {
   DEFAULT_TRON_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
+import { rpcProvidersByChainId } from "../../src/helpers/api";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
 
 import {
@@ -48,8 +49,6 @@ import {
   SignableMessage,
   ISignature,
 } from "@elrondnetwork/erdjs";
-
-import {rpcProvidersByChainId} from "../../src/helpers/api"
 
 import { UserVerifier } from "@elrondnetwork/erdjs-walletcore/out/userVerifier";
 import { Signature } from "@elrondnetwork/erdjs-walletcore/out/signature";
@@ -296,10 +295,9 @@ export function JsonRpcContextProvider({
 
         // encode message (hex)
         const hexMsg = encoding.utf8ToHex(message, true);
-        const hashMsg = hashPersonalMessage(message)
         // personal_sign params
         const params = [hexMsg, address];
-        const rpc = rpcProvidersByChainId[Number(chainId.toString().split(":")[1])]; 
+
         // send message
         const signature = await client!.request<string>({
           topic: session!.topic,
@@ -319,12 +317,14 @@ export function JsonRpcContextProvider({
           throw new Error(`Missing chain data for chainId: ${chainId}`);
         }
 
+        const hashMsg = hashPersonalMessage(message);
+        const rpc =
+          rpcProvidersByChainId[Number(chainId.toString().split(":")[1])];
         const valid = await verifySignature(
           address,
           signature,
           hashMsg,
           rpc.baseURL
-
         );
 
         // format displayed result
@@ -364,10 +364,14 @@ export function JsonRpcContextProvider({
           throw new Error(`Missing chain data for chainId: ${chainId}`);
         }
 
-        const valid = _verifyEip155MessageSignature(
-          message,
+        const hashMsg = hashPersonalMessage(message);
+        const rpc =
+          rpcProvidersByChainId[Number(chainId.toString().split(":")[1])];
+        const valid = await verifySignature(
+          address,
           signature,
-          address
+          hashMsg,
+          rpc.baseURL
         );
 
         // format displayed result
@@ -396,23 +400,15 @@ export function JsonRpcContextProvider({
           },
         });
 
-        // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
-        // will throw due to "unused" `EIP712Domain` type.
-        // See: https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
-        const {
-          EIP712Domain,
-          ...nonDomainTypes
-        }: Record<string, TypedDataField[]> = eip712.example.types;
-
-        const valid =
-          utils
-            .verifyTypedData(
-              eip712.example.domain,
-              nonDomainTypes,
-              eip712.example.message,
-              signature
-            )
-            .toLowerCase() === address.toLowerCase();
+        const hashedTypedData = hashTypedDataMessage(message);
+        const rpc =
+          rpcProvidersByChainId[Number(chainId.toString().split(":")[1])];
+        const valid = await verifySignature(
+          address,
+          signature,
+          hashedTypedData,
+          rpc.baseURL
+        );
 
         return {
           method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
