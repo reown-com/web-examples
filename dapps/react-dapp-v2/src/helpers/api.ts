@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import { AssetData } from "./types";
 
-const rpcProvidersByChainId: Record<number, any> = {
+export const rpcProvidersByChainId: Record<number, any> = {
   1: {
     name: "Ethereum Mainnet",
     baseURL: "https://mainnet.infura.io/v3/5dc0df7abe4645dfb06a9a8c39ede422",
