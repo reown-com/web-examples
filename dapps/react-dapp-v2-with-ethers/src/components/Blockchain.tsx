@@ -26,10 +26,14 @@ const SAccount = styled.div<AccountStyleProps>`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  cursor:pointer;
   border-radius: 8px;
   padding: 8px;
   margin: 5px 0;
   border: ${({ rgb }) => `2px solid rgb(${rgb})`};
+  &:hover{
+    box-shadow: ${({ rgb }) => `rgb(${rgb}) 0px 0px 10px 0px`};
+  }
   &.active {
     box-shadow: ${({ rgb }) => `0 0 8px rgb(${rgb})`};
   }
