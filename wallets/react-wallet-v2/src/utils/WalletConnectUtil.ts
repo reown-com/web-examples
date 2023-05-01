@@ -43,7 +43,6 @@ export async function updateSignClientChainId(chainId: string, address: string) 
       }
     }
 
-    // console.log(session.namespaces ? { ...session.namespaces, ...newNamespace } : newNamespace)
 
     signClient.update({
       topic: session.topic,
