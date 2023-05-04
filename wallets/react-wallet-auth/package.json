@@ -33,7 +33,7 @@
   "devDependencies": {
     "@types/node": "17.0.35",
     "@types/react": "18.0.9",
-    "@walletconnect/types": "2.5.1",
+    "@walletconnect/types": "2.7.2",
     "eslint": "8.15.0",
     "eslint-config-next": "12.1.6",
     "eslint-config-prettier": "8.5.0",
