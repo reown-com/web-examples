@@ -151,28 +151,3 @@ export function formatChainName(chainId: string) {
     chainId
   )
 }
-
-/**
- * finds the full chain name from the chainId
- * ex/ chainId 1 -> Ethereum Mainnet -> "eip155:"
- * ex/ chainId cosmoshub-4 -> cosmos -> "cosmos:cosmoshub-4"
- * @param chainId
- */
-export function getFullChainName(chainId: string) {
-  function searchChainData(data: any) {
-    const chainKey = Object.keys(data).find(key => key.includes(chainId))
-    return chainKey ? chainKey : null
-  }
-
-  return (
-    searchChainData(COSMOS_MAINNET_CHAINS) ??
-    searchChainData(EIP155_CHAINS) ??
-    searchChainData(ELROND_CHAINS) ??
-    searchChainData(NEAR_TEST_CHAINS) ??
-    searchChainData(POLKADOT_CHAINS) ??
-    searchChainData(SOLANA_CHAINS) ??
-    searchChainData(TEZOS_CHAINS) ??
-    searchChainData(TRON_CHAINS) ??
-    chainId
-  )
-}
