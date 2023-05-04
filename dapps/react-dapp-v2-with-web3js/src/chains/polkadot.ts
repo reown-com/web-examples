@@ -1,12 +1,11 @@
 import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
-import { BLOCKCHAIN_LOGO_BASE_URL } from "../constants";
 
 import { NamespaceMetadata, ChainMetadata, ChainRequestRender } from "../helpers";
 
 export const PolkadotMetadata: NamespaceMetadata = {
   // eslint-disable-next-line no-useless-computed-key
   ["91b171bb158e2d3848fa23a9f1c25182"]: {
-    logo: BLOCKCHAIN_LOGO_BASE_URL + "polkadot:91b171bb158e2d3848fa23a9f1c25182.png",
+    logo: "/assets/polkadot.svg",
     rgb: "230, 1, 122",
   },
 };
