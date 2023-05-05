@@ -3,6 +3,7 @@ import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { ELROND_CHAINS, TElrondChain } from '@/data/ElrondData'
+import { TXRPLChain, XRPL_CHAINS } from '@/data/XRPLData'
 import { utils } from 'ethers'
 
 /**
@@ -118,6 +119,13 @@ export function isElrondChain(chain: string) {
 }
 
 /**
+ * Check if chain is part of XRPL standard
+ */
+export function isXrplChain(chain: string) {
+  return chain.includes('xrpl')
+}
+
+/**
  * Formats chainId to its name
  */
 export function formatChainName(chainId: string) {
@@ -127,6 +135,7 @@ export function formatChainName(chainId: string) {
     SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
     NEAR_TEST_CHAINS[chainId as TNearChain]?.name ??
     ELROND_CHAINS[chainId as TElrondChain]?.name ??
+    XRPL_CHAINS[chainId as TXRPLChain]?.name ??
     chainId
   )
 }

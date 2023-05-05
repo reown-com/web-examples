@@ -6,11 +6,12 @@ import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
 import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { POLKADOT_MAINNET_CHAINS, POLKADOT_TEST_CHAINS } from '@/data/PolkadotData'
 import { ELROND_MAINNET_CHAINS, ELROND_TEST_CHAINS } from '@/data/ElrondData'
+import { NEAR_TEST_CHAINS } from '@/data/NEARData'
+import { XRPL_MAINNET_CHAINS, XRPL_TESTNET_CHAINS } from '@/data/XRPLData'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
-import { NEAR_TEST_CHAINS } from '@/data/NEARData'
 
 export default function HomePage() {
   const {
@@ -20,7 +21,8 @@ export default function HomePage() {
     solanaAddress,
     polkadotAddress,
     nearAddress,
-    elrondAddress
+    elrondAddress,
+    xrplAddress
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -46,6 +48,9 @@ export default function HomePage() {
       {Object.values(ELROND_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} />
       ))}
+      {Object.values(XRPL_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={xrplAddress} />
+      ))}
 
       {testNets ? (
         <Fragment>
@@ -66,6 +71,9 @@ export default function HomePage() {
           ))}
           {Object.values(ELROND_TEST_CHAINS).map(({ name, logo, rgb }) => (
             <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} />
+          ))}
+          {Object.values(XRPL_TESTNET_CHAINS).map(({ name, logo, rgb }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={xrplAddress} />
           ))}
         </Fragment>
       ) : null}

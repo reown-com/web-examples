@@ -7,21 +7,23 @@ import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { elrondAddresses } from '@/utils/ElrondWalletUtil'
+import { solanaAddresses } from '@/utils/SolanaWalletUtil'
+import { nearAddresses } from '@/utils/NearWalletUtil'
+import { xrplAddresses } from '@/utils/XrplWalletUtil'
 import {
   isCosmosChain,
   isEIP155Chain,
   isSolanaChain,
   isPolkadotChain,
   isNearChain,
-  isElrondChain
+  isElrondChain,
+  isXrplChain
 } from '@/utils/HelperUtil'
-import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { Fragment, useState } from 'react'
-import { nearAddresses } from '@/utils/NearWalletUtil'
 
 export default function SessionProposalModal() {
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string[]>>({})
@@ -143,6 +145,15 @@ export default function SessionProposalModal() {
       return (
         <ProposalSelectSection
           addresses={elrondAddresses}
+          selectedAddresses={selectedAccounts[chain]}
+          onSelect={onSelectAccount}
+          chain={chain}
+        />
+      )
+    } else if (isXrplChain(chain)) {
+      return (
+        <ProposalSelectSection
+          addresses={xrplAddresses}
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}

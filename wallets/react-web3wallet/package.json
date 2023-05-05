@@ -34,7 +34,9 @@
     "react-dom": "17.0.2",
     "react-qr-reader-es6": "2.2.1-2",
     "solana-wallet": "^1.0.2",
-    "valtio": "1.6.0"
+    "valtio": "1.6.0",
+    "xrpl": "^2.7.0",
+    "xrpl-sign-keypairs": "^2.1.4"
   },
   "devDependencies": {
     "@types/node": "17.0.35",

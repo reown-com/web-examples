@@ -3,11 +3,12 @@ import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
 import { POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
 import { ELROND_SIGNING_METHODS } from '@/data/ElrondData'
+import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
+import { XRPL_SIGNING_METHODS } from '@/data/XRPLData'
 import ModalStore from '@/store/ModalStore'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
-import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
 import { Web3WalletTypes } from '@walletconnect/web3wallet'
 
@@ -83,6 +84,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
             topic,
             response: await approveNearRequest(requestEvent)
           })
+
+        case XRPL_SIGNING_METHODS.XRPL_SIGN_TRANSACTION:
+        case XRPL_SIGNING_METHODS.XRPL_SIGN_TRANSACTION_FOR:
+          return ModalStore.open('SessionSignXrplModal', { requestEvent, requestSession })
+
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }
