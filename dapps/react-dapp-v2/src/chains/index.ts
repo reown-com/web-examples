@@ -8,6 +8,7 @@ import * as near from "./near";
 import * as elrond from "./elrond";
 import * as tron from "./tron";
 import * as tezos from "./tezos";
+import * as xrpl from "./xrpl";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -30,6 +31,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return tron.getChainMetadata(chainId);
     case "tezos":
       return tezos.getChainMetadata(chainId);
+    case "xrpl":
+      return xrpl.getChainMetadata(chainId);
     default:
       throw new Error(`No metadata handler for namespace ${namespace}`);
   }
@@ -51,6 +54,8 @@ export function getChainRequestRender(
       return near.getChainRequestRender(request);
     case "tezos":
       return tezos.getChainRequestRender(request);
+    case "xrpl":
+      return xrpl.getChainRequestRender(request);
     default:
       throw new Error(`No render handler for namespace ${namespace}`);
   }

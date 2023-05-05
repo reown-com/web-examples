@@ -18,6 +18,7 @@ import {
   DEFAULT_NEAR_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TEZOS_METHODS,
+  DEFAULT_XRPL_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -77,6 +78,7 @@ const Home: NextPage = () => {
     elrondRpc,
     tronRpc,
     tezosRpc,
+    xrplRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -337,6 +339,27 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getXrplActions = (): AccountAction[] => {
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await xrplRpc.testSignTransaction(chainId, address);
+    };
+    const onSignTransactionFor = async (chainId: string, address: string) => {
+      openRequestModal();
+      await xrplRpc.testSignTransactionFor(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_XRPL_METHODS.XRPL_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_XRPL_METHODS.XRPL_SIGN_TRANSACTION_FOR,
+        callback: onSignTransactionFor,
+      },
+    ];
+  };
+
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
     switch (namespace) {
@@ -356,6 +379,8 @@ const Home: NextPage = () => {
         return getTronActions();
       case "tezos":
         return getTezosActions();
+      case "xrpl":
+        return getXrplActions();
       default:
         break;
     }

@@ -16,6 +16,8 @@ import {
   DEFAULT_TRON_EVENTS,
   DEFAULT_TEZOS_METHODS,
   DEFAULT_TEZOS_EVENTS,
+  DEFAULT_XRPL_METHODS,
+  DEFAULT_XRPL_EVENTS,
 } from "../constants";
 
 export const getNamespacesFromChains = (chains: string[]) => {
@@ -48,6 +50,8 @@ export const getSupportedMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_TRON_METHODS);
     case "tezos":
       return Object.values(DEFAULT_TEZOS_METHODS);
+    case "xrpl":
+      return Object.values(DEFAULT_XRPL_METHODS);
     default:
       throw new Error(`No default methods for namespace: ${namespace}`);
   }
@@ -71,6 +75,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_TRON_EVENTS);
     case "tezos":
       return Object.values(DEFAULT_TEZOS_EVENTS);
+    case "xrpl":
+      return Object.values(DEFAULT_XRPL_EVENTS);
     default:
       throw new Error(`No default events for namespace: ${namespace}`);
   }

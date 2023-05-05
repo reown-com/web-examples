@@ -38,6 +38,7 @@ import {
   DEFAULT_ELROND_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TEZOS_METHODS,
+  DEFAULT_XRPL_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -105,6 +106,10 @@ interface IContext {
     testGetAccounts: TRpcRequestCallback;
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
+  };
+  xrplRpc: {
+    testSignTransaction: TRpcRequestCallback;
+    testSignTransactionFor: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -1265,6 +1270,123 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  // -------- XRPL RPC METHODS --------
+
+  const xrplRpc = {
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        try {
+          const result = await client!.request<{
+            tx_json: Record<string, any>;
+          }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_XRPL_METHODS.XRPL_SIGN_TRANSACTION,
+              params: {
+                tx_json: {
+                  TransactionType: "OfferCreate",
+                  Account: address,
+                  Flags: 524288,
+                  TakerGets: "15000000000",
+                  TakerPays: {
+                    currency: "USD",
+                    issuer: "rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B",
+                    value: "7072.8",
+                  },
+                },
+                autofill: true,
+                submit: true,
+              },
+            },
+          });
+          return {
+            method: DEFAULT_XRPL_METHODS.XRPL_SIGN_TRANSACTION,
+            address,
+            valid: true,
+            result: JSON.stringify(result, null, 2),
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+    testSignTransactionFor: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        try {
+          const result = await client!.request<{
+            tx_json: Record<string, any>;
+          }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_XRPL_METHODS.XRPL_SIGN_TRANSACTION_FOR,
+              params: {
+                tx_signer: address,
+                tx_json: {
+                  Account: "rh2EsAe2xVE71ZBjx7oEL2zpD4zmSs3sY9",
+                  TransactionType: "Payment",
+                  Amount: "400000000000000",
+                  Destination: "r9NpyVfLfUG8hatuCCHKzosyDtKnBdsEN3",
+                  Fee: "5000",
+                  Flags: 2147483648,
+                  LastLedgerSequence: 73541531,
+                  Sequence: 38,
+                  Signers: [
+                    {
+                      Signer: {
+                        Account: "re3LGjhrCvthtWWwrfKbVJjXN9PYDeQDJ",
+                        SigningPubKey:
+                          "0320ECD5569CAFA4E23147BE238DBFB268DB3B5A502ED339387AC7DCA0ADC6FB90",
+                        TxnSignature:
+                          "3045022100EC2BF025E748A028187EDB3C350D518F91F05BC201EAFC9C92566DE9E48AA1B7022018847D172386E93679630E3905BD30481359E5766931944F79F1BA6D910F5C01",
+                      },
+                    },
+                    {
+                      Signer: {
+                        Account: "rpcL6T32dYb6FDgdm4CnC1DZQSoMvvkLRd",
+                        SigningPubKey:
+                          "030BF97DA9A563A9A0679DD527F615CF8EA6B2DB55543075B72822B8D39910B5E1",
+                        TxnSignature:
+                          "304402201A891AF3945C81E2D6B95213B79E9A31635209AF0FB94DA8C0983D15F454179B0220388679E02CE6DE2AAC904A9C2F42208418BEF60743A7F9F76FC36D519902DA8C",
+                      },
+                    },
+                    {
+                      Signer: {
+                        Account: "r3vw3FnkXn2L7St45tzpySZsXVgG75seNk",
+                        SigningPubKey:
+                          "030BE281F6DFF9AFD260003375B64235DDBCD5B7A54511BE3DA1FEF1ADE4A85D87",
+                        TxnSignature:
+                          "3044022049D36ACE39F1208B4C78A1550F458E54E21161FA4B52B3763C8FA9C4FE45B52C022003BE3579B5B5558A27BB7DC6A8ED163999A451665974138298469C1FDACA615F",
+                      },
+                    },
+                  ],
+                  SigningPubKey: "",
+                },
+                autofill: false,
+                submit: false,
+              },
+            },
+          });
+          return {
+            method: DEFAULT_XRPL_METHODS.XRPL_SIGN_TRANSACTION_FOR,
+            address,
+            valid: true,
+            result: JSON.stringify(result),
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -1277,6 +1399,7 @@ export function JsonRpcContextProvider({
         elrondRpc,
         tronRpc,
         tezosRpc,
+        xrplRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,

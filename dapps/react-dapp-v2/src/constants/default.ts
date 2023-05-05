@@ -15,6 +15,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "elrond:1",
   "tron:0x2b6653dc",
   "tezos:mainnet",
+  "xrpl:0",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -30,6 +31,7 @@ export const DEFAULT_TEST_CHAINS = [
   "elrond:D",
   "tron:0xcd8690dc",
   "tezos:testnet",
+  "xrpl:1",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -135,6 +137,16 @@ export enum DEFAULT_TEZOS_METHODS {
   TEZOS_SEND = "tezos_send",
   TEZOS_SIGN = "tezos_sign",
 }
+
+/**
+ * XRPL
+ */
+export enum DEFAULT_XRPL_METHODS {
+  XRPL_SIGN_TRANSACTION = "xrpl_signTransaction",
+  XRPL_SIGN_TRANSACTION_FOR = "xrpl_signTransactionFor",
+}
+
+export enum DEFAULT_XRPL_EVENTS {}
 
 export enum DEFAULT_TEZOS_EVENTS {}
 
