@@ -129,7 +129,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       setClient(provider.client);
 
       const web3Modal = new Web3Modal({
-        projectId: DEFAULT_PROJECT_ID,
+        projectId: DEFAULT_PROJECT_ID || "",
+        walletConnectVersion: 2,
       });
 
       setWeb3Modal(web3Modal);

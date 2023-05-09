@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { version } from "@walletconnect/sign-client/package.json";
+import { RELAYER_SDK_VERSION as version } from "@walletconnect/core";
 import {
   formatDirectSignDoc,
   stringifySignDocValues,
