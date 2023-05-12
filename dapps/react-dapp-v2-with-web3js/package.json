@@ -1,5 +1,5 @@
 {
-  "name": "react-dapp-v2-with-ethers",
+  "name": "react-dapp-v2-with-web3",
   "version": "2.0.0-beta.26",
   "private": true,
   "keywords": [
@@ -30,10 +30,10 @@
   "dependencies": {
     "@ethereumjs/tx": "^3.5.0",
     "@walletconnect/encoding": "^1.0.1",
-    "@walletconnect/types": "2.1.1",
-    "@walletconnect/universal-provider": "2.1.4",
-    "@walletconnect/utils": "2.1.4",
-    "@web3modal/standalone": "^2.0.0-beta.10",
+    "@walletconnect/types": "2.7.2",
+    "@walletconnect/universal-provider": "2.7.2",
+    "@walletconnect/utils": "2.7.2",
+    "@web3modal/standalone": "^2.3.7",
     "axios": "^0.21.1",
     "blockies-ts": "^1.0.0",
     "caip-api": "^2.0.0-beta.1",

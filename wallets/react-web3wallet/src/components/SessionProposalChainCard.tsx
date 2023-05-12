@@ -36,19 +36,9 @@ interface IProps {
 export default function SessionProposalChainCard({ requiredNamespace }: IProps) {
   return (
     <Fragment>
-      {requiredNamespace.chains.map(chainId => {
-        const extensionMethods: ProposalTypes.RequiredNamespace['methods'] = []
-        const extensionEvents: ProposalTypes.RequiredNamespace['events'] = []
-
-        requiredNamespace.extension?.map(({ chains, methods, events }) => {
-          if (chains.includes(chainId)) {
-            extensionMethods.push(...methods)
-            extensionEvents.push(...events)
-          }
-        })
-
-        const allMethods = [...requiredNamespace.methods, ...extensionMethods]
-        const allEvents = [...requiredNamespace.events, ...extensionEvents]
+      {requiredNamespace.chains?.map(chainId => {
+        const allMethods = requiredNamespace.methods
+        const allEvents = requiredNamespace.events
         // @ts-expect-error
         const rgb = CHAIN_METADATA[chainId]?.rgb
 
