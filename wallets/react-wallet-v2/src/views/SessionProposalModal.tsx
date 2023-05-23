@@ -17,9 +17,6 @@ export default function SessionProposalModal() {
 
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
-  useEffect(() => {
-    console.log('selectedAccounts', selectedAccounts)
-  }, [selectedAccounts])
 
   // Ensure proposal is defined
   if (!proposal) {
@@ -30,7 +27,6 @@ export default function SessionProposalModal() {
   const { id, params } = proposal
 
   const { proposer, requiredNamespaces, optionalNamespaces, sessionProperties, relays } = params
-  console.log('proposal', params, requiredNamespaces, optionalNamespaces, sessionProperties)
   const requiredNamespaceKeys = requiredNamespaces ? Object.keys(requiredNamespaces) : []
   const optionalNamespaceKeys = optionalNamespaces ? Object.keys(optionalNamespaces) : []
 
@@ -61,9 +57,6 @@ export default function SessionProposalModal() {
           selectedOptionalNamespaces.push(chain.split(':')[1])
         }
       }
-
-      console.log('selectedOptionalNamespaces', selectedOptionalNamespaces)
-
       requiredNamespaceKeys.concat(selectedOptionalNamespaces).forEach(key => {
         const accounts: string[] = []
         if (requiredNamespaces[key].chains) {
@@ -90,9 +83,6 @@ export default function SessionProposalModal() {
           }
         }
       })
-
-      console.log('namespaces', namespaces)
-
       await signClient.approve({
         id,
         relayProtocol: relays[0].protocol,
