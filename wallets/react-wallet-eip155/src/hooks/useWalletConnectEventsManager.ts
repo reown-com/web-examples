@@ -3,6 +3,7 @@ import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
+import { Web3WalletTypes } from '@walletconnect/web3wallet'
 import { useCallback, useEffect } from 'react'
 import { useSnapshot } from 'valtio'
 
@@ -12,43 +13,37 @@ export default function useWalletConnectEventsManager() {
   /******************************************************************************
    * 1. Open session proposal modal for confirmation / rejection
    *****************************************************************************/
-  const onSessionProposal = useCallback(
-    (proposal: SignClientTypes.EventArguments['session_proposal']) => {
-      ModalStore.open('SessionProposalModal', { proposal })
-    },
-    []
-  )
+  const onSessionProposal = useCallback((proposal: Web3WalletTypes.SessionProposal) => {
+    ModalStore.open('SessionProposalModal', { proposal })
+  }, [])
 
   /******************************************************************************
    * 3. Open request handling modal based on method that was used
    *****************************************************************************/
-  const onSessionRequest = useCallback(
-    async (requestEvent: SignClientTypes.EventArguments['session_request']) => {
-      console.log('session_request', requestEvent)
-      const { topic, params } = requestEvent
-      const { request } = params
-      const requestSession = web3wallet.getActiveSessions()[topic]
+  const onSessionRequest = useCallback(async (requestEvent: Web3WalletTypes.SessionRequest) => {
+    console.log('session_request', requestEvent)
+    const { topic, params } = requestEvent
+    const { request } = params
+    const requestSession = web3wallet.getActiveSessions()[topic]
 
-      switch (request.method) {
-        case EIP155_SIGNING_METHODS.ETH_SIGN:
-        case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
-          return ModalStore.open('SessionSignModal', { requestEvent, requestSession })
+    switch (request.method) {
+      case EIP155_SIGNING_METHODS.ETH_SIGN:
+      case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
+        return ModalStore.open('SessionSignModal', { requestEvent, requestSession })
 
-        case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA:
-        case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
-        case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4:
-          return ModalStore.open('SessionSignTypedDataModal', { requestEvent, requestSession })
+      case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA:
+      case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
+      case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4:
+        return ModalStore.open('SessionSignTypedDataModal', { requestEvent, requestSession })
 
-        case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
-        case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
-          return ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
+      case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
+      case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
+        return ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
 
-        default:
-          return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
-      }
-    },
-    []
-  )
+      default:
+        return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
+    }
+  }, [])
 
   /******************************************************************************
    * Set up WalletConnect event listeners
