@@ -8,9 +8,10 @@ import {
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
+import { Web3WalletTypes } from '@walletconnect/web3wallet'
 import { providers } from 'ethers'
 
-type LegacySessionRequest = Omit<SignClientTypes.EventArguments['session_request'], 'context'>
+type LegacySessionRequest = Omit<Web3WalletTypes.SessionRequest, 'context'>
 
 export async function approveEIP155Request(requestEvent: LegacySessionRequest) {
   const { params, id } = requestEvent
