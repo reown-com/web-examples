@@ -45,15 +45,15 @@ export default function SessionChainCard({ namespace }: IProps) {
         const extensionMethods: SessionTypes.Namespace['methods'] = []
         const extensionEvents: SessionTypes.Namespace['events'] = []
 
-        namespace.extension?.map(({ accounts, methods, events }) => {
-          accounts.forEach(account => {
-            const [type, chain] = account.split(':')
-            const chainId = `${type}:${chain}`
-            if (chains.includes(chainId)) {
-              extensionMethods.push(...methods)
-              extensionEvents.push(...events)
-            }
-          })
+        const { accounts, methods, events } = namespace
+
+        accounts.forEach(account => {
+          const [type, chain] = account.split(':')
+          const chainId = `${type}:${chain}`
+          if (chains.includes(chainId)) {
+            extensionMethods.push(...methods)
+            extensionEvents.push(...events)
+          }
         })
 
         const allMethods = [...namespace.methods, ...extensionMethods]
