@@ -30,6 +30,7 @@ export async function createAuthClient() {
 
 export async function createPushClient() {
   pushClient = await WalletClient.init({
+    logger: 'debug',
     core,
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
     relayUrl: process.env.NEXT_PUBLIC_RELAY_URL || 'wss://relay.walletconnect.com'

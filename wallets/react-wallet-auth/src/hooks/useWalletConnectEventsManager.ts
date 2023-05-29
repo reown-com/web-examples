@@ -32,6 +32,17 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           }
         })
       })
+
+      pushClient.on('push_proposal', async ({ id, topic, params }) => {
+        console.log('push_proposal', { id, topic, params })
+        ModalStore.open('PushRequest', {
+          pushRequest: {
+            id,
+            topic,
+            params
+          }
+        })
+      })
     }
   }, [initialized])
 }
