@@ -5,7 +5,7 @@ import { COSMOS_MAINNET_CHAINS } from '@/data/COSMOSData'
 import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
 import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { POLKADOT_MAINNET_CHAINS, POLKADOT_TEST_CHAINS } from '@/data/PolkadotData'
-import { ELROND_MAINNET_CHAINS, ELROND_TEST_CHAINS } from '@/data/ElrondData'
+import { MULTIVERSX_MAINNET_CHAINS, MULTIVERSX_TEST_CHAINS } from '@/data/MultiversxData'
 import { TRON_MAINNET_CHAINS, TRON_TEST_CHAINS } from '@/data/TronData'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
@@ -22,7 +22,7 @@ export default function HomePage() {
     solanaAddress,
     polkadotAddress,
     nearAddress,
-    elrondAddress,
+    multiversxAddress,
     tronAddress,
     tezosAddress
   } = useSnapshot(SettingsStore.state)
@@ -47,8 +47,8 @@ export default function HomePage() {
       {Object.entries(POLKADOT_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={polkadotAddress} chainId={caip10}/>
       ))}
-      {Object.entries(ELROND_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} chainId={caip10}/>
+      {Object.entries(MULTIVERSX_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={multiversxAddress} chainId={caip10}/>
       ))}
       {Object.entries(TRON_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} chainId={caip10}/>
@@ -74,9 +74,9 @@ export default function HomePage() {
           {Object.entries(NEAR_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
             <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={nearAddress} chainId={caip10}/>
           ))}
-          {Object.entries(ELROND_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} chainId={caip10}/>
-          ))}
+          {Object.entries(MULTIVERSX_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={multiversxAddress} chainId={caip10}/>
+          ))}        
           {Object.entries(TRON_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
             <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} chainId={caip10}/>
           ))}

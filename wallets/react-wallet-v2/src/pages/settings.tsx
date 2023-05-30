@@ -4,7 +4,7 @@ import SettingsStore from '@/store/SettingsStore'
 import { cosmosWallets } from '@/utils/CosmosWalletUtil'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { solanaWallets } from '@/utils/SolanaWalletUtil'
-import { elrondWallets } from '@/utils/ElrondWalletUtil'
+import { multiversxWallets } from '@/utils/MultiversxWalletUtil'
 import { tronWallets } from '@/utils/TronWalletUtil'
 import { Card, Divider, Row, Switch, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
@@ -18,7 +18,7 @@ export default function SettingsPage() {
     eip155Address,
     cosmosAddress,
     solanaAddress,
-    elrondAddress,
+    multiversxAddress,
     tronAddress,
     tezosAddress
   } = useSnapshot(SettingsStore.state)
@@ -91,10 +91,10 @@ export default function SettingsPage() {
       </Card>
 
       <Text h4 css={{ marginTop: '$10', marginBottom: '$5' }}>
-        Elrond Mnemonic
+        MultiversX Mnemonic
       </Text>
       <Card bordered borderWeight="light" css={{ minHeight: '215px', wordWrap: 'break-word' }}>
-        <Text css={{ fontFamily: '$mono' }}>{elrondWallets[elrondAddress].getMnemonic()}</Text>
+        <Text css={{ fontFamily: '$mono' }}>{multiversxWallets[multiversxAddress].getMnemonic()}</Text>
       </Card>
 
       <Text h4 css={{ marginTop: '$10', marginBottom: '$5' }}>

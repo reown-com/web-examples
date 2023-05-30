@@ -6,7 +6,7 @@ import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
-import { elrondAddresses } from '@/utils/ElrondWalletUtil'
+import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
 import { tezosAddresses } from '@/utils/TezosWalletUtil'
 import {
@@ -15,7 +15,7 @@ import {
   isSolanaChain,
   isPolkadotChain,
   isNearChain,
-  isElrondChain,
+  isMultiversxChain,
   isTronChain,
   isTezosChain
 } from '@/utils/HelperUtil'
@@ -168,10 +168,10 @@ export default function SessionProposalModal() {
           chain={chain}
         />
       )
-    } else if (isElrondChain(chain)) {
+    } else if (isMultiversxChain(chain)) {
       return (
         <ProposalSelectSection
-          addresses={elrondAddresses}
+          addresses={multiversxAddresses}
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}

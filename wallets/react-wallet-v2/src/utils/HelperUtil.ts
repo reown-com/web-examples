@@ -1,6 +1,6 @@
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
-import { ELROND_CHAINS, TElrondChain } from '@/data/ElrondData'
+import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { POLKADOT_CHAINS, TPolkadotChain } from '@/data/PolkadotData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
@@ -115,10 +115,10 @@ export function isNearChain(chain: string) {
 }
 
 /**
- * Check if chain is part of ELROND standard
+ * Check if chain is part of MULTIVERSX standard
  */
-export function isElrondChain(chain: string) {
-  return chain.includes('elrond')
+export function isMultiversxChain(chain: string) {
+  return chain.includes('mvx')
 }
 
 /**
@@ -142,7 +142,7 @@ export function formatChainName(chainId: string) {
   return (
     COSMOS_MAINNET_CHAINS[chainId as TCosmosChain]?.name ??
     EIP155_CHAINS[chainId as TEIP155Chain]?.name ??
-    ELROND_CHAINS[chainId as TElrondChain]?.name ??
+    MULTIVERSX_CHAINS[chainId as TMultiversxChain]?.name ??
     NEAR_TEST_CHAINS[chainId as TNearChain]?.name ??
     POLKADOT_CHAINS[chainId as TPolkadotChain]?.name ??
     SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
