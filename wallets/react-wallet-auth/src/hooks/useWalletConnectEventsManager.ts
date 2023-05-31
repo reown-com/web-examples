@@ -22,17 +22,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
     if (pushClient) {
       // Push client events
-      pushClient.on('push_request', async ({ id, topic, params }) => {
-        console.log('push_request', { id, topic, params })
-        ModalStore.open('PushRequest', {
-          pushRequest: {
-            id,
-            topic,
-            params
-          }
-        })
-      })
-
       pushClient.on('push_proposal', async ({ id, topic, params }) => {
         console.log('push_proposal', { id, topic, params })
         ModalStore.open('PushRequest', {
