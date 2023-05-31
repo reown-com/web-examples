@@ -1,7 +1,6 @@
 import { BigNumber, utils } from "ethers";
 import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
-import { TypedDataField } from "@ethersproject/abstract-signer";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import { recoverTransaction } from "@celo/wallet-base";
 import {
@@ -25,6 +24,9 @@ import {
   eip712,
   formatTestTransaction,
   getLocalStorageTestnetFlag,
+  hashPersonalMessage,
+  hashTypedDataMessage,
+  verifySignature,
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
@@ -33,23 +35,21 @@ import {
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_NEAR_METHODS,
-  DEFAULT_ELROND_METHODS,
+  DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TRON_METHODS,
+  DEFAULT_TEZOS_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
+import { rpcProvidersByChainId } from "../../src/helpers/api";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
 
 import {
-  Transaction as ElrondTransaction,
+  Transaction as MultiversxTransaction,
   TransactionPayload,
   Address,
   SignableMessage,
-  ISignature,
-} from "@elrondnetwork/erdjs";
-
-import { UserVerifier } from "@elrondnetwork/erdjs-walletcore/out/userVerifier";
-import { Signature } from "@elrondnetwork/erdjs-walletcore/out/signature";
-import { IVerifiable } from "@elrondnetwork/erdjs-walletcore/out/interface";
+} from "@multiversx/sdk-core";
+import { UserVerifier } from "@multiversx/sdk-wallet/out/userVerifier";
 
 /**
  * Types
@@ -88,12 +88,17 @@ interface IContext {
     testSignAndSendTransaction: TRpcRequestCallback;
     testSignAndSendTransactions: TRpcRequestCallback;
   };
-  elrondRpc: {
+  multiversxRpc: {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
     testSignTransactions: TRpcRequestCallback;
   };
   tronRpc: {
+    testSignMessage: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
+  };
+  tezosRpc: {
+    testGetAccounts: TRpcRequestCallback;
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
   };
@@ -292,7 +297,6 @@ export function JsonRpcContextProvider({
 
         // encode message (hex)
         const hexMsg = encoding.utf8ToHex(message, true);
-
         // personal_sign params
         const params = [hexMsg, address];
 
@@ -308,17 +312,20 @@ export function JsonRpcContextProvider({
 
         //  split chainId
         const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
 
-        const targetChainData = chainData[namespace][reference];
-
-        if (typeof targetChainData === "undefined") {
-          throw new Error(`Missing chain data for chainId: ${chainId}`);
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
         }
 
-        const valid = _verifyEip155MessageSignature(
-          message,
+        const hashMsg = hashPersonalMessage(message);
+        const valid = await verifySignature(
+          address,
           signature,
-          address
+          hashMsg,
+          rpc.baseURL
         );
 
         // format displayed result
@@ -351,17 +358,20 @@ export function JsonRpcContextProvider({
 
         //  split chainId
         const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
 
-        const targetChainData = chainData[namespace][reference];
-
-        if (typeof targetChainData === "undefined") {
-          throw new Error(`Missing chain data for chainId: ${chainId}`);
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
         }
 
-        const valid = _verifyEip155MessageSignature(
-          message,
+        const hashMsg = hashPersonalMessage(message);
+        const valid = await verifySignature(
+          address,
           signature,
-          address
+          hashMsg,
+          rpc.baseURL
         );
 
         // format displayed result
@@ -390,23 +400,23 @@ export function JsonRpcContextProvider({
           },
         });
 
-        // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
-        // will throw due to "unused" `EIP712Domain` type.
-        // See: https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
-        const {
-          EIP712Domain,
-          ...nonDomainTypes
-        }: Record<string, TypedDataField[]> = eip712.example.types;
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
 
-        const valid =
-          utils
-            .verifyTypedData(
-              eip712.example.domain,
-              nonDomainTypes,
-              eip712.example.message,
-              signature
-            )
-            .toLowerCase() === address.toLowerCase();
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
+        }
+
+        const hashedTypedData = hashTypedDataMessage(message);
+        const valid = await verifySignature(
+          address,
+          signature,
+          hashedTypedData,
+          rpc.baseURL
+        );
 
         return {
           method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
@@ -867,9 +877,9 @@ export function JsonRpcContextProvider({
     ),
   };
 
-  // -------- ELROND RPC METHODS --------
+  // -------- MULTIVERSX RPC METHODS --------
 
-  const elrondRpc = {
+  const multiversxRpc = {
     testSignTransaction: _createJsonRpcRequestHandler(
       async (
         chainId: string,
@@ -881,7 +891,7 @@ export function JsonRpcContextProvider({
         const verifier = UserVerifier.fromAddress(userAddress);
         const transactionPayload = new TransactionPayload("testdata");
 
-        const testTransaction = new ElrondTransaction({
+        const testTransaction = new MultiversxTransaction({
           nonce: 1,
           value: "10000000000000000000",
           receiver: Address.fromBech32(address),
@@ -898,22 +908,20 @@ export function JsonRpcContextProvider({
             chainId,
             topic: session!.topic,
             request: {
-              method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
+              method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTION,
               params: {
                 transaction,
               },
             },
           });
 
-          testTransaction.applySignature(
-            new Signature(result.signature),
-            userAddress
+          const valid = verifier.verify(
+            testTransaction.serializeForSigning(Address.fromBech32(address)),
+            result.signature
           );
 
-          const valid = verifier.verify(testTransaction as IVerifiable);
-
           return {
-            method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
+            method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTION,
             address,
             valid,
             result: result.signature.toString(),
@@ -934,7 +942,7 @@ export function JsonRpcContextProvider({
         const verifier = UserVerifier.fromAddress(userAddress);
         const testTransactionPayload = new TransactionPayload("testdata");
 
-        const testTransaction = new ElrondTransaction({
+        const testTransaction = new MultiversxTransaction({
           nonce: 1,
           value: "10000000000000000000",
           receiver: Address.fromBech32(address),
@@ -946,7 +954,7 @@ export function JsonRpcContextProvider({
         });
 
         // no data for this Transaction
-        const testTransaction2 = new ElrondTransaction({
+        const testTransaction2 = new MultiversxTransaction({
           nonce: 2,
           value: "20000000000000000000",
           receiver: Address.fromBech32(address),
@@ -957,7 +965,7 @@ export function JsonRpcContextProvider({
         });
 
         const testTransaction3Payload = new TransactionPayload("third");
-        const testTransaction3 = new ElrondTransaction({
+        const testTransaction3 = new MultiversxTransaction({
           nonce: 3,
           value: "300000000000000000",
           receiver: Address.fromBech32(address),
@@ -981,7 +989,7 @@ export function JsonRpcContextProvider({
             chainId,
             topic: session!.topic,
             request: {
-              method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS,
+              method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTIONS,
               params: {
                 transactions,
               },
@@ -993,12 +1001,13 @@ export function JsonRpcContextProvider({
             testTransaction2,
             testTransaction3,
           ].reduce((acc, current, index) => {
-            current.applySignature(
-              new Signature(result.signatures[index].signature),
-              userAddress
+            return (
+              acc &&
+              verifier.verify(
+                current.serializeForSigning(Address.fromBech32(address)),
+                result.signatures[index].signature
+              )
             );
-
-            return acc && verifier.verify(current as IVerifiable);
           }, true);
 
           const resultSignatures = result.signatures.map(
@@ -1006,7 +1015,7 @@ export function JsonRpcContextProvider({
           );
 
           return {
-            method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS,
+            method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTIONS,
             address,
             valid,
             result: resultSignatures.join(", "),
@@ -1034,7 +1043,7 @@ export function JsonRpcContextProvider({
             chainId,
             topic: session!.topic,
             request: {
-              method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE,
+              method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_MESSAGE,
               params: {
                 address,
                 message: testMessage.message.toString(),
@@ -1042,12 +1051,14 @@ export function JsonRpcContextProvider({
             },
           });
 
-          testMessage.applySignature(new Signature(result.signature));
 
-          const valid = verifier.verify(testMessage);
+          const valid = verifier.verify(
+            testMessage.serializeForSigning(),
+            result.signature
+          );
 
           return {
-            method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE,
+            method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_MESSAGE,
             address,
             valid,
             result: result.signature.toString(),
@@ -1154,6 +1165,103 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  // -------- TEZOS RPC METHODS --------
+
+  const tezosRpc = {
+    testGetAccounts: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        try {
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+              params: {},
+            },
+          });
+
+          return {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+            address,
+            valid: true,
+            result: JSON.stringify(result, null, 2),
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        try {
+          const result = await client!.request<{ hash: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+              params: {
+                account: address,
+                operations: [
+                  {
+                    kind: "transaction",
+                    amount: "1", // 1 mutez, smallest unit
+                    destination: address, // send to ourselves
+                  },
+                ],
+              },
+            },
+          });
+
+          return {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+            address,
+            valid: true,
+            result: result.hash,
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const payload = "05010000004254";
+
+        try {
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+              params: {
+                account: address,
+                payload,
+              },
+            },
+          });
+
+          return {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+            address,
+            valid: true,
+            result: result.signature,
+          };
+        } catch (error: any) {
+          throw new Error(error.message);
+        }
+      }
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -1163,8 +1271,9 @@ export function JsonRpcContextProvider({
         solanaRpc,
         polkadotRpc,
         nearRpc,
-        elrondRpc,
+        multiversxRpc,
         tronRpc,
+        tezosRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,

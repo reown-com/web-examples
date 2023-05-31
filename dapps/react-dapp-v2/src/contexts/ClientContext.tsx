@@ -265,8 +265,6 @@ export function ClientContextProvider({
         metadata: getAppMetadata() || DEFAULT_APP_METADATA,
       });
 
-      console.log("CREATED CLIENT: ", _client);
-      console.log("relayerRegion ", relayerRegion);
       setClient(_client);
       prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
@@ -279,10 +277,14 @@ export function ClientContextProvider({
   }, [_checkPersistedState, _subscribeToEvents, relayerRegion]);
 
   useEffect(() => {
-    if (!client || prevRelayerValue.current !== relayerRegion) {
-      createClient();
+    if (!client) {
+      createClient()
     }
-  }, [client, createClient, relayerRegion]);
+    else if (prevRelayerValue.current !== relayerRegion) {
+      client.core.relayer.restartTransport(relayerRegion)
+      prevRelayerValue.current = relayerRegion
+    }
+  }, [createClient, relayerRegion, client]);
 
   const value = useMemo(
     () => ({

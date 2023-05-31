@@ -1,11 +1,13 @@
 import PageHeader from '@/components/PageHeader'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import SessionChainCard from '@/components/SessionChainCard'
+import SettingsStore from '@/store/SettingsStore'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Loading, Row, Text } from '@nextui-org/react'
 import { getSdkError } from '@walletconnect/utils'
 import { useRouter } from 'next/router'
 import { Fragment, useEffect, useState } from 'react'
+import { useSnapshot } from 'valtio'
 
 /**
  * Component
@@ -15,6 +17,8 @@ export default function SessionPage() {
   const [updated, setUpdated] = useState(new Date())
   const { query, replace } = useRouter()
   const [loading, setLoading] = useState(false)
+
+  const { activeChainId } = useSnapshot(SettingsStore.state);
 
   useEffect(() => {
     if (query?.topic) {
@@ -48,11 +52,10 @@ export default function SessionPage() {
 
   async function onSessionEmit() {
     setLoading(true)
-    console.log('baleg')
     await signClient.emit({
       topic,
       event: { name: 'chainChanged', data: 'Hello World' },
-      chainId: 'eip155:1'
+      chainId: activeChainId.toString() // chainId: 'eip155:1'
     })
     setLoading(false)
   }

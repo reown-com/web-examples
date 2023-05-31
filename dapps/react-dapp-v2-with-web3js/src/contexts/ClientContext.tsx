@@ -17,6 +17,7 @@ import { DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from "../consta
 import { utils } from "ethers";
 import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../helpers";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
+
 /**
  * Types
  */
@@ -149,7 +150,8 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       });
 
       const web3Modal = new Web3Modal({
-        projectId: DEFAULT_PROJECT_ID,
+        projectId: DEFAULT_PROJECT_ID || "",
+        walletConnectVersion: 2,
       });
 
       setEthereumProvider(provider);

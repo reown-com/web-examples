@@ -25,12 +25,20 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       console.log('session_request', requestEvent)
       const { topic, params } = requestEvent
       const { request } = params
-      const requestSession = signClient.session.get(topic)
+      const session = signClient.session.get(topic)
+      const requestSession = {
+        ...session,
+        optionalNamespaces: {},
+        pairingTopic: session.topic
+      }
 
       switch (request.method) {
         case EIP155_SIGNING_METHODS.ETH_SIGN:
         case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
-          return ModalStore.open('SessionSignModal', { requestEvent, requestSession })
+          return ModalStore.open('SessionSignModal', {
+            requestEvent,
+            requestSession
+          })
 
         case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA:
         case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
@@ -61,8 +69,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    *****************************************************************************/
   useEffect(() => {
     if (initialized) {
-      signClient.on('session_proposal', onSessionProposal)
-      signClient.on('session_request', onSessionRequest)
       // TODOs
       signClient.on('session_ping', data => console.log('ping', data))
       signClient.on('session_event', data => console.log('event', data))

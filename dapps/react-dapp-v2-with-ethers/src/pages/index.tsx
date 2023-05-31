@@ -31,7 +31,8 @@ import {
   SToggleContainer,
 } from "./../components/app";
 import { useWalletConnectClient } from "./../contexts/ClientContext";
-import { version } from "../../node_modules/@walletconnect/universal-provider/package.json";
+import { RELAYER_SDK_VERSION as version } from "@walletconnect/core";
+
 interface IFormattedRpcResponse {
   method: string;
   address: string;

@@ -12,8 +12,9 @@ export const DEFAULT_MAIN_CHAINS = [
   "cosmos:cosmoshub-4",
   "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
   "polkadot:91b171bb158e2d3848fa23a9f1c25182",
-  "elrond:1",
+  "mvx:1",
   "tron:0x2b6653dc",
+  "tezos:mainnet",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -26,8 +27,9 @@ export const DEFAULT_TEST_CHAINS = [
   "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
   "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
   "near:testnet",
-  "elrond:D",
+  "mvx:D",
   "tron:0xcd8690dc",
+  "tezos:testnet",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -104,16 +106,17 @@ export enum DEFAULT_NEAR_METHODS {
 export enum DEFAULT_NEAR_EVENTS {}
 
 /**
- * ELROND
+ * MULTIVERSX
  */
-export enum DEFAULT_ELROND_METHODS {
-  ELROND_SIGN_TRANSACTION = "erd_signTransaction",
-  ELROND_SIGN_TRANSACTIONS = "erd_signTransactions",
-  ELROND_SIGN_MESSAGE = "erd_signMessage",
-  ELROND_SIGN_LOGIN_TOKEN = "erd_signLoginToken",
+export enum DEFAULT_MULTIVERSX_METHODS {
+  MULTIVERSX_SIGN_TRANSACTION = "mvx_signTransaction",
+  MULTIVERSX_SIGN_TRANSACTIONS = "mvx_signTransactions",
+  MULTIVERSX_SIGN_MESSAGE = "mvx_signMessage",
+  MULTIVERSX_SIGN_LOGIN_TOKEN = "mvx_signLoginToken",
+  MULTIVERSX_SIGN_NATIVE_AUTH_TOKEN = "mvx_signNativeAuthToken",
 }
 
-export enum DEFAULT_ELROND_EVENTS {}
+export enum DEFAULT_MULTIVERSX_EVENTS {}
 
 /**
  * TRON
@@ -124,6 +127,17 @@ export enum DEFAULT_TRON_METHODS {
 }
 
 export enum DEFAULT_TRON_EVENTS {}
+
+/**
+ * TEZOS
+ */
+export enum DEFAULT_TEZOS_METHODS {
+  TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
+  TEZOS_SEND = "tezos_send",
+  TEZOS_SIGN = "tezos_sign",
+}
+
+export enum DEFAULT_TEZOS_EVENTS {}
 
 export const DEFAULT_GITHUB_REPO_URL =
   "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
@@ -140,15 +154,15 @@ export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
   },
 
   {
-    value: "wss://us-east-1.relay.walletconnect.com/",
+    value: "wss://us-east-1.relay.walletconnect.com",
     label: "US",
   },
   {
-    value: "wss://eu-central-1.relay.walletconnect.com/",
+    value: "wss://eu-central-1.relay.walletconnect.com",
     label: "EU",
   },
   {
-    value: "wss://ap-southeast-1.relay.walletconnect.com/",
+    value: "wss://ap-southeast-1.relay.walletconnect.com",
     label: "Asia Pacific",
   },
 ];

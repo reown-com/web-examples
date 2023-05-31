@@ -15,27 +15,30 @@ export default function AuthenticationRequestModal() {
   useEffect(() => {
     if (message) return
     const address = eip155Addresses[0]
-    const iss = `did:pkh:${authenticationRequest.params.cacaoPayload.chainId}:${address}`
-    setMessage(authClient.formatMessage(authenticationRequest.params.cacaoPayload, iss))
+    const iss = `did:pkh:${params.cacaoPayload.chainId}:${address}`
+    setMessage(authClient.formatMessage(params.cacaoPayload, iss))
     setIss(iss)
-  }, [authenticationRequest.params.cacaoPayload, eip155Addresses, message])
+  }, [params.cacaoPayload, eip155Addresses, message])
 
   const onApprove = useCallback(async () => {
     if (authenticationRequest && iss && message) {
-      console.log({ eip155Wallets })
-
-      const signature = await eip155Wallets[eip155Addresses[0]].signMessage(message)
-      await authClient.respond(
-        {
-          id,
-          signature: {
-            s: signature,
-            t: 'eip191'
-          }
-        },
-        iss
-      )
-      ModalStore.close()
+      try {
+        const signature = await eip155Wallets[eip155Addresses[0]].signMessage(message)
+        await authClient.respond(
+          {
+            id,
+            signature: {
+              s: signature,
+              t: 'eip191'
+            }
+          },
+          iss
+        )
+      } catch (onApproveError) {
+        console.log({ onApproveError })
+      } finally {
+        ModalStore.close()
+      }
     }
   }, [authenticationRequest, eip155Addresses, eip155Wallets, id, iss, message])
 
@@ -45,6 +48,22 @@ export default function AuthenticationRequestModal() {
 
   // Handle reject action
   async function onReject() {
+    if (id && iss) {
+      try {
+        await authClient.respond(
+          {
+            id,
+            error: {
+              code: 4001,
+              message: 'Auth request has been rejected'
+            }
+          },
+          iss
+        )
+      } catch (onRejectError) {
+        console.log({ onRejectError })
+      }
+    }
     ModalStore.close()
   }
 

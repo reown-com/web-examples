@@ -7,13 +7,14 @@ import {
 } from "react";
 import { SolanaChainData } from "../chains/solana";
 import { PolkadotChainData } from "../chains/polkadot";
-import { ElrondChainData } from "../chains/elrond";
+import { MultiversxChainData } from "../chains/multiversx";
 import { TronChainData } from "../chains/tron";
 
 import { ChainNamespaces, ChainsMap, getAllChainNamespaces } from "../helpers";
 import { NearChainData } from "../chains/near";
 import { CosmosChainData } from "../chains/cosmos";
 import { EIP155ChainData } from "../chains/eip155";
+import { TezosChainData } from "../chains/tezos";
 
 /**
  * Types
@@ -53,8 +54,8 @@ export function ChainDataContextProvider({
           case "near":
             chains = NearChainData;
             break;
-          case "elrond":
-            chains = ElrondChainData;
+          case "mvx":
+            chains = MultiversxChainData;
             break;
           case "tron":
             chains = TronChainData;
@@ -64,6 +65,9 @@ export function ChainDataContextProvider({
             break;
           case "eip155":
             chains = EIP155ChainData;
+            break;
+          case "tezos":
+            chains = TezosChainData;
             break;
           default:
             console.error("Unknown chain namespace: ", namespace);
