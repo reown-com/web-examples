@@ -3,7 +3,7 @@ import { createOrRestoreCosmosWallet } from '@/utils/CosmosWalletUtil'
 import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
-import { createOrRestoreElrondWallet } from '@/utils/ElrondWalletUtil'
+import { createOrRestoreMultiversxWallet } from '@/utils/MultiversxWalletUtil'
 import { createWeb3Wallet } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
@@ -22,14 +22,14 @@ export default function useInitialization() {
       const { solanaAddresses } = await createOrRestoreSolanaWallet()
       const { polkadotAddresses } = await createOrRestorePolkadotWallet()
       const { nearAddresses } = await createOrRestoreNearWallet()
-      const { elrondAddresses } = await createOrRestoreElrondWallet()
+      const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
 
       SettingsStore.setEIP155Address(eip155Addresses[0])
       SettingsStore.setCosmosAddress(cosmosAddresses[0])
       SettingsStore.setSolanaAddress(solanaAddresses[0])
       SettingsStore.setPolkadotAddress(polkadotAddresses[0])
       SettingsStore.setNearAddress(nearAddresses[0])
-      SettingsStore.setElrondAddress(elrondAddresses[0])
+      SettingsStore.setMultiversxAddress(multiversxAddresses[0])
       prevRelayerURLValue.current = relayerRegionURL
 
       await createWeb3Wallet(relayerRegionURL)

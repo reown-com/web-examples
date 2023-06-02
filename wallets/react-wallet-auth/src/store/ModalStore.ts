@@ -1,16 +1,16 @@
-import { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
 
 /**
  * Types
  */
 interface ModalData {
-  authenticationRequest: any
+  authenticationRequest?: any
+  pushRequest?: any
 }
 
 interface State {
   open: boolean
-  view?: 'AuthenticationRequest'
+  view?: 'AuthenticationRequest' | 'PushRequest'
   data?: ModalData
 }
 

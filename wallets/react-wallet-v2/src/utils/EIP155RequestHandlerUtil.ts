@@ -9,10 +9,8 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
-
-export async function approveEIP155Request(
-  requestEvent: SignClientTypes.EventArguments['session_request']
-) {
+type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
+export async function approveEIP155Request(requestEvent: RequestEventArgs) {
   const { params, id } = requestEvent
   const { chainId, request } = params
   const wallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
@@ -74,7 +72,7 @@ export async function approveEIP155Request(
   }
 }
 
-export function rejectEIP155Request(request: SignClientTypes.EventArguments['session_request']) {
+export function rejectEIP155Request(request: RequestEventArgs) {
   const { id } = request
 
   return formatJsonRpcError(id, getSdkError('USER_REJECTED').message)

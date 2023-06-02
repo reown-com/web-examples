@@ -10,8 +10,8 @@ import {
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_NEAR_METHODS,
   DEFAULT_NEAR_EVENTS,
-  DEFAULT_ELROND_EVENTS,
-  DEFAULT_ELROND_METHODS,
+  DEFAULT_MULTIVERSX_EVENTS,
+  DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TRON_EVENTS,
   DEFAULT_TEZOS_METHODS,
@@ -42,8 +42,8 @@ export const getSupportedMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_POLKADOT_METHODS);
     case "near":
       return Object.values(DEFAULT_NEAR_METHODS);
-    case "elrond":
-      return Object.values(DEFAULT_ELROND_METHODS);
+    case "mvx":
+      return Object.values(DEFAULT_MULTIVERSX_METHODS);
     case "tron":
       return Object.values(DEFAULT_TRON_METHODS);
     case "tezos":
@@ -65,8 +65,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_POLKADOT_EVENTS);
     case "near":
       return Object.values(DEFAULT_NEAR_EVENTS);
-    case "elrond":
-      return Object.values(DEFAULT_ELROND_EVENTS);
+    case "mvx":
+      return Object.values(DEFAULT_MULTIVERSX_EVENTS);
     case "tron":
       return Object.values(DEFAULT_TRON_EVENTS);
     case "tezos":

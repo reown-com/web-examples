@@ -3,7 +3,7 @@ import { createOrRestoreCosmosWallet } from '@/utils/CosmosWalletUtil'
 import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
-import { createOrRestoreElrondWallet } from '@/utils/ElrondWalletUtil'
+import { createOrRestoreMultiversxWallet } from '@/utils/MultiversxWalletUtil'
 import { createOrRestoreTronWallet } from '@/utils/TronWalletUtil'
 import { createOrRestoreTezosWallet } from '@/utils/TezosWalletUtil'
 import { createSignClient, signClient } from '@/utils/WalletConnectUtil'
@@ -24,7 +24,7 @@ export default function useInitialization() {
       const { solanaAddresses } = await createOrRestoreSolanaWallet()
       const { polkadotAddresses } = await createOrRestorePolkadotWallet()
       const { nearAddresses } = await createOrRestoreNearWallet()
-      const { elrondAddresses } = await createOrRestoreElrondWallet()
+      const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
       const { tronAddresses } = await createOrRestoreTronWallet()
       const { tezosAddresses } = await createOrRestoreTezosWallet()
 
@@ -33,7 +33,7 @@ export default function useInitialization() {
       SettingsStore.setSolanaAddress(solanaAddresses[0])
       SettingsStore.setPolkadotAddress(polkadotAddresses[0])
       SettingsStore.setNearAddress(nearAddresses[0])
-      SettingsStore.setElrondAddress(elrondAddresses[0])
+      SettingsStore.setMultiversxAddress(multiversxAddresses[0])
       SettingsStore.setTronAddress(tronAddresses[0])
       SettingsStore.setTezosAddress(tezosAddresses[0])
       await createSignClient(relayerRegionURL)

@@ -10,7 +10,7 @@ Please only use this for reference and development purposes, otherwise you are a
 
 # Useful links
 
-🔗 Live wallet app - https://react-wallet.walletconnect.com <br />
+🔗 Live wallet app - https://react-wallet-eip155.vercel.app/ <br />
 🔗 Live dapp - https://react-app.walletconnect.com <br />
 📚 WalletConnect docs - https://docs.walletconnect.com/2.0
 
