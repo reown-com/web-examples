@@ -1,5 +1,6 @@
 import AuthClient from '@walletconnect/auth-client'
 import pkg from '@walletconnect/auth-client/package.json'
+import { Verify } from '@walletconnect/types'
 import { Core } from '@walletconnect/core'
 import { WalletClient } from '@walletconnect/push-client'
 
@@ -56,4 +57,18 @@ export const getAndFormatNotifications = () => {
     .reverse()
 
   return allMessagesWithSubscription
+}
+
+export function getVerifyStatus(context?: Verify.Context) {
+  if (!context) return ''
+  switch (context.verified.validation) {
+    case 'VALID':
+      return '✅'
+    case 'INVALID':
+      return '❌'
+    case 'UNKNOWN':
+      return '❓'
+    default:
+      return ''
+  }
 }
