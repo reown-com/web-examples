@@ -15,7 +15,7 @@
     "@walletconnect/legacy-types": "2.0.0",
     "@walletconnect/web3wallet": "1.7.0",
     "@walletconnect/core": "^2.7.6",
-    "@walletconnect/utils": "2.7.6",
+    "@walletconnect/utils": "2.7.8",
     "ethers": "5.7.2",
     "framer-motion": "9.0.2",
     "next": "13.1.6",
