@@ -1056,7 +1056,6 @@ export function JsonRpcContextProvider({
             },
           });
 
-
           const valid = verifier.verify(
             testMessage.serializeForSigning(),
             result.signature
@@ -1285,18 +1284,13 @@ export function JsonRpcContextProvider({
               method: DEFAULT_XRPL_METHODS.XRPL_SIGN_TRANSACTION,
               params: {
                 tx_json: {
-                  TransactionType: "OfferCreate",
+                  TransactionType: "Payment",
                   Account: address,
-                  Flags: 524288,
-                  TakerGets: "15000000000",
-                  TakerPays: {
-                    currency: "USD",
-                    issuer: "rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B",
-                    value: "7072.8",
-                  },
+                  Destination: "rTooLkitCksh5mQa67eaa2JaWHDBnHkpy",
+                  Amount: "1",
                 },
-                autofill: true,
                 submit: true,
+                autofill: true,
               },
             },
           });
