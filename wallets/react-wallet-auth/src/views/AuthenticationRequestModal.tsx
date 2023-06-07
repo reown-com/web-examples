@@ -4,10 +4,11 @@ import ModalStore from '@/store/ModalStore'
 import { Button, Col, Modal, Row, Text } from '@nextui-org/react'
 import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { authClient } from '@/utils/WalletConnectUtil'
+import { getVerifyStatus } from '@/utils/WalletConnectUtil'
 
 export default function AuthenticationRequestModal() {
   const authenticationRequest = ModalStore.state.data?.authenticationRequest
-  const { params, id } = authenticationRequest
+  const { params, id, verifyContext } = authenticationRequest
   const [message, setMessage] = useState<string>()
   const [iss, setIss] = useState<string>()
   const { eip155Wallets, eip155Addresses } = createOrRestoreEIP155Wallet()
@@ -72,7 +73,7 @@ export default function AuthenticationRequestModal() {
       <RequestModalContainer title="Authentication Request">
         <Row>
           <Col>
-            <Text h5>Message</Text>
+            <Text h5>Message {getVerifyStatus(verifyContext)}</Text>            
             <Text style={{ whiteSpace: 'pre-wrap' }} color="$gray400">
               {message}
             </Text>

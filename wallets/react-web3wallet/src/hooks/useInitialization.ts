@@ -3,8 +3,8 @@ import { createOrRestoreCosmosWallet } from '@/utils/CosmosWalletUtil'
 import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
-import { createOrRestoreElrondWallet } from '@/utils/ElrondWalletUtil'
 import { createOrRestoreNearWallet } from '@/utils/NearWalletUtil'
+import { createOrRestoreMultiversxWallet } from '@/utils/MultiversxWalletUtil'
 import { createOrRestoreXrplWallet } from '@/utils/XrplWalletUtil'
 import { createWeb3Wallet } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -23,7 +23,7 @@ export default function useInitialization() {
       const { solanaAddresses } = await createOrRestoreSolanaWallet()
       const { polkadotAddresses } = await createOrRestorePolkadotWallet()
       const { nearAddresses } = await createOrRestoreNearWallet()
-      const { elrondAddresses } = await createOrRestoreElrondWallet()
+      const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
       const { xrplAddresses } = await createOrRestoreXrplWallet()
 
       SettingsStore.setEIP155Address(eip155Addresses[0])
@@ -31,7 +31,7 @@ export default function useInitialization() {
       SettingsStore.setSolanaAddress(solanaAddresses[0])
       SettingsStore.setPolkadotAddress(polkadotAddresses[0])
       SettingsStore.setNearAddress(nearAddresses[0])
-      SettingsStore.setElrondAddress(elrondAddresses[0])
+      SettingsStore.setMultiversxAddress(multiversxAddresses[0])
       SettingsStore.setXrplAddress(xrplAddresses[0])
       prevRelayerURLValue.current = relayerRegionURL
 

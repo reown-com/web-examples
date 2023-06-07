@@ -1,13 +1,14 @@
 import { IClientMeta, IWalletConnectSession } from '@walletconnect/legacy-types'
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
+import { Web3WalletTypes } from '@walletconnect/web3wallet'
 import { proxy } from 'valtio'
 
 /**
  * Types
  */
 interface ModalData {
-  proposal?: SignClientTypes.EventArguments['session_proposal']
-  requestEvent?: SignClientTypes.EventArguments['session_request']
+  proposal?: Web3WalletTypes.SessionProposal
+  requestEvent?: Web3WalletTypes.SessionRequest
   requestSession?: SessionTypes.Struct
   legacyProposal?: {
     id: number

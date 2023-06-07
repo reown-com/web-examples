@@ -2,8 +2,8 @@ import { COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
 import { POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
-import { ELROND_SIGNING_METHODS } from '@/data/ElrondData'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
+import { MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
 import { XRPL_SIGNING_METHODS } from '@/data/XRPLData'
 import ModalStore from '@/store/ModalStore'
 import { web3wallet } from '@/utils/WalletConnectUtil'
@@ -73,11 +73,12 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case NEAR_SIGNING_METHODS.NEAR_VERIFY_OWNER:
           return ModalStore.open('SessionSignNearModal', { requestEvent, requestSession })
 
-        case ELROND_SIGNING_METHODS.ELROND_SIGN_MESSAGE:
-        case ELROND_SIGNING_METHODS.ELROND_SIGN_TRANSACTION:
-        case ELROND_SIGNING_METHODS.ELROND_SIGN_TRANSACTIONS:
-        case ELROND_SIGNING_METHODS.ELROND_SIGN_LOGIN_TOKEN:
-          return ModalStore.open('SessionSignElrondModal', { requestEvent, requestSession })
+        case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_MESSAGE:
+        case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_TRANSACTION:
+        case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_TRANSACTIONS:
+        case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_LOGIN_TOKEN:
+        case MULTIVERSX_SIGNING_METHODS.MULTIVERSX_SIGN_NATIVE_AUTH_TOKEN:
+          return ModalStore.open('SessionSignMultiversxModal', { requestEvent, requestSession })
 
         case NEAR_SIGNING_METHODS.NEAR_GET_ACCOUNTS:
           return web3wallet.respondSessionRequest({

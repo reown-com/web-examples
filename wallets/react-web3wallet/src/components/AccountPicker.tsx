@@ -3,7 +3,7 @@ import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
-import { elrondAddresses } from '@/utils/ElrondWalletUtil'
+import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { xrplAddresses } from '@/utils/XrplWalletUtil'
 import { useSnapshot } from 'valtio'
 
@@ -17,7 +17,7 @@ export default function AccountPicker() {
     SettingsStore.setCosmosAddress(cosmosAddresses[account])
     SettingsStore.setSolanaAddress(solanaAddresses[account])
     SettingsStore.setNearAddress(nearAddresses[account])
-    SettingsStore.setElrondAddress(elrondAddresses[account])
+    SettingsStore.setMultiversxAddress(multiversxAddresses[account])
     SettingsStore.setXrplAddress(xrplAddresses[account])
   }
 

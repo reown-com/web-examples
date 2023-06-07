@@ -5,8 +5,8 @@ import { COSMOS_MAINNET_CHAINS } from '@/data/COSMOSData'
 import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
 import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { POLKADOT_MAINNET_CHAINS, POLKADOT_TEST_CHAINS } from '@/data/PolkadotData'
-import { ELROND_MAINNET_CHAINS, ELROND_TEST_CHAINS } from '@/data/ElrondData'
 import { NEAR_TEST_CHAINS } from '@/data/NEARData'
+import { MULTIVERSX_MAINNET_CHAINS, MULTIVERSX_TEST_CHAINS } from '@/data/MultiversxData'
 import { XRPL_MAINNET_CHAINS, XRPL_TESTNET_CHAINS } from '@/data/XRPLData'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
@@ -21,7 +21,7 @@ export default function HomePage() {
     solanaAddress,
     polkadotAddress,
     nearAddress,
-    elrondAddress,
+    multiversxAddress,
     xrplAddress
   } = useSnapshot(SettingsStore.state)
 
@@ -45,8 +45,8 @@ export default function HomePage() {
       {Object.values(POLKADOT_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={polkadotAddress} />
       ))}
-      {Object.values(ELROND_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} />
+      {Object.values(MULTIVERSX_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
+        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={multiversxAddress} />
       ))}
       {Object.values(XRPL_MAINNET_CHAINS).map(({ name, logo, rgb }) => (
         <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={xrplAddress} />
@@ -69,8 +69,8 @@ export default function HomePage() {
           {Object.values(NEAR_TEST_CHAINS).map(({ name, logo, rgb }) => (
             <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={nearAddress} />
           ))}
-          {Object.values(ELROND_TEST_CHAINS).map(({ name, logo, rgb }) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={elrondAddress} />
+          {Object.values(MULTIVERSX_TEST_CHAINS).map(({ name, logo, rgb }) => (
+            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={multiversxAddress} />
           ))}
           {Object.values(XRPL_TESTNET_CHAINS).map(({ name, logo, rgb }) => (
             <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={xrplAddress} />

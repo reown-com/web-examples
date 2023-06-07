@@ -6,9 +6,9 @@ import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
-import { elrondAddresses } from '@/utils/ElrondWalletUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { nearAddresses } from '@/utils/NearWalletUtil'
+import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { xrplAddresses } from '@/utils/XrplWalletUtil'
 import {
   isCosmosChain,
@@ -16,7 +16,7 @@ import {
   isSolanaChain,
   isPolkadotChain,
   isNearChain,
-  isElrondChain,
+  isMultiversxChain,
   isXrplChain
 } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
@@ -64,7 +64,7 @@ export default function SessionProposalModal() {
       const namespaces: SessionTypes.Namespaces = {}
       Object.keys(requiredNamespaces).forEach(key => {
         const accounts: string[] = []
-        requiredNamespaces[key].chains.map(chain => {
+        requiredNamespaces[key].chains?.map(chain => {
           selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
         })
         namespaces[key] = {
@@ -141,10 +141,10 @@ export default function SessionProposalModal() {
           chain={chain}
         />
       )
-    } else if (isElrondChain(chain)) {
+    } else if (isMultiversxChain(chain)) {
       return (
         <ProposalSelectSection
-          addresses={elrondAddresses}
+          addresses={multiversxAddresses}
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}

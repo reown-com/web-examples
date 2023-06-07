@@ -7,7 +7,7 @@ import {
 } from "react";
 import { SolanaChainData } from "../chains/solana";
 import { PolkadotChainData } from "../chains/polkadot";
-import { ElrondChainData } from "../chains/elrond";
+import { MultiversxChainData } from "../chains/multiversx";
 import { TronChainData } from "../chains/tron";
 
 import { ChainNamespaces, ChainsMap, getAllChainNamespaces } from "../helpers";
@@ -55,8 +55,8 @@ export function ChainDataContextProvider({
           case "near":
             chains = NearChainData;
             break;
-          case "elrond":
-            chains = ElrondChainData;
+          case "mvx":
+            chains = MultiversxChainData;
             break;
           case "tron":
             chains = TronChainData;

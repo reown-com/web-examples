@@ -15,18 +15,18 @@ interface ModalData {
 interface State {
   open: boolean
   view?:
-    | 'SessionProposalModal'
-    | 'SessionSignModal'
-    | 'SessionSignTypedDataModal'
-    | 'SessionSendTransactionModal'
-    | 'SessionUnsuportedMethodModal'
-    | 'SessionSignCosmosModal'
-    | 'SessionSignSolanaModal'
-    | 'SessionSignPolkadotModal'
-    | 'SessionSignNearModal'
-    | 'SessionSignElrondModal'
-    | 'SessionSignXrplModal'
-    | 'AuthRequestModal'
+  | 'SessionProposalModal'
+  | 'SessionSignModal'
+  | 'SessionSignTypedDataModal'
+  | 'SessionSendTransactionModal'
+  | 'SessionUnsuportedMethodModal'
+  | 'SessionSignCosmosModal'
+  | 'SessionSignSolanaModal'
+  | 'SessionSignPolkadotModal'
+  | 'SessionSignNearModal'
+  | 'SessionSignMultiversxModal'
+  | 'SessionSignXrplModal'
+  | 'AuthRequestModal'
   data?: ModalData
 }
 
