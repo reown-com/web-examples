@@ -138,9 +138,8 @@ export async function verifySignature(
   address: string,
   sig: string,
   hash: string,
-  rpcUrl: string,
+  provider: providers.Web3Provider,
 ): Promise<boolean> {
-  const provider = new providers.JsonRpcProvider(rpcUrl);
   const bytecode = await provider.getCode(address);
   if (!bytecode || bytecode === "0x" || bytecode === "0x0" || bytecode === "0x00") {
     const signer = recoverAddress(sig, hash);

@@ -16,7 +16,10 @@ import {
   eip712,
   formatTestTransaction,
   getLocalStorageTestnetFlag,
+  hashPersonalMessage,
+  hashTypedDataMessage,
   setLocaleStorageTestnetFlag,
+  verifySignature,
 } from "./../helpers";
 import Toggle from "./../components/Toggle";
 import RequestModal from "./../modals/RequestModal";
@@ -153,11 +156,13 @@ const Home: NextPage = () => {
     if (!web3Provider) {
       throw new Error("web3Provider not connected");
     }
+
     const msg = "hello world";
     const hexMsg = encoding.utf8ToHex(msg, true);
     const [address] = await web3Provider.listAccounts();
     const signature = await web3Provider.send("personal_sign", [hexMsg, address]);
-    const valid = verifyEip155MessageSignature(msg, signature, address);
+    const hashMsg = hashPersonalMessage(msg)
+    const valid = await verifySignature(address, signature, hashMsg, web3Provider);
     return {
       method: "personal_sign",
       address,
@@ -198,16 +203,13 @@ const Home: NextPage = () => {
     // send message
     const signature = await web3Provider.send("eth_signTypedData", params);
 
-    // Separate `EIP712Domain` type from remaining types to verify, otherwise `ethers.utils.verifyTypedData`
-    // will throw due to "unused" `EIP712Domain` type.
-    // See: https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
-    const { EIP712Domain, ...nonDomainTypes }: Record<string, TypedDataField[]> =
-      eip712.example.types;
-
-    const valid =
-      utils
-        .verifyTypedData(eip712.example.domain, nonDomainTypes, eip712.example.message, signature)
-        .toLowerCase() === address.toLowerCase();
+    const hashedTypedData = hashTypedDataMessage(message);
+    const valid = await verifySignature(
+          address,
+          signature,
+          hashedTypedData,
+          web3Provider
+        );
     return {
       method: "eth_signTypedData",
       address,
