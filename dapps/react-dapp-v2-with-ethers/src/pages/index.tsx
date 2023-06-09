@@ -162,7 +162,7 @@ const Home: NextPage = () => {
     const [address] = await web3Provider.listAccounts();
     const signature = await web3Provider.send("personal_sign", [hexMsg, address]);
     const hashMsg = hashPersonalMessage(msg)
-    const valid = await verifySignature(address, signature,hashMsg, web3Provider);
+    const valid = await verifySignature(address, signature, hashMsg, web3Provider);
     return {
       method: "personal_sign",
       address,
