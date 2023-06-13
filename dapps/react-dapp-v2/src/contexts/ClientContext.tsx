@@ -269,6 +269,17 @@ export function ClientContextProvider({
       prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
+
+      try {
+        const clientId = await _client.core.crypto.getClientId();
+        console.log("CLIENTID: ", clientId);
+        localStorage.setItem("WALLETCONNECT_CLIENT_ID", clientId);
+      } catch (error) {
+        console.error(
+          "Failed to set WalletConnect clientId in localStorage: ",
+          error
+        );
+      }
     } catch (err) {
       throw err;
     } finally {
@@ -278,11 +289,10 @@ export function ClientContextProvider({
 
   useEffect(() => {
     if (!client) {
-      createClient()
-    }
-    else if (prevRelayerValue.current !== relayerRegion) {
-      client.core.relayer.restartTransport(relayerRegion)
-      prevRelayerValue.current = relayerRegion
+      createClient();
+    } else if (prevRelayerValue.current !== relayerRegion) {
+      client.core.relayer.restartTransport(relayerRegion);
+      prevRelayerValue.current = relayerRegion;
     }
   }, [createClient, relayerRegion, client]);
 
