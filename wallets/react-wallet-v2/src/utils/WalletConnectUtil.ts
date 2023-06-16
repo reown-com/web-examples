@@ -13,6 +13,14 @@ export async function createSignClient(relayerRegionURL: string) {
       icons: ['https://avatars.githubusercontent.com/u/37784886']
     }
   })
+
+  try {
+    const clientId = await signClient.core.crypto.getClientId()
+    console.log('WalletConnect ClientID: ', clientId)
+    localStorage.setItem('WALLETCONNECT_CLIENT_ID', clientId)
+  } catch (error) {
+    console.error('Failed to set WalletConnect clientId in localStorage: ', error)
+  }
 }
 
 export async function updateSignClientChainId(chainId: string, address: string) {
