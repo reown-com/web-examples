@@ -12,11 +12,11 @@ import {
 import bs58 from "bs58";
 import { verifyMessageSignature } from "solana-wallet";
 import {
-  clusterApiUrl,
   Connection,
   Keypair,
   SystemProgram,
   Transaction as SolanaTransaction,
+  clusterApiUrl,
 } from "@solana/web3.js";
 // @ts-expect-error
 import TronWeb from "tronweb";
@@ -24,6 +24,7 @@ import {
   eip712,
   formatTestTransaction,
   getLocalStorageTestnetFlag,
+  getProviderUrl,
   hashPersonalMessage,
   hashTypedDataMessage,
   verifySignature,
@@ -562,8 +563,9 @@ export function JsonRpcContextProvider({
 
         const senderPublicKey = solanaPublicKeys[address];
 
+        // rpc.walletconnect.com doesn't support solana testnet yet
         const connection = new Connection(
-          clusterApiUrl(isTestnet ? "testnet" : "mainnet-beta")
+          isTestnet ? clusterApiUrl("testnet") : getProviderUrl(chainId)
         );
 
         // Using deprecated `getRecentBlockhash` over `getLatestBlockhash` here, since `mainnet-beta`
@@ -1050,7 +1052,6 @@ export function JsonRpcContextProvider({
               },
             },
           });
-
 
           const valid = verifier.verify(
             testMessage.serializeForSigning(),
