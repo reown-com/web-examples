@@ -254,6 +254,22 @@ export function ClientContextProvider({
     [session, onSessionConnected]
   );
 
+  const _logClientId = useCallback(async (_client: Client) => {
+    if (typeof _client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
+    }
+    try {
+      const clientId = await _client.core.crypto.getClientId();
+      console.log("WalletConnect ClientID: ", clientId);
+      localStorage.setItem("WALLETCONNECT_CLIENT_ID", clientId);
+    } catch (error) {
+      console.error(
+        "Failed to set WalletConnect clientId in localStorage: ",
+        error
+      );
+    }
+  }, []);
+
   const createClient = useCallback(async () => {
     try {
       setIsInitializing(true);
@@ -269,20 +285,20 @@ export function ClientContextProvider({
       prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
+      await _logClientId(_client);
     } catch (err) {
       throw err;
     } finally {
       setIsInitializing(false);
     }
-  }, [_checkPersistedState, _subscribeToEvents, relayerRegion]);
+  }, [_checkPersistedState, _subscribeToEvents, _logClientId, relayerRegion]);
 
   useEffect(() => {
     if (!client) {
-      createClient()
-    }
-    else if (prevRelayerValue.current !== relayerRegion) {
-      client.core.relayer.restartTransport(relayerRegion)
-      prevRelayerValue.current = relayerRegion
+      createClient();
+    } else if (prevRelayerValue.current !== relayerRegion) {
+      client.core.relayer.restartTransport(relayerRegion);
+      prevRelayerValue.current = relayerRegion;
     }
   }, [createClient, relayerRegion, client]);
 
