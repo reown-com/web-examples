@@ -96,12 +96,13 @@ export default function SessionProposalModal() {
         }
       })
 
-      console.log('buildApprovedNameSpace data:', namespaces);
+      console.log('buildApprovedNameSpace data:', namespaces)
 
       const approvedNamespaces = buildApprovedNamespaces({
         proposal: params,
         supportedNamespaces: {
           eip155: {
+            //@ts-ignore - Unsure why the string[] is not working for chains. Skipping as this is a test
             chains: namespaces.eip155.chains,
             methods: namespaces.eip155.methods,
             events: namespaces.eip155.events,
