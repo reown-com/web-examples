@@ -16,6 +16,7 @@ import {
   DEFAULT_TRON_EVENTS,
   DEFAULT_TEZOS_METHODS,
   DEFAULT_TEZOS_EVENTS,
+  DEFAULT_EIP155_OPTIONAL_METHODS,
 } from "../constants";
 
 export const getNamespacesFromChains = (chains: string[]) => {
@@ -30,7 +31,7 @@ export const getNamespacesFromChains = (chains: string[]) => {
   return supportedNamespaces;
 };
 
-export const getSupportedMethodsByNamespace = (namespace: string) => {
+export const getSupportedRequiredMethodsByNamespace = (namespace: string) => {
   switch (namespace) {
     case "eip155":
       return Object.values(DEFAULT_EIP155_METHODS);
@@ -49,7 +50,28 @@ export const getSupportedMethodsByNamespace = (namespace: string) => {
     case "tezos":
       return Object.values(DEFAULT_TEZOS_METHODS);
     default:
-      throw new Error(`No default methods for namespace: ${namespace}`);
+      throw new Error(
+        `No default required methods for namespace: ${namespace}`
+      );
+  }
+};
+
+export const getSupportedOptionalMethodsByNamespace = (namespace: string) => {
+  switch (namespace) {
+    case "eip155":
+      return Object.values(DEFAULT_EIP155_OPTIONAL_METHODS);
+    case "cosmos":
+    case "solana":
+    case "polkadot":
+    case "near":
+    case "mvx":
+    case "tron":
+    case "tezos":
+      return [];
+    default:
+      throw new Error(
+        `No default optional methods for namespace: ${namespace}`
+      );
   }
 };
 
@@ -80,15 +102,33 @@ export const getRequiredNamespaces = (
   chains: string[]
 ): ProposalTypes.RequiredNamespaces => {
   const selectedNamespaces = getNamespacesFromChains(chains);
-  console.log("selected namespaces:", selectedNamespaces);
+  console.log("selected required namespaces:", selectedNamespaces);
 
   return Object.fromEntries(
     selectedNamespaces.map((namespace) => [
       namespace,
       {
-        methods: getSupportedMethodsByNamespace(namespace),
+        methods: getSupportedRequiredMethodsByNamespace(namespace),
         chains: chains.filter((chain) => chain.startsWith(namespace)),
         events: getSupportedEventsByNamespace(namespace) as any[],
+      },
+    ])
+  );
+};
+
+export const getOptionalNamespaces = (
+  chains: string[]
+): ProposalTypes.OptionalNamespaces => {
+  const selectedNamespaces = getNamespacesFromChains(chains);
+  console.log("selected optional namespaces:", selectedNamespaces);
+
+  return Object.fromEntries(
+    selectedNamespaces.map((namespace) => [
+      namespace,
+      {
+        methods: getSupportedOptionalMethodsByNamespace(namespace),
+        chains: chains.filter((chain) => chain.startsWith(namespace)),
+        events: [],
       },
     ])
   );
