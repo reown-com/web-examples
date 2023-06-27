@@ -144,6 +144,11 @@ const Home: NextPage = () => {
       await ethereumRpc.testSignTypedData(chainId, address);
     };
 
+    const onSignTypedDatav4 = async (chainId: string, address: string) => {
+      openRequestModal();
+      await ethereumRpc.testSignTypedDatav4(chainId, address);
+    };
+
     return [
       {
         method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
@@ -164,6 +169,10 @@ const Home: NextPage = () => {
       {
         method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
         callback: onSignTypedData,
+      },
+      {
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA_V4,
+        callback: onSignTypedDatav4,
       },
     ];
   };
