@@ -19,7 +19,7 @@ import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
-import { getSdkError } from '@walletconnect/utils'
+import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
 import { Fragment, useState } from 'react'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 
@@ -29,6 +29,7 @@ export default function SessionProposalModal() {
 
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
+  console.log('SessionProposalModal proposal', proposal)
 
   // Ensure proposal is defined
   if (!proposal) {
@@ -37,7 +38,7 @@ export default function SessionProposalModal() {
 
   // Get required proposal data
   const { id, params } = proposal
-  const { proposer, requiredNamespaces, relays } = params
+  const { proposer, requiredNamespaces, optionalNamespaces, relays } = params
 
   // Add / remove address from EIP155 selection
   function onSelectAccount(chain: string, account: string) {
@@ -60,22 +61,56 @@ export default function SessionProposalModal() {
   async function onApprove() {
     if (proposal) {
       const namespaces: SessionTypes.Namespaces = {}
+
       Object.keys(requiredNamespaces).forEach(key => {
         const accounts: string[] = []
+        const chains: string[] = []
+        requiredNamespaces[key].chains?.map(chain => {
+          chains.push(chain)
+        })
         requiredNamespaces[key].chains?.map(chain => {
           selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
         })
         namespaces[key] = {
+          chains,
           accounts,
           methods: requiredNamespaces[key].methods,
           events: requiredNamespaces[key].events
         }
       })
 
+      Object.keys(optionalNamespaces).forEach(key => {
+        const accounts: string[] = []
+        const chains: string[] = []
+        optionalNamespaces[key].chains?.map(chain => {
+          chains.push(chain)
+        })
+        optionalNamespaces[key].chains?.map(chain => {
+          selectedAccounts[key].map(acc => accounts.push(`${chain}:${acc}`))
+        })
+        namespaces[key] = {
+          chains,
+          accounts,
+          methods: optionalNamespaces[key].methods,
+          events: optionalNamespaces[key].events
+        }
+      })
+
+      const approvedNamespaces = buildApprovedNamespaces({
+        proposal: params,
+        supportedNamespaces: {
+          eip155: {
+            chains: namespaces.eip155.chains,
+            methods: namespaces.eip155.methods,
+            events: namespaces.eip155.events,
+            accounts: namespaces.eip155.accounts
+          }
+        }
+      })
+
       await web3wallet.approveSession({
         id,
-        relayProtocol: relays[0].protocol,
-        namespaces
+        namespaces: approvedNamespaces
       })
     }
     ModalStore.close()
