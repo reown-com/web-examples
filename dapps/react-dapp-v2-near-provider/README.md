@@ -1,17 +1,12 @@
-# React dApp (with v2 CosmosProvider)
+# React dApp (with v2 NearProvider)
 
-> **⚠️ This provider-based example is currently reliant on the deprecated `2.0.0-beta.26` SDK. ⚠️**
->
-> This example will be updated to be compatible with the latest v2 SDK (`2.0.0-beta.100+`) in due time.
-> In the meantime, please use the up-to-date [standalone client example](../react-dapp-v2/).
-
-🔗 Live dapp demo - https://react-dapp-v2-cosmos-provider.vercel.app/ <br />
+🔗 Live dapp demo - https://react-dapp-v2-near-provider.vercel.app/ <br />
 🔗 Live wallet demo - https://react-wallet-v2.vercel.app <br />
 📚 WalletConnect v2 Docs - https://docs.walletconnect.com/2.0
 
 ## Overview
 
-This is an example implementation of a React dApp (generated via `create-react-app`) using the v2 [`CosmosProvider`](https://docs.walletconnect.com/2.0/quick-start/dapps/cosmos-provider) to:
+This is an example implementation of a React dApp (generated via `create-react-app`) using the v2 [`NearProvider`](https://docs.walletconnect.com/2.0/quick-start/dapps/near-provider) to:
 
 - handle pairings
 - manage sessions
