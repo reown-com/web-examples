@@ -119,7 +119,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     async (provider: UniversalProvider) => {
       provider.on("display_uri", async (uri: string) => {
         console.log("EVENT", "QR Code Modal open", uri);
-        web3Modal?.openModal({ uri, standaloneChains: ["near:testnet"] });
+        web3Modal?.openModal({ uri });
       });
 
       provider.on("session_delete", () => {
@@ -146,7 +146,6 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
       const web3Modal = new Web3Modal({
         projectId: DEFAULT_PROJECT_ID || "",
         walletConnectVersion: 2,
-        standaloneChains: ["near:testnet"]
       });
 
       setWeb3Modal(web3Modal);
