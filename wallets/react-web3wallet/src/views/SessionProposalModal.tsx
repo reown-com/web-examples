@@ -96,6 +96,8 @@ export default function SessionProposalModal() {
         }
       })
 
+      console.log('buildApprovedNameSpace data:', namespaces);
+
       const approvedNamespaces = buildApprovedNamespaces({
         proposal: params,
         supportedNamespaces: {
