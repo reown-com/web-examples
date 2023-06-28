@@ -432,6 +432,7 @@ export function JsonRpcContextProvider({
     testSignTypedDatav4: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
         const message = JSON.stringify(eip712.example);
+        console.log("eth_signTypedData_v4");
 
         // eth_signTypedData_v4 params
         const params = [address, message];
@@ -441,7 +442,7 @@ export function JsonRpcContextProvider({
           topic: session!.topic,
           chainId,
           request: {
-            method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA_V4,
+            method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4,
             params,
           },
         });
@@ -465,7 +466,7 @@ export function JsonRpcContextProvider({
         );
 
         return {
-          method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
+          method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
           address,
           valid,
           result: signature,
