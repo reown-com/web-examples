@@ -18,6 +18,7 @@ import {
   DEFAULT_NEAR_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TEZOS_METHODS,
+  DEFAULT_EIP155_OPTIONAL_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -123,58 +124,62 @@ const Home: NextPage = () => {
   }
 
   const getEthereumActions = (): AccountAction[] => {
-    const onSendTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testSendTransaction(chainId, address);
-    };
-    const onSignTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testSignTransaction(chainId, address);
-    };
-    const onSignPersonalMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testSignPersonalMessage(chainId, address);
-    };
-    const onEthSign = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testEthSign(chainId, address);
-    };
-    const onSignTypedData = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testSignTypedData(chainId, address);
-    };
-
-    const onSignTypedDatav4 = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testSignTypedDatav4(chainId, address);
-    };
-
-    return [
-      {
+    const actions = {
+      [DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION]: {
         method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
-        callback: onSendTransaction,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSendTransaction(chainId, address);
+        },
       },
-      {
-        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
-        callback: onSignTransaction,
-      },
-      {
+      [DEFAULT_EIP155_METHODS.PERSONAL_SIGN]: {
         method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
-        callback: onSignPersonalMessage,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSignPersonalMessage(chainId, address);
+        },
       },
-      {
-        method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
-        callback: onEthSign,
+      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSignTransaction(chainId, address);
+        },
       },
-      {
-        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
-        callback: onSignTypedData,
+      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN + " (standard)",
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testEthSign(chainId, address);
+        },
       },
-      {
-        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA_V4,
-        callback: onSignTypedDatav4,
+      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSignTypedData(chainId, address);
+        },
       },
-    ];
+      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSignTypedDatav4(chainId, address);
+        },
+      },
+    };
+
+    let availableActions: AccountAction[] = [];
+
+    session?.namespaces?.["eip155"].methods.forEach((methodName) => {
+      const action: AccountAction | undefined =
+        actions[methodName as keyof typeof actions];
+      if (action) {
+        availableActions.push(action);
+      }
+    });
+
+    return availableActions;
   };
 
   const getCosmosActions = (): AccountAction[] => {

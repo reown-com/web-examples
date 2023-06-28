@@ -39,6 +39,7 @@ import {
   DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TEZOS_METHODS,
+  DEFAULT_EIP155_OPTIONAL_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -262,7 +263,7 @@ export function JsonRpcContextProvider({
           topic: session!.topic,
           chainId,
           request: {
-            method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
+            method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION,
             params: [tx],
           },
         });
@@ -285,7 +286,7 @@ export function JsonRpcContextProvider({
         }
 
         return {
-          method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
+          method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION,
           address,
           valid,
           result: signedTx,
@@ -353,7 +354,7 @@ export function JsonRpcContextProvider({
           topic: session!.topic,
           chainId,
           request: {
-            method: DEFAULT_EIP155_METHODS.ETH_SIGN,
+            method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN,
             params,
           },
         });
@@ -378,7 +379,7 @@ export function JsonRpcContextProvider({
 
         // format displayed result
         return {
-          method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
+          method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN + " (standard)",
           address,
           valid,
           result: signature,
@@ -397,7 +398,7 @@ export function JsonRpcContextProvider({
           topic: session!.topic,
           chainId,
           request: {
-            method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
+            method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
             params,
           },
         });
@@ -421,7 +422,7 @@ export function JsonRpcContextProvider({
         );
 
         return {
-          method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
+          method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
           address,
           valid,
           result: signature,
