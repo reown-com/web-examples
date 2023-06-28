@@ -51,9 +51,12 @@ export const DEFAULT_APP_METADATA = {
  */
 export enum DEFAULT_EIP155_METHODS {
   ETH_SEND_TRANSACTION = "eth_sendTransaction",
+  PERSONAL_SIGN = "personal_sign",
+}
+
+export enum DEFAULT_EIP155_OPTIONAL_METHODS {
   ETH_SIGN_TRANSACTION = "eth_signTransaction",
   ETH_SIGN = "eth_sign",
-  PERSONAL_SIGN = "personal_sign",
   ETH_SIGN_TYPED_DATA = "eth_signTypedData",
 }
 
