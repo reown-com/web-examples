@@ -13,7 +13,7 @@
     "@nextui-org/react": "1.0.0-beta.13",
     "@walletconnect/client": "1.8.0",
     "@walletconnect/legacy-types": "2.0.0",
-    "@walletconnect/web3wallet": "1.8.2",
+    "@walletconnect/web3wallet": "1.8.5",
     "@walletconnect/core": "^2.7.6",
     "@walletconnect/utils": "2.8.4",
     "ethers": "5.7.2",
