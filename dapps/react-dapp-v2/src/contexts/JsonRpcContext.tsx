@@ -73,6 +73,7 @@ interface IContext {
     testEthSign: TRpcRequestCallback;
     testSignPersonalMessage: TRpcRequestCallback;
     testSignTypedData: TRpcRequestCallback;
+    testSignTypedDatav4: TRpcRequestCallback;
   };
   cosmosRpc: {
     testSignDirect: TRpcRequestCallback;
@@ -398,6 +399,50 @@ export function JsonRpcContextProvider({
           chainId,
           request: {
             method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
+            params,
+          },
+        });
+
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
+
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
+        }
+
+        const hashedTypedData = hashTypedDataMessage(message);
+        const valid = await verifySignature(
+          address,
+          signature,
+          hashedTypedData,
+          rpc.baseURL
+        );
+
+        return {
+          method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
+          address,
+          valid,
+          result: signature,
+        };
+      }
+    ),
+    testSignTypedDatav4: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        const message = JSON.stringify(eip712.example);
+        console.log("eth_signTypedData_v4");
+
+        // eth_signTypedData_v4 params
+        const params = [address, message];
+
+        // send message
+        const signature = await client!.request<string>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4,
             params,
           },
         });

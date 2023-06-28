@@ -160,6 +160,13 @@ const Home: NextPage = () => {
           await ethereumRpc.testSignTypedData(chainId, address);
         },
       },
+      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSignTypedDatav4(chainId, address);
+        },
+      },
     };
 
     let availableActions: AccountAction[] = [];
