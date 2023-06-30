@@ -16,6 +16,7 @@ export const EIP155Colors = {
   goerli: "189, 174, 155",
   xdai: "73, 169, 166",
   polygon: "130, 71, 229",
+  zksync: "90, 90, 90",
   celo: "60, 203, 132",
   arbitrum: "44, 55, 75",
 };
@@ -60,6 +61,20 @@ export const EIP155ChainData: ChainsMap = {
     name: "xDAI",
     id: "eip155:100",
     rpc: ["https://dai.poa.network"],
+    slip44: 60,
+    testnet: false,
+  },
+  "280": {
+    name: "zkSync Era Testnet",
+    id: "eip155:280",
+    rpc: ["https://testnet.era.zksync.dev"],
+    slip44: 60,
+    testnet: true,
+  },
+  "324": {
+    name: "zkSync Era",
+    id: "eip155:324",
+    rpc: ["https://mainnet.era.zksync.io"],
     slip44: 60,
     testnet: false,
   },
@@ -140,6 +155,16 @@ export const EIP155Metadata: NamespaceMetadata = {
   "100": {
     logo: BLOCKCHAIN_LOGO_BASE_URL + "eip155:100.png",
     rgb: EIP155Colors.xdai,
+  },
+  "280": {
+    name: "zkSync Era Testnet",
+    logo: "/assets/eip155-324.svg",
+    rgb: EIP155Colors.zksync,
+  },
+  "324": {
+    name: "zkSync Era",
+    logo: "/assets/eip155-324.svg",
+    rgb: EIP155Colors.zksync,
   },
   "137": {
     name: "Polygon",
