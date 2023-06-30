@@ -26,6 +26,22 @@ export const rpcProvidersByChainId: Record<number, any> = {
       symbol: "MATIC",
     },
   },
+  280: {
+    name: "zkSync Era Testnet",
+    baseURL: "https://testnet.era.zksync.dev",
+    token: {
+      name: "Ether",
+      symbol: "ETH",
+    },
+  },
+  324: {
+    name: "zkSync Era",
+    baseURL: "https://mainnet.era.zksync.io",
+    token: {
+      name: "Ether",
+      symbol: "ETH",
+    },
+  },
   80001: {
     name: "Polygon Mumbai",
     baseURL: "https://rpc-mumbai.maticvigil.com",
