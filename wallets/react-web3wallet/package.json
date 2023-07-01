@@ -9,7 +9,7 @@
     "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
   },
   "dependencies": {
-    "@cosmjs/amino": "0.28.4",
+    "@cosmjs/amino": "0.31.0",
     "@cosmjs/encoding": "0.28.4",
     "@cosmjs/proto-signing": "0.28.4",
     "@multiversx/sdk-core": "11.5.0",

@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@cosmjs/amino": "0.28.4",
+    "@cosmjs/amino": "0.31.0",
     "@cosmjs/encoding": "0.28.4",
     "@cosmjs/proto-signing": "0.28.4",
     "@json-rpc-tools/utils": "1.7.6",
