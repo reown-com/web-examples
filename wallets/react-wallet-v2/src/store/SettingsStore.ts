@@ -11,10 +11,12 @@ interface State {
   solanaAddress: string
   polkadotAddress: string
   nearAddress: string
-  kadenaAddress: string
-  elrondAddress: string
+  multiversxAddress: string
   tronAddress: string
+  tezosAddress: string
+  kadenaAddress: string
   relayerRegionURL: string
+  activeChainId: string
 }
 
 /**
@@ -23,14 +25,16 @@ interface State {
 const state = proxy<State>({
   testNets: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem('TEST_NETS')) : true,
   account: 0,
+  activeChainId: '1',
   eip155Address: '',
   cosmosAddress: '',
   solanaAddress: '',
   polkadotAddress: '',
   nearAddress: '',
-  kadenaAddress: '',
-  elrondAddress: '',
+  multiversxAddress: '',
   tronAddress: '',
+  tezosAddress: '',
+  kadenaAddress: '',
   relayerRegionURL: ''
 })
 
@@ -69,12 +73,20 @@ const SettingsStore = {
     state.relayerRegionURL = relayerRegionURL
   },
 
-  setElrondAddress(elrondAddress: string) {
-    state.elrondAddress = elrondAddress
+  setMultiversxAddress(multiversxAddress: string) {
+    state.multiversxAddress = multiversxAddress
   },
 
   setTronAddress(tronAddress: string) {
     state.tronAddress = tronAddress
+  },
+
+  setTezosAddress(tezosAddress: string) {
+    state.tezosAddress = tezosAddress
+  },
+
+  setActiveChainId(value: string) {
+    state.activeChainId = value
   },
 
   toggleTestNets() {

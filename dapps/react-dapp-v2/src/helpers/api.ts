@@ -2,8 +2,9 @@ import axios, { AxiosInstance } from "axios";
 import { apiGetKadenaAccountBalance } from "./kadena";
 
 import { AssetData } from "./types";
+import { PactCommand } from "@kadena/client";
 
-const rpcProvidersByChainId: Record<number, any> = {
+export const rpcProvidersByChainId: Record<number, any> = {
   1: {
     name: "Ethereum Mainnet",
     baseURL: "https://mainnet.infura.io/v3/5dc0df7abe4645dfb06a9a8c39ede422",
@@ -110,7 +111,10 @@ export async function apiGetAccountBalance(
   const [namespace, networkId] = chainId.split(":");
 
   if (namespace === "kadena") {
-    return apiGetKadenaAccountBalance(address, networkId);
+    return apiGetKadenaAccountBalance(
+      address,
+      networkId as PactCommand["networkId"]
+    );
   }
 
   if (namespace !== "eip155") {

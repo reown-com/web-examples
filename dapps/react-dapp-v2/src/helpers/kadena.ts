@@ -1,4 +1,4 @@
-import { PactCommand } from "@kadena/client";
+import { IPactCommand, PactCommand } from "@kadena/client";
 
 export async function getKadenaChainAmount(
   WCNetworkId: string
@@ -20,20 +20,31 @@ export async function getKadenaChainAmount(
 
 async function getKadenaBalanceForChain(
   publicKey: string,
-  WCNetworkId: string,
-  kadenaChainID: string
+  WCNetworkId: IPactCommand["networkId"],
+  kadenaChainID: IPactCommand["publicMeta"]["chainId"]
 ): Promise<number> {
   const ENDPOINT = WCNetworkId === "testnet04" ? "testnet." : "";
   const API_HOST = `https://api.${ENDPOINT}chainweb.com/chainweb/0.0/${WCNetworkId}/chain/${kadenaChainID}/pact`;
 
   // This request will fail if there is no on-chain activity for the given account yet
-  const command = new PactCommand();
-  command.code = `(coin.get-balance "k:${publicKey}")`;
-  const { result } = await command.local(API_HOST);
+  try {
+    const command = new PactCommand();
+    command.code = `(coin.get-balance "k:${publicKey}")`;
+    command.setMeta(
+      { sender: `k:${publicKey}`, chainId: kadenaChainID },
+      WCNetworkId
+    );
+    const { result } = await command.local(API_HOST, {
+      preflight: false,
+      signatureVerification: false,
+    });
 
-  if (result.status !== "success") return 0;
+    if (result.status !== "success") return 0;
 
-  return result.data as number;
+    return result.data;
+  } catch (e) {
+    return 0;
+  }
 }
 
 const kadenaNumberOfChains: Record<string, number> = {
@@ -43,15 +54,20 @@ const kadenaNumberOfChains: Record<string, number> = {
 
 export async function apiGetKadenaAccountBalance(
   publicKey: string,
-  WCNetworkId: string
+  WCNetworkId: IPactCommand["networkId"]
 ) {
   if (!kadenaNumberOfChains[WCNetworkId]) {
     kadenaNumberOfChains[WCNetworkId] = await getKadenaChainAmount(WCNetworkId);
   }
+
   const chainBalances = await Promise.all(
     Array.from(Array(kadenaNumberOfChains[WCNetworkId])).map(
       async (_val, chainNumber) =>
-        getKadenaBalanceForChain(publicKey, WCNetworkId, chainNumber.toString())
+        getKadenaBalanceForChain(
+          publicKey,
+          WCNetworkId,
+          chainNumber.toString() as IPactCommand["publicMeta"]["chainId"]
+        )
     )
   );
 

@@ -4,10 +4,11 @@ import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
 import { createOrRestoreNearWallet } from '@/utils/NearWalletUtil'
-import { createOrRestoreKadenaWallet } from '@/utils/KadenaWalletUtil'
-import { createOrRestoreElrondWallet } from '@/utils/ElrondWalletUtil'
+import { createOrRestoreMultiversxWallet } from '@/utils/MultiversxWalletUtil'
 import { createOrRestoreTronWallet } from '@/utils/TronWalletUtil'
-import { createSignClient } from '@/utils/WalletConnectUtil'
+import { createOrRestoreTezosWallet } from '@/utils/TezosWalletUtil'
+import { createSignClient, signClient } from '@/utils/WalletConnectUtil'
+import { createOrRestoreKadenaWallet } from '@/utils/KadenaWalletUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 
@@ -24,22 +25,32 @@ export default function useInitialization() {
       const { solanaAddresses } = await createOrRestoreSolanaWallet()
       const { polkadotAddresses } = await createOrRestorePolkadotWallet()
       const { nearAddresses } = await createOrRestoreNearWallet()
-      const { kadenaAddresses } = await createOrRestoreKadenaWallet()
-      const { elrondAddresses } = await createOrRestoreElrondWallet()
+      const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
       const { tronAddresses } = await createOrRestoreTronWallet()
+      const { tezosAddresses } = await createOrRestoreTezosWallet()
+      const { kadenaAddresses } = await createOrRestoreKadenaWallet()
 
       SettingsStore.setEIP155Address(eip155Addresses[0])
       SettingsStore.setCosmosAddress(cosmosAddresses[0])
       SettingsStore.setSolanaAddress(solanaAddresses[0])
       SettingsStore.setPolkadotAddress(polkadotAddresses[0])
       SettingsStore.setNearAddress(nearAddresses[0])
-      SettingsStore.setKadenaAddress(kadenaAddresses[0])
-      SettingsStore.setElrondAddress(elrondAddresses[0])
+      SettingsStore.setMultiversxAddress(multiversxAddresses[0])
       SettingsStore.setTronAddress(tronAddresses[0])
+      SettingsStore.setTezosAddress(tezosAddresses[0])
+      SettingsStore.setKadenaAddress(kadenaAddresses[0])
       await createSignClient(relayerRegionURL)
-      prevRelayerURLValue.current = relayerRegionURL
-
       setInitialized(true)
+    } catch (err: unknown) {
+      alert(err)
+    }
+  }, [relayerRegionURL])
+
+  // restart transport if relayer region changes
+  const onRelayerRegionChange = useCallback(() => {
+    try {
+      signClient.core.relayer.restartTransport(relayerRegionURL)
+      prevRelayerURLValue.current = relayerRegionURL
     } catch (err: unknown) {
       alert(err)
     }
@@ -50,10 +61,9 @@ export default function useInitialization() {
       onInitialize()
     }
     if (prevRelayerURLValue.current !== relayerRegionURL) {
-      setInitialized(false)
-      onInitialize()
+      onRelayerRegionChange()
     }
-  }, [initialized, onInitialize, relayerRegionURL])
+  }, [initialized, onInitialize, relayerRegionURL, onRelayerRegionChange])
 
   return initialized
 }

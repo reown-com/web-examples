@@ -5,16 +5,25 @@ import { chatClient } from '@/utils/WalletConnectUtil'
 import { ChatClientTypes } from '@walletconnect/chat-client'
 import ChatRequestCard from '@/components/ChatRequestCard'
 import { useRouter } from 'next/router'
+import { useSnapshot } from 'valtio'
+import SettingsStore from '@/store/SettingsStore'
 
 export default function ChatRequestsPage() {
   const router = useRouter()
-  const [chatInvites, setChatInvites] = useState<Map<number, ChatClientTypes.Invite>>(new Map())
+  const [chatInvites, setChatInvites] = useState<ChatClientTypes.ReceivedInvite[]>([])
+
+  const { eip155Address } = useSnapshot(SettingsStore.state)
 
   useEffect(() => {
-    console.log('setting invites:', chatClient.getInvites())
+    console.log(
+      'setting invites:',
+      chatClient.getReceivedInvites({ account: `eip155:1:${eip155Address}` })
+    )
 
-    setChatInvites(chatClient.getInvites())
+    setChatInvites(chatClient.getReceivedInvites({ account: `eip155:1:${eip155Address}` }))
   }, [])
+
+  console.log('NEWINVITES:::::', chatInvites)
 
   const acceptChatInvite = async (inviteId: number) => {
     await chatClient.accept({ id: inviteId })
@@ -29,14 +38,15 @@ export default function ChatRequestsPage() {
     <Fragment>
       <PageHeader title="Chat Requests" withBackButton backButtonHref="/chats" />
 
-      {chatInvites.size > 0 ? (
-        Array.from(chatInvites).map(([inviteId, invite]) => {
+      {chatInvites.length > 0 ? (
+        chatInvites.map(invite => {
           return (
             <ChatRequestCard
-              key={inviteId}
+              account={eip155Address}
+              key={invite.id}
               {...invite}
-              onAccept={() => acceptChatInvite(Number(inviteId))}
-              onReject={() => rejectChatInvite(Number(inviteId))}
+              onAccept={() => acceptChatInvite(Number(invite.id))}
+              onReject={() => rejectChatInvite(Number(invite.id))}
             />
           )
         })

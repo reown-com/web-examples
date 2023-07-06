@@ -2,7 +2,7 @@ import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
-import { ELROND_CHAINS, TElrondChain } from '@/data/ElrondData'
+import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
 import { Col, Divider, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -31,7 +31,7 @@ export default function RequesDetailsCard({ chains, protocol }: IProps) {
                   COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name ??
                   SOLANA_CHAINS[chain as TSolanaChain]?.name ??
                   NEAR_TEST_CHAINS[chain as TNearChain]?.name ??
-                  ELROND_CHAINS[chain as TElrondChain]?.name ??
+                  MULTIVERSX_CHAINS[chain as TMultiversxChain]?.name ??
                   chain
               )
               .join(', ')}

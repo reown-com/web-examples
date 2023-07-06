@@ -1,7 +1,5 @@
-import { ChainsMap } from "caip-api";
-import { NamespaceMetadata, ChainMetadata } from "../helpers";
+import { NamespaceMetadata, ChainMetadata, ChainsMap } from "../helpers";
 
-// TODO: add `solana` namespace to `caip-api` package to avoid manual specification here.
 export const SolanaChainData: ChainsMap = {
   "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ": {
     id: "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",

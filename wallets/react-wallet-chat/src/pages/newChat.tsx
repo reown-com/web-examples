@@ -17,7 +17,7 @@ export default function NewChatPage() {
   const { eip155Address } = useSnapshot(SettingsStore.state)
 
   useEffect(() => {
-    chatClient.once('chat_joined', args => {
+    chatClient.once('chat_invite_accepted', args => {
       const newChatTarget = new URLSearchParams(document.location.search).get('target')
       router.push(`/chat?topic=${args.topic}&peerAccount=${newChatTarget}`)
     })
@@ -25,13 +25,11 @@ export default function NewChatPage() {
 
   const createInvite = useCallback(
     async (targetAddress: string) => {
-      const invite: ChatClientTypes.PartialInvite = {
-        message: "hey let's chat",
-        account: `eip155:1:${eip155Address}`
-      }
       await chatClient.invite({
-        account: targetAddress,
-        invite
+        inviteeAccount: targetAddress,
+        inviterAccount: `eip155:1:${eip155Address}`,
+        message: "hey let's message",
+        inviteePublicKey: await chatClient.resolve({ account: targetAddress })
       })
     },
     [eip155Address]

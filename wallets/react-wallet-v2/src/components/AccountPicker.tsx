@@ -3,9 +3,10 @@ import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
-import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
-import { elrondAddresses } from '@/utils/ElrondWalletUtil'
+import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
+import { tezosAddresses } from '@/utils/TezosWalletUtil'
+import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { useSnapshot } from 'valtio'
 
 export default function AccountPicker() {
@@ -18,9 +19,10 @@ export default function AccountPicker() {
     SettingsStore.setCosmosAddress(cosmosAddresses[account])
     SettingsStore.setSolanaAddress(solanaAddresses[account])
     SettingsStore.setNearAddress(nearAddresses[account])
-    SettingsStore.setKadenaAddress(kadenaAddresses[account])
-    SettingsStore.setElrondAddress(elrondAddresses[account])
+    SettingsStore.setMultiversxAddress(multiversxAddresses[account])
     SettingsStore.setTronAddress(tronAddresses[account])
+    SettingsStore.setTezosAddress(tezosAddresses[account])
+    SettingsStore.setKadenaAddress(kadenaAddresses[account])
   }
 
   return (

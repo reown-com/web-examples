@@ -6,7 +6,7 @@ import SessionRequestModal from '@/views/SessionSignModal'
 import SessionSignNearModal from '@/views/SessionSignNearModal'
 import SessionSignPolkadotModal from '@/views/SessionSignPolkadotModal'
 import SessionSignSolanaModal from '@/views/SessionSignSolanaModal'
-import SessionSignElrondModal from '@/views/SessionSignElrondModal'
+import SessionSignMultiversxModal from '@/views/SessionSignMultiversxModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
 import { Modal as NextModal } from '@nextui-org/react'
@@ -27,7 +27,7 @@ export default function Modal() {
       {view === 'SessionSignSolanaModal' && <SessionSignSolanaModal />}
       {view === 'SessionSignPolkadotModal' && <SessionSignPolkadotModal />}
       {view === 'SessionSignNearModal' && <SessionSignNearModal />}
-      {view === 'SessionSignElrondModal' && <SessionSignElrondModal />}
+      {view === 'SessionSignMultiversxModal' && <SessionSignMultiversxModal />}
       {view === 'AuthRequestModal' && <AuthRequestModal />}
     </NextModal>
   )

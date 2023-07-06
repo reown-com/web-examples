@@ -14,12 +14,37 @@ export async function approveKadenaRequest(
   const wallet = kadenaWallets[account]
 
   switch (request.method) {
-    case KADENA_SIGNING_METHODS.KADENA_SIGN_TRANSACTION:
-      const signedRequest = wallet.signRequest(request.params.transaction)
+    case KADENA_SIGNING_METHODS.KADENA_GET_ACCOUNTS:
+      const mockAccount = `k:${account}`
+
+      return formatJsonRpcResult(id, {
+        accounts: [
+          {
+            account: mockAccount,
+            publicKey: account,
+            kadenaAccounts: [
+              {
+                name: mockAccount,
+                contract: 'coin',
+                chains: ['2', '4', '7', '18']
+              },
+              {
+                name: 'w:abcdabcdabcdabcd',
+                contract: 'coin',
+                chains: ['8', '17']
+              }
+            ]
+          }
+        ]
+      })
+
+    case KADENA_SIGNING_METHODS.KADENA_SIGN:
+      console.log(request)
+      const signedRequest = wallet.signRequest(request.params)
       return formatJsonRpcResult(id, signedRequest)
 
-    case KADENA_SIGNING_METHODS.KADENA_SIGN_MESSAGE:
-      const signedMessage = wallet.signRequest(request.params.message)
+    case KADENA_SIGNING_METHODS.KADENA_QUICKSIGN:
+      const signedMessage = wallet.quicksignRequest(request.params)
       return formatJsonRpcResult(id, signedMessage)
 
     default:

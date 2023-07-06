@@ -13,11 +13,13 @@ import {
   DEFAULT_MAIN_CHAINS,
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_METHODS,
-  DEFAULT_ELROND_METHODS,
+  DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TEST_CHAINS,
   DEFAULT_NEAR_METHODS,
   DEFAULT_KADENA_METHODS,
   DEFAULT_TRON_METHODS,
+  DEFAULT_TEZOS_METHODS,
+  DEFAULT_EIP155_OPTIONAL_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -74,9 +76,10 @@ const Home: NextPage = () => {
     solanaRpc,
     polkadotRpc,
     nearRpc,
-    kadenaRpc,
-    elrondRpc,
+    multiversxRpc,
     tronRpc,
+    tezosRpc,
+    kadenaRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -110,50 +113,75 @@ const Home: NextPage = () => {
     await ping();
   };
 
+  async function emit() {
+    if (typeof client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
+    }
+
+    await client.emit({
+      topic: session?.topic || "",
+      event: { name: "chainChanged", data: {} },
+      chainId: "eip155:5",
+    });
+  }
+
   const getEthereumActions = (): AccountAction[] => {
-    const onSendTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testSendTransaction(chainId, address);
-    };
-    const onSignTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testSignTransaction(chainId, address);
-    };
-    const onSignPersonalMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testSignPersonalMessage(chainId, address);
-    };
-    const onEthSign = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testEthSign(chainId, address);
-    };
-    const onSignTypedData = async (chainId: string, address: string) => {
-      openRequestModal();
-      await ethereumRpc.testSignTypedData(chainId, address);
+    const actions = {
+      [DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION]: {
+        method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSendTransaction(chainId, address);
+        },
+      },
+      [DEFAULT_EIP155_METHODS.PERSONAL_SIGN]: {
+        method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSignPersonalMessage(chainId, address);
+        },
+      },
+      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSignTransaction(chainId, address);
+        },
+      },
+      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN + " (standard)",
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testEthSign(chainId, address);
+        },
+      },
+      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSignTypedData(chainId, address);
+        },
+      },
+      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4]: {
+        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testSignTypedDatav4(chainId, address);
+        },
+      },
     };
 
-    return [
-      {
-        method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
-        callback: onSendTransaction,
-      },
-      {
-        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
-        callback: onSignTransaction,
-      },
-      {
-        method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
-        callback: onSignPersonalMessage,
-      },
-      {
-        method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
-        callback: onEthSign,
-      },
-      {
-        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
-        callback: onSignTypedData,
-      },
-    ];
+    let availableActions: AccountAction[] = [];
+
+    session?.namespaces?.["eip155"].methods.forEach((methodName) => {
+      const action: AccountAction | undefined =
+        actions[methodName as keyof typeof actions];
+      if (action) {
+        availableActions.push(action);
+      }
+    });
+
+    return availableActions;
   };
 
   const getCosmosActions = (): AccountAction[] => {
@@ -246,53 +274,30 @@ const Home: NextPage = () => {
     ];
   };
 
-  const getKadenaActions = (): AccountAction[] => {
-    const testSignTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await kadenaRpc.testSignTransaction(chainId, address);
-    };
-
-    const testSignMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await kadenaRpc.testSignMessage(chainId, address);
-    };
-
-    return [
-      {
-        method: DEFAULT_KADENA_METHODS.KADENA_SIGN_TRANSACTION,
-        callback: testSignTransaction,
-      },
-      {
-        method: DEFAULT_KADENA_METHODS.KADENA_SIGN_MESSAGE,
-        callback: testSignMessage,
-      },
-    ];
-  };
-
-  const getElrondActions = (): AccountAction[] => {
+  const getMultiversxActions = (): AccountAction[] => {
     const onSignTransaction = async (chainId: string, address: string) => {
       openRequestModal();
-      await elrondRpc.testSignTransaction(chainId, address);
+      await multiversxRpc.testSignTransaction(chainId, address);
     };
     const onSignTransactions = async (chainId: string, address: string) => {
       openRequestModal();
-      await elrondRpc.testSignTransactions(chainId, address);
+      await multiversxRpc.testSignTransactions(chainId, address);
     };
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
-      await elrondRpc.testSignMessage(chainId, address);
+      await multiversxRpc.testSignMessage(chainId, address);
     };
     return [
       {
-        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTION,
+        method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTION,
         callback: onSignTransaction,
       },
       {
-        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_TRANSACTIONS,
+        method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTIONS,
         callback: onSignTransactions,
       },
       {
-        method: DEFAULT_ELROND_METHODS.ELROND_SIGN_MESSAGE,
+        method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_MESSAGE,
         callback: onSignMessage,
       },
     ];
@@ -319,6 +324,66 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getTezosActions = (): AccountAction[] => {
+    const onGetAccounts = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testGetAccounts(chainId, address);
+    };
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignTransaction(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+        callback: onGetAccounts,
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+        callback: onSignMessage,
+      },
+    ];
+  };
+
+  const getKadenaActions = (): AccountAction[] => {
+    const testGetAccounts = async (chainId: string, address: string) => {
+      openRequestModal();
+      await kadenaRpc.testGetAccounts(chainId, address);
+    };
+    const testSign = async (chainId: string, address: string) => {
+      openRequestModal();
+      await kadenaRpc.testSign(chainId, address);
+    };
+
+    const testSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await kadenaRpc.testQuicksign(chainId, address);
+    };
+
+    return [
+      {
+        method: DEFAULT_KADENA_METHODS.KADENA_GET_ACCOUNTS,
+        callback: testGetAccounts,
+      },
+      {
+        method: DEFAULT_KADENA_METHODS.KADENA_SIGN,
+        callback: testSign,
+      },
+      {
+        method: DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN,
+        callback: testSignMessage,
+      },
+    ];
+  };
+
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
     switch (namespace) {
@@ -332,12 +397,14 @@ const Home: NextPage = () => {
         return getPolkadotActions();
       case "near":
         return getNearActions();
-      case "kadena":
-        return getKadenaActions();
-      case "elrond":
-        return getElrondActions();
+      case "mvx":
+        return getMultiversxActions();
       case "tron":
         return getTronActions();
+      case "tezos":
+        return getTezosActions();
+      case "kadena":
+        return getKadenaActions();
       default:
         break;
     }
@@ -400,7 +467,7 @@ const Home: NextPage = () => {
             />
           ))}
           <SConnectButton left onClick={onConnect} disabled={!chains.length}>
-            {"Connect"}
+            Connect
           </SConnectButton>
           <Dropdown
             relayerRegion={relayerRegion}
@@ -418,7 +485,7 @@ const Home: NextPage = () => {
             return (
               <Blockchain
                 key={account}
-                active={true}
+                active
                 chainData={chainData}
                 fetching={isFetchingBalances}
                 address={address}
@@ -436,7 +503,12 @@ const Home: NextPage = () => {
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={onPing} disconnect={disconnect} session={session} />
+        <Header
+          ping={onPing}
+          disconnect={disconnect}
+          session={session}
+          emit={emit}
+        />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>

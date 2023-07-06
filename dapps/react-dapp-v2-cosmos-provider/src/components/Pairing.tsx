@@ -6,7 +6,7 @@ import { PairingTypes } from "@walletconnect/types";
 import Peer from "./Peer";
 
 interface PairingProps {
-  pairing: PairingTypes.Settled;
+  pairing: PairingTypes.Struct;
   onClick?: any;
 }
 
@@ -16,14 +16,12 @@ const SPairingContainer = styled.div`
 `;
 
 const Pairing = (props: PairingProps) => {
-  const {
-    state: { metadata },
-  } = props.pairing;
+  const { peerMetadata } = props.pairing;
   return (
     <SPairingContainer onClick={props.onClick}>
       <div>
-        {typeof metadata !== "undefined" ? (
-          <Peer oneLiner metadata={metadata} />
+        {typeof peerMetadata !== "undefined" ? (
+          <Peer oneLiner metadata={peerMetadata} />
         ) : (
           <div>{`Unknown`}</div>
         )}

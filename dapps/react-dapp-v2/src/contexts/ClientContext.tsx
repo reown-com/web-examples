@@ -2,6 +2,7 @@ import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import { Web3Modal } from "@web3modal/standalone";
 
+import { PublicKey } from "@solana/web3.js";
 import {
   createContext,
   ReactNode,
@@ -9,11 +10,11 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
   useRef,
+  useState,
 } from "react";
-import { PublicKey } from "@solana/web3.js";
 
+import { getAppMetadata, getSdkError } from "@walletconnect/utils";
 import {
   DEFAULT_APP_METADATA,
   DEFAULT_LOGGER,
@@ -21,10 +22,11 @@ import {
   DEFAULT_RELAY_URL,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
-import { getAppMetadata, getSdkError } from "@walletconnect/utils";
+import {
+  getOptionalNamespaces,
+  getRequiredNamespaces,
+} from "../helpers/namespaces";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
-import { getRequiredNamespaces } from "../helpers/namespaces";
-import { getKadenaChainAmount } from "../helpers/kadena";
 
 /**
  * Types
@@ -57,6 +59,7 @@ export const ClientContext = createContext<IContext>({} as IContext);
 const web3Modal = new Web3Modal({
   projectId: DEFAULT_PROJECT_ID,
   themeMode: "light",
+  walletConnectVersion: 2,
 });
 
 /**
@@ -100,6 +103,7 @@ export function ClientContextProvider({
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
           const assets = await apiGetAccountBalance(address, chainId);
+
           return { account, assets: [assets] };
         })
       );
@@ -145,10 +149,16 @@ export function ClientContextProvider({
           "requiredNamespaces config for connect:",
           requiredNamespaces
         );
+        const optionalNamespaces = getOptionalNamespaces(chains);
+        console.log(
+          "optionalNamespaces config for connect:",
+          optionalNamespaces
+        );
 
         const { uri, approval } = await client.connect({
           pairingTopic: pairing?.topic,
           requiredNamespaces,
+          optionalNamespaces,
         });
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
@@ -156,7 +166,7 @@ export function ClientContextProvider({
           // Create a flat array of all requested chains across namespaces.
           const standaloneChains = Object.values(requiredNamespaces)
             .map((namespace) => namespace.chains)
-            .flat();
+            .flat() as string[];
 
           web3Modal.openModal({ uri, standaloneChains });
         }
@@ -255,6 +265,22 @@ export function ClientContextProvider({
     [session, onSessionConnected]
   );
 
+  const _logClientId = useCallback(async (_client: Client) => {
+    if (typeof _client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
+    }
+    try {
+      const clientId = await _client.core.crypto.getClientId();
+      console.log("WalletConnect ClientID: ", clientId);
+      localStorage.setItem("WALLETCONNECT_CLIENT_ID", clientId);
+    } catch (error) {
+      console.error(
+        "Failed to set WalletConnect clientId in localStorage: ",
+        error
+      );
+    }
+  }, []);
+
   const createClient = useCallback(async () => {
     try {
       setIsInitializing(true);
@@ -266,24 +292,26 @@ export function ClientContextProvider({
         metadata: getAppMetadata() || DEFAULT_APP_METADATA,
       });
 
-      console.log("CREATED CLIENT: ", _client);
-      console.log("relayerRegion ", relayerRegion);
       setClient(_client);
       prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
+      await _logClientId(_client);
     } catch (err) {
       throw err;
     } finally {
       setIsInitializing(false);
     }
-  }, [_checkPersistedState, _subscribeToEvents, relayerRegion]);
+  }, [_checkPersistedState, _subscribeToEvents, _logClientId, relayerRegion]);
 
   useEffect(() => {
-    if (!client || prevRelayerValue.current !== relayerRegion) {
+    if (!client) {
       createClient();
+    } else if (prevRelayerValue.current !== relayerRegion) {
+      client.core.relayer.restartTransport(relayerRegion);
+      prevRelayerValue.current = relayerRegion;
     }
-  }, [client, createClient, relayerRegion]);
+  }, [createClient, relayerRegion, client]);
 
   const value = useMemo(
     () => ({

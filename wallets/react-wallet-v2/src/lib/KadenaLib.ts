@@ -26,9 +26,23 @@ export default class KadenaLib {
     return this.keyPair.secretKey!
   }
 
-  public signRequest(message: string) {
-    const signResponse = sign(message.toString(), this.keyPair)
+  public signRequest(transaction: string) {
+    const signResponse = sign(transaction.toString(), this.keyPair)
 
-    return { signature: signResponse.sig }
+    return { body: { cmd: transaction, sigs: [signResponse.sig] } }
+  }
+
+  public quicksignRequest(transactions: any) {
+    const transaction = transactions.commandSigDatas[0].cmd
+    const signResponse = sign(transaction.toString(), this.keyPair)
+
+    return {
+      responses: [
+        {
+          outcome: { result: 'success', hash: signResponse.hash },
+          commandSigData: { sigs: [{ sig: signResponse.sig, pubKey: this.keyPair.publicKey }] }
+        }
+      ]
+    }
   }
 }

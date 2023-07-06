@@ -12,9 +12,10 @@ export const DEFAULT_MAIN_CHAINS = [
   "cosmos:cosmoshub-4",
   "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
   "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+  "mvx:1",
+  "tron:0x2b6653dc",
+  "tezos:mainnet",
   "kadena:mainnet01",
-  "elrond:1",
-  'tron:0x2b6653dc',
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -27,9 +28,10 @@ export const DEFAULT_TEST_CHAINS = [
   "solana:8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
   "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
   "near:testnet",
+  "mvx:D",
+  "tron:0xcd8690dc",
+  "tezos:testnet",
   "kadena:testnet04",
-  "elrond:D",
-  'tron:0xcd8690dc',
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -51,10 +53,14 @@ export const DEFAULT_APP_METADATA = {
  */
 export enum DEFAULT_EIP155_METHODS {
   ETH_SEND_TRANSACTION = "eth_sendTransaction",
+  PERSONAL_SIGN = "personal_sign",
+}
+
+export enum DEFAULT_EIP155_OPTIONAL_METHODS {
   ETH_SIGN_TRANSACTION = "eth_signTransaction",
   ETH_SIGN = "eth_sign",
-  PERSONAL_SIGN = "personal_sign",
   ETH_SIGN_TYPED_DATA = "eth_signTypedData",
+  ETH_SIGN_TYPED_DATA_V4 = "eth_signTypedData_v4",
 }
 
 export enum DEFAULT_EIP_155_EVENTS {
@@ -106,26 +112,38 @@ export enum DEFAULT_NEAR_METHODS {
 export enum DEFAULT_NEAR_EVENTS {}
 
 /**
- * ELROND
+ * MULTIVERSX
  */
-export enum DEFAULT_ELROND_METHODS {
-  ELROND_SIGN_TRANSACTION = "erd_signTransaction",
-  ELROND_SIGN_TRANSACTIONS = "erd_signTransactions",
-  ELROND_SIGN_MESSAGE = "erd_signMessage",
-  ELROND_SIGN_LOGIN_TOKEN = "erd_signLoginToken",
+export enum DEFAULT_MULTIVERSX_METHODS {
+  MULTIVERSX_SIGN_TRANSACTION = "mvx_signTransaction",
+  MULTIVERSX_SIGN_TRANSACTIONS = "mvx_signTransactions",
+  MULTIVERSX_SIGN_MESSAGE = "mvx_signMessage",
+  MULTIVERSX_SIGN_LOGIN_TOKEN = "mvx_signLoginToken",
+  MULTIVERSX_SIGN_NATIVE_AUTH_TOKEN = "mvx_signNativeAuthToken",
 }
 
-export enum DEFAULT_ELROND_EVENTS {}
+export enum DEFAULT_MULTIVERSX_EVENTS {}
 
 /**
  * TRON
  */
- export enum DEFAULT_TRON_METHODS {
-  TRON_SIGN_TRANSACTION = 'tron_signTransaction',
-  TRON_SIGN_MESSAGE = 'tron_signMessage'
+export enum DEFAULT_TRON_METHODS {
+  TRON_SIGN_TRANSACTION = "tron_signTransaction",
+  TRON_SIGN_MESSAGE = "tron_signMessage",
 }
 
 export enum DEFAULT_TRON_EVENTS {}
+
+/**
+ * TEZOS
+ */
+export enum DEFAULT_TEZOS_METHODS {
+  TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
+  TEZOS_SEND = "tezos_send",
+  TEZOS_SIGN = "tezos_sign",
+}
+
+export enum DEFAULT_TEZOS_EVENTS {}
 
 export const DEFAULT_GITHUB_REPO_URL =
   "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
@@ -139,8 +157,9 @@ type RelayerType = {
  * KADENA
  */
 export enum DEFAULT_KADENA_METHODS {
-  KADENA_SIGN_TRANSACTION = "kadena_signTransaction",
-  KADENA_SIGN_MESSAGE = "kadena_signMessage",
+  KADENA_GET_ACCOUNTS = "kadena_getAccounts_v1",
+  KADENA_SIGN = "kadena_sign_v1",
+  KADENA_QUICKSIGN = "kadena_quicksign_v1",
 }
 
 export enum DEFAULT_KADENA_EVENTS {}
@@ -152,15 +171,15 @@ export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
   },
 
   {
-    value: "wss://us-east-1.relay.walletconnect.com/",
+    value: "wss://us-east-1.relay.walletconnect.com",
     label: "US",
   },
   {
-    value: "wss://eu-central-1.relay.walletconnect.com/",
+    value: "wss://eu-central-1.relay.walletconnect.com",
     label: "EU",
   },
   {
-    value: "wss://ap-southeast-1.relay.walletconnect.com/",
+    value: "wss://ap-southeast-1.relay.walletconnect.com",
     label: "Asia Pacific",
   },
 ];
