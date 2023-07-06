@@ -10,17 +10,14 @@
   ],
   "packageRules": [
     {
-      "matchPackagePatterns": ["*"],
-      "schedule": ["every weekend"]
-    },
-    {
       "matchPackagePatterns": [
         "@walletconnect/core",
         "@walletconnect/sign-client",
         "@walletconnect/types",
         "@walletconnect/universal-provider",
         "@walletconnect/ethereum-provider",
-        "@walletconnect/utils"
+        "@walletconnect/utils",
+        "@walletconnect/react-native-compat"
       ],
       "schedule": ["at any time"],
       "groupName": "WalletConnect Monorepo Deps",
@@ -37,6 +34,16 @@
       "schedule": ["at any time"],
       "groupName": "Web3Modal Deps",
       "groupSlug": "web3modal-deps-updates"
+    },
+    {
+      "matchPackagePatterns": ["@cosmjs/*"],
+      "schedule": ["every weekend"],
+      "groupName": "cosmjs Deps",
+      "groupSlug": "cosmjs-deps-updates"
+    },
+    {
+      "matchPackagePatterns": ["*"],
+      "schedule": ["every weekend"]
     }
   ]
 }

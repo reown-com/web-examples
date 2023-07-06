@@ -1,5 +1,4 @@
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
-import { IClientMeta, IWalletConnectSession } from '@walletconnect/legacy-types'
 import { proxy } from 'valtio'
 
 /**
@@ -9,12 +8,6 @@ interface ModalData {
   proposal?: SignClientTypes.EventArguments['session_proposal']
   requestEvent?: SignClientTypes.EventArguments['session_request']
   requestSession?: SessionTypes.Struct
-  legacyProposal?: {
-    id: number
-    params: [{ chainId: number; peerId: string; peerMeta: IClientMeta }]
-  }
-  legacyCallRequestEvent?: { id: number; method: string; params: any[] }
-  legacyRequestSession?: IWalletConnectSession
 }
 
 interface State {
@@ -33,10 +26,6 @@ interface State {
     | 'SessionSignTronModal'
     | 'SessionSignTezosModal'
     | 'SessionSignKadenaModal'
-    | 'LegacySessionProposalModal'
-    | 'LegacySessionSignModal'
-    | 'LegacySessionSignTypedDataModal'
-    | 'LegacySessionSendTransactionModal'
   data?: ModalData
 }
 
