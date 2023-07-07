@@ -1,10 +1,10 @@
 import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
-import { ChainsMap } from "caip-api";
 
 import {
   NamespaceMetadata,
   ChainMetadata,
   ChainRequestRender,
+  ChainsMap,
 } from "../helpers";
 
 export const KadenaMetadata: NamespaceMetadata = {

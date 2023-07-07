@@ -159,6 +159,7 @@ export interface AccountBalances {
 }
 
 export interface KadenaAccount {
+  publicKey: string; // Kadena public key
   account: string; // Kadena account
   chainId: ChainId; // Kadena ChainId
 }

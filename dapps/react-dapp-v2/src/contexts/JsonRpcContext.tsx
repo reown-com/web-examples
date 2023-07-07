@@ -1354,10 +1354,12 @@ export function JsonRpcContextProvider({
           },
         });
 
-        // In a real app you would let the user pick which account they want to use. For this example we'll just set it to the first one
+        // In a real app you would let the user pick which account they want to use. For this example we'll just set it to the first one.
         const [firstAccount] = result.accounts;
 
+        // The information below will later be used to create a transaction
         setKadenaAccount({
+          publicKey: firstAccount.publicKey, // Kadena public key
           account: firstAccount.kadenaAccounts[0].name, // Kadena account
           chainId: firstAccount.kadenaAccounts[0].chains[0], // Kadena ChainId
         });
@@ -1402,10 +1404,10 @@ export function JsonRpcContextProvider({
             },
             networkId as IPactCommand["networkId"]
           )
-          .addCap("coin.GAS", publicKey)
+          .addCap("coin.GAS", kadenaAccount.publicKey)
           .addCap(
             "coin.TRANSFER",
-            publicKey, // pubKey of sender
+            kadenaAccount.publicKey, // public key of sender
             kadenaAccount.account, // account of sender
             "k:abcabcabcabc", // account of receiver
             { decimal: `1` } // amount
@@ -1421,7 +1423,7 @@ export function JsonRpcContextProvider({
 
         return {
           method,
-          address: publicKey,
+          address: kadenaAccount.publicKey,
           valid: true,
           result: JSON.stringify(result, null, 2),
         };
