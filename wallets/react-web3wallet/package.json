@@ -13,7 +13,7 @@
     "@cosmjs/encoding": "0.31.0",
     "@cosmjs/proto-signing": "0.31.0",
     "@multiversx/sdk-core": "11.5.0",
-    "@multiversx/sdk-wallet": "4.0.0",
+    "@multiversx/sdk-wallet": "4.2.0",
     "@json-rpc-tools/utils": "1.7.6",
     "@near-wallet-selector/wallet-utils": "^7.0.2",
     "@nextui-org/react": "1.0.8-beta.5",
