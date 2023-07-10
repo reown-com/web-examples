@@ -45,8 +45,8 @@ export const EIP155_MAINNET_CHAINS = {
     name: 'zkSync Era',
     logo: '/chain-logos/eip155-324.svg',
     rgb: '242, 242, 242',
-    rpc: 'https://mainnet.era.zsync.io/'
-  },
+    rpc: 'https://mainnet.era.zksync.io/'
+  }
 }
 
 export const EIP155_TEST_CHAINS = {
@@ -83,8 +83,8 @@ export const EIP155_TEST_CHAINS = {
     name: 'zkSync Era Testnet',
     logo: '/chain-logos/eip155-324.svg',
     rgb: '242, 242, 242',
-    rpc: 'https://testnet.era.zsync.dev/'
-  },
+    rpc: 'https://testnet.era.zksync.dev/'
+  }
 }
 
 export const EIP155_CHAINS = { ...EIP155_MAINNET_CHAINS, ...EIP155_TEST_CHAINS }
