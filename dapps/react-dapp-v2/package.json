@@ -12,7 +12,7 @@
   "dependencies": {
     "@celo/wallet-base": "^3.0.1",
     "@ethereumjs/tx": "^3.5.0",
-    "@multiversx/sdk-core": "11.5.0",
+    "@multiversx/sdk-core": "11.6.0",
     "@multiversx/sdk-wallet": "4.2.0",
     "@polkadot/util-crypto": "^10.1.2",
     "@solana/web3.js": "^1.36.0",
