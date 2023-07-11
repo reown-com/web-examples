@@ -2130,10 +2130,10 @@
   dependencies:
     bech32 "^2.0.0"
 
-"@multiversx/sdk-wallet@4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@multiversx/sdk-wallet/-/sdk-wallet-4.0.0.tgz#9c40cedd95baa861e0f55a9bb2a5657d7cc1d453"
-  integrity sha512-Fskqg9AGgqSIAgN+Ag9Y/DIoZRr4qgB0baVZ1nlXhgaRuM30v1UeW0TAIhuAbXkkMiTOJyLaCeebUDYy1VJgWA==
+"@multiversx/sdk-wallet@4.2.0":
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/@multiversx/sdk-wallet/-/sdk-wallet-4.2.0.tgz#00311338564abf0702b2063176f71db9585ecd06"
+  integrity sha512-EjSb9AnqMcpmDjZ7ebkUpOzpTfxj1plTuVXwZ6AaqJsdpxMfrE2izbPy18+bg5xFlr8V27wYZcW8zOhkBR50BA==
   dependencies:
     "@multiversx/sdk-bls-wasm" "0.3.5"
     "@noble/ed25519" "1.7.3"
