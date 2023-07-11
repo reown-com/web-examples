@@ -21,19 +21,22 @@
       ],
       "schedule": ["at any time"],
       "groupName": "WalletConnect Monorepo Deps",
-      "groupSlug": "walletconnect-monorepo-deps-updates"
+      "groupSlug": "walletconnect-monorepo-deps-updates",
+      "matchDepTypes": ["dependencies", "devDependencies"]
     },
     {
       "matchPackagePatterns": ["@walletconnect/web3wallet"],
       "schedule": ["at any time"],
       "groupName": "WalletConnect Web3Wallet Deps",
-      "groupSlug": "walletconnect-web3wallet-deps-updates"
+      "groupSlug": "walletconnect-web3wallet-deps-updates",
+      "matchDepTypes": ["dependencies", "devDependencies"]
     },
     {
       "matchPackagePatterns": ["@web3modal/*"],
       "schedule": ["at any time"],
       "groupName": "Web3Modal Deps",
-      "groupSlug": "web3modal-deps-updates"
+      "groupSlug": "web3modal-deps-updates",
+      "matchDepTypes": ["dependencies", "devDependencies"]
     },
     {
       "matchPackagePatterns": ["@cosmjs/*"],
