@@ -2640,18 +2640,6 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/types@2.7.6":
-  version "2.7.6"
-  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.7.6.tgz#60db56d8005d2b3168217eb65386bae52930a478"
-  integrity sha512-678xFaf5AULHMsd1JdN1X+iMHUt75bPUAOsQ0oSA4mtKZW/vS1jMqe3siXQKEOXFWyIJoQD1Q8clDO9oZ00/hg==
-  dependencies:
-    "@walletconnect/events" "^1.0.1"
-    "@walletconnect/heartbeat" "1.2.1"
-    "@walletconnect/jsonrpc-types" "1.0.3"
-    "@walletconnect/keyvaluestorage" "^1.0.2"
-    "@walletconnect/logger" "^2.0.1"
-    events "^3.3.0"
-
 "@walletconnect/types@2.9.0":
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.9.0.tgz#6e5dfdc7212c1ec4ab49a1ec409c743e16093f72"
