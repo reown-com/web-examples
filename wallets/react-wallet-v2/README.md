@@ -58,7 +58,7 @@ Accessible with `data-testid`
 | ----------- | ----------- |
 |  `accounts` | Accounts page |
 | `sessions` | Sessions page |
-| `wc-logo` |  WC Connect page |
+| `wc-connect` |  WC Connect page |
 | `pairings` | Pairings page |
 | `settings` | Settings Page |
 
