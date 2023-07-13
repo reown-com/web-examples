@@ -17,7 +17,7 @@ export default function Navigation() {
         </a>
       </Link>
 
-      <Link href="/walletconnect" passHref data-testid="wc-logo">
+      <Link href="/walletconnect" passHref data-testid="wc-connect">
         <a className="navLink">
           <Avatar
             size="lg"
