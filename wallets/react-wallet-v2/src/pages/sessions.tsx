@@ -25,7 +25,7 @@ export default function SessionsPage() {
         <SessionCard
           name={legacySession.peerMeta?.name + ' (v1/legacy)'}
           url={legacySession.peerMeta?.url}
-          logo={legacySession.peerMeta?.icons[0]}
+          logo={legacySession.peerMeta?.icons[0]}          
         />
       ) : null}
       {sessions.length
@@ -39,6 +39,7 @@ export default function SessionsPage() {
                 name={name}
                 logo={icons[0]}
                 url={url}
+                data-testid={'session-' + session.topic}
               />
             )
           })

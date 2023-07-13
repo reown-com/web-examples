@@ -9,13 +9,14 @@ interface IProps {
   logo?: string
   name?: string
   url?: string
+  topic?: string
   onDelete: () => Promise<void>
 }
 
 /**
  * Component
  */
-export default function PairingCard({ logo, name, url, onDelete }: IProps) {
+export default function PairingCard({ logo, name, url, topic, onDelete }: IProps) {
   return (
     <Card
       bordered
@@ -44,7 +45,7 @@ export default function PairingCard({ logo, name, url, onDelete }: IProps) {
           </Link>
         </div>
         <Tooltip content="Delete" placement="left">
-          <Button size="sm" color="error" flat onClick={onDelete} css={{ minWidth: 'auto' }}>
+          <Button size="sm" color="error" flat onClick={onDelete} css={{ minWidth: 'auto' }} data-testid={'pairing-delete-' + topic}>
             <Image src={'/icons/delete-icon.svg'} width={15} height={15} alt="delete icon" />
           </Button>
         </Tooltip>

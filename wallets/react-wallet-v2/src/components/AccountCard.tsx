@@ -48,6 +48,7 @@ export default function AccountCard({ name, logo, rgb, address, chainId }: Props
         <Button
           size="sm"
           css={{ minWidth: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+          data-testid={'chain-copy-button' + chainId}
           onClick={onCopy}
         >
           <Image
@@ -65,6 +66,7 @@ export default function AccountCard({ name, logo, rgb, address, chainId }: Props
           backgroundColor: "rgba(255, 255, 255, 0.15)",
           marginLeft: "$5",
         }}
+        data-testid={'chain-switch-button' + chainId}
         onPress={() => {
           onChainChanged(chainId, address);
         }}
