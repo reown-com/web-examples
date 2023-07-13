@@ -50,7 +50,7 @@ Your `.env.local` now contains the following environment variables:
 https://user-images.githubusercontent.com/3154053/156764521-3492c232-7a93-47ba-88bd-2cee3f8366d4.mp4
 
 ## DOM Tags
-This section is a key of the dom elements used for internal E2E testing
+This section is a key of the DOM elements used for internal E2E testing
 Accessible with `data-testid`
 
 ### Navbar
