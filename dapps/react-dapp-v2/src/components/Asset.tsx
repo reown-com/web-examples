@@ -59,7 +59,6 @@ interface AssetProps {
 
 const Asset = (props: AssetProps) => {
   const { asset } = props;
-  const decimals = asset.name === "KDA" ? 12 : undefined;
   return (
     <SAsset {...props}>
       <SAssetLeft>
@@ -68,7 +67,7 @@ const Asset = (props: AssetProps) => {
       </SAssetLeft>
       <SAssetRight>
         <SAssetBalance>
-          {fromWad(asset.balance || "0", decimals)} {asset.symbol}
+          {fromWad(asset.balance || "0")} {asset.symbol}
         </SAssetBalance>
       </SAssetRight>
     </SAsset>

@@ -39,7 +39,6 @@ export async function approveKadenaRequest(
       })
 
     case KADENA_SIGNING_METHODS.KADENA_SIGN:
-      console.log(request)
       const signedRequest = wallet.signRequest(request.params)
       return formatJsonRpcResult(id, signedRequest)
 

@@ -41,7 +41,7 @@ async function getKadenaBalanceForChain(
 
     if (result.status !== "success") return 0;
 
-    return result.data;
+    return result.data * 10e17;
   } catch (e) {
     return 0;
   }
@@ -74,7 +74,7 @@ export async function apiGetKadenaAccountBalance(
   const totalBalance = chainBalances.reduce((acc, item) => acc + item, 0);
 
   return {
-    balance: (totalBalance * 10e11).toString(),
+    balance: totalBalance.toString(),
     symbol: "KDA",
     name: "KDA",
   };
