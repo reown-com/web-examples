@@ -48,3 +48,54 @@ Your `.env.local` now contains the following environment variables:
 ## Preview of wallet and dapp examples in action
 
 https://user-images.githubusercontent.com/3154053/156764521-3492c232-7a93-47ba-88bd-2cee3f8366d4.mp4
+
+## DOM Tags
+This section is a key of the DOM elements used for internal E2E testing
+Accessible with `data-testid`
+
+### Navbar
+| Key | Description |
+| ----------- | ----------- |
+|  `accounts` | Accounts page |
+| `sessions` | Sessions page |
+| `wc-connect` |  WC Connect page |
+| `pairings` | Pairings page |
+| `settings` | Settings Page |
+
+### WC Connect Page
+url: `/walletconnect`
+| Key | Description |
+| ----------- | ----------- |
+| `uri-input` | Uri textbox |
+| `uri-connect-button` | Uri connect button |
+
+### Sessions Page
+url: `/session`
+| Key | Description |
+| ----------- | ----------- |
+| `session-${topic}` | Session cards can be accessed by topic |
+
+### Session Details Page
+url: `/session?topic=`
+| Key | Description |
+| ----------- | ----------- |
+| `session-card-${chain}` | Session chain info card |
+| `session-delete-button` | Session delete button |
+| `session-ping-button` | Session ping button |
+| `session-emit-button` | Session emit button |
+| `session-update-button` | Session update button |
+
+### Pairing Page
+url: `/pairings`
+| Key | Description |
+| ----------- | ----------- |
+| `pairing-${topic}` | Pairing cards can be accessed by topic |
+| `pairing-delete-${topic}` | Delete pairing by topic |
+
+### Accounts Page
+url: `/`
+| Key | Description |
+| ----------- | ----------- |
+| `chain-card-${chain id}` | Chain card by chain id |
+| `chain-switch-button-${chain id}` | Chain switch button |
+| `chain-switch-button-${chain id}` | Chain copy button |

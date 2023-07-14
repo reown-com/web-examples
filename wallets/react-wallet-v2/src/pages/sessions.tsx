@@ -30,6 +30,7 @@ export default function SessionsPage() {
                 name={name}
                 logo={icons[0]}
                 url={url}
+                data-testid={'session-' + session.topic}
               />
             )
           })
