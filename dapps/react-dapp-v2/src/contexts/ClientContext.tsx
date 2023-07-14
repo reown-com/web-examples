@@ -22,7 +22,10 @@ import {
   DEFAULT_RELAY_URL,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
-import { getRequiredNamespaces } from "../helpers/namespaces";
+import {
+  getOptionalNamespaces,
+  getRequiredNamespaces,
+} from "../helpers/namespaces";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 
 /**
@@ -144,10 +147,16 @@ export function ClientContextProvider({
           "requiredNamespaces config for connect:",
           requiredNamespaces
         );
+        const optionalNamespaces = getOptionalNamespaces(chains);
+        console.log(
+          "optionalNamespaces config for connect:",
+          optionalNamespaces
+        );
 
         const { uri, approval } = await client.connect({
           pairingTopic: pairing?.topic,
           requiredNamespaces,
+          optionalNamespaces,
         });
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
