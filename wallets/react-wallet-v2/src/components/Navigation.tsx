@@ -5,19 +5,19 @@ import Link from 'next/link'
 export default function Navigation() {
   return (
     <Row justify="space-between" align="center">
-      <Link href="/" passHref>
+      <Link href="/" passHref data-testid="accounts">
         <a className="navLink">
           <Image alt="accounts icon" src="/icons/accounts-icon.svg" width={27} height={27} />
         </a>
       </Link>
 
-      <Link href="/sessions" passHref>
+      <Link href="/sessions" passHref data-testid="sessions">
         <a className="navLink">
           <Image alt="sessions icon" src="/icons/sessions-icon.svg" width={27} height={27} />
         </a>
       </Link>
 
-      <Link href="/walletconnect" passHref>
+      <Link href="/walletconnect" passHref data-testid="wc-connect">
         <a className="navLink">
           <Avatar
             size="lg"
@@ -35,13 +35,13 @@ export default function Navigation() {
         </a>
       </Link>
 
-      <Link href="/pairings" passHref>
+      <Link href="/pairings" passHref data-testid="pairings">
         <a className="navLink">
           <Image alt="pairings icon" src="/icons/pairings-icon.svg" width={25} height={25} />
         </a>
       </Link>
 
-      <Link href="/settings" passHref>
+      <Link href="/settings" passHref data-testid="settings">
         <a className="navLink">
           <Image alt="settings icon" src="/icons/settings-icon.svg" width={27} height={27} />
         </a>

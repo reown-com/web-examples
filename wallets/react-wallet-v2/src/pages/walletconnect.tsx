@@ -38,6 +38,7 @@ export default function WalletConnectPage() {
         placeholder="e.g. wc:a281567bb3e4..."
         onChange={e => setUri(e.target.value)}
         value={uri}
+        data-testid="uri-input"
         contentRight={
           <Button
             size="xs"
@@ -45,6 +46,7 @@ export default function WalletConnectPage() {
             css={{ marginLeft: -60 }}
             onClick={() => onConnect(uri)}
             color="gradient"
+            data-testid="uri-connect-button"
           >
             {loading ? <Loading size="sm" /> : 'Connect'}
           </Button>
