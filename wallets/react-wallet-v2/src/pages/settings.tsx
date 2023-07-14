@@ -6,6 +6,7 @@ import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { solanaWallets } from '@/utils/SolanaWalletUtil'
 import { multiversxWallets } from '@/utils/MultiversxWalletUtil'
 import { tronWallets } from '@/utils/TronWalletUtil'
+import { kadenaWallets } from '@/utils/KadenaWalletUtil'
 import { Card, Divider, Row, Switch, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
@@ -20,7 +21,8 @@ export default function SettingsPage() {
     solanaAddress,
     multiversxAddress,
     tronAddress,
-    tezosAddress
+    tezosAddress,
+    kadenaAddress
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -94,7 +96,9 @@ export default function SettingsPage() {
         MultiversX Mnemonic
       </Text>
       <Card bordered borderWeight="light" css={{ minHeight: '215px', wordWrap: 'break-word' }}>
-        <Text css={{ fontFamily: '$mono' }}>{multiversxWallets[multiversxAddress].getMnemonic()}</Text>
+        <Text css={{ fontFamily: '$mono' }}>
+          {multiversxWallets[multiversxAddress].getMnemonic()}
+        </Text>
       </Card>
 
       <Text h4 css={{ marginTop: '$10', marginBottom: '$5' }}>
@@ -110,6 +114,15 @@ export default function SettingsPage() {
       <Card bordered borderWeight="light" css={{ minHeight: '100px', wordWrap: 'break-word' }}>
         <Text css={{ fontFamily: '$mono' }}>{tezosWallets[tezosAddress].getMnemonic()}</Text>
       </Card>
+
+      <Text h4 css={{ marginTop: '$10', marginBottom: '$5' }}>
+        Kadena Secret Key
+      </Text>
+      <Card bordered borderWeight="light" css={{ wordWrap: 'break-word' }}>
+        <Text css={{ fontFamily: '$mono' }}>{kadenaWallets[kadenaAddress].getSecretKey()}</Text>
+      </Card>
+
+      <Text h4 css={{ marginTop: '$10', marginBottom: '$5' }}></Text>
     </Fragment>
   )
 }

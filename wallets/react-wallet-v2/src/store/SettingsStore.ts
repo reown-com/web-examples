@@ -14,6 +14,7 @@ interface State {
   multiversxAddress: string
   tronAddress: string
   tezosAddress: string
+  kadenaAddress: string
   relayerRegionURL: string
   activeChainId: string
 }
@@ -33,6 +34,7 @@ const state = proxy<State>({
   multiversxAddress: '',
   tronAddress: '',
   tezosAddress: '',
+  kadenaAddress: '',
   relayerRegionURL: ''
 })
 
@@ -63,6 +65,9 @@ const SettingsStore = {
   },
   setNearAddress(nearAddress: string) {
     state.nearAddress = nearAddress
+  },
+  setKadenaAddress(kadenaAddress: string) {
+    state.kadenaAddress = kadenaAddress
   },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL

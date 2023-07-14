@@ -25,6 +25,7 @@ interface State {
     | 'SessionSignMultiversxModal'
     | 'SessionSignTronModal'
     | 'SessionSignTezosModal'
+    | 'SessionSignKadenaModal'
   data?: ModalData
 }
 

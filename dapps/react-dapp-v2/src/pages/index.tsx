@@ -16,6 +16,7 @@ import {
   DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TEST_CHAINS,
   DEFAULT_NEAR_METHODS,
+  DEFAULT_KADENA_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TEZOS_METHODS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
@@ -78,6 +79,7 @@ const Home: NextPage = () => {
     multiversxRpc,
     tronRpc,
     tezosRpc,
+    kadenaRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -351,6 +353,37 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getKadenaActions = (): AccountAction[] => {
+    const testGetAccounts = async (chainId: string, address: string) => {
+      openRequestModal();
+      await kadenaRpc.testGetAccounts(chainId, address);
+    };
+    const testSign = async (chainId: string, address: string) => {
+      openRequestModal();
+      await kadenaRpc.testSign(chainId, address);
+    };
+
+    const testSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await kadenaRpc.testQuicksign(chainId, address);
+    };
+
+    return [
+      {
+        method: DEFAULT_KADENA_METHODS.KADENA_GET_ACCOUNTS,
+        callback: testGetAccounts,
+      },
+      {
+        method: DEFAULT_KADENA_METHODS.KADENA_SIGN,
+        callback: testSign,
+      },
+      {
+        method: DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN,
+        callback: testSignMessage,
+      },
+    ];
+  };
+
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
     switch (namespace) {
@@ -370,6 +403,8 @@ const Home: NextPage = () => {
         return getTronActions();
       case "tezos":
         return getTezosActions();
+      case "kadena":
+        return getKadenaActions();
       default:
         break;
     }
@@ -411,6 +446,7 @@ const Home: NextPage = () => {
 
   const renderContent = () => {
     const chainOptions = isTestnet ? DEFAULT_TEST_CHAINS : DEFAULT_MAIN_CHAINS;
+
     return !accounts.length && !Object.keys(balances).length ? (
       <SLanding center>
         <Banner />
@@ -431,7 +467,7 @@ const Home: NextPage = () => {
             />
           ))}
           <SConnectButton left onClick={onConnect} disabled={!chains.length}>
-            {"Connect"}
+            Connect
           </SConnectButton>
           <Dropdown
             relayerRegion={relayerRegion}
@@ -449,7 +485,7 @@ const Home: NextPage = () => {
             return (
               <Blockchain
                 key={account}
-                active={true}
+                active
                 chainData={chainData}
                 fetching={isFetchingBalances}
                 address={address}

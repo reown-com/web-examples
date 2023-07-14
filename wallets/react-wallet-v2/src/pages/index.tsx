@@ -7,12 +7,13 @@ import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { POLKADOT_MAINNET_CHAINS, POLKADOT_TEST_CHAINS } from '@/data/PolkadotData'
 import { MULTIVERSX_MAINNET_CHAINS, MULTIVERSX_TEST_CHAINS } from '@/data/MultiversxData'
 import { TRON_MAINNET_CHAINS, TRON_TEST_CHAINS } from '@/data/TronData'
+import { NEAR_TEST_CHAINS } from '@/data/NEARData'
+import { TEZOS_MAINNET_CHAINS, TEZOS_TEST_CHAINS } from '@/data/TezosData'
+import { KADENA_MAINNET_CHAINS, KADENA_TEST_CHAINS } from '@/data/KadenaData'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
-import { NEAR_TEST_CHAINS } from '@/data/NEARData'
-import { TEZOS_MAINNET_CHAINS, TEZOS_TEST_CHAINS } from '@/data/TezosData'
 
 export default function HomePage() {
   const {
@@ -24,37 +25,105 @@ export default function HomePage() {
     nearAddress,
     multiversxAddress,
     tronAddress,
-    tezosAddress
+    tezosAddress,
+    kadenaAddress
   } = useSnapshot(SettingsStore.state)
 
   return (
     <Fragment>
       <PageHeader title="Accounts">
-        <AccountPicker data-testid='account-picker' />
+        <AccountPicker data-testid="account-picker" />
       </PageHeader>
       <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets
       </Text>
-      {Object.entries(EIP155_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={eip155Address} chainId={caip10.toString()} data-testid={'chain-card-' + caip10.toString()} />
+      {Object.entries(EIP155_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={eip155Address}
+          chainId={caip10.toString()}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
       ))}
-      {Object.entries(COSMOS_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={cosmosAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+      {Object.entries(COSMOS_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={cosmosAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
       ))}
-      {Object.entries(SOLANA_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={solanaAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+      {Object.entries(SOLANA_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={solanaAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
       ))}
-      {Object.entries(POLKADOT_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={polkadotAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+      {Object.entries(POLKADOT_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={polkadotAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
       ))}
-      {Object.entries(MULTIVERSX_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={multiversxAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+      {Object.entries(MULTIVERSX_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={multiversxAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
       ))}
-      {Object.entries(TRON_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+      {Object.entries(TRON_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={tronAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
       ))}
-      {Object.entries(TEZOS_MAINNET_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-        <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tezosAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+      {Object.entries(TEZOS_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={tezosAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
+      ))}
+      {Object.entries(KADENA_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={kadenaAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
       ))}
 
       {testNets ? (
@@ -62,26 +131,93 @@ export default function HomePage() {
           <Text h4 css={{ marginBottom: '$5' }}>
             Testnets
           </Text>
-          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={eip155Address} chainId={caip10.toString()} data-testid={'chain-card-' + caip10.toString()}/>
+          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={eip155Address}
+              chainId={caip10.toString()}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
           ))}
-          {Object.entries(SOLANA_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={solanaAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+          {Object.entries(SOLANA_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={solanaAddress}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
           ))}
-          {Object.entries(POLKADOT_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={polkadotAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+          {Object.entries(POLKADOT_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={polkadotAddress}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
           ))}
-          {Object.entries(NEAR_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={nearAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+          {Object.entries(NEAR_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={nearAddress}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
           ))}
-          {Object.entries(MULTIVERSX_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={multiversxAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
-          ))}        
-          {Object.entries(TRON_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tronAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+          {Object.entries(MULTIVERSX_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={multiversxAddress}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
           ))}
-          {Object.entries(TEZOS_TEST_CHAINS).map(([caip10, {name, logo, rgb}]) => (
-            <AccountCard key={name} name={name} logo={logo} rgb={rgb} address={tezosAddress} chainId={caip10} data-testid={'chain-card-' + caip10}/>
+          {Object.entries(TRON_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={tronAddress}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
+          ))}
+          {Object.entries(TEZOS_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={tezosAddress}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
+          ))}
+          {Object.entries(KADENA_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={kadenaAddress}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
           ))}
         </Fragment>
       ) : null}

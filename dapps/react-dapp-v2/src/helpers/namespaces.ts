@@ -10,6 +10,8 @@ import {
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_NEAR_METHODS,
   DEFAULT_NEAR_EVENTS,
+  DEFAULT_KADENA_METHODS,
+  DEFAULT_KADENA_EVENTS,
   DEFAULT_MULTIVERSX_EVENTS,
   DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TRON_METHODS,
@@ -49,6 +51,8 @@ export const getSupportedRequiredMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_TRON_METHODS);
     case "tezos":
       return Object.values(DEFAULT_TEZOS_METHODS);
+    case "kadena":
+      return Object.values(DEFAULT_KADENA_METHODS);
     default:
       throw new Error(
         `No default required methods for namespace: ${namespace}`
@@ -67,6 +71,7 @@ export const getSupportedOptionalMethodsByNamespace = (namespace: string) => {
     case "mvx":
     case "tron":
     case "tezos":
+    case "kadena":
       return [];
     default:
       throw new Error(
@@ -93,6 +98,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_TRON_EVENTS);
     case "tezos":
       return Object.values(DEFAULT_TEZOS_EVENTS);
+    case "kadena":
+      return Object.values(DEFAULT_KADENA_EVENTS);
     default:
       throw new Error(`No default events for namespace: ${namespace}`);
   }

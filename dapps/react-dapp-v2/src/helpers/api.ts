@@ -1,5 +1,8 @@
 import axios, { AxiosInstance } from "axios";
+import { apiGetKadenaAccountBalance } from "./kadena";
+
 import { AssetData } from "./types";
+import { PactCommand } from "@kadena/client";
 
 export const rpcProvidersByChainId: Record<number, any> = {
   1: {
@@ -121,10 +124,19 @@ export async function apiGetAccountBalance(
   address: string,
   chainId: string
 ): Promise<AssetData> {
-  const namespace = chainId.split(":")[0];
+  const [namespace, networkId] = chainId.split(":");
+
+  if (namespace === "kadena") {
+    return apiGetKadenaAccountBalance(
+      address,
+      networkId as PactCommand["networkId"]
+    );
+  }
+
   if (namespace !== "eip155") {
     return { balance: "", symbol: "", name: "" };
   }
+
   const ethChainId = chainId.split(":")[1];
   const rpc = rpcProvidersByChainId[Number(ethChainId)];
   if (!rpc) {

@@ -9,6 +9,7 @@ import SessionSignSolanaModal from '@/views/SessionSignSolanaModal'
 import SessionSignMultiversxModal from '@/views/SessionSignMultiversxModal'
 import SessionSignTronModal from '@/views/SessionSignTronModal'
 import SessionSignTezosModal from '@/views/SessionSignTezosModal'
+import SessionSignKadenaModal from '@/views/SessionSignKadenaModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
 import { Modal as NextModal } from '@nextui-org/react'
@@ -31,6 +32,7 @@ export default function Modal() {
       {view === 'SessionSignMultiversxModal' && <SessionSignMultiversxModal />}
       {view === 'SessionSignTronModal' && <SessionSignTronModal />}
       {view === 'SessionSignTezosModal' && <SessionSignTezosModal />}
+      {view === 'SessionSignKadenaModal' && <SessionSignKadenaModal />}
     </NextModal>
   )
 }

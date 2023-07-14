@@ -6,6 +6,7 @@ import { POLKADOT_CHAINS, TPolkadotChain } from '@/data/PolkadotData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { TEZOS_CHAINS, TTezosChain } from '@/data/TezosData'
 import { TRON_CHAINS, TTronChain } from '@/data/TronData'
+import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
 
 import { utils } from 'ethers'
 
@@ -115,6 +116,13 @@ export function isNearChain(chain: string) {
 }
 
 /**
+ * Check if chain is part of KADENA standard
+ */
+export function isKadenaChain(chain: string) {
+  return chain.includes('kadena')
+}
+
+/**
  * Check if chain is part of MULTIVERSX standard
  */
 export function isMultiversxChain(chain: string) {
@@ -146,8 +154,9 @@ export function formatChainName(chainId: string) {
     NEAR_TEST_CHAINS[chainId as TNearChain]?.name ??
     POLKADOT_CHAINS[chainId as TPolkadotChain]?.name ??
     SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
-    TEZOS_CHAINS[chainId as TTezosChain]?.name ??
     TRON_CHAINS[chainId as TTronChain]?.name ??
+    TEZOS_CHAINS[chainId as TTezosChain]?.name ??
+    KADENA_CHAINS[chainId as TKadenaChain]?.name ??
     chainId
   )
 }

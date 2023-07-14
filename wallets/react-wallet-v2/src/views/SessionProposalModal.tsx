@@ -17,7 +17,8 @@ import {
   isNearChain,
   isMultiversxChain,
   isTronChain,
-  isTezosChain
+  isTezosChain,
+  isKadenaChain
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
@@ -26,6 +27,7 @@ import { SessionTypes } from '@walletconnect/types'
 import { getSdkError, mergeArrays } from '@walletconnect/utils'
 import { Fragment, useEffect, useState } from 'react'
 import { nearAddresses } from '@/utils/NearWalletUtil'
+import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 
 export default function SessionProposalModal() {
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string[]>>({})
@@ -196,6 +198,15 @@ export default function SessionProposalModal() {
       return (
         <ProposalSelectSection
           addresses={tezosAddresses}
+          selectedAddresses={selectedAccounts[chain]}
+          onSelect={onSelectAccount}
+          chain={chain}
+        />
+      )
+    } else if (isKadenaChain(chain)) {
+      return (
+        <ProposalSelectSection
+          addresses={kadenaAddresses}
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}

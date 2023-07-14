@@ -103,6 +103,7 @@ export function ClientContextProvider({
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
           const assets = await apiGetAccountBalance(address, chainId);
+
           return { account, assets: [assets] };
         })
       );
@@ -130,6 +131,7 @@ export function ClientContextProvider({
       setChains(allNamespaceChains);
       setAccounts(allNamespaceAccounts);
       setSolanaPublicKeys(getPublicKeysFromAccounts(allNamespaceAccounts));
+
       await getAccountBalances(allNamespaceAccounts);
     },
     []

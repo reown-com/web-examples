@@ -16,6 +16,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "mvx:1",
   "tron:0x2b6653dc",
   "tezos:mainnet",
+  "kadena:mainnet01",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -32,6 +33,7 @@ export const DEFAULT_TEST_CHAINS = [
   "mvx:D",
   "tron:0xcd8690dc",
   "tezos:testnet",
+  "kadena:testnet04",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -152,6 +154,17 @@ type RelayerType = {
   value: string | undefined;
   label: string;
 };
+
+/**
+ * KADENA
+ */
+export enum DEFAULT_KADENA_METHODS {
+  KADENA_GET_ACCOUNTS = "kadena_getAccounts_v1",
+  KADENA_SIGN = "kadena_sign_v1",
+  KADENA_QUICKSIGN = "kadena_quicksign_v1",
+}
+
+export enum DEFAULT_KADENA_EVENTS {}
 
 export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
   {

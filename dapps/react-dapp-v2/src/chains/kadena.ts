@@ -7,26 +7,38 @@ import {
   ChainsMap,
 } from "../helpers";
 
-export const NearMetadata: NamespaceMetadata = {
-  testnet: {
-    logo: "https://avatars.githubusercontent.com/u/7613128?s=200&v=4",
-    rgb: "27, 31, 53",
+export const KadenaMetadata: NamespaceMetadata = {
+  mainnet01: {
+    logo: "/assets/kadena.png",
+    rgb: "237, 9, 143",
+  },
+  testnet04: {
+    logo: "/assets/kadena.png",
+    rgb: "237, 9, 143",
   },
 };
 
-export const NearChainData: ChainsMap = {
-  testnet: {
-    name: "NEAR Testnet",
-    id: "near:testnet",
-    rpc: ["https://rpc.testnet.near.org"],
-    slip44: 397,
+// TODO: add `kadena` namespace to `caip-api` package to avoid manual specification here.
+export const KadenaChainData: ChainsMap = {
+  mainnet01: {
+    name: "Kadena",
+    id: "kadena:mainnet01",
+    rpc: ["https://api.chainweb.com"],
+    slip44: 626,
+    testnet: false,
+  },
+  testnet04: {
+    name: "Kadena Testnet",
+    id: "kadena:testnet04",
+    rpc: ["https://api.chainweb.com"],
+    slip44: 626,
     testnet: true,
   },
 };
 
 export function getChainMetadata(chainId: string): ChainMetadata {
   const reference = chainId.split(":")[1];
-  const metadata = NearMetadata[reference];
+  const metadata = KadenaMetadata[reference];
   if (typeof metadata === "undefined") {
     throw new Error(`No chain metadata found for chainId: ${chainId}`);
   }

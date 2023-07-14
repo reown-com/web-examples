@@ -13,6 +13,8 @@
     "@cosmjs/encoding": "0.31.0",
     "@cosmjs/proto-signing": "0.31.0",
     "@json-rpc-tools/utils": "1.7.6",
+    "@kadena/cryptography-utils": "^0.3.2",
+    "@kadena/types": "^0.3.2",
     "@multiversx/sdk-core": "11.6.0",
     "@multiversx/sdk-wallet": "4.2.0",
     "@near-wallet-selector/wallet-utils": "^7.0.2",

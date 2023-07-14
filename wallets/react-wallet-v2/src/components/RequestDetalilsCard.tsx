@@ -1,5 +1,6 @@
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
@@ -18,7 +19,7 @@ interface IProps {
 /**
  * Component
  */
-export default function RequesDetailsCard({ chains, protocol }: IProps) {
+export default function RequestDetailsCard({ chains, protocol }: IProps) {
   return (
     <Fragment>
       <Row>
@@ -34,6 +35,7 @@ export default function RequesDetailsCard({ chains, protocol }: IProps) {
                   NEAR_TEST_CHAINS[chain as TNearChain]?.name ??
                   MULTIVERSX_CHAINS[chain as TMultiversxChain]?.name ??
                   TRON_CHAINS[chain as TTronChain]?.name ??
+                  KADENA_CHAINS[chain as TKadenaChain]?.name ??
                   chain
               )
               .join(', ')}
