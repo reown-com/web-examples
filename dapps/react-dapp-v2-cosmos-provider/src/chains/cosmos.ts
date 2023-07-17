@@ -20,19 +20,14 @@ export function getChainMetadata(chainId: string): ChainMetadata {
   return metadata;
 }
 
-export function getChainRequestRender(request: JsonRpcRequest): ChainRequestRender[] {
-  let params = [{ label: "Method", value: request.method }];
-
-  switch (request.method) {
-    default:
-      params = [
-        ...params,
-        {
-          label: "params",
-          value: JSON.stringify(request.params, null, "\t"),
-        },
-      ];
-      break;
-  }
-  return params;
+export function getChainRequestRender(
+  request: JsonRpcRequest
+): ChainRequestRender[] {
+  return [
+    { label: "Method", value: request.method },
+    {
+      label: "params",
+      value: JSON.stringify(request.params, null, "\t"),
+    },
+  ];
 }

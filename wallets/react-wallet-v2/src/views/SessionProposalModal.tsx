@@ -17,15 +17,17 @@ import {
   isNearChain,
   isMultiversxChain,
   isTronChain,
-  isTezosChain
+  isTezosChain,
+  isKadenaChain
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
-import { getSdkError } from '@walletconnect/utils'
+import { getSdkError, mergeArrays } from '@walletconnect/utils'
 import { Fragment, useEffect, useState } from 'react'
 import { nearAddresses } from '@/utils/NearWalletUtil'
+import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 
 export default function SessionProposalModal() {
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string[]>>({})
@@ -89,17 +91,23 @@ export default function SessionProposalModal() {
           }
           if (optionalNamespaces[key] && selectedAccounts[`optional:${key}`]) {
             optionalNamespaces[key].chains?.map(chain => {
-              selectedAccounts[`optional:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
+              selectedAccounts[`optional:${key}`].forEach(acc => {
+                if (!accounts.includes(`${chain}:${acc}`)) {
+                  accounts.push(`${chain}:${acc}`)
+                }
+              })
             })
             namespaces[key] = {
               ...namespaces[key],
               accounts,
-              methods: optionalNamespaces[key].methods,
-              events: optionalNamespaces[key].events,
-              chains: namespaces[key]?.chains?.concat(optionalNamespaces[key].chains || [])
+              methods: mergeArrays(namespaces[key].methods, optionalNamespaces[key].methods),
+              events: mergeArrays(namespaces[key].events, optionalNamespaces[key].events),
+              chains: mergeArrays(namespaces[key].chains, optionalNamespaces[key].chains)
             }
           }
         })
+
+      console.log('approving namespaces:', namespaces)
 
       await signClient.approve({
         id,
@@ -190,6 +198,15 @@ export default function SessionProposalModal() {
       return (
         <ProposalSelectSection
           addresses={tezosAddresses}
+          selectedAddresses={selectedAccounts[chain]}
+          onSelect={onSelectAccount}
+          chain={chain}
+        />
+      )
+    } else if (isKadenaChain(chain)) {
+      return (
+        <ProposalSelectSection
+          addresses={kadenaAddresses}
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}

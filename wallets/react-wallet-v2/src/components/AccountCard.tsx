@@ -18,9 +18,7 @@ interface Props {
 
 export default function AccountCard({ name, logo, rgb, address, chainId }: Props) {
   const [copied, setCopied] = useState(false)
-  const { activeChainId, account } = useSnapshot(
-    SettingsStore.state,
-  );
+  const { activeChainId, account } = useSnapshot(SettingsStore.state)
   function onCopy() {
     navigator?.clipboard?.writeText(address)
     setCopied(true)
@@ -28,8 +26,8 @@ export default function AccountCard({ name, logo, rgb, address, chainId }: Props
   }
 
   async function onChainChanged(chainId: string, address: string) {
-    SettingsStore.setActiveChainId(chainId);
-    await updateSignClientChainId(chainId.toString(), address);
+    SettingsStore.setActiveChainId(chainId)
+    await updateSignClientChainId(chainId.toString(), address)
   }
 
   return (
@@ -48,6 +46,7 @@ export default function AccountCard({ name, logo, rgb, address, chainId }: Props
         <Button
           size="sm"
           css={{ minWidth: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+          data-testid={'chain-copy-button' + chainId}
           onClick={onCopy}
         >
           <Image
@@ -58,15 +57,16 @@ export default function AccountCard({ name, logo, rgb, address, chainId }: Props
           />
         </Button>
       </Tooltip>
-    <Button
+      <Button
         size="sm"
         css={{
-          minWidth: "auto",
-          backgroundColor: "rgba(255, 255, 255, 0.15)",
-          marginLeft: "$5",
+          minWidth: 'auto',
+          backgroundColor: 'rgba(255, 255, 255, 0.15)',
+          marginLeft: '$5'
         }}
+        data-testid={'chain-switch-button' + chainId}
         onPress={() => {
-          onChainChanged(chainId, address);
+          onChainChanged(chainId, address)
         }}
       >
         {activeChainId === chainId ? `✅` : `🔄`}

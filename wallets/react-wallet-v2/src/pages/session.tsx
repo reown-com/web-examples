@@ -128,7 +128,7 @@ export default function SessionPage() {
         return (
           <Fragment key={chain}>
             <Text h4 css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-            <SessionChainCard namespace={namespaces[chain]} />
+            <SessionChainCard namespace={namespaces[chain]} data-testid={'session-card' + namespaces[chain]} />
             {/* {renderAccountSelection(chain)} */}
             <Divider y={2} />
           </Fragment>
@@ -146,25 +146,25 @@ export default function SessionPage() {
       </Row>
 
       <Row css={{ marginTop: '$10' }}>
-        <Button flat css={{ width: '100%' }} color="error" onClick={onDeleteSession}>
+        <Button flat css={{ width: '100%' }} color="error" onClick={onDeleteSession} data-testid='session-delete-button'>
           {loading ? <Loading size="sm" color="error" /> : 'Delete'}
         </Button>
       </Row>
 
       <Row css={{ marginTop: '$10' }}>
-        <Button flat css={{ width: '100%' }} color="primary" onClick={onSessionPing}>
+        <Button flat css={{ width: '100%' }} color="primary" onClick={onSessionPing} data-testid='session-ping-button'>
           {loading ? <Loading size="sm" color="primary" /> : 'Ping'}
         </Button>
       </Row>
 
       <Row css={{ marginTop: '$10' }}>
-        <Button flat css={{ width: '100%' }} color="secondary" onClick={onSessionEmit}>
+        <Button flat css={{ width: '100%' }} color="secondary" onClick={onSessionEmit} data-testid='session-emit-button'>
           {loading ? <Loading size="sm" color="secondary" /> : 'Emit'}
         </Button>
       </Row>
 
       <Row css={{ marginTop: '$10' }}>
-        <Button flat css={{ width: '100%' }} color="warning" onClick={onSessionUpdate}>
+        <Button flat css={{ width: '100%' }} color="warning" onClick={onSessionUpdate} data-testid='session-update-button'>
           {loading ? <Loading size="sm" color="warning" /> : 'Update'}
         </Button>
       </Row>

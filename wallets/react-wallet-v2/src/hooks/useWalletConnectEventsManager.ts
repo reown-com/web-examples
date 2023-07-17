@@ -11,6 +11,7 @@ import { useCallback, useEffect } from 'react'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
 import { TEZOS_SIGNING_METHODS } from '@/data/TezosData'
+import { KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -80,6 +81,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
             topic,
             response: await approveNearRequest(requestEvent)
           })
+
         case TRON_SIGNING_METHODS.TRON_SIGN_MESSAGE:
         case TRON_SIGNING_METHODS.TRON_SIGN_TRANSACTION:
           return ModalStore.open('SessionSignTronModal', { requestEvent, requestSession })
@@ -87,6 +89,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case TEZOS_SIGNING_METHODS.TEZOS_SEND:
         case TEZOS_SIGNING_METHODS.TEZOS_SIGN:
           return ModalStore.open('SessionSignTezosModal', { requestEvent, requestSession })
+        case KADENA_SIGNING_METHODS.KADENA_GET_ACCOUNTS:
+        case KADENA_SIGNING_METHODS.KADENA_SIGN:
+        case KADENA_SIGNING_METHODS.KADENA_QUICKSIGN:
+          return ModalStore.open('SessionSignKadenaModal', { requestEvent, requestSession })
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }

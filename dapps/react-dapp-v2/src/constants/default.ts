@@ -7,6 +7,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "eip155:10",
   "eip155:100",
   "eip155:137",
+  "eip155:324",
   "eip155:42161",
   "eip155:42220",
   "cosmos:cosmoshub-4",
@@ -15,11 +16,13 @@ export const DEFAULT_MAIN_CHAINS = [
   "mvx:1",
   "tron:0x2b6653dc",
   "tezos:mainnet",
+  "kadena:mainnet01",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
   // testnets
   "eip155:5",
+  "eip155:280",
   "eip155:420",
   "eip155:80001",
   "eip155:421611",
@@ -30,6 +33,7 @@ export const DEFAULT_TEST_CHAINS = [
   "mvx:D",
   "tron:0xcd8690dc",
   "tezos:testnet",
+  "kadena:testnet04",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -51,10 +55,14 @@ export const DEFAULT_APP_METADATA = {
  */
 export enum DEFAULT_EIP155_METHODS {
   ETH_SEND_TRANSACTION = "eth_sendTransaction",
+  PERSONAL_SIGN = "personal_sign",
+}
+
+export enum DEFAULT_EIP155_OPTIONAL_METHODS {
   ETH_SIGN_TRANSACTION = "eth_signTransaction",
   ETH_SIGN = "eth_sign",
-  PERSONAL_SIGN = "personal_sign",
   ETH_SIGN_TYPED_DATA = "eth_signTypedData",
+  ETH_SIGN_TYPED_DATA_V4 = "eth_signTypedData_v4",
 }
 
 export enum DEFAULT_EIP_155_EVENTS {
@@ -146,6 +154,17 @@ type RelayerType = {
   value: string | undefined;
   label: string;
 };
+
+/**
+ * KADENA
+ */
+export enum DEFAULT_KADENA_METHODS {
+  KADENA_GET_ACCOUNTS = "kadena_getAccounts_v1",
+  KADENA_SIGN = "kadena_sign_v1",
+  KADENA_QUICKSIGN = "kadena_quicksign_v1",
+}
+
+export enum DEFAULT_KADENA_EVENTS {}
 
 export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
   {
