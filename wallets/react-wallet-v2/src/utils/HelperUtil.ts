@@ -9,6 +9,7 @@ import { TRON_CHAINS, TTronChain } from '@/data/TronData'
 import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
 
 import { utils } from 'ethers'
+import { Verify } from '@walletconnect/types'
 
 /**
  * Truncates string (in the middle) via given lenght value
@@ -159,4 +160,16 @@ export function formatChainName(chainId: string) {
     KADENA_CHAINS[chainId as TKadenaChain]?.name ??
     chainId
   )
+}
+
+export function getVerifyStatus(context?: Verify.Context) {
+  if (!context) return ''
+  switch (context.verified.validation) {
+    case 'VALID':
+      return '✅ Verified'
+    case 'INVALID':
+      return '❌ Origin does not match'
+    case 'UNKNOWN':
+      return '❓ Unknown'
+  }
 }
