@@ -54,11 +54,10 @@ export const SToggleContainer = styled.div`
 `;
 
 export const SDropDownContainer = styled.div`
-  paddingtop: 20;
-  width: 250;
+  padding-top: 20px;
   display: flex;
-  justifycontent: center;
-  alignitems: flex-end;
+  justify-content: center;
+  align-items: flex-end;
 `;
 
 export const SFullWidthContainer = styled.div`
