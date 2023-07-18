@@ -42,7 +42,7 @@
     "@walletconnect/types": "2.9.0",
     "eslint": "8.15.0",
     "eslint-config-next": "12.1.6",
-    "eslint-config-prettier": "8.5.0",
+    "eslint-config-prettier": "8.8.0",
     "prettier": "2.6.2",
     "typescript": "4.6.4"
   }
