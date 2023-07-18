@@ -4,9 +4,10 @@ import styled from "styled-components";
 import Icon from "./Icon";
 import { useState } from "react";
 
-interface DropdownProps {
+interface RelayRegionDropdownProps {
   relayerRegion: string;
   setRelayerRegion?: (relayer: string) => void;
+  show: boolean;
 }
 
 const SelectContainer = styled.select`
@@ -17,47 +18,27 @@ const SelectContainer = styled.select`
   border-radius: 4px;
   padding: 2px;
   font-size: "1.25em";
-  position: absolute;
   bottom: 40px;
   left: 50px;
   direction: ltr;
   unicode-bidi: embed;
+  margin: 5px;
 `;
 
 const SelectOption = styled.option`
   font-size: "1.25em";
 `;
 
-const Dropdown = (props: DropdownProps) => {
-  const { relayerRegion, setRelayerRegion } = props;
-  const [openSelect, setOpenSelect] = useState(false);
-  const selectRef = React.createRef();
-
-  const openDropdown = () => {
-    setOpenSelect(!openSelect);
-  };
-
+const RelayRegionDropdown = (props: RelayRegionDropdownProps) => {
+  const { relayerRegion, setRelayerRegion, show } = props;
   return (
-    <div
-      style={{
-        paddingTop: 72,
-        width: 250,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "flex-end",
-      }}
-    >
-      <button onClick={openDropdown} style={{ background: "transparent" }}>
-        <Icon size={30} src={"/assets/settings.svg"} />
-      </button>
-      {openSelect && (
+    <div>
+      {show && (
         <SelectContainer
           value={relayerRegion}
           onChange={(e) => setRelayerRegion?.(e?.target?.value)}
         >
-          <option selected disabled>
-            Relayer Region:
-          </option>
+          <option disabled>Relayer Region:</option>
           {REGIONALIZED_RELAYER_ENDPOINTS.map((e, i) => {
             return (
               <SelectOption key={i} value={e.value}>
@@ -71,4 +52,4 @@ const Dropdown = (props: DropdownProps) => {
   );
 };
 
-export default Dropdown;
+export default RelayRegionDropdown;

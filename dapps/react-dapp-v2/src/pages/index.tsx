@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Banner from "../components/Banner";
 import Blockchain from "../components/Blockchain";
 import Column from "../components/Column";
-import Dropdown from "../components/Dropdown";
+import RelayRegionDropdown from "../components/RelayRegionDropdown";
 import Header from "../components/Header";
 import Modal from "../components/Modal";
 import {
@@ -32,6 +32,7 @@ import {
   SButtonContainer,
   SConnectButton,
   SContent,
+  SDropDownContainer,
   SLanding,
   SLayout,
   SToggleContainer,
@@ -39,6 +40,8 @@ import {
 import { useWalletConnectClient } from "../contexts/ClientContext";
 import { useJsonRpc } from "../contexts/JsonRpcContext";
 import { useChainData } from "../contexts/ChainDataContext";
+import Icon from "../components/Icon";
+import OriginSimulationDropdown from "../components/OriginSimulationDropdown";
 
 // Normal import does not work here
 const { version } = require("@walletconnect/sign-client/package.json");
@@ -66,6 +69,7 @@ const Home: NextPage = () => {
     isInitializing,
     setChains,
     setRelayerRegion,
+    origin,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -444,6 +448,12 @@ const Home: NextPage = () => {
     }
   };
 
+  const [openSelect, setOpenSelect] = useState(false);
+
+  const openDropdown = () => {
+    setOpenSelect(!openSelect);
+  };
+
   const renderContent = () => {
     const chainOptions = isTestnet ? DEFAULT_TEST_CHAINS : DEFAULT_MAIN_CHAINS;
 
@@ -469,10 +479,17 @@ const Home: NextPage = () => {
           <SConnectButton left onClick={onConnect} disabled={!chains.length}>
             Connect
           </SConnectButton>
-          <Dropdown
-            relayerRegion={relayerRegion}
-            setRelayerRegion={setRelayerRegion}
-          />
+          <SDropDownContainer>
+            <RelayRegionDropdown
+              relayerRegion={relayerRegion}
+              setRelayerRegion={setRelayerRegion}
+              show={openSelect}
+            />
+            <OriginSimulationDropdown origin={origin} show={openSelect} />
+          </SDropDownContainer>
+          <button onClick={openDropdown} style={{ background: "transparent" }}>
+            <Icon size={30} src={"/assets/settings.svg"} />
+          </button>
         </SButtonContainer>
       </SLanding>
     ) : (
