@@ -5,6 +5,8 @@ import { POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
 import { MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
 import { TRON_SIGNING_METHODS } from '@/data/TronData'
 import ModalStore from '@/store/ModalStore'
+import SettingsStore from '@/store/SettingsStore'
+import { useSnapshot } from 'valtio'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
@@ -19,6 +21,8 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    *****************************************************************************/
   const onSessionProposal = useCallback(
     (proposal: SignClientTypes.EventArguments['session_proposal']) => {
+      // set the verify context so it can be displayed in the projectInfoCard
+      SettingsStore.setCurrentRequestVerifyContext(proposal.verifyContext)
       ModalStore.open('SessionProposalModal', { proposal })
     },
     []
@@ -30,9 +34,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   const onSessionRequest = useCallback(
     async (requestEvent: SignClientTypes.EventArguments['session_request']) => {
       console.log('session_request', requestEvent)
-      const { topic, params } = requestEvent
+      const { topic, params, verifyContext } = requestEvent
       const { request } = params
       const requestSession = signClient.session.get(topic)
+      // set the verify context so it can be displayed in the projectInfoCard
+      SettingsStore.setCurrentRequestVerifyContext(verifyContext)
 
       switch (request.method) {
         case EIP155_SIGNING_METHODS.ETH_SIGN:

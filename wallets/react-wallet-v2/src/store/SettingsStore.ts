@@ -1,3 +1,4 @@
+import { Verify } from '@walletconnect/types'
 import { proxy } from 'valtio'
 
 /**
@@ -17,6 +18,7 @@ interface State {
   kadenaAddress: string
   relayerRegionURL: string
   activeChainId: string
+  currentRequestVerifyContext?: Verify.Context
 }
 
 /**
@@ -87,6 +89,10 @@ const SettingsStore = {
 
   setActiveChainId(value: string) {
     state.activeChainId = value
+  },
+
+  setCurrentRequestVerifyContext(context: Verify.Context) {
+    state.currentRequestVerifyContext = context
   },
 
   toggleTestNets() {

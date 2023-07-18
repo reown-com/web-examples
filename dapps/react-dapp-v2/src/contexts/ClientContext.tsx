@@ -46,6 +46,7 @@ interface IContext {
   isFetchingBalances: boolean;
   setChains: any;
   setRelayerRegion: any;
+  origin: string;
 }
 
 /**
@@ -86,7 +87,7 @@ export function ClientContextProvider({
   const [relayerRegion, setRelayerRegion] = useState<string>(
     DEFAULT_RELAY_URL!
   );
-
+  const [origin, setOrigin] = useState<string>(getAppMetadata().url);
   const reset = () => {
     setSession(undefined);
     setBalances({});
@@ -284,15 +285,24 @@ export function ClientContextProvider({
   const createClient = useCallback(async () => {
     try {
       setIsInitializing(true);
-
+      const claimedOrigin =
+        localStorage.getItem("wallet_connect_dapp_origin") || origin;
       const _client = await Client.init({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
-        metadata: getAppMetadata() || DEFAULT_APP_METADATA,
+        metadata: {
+          ...(getAppMetadata() || DEFAULT_APP_METADATA),
+          url: claimedOrigin,
+          verifyUrl:
+            claimedOrigin === "unknown"
+              ? "http://non-existent-url"
+              : DEFAULT_APP_METADATA.verifyUrl, // simulates `UNKNOWN` verify context
+        },
       });
 
       setClient(_client);
+      setOrigin(_client.metadata.url);
       prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
@@ -302,7 +312,13 @@ export function ClientContextProvider({
     } finally {
       setIsInitializing(false);
     }
-  }, [_checkPersistedState, _subscribeToEvents, _logClientId, relayerRegion]);
+  }, [
+    _checkPersistedState,
+    _subscribeToEvents,
+    _logClientId,
+    relayerRegion,
+    origin,
+  ]);
 
   useEffect(() => {
     if (!client) {
@@ -329,6 +345,7 @@ export function ClientContextProvider({
       disconnect,
       setChains,
       setRelayerRegion,
+      origin,
     }),
     [
       pairings,
@@ -345,6 +362,7 @@ export function ClientContextProvider({
       disconnect,
       setChains,
       setRelayerRegion,
+      origin,
     ]
   );
 
