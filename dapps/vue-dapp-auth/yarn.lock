@@ -897,14 +897,14 @@
     "@ethersproject/strings" "^5.7.0"
 
 "@headlessui/vue@^1.7.4":
-  version "1.7.6"
-  resolved "https://registry.yarnpkg.com/@headlessui/vue/-/vue-1.7.6.tgz#2847a5cdd78deea2b4684f6a4ec42f771cf72581"
-  integrity sha512-G5Y23FLCk8/pkv/m/UMEMhISFn6mn2mDpmFuVIT7kT8536SSmxuXT6aJh3FSpztYIXjjE0hbD2qezmJ2OHtMjg==
+  version "1.7.14"
+  resolved "https://registry.yarnpkg.com/@headlessui/vue/-/vue-1.7.14.tgz#cc10712044944bc728f5ef8b2df2174c1194a55e"
+  integrity sha512-aL9U9Sa7wdOzlrfjx6EjMIYNRCma5mngWcWzQBcHFwznpRZ8g/QZ/AYFtRDrZZUw22Ttttja4D7ZRXFwhONewA==
 
 "@humanwhocodes/config-array@^0.11.6":
-  version "0.11.8"
-  resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.8.tgz#03595ac2075a4dc0f191cc2131de14fbd7d410b9"
-  integrity sha512-UybHIJzJnR5Qc/MsD9Kr+RpO2h+/P1GhOwdiLPXK5TWk5sgTdu88bTD9UP+CKbPPh5Rni1u0GjAdYQLemG8g+g==
+  version "0.11.10"
+  resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.10.tgz#5a3ffe32cc9306365fb3fd572596cd602d5e12d2"
+  integrity sha512-KVVjQmNUepDVGXNuoRRdmmEjruj0KfiGSbS8LVc12LMsWDQzRXJ0qdhN8L8uUigKpfEHRhlaQFY0ib1tnUbNeQ==
   dependencies:
     "@humanwhocodes/object-schema" "^1.2.1"
     debug "^4.1.1"
