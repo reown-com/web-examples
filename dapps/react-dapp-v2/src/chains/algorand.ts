@@ -9,7 +9,7 @@ import {
   
 export const AlgorandMetadata: NamespaceMetadata = {
     mainnet: {
-        logo: "/assets/Algorand.svg",
+        logo: "/assets/algorand_logo_mark_black.svg",
         rgb: "44, 125, 247",
       },
       testnet: {
@@ -24,14 +24,14 @@ export const AlgorandChainData: ChainsMap = {
       name: "Algorand",
       id: "Algorand:mainnet",
       rpc: [""],
-      slip44: 1729,
+      slip44: 283,
       testnet: false,
     },
     testnet: {
       name: "Algorand Testnet",
       id: "Algorand:testnet",
       rpc: [""],
-      slip44: 1729,
+      slip44: 1,
       testnet: true,
     },
   };
