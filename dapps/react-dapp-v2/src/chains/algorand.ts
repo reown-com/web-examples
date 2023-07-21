@@ -10,11 +10,11 @@ import {
 export const AlgorandMetadata: NamespaceMetadata = {
     mainnet: {
         logo: "/assets/algorand_logo_mark_black.svg",
-        rgb: "44, 125, 247",
+        rgb: "0, 0, 0",
       },
       testnet: {
         logo: "/assets/Algorand.svg",
-        rgb: "44, 125, 247",
+        rgb: "0, 0, 0",
       },
 };
 
@@ -23,14 +23,14 @@ export const AlgorandChainData: ChainsMap = {
     mainnet: {
       name: "Algorand",
       id: "Algorand:mainnet",
-      rpc: [""],
+      rpc: ["https://mainnet-algorand.api.purestake.io/ps2"],
       slip44: 283,
       testnet: false,
     },
     testnet: {
       name: "Algorand Testnet",
       id: "Algorand:testnet",
-      rpc: [""],
+      rpc: ["https://testnet-algorand.api.purestake.io/ps2"],
       slip44: 1,
       testnet: true,
     },
