@@ -96,6 +96,7 @@ url: `/pairings`
 url: `/`
 | Key | Description |
 | ----------- | ----------- |
+| `account-picker` | Account drop down selector|
 | `chain-card-${chain id}` | Chain card by chain id |
 | `chain-switch-button-${chain id}` | Chain switch button |
 | `chain-switch-button-${chain id}` | Chain copy button |
