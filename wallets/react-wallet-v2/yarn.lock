@@ -1127,10 +1127,15 @@
     buffer "^6.0.3"
     tweetnacl "^1.0.3"
 
-"@kadena/types@0.3.2", "@kadena/types@^0.3.2":
+"@kadena/types@0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.3.2.tgz#7245110735d984d72fe1d4fc65ce94924fab85e1"
   integrity sha512-xgdbILZdZk5i6Kq7yVuCyhKYU8YY7F5S14xlePOQRN7kUex5Io9faAhHmMnpTzeMqpdMnv7qWKZ8zXaBLkv4oA==
+
+"@kadena/types@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.4.0.tgz#41615b3c7611b34a9f07332275ae077b69131a7b"
+  integrity sha512-fXId5LebFigIcMMG2JlPW/wMNf5sw81VqjoCVh7TmZnuMvT9YJDsYQahD8qdrXWxbFAssRXyIEe4oPsm2aQ5/Q==
 
 "@multiversx/sdk-bls-wasm@0.3.5":
   version "0.3.5"

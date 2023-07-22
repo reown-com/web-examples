@@ -2069,10 +2069,15 @@
     "@kadena/types" "0.3.3"
     bignumber.js "^9.0.2"
 
-"@kadena/types@0.3.3", "@kadena/types@^0.3.3":
+"@kadena/types@0.3.3":
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.3.3.tgz#e1b1a65a3a0ebde53cd81ecbc77f5926a24022da"
   integrity sha512-61ltE1vx81r/OSrrHaEte1m2QixsCVLBT8koBmWu7wmITGltjEzjkIJNNUs/A0d4aZzlUVOa+6tnRq22clQu3w==
+
+"@kadena/types@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.4.0.tgz#41615b3c7611b34a9f07332275ae077b69131a7b"
+  integrity sha512-fXId5LebFigIcMMG2JlPW/wMNf5sw81VqjoCVh7TmZnuMvT9YJDsYQahD8qdrXWxbFAssRXyIEe4oPsm2aQ5/Q==
 
 "@lit-labs/ssr-dom-shim@^1.0.0", "@lit-labs/ssr-dom-shim@^1.1.0":
   version "1.1.1"
