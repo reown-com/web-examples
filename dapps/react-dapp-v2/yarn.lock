@@ -2023,27 +2023,27 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kadena/chainweb-node-client@0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@kadena/chainweb-node-client/-/chainweb-node-client-0.3.3.tgz#46e97caeff081804667fe398f993f08c8a2a978e"
-  integrity sha512-QmJYfRPMWJaMJEPD4Cai+9t1rA4ljACQo8XDr6dZ6WQnOItV968rLIDr43KG3p7FsyrJW2G6W97GqQUXcqVdDQ==
+"@kadena/chainweb-node-client@0.4.1":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@kadena/chainweb-node-client/-/chainweb-node-client-0.4.1.tgz#a25112e850f1a8a2f0a629137323e3a626044f5a"
+  integrity sha512-AgAEEQy+5ZLMXrP2rI8xZuxbEUNWyk7vh0q4Ti909F2HwHPP1mAp56nZZMlNGKUm6A16BasXmsND1Pow4H95Mw==
   dependencies:
-    "@kadena/cryptography-utils" "0.3.3"
-    "@kadena/pactjs" "0.2.9"
-    "@kadena/types" "0.3.3"
+    "@kadena/cryptography-utils" "0.3.5"
+    "@kadena/pactjs" "0.2.11"
+    "@kadena/types" "0.3.5"
     "@types/isomorphic-fetch" "~0.0.36"
     cross-fetch "~3.1.5"
     node-fetch "~2.6.2"
 
-"@kadena/client@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@kadena/client/-/client-0.5.0.tgz#99d5eeea867b19e13df477e2c6a63b3e4fbd1874"
-  integrity sha512-F3GPdfKBfmto7BGoDd2+gXAZe7IhSIAI1l3VgPUpZgqAz5jiSQp7CNR94nc5YsyZZE05cYsEOsk64odihDQqZQ==
+"@kadena/client@^0.6.0":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@kadena/client/-/client-0.6.1.tgz#2ed5554bfa2d38e10c0e7d5ebf9bc84f8d95639d"
+  integrity sha512-2F3kyzrHItq/nBYGWRqnGWpiATDT6+xoBxiXrFqiq8ZLDhLMxvc0DHmB5INIDRHfYjbts/tKgFPfuQOk7Si2Og==
   dependencies:
-    "@kadena/chainweb-node-client" "0.3.3"
-    "@kadena/cryptography-utils" "0.3.3"
-    "@kadena/pactjs" "0.2.9"
-    "@kadena/types" "0.3.3"
+    "@kadena/chainweb-node-client" "0.4.1"
+    "@kadena/cryptography-utils" "0.3.5"
+    "@kadena/pactjs" "0.2.11"
+    "@kadena/types" "0.3.5"
     "@walletconnect/sign-client" "~2.8.1"
     "@walletconnect/types" "~2.8.1"
     cross-fetch "~3.1.5"
@@ -2051,7 +2051,17 @@
     encoding "~0.1.13"
     yaml "~2.1.1"
 
-"@kadena/cryptography-utils@0.3.3", "@kadena/cryptography-utils@^0.3.3":
+"@kadena/cryptography-utils@0.3.5":
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/@kadena/cryptography-utils/-/cryptography-utils-0.3.5.tgz#88b7b00bb2b45519c9b76342813ba6844639657a"
+  integrity sha512-z1dVWirsdrGBknmNXK3owsrVSxw65ooH7bWmYpn6UNiRpI6vzg1n+gj8fIUOQHcvLuq7dA57VfrGnNKWKW2pgQ==
+  dependencies:
+    "@kadena/types" "0.3.5"
+    blakejs "^1.2.1"
+    buffer "^6.0.3"
+    tweetnacl "^1.0.3"
+
+"@kadena/cryptography-utils@^0.3.3":
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/@kadena/cryptography-utils/-/cryptography-utils-0.3.3.tgz#fea284b28a413a998fd5600698000aedbe0d97ba"
   integrity sha512-6GYpjXKbMEeVR9TwIPnE2gv1yjIlIxnlMTH6R0fqlgg8AMkk5WwJ1DpKlahEh2ii2shoZISfmlKLa24U8Fkd/g==
@@ -2061,18 +2071,23 @@
     buffer "^6.0.3"
     tweetnacl "^1.0.3"
 
-"@kadena/pactjs@0.2.9":
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/@kadena/pactjs/-/pactjs-0.2.9.tgz#c636ea14ab146150ee8c9c869ca664eaf2836a18"
-  integrity sha512-Y4c9QmcKCHFWOSqAQhQLVN/neFLsNhQRMHNmUvRjnY4BypTX+8PVKVTRWk6y92C709Smkdyh8uzmE6aRfkMHtQ==
+"@kadena/pactjs@0.2.11":
+  version "0.2.11"
+  resolved "https://registry.yarnpkg.com/@kadena/pactjs/-/pactjs-0.2.11.tgz#7d91f79158c0e9073342ac9f58a88e20dc0112af"
+  integrity sha512-98ojO20l3ijp8rkCSokadm2NRMgigtduSB/5/QqRVa4WUMf5ROS01ocF6fzdp7GVUbBYaw1FEfslv6MXtz++IA==
   dependencies:
-    "@kadena/types" "0.3.3"
+    "@kadena/types" "0.3.5"
     bignumber.js "^9.0.2"
 
 "@kadena/types@0.3.3", "@kadena/types@^0.3.3":
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.3.3.tgz#e1b1a65a3a0ebde53cd81ecbc77f5926a24022da"
   integrity sha512-61ltE1vx81r/OSrrHaEte1m2QixsCVLBT8koBmWu7wmITGltjEzjkIJNNUs/A0d4aZzlUVOa+6tnRq22clQu3w==
+
+"@kadena/types@0.3.5":
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.3.5.tgz#5b399df1a8914c2db2726dfefc954780e74dbac1"
+  integrity sha512-BuQo6ll3ARQqC7/V1BTnKLZp1UrKMtS0a7NbRX7HT+0XYYcteixMUUf/AiPBBEKsSmD+TDlWQvEE7eapPP7ykA==
 
 "@lit-labs/ssr-dom-shim@^1.0.0", "@lit-labs/ssr-dom-shim@^1.1.0":
   version "1.1.1"
