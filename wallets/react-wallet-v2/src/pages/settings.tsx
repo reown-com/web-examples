@@ -51,7 +51,7 @@ export default function SettingsPage() {
         Testnets
       </Text>
       <Row justify="space-between" align="center">
-        <Switch checked={testNets} onChange={SettingsStore.toggleTestNets} />
+        <Switch checked={testNets} onChange={SettingsStore.toggleTestNets} data-testid="settings-toggle-testnets"/>
         <Text>{testNets ? 'Enabled' : 'Disabled'}</Text>
       </Row>
 

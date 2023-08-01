@@ -68,12 +68,16 @@ url: `/walletconnect`
 | ----------- | ----------- |
 | `uri-input` | Uri textbox |
 | `uri-connect-button` | Uri connect button |
+| `qrcode-button` | Use qrcode button | 
 
 ### Sessions Page
 url: `/session`
 | Key | Description |
 | ----------- | ----------- |
-| `session-${topic}` | Session cards can be accessed by topic |
+| `session-card` | Session cards can be accessed by topic |
+| `session-icon` | Icon used on session card |
+| `session-text` | Text listed on session card |
+| `session-link` | Link listed on session card |
 
 ### Session Details Page
 url: `/session?topic=`
@@ -90,7 +94,10 @@ url: `/pairings`
 | Key | Description |
 | ----------- | ----------- |
 | `pairing-${topic}` | Pairing cards can be accessed by topic |
+| `pairing-text-${topic}` | Pairing card text in label | 
+| `pairing-url-${topic}` | Pairing card link in label| 
 | `pairing-delete-${topic}` | Delete pairing by topic |
+
 
 ### Accounts Page
 url: `/`
@@ -100,3 +107,33 @@ url: `/`
 | `chain-card-${chain id}` | Chain card by chain id |
 | `chain-switch-button-${chain id}` | Chain switch button |
 | `chain-switch-button-${chain id}` | Chain copy button |
+
+### Settings Page
+url: `/settings`
+| Key | Description |
+| ----------- | ----------- |
+| `settings-toggle-testnets` | Toggle testnet support on/off |
+| `settings-region-select` | Select relayer region |
+
+### Session Proposal View
+| Key | Description |
+| ----------- | ----------- |
+| `session-approve-button` | Session approve button |
+| `session-reject-button` | Session reject button |
+| `session-info-card-text` | Session text info in header |
+| `session-info-card-url` | Session info url in header |
+| `session-info-card-verify` | Session info verify api in header |
+| `session-proposal-card-req-{chain}` | Session card for each required chain |
+| `session-proposal-card-opt-{chain}` | Session card for each optional chain |
+| `account-select-card-${req/opt}-${index}` | Account selection checkbox by account index|
+| `account-select-text-${req/opt}-${index}` | Account selection text by account index |
+
+
+### Sign Request View 
+| Key | Description |
+| ----------- | ----------- |
+| `request-details-chain` | List of chains in the request |
+| `request-details-relay-protocol` | Protocol used for request |
+| `request-methods` | Methods requested |
+| `request-button-reject` | Reject button |
+| `request-button-approve` | Approve button |

@@ -64,7 +64,7 @@ export default function SessionSignModal() {
         <Row>
           <Col>
             <Text h5>Message</Text>
-            <Text color="$gray400">{message}</Text>
+            <Text color="$gray400" data-testid="request-message-text">{message}</Text>
           </Col>
         </Row>
 
@@ -74,10 +74,10 @@ export default function SessionSignModal() {
       </RequestModalContainer>
 
       <Modal.Footer>
-        <Button auto flat color="error" onClick={onReject}>
+        <Button auto flat color="error" onClick={onReject} data-testid="request-button-reject">
           Reject
         </Button>
-        <Button auto flat color="success" onClick={onApprove}>
+        <Button auto flat color="success" onClick={onApprove} data-testid="request-button-approve">
           Approve
         </Button>
       </Modal.Footer>

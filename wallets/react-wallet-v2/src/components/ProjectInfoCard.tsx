@@ -30,10 +30,10 @@ export default function ProjectInfoCard({ metadata }: IProps) {
           <Avatar src={icons[0]} />
         </Col>
         <Col span={15}>
-          <Text h5>{name}</Text>
+          <Text h5 data-testid="session-info-card-text">{name}</Text>
           <Row>
-            <Link href={url}>{url}</Link>
-            <Text style={{ marginLeft: '5px' }}>{validation}</Text>
+            <Link href={url} data-testid="session-info-card-url">{url}</Link>
+            <Text style={{ marginLeft: '5px' }} data-testid="session-info-card-verify">{validation}</Text>
           </Row>
         </Col>
       </Row>

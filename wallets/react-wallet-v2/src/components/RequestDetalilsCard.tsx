@@ -25,7 +25,7 @@ export default function RequestDetailsCard({ chains, protocol }: IProps) {
       <Row>
         <Col>
           <Text h5>Blockchain(s)</Text>
-          <Text color="$gray400">
+          <Text color="$gray400" data-testid="request-details-chain">
             {chains
               .map(
                 chain =>
@@ -48,7 +48,7 @@ export default function RequestDetailsCard({ chains, protocol }: IProps) {
       <Row>
         <Col>
           <Text h5>Relay Protocol</Text>
-          <Text color="$gray400">{protocol}</Text>
+          <Text color="$gray400" data-testid="request-detauls-realy-protocol">{protocol}</Text>
         </Col>
       </Row>
     </Fragment>
