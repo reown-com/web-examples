@@ -157,7 +157,6 @@ export function ClientContextProvider({
           "optionalNamespaces config for connect:",
           optionalNamespaces
         );
-
         const { uri, approval } = await client.connect({
           pairingTopic: pairing?.topic,
           requiredNamespaces,
@@ -181,6 +180,9 @@ export function ClientContextProvider({
         setPairings(client.pairing.getAll({ active: true }));
       } catch (e) {
         console.error(e);
+        toast.error((e as Error).message, {
+          position: "bottom-left",
+        });
         // ignore rejection
       } finally {
         // close modal in case it was open
