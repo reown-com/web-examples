@@ -1,6 +1,8 @@
 import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import { Web3Modal } from "@web3modal/standalone";
+import { RELAYER_EVENTS } from "@walletconnect/core";
+import toast from "react-hot-toast";
 
 import { PublicKey } from "@solana/web3.js";
 import {
@@ -323,11 +325,29 @@ export function ClientContextProvider({
   useEffect(() => {
     if (!client) {
       createClient();
-    } else if (prevRelayerValue.current !== relayerRegion) {
+    } else if (
+      prevRelayerValue.current &&
+      prevRelayerValue.current !== relayerRegion
+    ) {
       client.core.relayer.restartTransport(relayerRegion);
       prevRelayerValue.current = relayerRegion;
     }
   }, [createClient, relayerRegion, client]);
+
+  useEffect(() => {
+    if (!client) return;
+    client.core.relayer.on(RELAYER_EVENTS.connect, () => {
+      toast.success("Network connection is restored!", {
+        position: "bottom-left",
+      });
+    });
+
+    client.core.relayer.on(RELAYER_EVENTS.disconnect, () => {
+      toast.error("Network connection lost.", {
+        position: "bottom-left",
+      });
+    });
+  }, [client]);
 
   const value = useMemo(
     () => ({
