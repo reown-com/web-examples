@@ -4,7 +4,7 @@ import RequestDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
-import { convertHexToUtf8, getSignParamsMessage } from '@/utils/HelperUtil'
+import { convertHexToUtf8, getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
 import { approveKadenaRequest, rejectKadenaRequest } from '@/utils/KadenaRequestHandlerUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Col, Divider, Modal, Row, Text } from '@nextui-org/react'
@@ -31,10 +31,15 @@ export default function SessionSignKadenaModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approveKadenaRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
@@ -43,10 +48,15 @@ export default function SessionSignKadenaModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectKadenaRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
