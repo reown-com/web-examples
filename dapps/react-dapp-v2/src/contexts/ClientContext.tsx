@@ -206,11 +206,13 @@ export function ClientContextProvider({
         reason: getSdkError("USER_DISCONNECTED"),
       });
     } catch (error) {
-      console.error("SignClient.disconnect failed:", error);
-    } finally {
-      // Reset app state after disconnect.
-      reset();
+      toast.error((error as Error).message, {
+        position: "bottom-left",
+      });
+      return;
     }
+    // Reset app state after disconnect.
+    reset();
   }, [client, session]);
 
   const _subscribeToEvents = useCallback(
