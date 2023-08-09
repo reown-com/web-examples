@@ -13,8 +13,8 @@ import Modal from "./../components/Modal";
 import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./../constants";
 import {
   AccountAction,
-  eip712,
   formatTestTransaction,
+  generateEip712Message,
   getLocalStorageTestnetFlag,
   hashPersonalMessage,
   hashTypedDataMessage,
@@ -161,7 +161,7 @@ const Home: NextPage = () => {
     const hexMsg = encoding.utf8ToHex(msg, true);
     const [address] = await web3Provider.listAccounts();
     const signature = await web3Provider.send("personal_sign", [hexMsg, address]);
-    const hashMsg = hashPersonalMessage(msg)
+    const hashMsg = hashPersonalMessage(msg);
     const valid = await verifySignature(address, signature, hashMsg, web3Provider);
     return {
       method: "personal_sign",
@@ -193,7 +193,8 @@ const Home: NextPage = () => {
       throw new Error("web3Provider not connected");
     }
 
-    const message = JSON.stringify(eip712.example);
+    const { chainId } = await web3Provider.getNetwork();
+    const message = JSON.stringify(generateEip712Message(chainId));
 
     const [address] = await web3Provider.listAccounts();
 

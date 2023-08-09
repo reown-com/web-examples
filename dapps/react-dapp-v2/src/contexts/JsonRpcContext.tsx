@@ -29,8 +29,8 @@ import {
 import { PactNumber } from "@kadena/pactjs";
 import {
   KadenaAccount,
-  eip712,
   formatTestTransaction,
+  generateEip712Message,
   getLocalStorageTestnetFlag,
   getProviderUrl,
   hashPersonalMessage,
@@ -411,7 +411,13 @@ export function JsonRpcContextProvider({
     ),
     testSignTypedData: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
-        const message = JSON.stringify(eip712.example);
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
+
+        const message = JSON.stringify(
+          generateEip712Message(Number(reference))
+        );
 
         // eth_signTypedData params
         const params = [address, message];
@@ -425,10 +431,6 @@ export function JsonRpcContextProvider({
             params,
           },
         });
-
-        //  split chainId
-        const [namespace, reference] = chainId.split(":");
-        const rpc = rpcProvidersByChainId[Number(reference)];
 
         if (typeof rpc === "undefined") {
           throw new Error(
@@ -454,7 +456,13 @@ export function JsonRpcContextProvider({
     ),
     testSignTypedDatav4: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
-        const message = JSON.stringify(eip712.example);
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
+
+        const message = JSON.stringify(
+          generateEip712Message(Number(reference))
+        );
         console.log("eth_signTypedData_v4");
 
         // eth_signTypedData_v4 params
@@ -469,10 +477,6 @@ export function JsonRpcContextProvider({
             params,
           },
         });
-
-        //  split chainId
-        const [namespace, reference] = chainId.split(":");
-        const rpc = rpcProvidersByChainId[Number(reference)];
 
         if (typeof rpc === "undefined") {
           throw new Error(

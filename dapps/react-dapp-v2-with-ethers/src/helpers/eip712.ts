@@ -1,5 +1,5 @@
 // From spec: https://eips.ethereum.org/EIPS/eip-712
-const example = {
+export const generateEip712Message = (chainId = 1) => ({
   types: {
     EIP712Domain: [
       { name: "name", type: "string" },
@@ -21,7 +21,7 @@ const example = {
   domain: {
     name: "Ether Mail",
     version: "1",
-    chainId: 1,
+    chainId,
     verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
   },
   message: {
@@ -29,8 +29,4 @@ const example = {
     to: { name: "Bob", wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB" },
     contents: "Hello, Bob!",
   },
-};
-
-export const eip712 = {
-  example,
-};
+});
