@@ -15,6 +15,7 @@ import { NearChainData } from "../chains/near";
 import { CosmosChainData } from "../chains/cosmos";
 import { EIP155ChainData } from "../chains/eip155";
 import { TezosChainData } from "../chains/tezos";
+import { KadenaChainData } from "../chains/kadena";
 
 /**
  * Types
@@ -68,6 +69,9 @@ export function ChainDataContextProvider({
             break;
           case "tezos":
             chains = TezosChainData;
+            break;
+          case "kadena":
+            chains = KadenaChainData;
             break;
           default:
             console.error("Unknown chain namespace: ", namespace);

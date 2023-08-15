@@ -1,3 +1,6 @@
+import { IPactCommand } from "@kadena/client";
+import { ChainId } from "@kadena/types";
+
 export interface AssetData {
   symbol: string;
   name: string;
@@ -153,4 +156,10 @@ export interface AccountAction {
 
 export interface AccountBalances {
   [account: string]: AssetData[];
+}
+
+export interface KadenaAccount {
+  publicKey: string; // Kadena public key
+  account: string; // Kadena account
+  chainId: ChainId; // Kadena ChainId
 }

@@ -70,10 +70,10 @@ export default function SessionSignTypedDataModal() {
       </RequestModalContainer>
 
       <Modal.Footer>
-        <Button auto flat color="error" onClick={onReject}>
+        <Button auto flat color="error" onClick={onReject} data-testid="request-button-reject">
           Reject
         </Button>
-        <Button auto flat color="success" onClick={onApprove}>
+        <Button auto flat color="success" onClick={onApprove} data-testid="request-button-approve">
           Approve
         </Button>
       </Modal.Footer>

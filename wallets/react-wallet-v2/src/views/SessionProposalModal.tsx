@@ -17,15 +17,17 @@ import {
   isNearChain,
   isMultiversxChain,
   isTronChain,
-  isTezosChain
+  isTezosChain,
+  isKadenaChain
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
-import { getSdkError } from '@walletconnect/utils'
+import { getSdkError, mergeArrays } from '@walletconnect/utils'
 import { Fragment, useEffect, useState } from 'react'
 import { nearAddresses } from '@/utils/NearWalletUtil'
+import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 
 export default function SessionProposalModal() {
   const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string[]>>({})
@@ -89,17 +91,23 @@ export default function SessionProposalModal() {
           }
           if (optionalNamespaces[key] && selectedAccounts[`optional:${key}`]) {
             optionalNamespaces[key].chains?.map(chain => {
-              selectedAccounts[`optional:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
+              selectedAccounts[`optional:${key}`].forEach(acc => {
+                if (!accounts.includes(`${chain}:${acc}`)) {
+                  accounts.push(`${chain}:${acc}`)
+                }
+              })
             })
             namespaces[key] = {
               ...namespaces[key],
               accounts,
-              methods: optionalNamespaces[key].methods,
-              events: optionalNamespaces[key].events,
-              chains: namespaces[key]?.chains?.concat(optionalNamespaces[key].chains || [])
+              methods: mergeArrays(namespaces[key].methods, optionalNamespaces[key].methods),
+              events: mergeArrays(namespaces[key].events, optionalNamespaces[key].events),
+              chains: mergeArrays(namespaces[key].chains, optionalNamespaces[key].chains)
             }
           }
         })
+
+      console.log('approving namespaces:', namespaces)
 
       await signClient.approve({
         id,
@@ -122,7 +130,7 @@ export default function SessionProposalModal() {
   }
 
   // Render account selection checkboxes based on chain
-  function renderAccountSelection(chain: string) {
+  function renderAccountSelection(chain: string, required: boolean) {
     if (isEIP155Chain(chain)) {
       return (
         <ProposalSelectSection
@@ -130,6 +138,7 @@ export default function SessionProposalModal() {
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}
+          isRequired={required}
         />
       )
     } else if (isCosmosChain(chain)) {
@@ -139,6 +148,7 @@ export default function SessionProposalModal() {
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}
+          isRequired={required}
         />
       )
     } else if (isSolanaChain(chain)) {
@@ -148,6 +158,7 @@ export default function SessionProposalModal() {
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}
+          isRequired={required}
         />
       )
     } else if (isPolkadotChain(chain)) {
@@ -157,6 +168,7 @@ export default function SessionProposalModal() {
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}
+          isRequired={required}
         />
       )
     } else if (isNearChain(chain)) {
@@ -166,6 +178,7 @@ export default function SessionProposalModal() {
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}
+          isRequired={required}
         />
       )
     } else if (isMultiversxChain(chain)) {
@@ -175,6 +188,7 @@ export default function SessionProposalModal() {
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}
+          isRequired={required}
         />
       )
     } else if (isTronChain(chain)) {
@@ -184,6 +198,7 @@ export default function SessionProposalModal() {
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}
+          isRequired={required}
         />
       )
     } else if (isTezosChain(chain)) {
@@ -193,6 +208,17 @@ export default function SessionProposalModal() {
           selectedAddresses={selectedAccounts[chain]}
           onSelect={onSelectAccount}
           chain={chain}
+          isRequired={required}
+        />
+      )
+    } else if (isKadenaChain(chain)) {
+      return (
+        <ProposalSelectSection
+          addresses={kadenaAddresses}
+          selectedAddresses={selectedAccounts[chain]}
+          onSelect={onSelectAccount}
+          chain={chain}
+          isRequired={required}
         />
       )
     }
@@ -201,7 +227,7 @@ export default function SessionProposalModal() {
   return (
     <Fragment>
       <RequestModalContainer title="Session Proposal">
-        <ProjectInfoCard metadata={proposer.metadata} />
+        <ProjectInfoCard metadata={proposer.metadata}/>
 
         <Divider y={2} />
         {Object.keys(requiredNamespaces).length != 0 ? <Text h4>Required Namespaces</Text> : null}
@@ -209,8 +235,8 @@ export default function SessionProposalModal() {
           return (
             <Fragment key={chain}>
               <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-              <SessionProposalChainCard requiredNamespace={requiredNamespaces[chain]} />
-              {renderAccountSelection(`required:${chain}`)}
+              <SessionProposalChainCard requiredNamespace={requiredNamespaces[chain]} data-testid={`session-proposal-card-req-${chain}`}/>
+              {renderAccountSelection(`required:${chain}`, true)}
               <Divider y={2} />
             </Fragment>
           )
@@ -224,8 +250,8 @@ export default function SessionProposalModal() {
             return (
               <Fragment key={chain}>
                 <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-                <SessionProposalChainCard requiredNamespace={optionalNamespaces[chain]} />
-                {renderAccountSelection(`optional:${chain}`)}
+                <SessionProposalChainCard requiredNamespace={optionalNamespaces[chain]} data-testid={`session-proposal-card-opt-${chain}`}/>
+                {renderAccountSelection(`optional:${chain}`, false)}
                 <Divider y={2} />
               </Fragment>
             )
@@ -233,7 +259,7 @@ export default function SessionProposalModal() {
       </RequestModalContainer>
 
       <Modal.Footer>
-        <Button auto flat color="error" onPress={onReject}>
+        <Button auto flat color="error" onPress={onReject} data-testid="session-reject-button">
           Reject
         </Button>
 
@@ -244,6 +270,7 @@ export default function SessionProposalModal() {
           onPress={onApprove}
           disabled={!hasSelected}
           css={{ opacity: hasSelected ? 1 : 0.4 }}
+          data-testid="session-approve-button"
         >
           Approve
         </Button>

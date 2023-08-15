@@ -14,6 +14,7 @@ export default function AccountPicker() {
       value={relayerRegionURL}
       onChange={e => onSelect(e.currentTarget.value)}
       aria-label="relayerRegions"
+      data-testid="setting-region-select"
     >
       {REGIONALIZED_RELAYER_ENDPOINTS.map((endpoint, index) => {
         return (
