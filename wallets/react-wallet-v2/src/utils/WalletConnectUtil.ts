@@ -55,7 +55,7 @@ export async function updateSignClientChainId(chainId: string, address: string) 
         name: 'chainChanged',
         data: parseInt(chainId.split(':')[1])
       },
-      chainId: 'eip155:1'
+      chainId: chainId
     }
 
     const accountsChanged = {
@@ -66,7 +66,7 @@ export async function updateSignClientChainId(chainId: string, address: string) 
       },
       chainId
     }
-    signClient.emit(chainChanged)
-    signClient.emit(accountsChanged)
+    await signClient.emit(chainChanged)
+    await signClient.emit(accountsChanged)
   })
 }
