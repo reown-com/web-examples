@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
@@ -171,5 +172,27 @@ export function getVerifyStatus(context?: Verify.Context) {
       return '❌ Origin does not match'
     case 'UNKNOWN':
       return '❓ Unknown'
+  }
+}
+
+export function styledToast(message: string, type: string) {
+  if (type === 'success') {
+    toast.success(message, {
+      position: 'bottom-left',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff'
+      }
+    })
+  } else if (type === 'error') {
+    toast.error(message, {
+      position: 'bottom-left',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff'
+      }
+    })
   }
 }

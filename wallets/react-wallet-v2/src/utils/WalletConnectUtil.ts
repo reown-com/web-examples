@@ -24,48 +24,49 @@ export async function createSignClient(relayerRegionURL: string) {
 }
 
 export async function updateSignClientChainId(chainId: string, address: string) {
+  console.log('chainId', chainId, address)
   // get most recent session
-  const session = signClient.session.getAll()[0]
-  if (!session) return
-
-  // if chainId does not exist in session, an update is required first
-  if (!session.namespaces[chainId]) {
-    const newNamespace = {
-      [chainId]: {
-        accounts: [`${chainId}:${address}`],
-        methods: [
-          'eth_sendTransaction',
-          'eth_signTransaction',
-          'eth_sign',
-          'personal_sign',
-          'eth_signTypedData'
-        ],
-        events: ['chainChanged', 'accountsChanged']
+  const sessions = signClient.session.getAll()
+  if (!sessions) return
+  const namespace = chainId.split(':')[0]
+  sessions.forEach(async session => {
+    await signClient.update({
+      topic: session.topic,
+      namespaces: {
+        ...session.namespaces,
+        [namespace]: {
+          ...session.namespaces[namespace],
+          chains: [
+            ...new Set([chainId].concat(Array.from(session.namespaces[namespace].chains || [])))
+          ],
+          accounts: [
+            ...new Set(
+              [`${chainId}:${address}`].concat(Array.from(session.namespaces[namespace].accounts))
+            )
+          ]
+        }
       }
-    }
-    try {
-      // need to wait for update to finish before emit
-      await signClient.update({
-        topic: session.topic,
-        namespaces: { ...session.namespaces, ...newNamespace }
-      })
-    } catch (err: unknown) {
-      console.error(`Failed to update session: ${err}`)
-    }
-  }
+    })
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
-  const payload = {
-    topic: session.topic,
-    event: {
-      name: 'chainChanged',
-      data: [address]
-    },
-    chainId
-  }
+    const chainChanged = {
+      topic: session.topic,
+      event: {
+        name: 'chainChanged',
+        data: parseInt(chainId.split(':')[1])
+      },
+      chainId: chainId
+    }
 
-  try {
-    signClient.emit(payload)
-  } catch (err: unknown) {
-    console.error(`Failed to emit chainChanged event: ${err}`)
-  }
+    const accountsChanged = {
+      topic: session.topic,
+      event: {
+        name: 'accountsChanged',
+        data: [`${chainId}:${address}`]
+      },
+      chainId
+    }
+    await signClient.emit(chainChanged)
+    await signClient.emit(accountsChanged)
+  })
 }

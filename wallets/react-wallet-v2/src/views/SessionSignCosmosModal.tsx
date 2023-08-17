@@ -5,6 +5,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveCosmosRequest, rejectCosmosRequest } from '@/utils/CosmosRequestHandler'
+import { styledToast } from '@/utils/HelperUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
@@ -27,10 +28,15 @@ export default function SessionSignCosmosModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approveCosmosRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
@@ -39,10 +45,15 @@ export default function SessionSignCosmosModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectCosmosRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }

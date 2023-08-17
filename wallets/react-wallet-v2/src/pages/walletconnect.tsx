@@ -4,6 +4,7 @@ import QrReader from '@/components/QrReader'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
+import { styledToast } from '@/utils/HelperUtil'
 
 export default function WalletConnectPage() {
   const [uri, setUri] = useState('')
@@ -13,8 +14,8 @@ export default function WalletConnectPage() {
     try {
       setLoading(true)
       await signClient.pair({ uri })
-    } catch (err: unknown) {
-      alert(err)
+    } catch (error) {
+      styledToast((error as Error).message, 'error')
     } finally {
       setUri('')
       setLoading(false)

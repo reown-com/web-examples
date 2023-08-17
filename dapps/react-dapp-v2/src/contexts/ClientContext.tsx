@@ -1,6 +1,8 @@
 import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import { Web3Modal } from "@web3modal/standalone";
+import { RELAYER_EVENTS } from "@walletconnect/core";
+import toast from "react-hot-toast";
 
 import { PublicKey } from "@solana/web3.js";
 import {
@@ -155,7 +157,6 @@ export function ClientContextProvider({
           "optionalNamespaces config for connect:",
           optionalNamespaces
         );
-
         const { uri, approval } = await client.connect({
           pairingTopic: pairing?.topic,
           requiredNamespaces,
@@ -179,6 +180,9 @@ export function ClientContextProvider({
         setPairings(client.pairing.getAll({ active: true }));
       } catch (e) {
         console.error(e);
+        toast.error((e as Error).message, {
+          position: "bottom-left",
+        });
         // ignore rejection
       } finally {
         // close modal in case it was open
@@ -202,11 +206,13 @@ export function ClientContextProvider({
         reason: getSdkError("USER_DISCONNECTED"),
       });
     } catch (error) {
-      console.error("SignClient.disconnect failed:", error);
-    } finally {
-      // Reset app state after disconnect.
-      reset();
+      toast.error((error as Error).message, {
+        position: "bottom-left",
+      });
+      return;
     }
+    // Reset app state after disconnect.
+    reset();
   }, [client, session]);
 
   const _subscribeToEvents = useCallback(
@@ -323,11 +329,29 @@ export function ClientContextProvider({
   useEffect(() => {
     if (!client) {
       createClient();
-    } else if (prevRelayerValue.current !== relayerRegion) {
+    } else if (
+      prevRelayerValue.current &&
+      prevRelayerValue.current !== relayerRegion
+    ) {
       client.core.relayer.restartTransport(relayerRegion);
       prevRelayerValue.current = relayerRegion;
     }
   }, [createClient, relayerRegion, client]);
+
+  useEffect(() => {
+    if (!client) return;
+    client.core.relayer.on(RELAYER_EVENTS.connect, () => {
+      toast.success("Network connection is restored!", {
+        position: "bottom-left",
+      });
+    });
+
+    client.core.relayer.on(RELAYER_EVENTS.disconnect, () => {
+      toast.error("Network connection lost.", {
+        position: "bottom-left",
+      });
+    });
+  }, [client]);
 
   const value = useMemo(
     () => ({

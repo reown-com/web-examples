@@ -18,7 +18,8 @@ import {
   isMultiversxChain,
   isTronChain,
   isTezosChain,
-  isKadenaChain
+  isKadenaChain,
+  styledToast
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
@@ -109,11 +110,16 @@ export default function SessionProposalModal() {
 
       console.log('approving namespaces:', namespaces)
 
-      await signClient.approve({
-        id,
-        relayProtocol: relays[0].protocol,
-        namespaces
-      })
+      try {
+        await signClient.approve({
+          id,
+          relayProtocol: relays[0].protocol,
+          namespaces
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
     }
     ModalStore.close()
   }
@@ -121,10 +127,15 @@ export default function SessionProposalModal() {
   // Hanlde reject action
   async function onReject() {
     if (proposal) {
-      await signClient.reject({
-        id,
-        reason: getSdkError('USER_REJECTED_METHODS')
-      })
+      try {
+        await signClient.reject({
+          id,
+          reason: getSdkError('USER_REJECTED_METHODS')
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
     }
     ModalStore.close()
   }
@@ -227,7 +238,7 @@ export default function SessionProposalModal() {
   return (
     <Fragment>
       <RequestModalContainer title="Session Proposal">
-        <ProjectInfoCard metadata={proposer.metadata}/>
+        <ProjectInfoCard metadata={proposer.metadata} />
 
         <Divider y={2} />
         {Object.keys(requiredNamespaces).length != 0 ? <Text h4>Required Namespaces</Text> : null}
@@ -235,7 +246,10 @@ export default function SessionProposalModal() {
           return (
             <Fragment key={chain}>
               <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-              <SessionProposalChainCard requiredNamespace={requiredNamespaces[chain]} data-testid={`session-proposal-card-req-${chain}`}/>
+              <SessionProposalChainCard
+                requiredNamespace={requiredNamespaces[chain]}
+                data-testid={`session-proposal-card-req-${chain}`}
+              />
               {renderAccountSelection(`required:${chain}`, true)}
               <Divider y={2} />
             </Fragment>
@@ -250,7 +264,10 @@ export default function SessionProposalModal() {
             return (
               <Fragment key={chain}>
                 <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-                <SessionProposalChainCard requiredNamespace={optionalNamespaces[chain]} data-testid={`session-proposal-card-opt-${chain}`}/>
+                <SessionProposalChainCard
+                  requiredNamespace={optionalNamespaces[chain]}
+                  data-testid={`session-proposal-card-opt-${chain}`}
+                />
                 {renderAccountSelection(`optional:${chain}`, false)}
                 <Divider y={2} />
               </Fragment>

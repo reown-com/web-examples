@@ -4,7 +4,11 @@ import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
-import { approveMultiversxRequest, rejectMultiversxRequest } from '@/utils/MultiversxRequestHandlerUtil'
+import { styledToast } from '@/utils/HelperUtil'
+import {
+  approveMultiversxRequest,
+  rejectMultiversxRequest
+} from '@/utils/MultiversxRequestHandlerUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
@@ -27,10 +31,15 @@ export default function SessionSignMultiversxModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approveMultiversxRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
@@ -39,10 +48,15 @@ export default function SessionSignMultiversxModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectMultiversxRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
