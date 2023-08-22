@@ -14,7 +14,7 @@
     "@cosmjs/proto-signing": "0.31.0",
     "@json-rpc-tools/utils": "1.7.6",
     "@nextui-org/react": "1.0.8-beta.5",
-    "@solana/web3.js": "1.43.0",
+    "@solana/web3.js": "1.78.4",
     "@walletconnect/chat-client": "^0.7.0",
     "@walletconnect/core": "2.9.1",
     "@walletconnect/logger": "^2.0.1",
