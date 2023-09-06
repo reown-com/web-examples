@@ -975,7 +975,7 @@ export function JsonRpcContextProvider({
         const transaction = testTransaction.toPlainObject();
 
         try {
-          const result = await client!.request<{ signature: Buffer }>({
+          const result = await client!.request<{ signature: string }>({
             chainId,
             topic: session!.topic,
             request: {
@@ -987,8 +987,8 @@ export function JsonRpcContextProvider({
           });
 
           const valid = verifier.verify(
-            testTransaction.serializeForSigning(Address.fromBech32(address)),
-            result.signature
+            testTransaction.serializeForSigning(),
+            Buffer.from(result.signature, "hex")
           );
 
           return {
@@ -1055,7 +1055,7 @@ export function JsonRpcContextProvider({
 
         try {
           const result = await client!.request<{
-            signatures: { signature: Buffer }[];
+            signatures: { signature: string }[];
           }>({
             chainId,
             topic: session!.topic,
@@ -1075,8 +1075,8 @@ export function JsonRpcContextProvider({
             return (
               acc &&
               verifier.verify(
-                current.serializeForSigning(Address.fromBech32(address)),
-                result.signatures[index].signature
+                current.serializeForSigning(),
+                Buffer.from(result.signatures[index].signature, "hex")
               )
             );
           }, true);
@@ -1110,7 +1110,7 @@ export function JsonRpcContextProvider({
         });
 
         try {
-          const result = await client!.request<{ signature: Buffer }>({
+          const result = await client!.request<{ signature: string }>({
             chainId,
             topic: session!.topic,
             request: {
@@ -1124,7 +1124,7 @@ export function JsonRpcContextProvider({
 
           const valid = verifier.verify(
             testMessage.serializeForSigning(),
-            result.signature
+            Buffer.from(result.signature, "hex")
           );
 
           return {

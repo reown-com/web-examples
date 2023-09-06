@@ -12,7 +12,7 @@
     "@cosmjs/amino": "0.31.1",
     "@cosmjs/encoding": "0.31.1",
     "@cosmjs/proto-signing": "0.31.1",
-    "@multiversx/sdk-core": "11.6.0",
+    "@multiversx/sdk-core": "12.8.0",
     "@multiversx/sdk-wallet": "4.2.0",
     "@json-rpc-tools/utils": "1.7.6",
     "@near-wallet-selector/wallet-utils": "^7.0.2",
