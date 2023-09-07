@@ -66,7 +66,7 @@ export default class MultiversxLib {
     const signTransaction = Transaction.fromPlainObject(transaction)
 
     const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
-    const signature = await signer.sign(signTransaction.serializeForSigning(signer.getAddress()))
+    const signature = await signer.sign(signTransaction.serializeForSigning())
 
     return { signature: signature.toString('hex') }
   }
@@ -79,9 +79,7 @@ export default class MultiversxLib {
       transactions.map(async (transaction: any): Promise<any> => {
         const signTransaction = Transaction.fromPlainObject(transaction)
         const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
-        const signature = await signer.sign(
-          signTransaction.serializeForSigning(signer.getAddress())
-        )
+        const signature = await signer.sign(signTransaction.serializeForSigning())
 
         return { signature: signature.toString('hex') }
       })
