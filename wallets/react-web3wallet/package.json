@@ -21,7 +21,7 @@
     "@polkadot/types": "^9.3.3",
     "@solana/web3.js": "1.78.4",
     "@walletconnect/utils": "2.10.0",
-    "@walletconnect/web3wallet": "1.8.7",
+    "@walletconnect/web3wallet": "1.9.0",
     "bs58": "5.0.0",
     "cosmos-wallet": "1.2.0",
     "ethers": "5.7.2",
