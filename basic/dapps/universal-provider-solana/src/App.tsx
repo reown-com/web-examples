@@ -7,20 +7,21 @@ const projectId = import.meta.env.VITE_PROJECT_ID;
 
 const events: string[] = [];
 
-const chains = [
-  `solana:${SolanaChains.MainnetBeta}`,
-  // `solana:${SolanaChains.Devnet}`,
-];
+// 1. select chains (solana)
+const chains = [`solana:${SolanaChains.MainnetBeta}`];
 
+// 2. select methods (solana)
 const methods = ["solana_signMessage", "solana_signTransaction"];
 
+// 3. create modal instance
 const modal = new WalletConnectModal({
   projectId,
   chains,
 });
 
+// 4. create provider instance
 const provider = await UniversalProvider.init({
-  logger: "info",
+  logger: "error",
   projectId: projectId,
   metadata: {
     name: "WalletConnect x Solana",
@@ -33,15 +34,19 @@ const provider = await UniversalProvider.init({
 const App = () => {
   const [isConnected, setIsConnected] = useState(false);
 
-  const address = provider.session?.namespaces.solana.accounts[0].split(":")[2];
+  // 5. get address once loaded
+  const address =
+    provider.session?.namespaces.solana?.accounts[0].split(":")[2];
 
+  // 6. handle display_uri event and open modal
   provider.on("display_uri", async (uri: string) => {
-    console.log('uri', uri)
+    console.log("uri", uri);
     await modal.openModal({
       uri,
     });
   });
 
+  // 7. handle connect event
   const connect = async () => {
     try {
       await provider.connect({
@@ -61,11 +66,13 @@ const App = () => {
     modal.closeModal();
   };
 
+  // 8. handle disconnect event
   const disconnect = async () => {
     await provider.disconnect();
     setIsConnected(false);
   };
 
+  // 9. handle signMessage and sendTransaction
   const handleSign = async () => {
     const res = await signMessage(
       `Can i have authorize this request pls bossman - ${Date.now()}`,
@@ -84,7 +91,10 @@ const App = () => {
     <div className="App">
       {isConnected ? (
         <>
-          <p><b>Public Key: </b>{address}</p>
+          <p>
+            <b>Public Key: </b>
+            {address}
+          </p>
           <div className="btn-container">
             <button onClick={handleSign}>Sign</button>
             <button onClick={handleSend}>Send</button>

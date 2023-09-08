@@ -875,9 +875,9 @@
     events "^3.3.0"
 
 "@walletconnect/universal-provider@2.10.0-canary-ac4c97":
-  version "2.10.0-canary-ac4c977"
-  resolved "https://registry.yarnpkg.com/@walletconnect/universal-provider/-/universal-provider-2.10.0-canary-ac4c977.tgz#4e21d31d65f6497e08243e5216a398e4531e1de4"
-  integrity sha512-Np4GK6gpUGAgRrSJihRJ7/njXzPj6S+JwslIad+gMf7znAFIWwHIrpwcfna72CuPnEiNqBxEfHtIOEF+7uzBCQ==
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/universal-provider/-/universal-provider-2.10.0.tgz#565d6478dcb5cc66955e5f03d6a00f51c9bcac14"
+  integrity sha512-jtVWf+AeTCqBcB3lCmWkv3bvSmdRCkQdo67GNoT5y6/pvVHMxfjgrJNBOUsWQMxpREpWDpZ993X0JRjsYVsMcA==
   dependencies:
     "@walletconnect/jsonrpc-http-connection" "^1.0.7"
     "@walletconnect/jsonrpc-provider" "1.0.13"
