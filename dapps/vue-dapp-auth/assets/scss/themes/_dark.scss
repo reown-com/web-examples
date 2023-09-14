@@ -1,0 +1,38 @@
+@mixin dark-mode {
+  /* text */
+  --c-text-base: var(--c-white);
+  --c-text-dim-1: 225, 225, 229;
+  --c-text-dim-2: 187, 187, 187;
+  --c-text-dim-3: 124, 124, 124;
+
+  /* bg */
+  --c-bg-base: 30, 30, 30; // #1e1e1e
+  --c-bg-dim-1: 39, 42, 42; // #272a2a
+  --c-bg-placeholder: 20, 20, 20;
+
+  --c-divider: 64, 64, 64;
+  --c-divider-muted: 54, 54, 54;
+
+  --c-state-error: 255, 71, 117;
+  --c-state-success: 71, 255, 197;
+
+  /* buttons */
+  // primary
+  --c-button-primary-color: var(--c-text-base);
+  --c-button-primary-bg: var(--c-accent-primary);
+  --c-button-primary-border: var(--c-accent-primary);
+  --o-button-primary-bg: 1;
+  --o-button-primary-bg-hover: 0.8;
+  --o-button-primary-border: 1;
+  --o-button-primary-border-hover: 1;
+  // secondary
+  --c-button-secondary-color: var(--c-accent-primary);
+  --c-button-secondary-bg: var(--c-accent-primary);
+  --c-button-secondary-border: var(--c-accent-primary);
+  --o-button-secondary-bg: 0.1;
+  --o-button-secondary-bg-hover: 0.2;
+  --o-button-secondary-border: 0.3;
+  --o-button-secondary-border-hover: 0.6;
+
+  --o-outline: 0.3;
+}

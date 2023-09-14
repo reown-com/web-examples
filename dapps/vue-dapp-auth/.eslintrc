@@ -1,0 +1,67 @@
+{
+  "extends": "@antfu",
+  "rules": {
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_"
+      }
+    ],
+    "@typescript-eslint/array-type": [
+      "error",
+      {
+        "default": "array"
+      }
+    ],
+    "camelcase": "off",
+    "import/named": "off",
+    "no-useless-constructor": "off",
+    "no-control-regex": "off",
+    "no-console": "warn",
+    "@typescript-eslint/brace-style": "off",
+    "brace-style": [
+      "error",
+      "1tbs"
+    ],
+    "curly": [
+      "error",
+      "all"
+    ],
+    "@typescript-eslint/space-before-function-paren": "off",
+    "space-before-function-paren": [
+      "error",
+      {
+        "anonymous": "never",
+        "named": "never",
+        "asyncArrow": "always"
+      }
+    ],
+    "vue/max-attributes-per-line": ["error", {
+      "singleline": {
+        "max": 3
+      },      
+      "multiline": {
+        "max": 1
+      }
+    }],
+    "vue/component-tags-order": ["error", {
+      "order": [ "template", "script", "style" ]
+    }],
+    "vue/custom-event-name-casing": ["error", "kebab-case"],
+    "vue/no-deprecated-v-on-native-modifier": "off",
+    "vue/no-deprecated-dollar-listeners-api": "off",
+    "vue/no-deprecated-v-bind-sync": "off",
+    "vue/no-deprecated-dollar-scopedslots-api": "off",
+    "vue/no-deprecated-filter": "off",
+    "vue/require-explicit-emits": "off",
+    "vue/no-deprecated-destroyed-lifecycle": "off",
+    "vue/component-name-in-template-casing": ["error", "kebab-case"],
+    "vue/multiline-html-element-content-newline": ["error", {
+      "ignores": ["pre", "textarea", "nuxt-link", "a", "abbr", "audio", "b", "bdi", "bdo", "canvas", "cite", "code", "data", "del", "dfn", "em", "i", "iframe", "ins", "kbd", "label", "map", "mark", "noscript", "object", "output", "picture", "q", "ruby", "s", "samp", "small", "span", "strong", "sub", "sup", "svg", "time", "u", "var", "video"]
+    }],
+    "vue/singleline-html-element-content-newline": ["error", {
+      "ignores": ["pre", "textarea", "nuxt-link", "a", "abbr", "audio", "b", "bdi", "bdo", "canvas", "cite", "code", "data", "del", "dfn", "em", "i", "iframe", "ins", "kbd", "label", "map", "mark", "noscript", "object", "output", "picture", "q", "ruby", "s", "samp", "small", "span", "strong", "sub", "sup", "svg", "time", "u", "var", "video"]
+    }]
+  }
+}

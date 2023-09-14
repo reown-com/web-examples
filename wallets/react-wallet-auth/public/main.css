@@ -1,0 +1,86 @@
+* {
+  box-sizing: border-box;
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.routeTransition {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.container {
+  width: 100%;
+  height: calc(100% - 220px);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.qrVideoMask {
+  width: 100%;
+  border-radius: 15px;
+  overflow: hidden !important;
+  position: relative;
+}
+
+.qrPlaceholder {
+  border: 2px rgba(139, 139, 139, 0.4) dashed;
+  width: 100%;
+  border-radius: 15px;
+  padding: 50px;
+}
+
+.qrIcon {
+  opacity: 0.3;
+}
+
+.codeBlock code {
+  flex: 1;
+}
+
+.codeBlock span {
+  background-color: transparent !important;
+  overflow: scroll;
+}
+
+.navLink {
+  transition: ease-in-out .2s opacity;
+}
+
+.navLink:hover {
+  opacity: 0.6;
+}
+
+select {
+  background-color: rgba(139, 139, 139, 0.2);
+  background-image: url(/icons/arrow-down-icon.svg);
+  background-size: 15px 15px;
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  padding: 5px 30px 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  appearance: none;
+  transition: .2s ease-in-out background-color;
+  font-family: var(--nextui-fonts-sans);
+  font-weight: var(--nextui-fontWeights-light);
+  border: 1px solid rgba(139, 139, 139, 0.25);
+}
+
+select:hover {
+  background-color: rgba(139, 139, 139, 0.35);
+}
+
+i {
+  margin-top: -5px !important;
+}

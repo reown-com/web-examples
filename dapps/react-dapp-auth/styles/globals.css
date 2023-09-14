@@ -1,0 +1,88 @@
+:root {
+  --primary-bg: #1e1e1e;
+  --secondary-bg: #272a2a;
+  --qr-bg: #141414;
+  --text-color: white;
+  --wc-btn-bg: #19324d;
+  --wc-btn-brdr: #0f4b8a;
+  --wc-btn-clr: #66b1ff;
+}
+
+* {
+  transition: background 0.25s ease-in-out;
+}
+
+html,
+body {
+  color: var(--text-color) !important;
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    color: white;
+    background: black;
+  }
+}
+
+.bg-primary {
+  background: var(--primary-bg);
+}
+
+.bg-qr {
+  background: var(--qr-bg);
+}
+
+.bg-secondary {
+  background: var(--secondary-bg);
+}
+
+.wc-button {
+  background: var(--wc-btn-bg) !important;
+  border: solid 1px var(--wc-btn-brdr);
+  color: var(--wc-btn-clr) !important;
+}
+
+.theme-switcher-dark > span > span {
+  background: url("/moon.svg") no-repeat #66b1ff !important;
+}
+
+.theme-switcher-light > span > span {
+  background: url("/sun.svg") no-repeat #66b1ff !important;
+}
+
+.theme-switcher > span {
+  border: solid 2px white;
+}
+
+.theme-switcher-light > span {
+  background: url("/moon.svg") no-repeat #3b4040 !important;
+  background-repeat: no-repeat !important;
+  background-position: 90% center !important;
+}
+
+.theme-switcher-dark > span {
+  background: url("/sun.svg") no-repeat #3b4040 !important;
+  background-repeat: no-repeat !important;
+  background-position: 10% center !important;
+}
+
+.theme-switcher > span > span {
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+}
