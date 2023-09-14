@@ -1,9 +1,0 @@
-{
-  "arrowParens": "avoid",
-  "parser": "typescript",
-  "printWidth": 100,
-  "singleQuote": true,
-  "tabWidth": 2,
-  "trailingComma": "none",
-  "semi": false
-}
