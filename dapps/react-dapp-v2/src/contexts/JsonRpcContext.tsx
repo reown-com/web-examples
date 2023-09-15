@@ -50,6 +50,7 @@ import {
   DEFAULT_XRPL_METHODS,
   DEFAULT_KADENA_METHODS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
+  DEFAULT_XRPL_OPTIONAL_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -1388,7 +1389,7 @@ export function JsonRpcContextProvider({
             chainId,
             topic: session!.topic,
             request: {
-              method: DEFAULT_XRPL_METHODS.XRPL_SIGN_TRANSACTION_FOR,
+              method: DEFAULT_XRPL_OPTIONAL_METHODS.XRPL_SIGN_TRANSACTION_FOR,
               params: {
                 tx_signer: address,
                 tx_json: {
@@ -1437,7 +1438,7 @@ export function JsonRpcContextProvider({
             },
           });
           return {
-            method: DEFAULT_XRPL_METHODS.XRPL_SIGN_TRANSACTION_FOR,
+            method: DEFAULT_XRPL_OPTIONAL_METHODS.XRPL_SIGN_TRANSACTION_FOR,
             address,
             valid: true,
             result: JSON.stringify(result),

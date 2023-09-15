@@ -21,6 +21,7 @@ import {
   DEFAULT_TEZOS_METHODS,
   DEFAULT_XRPL_METHODS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
+  DEFAULT_XRPL_OPTIONAL_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -374,7 +375,7 @@ const Home: NextPage = () => {
         callback: onSignTransaction,
       },
       {
-        method: DEFAULT_XRPL_METHODS.XRPL_SIGN_TRANSACTION_FOR,
+        method: DEFAULT_XRPL_OPTIONAL_METHODS.XRPL_SIGN_TRANSACTION_FOR,
         callback: onSignTransactionFor,
       },
     ];

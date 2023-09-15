@@ -155,6 +155,9 @@ export enum DEFAULT_TEZOS_METHODS {
  */
 export enum DEFAULT_XRPL_METHODS {
   XRPL_SIGN_TRANSACTION = "xrpl_signTransaction",
+}
+
+export enum DEFAULT_XRPL_OPTIONAL_METHODS {
   XRPL_SIGN_TRANSACTION_FOR = "xrpl_signTransactionFor",
 }
 

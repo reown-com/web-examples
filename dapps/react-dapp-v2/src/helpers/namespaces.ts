@@ -21,6 +21,7 @@ import {
   DEFAULT_XRPL_METHODS,
   DEFAULT_XRPL_EVENTS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
+  DEFAULT_XRPL_OPTIONAL_METHODS,
 } from "../constants";
 
 export const getNamespacesFromChains = (chains: string[]) => {
@@ -68,6 +69,8 @@ export const getSupportedOptionalMethodsByNamespace = (namespace: string) => {
   switch (namespace) {
     case "eip155":
       return Object.values(DEFAULT_EIP155_OPTIONAL_METHODS);
+    case "xrpl":
+      return Object.values(DEFAULT_XRPL_OPTIONAL_METHODS);
     case "cosmos":
     case "solana":
     case "polkadot":
