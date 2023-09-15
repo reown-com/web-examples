@@ -1,3 +1,4 @@
+import { Verify } from '@walletconnect/types'
 import { proxy } from 'valtio'
 
 /**
@@ -14,8 +15,10 @@ interface State {
   multiversxAddress: string
   tronAddress: string
   tezosAddress: string
+  kadenaAddress: string
   relayerRegionURL: string
   activeChainId: string
+  currentRequestVerifyContext?: Verify.Context
 }
 
 /**
@@ -33,6 +36,7 @@ const state = proxy<State>({
   multiversxAddress: '',
   tronAddress: '',
   tezosAddress: '',
+  kadenaAddress: '',
   relayerRegionURL: ''
 })
 
@@ -64,6 +68,9 @@ const SettingsStore = {
   setNearAddress(nearAddress: string) {
     state.nearAddress = nearAddress
   },
+  setKadenaAddress(kadenaAddress: string) {
+    state.kadenaAddress = kadenaAddress
+  },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL
   },
@@ -82,6 +89,10 @@ const SettingsStore = {
 
   setActiveChainId(value: string) {
     state.activeChainId = value
+  },
+
+  setCurrentRequestVerifyContext(context: Verify.Context) {
+    state.currentRequestVerifyContext = context
   },
 
   toggleTestNets() {

@@ -4,6 +4,7 @@ import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
+import { styledToast } from '@/utils/HelperUtil'
 import { approvePolkadotRequest, rejectPolkadotRequest } from '@/utils/PolkadotRequestHandlerUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
@@ -27,10 +28,15 @@ export default function SessionSignPolkadotModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approvePolkadotRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
@@ -39,10 +45,15 @@ export default function SessionSignPolkadotModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectPolkadotRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }

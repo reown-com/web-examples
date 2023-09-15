@@ -10,6 +10,7 @@ import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { transactions } from 'near-api-js'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
+import { styledToast } from '@/utils/HelperUtil'
 
 export default function SessionSignNearModal() {
   // Get request and wallet data from store
@@ -140,10 +141,15 @@ export default function SessionSignNearModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approveNearRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
@@ -152,10 +158,15 @@ export default function SessionSignNearModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectNearRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }

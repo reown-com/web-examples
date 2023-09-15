@@ -39,6 +39,13 @@ export const EIP155_MAINNET_CHAINS = {
     logo: '/chain-logos/eip155-10.png',
     rgb: '235, 0, 25',
     rpc: 'https://mainnet.optimism.io'
+  },
+  'eip155:324': {
+    chainId: 324,
+    name: 'zkSync Era',
+    logo: '/chain-logos/eip155-324.svg',
+    rgb: '242, 242, 242',
+    rpc: 'https://mainnet.era.zksync.io/'
   }
 }
 
@@ -70,6 +77,13 @@ export const EIP155_TEST_CHAINS = {
     logo: '/chain-logos/eip155-10.png',
     rgb: '235, 0, 25',
     rpc: 'https://goerli.optimism.io'
+  },
+  'eip155:280': {
+    chainId: 280,
+    name: 'zkSync Era Testnet',
+    logo: '/chain-logos/eip155-324.svg',
+    rgb: '242, 242, 242',
+    rpc: 'https://testnet.era.zksync.dev/'
   }
 }
 

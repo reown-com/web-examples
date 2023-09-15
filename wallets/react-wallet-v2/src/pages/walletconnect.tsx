@@ -2,9 +2,9 @@ import { parseUri } from '@walletconnect/utils'
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
 import { signClient } from '@/utils/WalletConnectUtil'
-import { createLegacySignClient } from '@/utils/LegacyWalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
+import { styledToast } from '@/utils/HelperUtil'
 
 export default function WalletConnectPage() {
   const [uri, setUri] = useState('')
@@ -13,16 +13,9 @@ export default function WalletConnectPage() {
   async function onConnect(uri: string) {
     try {
       setLoading(true)
-      const { version } = parseUri(uri)
-
-      // Route the provided URI to the v1 SignClient if URI version indicates it, else use v2.
-      if (version === 1) {
-        createLegacySignClient({ uri })
-      } else {
-        await signClient.pair({ uri })
-      }
-    } catch (err: unknown) {
-      alert(err)
+      await signClient.pair({ uri })
+    } catch (error) {
+      styledToast((error as Error).message, 'error')
     } finally {
       setUri('')
       setLoading(false)
@@ -46,6 +39,7 @@ export default function WalletConnectPage() {
         placeholder="e.g. wc:a281567bb3e4..."
         onChange={e => setUri(e.target.value)}
         value={uri}
+        data-testid="uri-input"
         contentRight={
           <Button
             size="xs"
@@ -53,6 +47,7 @@ export default function WalletConnectPage() {
             css={{ marginLeft: -60 }}
             onClick={() => onConnect(uri)}
             color="gradient"
+            data-testid="uri-connect-button"
           >
             {loading ? <Loading size="sm" /> : 'Connect'}
           </Button>

@@ -27,7 +27,9 @@ export default function PairingsPage() {
               logo={peerMetadata?.icons[0]}
               url={peerMetadata?.url}
               name={peerMetadata?.name}
+              topic={pairing.topic}
               onDelete={() => onDelete(pairing.topic)}
+              data-testid={'pairing-' + pairing.topic}
             />
           )
         })

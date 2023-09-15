@@ -9,6 +9,7 @@ import * as multiversx from "./multiversx";
 import * as tron from "./tron";
 import * as tezos from "./tezos";
 import * as xrpl from "./xrpl";
+import * as kadena from "./kadena";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -25,6 +26,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return solana.getChainMetadata(chainId);
     case "near":
       return near.getChainMetadata(chainId);
+    case "kadena":
+      return kadena.getChainMetadata(chainId);
     case "mvx":
       return multiversx.getChainMetadata(chainId);
     case "tron":
@@ -56,6 +59,8 @@ export function getChainRequestRender(
       return tezos.getChainRequestRender(request);
     case "xrpl":
       return xrpl.getChainRequestRender(request);
+    case "kadena":
+      return kadena.getChainRequestRender(request);
     default:
       throw new Error(`No render handler for namespace ${namespace}`);
   }

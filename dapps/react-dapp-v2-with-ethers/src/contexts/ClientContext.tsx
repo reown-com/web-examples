@@ -195,7 +195,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
             ],
             chains: [`eip155:${chainId}`],
             events: ["chainChanged", "accountsChanged"],
-            rpcMap: {},
+            rpcMap: {chainId: `https://rpc.walletconnect.com?chainId=eip155:${chainId}&projectId=${DEFAULT_PROJECT_ID}`,},
           },
         },
         pairingTopic: pairing?.topic,

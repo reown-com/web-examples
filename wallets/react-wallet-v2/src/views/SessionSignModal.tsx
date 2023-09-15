@@ -4,7 +4,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
-import { getSignParamsMessage } from '@/utils/HelperUtil'
+import { getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
 import { signClient } from '@/utils/WalletConnectUtil'
 import { Button, Col, Divider, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
@@ -30,10 +30,15 @@ export default function SessionSignModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approveEIP155Request(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
@@ -42,10 +47,15 @@ export default function SessionSignModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectEIP155Request(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await signClient.respond({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
@@ -64,7 +74,9 @@ export default function SessionSignModal() {
         <Row>
           <Col>
             <Text h5>Message</Text>
-            <Text color="$gray400">{message}</Text>
+            <Text color="$gray400" data-testid="request-message-text">
+              {message}
+            </Text>
           </Col>
         </Row>
 
@@ -74,10 +86,10 @@ export default function SessionSignModal() {
       </RequestModalContainer>
 
       <Modal.Footer>
-        <Button auto flat color="error" onClick={onReject}>
+        <Button auto flat color="error" onClick={onReject} data-testid="request-button-reject">
           Reject
         </Button>
-        <Button auto flat color="success" onClick={onApprove}>
+        <Button auto flat color="success" onClick={onApprove} data-testid="request-button-approve">
           Approve
         </Button>
       </Modal.Footer>
