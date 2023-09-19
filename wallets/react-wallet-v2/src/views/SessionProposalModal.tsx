@@ -101,9 +101,9 @@ export default function SessionProposalModal() {
             namespaces[key] = {
               ...namespaces[key],
               accounts,
-              methods: mergeArrays(namespaces[key].methods, optionalNamespaces[key].methods),
-              events: mergeArrays(namespaces[key].events, optionalNamespaces[key].events),
-              chains: mergeArrays(namespaces[key].chains, optionalNamespaces[key].chains)
+              methods: mergeArrays(namespaces[key]?.methods, optionalNamespaces[key].methods),
+              events: mergeArrays(namespaces[key]?.events, optionalNamespaces[key].events),
+              chains: mergeArrays(namespaces[key]?.chains, optionalNamespaces[key].chains)
             }
           }
         })
