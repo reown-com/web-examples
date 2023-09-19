@@ -6,7 +6,7 @@ import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { convertHexToUtf8, getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
 import { approveKadenaRequest, rejectKadenaRequest } from '@/utils/KadenaRequestHandlerUtil'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Col, Divider, Modal, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -32,7 +32,7 @@ export default function SessionSignKadenaModal() {
     if (requestEvent) {
       const response = await approveKadenaRequest(requestEvent)
       try {
-        await signClient.respond({
+        await web3wallet.respondSessionRequest({
           topic,
           response
         })
@@ -49,7 +49,7 @@ export default function SessionSignKadenaModal() {
     if (requestEvent) {
       const response = rejectKadenaRequest(requestEvent)
       try {
-        await signClient.respond({
+        await web3wallet.respondSessionRequest({
           topic,
           response
         })

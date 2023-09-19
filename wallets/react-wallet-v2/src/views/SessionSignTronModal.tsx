@@ -6,7 +6,7 @@ import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approveTronRequest, rejectTronRequest } from '@/utils/TronRequestHandlerUtil'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -29,7 +29,7 @@ export default function SessionSignTronModal() {
     if (requestEvent) {
       const response = await approveTronRequest(requestEvent)
       try {
-        await signClient.respond({
+        await web3wallet.respondSessionRequest({
           topic,
           response
         })
@@ -46,7 +46,7 @@ export default function SessionSignTronModal() {
     if (requestEvent) {
       const response = rejectTronRequest(requestEvent)
       try {
-        await signClient.respond({
+        await web3wallet.respondSessionRequest({
           topic,
           response
         })

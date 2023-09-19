@@ -9,7 +9,7 @@ import {
   approveMultiversxRequest,
   rejectMultiversxRequest
 } from '@/utils/MultiversxRequestHandlerUtil'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -32,7 +32,7 @@ export default function SessionSignMultiversxModal() {
     if (requestEvent) {
       const response = await approveMultiversxRequest(requestEvent)
       try {
-        await signClient.respond({
+        await web3wallet.respondSessionRequest({
           topic,
           response
         })
@@ -49,7 +49,7 @@ export default function SessionSignMultiversxModal() {
     if (requestEvent) {
       const response = rejectMultiversxRequest(requestEvent)
       try {
-        await signClient.respond({
+        await web3wallet.respondSessionRequest({
           topic,
           response
         })

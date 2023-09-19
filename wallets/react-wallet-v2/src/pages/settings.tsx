@@ -34,15 +34,7 @@ export default function SettingsPage() {
       </Text>
       <Row justify="space-between" align="center">
         <Text color="$gray400">@walletconnect/sign-client</Text>
-        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/sign-client']}</Text>
-      </Row>
-      <Row justify="space-between" align="center">
-        <Text color="$gray400">@walletconnect/utils</Text>
-        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/utils']}</Text>
-      </Row>
-      <Row justify="space-between" align="center">
-        <Text color="$gray400">@walletconnect/types</Text>
-        <Text color="$gray400">{packageJSON.devDependencies['@walletconnect/types']}</Text>
+        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/web3wallet']}</Text>
       </Row>
 
       <Divider y={2} />
@@ -51,7 +43,11 @@ export default function SettingsPage() {
         Testnets
       </Text>
       <Row justify="space-between" align="center">
-        <Switch checked={testNets} onChange={SettingsStore.toggleTestNets} data-testid="settings-toggle-testnets"/>
+        <Switch
+          checked={testNets}
+          onChange={SettingsStore.toggleTestNets}
+          data-testid="settings-toggle-testnets"
+        />
         <Text>{testNets ? 'Enabled' : 'Disabled'}</Text>
       </Row>
 
