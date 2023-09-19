@@ -1,3 +1,4 @@
+import { Web3WalletTypes } from '@walletconnect/web3wallet'
 import { COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
@@ -26,6 +27,12 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     },
     []
   )
+  /******************************************************************************
+   * 2. Open Auth modal for confirmation / rejection
+   *****************************************************************************/
+  const onAuthRequest = useCallback((request: Web3WalletTypes.AuthRequest) => {
+    ModalStore.open('AuthRequestModal', { request })
+  }, [])
 
   /******************************************************************************
    * 3. Open request handling modal based on method that was used
@@ -110,11 +117,14 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    *****************************************************************************/
   useEffect(() => {
     if (initialized) {
+      //sign
       web3wallet.on('session_proposal', onSessionProposal)
       web3wallet.on('session_request', onSessionRequest)
+      // auth
+      web3wallet.on('auth_request', onAuthRequest)
       // TODOs
       web3wallet.engine.signClient.events.on('session_ping', data => console.log('ping', data))
       web3wallet.on('session_delete', data => console.log('delete', data))
     }
-  }, [initialized, onSessionProposal, onSessionRequest])
+  }, [initialized, onAuthRequest, onSessionProposal, onSessionRequest])
 }
