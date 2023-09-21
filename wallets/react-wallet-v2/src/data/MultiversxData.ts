@@ -12,7 +12,8 @@ export const MULTIVERSX_MAINNET_CHAINS = {
     name: 'MultiversX',
     logo: '/chain-logos/multiversx-1.svg',
     rgb: '43, 45, 46',
-    rpc: ''
+    rpc: '',
+    namespace: 'mutiversx'
   }
 }
 
@@ -22,7 +23,8 @@ export const MULTIVERSX_TEST_CHAINS = {
     name: 'MultiversX Devnet',
     logo: '/chain-logos/multiversx-1.svg',
     rgb: '43, 45, 46',
-    rpc: ''
+    rpc: '',
+    namespace: 'mutiversx'
   }
   // Keep only one Test Chain visible
   // 'mvx:T': {

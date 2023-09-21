@@ -9,6 +9,9 @@ import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
 import { tezosAddresses } from '@/utils/TezosWalletUtil'
+import { solanaAddresses } from '@/utils/SolanaWalletUtil'
+import { nearAddresses } from '@/utils/NearWalletUtil'
+import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import {
   isCosmosChain,
   isEIP155Chain,
@@ -21,21 +24,198 @@ import {
   isKadenaChain,
   styledToast
 } from '@/utils/HelperUtil'
-import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { Button, Divider, Modal, Text } from '@nextui-org/react'
+import { Button, Col, Collapse, Divider, Grid, Modal, Row, Text, styled } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
 import { getSdkError, mergeArrays } from '@walletconnect/utils'
-import { Fragment, useEffect, useState } from 'react'
-import { nearAddresses } from '@/utils/NearWalletUtil'
-import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
+import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
+import { MULTIVERSX_CHAINS, MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
+import { NEAR_CHAINS, NEAR_SIGNING_METHODS } from '@/data/NEARData'
+import { POLKADOT_CHAINS, POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
+import { SOLANA_CHAINS, SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
+import { TEZOS_CHAINS, TEZOS_SIGNING_METHODS } from '@/data/TezosData'
+import { TRON_CHAINS, TRON_SIGNING_METHODS } from '@/data/TronData'
+import DoneIcon from '@mui/icons-material/Done'
+import CloseIcon from '@mui/icons-material/Close'
+import { buildApprovedNamespaces } from '@walletconnect/utils'
+import ChainDataMini from '@/components/ChainDataMini'
+import ChainAddressMini from '@/components/ChainAddressMini'
+import { getChainData } from '@/data/chainsUtil'
+import VerifyInfobox from '@/components/VerifyInfobox'
+
+const StyledText = styled(Text, {
+  fontWeight: 400
+} as any)
+
+const StyledSpan = styled('span', {
+  fontWeight: 400
+} as any)
 
 export default function SessionProposalModal() {
-  const [selectedAccounts, setSelectedAccounts] = useState<Record<string, string[]>>({})
-  const hasSelected = Object.keys(selectedAccounts).length
-
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
+
+  const supportedNamespaces = useMemo(() => {
+    // eip155
+    const eip155Chains = Object.keys(EIP155_CHAINS)
+    const eip155Methods = Object.values(EIP155_SIGNING_METHODS)
+    // cosmos
+    const cosmosChains = Object.keys(COSMOS_MAINNET_CHAINS)
+    const cosmosMethods = Object.values(COSMOS_SIGNING_METHODS)
+
+    // Kadena
+    const kadenaChains = Object.keys(KADENA_CHAINS)
+    const kadenaMethods = Object.values(KADENA_SIGNING_METHODS)
+
+    // multiversx
+    const multiversxChains = Object.keys(MULTIVERSX_CHAINS)
+    const multiversxMethods = Object.values(MULTIVERSX_SIGNING_METHODS)
+
+    // near
+    const nearChains = Object.keys(NEAR_CHAINS)
+    const nearMethods = Object.values(NEAR_SIGNING_METHODS)
+
+    // polkadot
+    const polkadotChains = Object.keys(POLKADOT_CHAINS)
+    const polkadotMethods = Object.values(POLKADOT_SIGNING_METHODS)
+
+    // solana
+    const solanaChains = Object.keys(SOLANA_CHAINS)
+    const solanaMethods = Object.values(SOLANA_SIGNING_METHODS)
+
+    // tezos
+    const tezosChains = Object.keys(TEZOS_CHAINS)
+    const tezosMethods = Object.values(TEZOS_SIGNING_METHODS)
+
+    // tron
+    const tronChains = Object.keys(TRON_CHAINS)
+    const tronMethods = Object.values(TRON_SIGNING_METHODS)
+
+    return {
+      eip155: {
+        chains: eip155Chains,
+        methods: eip155Methods,
+        events: ['accountsChanged', 'chainChanged'],
+        accounts: eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
+      },
+      cosmos: {
+        chains: cosmosChains,
+        methods: cosmosMethods,
+        events: [],
+        accounts: cosmosChains.map(chain => `${chain}:${cosmosAddresses[0]}`).flat()
+      },
+      kadena: {
+        chains: kadenaChains,
+        methods: kadenaMethods,
+        events: [],
+        accounts: kadenaChains.map(chain => `${chain}:${kadenaAddresses[0]}`).flat()
+      },
+      multiversx: {
+        chains: multiversxChains,
+        methods: multiversxMethods,
+        events: [],
+        accounts: multiversxChains.map(chain => `${chain}:${multiversxAddresses[0]}`).flat()
+      },
+      near: {
+        chains: nearChains,
+        methods: nearMethods,
+        events: [],
+        accounts: nearChains.map(chain => `${chain}:${nearAddresses[0]}`).flat()
+      },
+      polkadot: {
+        chains: polkadotChains,
+        methods: polkadotMethods,
+        events: [],
+        accounts: polkadotChains
+          .map(chain => polkadotAddresses.map(address => `${chain}:${address}`))
+          .flat()
+      },
+      solana: {
+        chains: solanaChains,
+        methods: solanaMethods,
+        events: [],
+        accounts: solanaChains
+          .map(chain => solanaAddresses.map(address => `${chain}:${address}`))
+          .flat()
+      },
+      tezos: {
+        chains: tezosChains,
+        methods: tezosMethods,
+        events: [],
+        accounts: tezosChains
+          .map(chain => tezosAddresses.map(address => `${chain}:${address}`))
+          .flat()
+      },
+      tron: {
+        chains: tronChains,
+        methods: tronMethods,
+        events: [],
+        accounts: tronChains.map(chain => `${chain}:${tronAddresses[0]}`)
+      }
+    }
+  }, [])
+  console.log('supportedNamespaces', supportedNamespaces, eip155Addresses)
+
+  const requestedChains = useMemo(() => {
+    if (!proposal) return []
+    const required = []
+    for (const [key, values] of Object.entries(proposal.params.requiredNamespaces)) {
+      const chains = key.includes(':') ? key : values.chains
+      required.push(chains)
+    }
+
+    const optional = []
+    for (const [key, values] of Object.entries(proposal.params.optionalNamespaces)) {
+      const chains = key.includes(':') ? key : values.chains
+      optional.push(chains)
+    }
+    console.log('requestedChains', [...new Set([...required.flat(), ...optional.flat()])])
+    return [...new Set([...required.flat(), ...optional.flat()])]
+  }, [proposal])
+
+  // the chains that are supported by the wallet from the proposal
+  const supportedChains = useMemo(
+    () => requestedChains.map(chain => getChainData(chain!)),
+    [requestedChains]
+  )
+
+  const getAddress = useCallback((namespace?: string) => {
+    if (!namespace) return '< not available >'
+    switch (namespace) {
+      case 'eip155':
+        return eip155Addresses[0]
+      case 'cosmos':
+        return cosmosAddresses[0]
+      case 'kadena':
+        return kadenaAddresses[0]
+      case 'multiversx':
+        return multiversxAddresses[0]
+      case 'near':
+        return nearAddresses[0]
+      case 'polkadot':
+        return polkadotAddresses[0]
+      case 'solana':
+        return solanaAddresses[0]
+      case 'tezos':
+        return tezosAddresses[0]
+      case 'tron':
+        return tronAddresses[0]
+    }
+  }, [])
+
+  const approveButtonColor: any = useMemo(() => {
+    switch (proposal?.verifyContext.verified.validation) {
+      case 'INVALID':
+        return 'error'
+      case 'UNKNOWN':
+        return 'warning'
+      default:
+        return 'success'
+    }
+  }, [proposal])
 
   // Ensure proposal is defined
   if (!proposal) {
@@ -45,69 +225,15 @@ export default function SessionProposalModal() {
   // Get required proposal data
   const { id, params } = proposal
 
-  const { proposer, requiredNamespaces, optionalNamespaces, sessionProperties, relays } = params
-
-  // Add / remove address from EIP155 selection
-  function onSelectAccount(chain: string, account: string) {
-    if (selectedAccounts[chain]?.includes(account)) {
-      const newSelectedAccounts = selectedAccounts[chain]?.filter(a => a !== account)
-      setSelectedAccounts(prev => ({
-        ...prev,
-        [chain]: newSelectedAccounts
-      }))
-    } else {
-      const prevChainAddresses = selectedAccounts[chain] ?? []
-      setSelectedAccounts(prev => ({
-        ...prev,
-        [chain]: [...prevChainAddresses, account]
-      }))
-    }
-  }
+  const { proposer, relays } = params
 
   // Hanlde approve action, construct session namespace
   async function onApprove() {
     if (proposal) {
-      let namespaces: SessionTypes.Namespaces = {}
-      const selectedOptionalNamespaces = []
-      for (const [chain, account] of Object.entries(selectedAccounts)) {
-        if (chain.includes('optional')) {
-          selectedOptionalNamespaces.push(chain.split(':')[1])
-        }
-      }
-
-      Object.keys(requiredNamespaces)
-        .concat(selectedOptionalNamespaces)
-        .forEach(key => {
-          const accounts: string[] = []
-          if (requiredNamespaces[key] && requiredNamespaces[key]?.chains) {
-            requiredNamespaces[key].chains?.map(chain => {
-              selectedAccounts[`required:${key}`].map(acc => accounts.push(`${chain}:${acc}`))
-            })
-            namespaces[key] = {
-              accounts,
-              methods: requiredNamespaces[key].methods,
-              events: requiredNamespaces[key].events,
-              chains: requiredNamespaces[key].chains
-            }
-          }
-          if (optionalNamespaces[key] && selectedAccounts[`optional:${key}`]) {
-            optionalNamespaces[key].chains?.map(chain => {
-              selectedAccounts[`optional:${key}`].forEach(acc => {
-                if (!accounts.includes(`${chain}:${acc}`)) {
-                  accounts.push(`${chain}:${acc}`)
-                }
-              })
-            })
-            namespaces[key] = {
-              ...namespaces[key],
-              accounts,
-              methods: mergeArrays(namespaces[key]?.methods, optionalNamespaces[key].methods),
-              events: mergeArrays(namespaces[key]?.events, optionalNamespaces[key].events),
-              chains: mergeArrays(namespaces[key]?.chains, optionalNamespaces[key].chains)
-            }
-          }
-        })
-
+      const namespaces = buildApprovedNamespaces({
+        proposal: proposal.params,
+        supportedNamespaces
+      })
       console.log('approving namespaces:', namespaces)
 
       try {
@@ -140,157 +266,87 @@ export default function SessionProposalModal() {
     ModalStore.close()
   }
 
-  // Render account selection checkboxes based on chain
-  function renderAccountSelection(chain: string, required: boolean) {
-    if (isEIP155Chain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={eip155Addresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-          isRequired={required}
-        />
-      )
-    } else if (isCosmosChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={cosmosAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-          isRequired={required}
-        />
-      )
-    } else if (isSolanaChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={solanaAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-          isRequired={required}
-        />
-      )
-    } else if (isPolkadotChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={polkadotAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-          isRequired={required}
-        />
-      )
-    } else if (isNearChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={nearAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-          isRequired={required}
-        />
-      )
-    } else if (isMultiversxChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={multiversxAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-          isRequired={required}
-        />
-      )
-    } else if (isTronChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={tronAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-          isRequired={required}
-        />
-      )
-    } else if (isTezosChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={tezosAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-          isRequired={required}
-        />
-      )
-    } else if (isKadenaChain(chain)) {
-      return (
-        <ProposalSelectSection
-          addresses={kadenaAddresses}
-          selectedAddresses={selectedAccounts[chain]}
-          onSelect={onSelectAccount}
-          chain={chain}
-          isRequired={required}
-        />
-      )
-    }
-  }
-
   return (
     <Fragment>
-      <RequestModalContainer title="Session Proposal">
+      <RequestModalContainer title="">
         <ProjectInfoCard metadata={proposer.metadata} />
-
-        <Divider y={2} />
-        {Object.keys(requiredNamespaces).length != 0 ? <Text h4>Required Namespaces</Text> : null}
-        {Object.keys(requiredNamespaces).map(chain => {
-          return (
-            <Fragment key={chain}>
-              <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-              <SessionProposalChainCard
-                requiredNamespace={requiredNamespaces[chain]}
-                data-testid={`session-proposal-card-req-${chain}`}
-              />
-              {renderAccountSelection(`required:${chain}`, true)}
-              <Divider y={2} />
-            </Fragment>
-          )
-        })}
-        {optionalNamespaces && Object.keys(optionalNamespaces).length != 0 ? (
-          <Text h4>Optional Namespaces</Text>
-        ) : null}
-        {optionalNamespaces &&
-          Object.keys(optionalNamespaces).length != 0 &&
-          Object.keys(optionalNamespaces).map(chain => {
-            return (
-              <Fragment key={chain}>
-                <Text css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-                <SessionProposalChainCard
-                  requiredNamespace={optionalNamespaces[chain]}
-                  data-testid={`session-proposal-card-opt-${chain}`}
-                />
-                {renderAccountSelection(`optional:${chain}`, false)}
-                <Divider y={2} />
-              </Fragment>
-            )
-          })}
-      </RequestModalContainer>
-
-      <Modal.Footer>
-        <Button auto flat color="error" onPress={onReject} data-testid="session-reject-button">
-          Reject
-        </Button>
-
-        <Button
-          auto
-          flat
-          color="success"
-          onPress={onApprove}
-          disabled={!hasSelected}
-          css={{ opacity: hasSelected ? 1 : 0.4 }}
-          data-testid="session-approve-button"
+        <Divider y={1} />
+        <Row>
+          <Col>
+            <StyledText h4>Requested permissions</StyledText>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <DoneIcon style={{ verticalAlign: 'bottom' }} />{' '}
+            <StyledSpan>View your balance and activity</StyledSpan>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <DoneIcon style={{ verticalAlign: 'bottom' }} />{' '}
+            <StyledSpan>Send approval requests</StyledSpan>
+          </Col>
+        </Row>
+        <Row>
+          <Col style={{ color: 'gray' }}>
+            <CloseIcon style={{ verticalAlign: 'bottom' }} />
+            <StyledSpan>Move funds without permission</StyledSpan>
+          </Col>
+        </Row>
+        <VerifyInfobox metadata={proposer.metadata} />
+        <Grid.Container
+          style={{ marginBottom: '10px', marginTop: '10px' }}
+          justify={'space-between'}
         >
-          Approve
-        </Button>
+          <Grid>
+            <Row style={{ color: 'GrayText' }}>Wallets</Row>
+            {supportedChains.length &&
+              supportedChains.map((chain, i) => {
+                return (
+                  <Row key={i}>
+                    <ChainAddressMini key={i} address={getAddress(chain?.namespace)} />
+                  </Row>
+                )
+              })}
+          </Grid>
+          <Grid>
+            <Row style={{ color: 'GrayText' }} justify="flex-end">
+              Networks
+            </Row>
+            {supportedChains.length &&
+              supportedChains.map((chain, i) => {
+                return (
+                  <Row key={i}>
+                    <ChainDataMini key={i} chainId={chain?.chainId!} />
+                  </Row>
+                )
+              })}
+          </Grid>
+        </Grid.Container>
+      </RequestModalContainer>
+      <Divider style={{ width: '89%', margin: '5px auto' }} />
+      <Modal.Footer>
+        <Row justify="space-between">
+          <Button
+            auto
+            flat
+            style={{ color: 'white', backgroundColor: 'grey' }}
+            onPress={onReject}
+            data-testid="session-reject-button"
+          >
+            Reject
+          </Button>
+          <Button
+            auto
+            flat
+            color={approveButtonColor}
+            onPress={onApprove}
+            data-testid="session-approve-button"
+          >
+            Approve
+          </Button>
+        </Row>
       </Modal.Footer>
     </Fragment>
   )

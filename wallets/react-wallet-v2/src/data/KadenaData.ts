@@ -11,7 +11,8 @@ export const KADENA_MAINNET_CHAINS = {
     chainId: 'mainnet01',
     name: 'Kadena',
     logo: '/chain-logos/kadena.png',
-    rgb: '237, 9, 143'
+    rgb: '237, 9, 143',
+    namespace: 'kadena'
   }
 }
 
@@ -20,7 +21,8 @@ export const KADENA_TEST_CHAINS = {
     chainId: 'testnet04',
     name: 'Kadena Testnet',
     logo: '/chain-logos/kadena.png',
-    rgb: '237, 9, 143'
+    rgb: '237, 9, 143',
+    namespace: 'kadena'
   }
 }
 
