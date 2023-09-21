@@ -1,4 +1,7 @@
+import ModalFooter from '@/components/ModalFooter'
+import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
+import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
@@ -15,7 +18,6 @@ export default function AuthRequestModal() {
   console.log('modal data', ModalStore.state.data, account)
   // Get request and wallet data from store
   const request = ModalStore.state.data?.request
-
   // Ensure request and wallet are defined
   if (!request) {
     return <Text>Missing request data</Text>
@@ -62,8 +64,9 @@ export default function AuthRequestModal() {
   }
   return (
     <Fragment>
-      <RequestModalContainer title="Auth Message">
-        <Divider y={2} />
+      <RequestModalContainer title="">
+        <ProjectInfoCard metadata={request?.params.requester.metadata} />
+        <Divider y={1} />
         <Row>
           <Col>
             <Text h5>Message</Text>
@@ -72,17 +75,10 @@ export default function AuthRequestModal() {
             </Code>
           </Col>
         </Row>
-        <Divider y={2} />
+        <Divider y={1} />
+        <VerifyInfobox metadata={request.params.requester.metadata} />
       </RequestModalContainer>
-
-      <Modal.Footer>
-        <Button auto flat color="error" onClick={onReject}>
-          Reject
-        </Button>
-        <Button auto flat color="success" onClick={onApprove}>
-          Approve
-        </Button>
-      </Modal.Footer>
+      <ModalFooter onApprove={onApprove} onReject={onReject} />
     </Fragment>
   )
 }

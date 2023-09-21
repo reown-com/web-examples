@@ -1,8 +1,10 @@
+import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
+import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approvePolkadotRequest, rejectPolkadotRequest } from '@/utils/PolkadotRequestHandlerUtil'
@@ -60,30 +62,26 @@ export default function SessionSignPolkadotModal() {
 
   return (
     <Fragment>
-      <RequestModalContainer title="Sign Message">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} />
+      <RequestModalContainer title="">
+        <ProjectInfoCard
+          metadata={requestSession.peer.metadata}
+          intention="sign a Polkadot message"
+        />
 
-        <Divider y={2} />
+        <Divider y={1} />
 
         <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
-        <Divider y={2} />
+        <Divider y={1} />
 
         <RequestDataCard data={params} />
 
-        <Divider y={2} />
+        <Divider y={1} />
 
         <RequestMethodCard methods={[request.method]} />
+        <VerifyInfobox metadata={requestSession.peer.metadata} />
       </RequestModalContainer>
-
-      <Modal.Footer>
-        <Button auto flat color="error" onClick={onReject}>
-          Reject
-        </Button>
-        <Button auto flat color="success" onClick={onApprove}>
-          Approve
-        </Button>
-      </Modal.Footer>
+      <ModalFooter onApprove={onApprove} onReject={onReject} />
     </Fragment>
   )
 }

@@ -25,15 +25,14 @@ export default function SessionUnsuportedMethodModal() {
       <RequestModalContainer title="Unsuported Method">
         <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
-        <Divider y={2} />
+        <Divider y={1} />
 
         <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
-        <Divider y={2} />
+        <Divider y={1} />
 
         <RequestMethodCard methods={[request.method]} />
       </RequestModalContainer>
-
       <Modal.Footer>
         <Button auto flat color="error" onClick={ModalStore.close}>
           Close

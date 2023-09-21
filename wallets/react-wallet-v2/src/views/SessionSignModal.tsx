@@ -1,7 +1,9 @@
+import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
+import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
@@ -62,15 +64,11 @@ export default function SessionSignModal() {
 
   return (
     <Fragment>
-      <RequestModalContainer title="Sign Message">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} />
-
-        <Divider y={2} />
-
+      <RequestModalContainer title="">
+        <ProjectInfoCard metadata={requestSession.peer.metadata} intention="request a signature" />
+        <Divider y={1} />
         <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-
-        <Divider y={2} />
-
+        <Divider y={1} />
         <Row>
           <Col>
             <Text h5>Message</Text>
@@ -80,19 +78,11 @@ export default function SessionSignModal() {
           </Col>
         </Row>
 
-        <Divider y={2} />
-
+        <Divider y={1} />
         <RequestMethodCard methods={[request.method]} />
+        <VerifyInfobox metadata={requestSession.peer.metadata} />
       </RequestModalContainer>
-
-      <Modal.Footer>
-        <Button auto flat color="error" onClick={onReject} data-testid="request-button-reject">
-          Reject
-        </Button>
-        <Button auto flat color="success" onClick={onApprove} data-testid="request-button-approve">
-          Approve
-        </Button>
-      </Modal.Footer>
+      <ModalFooter onApprove={onApprove} onReject={onReject} />
     </Fragment>
   )
 }

@@ -25,7 +25,18 @@ import {
   styledToast
 } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { Button, Col, Collapse, Divider, Grid, Modal, Row, Text, styled } from '@nextui-org/react'
+import {
+  Button,
+  Col,
+  Collapse,
+  Divider,
+  Grid,
+  Modal,
+  Row,
+  StyledModalFooter,
+  Text,
+  styled
+} from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
 import { getSdkError, mergeArrays } from '@walletconnect/utils'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
@@ -45,6 +56,7 @@ import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
 import VerifyInfobox from '@/components/VerifyInfobox'
+import ModalFooter from '@/components/ModalFooter'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -182,8 +194,26 @@ export default function SessionProposalModal() {
     [requestedChains]
   )
 
+  // get required chains that are not supported by the wallet
+  const notSupportedChains = useMemo(() => {
+    if (!proposal) return []
+    const required = []
+    for (const [key, values] of Object.entries(proposal.params.requiredNamespaces)) {
+      const chains = key.includes(':') ? key : values.chains
+      required.push(chains)
+    }
+    return required
+      .flat()
+      .filter(
+        chain =>
+          !supportedChains
+            .map(supportedChain => `${supportedChain?.namespace}:${supportedChain?.chainId}`)
+            .includes(chain!)
+      )
+  }, [proposal, supportedChains])
+  console.log('notSupportedChains', notSupportedChains)
   const getAddress = useCallback((namespace?: string) => {
-    if (!namespace) return '< not available >'
+    if (!namespace) return 'N/A'
     switch (namespace) {
       case 'eip155':
         return eip155Addresses[0]
@@ -300,7 +330,7 @@ export default function SessionProposalModal() {
           justify={'space-between'}
         >
           <Grid>
-            <Row style={{ color: 'GrayText' }}>Wallets</Row>
+            <Row style={{ color: 'GrayText' }}>Accounts</Row>
             {supportedChains.length &&
               supportedChains.map((chain, i) => {
                 return (
@@ -312,7 +342,7 @@ export default function SessionProposalModal() {
           </Grid>
           <Grid>
             <Row style={{ color: 'GrayText' }} justify="flex-end">
-              Networks
+              Chains
             </Row>
             {supportedChains.length &&
               supportedChains.map((chain, i) => {
@@ -326,28 +356,13 @@ export default function SessionProposalModal() {
         </Grid.Container>
       </RequestModalContainer>
       <Divider style={{ width: '89%', margin: '5px auto' }} />
-      <Modal.Footer>
-        <Row justify="space-between">
-          <Button
-            auto
-            flat
-            style={{ color: 'white', backgroundColor: 'grey' }}
-            onPress={onReject}
-            data-testid="session-reject-button"
-          >
-            Reject
-          </Button>
-          <Button
-            auto
-            flat
-            color={approveButtonColor}
-            onPress={onApprove}
-            data-testid="session-approve-button"
-          >
-            Approve
-          </Button>
-        </Row>
-      </Modal.Footer>
+      <ModalFooter
+        onApprove={onApprove}
+        onReject={onReject}
+        infoBoxCondition={notSupportedChains.length > 0}
+        infoBoxText={`The following required chains are not supported by your wallet - ${notSupportedChains.toString()}`}
+        disabledApprove={notSupportedChains.length > 0}
+      />
     </Fragment>
   )
 }

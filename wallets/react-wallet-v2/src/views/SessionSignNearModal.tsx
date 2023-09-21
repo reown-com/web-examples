@@ -11,6 +11,8 @@ import { transactions } from 'near-api-js'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { styledToast } from '@/utils/HelperUtil'
+import ModalFooter from '@/components/ModalFooter'
+import VerifyInfobox from '@/components/VerifyInfobox'
 
 export default function SessionSignNearModal() {
   // Get request and wallet data from store
@@ -173,30 +175,23 @@ export default function SessionSignNearModal() {
 
   return (
     <Fragment>
-      <RequestModalContainer title="NEAR">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} />
+      <RequestModalContainer title="">
+        <ProjectInfoCard metadata={requestSession.peer.metadata} intention="sign NEAR message" />
 
-        <Divider y={2} />
+        <Divider y={1} />
 
         <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
-        <Divider y={2} />
+        <Divider y={1} />
 
         <RequestDataCard data={formatParams()} />
 
-        <Divider y={2} />
+        <Divider y={1} />
 
         <RequestMethodCard methods={[request.method]} />
+        <VerifyInfobox metadata={requestSession.peer.metadata} />
       </RequestModalContainer>
-
-      <Modal.Footer>
-        <Button auto flat color="error" onClick={onReject}>
-          Reject
-        </Button>
-        <Button auto flat color="success" onClick={onApprove}>
-          Approve
-        </Button>
-      </Modal.Footer>
+      <ModalFooter onApprove={onApprove} onReject={onReject} />
     </Fragment>
   )
 }

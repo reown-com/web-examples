@@ -13,6 +13,7 @@ import { SignClientTypes } from '@walletconnect/types'
  */
 interface IProps {
   metadata: SignClientTypes.Metadata
+  intention?: string
 }
 
 const StyledLink = styled('span', {
@@ -45,7 +46,7 @@ const StyledInvalidContainer = styled('div', {
 /**
  * Components
  */
-export default function ProjectInfoCard({ metadata }: IProps) {
+export default function ProjectInfoCard({ metadata, intention }: IProps) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const validation = currentRequestVerifyContext?.verified.validation
   const { icons, name, url } = metadata
@@ -69,7 +70,7 @@ export default function ProjectInfoCard({ metadata }: IProps) {
         <Col>
           <Text h3 data-testid="session-info-card-text">
             <span>{name}</span> <br />
-            <Text h4> wants to connect</Text>
+            <Text h4> wants to {intention ? intention : 'connect'}</Text>
           </Text>
         </Col>
       </Row>
