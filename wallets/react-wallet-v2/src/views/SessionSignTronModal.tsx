@@ -1,3 +1,6 @@
+import { Divider, Text } from '@nextui-org/react'
+import { Fragment } from 'react'
+
 import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
@@ -9,8 +12,6 @@ import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approveTronRequest, rejectTronRequest } from '@/utils/TronRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { Button, Divider, Modal, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
 
 export default function SessionSignTronModal() {
   // Get request and wallet data from store

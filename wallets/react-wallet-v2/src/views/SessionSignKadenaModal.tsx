@@ -1,3 +1,6 @@
+import { Col, Divider, Row, Text } from '@nextui-org/react'
+import { Fragment } from 'react'
+
 import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
@@ -6,11 +9,9 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
-import { convertHexToUtf8, getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
+import { convertHexToUtf8, styledToast } from '@/utils/HelperUtil'
 import { approveKadenaRequest, rejectKadenaRequest } from '@/utils/KadenaRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { Button, Col, Divider, Modal, Row, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
 
 export default function SessionSignKadenaModal() {
   // Get request and wallet data from store

@@ -1,3 +1,6 @@
+import { Divider, Text } from '@nextui-org/react'
+import { Fragment } from 'react'
+
 import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
@@ -12,8 +15,6 @@ import {
   rejectMultiversxRequest
 } from '@/utils/MultiversxRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { Button, Divider, Modal, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
 
 export default function SessionSignMultiversxModal() {
   // Get request and wallet data from store

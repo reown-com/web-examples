@@ -1,10 +1,11 @@
+import { Button, Divider, Modal, Text } from '@nextui-org/react'
+import { Fragment } from 'react'
+
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
-import { Button, Divider, Modal, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
 
 export default function SessionUnsuportedMethodModal() {
   // Get request and wallet data from store

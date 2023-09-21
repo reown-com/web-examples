@@ -1,17 +1,16 @@
+import { Fragment } from 'react'
+import { useSnapshot } from 'valtio'
+import { Col, Divider, Row, Text, Code } from '@nextui-org/react'
+import { getSdkError } from '@walletconnect/utils'
+
 import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
-import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
-import { getSignParamsMessage } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { Button, Col, Divider, Modal, Row, Text, Code } from '@nextui-org/react'
-import { getSdkError } from '@walletconnect/utils'
-import { Fragment } from 'react'
-import { useSnapshot } from 'valtio'
 
 export default function AuthRequestModal() {
   const { account } = useSnapshot(SettingsStore.state)

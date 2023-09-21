@@ -1,3 +1,6 @@
+import { Fragment, useState } from 'react'
+import { Divider, Modal, Text } from '@nextui-org/react'
+
 import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
@@ -9,8 +12,6 @@ import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { Button, Divider, Loading, Modal, Text } from '@nextui-org/react'
-import { Fragment, useState } from 'react'
 
 export default function SessionSendTransactionModal() {
   const [loading, setLoading] = useState(false)

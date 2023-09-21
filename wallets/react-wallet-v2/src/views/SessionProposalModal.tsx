@@ -1,7 +1,12 @@
+import { Col, Divider, Grid, Row, Text, styled } from '@nextui-org/react'
+import { Fragment, useCallback, useMemo } from 'react'
+import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
+
+import DoneIcon from '@mui/icons-material/Done'
+import CloseIcon from '@mui/icons-material/Close'
+
 import ProjectInfoCard from '@/components/ProjectInfoCard'
-import ProposalSelectSection from '@/components/ProposalSelectSection'
 import RequestModalContainer from '@/components/RequestModalContainer'
-import SessionProposalChainCard from '@/components/SessionProposalChainCard'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
@@ -12,34 +17,8 @@ import { tezosAddresses } from '@/utils/TezosWalletUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
-import {
-  isCosmosChain,
-  isEIP155Chain,
-  isSolanaChain,
-  isPolkadotChain,
-  isNearChain,
-  isMultiversxChain,
-  isTronChain,
-  isTezosChain,
-  isKadenaChain,
-  styledToast
-} from '@/utils/HelperUtil'
+import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import {
-  Button,
-  Col,
-  Collapse,
-  Divider,
-  Grid,
-  Modal,
-  Row,
-  StyledModalFooter,
-  Text,
-  styled
-} from '@nextui-org/react'
-import { SessionTypes } from '@walletconnect/types'
-import { getSdkError, mergeArrays } from '@walletconnect/utils'
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
@@ -49,9 +28,6 @@ import { POLKADOT_CHAINS, POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
 import { SOLANA_CHAINS, SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
 import { TEZOS_CHAINS, TEZOS_SIGNING_METHODS } from '@/data/TezosData'
 import { TRON_CHAINS, TRON_SIGNING_METHODS } from '@/data/TronData'
-import DoneIcon from '@mui/icons-material/Done'
-import CloseIcon from '@mui/icons-material/Close'
-import { buildApprovedNamespaces } from '@walletconnect/utils'
 import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
