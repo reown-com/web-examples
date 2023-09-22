@@ -38,7 +38,7 @@ export async function approveMultiversxRequest(
       // Sometimes a dApp (and its backend) might want to reliably assign an off-chain user identity to a MultiversX address.
       // On this purpose, the signing providers allow a login token to be used within the login flow  - this token is signed using the wallet of the user.
       // Afterwards, a backend application would normally verify the signature of the token
-      const message = `${account}${request.params.token}{}`
+      const message = `${account}${request.params.token}`
       const { signature: signedLoginToken } = await wallet.signMessage(message)
 
       return formatJsonRpcResult(id, { signature: signedLoginToken })
