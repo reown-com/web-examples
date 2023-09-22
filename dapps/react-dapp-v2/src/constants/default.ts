@@ -36,6 +36,7 @@ export const DEFAULT_TEST_CHAINS = [
   "tron:0xcd8690dc",
   "tezos:testnet",
   "kadena:testnet04",
+  "eip155:31",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];

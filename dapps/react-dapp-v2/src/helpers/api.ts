@@ -21,6 +21,14 @@ export const rpcProvidersByChainId: Record<number, any> = {
       symbol: "ETH",
     },
   },
+  31: {
+    name: "RSK",
+    baseURL: "https://public-node.testnet.rsk.co",
+    token: {
+      name: "tRIF",
+      symbol: "tRIF",
+    },
+  },
   137: {
     name: "Polygon Mainnet",
     baseURL: "https://polygon-rpc.com",

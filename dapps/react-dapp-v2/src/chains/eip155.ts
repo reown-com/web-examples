@@ -43,6 +43,13 @@ export const EIP155ChainData: ChainsMap = {
     slip44: 60,
     testnet: false,
   },
+  "31": {
+    name: "RSK Testnet",
+    id: "eip155:31",
+    rpc: ["https://public-node.testnet.rsk.co"],
+    slip44: 60,
+    testnet: true,
+  },
   "42": {
     name: "Ethereum Kovan",
     id: "eip155:42",
@@ -143,6 +150,11 @@ export const EIP155Metadata: NamespaceMetadata = {
     name: "Optimism",
     logo: BLOCKCHAIN_LOGO_BASE_URL + "eip155:10.png",
     rgb: EIP155Colors.optimism,
+  },
+  "31": {
+    name: "RSK Testnet",
+    logo: BLOCKCHAIN_LOGO_BASE_URL + "eip155:10.png",
+    rgb: EIP155Colors.optimism
   },
   "42": {
     logo: BLOCKCHAIN_LOGO_BASE_URL + "eip155:42.png",
