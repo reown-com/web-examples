@@ -1,6 +1,8 @@
 # Basic Web Examples
 
-Table Of Contents:
+Basic examples/templates for using WalletConnect SDKs
+
+## Table Of Contents:
 
 ```bash
 .
