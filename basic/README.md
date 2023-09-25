@@ -2,13 +2,13 @@
 
 Basic examples/templates for using WalletConnect SDKs
 
-## Table Of Contents:
+## Table Of Contents
 
 ```bash
 .
 ├── dapps/
 │   ├── web3modal
-│   ├── web3inbox(TODO)
+│   ├── web3inbox
 │   ├── ethereum-provider
 │   ├── universal-provider-solana
 │   └── universal-provider-cosmos(TODO)
