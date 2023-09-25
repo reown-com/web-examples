@@ -11,6 +11,7 @@ import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
+import RequestModal from './RequestModal'
 
 export default function SessionSignModal() {
   // Get request and wallet data from store
@@ -64,26 +65,22 @@ export default function SessionSignModal() {
   }
 
   return (
-    <Fragment>
-      <RequestModalContainer title="">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} intention="request a signature" />
-        <Divider y={1} />
-        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-        <Divider y={1} />
-        <Row>
-          <Col>
-            <Text h5>Message</Text>
-            <Text color="$gray400" data-testid="request-message-text">
-              {message}
-            </Text>
-          </Col>
-        </Row>
-
-        <Divider y={1} />
-        <RequestMethodCard methods={[request.method]} />
-        <VerifyInfobox metadata={requestSession.peer.metadata} />
-      </RequestModalContainer>
-      <ModalFooter onApprove={onApprove} onReject={onReject} />
-    </Fragment>
+    <RequestModal
+      intention="request a signature"
+      metadata={requestSession.peer.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+    >
+      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <Divider y={1} />
+      <Row>
+        <Col>
+          <Text h5>Message</Text>
+          <Text color="$gray400" data-testid="request-message-text">
+            {message}
+          </Text>
+        </Col>
+      </Row>
+    </RequestModal>
   )
 }
