@@ -1,10 +1,9 @@
 import { useMemo } from 'react'
 import { useSnapshot } from 'valtio'
-import { Image } from '@nextui-org/react'
 import SettingsStore from '@/store/SettingsStore'
-// import VerifiedIcon from '/../../public/icons/verified-icon.svg'
 import ReportIcon from '@mui/icons-material/Report'
 import ReportProblemIcon from '@mui/icons-material/ReportProblem'
+import NewReleasesIcon from '@mui/icons-material/NewReleases'
 import { Avatar, Col, Link, Row, Text, styled } from '@nextui-org/react'
 import { SignClientTypes } from '@walletconnect/types'
 
@@ -50,15 +49,7 @@ export default function ProjectInfoCard({ metadata, intention }: IProps) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const validation = currentRequestVerifyContext?.verified.validation
   const { icons, name, url } = metadata
-  const validationDescriptionShort = useMemo(() => {
-    if (!currentRequestVerifyContext?.verified.validation) return ''
-    switch (currentRequestVerifyContext?.verified.validation) {
-      case 'INVALID':
-        return 'Invalid Domain'
-      case 'UNKNOWN':
-        return 'Cannot Verify'
-    }
-  }, [currentRequestVerifyContext])
+
   return (
     <div style={{ textAlign: 'center' }}>
       <Row>
@@ -82,22 +73,30 @@ export default function ProjectInfoCard({ metadata, intention }: IProps) {
           </Link>
         </Col>
       </Row>
-      {validation == 'UNKNOWN' ? (
+      {currentRequestVerifyContext?.verified.isScam ? (
+        <StyledInvalidRow>
+          <Col style={{ margin: 'auto' }}>
+            <StyledInvalidContainer>
+              <NewReleasesIcon style={{ verticalAlign: 'bottom' }} />
+              Potential threat
+            </StyledInvalidContainer>
+          </Col>
+        </StyledInvalidRow>
+      ) : validation == 'UNKNOWN' ? (
         <StyledUnknownRow>
           <Col style={{ margin: 'auto' }}>
             <StyledUnknownContainer>
               <ReportIcon style={{ verticalAlign: 'bottom' }} />
-              {validationDescriptionShort}
+              Cannot Verify
             </StyledUnknownContainer>
           </Col>
         </StyledUnknownRow>
-      ) : null}
-      {validation == 'INVALID' ? (
+      ) : validation == 'INVALID' ? (
         <StyledInvalidRow>
           <Col style={{ margin: 'auto' }}>
             <StyledInvalidContainer>
               <ReportProblemIcon style={{ verticalAlign: 'bottom', marginRight: '2px' }} />
-              {validationDescriptionShort}
+              Invalid Domain
             </StyledInvalidContainer>
           </Col>
         </StyledInvalidRow>

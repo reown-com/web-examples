@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 import { useSnapshot } from 'valtio'
 import { Image, StyledText } from '@nextui-org/react'
 import SettingsStore from '@/store/SettingsStore'
-// import VerifiedIcon from '/../../public/icons/verified-icon.svg'
 import ReportIcon from '@mui/icons-material/Report'
 import ReportProblemIcon from '@mui/icons-material/ReportProblem'
+import NewReleasesIcon from '@mui/icons-material/NewReleases'
 import { Avatar, Col, Link, Row, Text, styled } from '@nextui-org/react'
 import { SignClientTypes } from '@walletconnect/types'
 
@@ -52,7 +52,24 @@ export default function VerifyInfobox({ metadata }: IProps) {
   const validation = currentRequestVerifyContext?.verified.validation
   return (
     <div style={{ textAlign: 'center' }}>
-      {validation == 'UNKNOWN' ? (
+      {currentRequestVerifyContext?.verified.isScam ? (
+        <StyledInvalidRow>
+          <Col style={{ margin: 'auto' }} span={2}>
+            <NewReleasesIcon style={{ verticalAlign: 'bottom' }} />
+          </Col>
+          <Col style={{ margin: 'auto' }}>
+            <Row>Known secury risk</Row>
+            <Row>
+              <StyledInvalidContainer>
+                <StyledDescription>
+                  This website is flagged as unsafe by multiple security reports. Leave immediately
+                  to protect your assets.
+                </StyledDescription>
+              </StyledInvalidContainer>
+            </Row>
+          </Col>
+        </StyledInvalidRow>
+      ) : validation == 'UNKNOWN' ? (
         <StyledUnknownRow>
           <Col style={{ margin: 'auto' }} span={2}>
             <ReportIcon style={{ verticalAlign: 'bottom' }} />
@@ -71,8 +88,7 @@ export default function VerifyInfobox({ metadata }: IProps) {
             </Row>
           </Col>
         </StyledUnknownRow>
-      ) : null}
-      {validation == 'INVALID' ? (
+      ) : validation == 'INVALID' ? (
         <StyledInvalidRow>
           <Col style={{ margin: 'auto' }} span={2}>
             <ReportProblemIcon style={{ verticalAlign: 'bottom' }} />
