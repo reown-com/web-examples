@@ -64,7 +64,6 @@ export default function SessionSignTypedDataModal() {
       ModalStore.close()
     }
   }
-
   return (
     <RequestModal
       intention="sign a message"
