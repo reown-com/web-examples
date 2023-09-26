@@ -1,21 +1,23 @@
-import RequestModalContainer from '@/components/RequestModalContainer'
-import ModalStore from '@/store/ModalStore'
-import SettingsStore from '@/store/SettingsStore'
-import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
-import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
-import { getSignParamsMessage } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
-import { Button, Col, Divider, Modal, Row, Text, Code } from '@nextui-org/react'
-import { getSdkError } from '@walletconnect/utils'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
+import { Col, Divider, Row, Text, Code } from '@nextui-org/react'
+import { getSdkError } from '@walletconnect/utils'
+
+import ModalFooter from '@/components/ModalFooter'
+import ProjectInfoCard from '@/components/ProjectInfoCard'
+import RequestModalContainer from '@/components/RequestModalContainer'
+import VerifyInfobox from '@/components/VerifyInfobox'
+import ModalStore from '@/store/ModalStore'
+import SettingsStore from '@/store/SettingsStore'
+import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
+import RequestModal from './RequestModal'
 
 export default function AuthRequestModal() {
   const { account } = useSnapshot(SettingsStore.state)
   console.log('modal data', ModalStore.state.data, account)
   // Get request and wallet data from store
   const request = ModalStore.state.data?.request
-
   // Ensure request and wallet are defined
   if (!request) {
     return <Text>Missing request data</Text>
@@ -61,28 +63,20 @@ export default function AuthRequestModal() {
     }
   }
   return (
-    <Fragment>
-      <RequestModalContainer title="Auth Message">
-        <Divider y={2} />
-        <Row>
-          <Col>
-            <Text h5>Message</Text>
-            <Code>
-              <Text color="$gray400">{message}</Text>
-            </Code>
-          </Col>
-        </Row>
-        <Divider y={2} />
-      </RequestModalContainer>
-
-      <Modal.Footer>
-        <Button auto flat color="error" onClick={onReject}>
-          Reject
-        </Button>
-        <Button auto flat color="success" onClick={onApprove}>
-          Approve
-        </Button>
-      </Modal.Footer>
-    </Fragment>
+    <RequestModal
+      intention="request a signature"
+      metadata={request.params.requester.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+    >
+      <Row>
+        <Col>
+          <Text h5>Message</Text>
+          <Code>
+            <Text color="$gray400">{message}</Text>
+          </Code>
+        </Col>
+      </Row>
+    </RequestModal>
   )
 }

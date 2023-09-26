@@ -13,6 +13,7 @@ type ChainMetadata = {
   logo: string
   rgb: string
   fullNode: string
+  namespace: string
 }
 
 /**
@@ -24,7 +25,8 @@ export const TRON_MAINNET_CHAINS: TRONChains = {
     name: 'Tron',
     logo: 'https://tronscan.io/static/media/TRON.4a760cebd163969b2ee874abf2415e9a.svg',
     rgb: '183, 62, 49',
-    fullNode: 'https://api.trongrid.io'
+    fullNode: 'https://api.trongrid.io',
+    namespace: 'tron'
   }
 }
 
@@ -34,7 +36,8 @@ export const TRON_TEST_CHAINS: TRONChains = {
     name: 'Tron Testnet',
     logo: 'https://tronscan.io/static/media/TRON.4a760cebd163969b2ee874abf2415e9a.svg',
     rgb: '183, 62, 49',
-    fullNode: 'https://nile.trongrid.io/'
+    fullNode: 'https://nile.trongrid.io/',
+    namespace: 'tron'
   }
 }
 

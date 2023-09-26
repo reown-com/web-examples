@@ -2,7 +2,7 @@ import toast from 'react-hot-toast'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
-import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
+import { NEAR_CHAINS, NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { POLKADOT_CHAINS, TPolkadotChain } from '@/data/PolkadotData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { TEZOS_CHAINS, TTezosChain } from '@/data/TezosData'
@@ -161,18 +161,6 @@ export function formatChainName(chainId: string) {
     KADENA_CHAINS[chainId as TKadenaChain]?.name ??
     chainId
   )
-}
-
-export function getVerifyStatus(context?: Verify.Context) {
-  if (!context) return ''
-  switch (context.verified.validation) {
-    case 'VALID':
-      return '✅ Verified'
-    case 'INVALID':
-      return '❌ Origin does not match'
-    case 'UNKNOWN':
-      return '❓ Unknown'
-  }
 }
 
 export function styledToast(message: string, type: string) {

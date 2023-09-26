@@ -12,7 +12,8 @@ export const SOLANA_MAINNET_CHAINS = {
     name: 'Solana',
     logo: '/chain-logos/solana-4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ.png',
     rgb: '30, 240, 166',
-    rpc: ''
+    rpc: '',
+    namespace: 'solana'
   }
 }
 
@@ -22,7 +23,8 @@ export const SOLANA_TEST_CHAINS = {
     name: 'Solana Devnet',
     logo: '/chain-logos/solana-4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ.png',
     rgb: '30, 240, 166',
-    rpc: ''
+    rpc: '',
+    namespace: 'solana'
   }
 }
 
