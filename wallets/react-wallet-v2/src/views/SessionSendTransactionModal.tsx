@@ -6,7 +6,7 @@ import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { styledToast } from '@/utils/HelperUtil'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Loading, Modal, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
@@ -34,7 +34,7 @@ export default function SessionSendTransactionModal() {
       setLoading(true)
       try {
         const response = await approveEIP155Request(requestEvent)
-        await signClient.respond({
+        await web3wallet.respondSessionRequest({
           topic,
           response
         })
@@ -51,7 +51,7 @@ export default function SessionSendTransactionModal() {
     if (requestEvent) {
       const response = rejectEIP155Request(requestEvent)
       try {
-        await signClient.respond({
+        await web3wallet.respondSessionRequest({
           topic,
           response
         })

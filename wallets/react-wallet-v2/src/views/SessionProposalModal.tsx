@@ -22,7 +22,7 @@ import {
   styledToast
 } from '@/utils/HelperUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Divider, Modal, Text } from '@nextui-org/react'
 import { SessionTypes } from '@walletconnect/types'
 import { getSdkError, mergeArrays } from '@walletconnect/utils'
@@ -101,9 +101,9 @@ export default function SessionProposalModal() {
             namespaces[key] = {
               ...namespaces[key],
               accounts,
-              methods: mergeArrays(namespaces[key].methods, optionalNamespaces[key].methods),
-              events: mergeArrays(namespaces[key].events, optionalNamespaces[key].events),
-              chains: mergeArrays(namespaces[key].chains, optionalNamespaces[key].chains)
+              methods: mergeArrays(namespaces[key]?.methods, optionalNamespaces[key].methods),
+              events: mergeArrays(namespaces[key]?.events, optionalNamespaces[key].events),
+              chains: mergeArrays(namespaces[key]?.chains, optionalNamespaces[key].chains)
             }
           }
         })
@@ -111,7 +111,7 @@ export default function SessionProposalModal() {
       console.log('approving namespaces:', namespaces)
 
       try {
-        await signClient.approve({
+        await web3wallet.approveSession({
           id,
           relayProtocol: relays[0].protocol,
           namespaces
@@ -128,7 +128,7 @@ export default function SessionProposalModal() {
   async function onReject() {
     if (proposal) {
       try {
-        await signClient.reject({
+        await web3wallet.rejectSession({
           id,
           reason: getSdkError('USER_REJECTED_METHODS')
         })

@@ -7,7 +7,7 @@ import {
 } from 'near-api-js'
 import { AccessKeyView } from 'near-api-js/lib/providers/provider'
 
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 
 const MAX_ACCOUNTS = 2
@@ -131,7 +131,7 @@ export class NearWallet {
   }
 
   private isAccountsValid(topic: string, accounts: Array<{ accountId: string }>) {
-    const session = signClient.session.get(topic)
+    const session = web3wallet.engine.signClient.session.get(topic)
     const validAccountIds = session.namespaces.near.accounts.map(accountId => {
       return accountId.split(':')[2]
     })
@@ -190,8 +190,7 @@ export class NearWallet {
   }
 
   async getAccounts({ topic }: GetAccountsParams): Promise<Array<Account>> {
-    const session = signClient.session.get(topic)
-
+    const session = web3wallet.engine.signClient.session.get(topic)
     return Promise.all(
       session.namespaces.near.accounts.map(async account => {
         const accountId = account.split(':')[2]

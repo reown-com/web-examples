@@ -6,7 +6,7 @@ import Layout from '@/components/Layout'
 import Modal from '@/components/Modal'
 import useInitialization from '@/hooks/useInitialization'
 import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { RELAYER_EVENTS } from '@walletconnect/core'
 import { AppProps } from 'next/app'
 import '../../public/main.css'
@@ -20,11 +20,11 @@ export default function App({ Component, pageProps }: AppProps) {
   useWalletConnectEventsManager(initialized)
   useEffect(() => {
     if (!initialized) return
-    signClient.core.relayer.on(RELAYER_EVENTS.connect, () => {
+    web3wallet.core.relayer.on(RELAYER_EVENTS.connect, () => {
       styledToast('Network connection is restored!', 'success')
     })
 
-    signClient.core.relayer.on(RELAYER_EVENTS.disconnect, () => {
+    web3wallet.core.relayer.on(RELAYER_EVENTS.disconnect, () => {
       styledToast('Network connection lost.', 'error')
     })
   }, [initialized])
