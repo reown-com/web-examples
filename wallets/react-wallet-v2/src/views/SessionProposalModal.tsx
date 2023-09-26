@@ -241,6 +241,7 @@ export default function SessionProposalModal() {
         proposal: proposal.params,
         supportedNamespaces
       })
+
       console.log('approving namespaces:', namespaces)
 
       try {

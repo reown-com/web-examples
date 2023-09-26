@@ -131,7 +131,6 @@ export default function SessionPage() {
               namespace={namespaces[chain]}
               data-testid={'session-card' + namespaces[chain]}
             />
-            {/* {renderAccountSelection(chain)} */}
             <Divider y={2} />
           </Fragment>
         )
