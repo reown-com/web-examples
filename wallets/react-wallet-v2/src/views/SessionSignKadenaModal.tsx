@@ -12,6 +12,7 @@ import ModalStore from '@/store/ModalStore'
 import { convertHexToUtf8, styledToast } from '@/utils/HelperUtil'
 import { approveKadenaRequest, rejectKadenaRequest } from '@/utils/KadenaRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
+import RequestModal from './RequestModal'
 
 export default function SessionSignKadenaModal() {
   // Get request and wallet data from store
@@ -65,40 +66,26 @@ export default function SessionSignKadenaModal() {
   }
 
   return (
-    <Fragment>
-      <RequestModalContainer title="">
-        <ProjectInfoCard
-          metadata={requestSession.peer.metadata}
-          intention="sign a Kadena message"
-        />
-
-        <Divider y={1} />
-
-        <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-
-        <Divider y={1} />
-
-        {message && (
-          <>
-            <Row>
-              <Col>
-                <Text h5>Message</Text>
-                <Text color="$gray400">{message}</Text>
-              </Col>
-            </Row>
-
-            <Divider y={1} />
-          </>
-        )}
-
-        <RequestDataCard data={params} />
-
-        <Divider y={1} />
-
-        <RequestMethodCard methods={[request.method]} />
-        <VerifyInfobox metadata={requestSession.peer.metadata} />
-      </RequestModalContainer>
-      <ModalFooter onApprove={onApprove} onReject={onReject} />
-    </Fragment>
+    <RequestModal
+      intention="sign a Kadena message"
+      metadata={requestSession.peer.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+    >
+      <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <Divider y={1} />
+      {message && (
+        <>
+          <Row>
+            <Col>
+              <Text h5>Message</Text>
+              <Text color="$gray400">{message}</Text>
+            </Col>
+          </Row>
+          <Divider y={1} />
+        </>
+      )}
+      <RequestDataCard data={params} />
+    </RequestModal>
   )
 }

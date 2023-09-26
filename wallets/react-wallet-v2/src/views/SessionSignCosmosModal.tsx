@@ -12,6 +12,7 @@ import ModalStore from '@/store/ModalStore'
 import { approveCosmosRequest, rejectCosmosRequest } from '@/utils/CosmosRequestHandler'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
+import RequestModal from './RequestModal'
 
 export default function SessionSignCosmosModal() {
   // Get request and wallet data from store
@@ -62,27 +63,17 @@ export default function SessionSignCosmosModal() {
   }
 
   return (
-    <Fragment>
-      <RequestModalContainer title="">
-        <ProjectInfoCard
-          metadata={requestSession.peer.metadata}
-          intention="sign Cosmos transaction"
-        />
-
-        <Divider y={1} />
-
-        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-
-        <Divider y={1} />
-
-        <RequestDataCard data={params} />
-
-        <Divider y={1} />
-
-        <RequestMethodCard methods={[request.method]} />
-        <VerifyInfobox metadata={requestSession.peer.metadata} />
-      </RequestModalContainer>
-      <ModalFooter onApprove={onApprove} onReject={onReject} />
-    </Fragment>
+    <RequestModal
+      intention="sign Cosmos transaction"
+      metadata={requestSession.peer.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+    >
+      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <Divider y={1} />
+      <RequestDataCard data={params} />
+      <Divider y={1} />
+      <RequestMethodCard methods={[request.method]} />
+    </RequestModal>
   )
 }

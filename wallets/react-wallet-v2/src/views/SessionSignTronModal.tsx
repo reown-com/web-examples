@@ -12,6 +12,7 @@ import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approveTronRequest, rejectTronRequest } from '@/utils/TronRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
+import RequestModal from './RequestModal'
 
 export default function SessionSignTronModal() {
   // Get request and wallet data from store
@@ -62,18 +63,17 @@ export default function SessionSignTronModal() {
   }
 
   return (
-    <Fragment>
-      <RequestModalContainer title="">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} intention="sign a Tron message" />
-        <Divider y={1} />
-        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-        <Divider y={1} />
-        <RequestDataCard data={params} />
-        <Divider y={1} />
-        <RequestMethodCard methods={[request.method]} />
-        <VerifyInfobox metadata={requestSession.peer.metadata} />
-      </RequestModalContainer>
-      <ModalFooter onApprove={onApprove} onReject={onReject} />
-    </Fragment>
+    <RequestModal
+      intention="sign a Tron message"
+      metadata={requestSession.peer.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+    >
+      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <Divider y={1} />
+      <RequestDataCard data={params} />
+      <Divider y={1} />
+      <RequestMethodCard methods={[request.method]} />
+    </RequestModal>
   )
 }

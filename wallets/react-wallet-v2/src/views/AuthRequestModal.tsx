@@ -11,6 +11,7 @@ import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
+import RequestModal from './RequestModal'
 
 export default function AuthRequestModal() {
   const { account } = useSnapshot(SettingsStore.state)
@@ -62,22 +63,20 @@ export default function AuthRequestModal() {
     }
   }
   return (
-    <Fragment>
-      <RequestModalContainer title="">
-        <ProjectInfoCard metadata={request?.params.requester.metadata} />
-        <Divider y={1} />
-        <Row>
-          <Col>
-            <Text h5>Message</Text>
-            <Code>
-              <Text color="$gray400">{message}</Text>
-            </Code>
-          </Col>
-        </Row>
-        <Divider y={1} />
-        <VerifyInfobox metadata={request.params.requester.metadata} />
-      </RequestModalContainer>
-      <ModalFooter onApprove={onApprove} onReject={onReject} />
-    </Fragment>
+    <RequestModal
+      intention="request a signature"
+      metadata={request.params.requester.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+    >
+      <Row>
+        <Col>
+          <Text h5>Message</Text>
+          <Code>
+            <Text color="$gray400">{message}</Text>
+          </Code>
+        </Col>
+      </Row>
+    </RequestModal>
   )
 }

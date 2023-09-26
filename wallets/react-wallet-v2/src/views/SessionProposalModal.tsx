@@ -33,6 +33,7 @@ import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
 import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalFooter from '@/components/ModalFooter'
+import RequestModal from './RequestModal'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -45,7 +46,7 @@ const StyledSpan = styled('span', {
 export default function SessionProposalModal() {
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
-
+  console.log('proposal', proposal)
   const supportedNamespaces = useMemo(() => {
     // eip155
     const eip155Chains = Object.keys(EIP155_CHAINS)
@@ -273,72 +274,63 @@ export default function SessionProposalModal() {
   }
 
   return (
-    <Fragment>
-      <RequestModalContainer title="">
-        <ProjectInfoCard metadata={proposer.metadata} />
-        <Divider y={1} />
-        <Row>
-          <Col>
-            <StyledText h4>Requested permissions</StyledText>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <DoneIcon style={{ verticalAlign: 'bottom' }} />{' '}
-            <StyledSpan>View your balance and activity</StyledSpan>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <DoneIcon style={{ verticalAlign: 'bottom' }} />{' '}
-            <StyledSpan>Send approval requests</StyledSpan>
-          </Col>
-        </Row>
-        <Row>
-          <Col style={{ color: 'gray' }}>
-            <CloseIcon style={{ verticalAlign: 'bottom' }} />
-            <StyledSpan>Move funds without permission</StyledSpan>
-          </Col>
-        </Row>
-        <VerifyInfobox metadata={proposer.metadata} />
-        <Grid.Container
-          style={{ marginBottom: '10px', marginTop: '10px' }}
-          justify={'space-between'}
-        >
-          <Grid>
-            <Row style={{ color: 'GrayText' }}>Accounts</Row>
-            {supportedChains.length &&
-              supportedChains.map((chain, i) => {
-                return (
-                  <Row key={i}>
-                    <ChainAddressMini key={i} address={getAddress(chain?.namespace)} />
-                  </Row>
-                )
-              })}
-          </Grid>
-          <Grid>
-            <Row style={{ color: 'GrayText' }} justify="flex-end">
-              Chains
-            </Row>
-            {supportedChains.length &&
-              supportedChains.map((chain, i) => {
-                return (
-                  <Row key={i}>
-                    <ChainDataMini key={i} chainId={chain?.chainId!} />
-                  </Row>
-                )
-              })}
-          </Grid>
-        </Grid.Container>
-      </RequestModalContainer>
-      <Divider style={{ width: '89%', margin: '5px auto' }} />
-      <ModalFooter
-        onApprove={onApprove}
-        onReject={onReject}
-        infoBoxCondition={notSupportedChains.length > 0}
-        infoBoxText={`The following required chains are not supported by your wallet - ${notSupportedChains.toString()}`}
-        disabledApprove={notSupportedChains.length > 0}
-      />
-    </Fragment>
+    <RequestModal
+      metadata={proposal.params.proposer.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+      infoBoxCondition={notSupportedChains.length > 0}
+      infoBoxText={`The following required chains are not supported by your wallet - ${notSupportedChains.toString()}`}
+      disabledApprove={notSupportedChains.length > 0}
+    >
+      <Row>
+        <Col>
+          <StyledText h4>Requested permissions</StyledText>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <DoneIcon style={{ verticalAlign: 'bottom' }} />{' '}
+          <StyledSpan>View your balance and activity</StyledSpan>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <DoneIcon style={{ verticalAlign: 'bottom' }} />{' '}
+          <StyledSpan>Send approval requests</StyledSpan>
+        </Col>
+      </Row>
+      <Row>
+        <Col style={{ color: 'gray' }}>
+          <CloseIcon style={{ verticalAlign: 'bottom' }} />
+          <StyledSpan>Move funds without permission</StyledSpan>
+        </Col>
+      </Row>
+      <Grid.Container style={{ marginBottom: '10px', marginTop: '10px' }} justify={'space-between'}>
+        <Grid>
+          <Row style={{ color: 'GrayText' }}>Accounts</Row>
+          {supportedChains.length &&
+            supportedChains.map((chain, i) => {
+              return (
+                <Row key={i}>
+                  <ChainAddressMini key={i} address={getAddress(chain?.namespace)} />
+                </Row>
+              )
+            })}
+        </Grid>
+        <Grid>
+          <Row style={{ color: 'GrayText' }} justify="flex-end">
+            Chains
+          </Row>
+          {supportedChains.length &&
+            supportedChains.map((chain, i) => {
+              return (
+                <Row key={i}>
+                  <ChainDataMini key={i} chainId={chain?.chainId!} />
+                </Row>
+              )
+            })}
+        </Grid>
+      </Grid.Container>
+    </RequestModal>
   )
 }

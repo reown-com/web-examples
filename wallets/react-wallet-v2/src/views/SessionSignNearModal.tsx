@@ -14,6 +14,7 @@ import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { styledToast } from '@/utils/HelperUtil'
 import ModalFooter from '@/components/ModalFooter'
 import VerifyInfobox from '@/components/VerifyInfobox'
+import RequestModal from './RequestModal'
 
 export default function SessionSignNearModal() {
   // Get request and wallet data from store
@@ -175,24 +176,17 @@ export default function SessionSignNearModal() {
   }
 
   return (
-    <Fragment>
-      <RequestModalContainer title="">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} intention="sign NEAR message" />
-
-        <Divider y={1} />
-
-        <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-
-        <Divider y={1} />
-
-        <RequestDataCard data={formatParams()} />
-
-        <Divider y={1} />
-
-        <RequestMethodCard methods={[request.method]} />
-        <VerifyInfobox metadata={requestSession.peer.metadata} />
-      </RequestModalContainer>
-      <ModalFooter onApprove={onApprove} onReject={onReject} />
-    </Fragment>
+    <RequestModal
+      intention="sign NEAR message"
+      metadata={requestSession.peer.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+    >
+      <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <Divider y={1} />
+      <RequestDataCard data={formatParams()} />
+      <Divider y={1} />
+      <RequestMethodCard methods={[request.method]} />
+    </RequestModal>
   )
 }
