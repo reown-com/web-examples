@@ -20,8 +20,10 @@ export const ALL_CHAINS = {
   ...TRON_CHAINS
 }
 
-export function getChainData(chainId: string | number) {
+export function getChainData(chainId?: string) {
   if (!chainId) return
-  chainId = chainId.toString().includes(':') ? chainId.toString().split(':')[1] : chainId
-  return Object.values(ALL_CHAINS).find(chain => chain.chainId == chainId)
+  const [namespace, reference] = chainId.toString().split(':')
+  return Object.values(ALL_CHAINS).find(
+    chain => chain.chainId == reference && chain.namespace === namespace
+  )
 }
