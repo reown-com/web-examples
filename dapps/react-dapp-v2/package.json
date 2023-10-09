@@ -24,7 +24,7 @@
     "@walletconnect/types": "2.10.0",
     "@walletconnect/utils": "2.10.0",
     "@web3modal/standalone": "2.4.3",
-    "axios": "^0.21.1",
+    "axios": "^0.27.0",
     "blockies-ts": "^1.0.0",
     "bs58": "^5.0.0",
     "cosmos-wallet": "^1.2.0",
