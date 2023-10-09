@@ -7,7 +7,7 @@ import { createOrRestoreNearWallet } from '@/utils/NearWalletUtil'
 import { createOrRestoreMultiversxWallet } from '@/utils/MultiversxWalletUtil'
 import { createOrRestoreTronWallet } from '@/utils/TronWalletUtil'
 import { createOrRestoreTezosWallet } from '@/utils/TezosWalletUtil'
-import { createSignClient, signClient } from '@/utils/WalletConnectUtil'
+import { createWeb3Wallet, web3wallet } from '@/utils/WalletConnectUtil'
 import { createOrRestoreKadenaWallet } from '@/utils/KadenaWalletUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
@@ -39,7 +39,7 @@ export default function useInitialization() {
       SettingsStore.setTronAddress(tronAddresses[0])
       SettingsStore.setTezosAddress(tezosAddresses[0])
       SettingsStore.setKadenaAddress(kadenaAddresses[0])
-      await createSignClient(relayerRegionURL)
+      await createWeb3Wallet(relayerRegionURL)
       setInitialized(true)
     } catch (err: unknown) {
       alert(err)
@@ -49,7 +49,7 @@ export default function useInitialization() {
   // restart transport if relayer region changes
   const onRelayerRegionChange = useCallback(() => {
     try {
-      signClient.core.relayer.restartTransport(relayerRegionURL)
+      web3wallet.core.relayer.restartTransport(relayerRegionURL)
       prevRelayerURLValue.current = relayerRegionURL
     } catch (err: unknown) {
       alert(err)

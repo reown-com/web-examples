@@ -25,6 +25,7 @@ type ChainMetadata = {
   logo: string
   rgb: string
   rpc: string
+  namespace: string
 }
 
 export const NEAR_TEST_CHAINS: NearTestChains = {
@@ -33,7 +34,8 @@ export const NEAR_TEST_CHAINS: NearTestChains = {
     name: 'NEAR Testnet',
     logo: '/chain-logos/near.png',
     rgb: '99, 125, 234',
-    rpc: 'https://rpc.testnet.near.org'
+    rpc: 'https://rpc.testnet.near.org',
+    namespace: 'near'
   }
 }
 

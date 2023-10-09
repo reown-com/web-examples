@@ -1,13 +1,16 @@
-import SignClient from '@walletconnect/sign-client'
-export let signClient: SignClient
+import { Web3Wallet, IWeb3Wallet } from '@walletconnect/web3wallet'
+import { Core } from '@walletconnect/core'
+export let web3wallet: IWeb3Wallet
 
-export async function createSignClient(relayerRegionURL: string) {
-  signClient = await SignClient.init({
-    logger: 'debug',
+export async function createWeb3Wallet(relayerRegionURL: string) {
+  const core = new Core({
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-    relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL,
+    relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL
+  })
+  web3wallet = await Web3Wallet.init({
+    core,
     metadata: {
-      name: 'React Wallet',
+      name: 'React Wallet Example',
       description: 'React Wallet for WalletConnect',
       url: 'https://walletconnect.com/',
       icons: ['https://avatars.githubusercontent.com/u/37784886']
@@ -15,7 +18,7 @@ export async function createSignClient(relayerRegionURL: string) {
   })
 
   try {
-    const clientId = await signClient.core.crypto.getClientId()
+    const clientId = await web3wallet.engine.signClient.core.crypto.getClientId()
     console.log('WalletConnect ClientID: ', clientId)
     localStorage.setItem('WALLETCONNECT_CLIENT_ID', clientId)
   } catch (error) {
@@ -24,48 +27,49 @@ export async function createSignClient(relayerRegionURL: string) {
 }
 
 export async function updateSignClientChainId(chainId: string, address: string) {
+  console.log('chainId', chainId, address)
   // get most recent session
-  const session = signClient.session.getAll()[0]
-  if (!session) return
-
-  // if chainId does not exist in session, an update is required first
-  if (!session.namespaces[chainId]) {
-    const newNamespace = {
-      [chainId]: {
-        accounts: [`${chainId}:${address}`],
-        methods: [
-          'eth_sendTransaction',
-          'eth_signTransaction',
-          'eth_sign',
-          'personal_sign',
-          'eth_signTypedData'
-        ],
-        events: ['chainChanged', 'accountsChanged']
+  const sessions = web3wallet.getActiveSessions()
+  if (!sessions) return
+  const namespace = chainId.split(':')[0]
+  Object.values(sessions).forEach(async session => {
+    await web3wallet.updateSession({
+      topic: session.topic,
+      namespaces: {
+        ...session.namespaces,
+        [namespace]: {
+          ...session.namespaces[namespace],
+          chains: [
+            ...new Set([chainId].concat(Array.from(session.namespaces[namespace].chains || [])))
+          ],
+          accounts: [
+            ...new Set(
+              [`${chainId}:${address}`].concat(Array.from(session.namespaces[namespace].accounts))
+            )
+          ]
+        }
       }
-    }
-    try {
-      // need to wait for update to finish before emit
-      await signClient.update({
-        topic: session.topic,
-        namespaces: { ...session.namespaces, ...newNamespace }
-      })
-    } catch (err: unknown) {
-      console.error(`Failed to update session: ${err}`)
-    }
-  }
+    })
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
-  const payload = {
-    topic: session.topic,
-    event: {
-      name: 'chainChanged',
-      data: [address]
-    },
-    chainId
-  }
+    const chainChanged = {
+      topic: session.topic,
+      event: {
+        name: 'chainChanged',
+        data: parseInt(chainId.split(':')[1])
+      },
+      chainId: chainId
+    }
 
-  try {
-    signClient.emit(payload)
-  } catch (err: unknown) {
-    console.error(`Failed to emit chainChanged event: ${err}`)
-  }
+    const accountsChanged = {
+      topic: session.topic,
+      event: {
+        name: 'accountsChanged',
+        data: [`${chainId}:${address}`]
+      },
+      chainId
+    }
+    await web3wallet.emitSessionEvent(chainChanged)
+    await web3wallet.emitSessionEvent(accountsChanged)
+  })
 }

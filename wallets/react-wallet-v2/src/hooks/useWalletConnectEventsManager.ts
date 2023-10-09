@@ -1,3 +1,4 @@
+import { Web3WalletTypes } from '@walletconnect/web3wallet'
 import { COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
@@ -6,8 +7,7 @@ import { MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
 import { TRON_SIGNING_METHODS } from '@/data/TronData'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
-import { useSnapshot } from 'valtio'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
@@ -27,6 +27,12 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     },
     []
   )
+  /******************************************************************************
+   * 2. Open Auth modal for confirmation / rejection
+   *****************************************************************************/
+  const onAuthRequest = useCallback((request: Web3WalletTypes.AuthRequest) => {
+    ModalStore.open('AuthRequestModal', { request })
+  }, [])
 
   /******************************************************************************
    * 3. Open request handling modal based on method that was used
@@ -36,7 +42,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       console.log('session_request', requestEvent)
       const { topic, params, verifyContext } = requestEvent
       const { request } = params
-      const requestSession = signClient.session.get(topic)
+      const requestSession = web3wallet.engine.signClient.session.get(topic)
       // set the verify context so it can be displayed in the projectInfoCard
       SettingsStore.setCurrentRequestVerifyContext(verifyContext)
 
@@ -83,7 +89,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           return ModalStore.open('SessionSignMultiversxModal', { requestEvent, requestSession })
 
         case NEAR_SIGNING_METHODS.NEAR_GET_ACCOUNTS:
-          return signClient.respond({
+          return web3wallet.respondSessionRequest({
             topic,
             response: await approveNearRequest(requestEvent)
           })
@@ -111,13 +117,14 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    *****************************************************************************/
   useEffect(() => {
     if (initialized) {
-      signClient.on('session_proposal', onSessionProposal)
-      signClient.on('session_request', onSessionRequest)
+      //sign
+      web3wallet.on('session_proposal', onSessionProposal)
+      web3wallet.on('session_request', onSessionRequest)
+      // auth
+      web3wallet.on('auth_request', onAuthRequest)
       // TODOs
-      signClient.on('session_ping', data => console.log('ping', data))
-      signClient.on('session_event', data => console.log('event', data))
-      signClient.on('session_update', data => console.log('update', data))
-      signClient.on('session_delete', data => console.log('delete', data))
+      web3wallet.engine.signClient.events.on('session_ping', data => console.log('ping', data))
+      web3wallet.on('session_delete', data => console.log('delete', data))
     }
-  }, [initialized, onSessionProposal, onSessionRequest])
+  }, [initialized, onAuthRequest, onSessionProposal, onSessionRequest])
 }

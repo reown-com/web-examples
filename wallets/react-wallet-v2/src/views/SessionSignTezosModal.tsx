@@ -1,13 +1,18 @@
+import { Divider, Text } from '@nextui-org/react'
+import { Fragment } from 'react'
+
+import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
+import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
+import { styledToast } from '@/utils/HelperUtil'
 import { approveTezosRequest, rejectTezosRequest } from '@/utils/TezosRequestHandlerUtil'
-import { signClient } from '@/utils/WalletConnectUtil'
-import { Button, Divider, Modal, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
+import { web3wallet } from '@/utils/WalletConnectUtil'
+import RequestModal from './RequestModal'
 
 export default function SessionSignTezosModal() {
   // Get request and wallet data from store
@@ -27,10 +32,15 @@ export default function SessionSignTezosModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approveTezosRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await web3wallet.respondSessionRequest({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
@@ -39,40 +49,31 @@ export default function SessionSignTezosModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectTezosRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await web3wallet.respondSessionRequest({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
 
   return (
-    <Fragment>
-      <RequestModalContainer title="Sign Message">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} />
-
-        <Divider y={2} />
-
-        <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-
-        <Divider y={2} />
-
-        <RequestDataCard data={params} />
-
-        <Divider y={2} />
-
-        <RequestMethodCard methods={[request.method]} />
-      </RequestModalContainer>
-
-      <Modal.Footer>
-        <Button auto flat color="error" onClick={onReject}>
-          Reject
-        </Button>
-        <Button auto flat color="success" onClick={onApprove}>
-          Approve
-        </Button>
-      </Modal.Footer>
-    </Fragment>
+    <RequestModal
+      intention="sign a Tezos message"
+      metadata={requestSession.peer.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+    >
+      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <Divider y={1} />
+      <RequestDataCard data={params} />
+      <Divider y={1} />
+      <RequestMethodCard methods={[request.method]} />
+    </RequestModal>
   )
 }

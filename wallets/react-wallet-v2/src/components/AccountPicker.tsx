@@ -14,6 +14,7 @@ export default function AccountPicker() {
 
   function onSelect(value: string) {
     const account = Number(value)
+    console.log('account', account)
     SettingsStore.setAccount(account)
     SettingsStore.setEIP155Address(eip155Addresses[account])
     SettingsStore.setCosmosAddress(cosmosAddresses[account])
@@ -26,7 +27,12 @@ export default function AccountPicker() {
   }
 
   return (
-    <select value={account} onChange={e => onSelect(e.currentTarget.value)} aria-label="addresses" data-testid="account-picker">
+    <select
+      value={account}
+      onChange={e => onSelect(e.currentTarget.value)}
+      aria-label="addresses"
+      data-testid="account-picker"
+    >
       <option value={0}>Account 1</option>
       <option value={1}>Account 2</option>
     </select>

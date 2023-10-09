@@ -1,9 +1,10 @@
 import { parseUri } from '@walletconnect/utils'
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
+import { styledToast } from '@/utils/HelperUtil'
 
 export default function WalletConnectPage() {
   const [uri, setUri] = useState('')
@@ -12,9 +13,9 @@ export default function WalletConnectPage() {
   async function onConnect(uri: string) {
     try {
       setLoading(true)
-      await signClient.pair({ uri })
-    } catch (err: unknown) {
-      alert(err)
+      await web3wallet.pair({ uri })
+    } catch (error) {
+      styledToast((error as Error).message, 'error')
     } finally {
       setUri('')
       setLoading(false)

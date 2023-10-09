@@ -1,11 +1,11 @@
 import PageHeader from '@/components/PageHeader'
 import SessionCard from '@/components/SessionCard'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Text } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 
 export default function SessionsPage() {
-  const [sessions] = useState(signClient.session.values)
+  const [sessions] = useState(Object.values(web3wallet.getActiveSessions()))
 
   if (!sessions.length) {
     return (

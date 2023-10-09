@@ -16,7 +16,7 @@ interface Props {
   chainId: string
 }
 
-export default function AccountCard({ name, logo, rgb, address, chainId }: Props) {
+export default function AccountCard({ name, logo, rgb, address = '', chainId }: Props) {
   const [copied, setCopied] = useState(false)
   const { activeChainId, account } = useSnapshot(SettingsStore.state)
   function onCopy() {
@@ -38,7 +38,7 @@ export default function AccountCard({ name, logo, rgb, address, chainId }: Props
           {name}
         </Text>
         <Text weight="light" size={13} css={{ marginLeft: '$9' }}>
-          {truncate(address, 19)}
+          {address ? truncate(address, 19) : '<no address available>'}
         </Text>
       </div>
 

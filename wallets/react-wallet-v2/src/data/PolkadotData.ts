@@ -12,7 +12,8 @@ export const POLKADOT_MAINNET_CHAINS = {
     name: 'Polkadot',
     logo: '/chain-logos/polkadot.svg',
     rgb: '230, 1, 122',
-    rpc: ''
+    rpc: '',
+    namespace: 'polkadot'
   }
 }
 
@@ -22,7 +23,8 @@ export const POLKADOT_TEST_CHAINS = {
     name: 'Polkadot Westend',
     logo: '/chain-logos/westend.svg',
     rgb: '218, 104, 167',
-    rpc: ''
+    rpc: '',
+    namespace: 'polkadot'
   }
 }
 
