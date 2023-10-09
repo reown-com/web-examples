@@ -29,7 +29,7 @@
     "ethers": "5.7.2",
     "framer-motion": "6.5.1",
     "mnemonic-keyring": "1.4.0",
-    "next": "12.3.4",
+    "next": "12.1.5",
     "react": "17.0.2",
     "react-code-blocks": "0.0.9-0",
     "react-dom": "17.0.2",
