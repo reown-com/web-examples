@@ -111,7 +111,7 @@ export default function SessionProposalModal() {
       near: {
         chains: nearChains,
         methods: nearMethods,
-        events: [],
+        events: ['accountsChanged', 'chainChanged'],
         accounts: nearChains.map(chain => `${chain}:${nearAddresses[0]}`).flat()
       },
       polkadot: {
