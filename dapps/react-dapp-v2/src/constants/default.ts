@@ -125,6 +125,7 @@ export enum DEFAULT_MULTIVERSX_METHODS {
   MULTIVERSX_SIGN_MESSAGE = "mvx_signMessage",
   MULTIVERSX_SIGN_LOGIN_TOKEN = "mvx_signLoginToken",
   MULTIVERSX_SIGN_NATIVE_AUTH_TOKEN = "mvx_signNativeAuthToken",
+  MULTIVERSX_CANCEL_ACTION = "mvx_cancelAction"
 }
 
 export enum DEFAULT_MULTIVERSX_EVENTS {}

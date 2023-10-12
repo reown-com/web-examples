@@ -12,13 +12,13 @@ import { Card, Row, styled, Image, Avatar } from '@nextui-org/react'
 import { ReactNode, useMemo } from 'react'
 
 interface Props {
-  chainId?: string | number
+  chainId?: string // namespace + ":" + reference
 }
 
 // const StyledLogo = styled(Image, {})
 
 export default function ChainDataMini({ chainId }: Props) {
-  const chainData = useMemo(() => getChainData(chainId!), [chainId])
+  const chainData = useMemo(() => getChainData(chainId), [chainId])
   console.log(chainData)
 
   if (!chainData) return <></>
