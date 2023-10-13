@@ -9,7 +9,7 @@ import { AccessKeyView } from 'near-api-js/lib/providers/provider'
 
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
-import { Schema, serialize } from "borsh";
+import { Schema, serialize } from 'borsh'
 const MAX_ACCOUNTS = 2
 
 interface Account {
@@ -64,43 +64,43 @@ interface SignAndSendTransactionsParams {
 }
 
 export interface SignMessageParamsNEP {
-  message: string;
-  recipient: string;
-  nonce: Buffer;
-  callbackUrl?: string;
-  state?: string;
+  message: string
+  recipient: string
+  nonce: Buffer
+  callbackUrl?: string
+  state?: string
 }
 
 interface SignMessageParams {
   chainId: string
   messageParams: SignMessageParamsNEP & {
-    accountId?: string;
+    accountId?: string
   }
 }
 
 interface SignedMessage {
-  accountId: string;
-  publicKey: string;
-  signature: string;
-  state?: string;
+  accountId: string
+  publicKey: string
+  signature: string
+  state?: string
 }
 
 export class MessagePayload {
-  tag: number;
-  message: string;
-  nonce: Buffer;
-  recipient: string;
-  callbackUrl?: string;
+  tag: number
+  message: string
+  nonce: Buffer
+  recipient: string
+  callbackUrl?: string
 
   constructor(data: SignMessageParamsNEP) {
     // The tag's value is a hardcoded value as per
     // defined in the NEP [NEP413](https://github.com/near/NEPs/blob/master/neps/nep-0413.md)
-    this.tag = 2147484061;
-    this.message = data.message;
-    this.nonce = data.nonce;
-    this.recipient = data.recipient;
+    this.tag = 2147484061
+    this.message = data.message
+    this.nonce = data.nonce
+    this.recipient = data.recipient
     if (data.callbackUrl) {
-      this.callbackUrl = data.callbackUrl;
+      this.callbackUrl = data.callbackUrl
     }
   }
 }
@@ -111,8 +111,8 @@ export const payloadSchema: Schema = {
     message: 'string',
     nonce: { array: { type: 'u8', len: 32 } },
     recipient: 'string',
-    callbackUrl: { option: 'string' },
-  },
+    callbackUrl: { option: 'string' }
+  }
 }
 
 export class NearWallet {
@@ -396,11 +396,11 @@ export class NearWallet {
   }
 
   async signMessage({ chainId, messageParams }: SignMessageParams): Promise<SignedMessage> {
-    const { message, nonce,recipient, callbackUrl, state,accountId } = messageParams
+    const { message, nonce, recipient, callbackUrl, state, accountId } = messageParams
     const nonceArray = Buffer.from(nonce)
 
     if (nonceArray.length !== 32) {
-      throw Error("Expected nonce to be a 32 bytes buffer")
+      throw Error('Expected nonce to be a 32 bytes buffer')
     }
 
     const accounts = await this.getAllAccounts()
@@ -409,14 +409,14 @@ export class NearWallet {
     // If no accountId is provided in params default to the first accountId in accounts.
     // in a real wallet it would default to the `active/selected` account
     // this is because we should be able to use `signMessage` without `signIn`.
-    const accId = account ? account.accountId : accounts[0].accountId;
+    const accId = account ? account.accountId : accounts[0].accountId
 
     const signer = new InMemorySigner(this.getKeyStore())
     const networkId = chainId.split(':')[1]
 
     // Create the message payload and sign it
-    const payload = new MessagePayload({ message, nonce: nonceArray, recipient, callbackUrl });
-    const encodedPayload = serialize(payloadSchema, payload);
+    const payload = new MessagePayload({ message, nonce: nonceArray, recipient, callbackUrl })
+    const encodedPayload = serialize(payloadSchema, payload)
     const signed = await signer.signMessage(encodedPayload, accId, networkId)
 
     return {
