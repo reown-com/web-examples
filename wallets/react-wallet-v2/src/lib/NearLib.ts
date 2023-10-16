@@ -10,6 +10,7 @@ import { AccessKeyView } from 'near-api-js/lib/providers/provider'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { Schema, serialize } from 'borsh'
+
 const MAX_ACCOUNTS = 2
 
 interface Account {
