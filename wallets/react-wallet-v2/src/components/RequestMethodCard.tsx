@@ -15,7 +15,7 @@ export default function RequestMethodCard({ methods }: IProps) {
     <Row>
       <Col>
         <Text h5>Methods</Text>
-        <Text color="$gray400">{methods.map(method => method).join(', ')}</Text>
+        <Text color="$gray400" data-testid="request-methods">{methods.map(method => method).join(', ')}</Text>
       </Col>
     </Row>
   )

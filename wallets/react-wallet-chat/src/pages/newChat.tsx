@@ -17,7 +17,7 @@ export default function NewChatPage() {
   const { eip155Address } = useSnapshot(SettingsStore.state)
 
   useEffect(() => {
-    chatClient.once('chat_joined', args => {
+    chatClient.once('chat_invite_accepted', args => {
       const newChatTarget = new URLSearchParams(document.location.search).get('target')
       router.push(`/chat?topic=${args.topic}&peerAccount=${newChatTarget}`)
     })

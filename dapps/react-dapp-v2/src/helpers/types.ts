@@ -1,4 +1,5 @@
-import { ChainsMap } from "caip-api";
+import { IPactCommand } from "@kadena/client";
+import { ChainId } from "@kadena/types";
 
 export interface AssetData {
   symbol: string;
@@ -9,13 +10,13 @@ export interface AssetData {
 
 export interface ChainData {
   name: string;
-  short_name: string;
-  chain: string;
-  network: string;
-  chain_id: number;
-  network_id: number;
-  rpc_url: string;
-  native_currency: AssetData;
+  id: string;
+  rpc: string[];
+  slip44: number;
+  testnet: boolean;
+}
+export interface ChainsMap {
+  [reference: string]: ChainData;
 }
 export interface TxData {
   from: string;
@@ -155,4 +156,10 @@ export interface AccountAction {
 
 export interface AccountBalances {
   [account: string]: AssetData[];
+}
+
+export interface KadenaAccount {
+  publicKey: string; // Kadena public key
+  account: string; // Kadena account
+  chainId: ChainId; // Kadena ChainId
 }

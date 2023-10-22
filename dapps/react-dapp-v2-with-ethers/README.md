@@ -34,7 +34,7 @@ Your `.env.local` now contains the following environment variables:
 ## Develop
 
 ```bash
-yarn start
+yarn dev
 ```
 
 ## Test

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":prConcurrentLimit10",
+    ":prHourlyLimit2",
+    ":semanticCommits",
+    ":semanticCommitScope(deps)"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": [
+        "@walletconnect/core",
+        "@walletconnect/sign-client",
+        "@walletconnect/types",
+        "@walletconnect/universal-provider",
+        "@walletconnect/ethereum-provider",
+        "@walletconnect/utils",
+        "@walletconnect/react-native-compat"
+      ],
+      "schedule": ["at any time"],
+      "groupName": "WalletConnect Monorepo Deps",
+      "groupSlug": "walletconnect-monorepo-deps-updates",
+      "matchDepTypes": ["dependencies", "devDependencies"]
+    },
+    {
+      "matchPackagePatterns": ["@walletconnect/web3wallet"],
+      "schedule": ["at any time"],
+      "groupName": "WalletConnect Web3Wallet Deps",
+      "groupSlug": "walletconnect-web3wallet-deps-updates",
+      "matchDepTypes": ["dependencies", "devDependencies"]
+    },
+    {
+      "matchPackagePatterns": ["@web3modal/*"],
+      "schedule": ["at any time"],
+      "groupName": "Web3Modal Deps",
+      "groupSlug": "web3modal-deps-updates",
+      "matchDepTypes": ["dependencies", "devDependencies"]
+    },
+    {
+      "matchPackagePatterns": ["@cosmjs/*"],
+      "schedule": ["every weekend"],
+      "groupName": "cosmjs Deps",
+      "groupSlug": "cosmjs-deps-updates",
+      "matchDepTypes": ["dependencies"]
+    },
+    {
+      "matchPackagePatterns": ["*"],
+      "schedule": ["every weekend"],
+      "matchDepTypes": ["dependencies"]
+    },
+    {
+      "matchPackagePatterns": ["*"],
+      "matchDepTypes": ["devDependencies"],
+      "enabled": false
+    }
+  ]
+}

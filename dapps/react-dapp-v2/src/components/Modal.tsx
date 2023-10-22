@@ -65,6 +65,7 @@ const SCloseButton = styled.div<CloseButtonStyleProps>`
   top: ${({ size }) => `${size / 1.6667}px`};
   opacity: 0.5;
   cursor: pointer;
+
   &:hover {
     opacity: 1;
   }
@@ -130,9 +131,8 @@ export default function Modal({ children, show, opacity, closeModal }: IProps) {
     <SLightbox show={show} offset={offset} opacity={opacity} ref={lightboxRef}>
       <SModalContainer>
         <SHitbox onClick={closeModal} />
-
         <SCard>
-          <SCloseButton size={25} color={"dark"} onClick={closeModal} />
+          <SCloseButton size={25} color="dark" onClick={closeModal} />
           <SModalContent>{children}</SModalContent>
         </SCard>
       </SModalContainer>

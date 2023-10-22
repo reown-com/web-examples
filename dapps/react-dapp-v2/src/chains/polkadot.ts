@@ -1,10 +1,10 @@
-import { ChainsMap } from "caip-api";
 import { BLOCKCHAIN_LOGO_BASE_URL } from "../constants";
 import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
 import {
   NamespaceMetadata,
   ChainMetadata,
   ChainRequestRender,
+  ChainsMap,
 } from "../helpers";
 
 export const PolkadotChainData: ChainsMap = {
@@ -27,9 +27,7 @@ export const PolkadotChainData: ChainsMap = {
 export const PolkadotMetadata: NamespaceMetadata = {
   // eslint-disable-next-line no-useless-computed-key
   ["91b171bb158e2d3848fa23a9f1c25182"]: {
-    logo:
-      BLOCKCHAIN_LOGO_BASE_URL +
-      "polkadot:91b171bb158e2d3848fa23a9f1c25182.png",
+    logo: "/assets/polkadot.svg",
     rgb: "230, 1, 122",
   },
   ["e143f23803ac50e8f6f8e62695d1ce9e"]: {
@@ -50,18 +48,11 @@ export function getChainMetadata(chainId: string): ChainMetadata {
 export function getChainRequestRender(
   request: JsonRpcRequest
 ): ChainRequestRender[] {
-  let params = [{ label: "Method", value: request.method }];
-
-  switch (request.method) {
-    default:
-      params = [
-        ...params,
-        {
-          label: "params",
-          value: JSON.stringify(request.params, null, "\t"),
-        },
-      ];
-      break;
-  }
-  return params;
+  return [
+    { label: "Method", value: request.method },
+    {
+      label: "params",
+      value: JSON.stringify(request.params, null, "\t"),
+    },
+  ];
 }

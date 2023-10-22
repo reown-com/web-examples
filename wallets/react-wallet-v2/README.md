@@ -48,3 +48,92 @@ Your `.env.local` now contains the following environment variables:
 ## Preview of wallet and dapp examples in action
 
 https://user-images.githubusercontent.com/3154053/156764521-3492c232-7a93-47ba-88bd-2cee3f8366d4.mp4
+
+## DOM Tags
+This section is a key of the DOM elements used for internal E2E testing
+Accessible with `data-testid`
+
+### Navbar
+| Key | Description |
+| ----------- | ----------- |
+|  `accounts` | Accounts page |
+| `sessions` | Sessions page |
+| `wc-connect` |  WC Connect page |
+| `pairings` | Pairings page |
+| `settings` | Settings Page |
+
+### WC Connect Page
+url: `/walletconnect`
+| Key | Description |
+| ----------- | ----------- |
+| `uri-input` | Uri textbox |
+| `uri-connect-button` | Uri connect button |
+| `qrcode-button` | Use qrcode button | 
+
+### Sessions Page
+url: `/session`
+| Key | Description |
+| ----------- | ----------- |
+| `session-card` | Session cards can be accessed by topic |
+| `session-icon` | Icon used on session card |
+| `session-text` | Text listed on session card |
+| `session-link` | Link listed on session card |
+
+### Session Details Page
+url: `/session?topic=`
+| Key | Description |
+| ----------- | ----------- |
+| `session-card-${chain}` | Session chain info card |
+| `session-delete-button` | Session delete button |
+| `session-ping-button` | Session ping button |
+| `session-emit-button` | Session emit button |
+| `session-update-button` | Session update button |
+
+### Pairing Page
+url: `/pairings`
+| Key | Description |
+| ----------- | ----------- |
+| `pairing-${topic}` | Pairing cards can be accessed by topic |
+| `pairing-text-${topic}` | Pairing card text in label | 
+| `pairing-url-${topic}` | Pairing card link in label| 
+| `pairing-delete-${topic}` | Delete pairing by topic |
+
+
+### Accounts Page
+url: `/`
+| Key | Description |
+| ----------- | ----------- |
+| `account-picker` | Account drop down selector|
+| `chain-card-${chain id}` | Chain card by chain id |
+| `chain-switch-button-${chain id}` | Chain switch button |
+| `chain-switch-button-${chain id}` | Chain copy button |
+
+### Settings Page
+url: `/settings`
+| Key | Description |
+| ----------- | ----------- |
+| `settings-toggle-testnets` | Toggle testnet support on/off |
+| `settings-region-select` | Select relayer region |
+
+### Session Proposal View
+| Key | Description |
+| ----------- | ----------- |
+| `session-approve-button` | Session approve button |
+| `session-reject-button` | Session reject button |
+| `session-info-card-text` | Session text info in header |
+| `session-info-card-url` | Session info url in header |
+| `session-info-card-verify` | Session info verify api in header |
+| `session-proposal-card-req-{chain}` | Session card for each required chain |
+| `session-proposal-card-opt-{chain}` | Session card for each optional chain |
+| `account-select-card-${req/opt}-${index}` | Account selection checkbox by account index|
+| `account-select-text-${req/opt}-${index}` | Account selection text by account index |
+
+
+### Sign Request View 
+| Key | Description |
+| ----------- | ----------- |
+| `request-details-chain` | List of chains in the request |
+| `request-details-relay-protocol` | Protocol used for request |
+| `request-methods` | Methods requested |
+| `request-button-reject` | Reject button |
+| `request-button-approve` | Approve button |

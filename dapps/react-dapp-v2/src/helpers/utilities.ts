@@ -230,3 +230,7 @@ export const getAllChainNamespaces = () => {
   });
   return namespaces;
 };
+
+export const getProviderUrl = (chainId: string) => {
+  return `https://rpc.walletconnect.com/v1/?chainId=${chainId}&projectId=${process.env.NEXT_PUBLIC_PROJECT_ID}`;
+};

@@ -1,4 +1,3 @@
-import { apiGetChainNamespace, ChainsMap } from "caip-api";
 import {
   createContext,
   ReactNode,
@@ -8,11 +7,15 @@ import {
 } from "react";
 import { SolanaChainData } from "../chains/solana";
 import { PolkadotChainData } from "../chains/polkadot";
-import { ElrondChainData } from "../chains/elrond";
-import { TronChainData } from '../chains/tron';
+import { MultiversxChainData } from "../chains/multiversx";
+import { TronChainData } from "../chains/tron";
 
-import { ChainNamespaces, getAllChainNamespaces } from "../helpers";
+import { ChainNamespaces, ChainsMap, getAllChainNamespaces } from "../helpers";
 import { NearChainData } from "../chains/near";
+import { CosmosChainData } from "../chains/cosmos";
+import { EIP155ChainData } from "../chains/eip155";
+import { TezosChainData } from "../chains/tezos";
+import { KadenaChainData } from "../chains/kadena";
 
 /**
  * Types
@@ -42,23 +45,38 @@ export function ChainDataContextProvider({
     await Promise.all(
       namespaces.map(async (namespace) => {
         let chains: ChainsMap | undefined;
-        try {
-          if (namespace === "solana") {
+        switch (namespace) {
+          case "solana":
             chains = SolanaChainData;
-          } else if (namespace === "polkadot") {
+            break;
+          case "polkadot":
             chains = PolkadotChainData;
-          } else if (namespace === "near") {
+            break;
+          case "near":
             chains = NearChainData;
-          } else if (namespace === "elrond") {
-            chains = ElrondChainData;  
-          } else if (namespace === 'tron') {
+            break;
+          case "mvx":
+            chains = MultiversxChainData;
+            break;
+          case "tron":
             chains = TronChainData;
-          } else {
-            chains = await apiGetChainNamespace(namespace);
-          }
-        } catch (e) {
-          // ignore error
+            break;
+          case "cosmos":
+            chains = CosmosChainData;
+            break;
+          case "eip155":
+            chains = EIP155ChainData;
+            break;
+          case "tezos":
+            chains = TezosChainData;
+            break;
+          case "kadena":
+            chains = KadenaChainData;
+            break;
+          default:
+            console.error("Unknown chain namespace: ", namespace);
         }
+
         if (typeof chains !== "undefined") {
           chainData[namespace] = chains;
         }

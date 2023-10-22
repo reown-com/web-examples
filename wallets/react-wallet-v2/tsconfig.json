@@ -13,6 +13,7 @@
     "noEmit": true,
     "incremental": true,
     "esModuleInterop": true,
+    "downlevelIteration": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,

@@ -28,6 +28,7 @@ export default function SessionCard({ logo, name, url, topic }: IProps) {
           marginBottom: '$6',
           minHeight: '70px'
         }}
+        data-testid={`session-card`}
       >
         <Card.Body
           css={{
@@ -39,15 +40,17 @@ export default function SessionCard({ logo, name, url, topic }: IProps) {
         >
           <Avatar src={logo} />
           <div style={{ flex: 1 }}>
-            <Text h5 css={{ marginLeft: '$9' }}>
+            <Text h5 css={{ marginLeft: '$9' }} data-testid={`session-text`}>
               {name}
             </Text>
             <Link href={url} css={{ marginLeft: '$9' }}>
+              <a data-testid={`session-link`}>
               {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
+              </a>
             </Link>
           </div>
 
-          <Image src={'/icons/arrow-right-icon.svg'} width={20} height={20} alt="session icon" />
+          <Image src={'/icons/arrow-right-icon.svg'} width={20} height={20} alt="session icon" data-testid={`session-icon`} />
         </Card.Body>
       </Card>
     </NextLink>
