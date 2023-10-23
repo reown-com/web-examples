@@ -162,6 +162,24 @@ export async function approveNearRequest(
         keyType: signed.publicKey.keyType
       })
     }
+    case NEAR_SIGNING_METHODS.NEAR_SIGN_MESSAGE: {
+      console.log('approve', { id, params })
+
+      if (!chainId) {
+        throw new Error('Invalid chain id')
+      }
+
+      const { accountId, publicKey, signature } = await nearWallet.signMessage({
+        chainId,
+        messageParams: params.request.params
+      })
+
+      return formatJsonRpcResult(id, {
+        accountId,
+        publicKey,
+        signature
+      })
+    }
     case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS: {
       console.log('approve', { id, params })
 

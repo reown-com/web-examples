@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@ethereumjs/tx": "^3.5.0",
-    "axios": "^0.21.1",
+    "axios": "^0.27.0",
     "blockies-ts": "^1.0.0",
     "caip-api": "^2.0.0-beta.1",
     "cosmos-wallet": "^1.1.0",

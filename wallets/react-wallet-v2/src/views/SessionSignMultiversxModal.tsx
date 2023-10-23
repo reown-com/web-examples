@@ -67,7 +67,7 @@ export default function SessionSignMultiversxModal() {
 
   return (
     <RequestModal
-      intention="sign a Mtvx message"
+      intention="sign a MultiversX message"
       metadata={requestSession.peer.metadata}
       onApprove={onApprove}
       onReject={onReject}

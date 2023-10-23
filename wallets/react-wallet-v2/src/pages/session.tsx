@@ -138,12 +138,16 @@ export default function SessionPage() {
 
       <Row justify="space-between">
         <Text h5>Expiry</Text>
-        <Text css={{ color: '$gray400' }}>{expiryDate.toDateString()}</Text>
+        <Text css={{ color: '$gray400' }}>
+          {expiryDate.toDateString()} - {expiryDate.toLocaleTimeString()}
+        </Text>
       </Row>
 
       <Row justify="space-between">
         <Text h5>Last Updated</Text>
-        <Text css={{ color: '$gray400' }}>{updated.toDateString()}</Text>
+        <Text css={{ color: '$gray400' }}>
+          {updated.toDateString()} - {updated.toLocaleTimeString()}
+        </Text>
       </Row>
 
       <Row css={{ marginTop: '$10' }}>

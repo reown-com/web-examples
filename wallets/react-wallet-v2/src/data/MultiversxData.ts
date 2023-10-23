@@ -13,7 +13,7 @@ export const MULTIVERSX_MAINNET_CHAINS = {
     logo: '/chain-logos/multiversx-1.svg',
     rgb: '43, 45, 46',
     rpc: '',
-    namespace: 'mutiversx'
+    namespace: 'mvx'
   }
 }
 
@@ -24,7 +24,7 @@ export const MULTIVERSX_TEST_CHAINS = {
     logo: '/chain-logos/multiversx-1.svg',
     rgb: '43, 45, 46',
     rpc: '',
-    namespace: 'mutiversx'
+    namespace: 'mvx'
   }
   // Keep only one Test Chain visible
   // 'mvx:T': {
@@ -32,7 +32,8 @@ export const MULTIVERSX_TEST_CHAINS = {
   //   name: 'MultiversX Testnet',
   //   logo: '/chain-logos/multiversx-1.svg',
   //   rgb: '43, 45, 46',
-  //   rpc: ''
+  //   rpc: '',
+  //   namespace: 'mvx'
   // }
 }
 
@@ -46,5 +47,6 @@ export const MULTIVERSX_SIGNING_METHODS = {
   MULTIVERSX_SIGN_TRANSACTIONS: 'mvx_signTransactions',
   MULTIVERSX_SIGN_MESSAGE: 'mvx_signMessage',
   MULTIVERSX_SIGN_LOGIN_TOKEN: 'mvx_signLoginToken',
-  MULTIVERSX_SIGN_NATIVE_AUTH_TOKEN: 'mvx_signNativeAuthToken'
+  MULTIVERSX_SIGN_NATIVE_AUTH_TOKEN: 'mvx_signNativeAuthToken',
+  MULTIVERSX_CANCEL_ACTION: 'mvx_cancelAction'
 }

@@ -102,7 +102,7 @@ export default function SessionProposalModal() {
         events: [],
         accounts: kadenaChains.map(chain => `${chain}:${kadenaAddresses[0]}`).flat()
       },
-      multiversx: {
+      mvx: {
         chains: multiversxChains,
         methods: multiversxMethods,
         events: [],
@@ -111,7 +111,7 @@ export default function SessionProposalModal() {
       near: {
         chains: nearChains,
         methods: nearMethods,
-        events: [],
+        events: ['accountsChanged', 'chainChanged'],
         accounts: nearChains.map(chain => `${chain}:${nearAddresses[0]}`).flat()
       },
       polkadot: {
@@ -198,7 +198,7 @@ export default function SessionProposalModal() {
         return cosmosAddresses[0]
       case 'kadena':
         return kadenaAddresses[0]
-      case 'multiversx':
+      case 'mvx':
         return multiversxAddresses[0]
       case 'near':
         return nearAddresses[0]
@@ -324,9 +324,13 @@ export default function SessionProposalModal() {
           </Row>
           {supportedChains.length &&
             supportedChains.map((chain, i) => {
+              if (!chain) {
+                return <></>
+              }
+
               return (
                 <Row key={i}>
-                  <ChainDataMini key={i} chainId={chain?.chainId!} />
+                  <ChainDataMini key={i} chainId={`${chain?.namespace}:${chain?.chainId}`} />
                 </Row>
               )
             })}
