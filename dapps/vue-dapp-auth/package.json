@@ -18,7 +18,7 @@
     "@vueuse/nuxt": "^9.1.1",
     "@walletconnect/auth-client": "^2.1.0",
     "ethers": "^5.7.0",
-    "nuxt-icon": "^0.1.7",
+    "nuxt-icon": "^0.6.0",
     "pinia": "^2.0.23",
     "qrcode.vue": "^3.3.3",
     "sass": "^1.43.3",
