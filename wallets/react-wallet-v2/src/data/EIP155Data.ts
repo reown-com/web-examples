@@ -68,7 +68,7 @@ export const EIP155_TEST_CHAINS = {
     name: 'Ethereum Sepolia',
     logo: '/chain-logos/eip155-1.png',
     rgb: '99, 125, 234',
-    rpc: 'https://sepolia.rpc.thirdweb.com',
+    rpc: 'https://rpc.sepolia.org',
     namespace: 'eip155'
   },
   'eip155:43113': {
