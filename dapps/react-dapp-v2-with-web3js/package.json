@@ -34,7 +34,7 @@
     "@walletconnect/universal-provider": "2.10.0",
     "@walletconnect/utils": "2.10.0",
     "@web3modal/standalone": "^2.3.7",
-    "axios": "^0.27.0",
+    "axios": "^1.0.0",
     "blockies-ts": "^1.0.0",
     "caip-api": "^2.0.0-beta.1",
     "cosmos-wallet": "^1.1.0",
