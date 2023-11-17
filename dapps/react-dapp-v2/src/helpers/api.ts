@@ -109,6 +109,22 @@ export const rpcProvidersByChainId: Record<number, any> = {
       symbol: "CELO",
     },
   },
+  148: {
+    name: "ShimmerEVM Mainnet",
+    baseURL: "https://json-rpc.evm.shimmer.network",
+    token: {
+      name: "Shimmer",
+      symbol: "SMR",
+    },
+  },
+  1073: {
+    name: "ShimmerEVM Testnet",
+    baseURL: "https://json-rpc.evm.testnet.shimmer.network",
+    token: {
+      name: "Shimmer",
+      symbol: "SMR",
+    },
+  },
 };
 
 const api: AxiosInstance = axios.create({
