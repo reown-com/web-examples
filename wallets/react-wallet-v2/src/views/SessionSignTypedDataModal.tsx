@@ -1,13 +1,7 @@
 import { Divider, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
-
-import ModalFooter from '@/components/ModalFooter'
-import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
-import RequestModalContainer from '@/components/RequestModalContainer'
-import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { getSignTypedDataParamsData, styledToast } from '@/utils/HelperUtil'
