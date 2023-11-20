@@ -28,7 +28,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-, "src/lib/PimlicoLib.js", "src/lib/SmartAccountLib.js"  ],
+, "src/lib/PimlicoLib.ts", "src/lib/SmartAccountLib.ts"  ],
   "exclude": [
     "node_modules"
   ]

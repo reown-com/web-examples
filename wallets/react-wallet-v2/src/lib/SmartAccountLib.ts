@@ -3,6 +3,7 @@ import { privateKeyToSafeSmartAccount } from 'permissionless/accounts'
 import { sepolia } from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
 import { createWalletClient } from 'viem'
+import type { WalletClient } from 'viem'
 import {
   publicClient,
   bundlerClient,
@@ -11,7 +12,7 @@ import {
 } from './PimlicoLib'
 
 // Create smart account
-export async function createSmartAccount(signerPrivateKey) {
+export async function createSmartAccount(signerPrivateKey: `0x${string}`) {
   const smartAccount = await privateKeyToSafeSmartAccount(publicClient, {
     privateKey: signerPrivateKey,
     safeVersion: '1.4.1',
@@ -34,13 +35,20 @@ export async function createSmartAccount(signerPrivateKey) {
 }
 
 // Prrefund smart account
-export async function prefundSmartAccount(signerPrivateKey, smartAccountViemClient) {
+export async function prefundSmartAccount(
+  signerPrivateKey: `0x${string}`,
+  smartAccountViemClient: WalletClient
+) {
   const signerAccount = privateKeyToAccount(signerPrivateKey)
   const signerAccountViemClient = createWalletClient({
     account: signerAccount,
     chain: sepolia,
     transport: walletConnectTransport
   })
+
+  // prepareUserOperationRequest(smartAccountViemClient, {
+
+  // })
 
   // TODO: Calculate prefund amount
   // const { maxFeePerGas, preVerificationGas, verificationGasLimit, callGasLimit } =
