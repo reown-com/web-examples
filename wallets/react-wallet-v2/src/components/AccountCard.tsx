@@ -16,18 +16,9 @@ interface Props {
   rgb: string
   address: string
   chainId: string
-  isSmartAccount?: boolean
 }
 
-export default function AccountCard({
-  name,
-  logo,
-  rgb,
-  address = '',
-  chainId,
-  isSmartAccount
-}: Props) {
-  const [loading, setLoading] = useState(false)
+export default function AccountCard({ name, logo, rgb, address = '', chainId }: Props) {
   const [copied, setCopied] = useState(false)
   const { activeChainId } = useSnapshot(SettingsStore.state)
   function onCopy() {
@@ -39,29 +30,6 @@ export default function AccountCard({
   async function onChainChanged(chainId: string, address: string) {
     SettingsStore.setActiveChainId(chainId)
     await updateSignClientChainId(chainId.toString(), address)
-  }
-
-  async function onCreateSmartAccount() {
-    try {
-      setLoading(true)
-      const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
-
-      const data = await createSmartAccount(signerPrivateKey)
-      console.log(`Step 1: Created Smart Account (addr: ${data.smartAccount.address})`)
-      styledToast(`Step 1: Created Smart Account (addr: ${data.smartAccount.address})`, 'success')
-
-      const prefundTxHash = await prefundSmartAccount(signerPrivateKey, data.smartAccountViemClient)
-      console.log(`Step 2: Prefunded Smart Account (tx: ${prefundTxHash})`)
-      styledToast(`Step 2: Prefunded Smart Account (tx: ${prefundTxHash})`, 'success')
-
-      const testTxHash = await sendTestTransaction(data.smartAccountViemClient)
-      console.log(`Step 3: Sent Vitalik Some $ (tx: ${testTxHash})`)
-      styledToast(`Step 3: Sent Vitalik Some $ (tx: ${testTxHash})`, 'success')
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
   }
 
   return (
@@ -105,16 +73,6 @@ export default function AccountCard({
       >
         {activeChainId === chainId ? `✅` : `🔄`}
       </Button>
-
-      {isSmartAccount ? (
-        loading ? (
-          <Loading />
-        ) : (
-          <Button size="sm" css={{ marginTop: 20, width: '100%' }} onClick={onCreateSmartAccount}>
-            Create Smart Account
-          </Button>
-        )
-      ) : null}
     </ChainCard>
   )
 }
