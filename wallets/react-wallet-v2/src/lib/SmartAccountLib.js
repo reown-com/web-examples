@@ -11,28 +11,32 @@ import {
 } from './PimlicoLib'
 
 // Create smart account
-export async function createSmartAccount(privateKey) {
-  const account = await privateKeyToSafeSmartAccount(publicClient, {
-    privateKey,
+export async function createSmartAccount(signerPrivateKey) {
+  const smartAccount = await privateKeyToSafeSmartAccount(publicClient, {
+    privateKey: signerPrivateKey,
     safeVersion: '1.4.1',
     entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
   })
 
-  const smartAccountClient = createSmartAccountClient({
-    account,
+  const smartAccountViemClient = createSmartAccountClient({
+    account: smartAccount,
     chain: sepolia,
     transport: pimlicoBundlerTransport
   })
 
-  // publicClient.getBytecode({ address: account.address})
+  const bytecode = await publicClient.getBytecode({ address: smartAccount.address })
 
-  return smartAccountClient
+  return {
+    smartAccount,
+    smartAccountViemClient,
+    isDeployed: Boolean(bytecode)
+  }
 }
 
 // Prrefund smart account
-export async function prefundSmartAccount(signerAccountPrivateKey, smartAccountClient) {
-  const signerAccount = privateKeyToAccount(signerAccountPrivateKey)
-  const signerAccountClient = createWalletClient({
+export async function prefundSmartAccount(signerPrivateKey, smartAccountViemClient) {
+  const signerAccount = privateKeyToAccount(signerPrivateKey)
+  const signerAccountViemClient = createWalletClient({
     account: signerAccount,
     chain: sepolia,
     transport: walletConnectTransport
@@ -45,26 +49,27 @@ export async function prefundSmartAccount(signerAccountPrivateKey, smartAccountC
   //   maxFeePerGas * (preVerificationGas + 3 * verificationGasLimit + callGasLimit)
 
   // Prefund smart account
-  const hash = await signerAccountClient.sendTransaction({
-    account: signerAccount,
-    to: smartAccountClient.account.address,
-    value: 100000000000000000n
+  const { fast } = await bundlerClient.getUserOperationGasPrice()
+  const hash = await signerAccountViemClient.sendTransaction({
+    to: smartAccountViemClient.account.address,
+    value: 0n,
+    maxFeePerGas: fast.maxFeePerGas,
+    maxPriorityFeePerGas: fast.maxPriorityFeePerGas
   })
   await publicClient.waitForTransactionReceipt({ hash })
 
   return hash
 }
 
-export async function sendTestTransaction(smartAccount) {
+export async function sendTestTransaction(smartAccountViemClient) {
   // Send test transaction to vitalik
-  const gasPrices = await bundlerClient.getUserOperationGasPrice()
-  const txHash = await smartAccount.sendTransaction({
+  const { fast } = await bundlerClient.getUserOperationGasPrice()
+  const hash = await smartAccountViemClient.sendTransaction({
     to: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
     value: 0n,
-    data: '0x1234',
-    maxFeePerGas: gasPrices.fast.maxFeePerGas,
-    maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas
+    maxFeePerGas: fast.maxFeePerGas,
+    maxPriorityFeePerGas: fast.maxPriorityFeePerGas
   })
 
-  return txHash
+  return hash
 }
