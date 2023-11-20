@@ -8,10 +8,7 @@ import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 
 export default function HomePage() {
-  const {
-    testNets,
-    eip155Address
-  } = useSnapshot(SettingsStore.state)
+  const { testNets, eip155Address, activeChainId } = useSnapshot(SettingsStore.state)
 
   return (
     <Fragment>
@@ -32,14 +29,13 @@ export default function HomePage() {
           data-testid={'chain-card-' + caip10.toString()}
         />
       ))}
-      
 
       {testNets ? (
         <Fragment>
           <Text h4 css={{ marginBottom: '$5' }}>
             Testnets
           </Text>
-          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb, chainId }]) => (
             <AccountCard
               key={name}
               name={name}
@@ -48,9 +44,9 @@ export default function HomePage() {
               address={eip155Address}
               chainId={caip10.toString()}
               data-testid={'chain-card-' + caip10.toString()}
+              isSmartAccount={chainId === 11155111 && activeChainId === `eip155:${11155111}`}
             />
           ))}
-         
         </Fragment>
       ) : null}
     </Fragment>
