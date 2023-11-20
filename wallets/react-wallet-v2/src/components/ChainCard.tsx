@@ -6,9 +6,10 @@ interface Props {
   rgb: string
   flexDirection: 'row' | 'col'
   alignItems: 'center' | 'flex-start'
+  flexWrap?: 'wrap' | 'nowrap'
 }
 
-export default function ChainCard({ rgb, children, flexDirection, alignItems }: Props) {
+export default function ChainCard({ rgb, children, flexDirection, alignItems, flexWrap }: Props) {
   return (
     <Card
       bordered
@@ -23,6 +24,7 @@ export default function ChainCard({ rgb, children, flexDirection, alignItems }: 
     >
       <Card.Body
         css={{
+          flexWrap,
           flexDirection,
           alignItems,
           justifyContent: 'space-between',

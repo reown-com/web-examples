@@ -57,7 +57,7 @@ const SettingsStore = {
 
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL
-  },
+  }
 }
 
 export default SettingsStore
