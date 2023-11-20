@@ -7,7 +7,7 @@ import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import Image from 'next/image'
 import { useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { createSmartAccount } from '@/lib/SmartAccountLib'
+import { createSmartAccount, sendTestTransaction, prefundSmartAccount } from '@/lib/SmartAccountLib'
 
 interface Props {
   name: string
@@ -45,7 +45,11 @@ export default function AccountCard({
       setLoading(true)
       const privateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
       const smartAccount = await createSmartAccount(privateKey)
-      console.log(smartAccount)
+      console.log('Step 1', smartAccount)
+      // const prefundTxHash = await prefundSmartAccount(privateKey, smartAccount)
+      // console.log('Step 2', prefundTxHash)
+      const testTxHash = await sendTestTransaction(smartAccount)
+      console.log('Step 4', testTxHash)
     } catch (error) {
       console.error(error)
     } finally {
