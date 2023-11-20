@@ -43,12 +43,12 @@ export default function AccountCard({
   async function onCreateSmartAccount() {
     try {
       setLoading(true)
-      const privateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
-      const smartAccount = await createSmartAccount(privateKey)
-      console.log('Step 1', smartAccount)
-      // const prefundTxHash = await prefundSmartAccount(privateKey, smartAccount)
-      // console.log('Step 2', prefundTxHash)
-      const testTxHash = await sendTestTransaction(smartAccount)
+      const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
+      const data = await createSmartAccount(signerPrivateKey)
+      console.log('Step 1', data)
+      const prefundTxHash = await prefundSmartAccount(signerPrivateKey, data.smartAccountViemClient)
+      console.log('Step 2', prefundTxHash)
+      const testTxHash = await sendTestTransaction(data.smartAccountViemClient)
       console.log('Step 4', testTxHash)
     } catch (error) {
       console.error(error)
