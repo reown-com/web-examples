@@ -16,7 +16,7 @@ interface Props {
   rgb: string
   address: string
   chainId: string
-  isSmartAccount?: boolean
+  isActiveChain: boolean
 }
 
 export default function SmartAccountCard({
@@ -25,11 +25,12 @@ export default function SmartAccountCard({
   rgb,
   address = '',
   chainId,
-  isSmartAccount
+  isActiveChain
 }: Props) {
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const { activeChainId } = useSnapshot(SettingsStore.state)
+
   function onCopy() {
     navigator?.clipboard?.writeText(address)
     setCopied(true)
@@ -106,15 +107,14 @@ export default function SmartAccountCard({
         {activeChainId === chainId ? `✅` : `🔄`}
       </Button>
 
-      {isSmartAccount ? (
-        loading ? (
-          <Loading />
-        ) : (
-          <Button size="sm" css={{ marginTop: 20, width: '100%' }} onClick={onCreateSmartAccount}>
-            Create Smart Account
-          </Button>
-        )
-      ) : null}
+      <Button
+        disabled={!isActiveChain || loading}
+        size="sm"
+        css={{ marginTop: 20, width: '100%' }}
+        onClick={onCreateSmartAccount}
+      >
+        {loading ? <Loading size="sm" /> : 'Create Smart Account'}
+      </Button>
     </ChainCard>
   )
 }

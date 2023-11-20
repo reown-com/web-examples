@@ -1,4 +1,5 @@
 import AccountCard from '@/components/AccountCard'
+import SmartAccountCard from '@/components/SmartAccountCard'
 import AccountPicker from '@/components/AccountPicker'
 import PageHeader from '@/components/PageHeader'
 import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
@@ -35,18 +36,34 @@ export default function HomePage() {
           <Text h4 css={{ marginBottom: '$5' }}>
             Testnets
           </Text>
-          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb, chainId }]) => (
-            <AccountCard
-              key={name}
-              name={name}
-              logo={logo}
-              rgb={rgb}
-              address={eip155Address}
-              chainId={caip10.toString()}
-              data-testid={'chain-card-' + caip10.toString()}
-              isSmartAccount={chainId === 11155111 && activeChainId === `eip155:${11155111}`}
-            />
-          ))}
+          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb, chainId }]) => {
+            if (chainId === 11155111) {
+              return (
+                <SmartAccountCard
+                  key={name}
+                  name={name}
+                  logo={logo}
+                  rgb={rgb}
+                  address={eip155Address}
+                  chainId={caip10.toString()}
+                  data-testid={'chain-card-' + caip10.toString()}
+                  isActiveChain={activeChainId === `eip155:${11155111}`}
+                />
+              )
+            }
+
+            return (
+              <AccountCard
+                key={name}
+                name={name}
+                logo={logo}
+                rgb={rgb}
+                address={eip155Address}
+                chainId={caip10.toString()}
+                data-testid={'chain-card-' + caip10.toString()}
+              />
+            )
+          })}
         </Fragment>
       ) : null}
     </Fragment>
