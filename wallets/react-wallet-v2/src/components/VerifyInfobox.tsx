@@ -1,12 +1,10 @@
-import { useMemo } from 'react'
-import { useSnapshot } from 'valtio'
-import { Image, StyledText } from '@nextui-org/react'
 import SettingsStore from '@/store/SettingsStore'
-import ReportIcon from '@mui/icons-material/Report'
 import ReportProblemIcon from '@mui/icons-material/ReportProblem'
 import NewReleasesIcon from '@mui/icons-material/NewReleases'
-import { Avatar, Col, Link, Row, Text, styled } from '@nextui-org/react'
+import {  Col,  Row, Text, styled } from '@nextui-org/react'
 import { SignClientTypes } from '@walletconnect/types'
+import {useSnapshot} from 'valtio'
+import ReportIcon from "@material-ui/icons/Report"
 
 /**
  * Types

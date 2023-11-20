@@ -1,4 +1,3 @@
-import { parseUri } from '@walletconnect/utils'
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
 import { web3wallet } from '@/utils/WalletConnectUtil'

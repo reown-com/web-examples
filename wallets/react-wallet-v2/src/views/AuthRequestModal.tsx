@@ -1,12 +1,7 @@
-import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
-import { Col, Divider, Row, Text, Code } from '@nextui-org/react'
+import { Col,  Row, Text, Code } from '@nextui-org/react'
 import { getSdkError } from '@walletconnect/utils'
 
-import ModalFooter from '@/components/ModalFooter'
-import ProjectInfoCard from '@/components/ProjectInfoCard'
-import RequestModalContainer from '@/components/RequestModalContainer'
-import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'

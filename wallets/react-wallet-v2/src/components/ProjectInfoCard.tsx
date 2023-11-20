@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
 import ReportIcon from '@mui/icons-material/Report'
