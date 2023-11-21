@@ -51,6 +51,7 @@ export default function SmartAccountCard({
         setSmartAccountAddress(smartAccountViemClient.account.address)
       } else {
         await deploy()
+        setSmartAccountAddress(smartAccountViemClient.account.address)
       }
     } catch (error) {
       console.error(error)
@@ -125,14 +126,24 @@ export default function SmartAccountCard({
           </Text>
         </>
       ) : (
-        <Button
-          disabled={!isActiveChain || loading}
-          size="sm"
-          css={{ marginTop: 20, width: '100%' }}
-          onClick={onCreateSmartAccount}
-        >
-          {loading ? <Loading size="sm" /> : 'Create Smart Account'}
-        </Button>
+        <>
+          <Button
+            disabled={!isActiveChain || loading}
+            size="sm"
+            css={{ marginTop: 20, width: '100%' }}
+            onClick={() => window.open('https://sepoliafaucet.com', '_blank')}
+          >
+            Sepolia Faucet
+          </Button>
+          <Button
+            disabled={!isActiveChain || loading}
+            size="sm"
+            css={{ marginTop: 10, width: '100%' }}
+            onClick={onCreateSmartAccount}
+          >
+            {loading ? <Loading size="sm" /> : 'Create Smart Account'}
+          </Button>
+        </>
       )}
     </ChainCard>
   )
