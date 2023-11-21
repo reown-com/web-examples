@@ -12,11 +12,13 @@ const pimlicoKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
 
 // -- RPC CLient -----------------------------------------------------------------------------------
 export const pimlicoBundlerTransport = http(
-  `https://api.pimlico.io/v1/sepolia/rpc?apikey=${pimlicoKey}`
+  `https://api.pimlico.io/v1/sepolia/rpc?apikey=${pimlicoKey}`,
+  { retryDelay: 1000 }
 )
 
 export const walletConnectTransport = http(
-  `https://rpc.walletconnect.com/v1/?chainId=EIP155:11155111&projectId=${projectId}`
+  `https://rpc.walletconnect.com/v1/?chainId=EIP155:11155111&projectId=${projectId}`,
+  { retryDelay: 1000 }
 )
 
 export const publicClient = createPublicClient({
@@ -75,16 +77,28 @@ export async function getSmartAccount(signerPrivateKey: `0x${string}`) {
         //   maxFeePerGas * (preVerificationGas + 3 * verificationGasLimit + callGasLimit)
 
         // Step 3.3: Send prefund transaction from signer to smart account
-        const { fast } = await bundlerClient.getUserOperationGasPrice()
+        const { fast: fastPrefund } = await bundlerClient.getUserOperationGasPrice()
         const prefundHash = await signerAccountViemClient.sendTransaction({
           to: smartAccountViemClient.account.address,
-          value: 50000000000000000n,
-          maxFeePerGas: fast.maxFeePerGas,
-          maxPriorityFeePerGas: fast.maxPriorityFeePerGas
+          value: 10000000000000000n,
+          maxFeePerGas: fastPrefund.maxFeePerGas,
+          maxPriorityFeePerGas: fastPrefund.maxPriorityFeePerGas
         })
         console.log(`Prefunding Smart Account: ${prefundHash}`)
         await publicClient.waitForTransactionReceipt({ hash: prefundHash })
         console.log(`Prefunding Success`)
+
+        // Step 4: Send test tx to Vitalik and create account
+        const { fast: fastTest } = await bundlerClient.getUserOperationGasPrice()
+        const testHash = await smartAccountViemClient.sendTransaction({
+          to: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
+          value: 0n,
+          maxFeePerGas: fastTest.maxFeePerGas,
+          maxPriorityFeePerGas: fastTest.maxPriorityFeePerGas
+        })
+        console.log(`Sending first tx: ${testHash}`)
+        await publicClient.waitForTransactionReceipt({ hash: testHash })
+        console.log(`Account Created`)
       }
     }
   }
