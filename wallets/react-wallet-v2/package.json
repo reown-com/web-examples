@@ -28,7 +28,7 @@
     "react-hot-toast": "2.4.1",
     "react-qr-reader-es6": "2.2.1-2",
     "valtio": "1.6.0",
-    "permissionless": "file:../../../permissionless.js/src",
+    "permissionless": "0.0.0-main.20231120T173047",
     "viem": "1.19.4"
   },
   "devDependencies": {
