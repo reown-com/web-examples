@@ -5,9 +5,9 @@ import { updateSignClientChainId } from '@/utils/WalletConnectUtil'
 import { Avatar, Button, Text, Tooltip, Loading } from '@nextui-org/react'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSnapshot } from 'valtio'
-import { getOrCreateSmartAccount } from '@/lib/SmartAccountLib'
+import { getSmartAccount } from '@/lib/SmartAccountLib'
 
 interface Props {
   name: string
@@ -28,6 +28,7 @@ export default function SmartAccountCard({
 }: Props) {
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [smartAccountAddress, setSmartAccountAddress] = useState<string | null>(null)
   const { activeChainId } = useSnapshot(SettingsStore.state)
 
   function onCopy() {
@@ -45,14 +46,32 @@ export default function SmartAccountCard({
     try {
       setLoading(true)
       const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
-      const { smartAccountViemClient } = await getOrCreateSmartAccount(signerPrivateKey)
-      console.log(smartAccountViemClient)
+      const { smartAccountViemClient, deploy, isDeployed } = await getSmartAccount(signerPrivateKey)
+      if (isDeployed) {
+        setSmartAccountAddress(smartAccountViemClient.account.address)
+      } else {
+        await deploy()
+      }
     } catch (error) {
       console.error(error)
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    async function bootstrap() {
+      const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
+      const { smartAccountViemClient, isDeployed } = await getSmartAccount(signerPrivateKey)
+      if (isDeployed) {
+        setSmartAccountAddress(smartAccountViemClient.account.address)
+      } else {
+        setSmartAccountAddress(null)
+      }
+    }
+
+    bootstrap()
+  }, [address])
 
   return (
     <ChainCard rgb={rgb} flexDirection="row" alignItems="center" flexWrap="wrap">
@@ -96,14 +115,25 @@ export default function SmartAccountCard({
         {activeChainId === chainId ? `✅` : `🔄`}
       </Button>
 
-      <Button
-        disabled={!isActiveChain || loading}
-        size="sm"
-        css={{ marginTop: 20, width: '100%' }}
-        onClick={onCreateSmartAccount}
-      >
-        {loading ? <Loading size="sm" /> : 'Create Smart Account'}
-      </Button>
+      {smartAccountAddress ? (
+        <>
+          <Text h5 css={{ marginTop: 20 }}>
+            Smart Account:
+          </Text>
+          <Text small css={{ marginTop: 5 }}>
+            {smartAccountAddress}
+          </Text>
+        </>
+      ) : (
+        <Button
+          disabled={!isActiveChain || loading}
+          size="sm"
+          css={{ marginTop: 20, width: '100%' }}
+          onClick={onCreateSmartAccount}
+        >
+          {loading ? <Loading size="sm" /> : 'Create Smart Account'}
+        </Button>
+      )}
     </ChainCard>
   )
 }
