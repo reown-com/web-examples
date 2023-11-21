@@ -3,12 +3,9 @@ import SettingsStore from '@/store/SettingsStore'
 import { truncate } from '@/utils/HelperUtil'
 import { updateSignClientChainId } from '@/utils/WalletConnectUtil'
 import { Avatar, Button, Text, Tooltip, Loading } from '@nextui-org/react'
-import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import Image from 'next/image'
 import { useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { createSmartAccount, sendTestTransaction, prefundSmartAccount } from '@/lib/SmartAccountLib'
-import { styledToast } from '@/utils/HelperUtil'
 
 interface Props {
   name: string

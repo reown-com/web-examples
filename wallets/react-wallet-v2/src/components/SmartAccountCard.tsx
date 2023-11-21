@@ -7,8 +7,7 @@ import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import Image from 'next/image'
 import { useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { createSmartAccount, sendTestTransaction, prefundSmartAccount } from '@/lib/SmartAccountLib'
-import { styledToast } from '@/utils/HelperUtil'
+import { getOrCreateSmartAccount } from '@/lib/SmartAccountLib'
 
 interface Props {
   name: string
@@ -46,18 +45,8 @@ export default function SmartAccountCard({
     try {
       setLoading(true)
       const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
-
-      const data = await createSmartAccount(signerPrivateKey)
-      console.log(`Step 1: Created Smart Account (addr: ${data.smartAccount.address})`)
-      styledToast(`Step 1: Created Smart Account (addr: ${data.smartAccount.address})`, 'success')
-
-      const prefundTxHash = await prefundSmartAccount(signerPrivateKey, data.smartAccountViemClient)
-      console.log(`Step 2: Prefunded Smart Account (tx: ${prefundTxHash})`)
-      styledToast(`Step 2: Prefunded Smart Account (tx: ${prefundTxHash})`, 'success')
-
-      const testTxHash = await sendTestTransaction(data.smartAccountViemClient)
-      console.log(`Step 3: Sent Vitalik Some $ (tx: ${testTxHash})`)
-      styledToast(`Step 3: Sent Vitalik Some $ (tx: ${testTxHash})`, 'success')
+      const { smartAccountViemClient } = await getOrCreateSmartAccount(signerPrivateKey)
+      console.log(smartAccountViemClient)
     } catch (error) {
       console.error(error)
     } finally {
