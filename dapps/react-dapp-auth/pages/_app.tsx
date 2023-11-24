@@ -8,7 +8,6 @@ import {
   Grid,
   GridItem,
   Image,
-  Text,
 } from "@chakra-ui/react";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 

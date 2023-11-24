@@ -23,6 +23,17 @@ export default function Navigation() {
         </a>
       </Link>
 
+      <Link href="/notifications" passHref>
+        <a className="navLink">
+          <Image
+            alt="notifications icon"
+            src="/icons/notification-icon.svg"
+            width={25}
+            height={25}
+          />
+        </a>
+      </Link>
+
       <Link href="/walletconnect" passHref>
         <a className="navLink">
           <Avatar

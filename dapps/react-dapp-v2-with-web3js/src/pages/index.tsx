@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { version } from "@walletconnect/universal-provider/package.json";
+import { RELAYER_SDK_VERSION as version } from "@walletconnect/core";
 import * as encoding from "@walletconnect/encoding";
 import { utils } from "ethers";
 import { TypedDataField } from "@ethersproject/abstract-signer";

@@ -1,10 +1,16 @@
+import toast from 'react-hot-toast'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
-import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
+import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
+import { NEAR_CHAINS, NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
+import { POLKADOT_CHAINS, TPolkadotChain } from '@/data/PolkadotData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
-import { ELROND_CHAINS, TElrondChain } from '@/data/ElrondData'
+import { TEZOS_CHAINS, TTezosChain } from '@/data/TezosData'
 import { TRON_CHAINS, TTronChain } from '@/data/TronData'
+import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
+
 import { utils } from 'ethers'
+import { Verify } from '@walletconnect/types'
 
 /**
  * Truncates string (in the middle) via given lenght value
@@ -112,17 +118,31 @@ export function isNearChain(chain: string) {
 }
 
 /**
- * Check if chain is part of ELROND standard
+ * Check if chain is part of KADENA standard
  */
-export function isElrondChain(chain: string) {
-  return chain.includes('elrond')
+export function isKadenaChain(chain: string) {
+  return chain.includes('kadena')
+}
+
+/**
+ * Check if chain is part of MULTIVERSX standard
+ */
+export function isMultiversxChain(chain: string) {
+  return chain.includes('mvx')
 }
 
 /**
  * Check if chain is part of TRON standard
  */
- export function isTronChain(chain: string) {
+export function isTronChain(chain: string) {
   return chain.includes('tron')
+}
+
+/**
+ * Check if chain is part of Tezos standard
+ */
+export function isTezosChain(chain: string) {
+  return chain.includes('tezos')
 }
 
 /**
@@ -130,12 +150,37 @@ export function isElrondChain(chain: string) {
  */
 export function formatChainName(chainId: string) {
   return (
-    EIP155_CHAINS[chainId as TEIP155Chain]?.name ??
     COSMOS_MAINNET_CHAINS[chainId as TCosmosChain]?.name ??
-    SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
+    EIP155_CHAINS[chainId as TEIP155Chain]?.name ??
+    MULTIVERSX_CHAINS[chainId as TMultiversxChain]?.name ??
     NEAR_TEST_CHAINS[chainId as TNearChain]?.name ??
-    ELROND_CHAINS[chainId as TElrondChain]?.name ??
+    POLKADOT_CHAINS[chainId as TPolkadotChain]?.name ??
+    SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
     TRON_CHAINS[chainId as TTronChain]?.name ??
+    TEZOS_CHAINS[chainId as TTezosChain]?.name ??
+    KADENA_CHAINS[chainId as TKadenaChain]?.name ??
     chainId
   )
+}
+
+export function styledToast(message: string, type: string) {
+  if (type === 'success') {
+    toast.success(message, {
+      position: 'bottom-left',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff'
+      }
+    })
+  } else if (type === 'error') {
+    toast.error(message, {
+      position: 'bottom-left',
+      style: {
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff'
+      }
+    })
+  }
 }

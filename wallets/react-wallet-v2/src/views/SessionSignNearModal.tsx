@@ -1,3 +1,7 @@
+import { transactions } from 'near-api-js'
+import { Divider, Text } from '@nextui-org/react'
+import { Fragment } from 'react'
+
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
 import RequestDetailsCard from '@/components/RequestDetalilsCard'
@@ -5,11 +9,12 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { approveNearRequest, rejectNearRequest } from '@/utils/NearRequestHandlerUtil'
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
-import { transactions } from 'near-api-js'
-import { Button, Divider, Modal, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
+import { styledToast } from '@/utils/HelperUtil'
+import ModalFooter from '@/components/ModalFooter'
+import VerifyInfobox from '@/components/VerifyInfobox'
+import RequestModal from './RequestModal'
 
 export default function SessionSignNearModal() {
   // Get request and wallet data from store
@@ -140,10 +145,15 @@ export default function SessionSignNearModal() {
   async function onApprove() {
     if (requestEvent) {
       const response = await approveNearRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await web3wallet.respondSessionRequest({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
@@ -152,40 +162,31 @@ export default function SessionSignNearModal() {
   async function onReject() {
     if (requestEvent) {
       const response = rejectNearRequest(requestEvent)
-      await signClient.respond({
-        topic,
-        response
-      })
+      try {
+        await web3wallet.respondSessionRequest({
+          topic,
+          response
+        })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        return
+      }
       ModalStore.close()
     }
   }
 
   return (
-    <Fragment>
-      <RequestModalContainer title="NEAR">
-        <ProjectInfoCard metadata={requestSession.peer.metadata} />
-
-        <Divider y={2} />
-
-        <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-
-        <Divider y={2} />
-
-        <RequestDataCard data={formatParams()} />
-
-        <Divider y={2} />
-
-        <RequestMethodCard methods={[request.method]} />
-      </RequestModalContainer>
-
-      <Modal.Footer>
-        <Button auto flat color="error" onClick={onReject}>
-          Reject
-        </Button>
-        <Button auto flat color="success" onClick={onApprove}>
-          Approve
-        </Button>
-      </Modal.Footer>
-    </Fragment>
+    <RequestModal
+      intention="sign NEAR message"
+      metadata={requestSession.peer.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+    >
+      <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <Divider y={1} />
+      <RequestDataCard data={formatParams()} />
+      <Divider y={1} />
+      <RequestMethodCard methods={[request.method]} />
+    </RequestModal>
   )
 }

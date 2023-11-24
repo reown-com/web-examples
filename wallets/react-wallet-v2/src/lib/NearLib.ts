@@ -7,8 +7,9 @@ import {
 } from 'near-api-js'
 import { AccessKeyView } from 'near-api-js/lib/providers/provider'
 
-import { signClient } from '@/utils/WalletConnectUtil'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
+import { Schema, serialize } from 'borsh'
 
 const MAX_ACCOUNTS = 2
 
@@ -63,6 +64,58 @@ interface SignAndSendTransactionsParams {
   transactions: Array<nearTransactions.Transaction>
 }
 
+export interface SignMessageParamsNEP {
+  message: string
+  recipient: string
+  nonce: Buffer
+  callbackUrl?: string
+  state?: string
+}
+
+interface SignMessageParams {
+  chainId: string
+  messageParams: SignMessageParamsNEP & {
+    accountId?: string
+  }
+}
+
+interface SignedMessage {
+  accountId: string
+  publicKey: string
+  signature: string
+  state?: string
+}
+
+export class MessagePayload {
+  tag: number
+  message: string
+  nonce: Buffer
+  recipient: string
+  callbackUrl?: string
+
+  constructor(data: SignMessageParamsNEP) {
+    // The tag's value is a hardcoded value as per
+    // defined in the NEP [NEP413](https://github.com/near/NEPs/blob/master/neps/nep-0413.md)
+    this.tag = 2147484061
+    this.message = data.message
+    this.nonce = data.nonce
+    this.recipient = data.recipient
+    if (data.callbackUrl) {
+      this.callbackUrl = data.callbackUrl
+    }
+  }
+}
+
+export const payloadSchema: Schema = {
+  struct: {
+    tag: 'u32',
+    message: 'string',
+    nonce: { array: { type: 'u8', len: 32 } },
+    recipient: 'string',
+    callbackUrl: { option: 'string' }
+  }
+}
+
 export class NearWallet {
   private networkId: string
   private keyStore: nearKeyStores.KeyStore
@@ -88,23 +141,21 @@ export class NearWallet {
     const accountId = `dev-${Date.now()}-${randomNumber}`
     const publicKey = keyPair.getPublicKey().toString()
 
-    return fetch(`https://helper.testnet.near.org/account`, {
+    fetch(`https://helper.testnet.near.org/account`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         newAccountId: accountId,
         newAccountPublicKey: publicKey
       })
-    }).then(res => {
-      if (res.ok) {
-        return {
-          accountId,
-          keyPair
-        }
-      }
-
-      throw new Error('Failed to create NEAR dev account')
+    }).catch(error => {
+      console.error('Failed to create NEAR dev account: ', error)
     })
+
+    return {
+      accountId,
+      keyPair
+    }
   }
 
   private constructor(networkId: string, keyStore: nearKeyStores.KeyStore) {
@@ -133,7 +184,7 @@ export class NearWallet {
   }
 
   private isAccountsValid(topic: string, accounts: Array<{ accountId: string }>) {
-    const session = signClient.session.get(topic)
+    const session = web3wallet.engine.signClient.session.get(topic)
     const validAccountIds = session.namespaces.near.accounts.map(accountId => {
       return accountId.split(':')[2]
     })
@@ -192,8 +243,7 @@ export class NearWallet {
   }
 
   async getAccounts({ topic }: GetAccountsParams): Promise<Array<Account>> {
-    const session = signClient.session.get(topic)
-
+    const session = web3wallet.engine.signClient.session.get(topic)
     return Promise.all(
       session.namespaces.near.accounts.map(async account => {
         const accountId = account.split(':')[2]
@@ -344,5 +394,36 @@ export class NearWallet {
     }
 
     return results
+  }
+
+  async signMessage({ chainId, messageParams }: SignMessageParams): Promise<SignedMessage> {
+    const { message, nonce, recipient, callbackUrl, state, accountId } = messageParams
+    const nonceArray = Buffer.from(nonce)
+
+    if (nonceArray.length !== 32) {
+      throw Error('Expected nonce to be a 32 bytes buffer')
+    }
+
+    const accounts = await this.getAllAccounts()
+    const account = accounts.find(acc => acc.accountId === accountId)
+
+    // If no accountId is provided in params default to the first accountId in accounts.
+    // in a real wallet it would default to the `active/selected` account
+    // this is because we should be able to use `signMessage` without `signIn`.
+    const accId = account ? account.accountId : accounts[0].accountId
+
+    const signer = new InMemorySigner(this.getKeyStore())
+    const networkId = chainId.split(':')[1]
+
+    // Create the message payload and sign it
+    const payload = new MessagePayload({ message, nonce: nonceArray, recipient, callbackUrl })
+    const encodedPayload = serialize(payloadSchema, payload)
+    const signed = await signer.signMessage(encodedPayload, accId, networkId)
+
+    return {
+      accountId: accId,
+      publicKey: signed.publicKey.toString(),
+      signature: Buffer.from(signed.signature).toString('base64')
+    }
   }
 }

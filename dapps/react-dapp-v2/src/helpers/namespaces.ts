@@ -10,10 +10,15 @@ import {
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_NEAR_METHODS,
   DEFAULT_NEAR_EVENTS,
-  DEFAULT_ELROND_EVENTS,
-  DEFAULT_ELROND_METHODS,
+  DEFAULT_KADENA_METHODS,
+  DEFAULT_KADENA_EVENTS,
+  DEFAULT_MULTIVERSX_EVENTS,
+  DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TRON_EVENTS,
+  DEFAULT_TEZOS_METHODS,
+  DEFAULT_TEZOS_EVENTS,
+  DEFAULT_EIP155_OPTIONAL_METHODS,
 } from "../constants";
 
 export const getNamespacesFromChains = (chains: string[]) => {
@@ -28,7 +33,7 @@ export const getNamespacesFromChains = (chains: string[]) => {
   return supportedNamespaces;
 };
 
-export const getSupportedMethodsByNamespace = (namespace: string) => {
+export const getSupportedRequiredMethodsByNamespace = (namespace: string) => {
   switch (namespace) {
     case "eip155":
       return Object.values(DEFAULT_EIP155_METHODS);
@@ -40,12 +45,38 @@ export const getSupportedMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_POLKADOT_METHODS);
     case "near":
       return Object.values(DEFAULT_NEAR_METHODS);
-    case "elrond":
-      return Object.values(DEFAULT_ELROND_METHODS);
-    case 'tron':
+    case "mvx":
+      return Object.values(DEFAULT_MULTIVERSX_METHODS);
+    case "tron":
       return Object.values(DEFAULT_TRON_METHODS);
+    case "tezos":
+      return Object.values(DEFAULT_TEZOS_METHODS);
+    case "kadena":
+      return Object.values(DEFAULT_KADENA_METHODS);
     default:
-      throw new Error(`No default methods for namespace: ${namespace}`);
+      throw new Error(
+        `No default required methods for namespace: ${namespace}`
+      );
+  }
+};
+
+export const getSupportedOptionalMethodsByNamespace = (namespace: string) => {
+  switch (namespace) {
+    case "eip155":
+      return Object.values(DEFAULT_EIP155_OPTIONAL_METHODS);
+    case "cosmos":
+    case "solana":
+    case "polkadot":
+    case "near":
+    case "mvx":
+    case "tron":
+    case "tezos":
+    case "kadena":
+      return [];
+    default:
+      throw new Error(
+        `No default optional methods for namespace: ${namespace}`
+      );
   }
 };
 
@@ -61,10 +92,14 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_POLKADOT_EVENTS);
     case "near":
       return Object.values(DEFAULT_NEAR_EVENTS);
-    case "elrond":
-      return Object.values(DEFAULT_ELROND_EVENTS);
+    case "mvx":
+      return Object.values(DEFAULT_MULTIVERSX_EVENTS);
     case "tron":
       return Object.values(DEFAULT_TRON_EVENTS);
+    case "tezos":
+      return Object.values(DEFAULT_TEZOS_EVENTS);
+    case "kadena":
+      return Object.values(DEFAULT_KADENA_EVENTS);
     default:
       throw new Error(`No default events for namespace: ${namespace}`);
   }
@@ -74,15 +109,33 @@ export const getRequiredNamespaces = (
   chains: string[]
 ): ProposalTypes.RequiredNamespaces => {
   const selectedNamespaces = getNamespacesFromChains(chains);
-  console.log("selected namespaces:", selectedNamespaces);
+  console.log("selected required namespaces:", selectedNamespaces);
 
   return Object.fromEntries(
     selectedNamespaces.map((namespace) => [
       namespace,
       {
-        methods: getSupportedMethodsByNamespace(namespace),
+        methods: getSupportedRequiredMethodsByNamespace(namespace),
         chains: chains.filter((chain) => chain.startsWith(namespace)),
         events: getSupportedEventsByNamespace(namespace) as any[],
+      },
+    ])
+  );
+};
+
+export const getOptionalNamespaces = (
+  chains: string[]
+): ProposalTypes.OptionalNamespaces => {
+  const selectedNamespaces = getNamespacesFromChains(chains);
+  console.log("selected optional namespaces:", selectedNamespaces);
+
+  return Object.fromEntries(
+    selectedNamespaces.map((namespace) => [
+      namespace,
+      {
+        methods: getSupportedOptionalMethodsByNamespace(namespace),
+        chains: chains.filter((chain) => chain.startsWith(namespace)),
+        events: [],
       },
     ])
   );

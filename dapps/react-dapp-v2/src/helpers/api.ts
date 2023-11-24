@@ -1,7 +1,10 @@
 import axios, { AxiosInstance } from "axios";
-import { AssetData } from "./types";
+import { apiGetKadenaAccountBalance } from "./kadena";
 
-const rpcProvidersByChainId: Record<number, any> = {
+import { AssetData } from "./types";
+import { PactCommand } from "@kadena/client";
+
+export const rpcProvidersByChainId: Record<number, any> = {
   1: {
     name: "Ethereum Mainnet",
     baseURL: "https://mainnet.infura.io/v3/5dc0df7abe4645dfb06a9a8c39ede422",
@@ -24,6 +27,22 @@ const rpcProvidersByChainId: Record<number, any> = {
     token: {
       name: "Matic",
       symbol: "MATIC",
+    },
+  },
+  280: {
+    name: "zkSync Era Testnet",
+    baseURL: "https://testnet.era.zksync.dev",
+    token: {
+      name: "Ether",
+      symbol: "ETH",
+    },
+  },
+  324: {
+    name: "zkSync Era",
+    baseURL: "https://mainnet.era.zksync.io",
+    token: {
+      name: "Ether",
+      symbol: "ETH",
     },
   },
   80001: {
@@ -105,10 +124,19 @@ export async function apiGetAccountBalance(
   address: string,
   chainId: string
 ): Promise<AssetData> {
-  const namespace = chainId.split(":")[0];  
-  if (namespace !== 'eip155') {
+  const [namespace, networkId] = chainId.split(":");
+
+  if (namespace === "kadena") {
+    return apiGetKadenaAccountBalance(
+      address,
+      networkId as PactCommand["networkId"]
+    );
+  }
+
+  if (namespace !== "eip155") {
     return { balance: "", symbol: "", name: "" };
   }
+
   const ethChainId = chainId.split(":")[1];
   const rpc = rpcProvidersByChainId[Number(ethChainId)];
   if (!rpc) {
