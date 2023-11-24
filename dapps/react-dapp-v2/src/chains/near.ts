@@ -1,10 +1,10 @@
 import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
-import { ChainsMap } from "caip-api";
 
 import {
   NamespaceMetadata,
   ChainMetadata,
   ChainRequestRender,
+  ChainsMap,
 } from "../helpers";
 
 export const NearMetadata: NamespaceMetadata = {
@@ -14,7 +14,6 @@ export const NearMetadata: NamespaceMetadata = {
   },
 };
 
-// TODO: add `near` namespace to `caip-api` package to avoid manual specification here.
 export const NearChainData: ChainsMap = {
   testnet: {
     name: "NEAR Testnet",
@@ -37,18 +36,11 @@ export function getChainMetadata(chainId: string): ChainMetadata {
 export function getChainRequestRender(
   request: JsonRpcRequest
 ): ChainRequestRender[] {
-  let params = [{ label: "Method", value: request.method }];
-
-  switch (request.method) {
-    default:
-      params = [
-        ...params,
-        {
-          label: "params",
-          value: JSON.stringify(request.params, null, "\t"),
-        },
-      ];
-      break;
-  }
-  return params;
+  return [
+    { label: "Method", value: request.method },
+    {
+      label: "params",
+      value: JSON.stringify(request.params, null, "\t"),
+    },
+  ];
 }

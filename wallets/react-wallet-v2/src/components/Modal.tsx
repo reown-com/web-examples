@@ -6,22 +6,33 @@ import SessionRequestModal from '@/views/SessionSignModal'
 import SessionSignNearModal from '@/views/SessionSignNearModal'
 import SessionSignPolkadotModal from '@/views/SessionSignPolkadotModal'
 import SessionSignSolanaModal from '@/views/SessionSignSolanaModal'
-import SessionSignElrondModal from '@/views/SessionSignElrondModal'
+import SessionSignMultiversxModal from '@/views/SessionSignMultiversxModal'
 import SessionSignTronModal from '@/views/SessionSignTronModal'
+import SessionSignTezosModal from '@/views/SessionSignTezosModal'
+import SessionSignKadenaModal from '@/views/SessionSignKadenaModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
-import LegacySessionProposalModal from '@/views/LegacySessionProposalModal'
-import LegacySessionSignModal from '@/views/LegacySessionSignModal'
-import LegacySessionSignTypedDataModal from '@/views/LegacySessionSignTypedDataModal'
-import LegacySessionSendTransactionModal from '@/views/LegacySessionSendTransactionModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
+import { useCallback } from 'react'
+import AuthRequestModal from '@/views/AuthRequestModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
+  // handle the modal being closed by click outside
+  const onClose = useCallback(() => {
+    if (open) {
+      ModalStore.close()
+    }
+  }, [open])
 
   return (
-    <NextModal blur open={open} style={{ border: '1px solid rgba(139, 139, 139, 0.4)' }}>
+    <NextModal
+      blur
+      onClose={onClose}
+      open={open}
+      style={{ border: '1px solid rgba(139, 139, 139, 0.4)' }}
+    >
       {view === 'SessionProposalModal' && <SessionProposalModal />}
       {view === 'SessionSignModal' && <SessionRequestModal />}
       {view === 'SessionSignTypedDataModal' && <SessionSignTypedDataModal />}
@@ -31,12 +42,11 @@ export default function Modal() {
       {view === 'SessionSignSolanaModal' && <SessionSignSolanaModal />}
       {view === 'SessionSignPolkadotModal' && <SessionSignPolkadotModal />}
       {view === 'SessionSignNearModal' && <SessionSignNearModal />}
-      {view === 'SessionSignElrondModal' && <SessionSignElrondModal />}
+      {view === 'SessionSignMultiversxModal' && <SessionSignMultiversxModal />}
       {view === 'SessionSignTronModal' && <SessionSignTronModal />}
-      {view === 'LegacySessionProposalModal' && <LegacySessionProposalModal />}
-      {view === 'LegacySessionSignModal' && <LegacySessionSignModal />}
-      {view === 'LegacySessionSignTypedDataModal' && <LegacySessionSignTypedDataModal />}
-      {view === 'LegacySessionSendTransactionModal' && <LegacySessionSendTransactionModal />}
+      {view === 'SessionSignTezosModal' && <SessionSignTezosModal />}
+      {view === 'SessionSignKadenaModal' && <SessionSignKadenaModal />}
+      {view === 'AuthRequestModal' && <AuthRequestModal />}
     </NextModal>
   )
 }

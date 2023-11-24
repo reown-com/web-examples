@@ -5,7 +5,7 @@ import { Fragment, ReactNode } from 'react'
  * Types
  */
 interface IProps {
-  title: string
+  title?: string
   children: ReactNode | ReactNode[]
 }
 
@@ -15,10 +15,11 @@ interface IProps {
 export default function RequestModalContainer({ children, title }: IProps) {
   return (
     <Fragment>
-      <Modal.Header>
-        <Text h3>{title}</Text>
-      </Modal.Header>
-
+      {title ? (
+        <Modal.Header>
+          <Text h3>{title}</Text>
+        </Modal.Header>
+      ) : null}
       <Modal.Body>
         <Container css={{ padding: 0 }}>{children}</Container>
       </Modal.Body>

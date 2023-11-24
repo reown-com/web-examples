@@ -1,7 +1,10 @@
 import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import { Web3Modal } from "@web3modal/standalone";
+import { RELAYER_EVENTS } from "@walletconnect/core";
+import toast from "react-hot-toast";
 
+import { PublicKey } from "@solana/web3.js";
 import {
   createContext,
   ReactNode,
@@ -9,11 +12,11 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
   useRef,
+  useState,
 } from "react";
-import { PublicKey } from "@solana/web3.js";
 
+import { getAppMetadata, getSdkError } from "@walletconnect/utils";
 import {
   DEFAULT_APP_METADATA,
   DEFAULT_LOGGER,
@@ -21,9 +24,11 @@ import {
   DEFAULT_RELAY_URL,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
-import { getAppMetadata, getSdkError } from "@walletconnect/utils";
+import {
+  getOptionalNamespaces,
+  getRequiredNamespaces,
+} from "../helpers/namespaces";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
-import { getRequiredNamespaces } from "../helpers/namespaces";
 
 /**
  * Types
@@ -43,6 +48,7 @@ interface IContext {
   isFetchingBalances: boolean;
   setChains: any;
   setRelayerRegion: any;
+  origin: string;
 }
 
 /**
@@ -83,7 +89,7 @@ export function ClientContextProvider({
   const [relayerRegion, setRelayerRegion] = useState<string>(
     DEFAULT_RELAY_URL!
   );
-
+  const [origin, setOrigin] = useState<string>(getAppMetadata().url);
   const reset = () => {
     setSession(undefined);
     setBalances({});
@@ -100,6 +106,7 @@ export function ClientContextProvider({
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
           const assets = await apiGetAccountBalance(address, chainId);
+
           return { account, assets: [assets] };
         })
       );
@@ -127,6 +134,7 @@ export function ClientContextProvider({
       setChains(allNamespaceChains);
       setAccounts(allNamespaceAccounts);
       setSolanaPublicKeys(getPublicKeysFromAccounts(allNamespaceAccounts));
+
       await getAccountBalances(allNamespaceAccounts);
     },
     []
@@ -144,10 +152,15 @@ export function ClientContextProvider({
           "requiredNamespaces config for connect:",
           requiredNamespaces
         );
-
+        const optionalNamespaces = getOptionalNamespaces(chains);
+        console.log(
+          "optionalNamespaces config for connect:",
+          optionalNamespaces
+        );
         const { uri, approval } = await client.connect({
           pairingTopic: pairing?.topic,
           requiredNamespaces,
+          optionalNamespaces,
         });
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
@@ -167,6 +180,9 @@ export function ClientContextProvider({
         setPairings(client.pairing.getAll({ active: true }));
       } catch (e) {
         console.error(e);
+        toast.error((e as Error).message, {
+          position: "bottom-left",
+        });
         // ignore rejection
       } finally {
         // close modal in case it was open
@@ -190,11 +206,13 @@ export function ClientContextProvider({
         reason: getSdkError("USER_DISCONNECTED"),
       });
     } catch (error) {
-      console.error("SignClient.disconnect failed:", error);
-    } finally {
-      // Reset app state after disconnect.
-      reset();
+      toast.error((error as Error).message, {
+        position: "bottom-left",
+      });
+      return;
     }
+    // Reset app state after disconnect.
+    reset();
   }, [client, session]);
 
   const _subscribeToEvents = useCallback(
@@ -254,35 +272,86 @@ export function ClientContextProvider({
     [session, onSessionConnected]
   );
 
+  const _logClientId = useCallback(async (_client: Client) => {
+    if (typeof _client === "undefined") {
+      throw new Error("WalletConnect is not initialized");
+    }
+    try {
+      const clientId = await _client.core.crypto.getClientId();
+      console.log("WalletConnect ClientID: ", clientId);
+      localStorage.setItem("WALLETCONNECT_CLIENT_ID", clientId);
+    } catch (error) {
+      console.error(
+        "Failed to set WalletConnect clientId in localStorage: ",
+        error
+      );
+    }
+  }, []);
+
   const createClient = useCallback(async () => {
     try {
       setIsInitializing(true);
-
+      const claimedOrigin =
+        localStorage.getItem("wallet_connect_dapp_origin") || origin;
       const _client = await Client.init({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
-        metadata: getAppMetadata() || DEFAULT_APP_METADATA,
+        metadata: {
+          ...(getAppMetadata() || DEFAULT_APP_METADATA),
+          url: claimedOrigin,
+          verifyUrl:
+            claimedOrigin === "unknown"
+              ? "http://non-existent-url"
+              : DEFAULT_APP_METADATA.verifyUrl, // simulates `UNKNOWN` verify context
+        },
       });
 
-      console.log("CREATED CLIENT: ", _client);
-      console.log("relayerRegion ", relayerRegion);
       setClient(_client);
+      setOrigin(_client.metadata.url);
       prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
+      await _logClientId(_client);
     } catch (err) {
       throw err;
     } finally {
       setIsInitializing(false);
     }
-  }, [_checkPersistedState, _subscribeToEvents, relayerRegion]);
+  }, [
+    _checkPersistedState,
+    _subscribeToEvents,
+    _logClientId,
+    relayerRegion,
+    origin,
+  ]);
 
   useEffect(() => {
-    if (!client || prevRelayerValue.current !== relayerRegion) {
+    if (!client) {
       createClient();
+    } else if (
+      prevRelayerValue.current &&
+      prevRelayerValue.current !== relayerRegion
+    ) {
+      client.core.relayer.restartTransport(relayerRegion);
+      prevRelayerValue.current = relayerRegion;
     }
-  }, [client, createClient, relayerRegion]);
+  }, [createClient, relayerRegion, client]);
+
+  useEffect(() => {
+    if (!client) return;
+    client.core.relayer.on(RELAYER_EVENTS.connect, () => {
+      toast.success("Network connection is restored!", {
+        position: "bottom-left",
+      });
+    });
+
+    client.core.relayer.on(RELAYER_EVENTS.disconnect, () => {
+      toast.error("Network connection lost.", {
+        position: "bottom-left",
+      });
+    });
+  }, [client]);
 
   const value = useMemo(
     () => ({
@@ -300,6 +369,7 @@ export function ClientContextProvider({
       disconnect,
       setChains,
       setRelayerRegion,
+      origin,
     }),
     [
       pairings,
@@ -316,6 +386,7 @@ export function ClientContextProvider({
       disconnect,
       setChains,
       setRelayerRegion,
+      origin,
     ]
   );
 

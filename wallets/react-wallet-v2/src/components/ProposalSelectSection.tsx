@@ -9,6 +9,7 @@ interface IProps {
   addresses: string[]
   selectedAddresses: string[] | undefined
   onSelect: (chain: string, address: string) => void
+  isRequired: boolean
 }
 
 /**
@@ -18,7 +19,8 @@ export default function ProposalSelectSection({
   addresses,
   selectedAddresses,
   chain,
-  onSelect
+  onSelect,
+  isRequired,
 }: IProps) {
   return (
     <Row>
@@ -30,7 +32,8 @@ export default function ProposalSelectSection({
             address={address}
             index={index}
             onSelect={() => onSelect(chain, address)}
-            selected={selectedAddresses?.includes(address) ?? false}
+            selected={selectedAddresses?.includes(address) ?? false}          
+            isRequired={isRequired}
           />
         ))}
       </Col>
