@@ -960,17 +960,16 @@
     "@json-rpc-tools/types" "^1.7.6"
     "@pedrouid/environment" "^1.0.1"
 
-"@kadena/cryptography-utils@^0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@kadena/cryptography-utils/-/cryptography-utils-0.3.2.tgz#4fa6d26bc6e67709507a2c8935480e2331629bbd"
-  integrity sha512-+z1liOA5TDEBEPvpKKCTG43jVtPV8jr3godoyUpu/aCcNB48Wk/BzzV1vCjFaNFb8P6s9UtTW0NO9EsV5JZsTw==
+"@kadena/cryptography-utils@^0.4.0":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@kadena/cryptography-utils/-/cryptography-utils-0.4.2.tgz#00b13ad4db91afbcde43c309d03c309ba8e40a86"
+  integrity sha512-4OdFS7fDYkvhq89JHj0kB8qHBk19hgbX5UN/959ibv6mtMvBjNgq/MVT3Fa146wgFqAHVySyzWi8pSeD9Qzk1A==
   dependencies:
-    "@kadena/types" "0.3.2"
     blakejs "^1.2.1"
     buffer "^6.0.3"
     tweetnacl "^1.0.3"
 
-"@kadena/types@0.3.2", "@kadena/types@^0.3.2":
+"@kadena/types@^0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.3.2.tgz#7245110735d984d72fe1d4fc65ce94924fab85e1"
   integrity sha512-xgdbILZdZk5i6Kq7yVuCyhKYU8YY7F5S14xlePOQRN7kUex5Io9faAhHmMnpTzeMqpdMnv7qWKZ8zXaBLkv4oA==
