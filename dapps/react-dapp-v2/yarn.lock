@@ -2176,10 +2176,10 @@
   resolved "https://registry.yarnpkg.com/@multiversx/sdk-bls-wasm/-/sdk-bls-wasm-0.3.5.tgz#2e83308fdc7a0928c6d5a7f910d796fd8eb2d90b"
   integrity sha512-c0tIdQUnbBLSt6NYU+OpeGPYdL0+GV547HeHT8Xc0BKQ7Cj0v82QUoA2QRtWrR1G4MNZmLsIacZSsf6DrIS2Bw==
 
-"@multiversx/sdk-core@12.8.0":
-  version "12.8.0"
-  resolved "https://registry.yarnpkg.com/@multiversx/sdk-core/-/sdk-core-12.8.0.tgz#a30687bc562f1bcd9f95e75fa2857409cb8e777f"
-  integrity sha512-+XtnwQ/dUaXrpu/GCNud7r5AaQtNKRVqeKnjVUoKKHr14ohXbg9FW2Xx7IrJvehEMupjdx+6phR+nAXR60bIbQ==
+"@multiversx/sdk-core@12.15.0":
+  version "12.15.0"
+  resolved "https://registry.yarnpkg.com/@multiversx/sdk-core/-/sdk-core-12.15.0.tgz#98549bf8e7d1bf3a32e54e23697683340b21dd7d"
+  integrity sha512-PdjKxGeYBCDksKhsy/JSeH6dLUdK9RtLPbfk5nvO1+2fXJj9fmaGaM1347U8hqE30CVEYS/jl6alzuKbBS8TZg==
   dependencies:
     "@multiversx/sdk-transaction-decoder" "1.0.2"
     bech32 "1.1.4"
