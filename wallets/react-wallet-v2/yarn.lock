@@ -974,10 +974,10 @@
     buffer "^6.0.3"
     tweetnacl "^1.0.3"
 
-"@kadena/types@^0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.3.2.tgz#7245110735d984d72fe1d4fc65ce94924fab85e1"
-  integrity sha512-xgdbILZdZk5i6Kq7yVuCyhKYU8YY7F5S14xlePOQRN7kUex5Io9faAhHmMnpTzeMqpdMnv7qWKZ8zXaBLkv4oA==
+"@kadena/types@^0.5.0":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.5.2.tgz#46fb45ceaaba67763e220e499c82361c96fa80c3"
+  integrity sha512-sCTCBKQXb5LF427FiPYQcRpwmcRSIyY6Mkc2VMpy8tkddyxn/Szo6IQdbzzqOdbA7cM75FAVrQ8nTrLyHi9D2g==
 
 "@material-ui/core@^4.12.4":
   version "4.12.4"
