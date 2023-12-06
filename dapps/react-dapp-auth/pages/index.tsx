@@ -114,7 +114,9 @@ const Home: NextPage = () => {
       {view === "default" && (
         <DefaultView onClick={onSignIn} hasInitialized={hasInitialized} />
       )}
-      {view === "signedIn" && <SignedInView address={address} />}
+      {view === "signedIn" && (
+        <SignedInView address={address} client={client} />
+      )}
     </Box>
   );
 };

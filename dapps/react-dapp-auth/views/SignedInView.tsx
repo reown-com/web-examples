@@ -12,8 +12,12 @@ import truncate from "smart-truncate";
 import { providers } from "ethers";
 
 import { useCallback, useEffect, useState } from "react";
+import { AuthClient } from "@walletconnect/auth-client/dist/types/client";
 
-const SignedInView: React.FC<{ address: string }> = ({ address }) => {
+const SignedInView: React.FC<{
+  address: string;
+  client: AuthClient | null | undefined;
+}> = ({ address, client }) => {
   const [balance, setBalance] = useState<string>();
   const [avatar, setAvatar] = useState<string | null>();
   const [isLoading, setLoading] = useState<boolean>(false);
@@ -39,6 +43,19 @@ const SignedInView: React.FC<{ address: string }> = ({ address }) => {
     window.location.reload();
   }, []);
 
+  const onPairingDisconnect = useCallback(async () => {
+    console.log("Disconnecting", client);
+    console.log(client?.core.pairing.getPairings());
+    await client?.core.pairing.disconnect({
+      topic:
+        client.core.pairing.getPairings()[
+          client.core.pairing.getPairings().length - 1
+        ].topic,
+    });
+    console.log("Disconnected");
+    console.log(client?.core.pairing.getPairings());
+    window.location.reload();
+  }, [client]);
   return (
     <Box className="bg-secondary" borderRadius={"24px"} padding="2em">
       <Flex flexDir={"column"} gap="5">
@@ -106,6 +123,15 @@ const SignedInView: React.FC<{ address: string }> = ({ address }) => {
             onClick={onSignOut}
           >
             Sign Out
+          </Button>
+          <Button
+            width={"100%"}
+            className="wc-button"
+            padding={"1.5em"}
+            borderRadius={"16px"}
+            onClick={onPairingDisconnect}
+          >
+            Disconnect pairing
           </Button>
         </Flex>
       </Flex>
