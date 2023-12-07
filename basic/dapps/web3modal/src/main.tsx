@@ -1,34 +1,32 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import {
-  EthereumClient,
-  w3mConnectors,
-  w3mProvider,
-} from "@web3modal/ethereum";
-import { Web3Modal, Web3Button } from "@web3modal/react";
-import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { arbitrum, mainnet, polygon } from "wagmi/chains";
+import React from "react"
+import ReactDOM from "react-dom/client"
+import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi/react'
 
-// 1. select chains
-const chains = [arbitrum, mainnet, polygon];
-const projectId = import.meta.env.VITE_PROJECT_ID;
+import { WagmiConfig } from 'wagmi'
+import { arbitrum, mainnet } from 'viem/chains'
 
-// 2. generate wagmiConfig with w3mConnectors
-const { publicClient } = configureChains(chains, [w3mProvider({ projectId })]);
-const wagmiConfig = createConfig({
-  autoConnect: true,
-  connectors: w3mConnectors({ projectId, chains }),
-  publicClient,
-});
+// 1. Get projectId at https://cloud.walletconnect.com
+const projectId = import.meta.env.VITE_PROJECT_ID
+if(!projectId) throw new Error("Project ID is undefined")
 
-// 3. create ethereumClient
-const ethereumClient = new EthereumClient(wagmiConfig, chains);
+// 2. Create wagmiConfig
+const metadata = {
+  name: 'Web3Modal',
+  description: 'Web3Modal Example',
+  url: 'https://web3modal.com',
+  icons: ['https://avatars.githubusercontent.com/u/37784886']
+}
+
+const chains = [mainnet, arbitrum]
+const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata })
+
+// 3. Create modal
+createWeb3Modal({ wagmiConfig, projectId, chains })
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <WagmiConfig config={wagmiConfig}>
-      <Web3Button />
+      <w3m-button/>
     </WagmiConfig>
-    <Web3Modal projectId={projectId} ethereumClient={ethereumClient} />
   </React.StrictMode>
-);
+)
