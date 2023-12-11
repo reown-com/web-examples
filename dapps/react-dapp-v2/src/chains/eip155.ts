@@ -19,6 +19,7 @@ export const EIP155Colors = {
   zksync: "90, 90, 90",
   celo: "60, 203, 132",
   arbitrum: "44, 55, 75",
+  shimmerEvm: "23, 225, 213",
 };
 
 export const EIP155ChainData: ChainsMap = {
@@ -127,6 +128,20 @@ export const EIP155ChainData: ChainsMap = {
     slip44: 60,
     testnet: true,
   },
+  "148": {
+    name: "ShimmerEVM Mainnet",
+    id: "eip155:148",
+    rpc: ["https://json-rpc.evm.shimmer.network"],
+    slip44: 60,
+    testnet: false,
+  },
+  "1073": {
+    name: "ShimmerEVM Testnet",
+    id: "eip155:1073",
+    rpc: ["https://json-rpc.evm.testnet.shimmer.network"],
+    slip44: 60,
+    testnet: true,
+  },
 };
 
 export const EIP155Metadata: NamespaceMetadata = {
@@ -192,6 +207,14 @@ export const EIP155Metadata: NamespaceMetadata = {
   "421611": {
     logo: BLOCKCHAIN_LOGO_BASE_URL + "eip155:421611.png",
     rgb: EIP155Colors.arbitrum,
+  },
+  "148": {
+    logo: "/assets/eip155-148.svg",
+    rgb: EIP155Colors.shimmerEvm,
+  },
+  "1073": {
+    logo: "/assets/eip155-1073.svg",
+    rgb: EIP155Colors.shimmerEvm,
   },
 };
 export function getChainMetadata(chainId: string): ChainMetadata {
