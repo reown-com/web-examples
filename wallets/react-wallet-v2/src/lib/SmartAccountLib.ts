@@ -1,137 +1,158 @@
 import { createSmartAccountClient } from 'permissionless'
 import { privateKeyToSafeSmartAccount } from 'permissionless/accounts'
-import { goerli } from 'viem/chains'
+import * as chains from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
-import { createWalletClient, etherUnits, formatEther } from 'viem'
+import { Chain, createWalletClient, formatEther, createPublicClient, http } from 'viem'
 import { createPimlicoBundlerClient } from 'permissionless/clients/pimlico'
-import { createPublicClient, http } from 'viem'
 
 // -- Helpers --------------------------------------------------------------------------------------
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID
 const pimlicoKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
-
+type SmartAccountEnabledChains = 'sepolia' | 'goerli'
 // -- RPC CLient -----------------------------------------------------------------------------------
-export const pimlicoBundlerTransport = http(
-  `https://api.pimlico.io/v1/goerli/rpc?apikey=${pimlicoKey}`,
-  { retryDelay: 1000 }
-)
 
-export const walletConnectTransport = http(
-  `https://rpc.walletconnect.com/v1/?chainId=EIP155:5&projectId=${projectId}`,
-  { retryDelay: 1000 }
-)
+const getWalletConnectTransport = (chain: Chain) => {
+  return http(
+    `https://rpc.walletconnect.com/v1/?chainId=EIP155:${chain.id}&projectId=${projectId}`,
+    { retryDelay: 1000 }
+  )
+}
 
-export const publicClient = createPublicClient({
-  chain: goerli,
-  transport: walletConnectTransport
-})
+const getPimlicoBundlerTransport = (chain: Chain) => {
+  return http(
+    `https://api.pimlico.io/v1/${chain.name.toLowerCase()}/rpc?apikey=${pimlicoKey}`,
+    { retryDelay: 1000 }
+  );
+}
 
-export const bundlerClient = createPimlicoBundlerClient({
-  chain: goerli,
-  transport: pimlicoBundlerTransport
-})
+const createRPCClients = (chainName: SmartAccountEnabledChains) => {
+  const chain = chains[chainName] as Chain
+  const pimlicoBundlerTransport = getPimlicoBundlerTransport(chain)
+  const walletConnectTransport = getWalletConnectTransport(chain)
 
-// -- Smart Account --------------------------------------------------------------------------------
-export async function getSmartAccount(signerPrivateKey: `0x${string}`) {
-  // Step 1: Create smart account details and client
+  const publicClient = createPublicClient({
+    chain: chain,
+    transport: walletConnectTransport
+  })
+
+  const bundlerClient = createPimlicoBundlerClient({
+    chain: chain,
+    transport: pimlicoBundlerTransport
+  })
+
+  return {
+    bundlerClient,
+    publicClient,
+  }
+}
+
+
+
+// -- CLients -----------------------------------------------------------------------------------
+export const getSignerClient = (signerPrivateKey: `0x${string}`, chainName: SmartAccountEnabledChains) => {
+  const chain = chains[chainName] as Chain
+  const signerAccount = privateKeyToAccount(signerPrivateKey)
+  return createWalletClient({
+    account: signerAccount,
+    chain,
+    transport: getWalletConnectTransport(chain)
+  })
+}
+
+export const getSmartAccountClient = async (signerPrivateKey: `0x${string}`, chainName: SmartAccountEnabledChains) => {
+  const chain = chains[chainName] as Chain
+  const { publicClient } = createRPCClients(chainName)
+
   const smartAccount = await privateKeyToSafeSmartAccount(publicClient, {
     privateKey: signerPrivateKey,
     safeVersion: '1.4.1',
     entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
   })
-  const smartAccountViemClient = createSmartAccountClient({
+
+  return createSmartAccountClient({
     account: smartAccount,
-    chain: goerli,
-    transport: pimlicoBundlerTransport
+    chain,
+    transport: getPimlicoBundlerTransport(chain)
   })
-  console.log(`Created Smart Account ${smartAccount.address}`)
+}
 
-  // Step 2: Check if smart account is deployed
-  const bytecode = await publicClient.getBytecode({ address: smartAccount.address })
-  console.log(`Smart Account Bytecode: ${bytecode}`)
-  const isDeployed = Boolean(bytecode)
-  console.log(`Is Smart Account Deployed? ${isDeployed}`)
+// -- Smart Account Utils -----------------------------------------------------------------------------------
+export const prefundSmartAccount = async (address: `0x${string}`, signerPrivateKey: `0x${string}`, chainName: SmartAccountEnabledChains) => {
+  const { bundlerClient, publicClient } = createRPCClients(chainName)
+  const signerAccountViemClient = getSignerClient(signerPrivateKey, chainName);
+  const smartAccountBalance = await publicClient.getBalance({ address })
 
-  return {
-    smartAccountViemClient,
-    isDeployed,
-    deploy: async () => {
-      // Step 3: If not deployed, prefund smart account from signer
-      if (!isDeployed) {
-        // Step 3.1: Create signer account and client from private key
-        const signerAccount = privateKeyToAccount(signerPrivateKey)
-        const signerAccountViemClient = createWalletClient({
-          account: signerAccount,
-          chain: goerli,
-          transport: walletConnectTransport
-        })
+  console.log(`Smart Account Balance: ${formatEther(smartAccountBalance)} ETH`)
+  if (smartAccountBalance < 1n) {
+    console.log(`Smart Account has no balance. Starting prefund`)
+    const { fast: fastPrefund } = await bundlerClient.getUserOperationGasPrice()
+    const prefundHash = await signerAccountViemClient.sendTransaction({
+      to: address,
+      value: 10000000000000000n,
+      maxFeePerGas: fastPrefund.maxFeePerGas,
+      maxPriorityFeePerGas: fastPrefund.maxPriorityFeePerGas
+    })
 
-        // Step 3.2: Precalculate necessary prefund amount
-        // const data = await bundlerClient.getUserOperationGasPrice()
-        // const userOpe = await smartAccountViemClient.prepareUserOperationRequest()
+    await publicClient.waitForTransactionReceipt({ hash: prefundHash })
+    console.log(`Prefunding Success`)
 
-        // prepareUserOperationRequest(smartAccountViemClient, {
-        // })
-
-        // const { maxFeePerGas, preVerificationGas, verificationGasLimit, callGasLimit } =
-        //   smartAccountClient.userOp
-        // const prefundAmount =
-        //   maxFeePerGas * (preVerificationGas + 3 * verificationGasLimit + callGasLimit)
-
-        // Step 3.3: Send prefund transaction from signer to smart account if empty
-        const smartAccountBalance = await publicClient.getBalance({
-          address: smartAccountViemClient.account.address
-        })
-        console.log(`Smart Account Balance: ${formatEther(smartAccountBalance)} ETH`)
-        if (smartAccountBalance < 1n) {
-          console.log(`Smart Account has no balance. Starting prefund`)
-          const { fast: fastPrefund } = await bundlerClient.getUserOperationGasPrice()
-          const prefundHash = await signerAccountViemClient.sendTransaction({
-            to: smartAccountViemClient.account.address,
-            value: 10000000000000000n,
-            maxFeePerGas: fastPrefund.maxFeePerGas,
-            maxPriorityFeePerGas: fastPrefund.maxPriorityFeePerGas
-          })
-          console.log(`Prefunding Smart Account: ${prefundHash}`)
-          await publicClient.waitForTransactionReceipt({ hash: prefundHash })
-          console.log(`Prefunding Success`)
-          const newSmartAccountBalance = await publicClient.getBalance({
-            address: smartAccountViemClient.account.address
-          })
-          console.log(
-            `Smart Account Balance: ${formatEther(newSmartAccountBalance)} ETH`
-          )
-        }
-
-        // Step 4: Send test tx to Vitalik and create account
-        const { fast: testGas, } = await bundlerClient.getUserOperationGasPrice()
-        const transaction = {
-          to: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' as `0x${string}`,
-          value: 0n,
-          maxFeePerGas: testGas.maxFeePerGas,
-          maxPriorityFeePerGas: testGas.maxPriorityFeePerGas,
-          
-        };
-
-        // console.log(`Sending first tx with gas: maxFeePerGas: ${formatEther(testGas.maxFeePerGas)} maxPriorityFeePerGas: ${formatEther(testGas.maxPriorityFeePerGas)}`)
-        const testHash = await smartAccountViemClient.sendTransaction(transaction)
-        console.log(`Sending first tx: ${JSON.stringify(testHash, null, 2)}`)
-        await publicClient.waitForTransactionReceipt({ hash: testHash })
-        console.log(`Account Created`)
-      }
-    }
+    const newSmartAccountBalance = await publicClient.getBalance({ address })
+    console.log(
+      `Smart Account Balance: ${formatEther(newSmartAccountBalance)} ETH`
+    )
   }
 }
 
-// export async function sendTestTransaction(smartAccountViemClient: WalletClient) {
-//   // Send test transaction to vitalik
-//   const { fast } = await bundlerClient.getUserOperationGasPrice()
-//   const hash = await smartAccountViemClient.sendTransaction({
-//     to: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
-//     value: 0n,
-//     maxFeePerGas: fast.maxFeePerGas,
-//     maxPriorityFeePerGas: fast.maxPriorityFeePerGas
-//   })
+// By default first transaction will deploy the smart contract if it hasn't been deployed yet
+export const sendTestTransaction = async (signerPrivateKey: `0x${string}`, chainName: SmartAccountEnabledChains) => {
+  const { bundlerClient, publicClient } = createRPCClients(chainName)
+  const smartAccountClient = await getSmartAccountClient(signerPrivateKey, chainName);
+  const { fast: testGas, } = await bundlerClient.getUserOperationGasPrice()
 
-//   return hash
-// }
+  const testHash = await smartAccountClient.sendTransaction({
+    to: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' as `0x${string}`,
+    value: 0n,
+    maxFeePerGas: testGas.maxFeePerGas,
+    maxPriorityFeePerGas: testGas.maxPriorityFeePerGas,
+  })
+
+  await publicClient.waitForTransactionReceipt({ hash: testHash })
+  console.log(`Test Transaction Success`)
+}
+
+export const checkIfSmartAccountDeployed = async (address: `0x${string}`, chainName: SmartAccountEnabledChains) => {
+  const { publicClient } = createRPCClients(chainName)
+  const bytecode = await publicClient.getBytecode({ address })
+  return Boolean(bytecode)
+}
+
+export const deploySmartAccount = async (signerPrivateKey: `0x${string}`, chainName: SmartAccountEnabledChains) => {
+    const smartAccountClient = await getSmartAccountClient(signerPrivateKey, chainName);
+    const isDeployed = await checkIfSmartAccountDeployed(smartAccountClient?.account.address, chainName)
+    if (!isDeployed) {
+    // If not deployed, prefund smart account from signer
+      // Step 3: Send prefund transaction from signer to smart account if empty
+      await prefundSmartAccount(smartAccountClient.account.address, signerPrivateKey, chainName)
+
+      // Step 4: Create account by sending test tx
+      await sendTestTransaction(signerPrivateKey, chainName)
+      console.log(`Account Created`)
+    }
+  }
+
+// -- Smart Account --------------------------------------------------------------------------------
+export async function getSmartAccount(signerPrivateKey: `0x${string}`, chainName: SmartAccountEnabledChains) {
+  // Step 1: Create smart account details and client
+  const smartAccountClient = await getSmartAccountClient(signerPrivateKey, chainName); 
+  console.log(`Created Smart Account ${smartAccountClient.account.address}`)
+
+  // Step 2: Check if smart account is deployed
+  const isDeployed = await checkIfSmartAccountDeployed(smartAccountClient.account.address, chainName)
+  console.log(`Is Smart Account Deployed? ${isDeployed}`)
+
+  return {
+    smartAccountClient,
+    isDeployed,
+    deploySmartAccount,
+  }
+}

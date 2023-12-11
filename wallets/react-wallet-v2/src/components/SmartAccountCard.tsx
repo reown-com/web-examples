@@ -7,7 +7,7 @@ import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useSnapshot } from 'valtio'
-import { getSmartAccount } from '@/lib/SmartAccountLib'
+import { getSmartAccount, sendTestTransaction as notifyVitalik } from '@/lib/SmartAccountLib'
 
 interface Props {
   name: string
@@ -46,12 +46,12 @@ export default function SmartAccountCard({
     try {
       setLoading(true)
       const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
-      const { smartAccountViemClient, deploy, isDeployed } = await getSmartAccount(signerPrivateKey)
+      const { smartAccountClient, deploySmartAccount, isDeployed } = await getSmartAccount(signerPrivateKey, 'goerli')
       if (isDeployed) {
-        setSmartAccountAddress(smartAccountViemClient.account.address)
+        setSmartAccountAddress(smartAccountClient.account.address)
       } else {
-        await deploy()
-        setSmartAccountAddress(smartAccountViemClient.account.address)
+        await deploySmartAccount(signerPrivateKey, 'goerli')
+        setSmartAccountAddress(smartAccountClient.account.address)
       }
     } catch (error) {
       console.error(error)
@@ -62,12 +62,25 @@ export default function SmartAccountCard({
 
   const getFaucetUrl = () => `https://${name?.toLowerCase()?.replace('ethereum', '')?.trim()}faucet.com`
 
+  const sendTestTransaction = async () => {
+    console.log('sendTestTransaction')
+    const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
+    setLoading(true)
+    try {
+      await notifyVitalik(signerPrivateKey, 'goerli')
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     async function bootstrap() {
       const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
-      const { smartAccountViemClient, isDeployed } = await getSmartAccount(signerPrivateKey)
+      const { smartAccountClient, isDeployed } = await getSmartAccount(signerPrivateKey, 'goerli')
       if (isDeployed) {
-        setSmartAccountAddress(smartAccountViemClient.account.address)
+        setSmartAccountAddress(smartAccountClient.account.address)
       } else {
         setSmartAccountAddress(null)
       }
@@ -126,6 +139,13 @@ export default function SmartAccountCard({
           <Text small css={{ marginTop: 5 }}>
             {smartAccountAddress}
           </Text>
+          <Button
+            size="md"
+            css={{ marginTop: 20, width: '100%' }}
+            onClick={sendTestTransaction}
+          >
+            Send Test TX
+          </Button>
         </>
       ) : (
         <>
