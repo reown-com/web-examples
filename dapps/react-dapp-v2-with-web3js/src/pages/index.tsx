@@ -13,7 +13,7 @@ import Modal from "./../components/Modal";
 import { DEFAULT_MAIN_CHAINS, DEFAULT_TEST_CHAINS } from "./../constants";
 import {
   AccountAction,
-  eip712,
+  generateEip712Message,
   getLocalStorageTestnetFlag,
   setLocaleStorageTestnetFlag,
 } from "./../helpers";
@@ -188,7 +188,9 @@ export default function App() {
       throw new Error("web3Provider.currentProvider is not set");
     }
 
-    const message = JSON.stringify(eip712.example);
+    const chainId = await web3Provider.eth.getChainId();
+    const eip712Message = generateEip712Message(chainId);
+    const message = JSON.stringify(eip712Message);
 
     const [address] = await web3Provider.eth.getAccounts();
 
@@ -208,11 +210,11 @@ export default function App() {
     // will throw due to "unused" `EIP712Domain` type.
     // See: https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
     const { EIP712Domain, ...nonDomainTypes }: Record<string, TypedDataField[]> =
-      eip712.example.types;
+      eip712Message.types;
 
     const valid =
       utils
-        .verifyTypedData(eip712.example.domain, nonDomainTypes, eip712.example.message, signature)
+        .verifyTypedData(eip712Message.domain, nonDomainTypes, eip712Message.message, signature)
         .toLowerCase() === address.toLowerCase();
 
     return {
