@@ -60,6 +60,8 @@ export default function SmartAccountCard({
     }
   }
 
+  const getFaucetUrl = () => `https://${name?.toLowerCase()?.replace('ethereum', '')?.trim()}faucet.com`
+
   useEffect(() => {
     async function bootstrap() {
       const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
@@ -131,9 +133,9 @@ export default function SmartAccountCard({
             disabled={!isActiveChain || loading}
             size="sm"
             css={{ marginTop: 20, width: '100%' }}
-            onClick={() => window.open('https://sepoliafaucet.com', '_blank')}
+            onClick={() => window.open(getFaucetUrl(), '_blank')}
           >
-            Sepolia Faucet
+            {name} Faucet
           </Button>
           <Button
             disabled={!isActiveChain || loading}

@@ -36,8 +36,8 @@ export default function HomePage() {
           <Text h4 css={{ marginBottom: '$5' }}>
             Testnets
           </Text>
-          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb, chainId }]) => {
-            if (chainId === 11155111) {
+          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb, chainId, smartAccountEnabled }]) => {
+            if (smartAccountEnabled) {
               return (
                 <SmartAccountCard
                   key={name}
@@ -47,7 +47,7 @@ export default function HomePage() {
                   address={eip155Address}
                   chainId={caip10.toString()}
                   data-testid={'chain-card-' + caip10.toString()}
-                  isActiveChain={activeChainId === `eip155:${11155111}`}
+                  isActiveChain={activeChainId === `eip155:${chainId}`}
                 />
               )
             }
