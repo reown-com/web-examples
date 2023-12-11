@@ -16,6 +16,7 @@ interface State {
   tronAddress: string
   tezosAddress: string
   kadenaAddress: string
+  xrplAddress: string
   relayerRegionURL: string
   activeChainId: string
   currentRequestVerifyContext?: Verify.Context
@@ -37,6 +38,7 @@ const state = proxy<State>({
   tronAddress: '',
   tezosAddress: '',
   kadenaAddress: '',
+  xrplAddress: '',
   relayerRegionURL: ''
 })
 
@@ -70,6 +72,9 @@ const SettingsStore = {
   },
   setKadenaAddress(kadenaAddress: string) {
     state.kadenaAddress = kadenaAddress
+  },
+  setXrplAddress(xrplAddress: string) {
+    state.xrplAddress = xrplAddress
   },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL

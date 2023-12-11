@@ -10,6 +10,7 @@ import { TRON_MAINNET_CHAINS, TRON_TEST_CHAINS } from '@/data/TronData'
 import { NEAR_TEST_CHAINS } from '@/data/NEARData'
 import { TEZOS_MAINNET_CHAINS, TEZOS_TEST_CHAINS } from '@/data/TezosData'
 import { KADENA_MAINNET_CHAINS, KADENA_TEST_CHAINS } from '@/data/KadenaData'
+import { XRPL_MAINNET_CHAINS, XRPL_TESTNET_CHAINS } from '@/data/XRPLData'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
@@ -26,7 +27,8 @@ export default function HomePage() {
     multiversxAddress,
     tronAddress,
     tezosAddress,
-    kadenaAddress
+    kadenaAddress,
+    xrplAddress,
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -125,6 +127,16 @@ export default function HomePage() {
           data-testid={'chain-card-' + caip10.toString()}
         />
       ))}
+      {Object.entries(XRPL_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb} address={xrplAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
+      ))}
 
       {testNets ? (
         <Fragment>
@@ -215,6 +227,17 @@ export default function HomePage() {
               logo={logo}
               rgb={rgb}
               address={kadenaAddress}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
+          ))}
+          {Object.entries(XRPL_TESTNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={xrplAddress}
               chainId={caip10}
               data-testid={'chain-card-' + caip10.toString()}
             />

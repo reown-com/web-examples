@@ -8,6 +8,7 @@ import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { TEZOS_CHAINS, TTezosChain } from '@/data/TezosData'
 import { TRON_CHAINS, TTronChain } from '@/data/TronData'
 import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
+import { TXRPLChain, XRPL_CHAINS } from '@/data/XRPLData'
 
 import { utils } from 'ethers'
 import { Verify } from '@walletconnect/types'
@@ -146,6 +147,13 @@ export function isTezosChain(chain: string) {
 }
 
 /**
+ * Check if chain is part of XRPL standard
+ */
+export function isXrplChain(chain: string) {
+  return chain.includes('xrpl')
+}
+
+/**
  * Formats chainId to its name
  */
 export function formatChainName(chainId: string) {
@@ -159,6 +167,7 @@ export function formatChainName(chainId: string) {
     TRON_CHAINS[chainId as TTronChain]?.name ??
     TEZOS_CHAINS[chainId as TTezosChain]?.name ??
     KADENA_CHAINS[chainId as TKadenaChain]?.name ??
+    XRPL_CHAINS[chainId as TXRPLChain]?.name ??
     chainId
   )
 }

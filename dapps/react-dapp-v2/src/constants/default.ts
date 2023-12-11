@@ -19,6 +19,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "tron:0x2b6653dc",
   "tezos:mainnet",
   "kadena:mainnet01",
+  "xrpl:0",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -36,6 +37,7 @@ export const DEFAULT_TEST_CHAINS = [
   "tron:0xcd8690dc",
   "tezos:testnet",
   "kadena:testnet04",
+  "xrpl:1",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -168,7 +170,20 @@ export enum DEFAULT_KADENA_METHODS {
   KADENA_QUICKSIGN = "kadena_quicksign_v1",
 }
 
-export enum DEFAULT_KADENA_EVENTS {}
+export enum DEFAULT_KADENA_EVENTS { }
+
+/**
+ * XRPL
+ */
+export enum DEFAULT_XRPL_METHODS {
+  XRPL_SIGN_TRANSACTION = "xrpl_signTransaction",
+}
+
+export enum DEFAULT_XRPL_OPTIONAL_METHODS {
+  XRPL_SIGN_TRANSACTION_FOR = "xrpl_signTransactionFor",
+}
+
+export enum DEFAULT_XRPL_EVENTS { }
 
 export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
   {

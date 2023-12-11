@@ -17,6 +17,7 @@ import { tezosAddresses } from '@/utils/TezosWalletUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
+import { xrplAddresses } from '@/utils/XrplWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
@@ -28,6 +29,7 @@ import { POLKADOT_CHAINS, POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
 import { SOLANA_CHAINS, SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
 import { TEZOS_CHAINS, TEZOS_SIGNING_METHODS } from '@/data/TezosData'
 import { TRON_CHAINS, TRON_SIGNING_METHODS } from '@/data/TronData'
+import { XRPL_CHAINS, XRPL_SIGNING_METHODS } from '@/data/XRPLData'
 import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
@@ -82,6 +84,10 @@ export default function SessionProposalModal() {
     // tron
     const tronChains = Object.keys(TRON_CHAINS)
     const tronMethods = Object.values(TRON_SIGNING_METHODS)
+
+    // xrpl
+    const xrplChains = Object.keys(XRPL_CHAINS)
+    const xrplMethods = Object.values(XRPL_SIGNING_METHODS)
 
     return {
       eip155: {
@@ -143,6 +149,12 @@ export default function SessionProposalModal() {
         methods: tronMethods,
         events: [],
         accounts: tronChains.map(chain => `${chain}:${tronAddresses[0]}`)
+      },
+      xrpl: {
+        chains: xrplChains,
+        methods: xrplMethods,
+        events: [],
+        accounts: xrplChains.map(chain => `${chain}:${xrplAddresses[0]}`)
       }
     }
   }, [])
@@ -210,6 +222,8 @@ export default function SessionProposalModal() {
         return tezosAddresses[0]
       case 'tron':
         return tronAddresses[0]
+      case 'xrpl':
+        return xrplAddresses[0]
     }
   }, [])
 

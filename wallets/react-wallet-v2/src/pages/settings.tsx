@@ -7,6 +7,7 @@ import { solanaWallets } from '@/utils/SolanaWalletUtil'
 import { multiversxWallets } from '@/utils/MultiversxWalletUtil'
 import { tronWallets } from '@/utils/TronWalletUtil'
 import { kadenaWallets } from '@/utils/KadenaWalletUtil'
+import { xrplWallets } from '@/utils/XrplWalletUtil'
 import { Card, Divider, Row, Switch, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
@@ -22,7 +23,8 @@ export default function SettingsPage() {
     multiversxAddress,
     tronAddress,
     tezosAddress,
-    kadenaAddress
+    kadenaAddress,
+    xrplAddress,
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -116,6 +118,13 @@ export default function SettingsPage() {
       </Text>
       <Card bordered borderWeight="light" css={{ wordWrap: 'break-word' }}>
         <Text css={{ fontFamily: '$mono' }}>{kadenaWallets[kadenaAddress].getSecretKey()}</Text>
+      </Card>
+
+      <Text h4 css={{ marginTop: '$10', marginBottom: '$5' }}>
+        XRPL Seed
+      </Text>
+      <Card bordered borderWeight="light" css={{ minHeight: '100px' }}>
+        <Text css={{ fontFamily: '$mono' }}>{xrplWallets[xrplAddress].seed}</Text>
       </Card>
 
       <Text h4 css={{ marginTop: '$10', marginBottom: '$5' }}></Text>
