@@ -76,15 +76,11 @@ export default function SmartAccountCard({
   }
 
   useEffect(() => {
-    async function bootstrap() {
-      if (isDeployed) {
-        setSmartAccountAddress(client?.account?.address!)
-      } else {
-        setSmartAccountAddress(null)
-      }
+    if (isDeployed) {
+      setSmartAccountAddress(client?.account?.address!)
+    } else {
+      setSmartAccountAddress(null)
     }
-
-    bootstrap()
   }, [isDeployed, client?.account?.address])
 
   return (
