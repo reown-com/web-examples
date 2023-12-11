@@ -9,13 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@cosmjs/amino": "0.31.1",
-    "@cosmjs/encoding": "0.31.1",
-    "@cosmjs/proto-signing": "0.31.1",
+    "@cosmjs/amino": "0.32.0",
+    "@cosmjs/encoding": "0.32.0",
+    "@cosmjs/proto-signing": "0.32.0",
     "@json-rpc-tools/utils": "1.7.6",
     "@nextui-org/react": "1.0.8-beta.5",
     "@solana/web3.js": "1.78.4",
-    "@walletconnect/chat-client": "^0.7.0",
+    "@walletconnect/chat-client": "^0.8.0",
     "@walletconnect/core": "2.10.0",
     "@walletconnect/logger": "^2.0.1",
     "@walletconnect/sign-client": "2.10.0",
