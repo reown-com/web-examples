@@ -7,7 +7,7 @@ import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useSnapshot } from 'valtio'
-import { getSmartAccount, sendTestTransaction as notifyVitalik } from '@/lib/SmartAccountLib'
+import { sendTestTransaction as notifyVitalik } from '@/lib/SmartAccountLib'
 import useSmartAccount from '@/hooks/useSmartAccount'
 
 interface Props {
@@ -31,7 +31,7 @@ export default function SmartAccountCard({
   const [copied, setCopied] = useState(false)
   const [smartAccountAddress, setSmartAccountAddress] = useState<string | null>(null)
   const { activeChainId } = useSnapshot(SettingsStore.state)
-  const sa = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
+  const { isDeployed, deploy, client } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
 
   function onCopy() {
     navigator?.clipboard?.writeText(address)
@@ -47,13 +47,11 @@ export default function SmartAccountCard({
   async function onCreateSmartAccount() {
     try {
       setLoading(true)
-      const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
-      const { smartAccountClient, deploy, isDeployed } = await getSmartAccount(signerPrivateKey, 'goerli')
       if (isDeployed) {
-        setSmartAccountAddress(smartAccountClient.account.address)
+        setSmartAccountAddress(client?.account?.address!)
       } else {
         await deploy()
-        setSmartAccountAddress(smartAccountClient.account.address)
+        setSmartAccountAddress(client?.account?.address!)
       }
     } catch (error) {
       console.error(error)
@@ -79,17 +77,15 @@ export default function SmartAccountCard({
 
   useEffect(() => {
     async function bootstrap() {
-      const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
-      const { smartAccountClient, isDeployed } = await getSmartAccount(signerPrivateKey, 'goerli')
       if (isDeployed) {
-        setSmartAccountAddress(smartAccountClient.account.address)
+        setSmartAccountAddress(client?.account?.address!)
       } else {
         setSmartAccountAddress(null)
       }
     }
 
     bootstrap()
-  }, [address])
+  }, [isDeployed, client?.account?.address])
 
   return (
     <ChainCard rgb={rgb} flexDirection="row" alignItems="center" flexWrap="wrap">
@@ -145,8 +141,9 @@ export default function SmartAccountCard({
             size="md"
             css={{ marginTop: 20, width: '100%' }}
             onClick={sendTestTransaction}
+            disabled={!isActiveChain || loading}
           >
-            Send Test TX
+            {loading ? <Loading size="sm" /> : 'Send Test TX'}
           </Button>
         </>
       ) : (

@@ -7,6 +7,7 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
     const [client, setClient] = useState<SmartAccountClient>();
     const [isDeployed, setIsDeployed] = useState(false);
 
+
     const updateIsDeployed = useCallback(async () => {
         if (client?.account?.address) {
             const deployed = await checkIfSmartAccountDeployed(client.account.address, 'goerli');
@@ -20,6 +21,7 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
         setLoading(false)
     }, [signerPrivateKey])
 
+
     const initialize = useCallback(async () => {
         setLoading(true)
         const client = await getSmartAccountClient(signerPrivateKey, 'goerli');
@@ -27,13 +29,8 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
 
         const deployed = await checkIfSmartAccountDeployed(client.account.address, 'goerli');
         setIsDeployed(deployed);
-
-        if (!deployed) {
-            await deploy()
-        }
-
         setLoading(false)
-    }, [signerPrivateKey, deploy]);
+    }, [signerPrivateKey]);
 
     useEffect(() => {
         updateIsDeployed()
