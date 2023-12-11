@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useSnapshot } from 'valtio'
 import { getSmartAccount, sendTestTransaction as notifyVitalik } from '@/lib/SmartAccountLib'
+import useSmartAccount from '@/hooks/useSmartAccount'
 
 interface Props {
   name: string
@@ -30,6 +31,7 @@ export default function SmartAccountCard({
   const [copied, setCopied] = useState(false)
   const [smartAccountAddress, setSmartAccountAddress] = useState<string | null>(null)
   const { activeChainId } = useSnapshot(SettingsStore.state)
+  const sa = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
 
   function onCopy() {
     navigator?.clipboard?.writeText(address)
@@ -46,11 +48,11 @@ export default function SmartAccountCard({
     try {
       setLoading(true)
       const signerPrivateKey = eip155Wallets[address].getPrivateKey() as `0x${string}`
-      const { smartAccountClient, deploySmartAccount, isDeployed } = await getSmartAccount(signerPrivateKey, 'goerli')
+      const { smartAccountClient, deploy, isDeployed } = await getSmartAccount(signerPrivateKey, 'goerli')
       if (isDeployed) {
         setSmartAccountAddress(smartAccountClient.account.address)
       } else {
-        await deploySmartAccount(signerPrivateKey, 'goerli')
+        await deploy()
         setSmartAccountAddress(smartAccountClient.account.address)
       }
     } catch (error) {

@@ -153,6 +153,6 @@ export async function getSmartAccount(signerPrivateKey: `0x${string}`, chainName
   return {
     smartAccountClient,
     isDeployed,
-    deploySmartAccount,
+    deploy: async () => deploySmartAccount(signerPrivateKey, chainName),
   }
 }
