@@ -21,14 +21,15 @@
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "react": ["node_modules/@types/react"]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-, "src/lib/PimlicoLib.ts", "src/lib/SmartAccountLib.ts"  ],
+  ],
   "exclude": [
     "node_modules"
   ]
