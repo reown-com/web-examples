@@ -28,7 +28,7 @@ export default function SmartAccountCard({
 }: Props) {
   const [copied, setCopied] = useState(false)
   const { activeChainId } = useSnapshot(SettingsStore.state)
-  const { deploy, isDeployed, address: smartAccountAddress, loading, sendTestTransaction } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
+  const { deploy, isDeployed, address: smartAccountAddress, loading, sendTestTransaction, sendSponsoredTransaction } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
 
   function onCopy() {
     navigator?.clipboard?.writeText(address)
@@ -110,6 +110,14 @@ export default function SmartAccountCard({
             disabled={!isActiveChain || loading}
           >
             {loading ? <Loading size="sm" /> : 'Send Test TX'}
+          </Button>
+          <Button
+            size="md"
+            css={{ marginTop: 20, width: '100%' }}
+            onClick={sendSponsoredTransaction}
+            disabled={!isActiveChain || loading}
+          >
+            {loading ? <Loading size="sm" /> : 'Send Sponsored ERC20 TX [Pimlico]'}
           </Button>
         </>
       ) : (

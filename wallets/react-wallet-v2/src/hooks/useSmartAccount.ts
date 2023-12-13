@@ -19,6 +19,13 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
         setLoading(false)
     }, [client])
 
+    const sendSponsoredTransaction = useCallback(async () => {
+        setLoading(true)
+        await client?.sendUSDCSponsoredTransaction()
+        setLoading(false)
+    }, [client])
+
+    
     useEffect(() => {
         const smartAccountClient = new SmartAccountLib(signerPrivateKey, 'goerli')
         setClient(smartAccountClient)
@@ -39,5 +46,6 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
         deploy,
         loading,
         sendTestTransaction,
+        sendSponsoredTransaction
     }
 }
