@@ -68,8 +68,6 @@ export class SmartAccountLib {
       safeVersion: '1.4.1',
       entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
     })
-
-    this.address = smartAccount.address
   
     return createSmartAccountClient({
       account: smartAccount,
@@ -131,8 +129,8 @@ export class SmartAccountLib {
     const publicClient = this.getPublicClient();
     const bytecode = await publicClient.getBytecode({ address: smartAccountClient.account.address })
     this.isDeployed = Boolean(bytecode)
+    console.log(`Smart Account Deployed: ${this.isDeployed}`)
     if (this.isDeployed) {
-      console.log(`Smart Account Deployed`)
       this.address = smartAccountClient.account.address
     }
     return this.isDeployed;
