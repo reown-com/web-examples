@@ -1,12 +1,10 @@
 import * as encoding from "@walletconnect/encoding";
 
-import { apiGetAccountNonce, apiGetGasPrices } from "./api";
-import { toWad } from "./utilities";
+import { apiGetAccountNonce, apiGetGasPrice } from "./api";
 
 export async function getGasPrice(chainId: string): Promise<string> {
-  if (chainId === "eip155:1") return toWad("20", 9).toHexString();
-  const gasPrices = await apiGetGasPrices();
-  return toWad(`${gasPrices.slow.price}`, 9).toHexString();
+  const gasPrice = await apiGetGasPrice(chainId);
+  return gasPrice
 }
 
 export async function formatTestTransaction(account: string) {
