@@ -26,11 +26,9 @@ export default function SmartAccountCard({
   chainId,
   isActiveChain
 }: Props) {
-  const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [smartAccountAddress, setSmartAccountAddress] = useState<string | null>(null)
   const { activeChainId } = useSnapshot(SettingsStore.state)
-  const { isDeployed, deploy, client } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
+  const { deploy, isDeployed, address: smartAccountAddress, loading, sendTestTransaction } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
 
   function onCopy() {
     navigator?.clipboard?.writeText(address)
@@ -45,40 +43,15 @@ export default function SmartAccountCard({
 
   async function onCreateSmartAccount() {
     try {
-      setLoading(true)
-      if (isDeployed) {
-        setSmartAccountAddress(client?.address!)
-      } else {
+      if (!isDeployed) {
         await deploy()
-        setSmartAccountAddress(client?.address!)
       }
     } catch (error) {
       console.error(error)
-    } finally {
-      setLoading(false)
     }
   }
 
   const getFaucetUrl = () => `https://${name?.toLowerCase()?.replace('ethereum', '')?.trim()}faucet.com`
-
-  const sendTestTransaction = async () => {
-    setLoading(true)
-    try {
-      await client?.sendTestTransaction()
-    } catch (error) {
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (client?.isDeployed) {
-      setSmartAccountAddress(client?.address!)
-    } else {
-      setSmartAccountAddress(null)
-    }
-  }, [client])
 
   return (
     <ChainCard rgb={rgb} flexDirection="row" alignItems="center" flexWrap="wrap">

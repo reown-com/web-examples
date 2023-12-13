@@ -119,20 +119,28 @@ export class SmartAccountLib {
       maxPriorityFeePerGas: testGas.maxPriorityFeePerGas,
     })
 
+    console.log(`Sending Test Transaction With Hash: ${testHash}`)
+
     await publicClient.waitForTransactionReceipt({ hash: testHash })
     console.log(`Test Transaction Success`)
   }
 
-  public checkIfSmartAccountDeployed = async (address: `0x${string}`) => {
+  public checkIfSmartAccountDeployed = async () => {
+    console.log('checking if deployed')
+    const smartAccountClient = await this.getSmartAccountClient();
     const publicClient = this.getPublicClient();
-    const bytecode = await publicClient.getBytecode({ address })
+    const bytecode = await publicClient.getBytecode({ address: smartAccountClient.account.address })
     this.isDeployed = Boolean(bytecode)
+    if (this.isDeployed) {
+      console.log(`Smart Account Deployed`)
+      this.address = smartAccountClient.account.address
+    }
     return this.isDeployed;
 }
 
   public deploySmartAccount = async () => {
     const smartAccountClient = await this.getSmartAccountClient();
-    const isDeployed = await this.checkIfSmartAccountDeployed(smartAccountClient?.account.address)
+    const isDeployed = await this.checkIfSmartAccountDeployed()
     if (!isDeployed) {
     // If not deployed, prefund smart account from signer
         // Step 3: Send prefund transaction from signer to smart account if empty
@@ -140,7 +148,7 @@ export class SmartAccountLib {
 
         // Step 4: Create account by sending test tx
         await this.sendTestTransaction()
-        await this.checkIfSmartAccountDeployed(smartAccountClient.account.address)
+        await this.checkIfSmartAccountDeployed()
         console.log(`Account Created`)
     }
   }
