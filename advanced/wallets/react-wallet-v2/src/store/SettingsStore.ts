@@ -102,7 +102,7 @@ const SettingsStore = {
     } else {
       localStorage.removeItem('TEST_NETS')
     }
-  }
+  },
 }
 
 export default SettingsStore
