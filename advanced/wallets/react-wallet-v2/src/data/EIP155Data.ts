@@ -8,6 +8,16 @@
  */
 export type TEIP155Chain = keyof typeof EIP155_CHAINS
 
+export type EIP155TestChain = {
+  chainId: number
+  name: string
+  logo: string
+  rgb: string
+  rpc: string
+  namespace: string
+  smartAccountEnabled?: boolean
+}
+
 /**
  * Chains
  */
@@ -54,14 +64,23 @@ export const EIP155_MAINNET_CHAINS = {
   }
 }
 
-export const EIP155_TEST_CHAINS = {
+export const EIP155_TEST_CHAINS: Record<string,EIP155TestChain> = {
   'eip155:5': {
     chainId: 5,
     name: 'Ethereum Goerli',
     logo: '/chain-logos/eip155-1.png',
     rgb: '99, 125, 234',
     rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
-    namespace: 'eip155'
+    namespace: 'eip155',
+    smartAccountEnabled: true,
+  },
+  'eip155:11155111': {
+    chainId: 11155111,
+    name: 'Ethereum Sepolia',
+    logo: '/chain-logos/eip155-1.png',
+    rgb: '99, 125, 234',
+    rpc: 'https://rpc.sepolia.org',
+    namespace: 'eip155',
   },
   'eip155:43113': {
     chainId: 43113,

@@ -27,6 +27,10 @@ export default class EIP155Lib {
     return this.wallet.mnemonic.phrase
   }
 
+  getPrivateKey() {
+    return this.wallet.privateKey
+  }
+
   getAddress() {
     return this.wallet.address
   }
