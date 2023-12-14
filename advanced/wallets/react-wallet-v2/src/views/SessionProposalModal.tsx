@@ -9,7 +9,7 @@ import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
-import { eip155Addresses } from '@/utils/EIP155WalletUtil'
+import { createOrRestoreEIP155Wallet, eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
@@ -19,7 +19,7 @@ import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { EIP155Chain, EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 import { MULTIVERSX_CHAINS, MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
@@ -34,6 +34,9 @@ import { getChainData } from '@/data/chainsUtil'
 import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalFooter from '@/components/ModalFooter'
 import RequestModal from './RequestModal'
+import { SmartAccountLib } from '@/lib/SmartAccountLib'
+import { Hex } from 'viem'
+import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -171,6 +174,11 @@ export default function SessionProposalModal() {
     [requestedChains]
   )
 
+  const smartAccountChains = useMemo(
+    () => supportedChains.filter(chain =>(chain as any)?.smartAccountEnabled),
+    [supportedChains]
+  )
+
   // get required chains that are not supported by the wallet
   const notSupportedChains = useMemo(() => {
     if (!proposal) return []
@@ -212,6 +220,7 @@ export default function SessionProposalModal() {
         return tronAddresses[0]
     }
   }, [])
+
 
   const approveButtonColor: any = useMemo(() => {
     switch (proposal?.verifyContext.verified.validation) {
@@ -274,6 +283,7 @@ export default function SessionProposalModal() {
     ModalStore.close()
   }
 
+  console.log('supported chains', supportedChains)
   return (
     <RequestModal
       metadata={proposal.params.proposer.metadata}
@@ -314,6 +324,16 @@ export default function SessionProposalModal() {
               return (
                 <Row key={i}>
                   <ChainAddressMini key={i} address={getAddress(chain?.namespace)} />
+                </Row>
+              )
+            })}
+
+          <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
+          {smartAccountChains.length &&
+            smartAccountChains.map((chain, i) => {
+              return (
+                <Row key={i}>
+                  <ChainSmartAddressMini namespace={chain?.namespace!} />
                 </Row>
               )
             })}

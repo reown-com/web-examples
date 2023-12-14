@@ -1,7 +1,7 @@
 import { SmartAccountLib } from "@/lib/SmartAccountLib";
 import { useCallback, useEffect, useState } from "react";
 
-export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
+export default function useSmartAccount(signerPrivateKey?: `0x${string}`) {
     const [loading, setLoading] = useState(false)
     const [client, setClient] = useState<SmartAccountLib>();
     const [isDeployed, setIsDeployed] = useState(false)
@@ -30,8 +30,9 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
     }, [client, execute])
 
     useEffect(() => {
-        const smartAccountClient = new SmartAccountLib(signerPrivateKey, 'goerli')
-        setClient(smartAccountClient)
+      if (!signerPrivateKey) return
+      const smartAccountClient = new SmartAccountLib(signerPrivateKey, 'goerli')
+      setClient(smartAccountClient)
     }, [signerPrivateKey])
 
     useEffect(() => {

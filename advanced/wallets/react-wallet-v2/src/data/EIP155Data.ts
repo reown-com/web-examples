@@ -8,7 +8,7 @@
  */
 export type TEIP155Chain = keyof typeof EIP155_CHAINS
 
-export type EIP155TestChain = {
+export type EIP155Chain = {
   chainId: number
   name: string
   logo: string
@@ -21,7 +21,7 @@ export type EIP155TestChain = {
 /**
  * Chains
  */
-export const EIP155_MAINNET_CHAINS = {
+export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
   'eip155:1': {
     chainId: 1,
     name: 'Ethereum',
@@ -64,7 +64,7 @@ export const EIP155_MAINNET_CHAINS = {
   }
 }
 
-export const EIP155_TEST_CHAINS: Record<string,EIP155TestChain> = {
+export const EIP155_TEST_CHAINS: Record<string,EIP155Chain> = {
   'eip155:5': {
     chainId: 5,
     name: 'Ethereum Goerli',

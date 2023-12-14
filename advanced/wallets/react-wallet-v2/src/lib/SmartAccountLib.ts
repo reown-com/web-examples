@@ -63,6 +63,7 @@ export class SmartAccountLib {
   }
 
   private getSmartAccountClient = async () => {  
+    console.log(`Creating Smart Account`, this.#signerPrivateKey)
     const smartAccount = await privateKeyToSafeSmartAccount(this.getPublicClient(), {
       privateKey: this.#signerPrivateKey,
       safeVersion: '1.4.1',
