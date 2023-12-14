@@ -7,17 +7,27 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
     const [isDeployed, setIsDeployed] = useState(false)
     const [address, setAddress] = useState<`0x${string}`>()
 
-    const deploy = useCallback(async () => {
+    const execute = useCallback(async (callback: () => void) => {
+      try {
         setLoading(true)
-        await client?.deploySmartAccount()
+        await callback()
         setLoading(false)
-    }, [client])
+      }
+      catch (e) {
+        console.error(e)
+        setLoading(false)
+      }  
+    }, [setLoading])
+
+    const deploy = useCallback(async () => {
+      if (!client) return
+      execute(client?.deploySmartAccount)
+    }, [client, execute])
 
     const sendTestTransaction = useCallback(async () => {
-        setLoading(true)
-        await client?.sendTestTransaction()
-        setLoading(false)
-    }, [client])
+      if (!client) return
+      execute(client?.sendTestTransaction)
+    }, [client, execute])
 
     useEffect(() => {
         const smartAccountClient = new SmartAccountLib(signerPrivateKey, 'goerli')
@@ -26,7 +36,7 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
 
     useEffect(() => {
         client?.checkIfSmartAccountDeployed()
-            .then((deployed) => {
+            .then((deployed: boolean) => {
                 setIsDeployed(deployed)
                 setAddress(client?.address)
             })
