@@ -28,7 +28,13 @@ export default function SmartAccountCard({
 }: Props) {
   const [copied, setCopied] = useState(false)
   const { activeChainId } = useSnapshot(SettingsStore.state)
-  const { deploy, isDeployed, address: smartAccountAddress, loading, sendTestTransaction } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
+  const {
+    deploy,
+    isDeployed,
+    address: smartAccountAddress,
+    loading,
+    sendTestTransaction,
+  } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
 
   function onCopy() {
     navigator?.clipboard?.writeText(address)
