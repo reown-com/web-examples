@@ -16,6 +16,7 @@ import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
 import { useCallback } from 'react'
 import AuthRequestModal from '@/views/AuthRequestModal'
+import SessionAuthenticateModal from '@/views/SessionAuthenticateModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -47,6 +48,7 @@ export default function Modal() {
       {view === 'SessionSignTezosModal' && <SessionSignTezosModal />}
       {view === 'SessionSignKadenaModal' && <SessionSignKadenaModal />}
       {view === 'AuthRequestModal' && <AuthRequestModal />}
+      {view === 'SessionAuthenticateModal' && <SessionAuthenticateModal />}
     </NextModal>
   )
 }

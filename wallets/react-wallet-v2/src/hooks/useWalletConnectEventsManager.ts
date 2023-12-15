@@ -8,7 +8,7 @@ import { TRON_SIGNING_METHODS } from '@/data/TronData'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { SignClientTypes } from '@walletconnect/types'
+import { AuthTypes, SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
@@ -33,6 +33,13 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   const onAuthRequest = useCallback((request: Web3WalletTypes.AuthRequest) => {
     ModalStore.open('AuthRequestModal', { request })
   }, [])
+
+  const onSessionAuthenticate = useCallback(
+    (authRequest: SignClientTypes.EventArguments['session_authenticate']) => {
+      ModalStore.open('SessionAuthenticateModal', { authRequest })
+    },
+    []
+  )
 
   /******************************************************************************
    * 3. Open request handling modal based on method that was used
@@ -126,6 +133,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       // TODOs
       web3wallet.engine.signClient.events.on('session_ping', data => console.log('ping', data))
       web3wallet.on('session_delete', data => console.log('delete', data))
+      web3wallet.engine.signClient.events.on('session_authenticate', payload => {
+        console.log('session_authenticate', payload)
+        onSessionAuthenticate(payload)
+      })
     }
-  }, [initialized, onAuthRequest, onSessionProposal, onSessionRequest])
+  }, [initialized, onAuthRequest, onSessionAuthenticate, onSessionProposal, onSessionRequest])
 }
