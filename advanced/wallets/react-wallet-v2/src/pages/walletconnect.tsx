@@ -13,7 +13,7 @@ export default function WalletConnectPage() {
   async function onConnect(uri: string) {
     try {
       setLoading(true)
-      await web3wallet.pair({ uri })
+      await web3wallet.engine.signClient.pair({ uri })
     } catch (error) {
       styledToast((error as Error).message, 'error')
     } finally {

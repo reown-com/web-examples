@@ -157,10 +157,18 @@ export function ClientContextProvider({
           "optionalNamespaces config for connect:",
           optionalNamespaces
         );
-        const { uri, approval } = await client.connect({
-          pairingTopic: pairing?.topic,
-          requiredNamespaces,
-          optionalNamespaces,
+        // const { uri, approval } = await client.connect({
+        //   pairingTopic: pairing?.topic,
+        //   requiredNamespaces,
+        //   optionalNamespaces,
+        // });
+
+        const { uri, response } = await client.sessionAuthenticate({
+          chains: chains,
+          domain: getAppMetadata().url,
+          nonce: "1",
+          aud: "aud",
+          methods: ["personal_sign", "eth_signTypedData_v4"],
         });
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
@@ -172,9 +180,13 @@ export function ClientContextProvider({
 
           web3Modal.openModal({ uri, standaloneChains });
         }
-
-        const session = await approval();
+        const res = await response;
+        console.log("response from sessionAuthenticate:", res);
+        const session = res.session;
         console.log("Established session:", session);
+        if (!session) {
+          return;
+        }
         await onSessionConnected(session);
         // Update known pairings after session is connected.
         setPairings(client.pairing.getAll({ active: true }));
