@@ -1,5 +1,5 @@
 import SettingsStore from '@/store/SettingsStore'
-import { Button, Modal, Row } from '@nextui-org/react'
+import { Button, Loading, Modal, Row } from '@nextui-org/react'
 import { useMemo } from 'react'
 import { useSnapshot } from 'valtio'
 
@@ -9,6 +9,7 @@ interface Props {
   infoBoxCondition?: boolean
   infoBoxText?: string
   disabledApprove?: boolean
+  loading?: boolean
 }
 
 export default function ModalFooter({
@@ -16,7 +17,8 @@ export default function ModalFooter({
   onReject,
   infoBoxCondition,
   infoBoxText,
-  disabledApprove
+  disabledApprove,
+  loading = false,
 }: Props) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const validation = currentRequestVerifyContext?.verified.validation
@@ -39,26 +41,29 @@ export default function ModalFooter({
           <span>{infoBoxText || ''}</span>
         </Row>
       )}
-      <Row justify="space-between">
+      <Row justify="space-between" align='center'>
         <Button
           auto
           flat
           style={{ color: 'white', backgroundColor: 'grey' }}
           onPress={onReject}
           data-testid="session-reject-button"
+          disabled={loading}
         >
           Reject
         </Button>
-        <Button
-          auto
-          flat
-          color={approveButtonColor}
-          disabled={disabledApprove}
-          onPress={onApprove}
-          data-testid="session-approve-button"
-        >
-          Approve
-        </Button>
+        {loading ? <Loading style={{ width: '25%' }} size="sm" /> : (
+          <Button
+            auto
+            flat
+            color={approveButtonColor}
+            disabled={disabledApprove || loading}
+            onPress={onApprove}
+            data-testid="session-approve-button"
+          >
+            Approve
+          </Button>
+        )}
       </Row>
     </Modal.Footer>
   )

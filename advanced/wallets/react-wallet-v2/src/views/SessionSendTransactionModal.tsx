@@ -44,8 +44,10 @@ export default function SessionSendTransactionModal() {
         })
       } catch (e) {
         styledToast((e as Error).message, 'error')
+        setLoading(false)
         return
       }
+      setLoading(false)
       ModalStore.close()
     }
   }
@@ -73,6 +75,7 @@ export default function SessionSendTransactionModal() {
       metadata={requestSession.peer.metadata}
       onApprove={onApprove}
       onReject={onReject}
+      loading={loading}
     >
       <RequestDataCard data={transaction} />
       <Divider y={1} />

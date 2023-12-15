@@ -1,5 +1,5 @@
 import { Divider, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 
 import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
@@ -15,6 +15,7 @@ import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 
 export default function SessionSignTypedDataModal() {
+  const [loading, setLoading] = useState(false)
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
@@ -34,6 +35,7 @@ export default function SessionSignTypedDataModal() {
   // Handle approve action (logic varies based on request method)
   async function onApprove() {
     if (requestEvent) {
+      setLoading(true)
       const response = await approveEIP155Request(requestEvent)
       try {
         await web3wallet.respondSessionRequest({
@@ -42,8 +44,10 @@ export default function SessionSignTypedDataModal() {
         })
       } catch (e) {
         styledToast((e as Error).message, 'error')
+        setLoading(false)
         return
       }
+      setLoading(false)
       ModalStore.close()
     }
   }
@@ -70,6 +74,7 @@ export default function SessionSignTypedDataModal() {
       metadata={requestSession.peer.metadata}
       onApprove={onApprove}
       onReject={onReject}
+      loading={loading}
     >
       <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
       <Divider y={1} />
