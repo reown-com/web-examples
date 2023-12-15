@@ -1,11 +1,12 @@
 import { SmartAccountLib } from "@/lib/SmartAccountLib";
 import { useCallback, useEffect, useState } from "react";
+import { Hex } from "viem";
 
-export default function useSmartAccount(signerPrivateKey?: `0x${string}`) {
+export default function useSmartAccount(signerPrivateKey?: Hex) {
     const [loading, setLoading] = useState(false)
     const [client, setClient] = useState<SmartAccountLib>();
     const [isDeployed, setIsDeployed] = useState(false)
-    const [address, setAddress] = useState<`0x${string}`>()
+    const [address, setAddress] = useState<Hex>()
 
     const execute = useCallback(async (callback: () => void) => {
       try {
