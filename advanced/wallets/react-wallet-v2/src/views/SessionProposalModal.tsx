@@ -49,7 +49,6 @@ const StyledSpan = styled('span', {
 export default function SessionProposalModal() {
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
-  console.log('proposal', proposal)
   const supportedNamespaces = useMemo(() => {
     // eip155
     const eip155Chains = Object.keys(EIP155_CHAINS)
@@ -293,7 +292,6 @@ export default function SessionProposalModal() {
     ModalStore.close()
   }
 
-  console.log('supported chains', supportedChains)
   return (
     <RequestModal
       metadata={proposal.params.proposer.metadata}

@@ -268,7 +268,6 @@ export class SmartAccountLib {
   }
   public _signTypedData = async (domain: any, types: any, data: any, primaryType: any) => {
     const client = await this.getSmartAccountClient()
-    console.log(client.account.type)
     return client.signTypedData({ account: client.account, domain, types, primaryType, message: data })
   }
 

@@ -21,7 +21,6 @@ export default function ChainSmartAddressMini({ namespace }: Props) {
   const { address } = useSmartAccount(getKey(namespace) as `0x${string}`)
 
   if (!address) return <Spinner />
-  console.log('address', address)
   return (
       <ChainAddressMini address={address}/>
   )

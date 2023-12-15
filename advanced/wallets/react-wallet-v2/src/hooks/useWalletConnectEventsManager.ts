@@ -22,7 +22,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   const onSessionProposal = useCallback(
     (proposal: SignClientTypes.EventArguments['session_proposal']) => {
       // set the verify context so it can be displayed in the projectInfoCard
-      console.log('session_proposal', proposal)
       SettingsStore.setCurrentRequestVerifyContext(proposal.verifyContext)
       ModalStore.open('SessionProposalModal', { proposal })
     },
