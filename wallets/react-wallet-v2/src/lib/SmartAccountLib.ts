@@ -2,15 +2,20 @@ import { createSmartAccountClient, getAccountNonce, signUserOperationHashWithECD
 import { privateKeyToSafeSmartAccount } from 'permissionless/accounts'
 import * as chains from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
-import { type Chain, createWalletClient, formatEther, createPublicClient, http, Address, encodeFunctionData, Hex, keccak256 } from 'viem'
+import { type Chain, createWalletClient, formatEther, createPublicClient, http, Address, Hex } from 'viem'
 import { createPimlicoBundlerClient, createPimlicoPaymasterClient } from 'permissionless/clients/pimlico'
-import { getERC20Paymaster } from "@pimlico/erc20-paymaster"
-import { StaticJsonRpcProvider } from "@ethersproject/providers";
 import { UserOperation } from 'permissionless/types'
 import { GOERLI_PAYMASTER_ADDRESS, GOERLI_USDC_ADDRESS, genereteApproveCallData, genereteDummyCallData } from '@/utils/ERC20PaymasterUtil'
- 
+import { ERC20Paymaster } from '@pimlico/erc20-paymaster'
+import { StaticJsonRpcProvider } from "@ethersproject/providers";
 
-export type SmartAccountEnabledChains = 'sepolia' | 'goerli'
+export const smartAccountEnabledChains = ['sepolia', 'goerli'] as const
+export type SmartAccountEnabledChains = typeof smartAccountEnabledChains[number]
+type SmartAccountLibOptions = {
+  privateKey: `0x${string}`
+  chain: SmartAccountEnabledChains
+  sponsored?: boolean
+};
 
 const ENTRY_POINT_ADDRESS = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
 
@@ -25,14 +30,17 @@ export class SmartAccountLib {
   #signerPrivateKey: `0x${string}`;
   public isDeployed: boolean = false;
   public address?: `0x${string}`;
+  public sponsored: boolean = true;
 
-  public constructor(privateKey: `0x${string}`, chain: SmartAccountEnabledChains = 'goerli') {
+
+  public constructor({ privateKey, chain, sponsored = true }: SmartAccountLibOptions) {
     if (!pimlicoApiKey) {
       throw new Error('Missing required data in SmartAccountSdk')
     }
     this.pimlicoApiKey = pimlicoApiKey
     this.chain = chains[chain] as Chain
     this.#signerPrivateKey = privateKey
+    this.sponsored = sponsored
   }
 
   // -- Public ------------------------------------------------------------------
@@ -109,7 +117,7 @@ export class SmartAccountLib {
       account: smartAccount,
       chain: this.chain,
       transport: this.bundlerTransport,
-      sponsorUserOperation: this.paymasterClient.sponsorUserOperation,
+      sponsorUserOperation: this.sponsored ? this.paymasterClient.sponsorUserOperation : undefined,
     })
   }
 
@@ -217,46 +225,21 @@ export class SmartAccountLib {
     const gasPriceResult = await this.bundlerClient.getUserOperationGasPrice()
     const nonce = await this.getAccountNonce()
 
+    const smartAccountClient = await this.getSmartAccountClient();
     console.log(`Approving USDC for ${this.address} with nonce ${nonce}`)
-    const userOperation: Partial<UserOperation> = {
-        sender: this.address,
-        nonce,
-        initCode: "0x",
-        callData: approveCallData,
-        maxFeePerGas: gasPriceResult.fast.maxFeePerGas,
-        maxPriorityFeePerGas: gasPriceResult.fast.maxPriorityFeePerGas,
-        callGasLimit: 100_000n,
-        verificationGasLimit: 500_000n,
-        preVerificationGas: 50_000n,
-        paymasterAndData: "0x",
-        signature: "0xfffffffffffffffffffffffffffffff0000000000000000000000000000000007aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1c"
-    }
-
-    // const result = await this.paymasterClient.sponsorUserOperation({
-    //   userOperation: userOperation as UserOperation,
-    //   entryPoint: ENTRY_POINT_ADDRESS
-    // })
-
-    // userOperation.preVerificationGas = result.preVerificationGas
-    // userOperation.verificationGasLimit = result.verificationGasLimit
-    // userOperation.callGasLimit = result.callGasLimit
-    // userOperation.paymasterAndData = result.paymasterAndData
-
-    // SIGN THE USEROPERATION
-    const signature = await signUserOperationHashWithECDSA({
-        account: this.signerClient.account,
-        userOperation: userOperation as UserOperation,
-        chainId: this.chain.id,
-        entryPoint: ENTRY_POINT_ADDRESS
+    const hash = await smartAccountClient.sendTransaction({
+      to: GOERLI_USDC_ADDRESS,
+      value: 0n,
+      maxFeePerGas: gasPriceResult.fast.maxFeePerGas,
+      maxPriorityFeePerGas: gasPriceResult.fast.maxPriorityFeePerGas,
+      data: approveCallData,
     })
-    userOperation.signature = signature
-    await this.submitUserOperation(userOperation as UserOperation)
+
+    await this.publicClient.waitForTransactionReceipt({ hash })
+    console.log(`USDC Approval Success`)
   }
 
-  // Ref: https://docs.pimlico.io/tutorial/tutorial-2
-  public sendUSDCSponsoredTransaction = async () => {
-    // 1. Check USDC Balance on smart account
-    console.log('balanceof params')
+  private getSmartAccountUSDCBalance = async () => {
     const params = {
       abi: [
           {
@@ -270,8 +253,13 @@ export class SmartAccountLib {
       functionName: "balanceOf",
       args: [this.address!]
     }
-    console.log(params)
     const usdcBalance = await this.publicClient.readContract(params) as bigint
+    return usdcBalance
+  }
+
+  public sendUSDCSponsoredTransaction = async () => {
+    // 1. Check USDC Balance on smart account
+    const usdcBalance = await this.getSmartAccountUSDCBalance()
     
     if (usdcBalance < 1_000_000n) {
         throw new Error(
@@ -288,6 +276,7 @@ export class SmartAccountLib {
 
     // 3. Send transaction
     const dummyCallData = genereteDummyCallData()
+    const paymaster = new ERC20Paymaster(new StaticJsonRpcProvider(), GOERLI_PAYMASTER_ADDRESS)
     const userOperation = await this.prepareSponsoredUserOperation(dummyCallData, GOERLI_PAYMASTER_ADDRESS)
 
     await this.submitUserOperation(userOperation)

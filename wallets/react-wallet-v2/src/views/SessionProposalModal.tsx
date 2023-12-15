@@ -9,7 +9,7 @@ import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
-import { eip155Addresses } from '@/utils/EIP155WalletUtil'
+import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
@@ -34,6 +34,8 @@ import { getChainData } from '@/data/chainsUtil'
 import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalFooter from '@/components/ModalFooter'
 import RequestModal from './RequestModal'
+import { SmartAccountLib, smartAccountEnabledChains } from '@/lib/SmartAccountLib'
+import { Hex } from 'viem'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -83,12 +85,14 @@ export default function SessionProposalModal() {
     const tronChains = Object.keys(TRON_CHAINS)
     const tronMethods = Object.values(TRON_SIGNING_METHODS)
 
+    const eip155Accounts = eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
+
     return {
       eip155: {
         chains: eip155Chains,
         methods: eip155Methods,
         events: ['accountsChanged', 'chainChanged'],
-        accounts: eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
+        accounts: eip155Accounts,
       },
       cosmos: {
         chains: cosmosChains,
@@ -242,7 +246,15 @@ export default function SessionProposalModal() {
         supportedNamespaces
       })
 
-      console.log('approving namespaces:', namespaces)
+      // TODO: improve for multi network
+      console.log('checking if SA is deployed', eip155Wallets[eip155Addresses[0]])
+      const smartAccountClient = new SmartAccountLib({ privateKey: eip155Wallets[eip155Addresses[0]].getPrivateKey() as Hex, chain: 'goerli' })
+      const isDeployed = await smartAccountClient.checkIfSmartAccountDeployed()
+      console.log('isDeployed', isDeployed)
+      
+      if (isDeployed) {
+        namespaces.eip155.accounts = [...namespaces.eip155.accounts, `eip155:5:${smartAccountClient.address}`]
+      }
 
       try {
         await web3wallet.approveSession({

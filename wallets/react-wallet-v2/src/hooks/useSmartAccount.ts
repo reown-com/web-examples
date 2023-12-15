@@ -7,27 +7,25 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
     const [isDeployed, setIsDeployed] = useState(false)
     const [address, setAddress] = useState<`0x${string}`>()
 
-    const deploy = useCallback(async () => {
+    const execute = useCallback(async (callback?: () => Promise<void>) => {
+        try {
         setLoading(true)
-        await client?.deploySmartAccount()
+        await callback?.()
+        } catch (e) {
+        console.error(e)
+        } finally {
         setLoading(false)
-    }, [client])
+        }
+    }, [])
 
-    const sendTestTransaction = useCallback(async () => {
-        setLoading(true)
-        await client?.sendTestTransaction()
-        setLoading(false)
-    }, [client])
+    const deploy = () => execute(client?.deploySmartAccount)
 
-    const sendSponsoredTransaction = useCallback(async () => {
-        setLoading(true)
-        await client?.sendUSDCSponsoredTransaction()
-        setLoading(false)
-    }, [client])
+    const sendTestTransaction = () => execute(client?.sendTestTransaction)
 
+    const sendSponsoredTransaction = () => execute(client?.sendUSDCSponsoredTransaction)
     
     useEffect(() => {
-        const smartAccountClient = new SmartAccountLib(signerPrivateKey, 'goerli')
+        const smartAccountClient = new SmartAccountLib({ privateKey: signerPrivateKey, chain: 'goerli', sponsored: true })
         setClient(smartAccountClient)
     }, [signerPrivateKey])
 
