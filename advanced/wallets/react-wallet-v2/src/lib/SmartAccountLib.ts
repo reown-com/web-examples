@@ -6,6 +6,7 @@ import { type Chain, createWalletClient, formatEther, createPublicClient, http, 
 import { createPimlicoBundlerClient, createPimlicoPaymasterClient } from 'permissionless/clients/pimlico'
 import { UserOperation } from 'permissionless/types'
 import { GOERLI_PAYMASTER_ADDRESS, GOERLI_USDC_ADDRESS, genereteApproveCallData, genereteDummyCallData } from '@/utils/ERC20PaymasterUtil'
+import { providers } from 'ethers'
 
 export const smartAccountEnabledChains = ['sepolia', 'goerli'] as const
 export type SmartAccountEnabledChains = typeof smartAccountEnabledChains[number]
@@ -240,6 +241,7 @@ export class SmartAccountLib {
     const bytecode = await client.getBytecode({ address })
     return Boolean(bytecode)
   }
+  
   // By default first transaction will deploy the smart contract if it hasn't been deployed yet
   public sendTestTransaction = async () => {
     const publicClient = this.publicClient;
@@ -264,8 +266,20 @@ export class SmartAccountLib {
     const client = await this.getSmartAccountClient()
     return client.signMessage({ message })
   }
+  public _signTypedData = async (domain: any, types: any, data: any, primaryType: any) => {
+    const client = await this.getSmartAccountClient()
+    console.log(client.account.type)
+    return client.signTypedData({ account: client.account, domain, types, primaryType, message: data })
+  }
 
-  
+  public connect = async (_provider: providers.JsonRpcProvider) => {
+    return this.getSmartAccountClient()
+  }
+
+  public signTransaction = async (transaction: any) => {
+    const smartAccountClient = await this.getSmartAccountClient()
+    return smartAccountClient.account.signTransaction(transaction)
+  }
 
   public sendUSDCSponsoredTransaction = async () => {
     // 1. Check USDC Balance on smart account
