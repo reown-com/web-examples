@@ -12,9 +12,7 @@ const getKey = (namespace?: string) => {
   switch (namespace) {
     case 'eip155':
       createOrRestoreEIP155Wallet()
-      console.log('eip155Wallets', eip155Wallets)
       const key = Object.values(eip155Wallets)[0]?.getPrivateKey() as Hex
-      console.log('key', key)
       return key
   }
 }
@@ -23,6 +21,7 @@ export default function ChainSmartAddressMini({ namespace }: Props) {
   const { address } = useSmartAccount(getKey(namespace) as `0x${string}`)
 
   if (!address) return <Spinner />
+  console.log('address', address)
   return (
       <ChainAddressMini address={address}/>
   )

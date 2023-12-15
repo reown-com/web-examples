@@ -251,6 +251,16 @@ export default function SessionProposalModal() {
         supportedNamespaces
       })
 
+      // TODO: improve for multi network
+      console.log('checking if SA is deployed', eip155Wallets[eip155Addresses[0]])
+      const smartAccountClient = new SmartAccountLib({ privateKey: eip155Wallets[eip155Addresses[0]].getPrivateKey() as Hex, chain: 'goerli' })
+      const isDeployed = await smartAccountClient.checkIfSmartAccountDeployed()
+      console.log('isDeployed', isDeployed)
+
+      if (isDeployed) {
+        namespaces.eip155.accounts = [...namespaces.eip155.accounts, `eip155:5:${smartAccountClient.address}`]
+      }
+
       console.log('approving namespaces:', namespaces)
 
       try {

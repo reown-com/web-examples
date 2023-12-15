@@ -31,7 +31,7 @@ export default function useSmartAccount(signerPrivateKey?: `0x${string}`) {
 
     useEffect(() => {
       if (!signerPrivateKey) return
-      const smartAccountClient = new SmartAccountLib(signerPrivateKey, 'goerli')
+      const smartAccountClient = new SmartAccountLib({ privateKey: signerPrivateKey, chain: 'goerli' })
       setClient(smartAccountClient)
     }, [signerPrivateKey])
 
