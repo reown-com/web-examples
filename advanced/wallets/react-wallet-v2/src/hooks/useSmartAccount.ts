@@ -1,5 +1,7 @@
 import { SmartAccountLib } from "@/lib/SmartAccountLib";
+import SettingsStore from "@/store/SettingsStore";
 import { useCallback, useEffect, useState } from "react";
+import { useSnapshot } from "valtio";
 import { Hex } from "viem";
 
 export default function useSmartAccount(signerPrivateKey?: Hex) {
@@ -7,6 +9,7 @@ export default function useSmartAccount(signerPrivateKey?: Hex) {
     const [client, setClient] = useState<SmartAccountLib>();
     const [isDeployed, setIsDeployed] = useState(false)
     const [address, setAddress] = useState<Hex>()
+    const { smartAccountSponsorshipEnabled } = useSnapshot(SettingsStore.state);
 
     const execute = useCallback(async (callback: () => void) => {
       try {
@@ -32,9 +35,13 @@ export default function useSmartAccount(signerPrivateKey?: Hex) {
 
     useEffect(() => {
       if (!signerPrivateKey) return
-      const smartAccountClient = new SmartAccountLib({ privateKey: signerPrivateKey, chain: 'goerli' })
+      const smartAccountClient = new SmartAccountLib({
+        privateKey: signerPrivateKey,
+        chain: 'goerli',
+        sponsored: smartAccountSponsorshipEnabled,
+      })
       setClient(smartAccountClient)
-    }, [signerPrivateKey])
+    }, [signerPrivateKey, smartAccountSponsorshipEnabled])
 
     useEffect(() => {
         client?.checkIfSmartAccountDeployed()

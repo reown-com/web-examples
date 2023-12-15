@@ -37,6 +37,8 @@ import RequestModal from './RequestModal'
 import { SmartAccountLib } from '@/lib/SmartAccountLib'
 import { Hex } from 'viem'
 import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
+import { useSnapshot } from 'valtio'
+import SettingsStore from '@/store/SettingsStore'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -47,6 +49,7 @@ const StyledSpan = styled('span', {
 } as any)
 
 export default function SessionProposalModal() {
+  const { smartAccountSponsorshipEnabled } = useSnapshot(SettingsStore.state)
   // Get proposal data and wallet address from store
   const proposal = ModalStore.state.data?.proposal
   const supportedNamespaces = useMemo(() => {
@@ -252,7 +255,11 @@ export default function SessionProposalModal() {
 
       // TODO: improve for multi network
       console.log('checking if SA is deployed', eip155Wallets[eip155Addresses[0]])
-      const smartAccountClient = new SmartAccountLib({ privateKey: eip155Wallets[eip155Addresses[0]].getPrivateKey() as Hex, chain: 'goerli' })
+      const smartAccountClient = new SmartAccountLib({
+        privateKey: eip155Wallets[eip155Addresses[0]].getPrivateKey() as Hex,
+        chain: 'goerli',
+        sponsored: smartAccountSponsorshipEnabled,
+      })
       const isDeployed = await smartAccountClient.checkIfSmartAccountDeployed()
       console.log('isDeployed', isDeployed)
 

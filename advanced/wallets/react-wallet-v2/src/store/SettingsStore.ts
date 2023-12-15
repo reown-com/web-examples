@@ -18,7 +18,8 @@ interface State {
   kadenaAddress: string
   relayerRegionURL: string
   activeChainId: string
-  currentRequestVerifyContext?: Verify.Context
+  currentRequestVerifyContext?: Verify.Context,
+  smartAccountSponsorshipEnabled: boolean
 }
 
 /**
@@ -37,7 +38,8 @@ const state = proxy<State>({
   tronAddress: '',
   tezosAddress: '',
   kadenaAddress: '',
-  relayerRegionURL: ''
+  relayerRegionURL: '',
+  smartAccountSponsorshipEnabled: false,
 })
 
 /**
@@ -98,11 +100,18 @@ const SettingsStore = {
   toggleTestNets() {
     state.testNets = !state.testNets
     if (state.testNets) {
+      state.smartAccountSponsorshipEnabled = true
       localStorage.setItem('TEST_NETS', 'YES')
     } else {
+      state.smartAccountSponsorshipEnabled = false
       localStorage.removeItem('TEST_NETS')
     }
   },
+
+  toggleSmartAccountSponsorship() {
+    if (!state.testNets) return
+    state.smartAccountSponsorshipEnabled = !state.smartAccountSponsorshipEnabled
+  }
 }
 
 export default SettingsStore

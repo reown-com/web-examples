@@ -24,7 +24,11 @@ const getWallet = async (params: any) => {
 
   // TODO improve for multichain
   const deployedSmartAccounts = await Promise.all(Object.values(eip155Wallets).map(async (wallet) => {
-    const smartAccount = new SmartAccountLib({ privateKey: wallet.getPrivateKey() as Hex, chain: 'goerli' })
+    const smartAccount = new SmartAccountLib({
+      privateKey: wallet.getPrivateKey() as Hex,
+      chain: 'goerli',
+      sponsored: true, // Sponsor for now but should be dynamic according to SettingsStore
+    })
     const isDeployed = await smartAccount.checkIfSmartAccountDeployed()
     if (isDeployed) {
       return smartAccount
