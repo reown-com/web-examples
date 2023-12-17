@@ -39,7 +39,7 @@
     "mnemonic-keyring": "1.4.0",
     "near-api-js": "^0.45.0",
     "next": "12.1.5",
-    "permissionless": "0.0.15",
+    "permissionless": "0.0.16",
     "react": "17.0.2",
     "react-code-blocks": "0.0.9-0",
     "react-dom": "17.0.2",
