@@ -26,7 +26,7 @@
     "@near-wallet-selector/wallet-utils": "^7.0.2",
     "@nextui-org/react": "1.0.8-beta.5",
     "@polkadot/keyring": "^10.1.2",
-    "@polkadot/types": "^9.3.3",
+    "@polkadot/types": "^10.0.0",
     "@solana/web3.js": "1.78.4",
     "@taquito/signer": "^15.1.0",
     "@taquito/taquito": "^15.1.0",
