@@ -2081,45 +2081,28 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@kadena/chainweb-node-client@0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@kadena/chainweb-node-client/-/chainweb-node-client-0.3.3.tgz#46e97caeff081804667fe398f993f08c8a2a978e"
-  integrity sha512-QmJYfRPMWJaMJEPD4Cai+9t1rA4ljACQo8XDr6dZ6WQnOItV968rLIDr43KG3p7FsyrJW2G6W97GqQUXcqVdDQ==
+"@kadena/chainweb-node-client@0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@kadena/chainweb-node-client/-/chainweb-node-client-0.5.2.tgz#1f17152577687c6515021793dfaa0ffe62bd6135"
+  integrity sha512-YgQ7J0x2ctLTJ2G/OFd07SK+I60H/O2VagvdZik0lcH4ied4qdnYOFev0wsLovrhVntYxDRVKpVQwx5jVZGopg==
   dependencies:
-    "@kadena/cryptography-utils" "0.3.3"
-    "@kadena/pactjs" "0.2.9"
-    "@kadena/types" "0.3.3"
-    "@types/isomorphic-fetch" "~0.0.36"
+    "@kadena/cryptography-utils" "0.4.2"
+    "@kadena/pactjs" "0.4.2"
     cross-fetch "~3.1.5"
-    node-fetch "~2.6.2"
 
-"@kadena/client@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@kadena/client/-/client-0.5.0.tgz#99d5eeea867b19e13df477e2c6a63b3e4fbd1874"
-  integrity sha512-F3GPdfKBfmto7BGoDd2+gXAZe7IhSIAI1l3VgPUpZgqAz5jiSQp7CNR94nc5YsyZZE05cYsEOsk64odihDQqZQ==
+"@kadena/client@^1.0.0":
+  version "1.6.4"
+  resolved "https://registry.yarnpkg.com/@kadena/client/-/client-1.6.4.tgz#e4b3f9e6d78e81647f4b4238cdc8616de4157459"
+  integrity sha512-ByMi+CCz3Wwc3HUNnqREfBsDnFFTK4oeCiS6eIAGtgpu1l8kVHWptkybw2LLXVT+1XM9WAMcGg5BgQBAs+cACQ==
   dependencies:
-    "@kadena/chainweb-node-client" "0.3.3"
-    "@kadena/cryptography-utils" "0.3.3"
-    "@kadena/pactjs" "0.2.9"
-    "@kadena/types" "0.3.3"
+    "@kadena/chainweb-node-client" "0.5.2"
+    "@kadena/cryptography-utils" "0.4.2"
+    "@kadena/pactjs" "0.4.2"
     "@walletconnect/sign-client" "~2.8.1"
-    "@walletconnect/types" "~2.8.1"
     cross-fetch "~3.1.5"
     debug "~4.3.4"
-    encoding "~0.1.13"
-    yaml "~2.1.1"
 
-"@kadena/cryptography-utils@0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@kadena/cryptography-utils/-/cryptography-utils-0.3.3.tgz#fea284b28a413a998fd5600698000aedbe0d97ba"
-  integrity sha512-6GYpjXKbMEeVR9TwIPnE2gv1yjIlIxnlMTH6R0fqlgg8AMkk5WwJ1DpKlahEh2ii2shoZISfmlKLa24U8Fkd/g==
-  dependencies:
-    "@kadena/types" "0.3.3"
-    blakejs "^1.2.1"
-    buffer "^6.0.3"
-    tweetnacl "^1.0.3"
-
-"@kadena/cryptography-utils@^0.4.0":
+"@kadena/cryptography-utils@0.4.2", "@kadena/cryptography-utils@^0.4.0":
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/@kadena/cryptography-utils/-/cryptography-utils-0.4.2.tgz#00b13ad4db91afbcde43c309d03c309ba8e40a86"
   integrity sha512-4OdFS7fDYkvhq89JHj0kB8qHBk19hgbX5UN/959ibv6mtMvBjNgq/MVT3Fa146wgFqAHVySyzWi8pSeD9Qzk1A==
@@ -2128,18 +2111,12 @@
     buffer "^6.0.3"
     tweetnacl "^1.0.3"
 
-"@kadena/pactjs@0.2.9":
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/@kadena/pactjs/-/pactjs-0.2.9.tgz#c636ea14ab146150ee8c9c869ca664eaf2836a18"
-  integrity sha512-Y4c9QmcKCHFWOSqAQhQLVN/neFLsNhQRMHNmUvRjnY4BypTX+8PVKVTRWk6y92C709Smkdyh8uzmE6aRfkMHtQ==
+"@kadena/pactjs@0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@kadena/pactjs/-/pactjs-0.4.2.tgz#f83878519181094abbebc2b1322058875d29f1ac"
+  integrity sha512-4eXXXWELLVsuOORW3pGWCv9xJAH6gGmkTyOCHPZoY/VJsRAEXlbj0qjQ+Ub58s/YLp4A8DHTZygNv1tByyoCdA==
   dependencies:
-    "@kadena/types" "0.3.3"
-    bignumber.js "^9.0.2"
-
-"@kadena/types@0.3.3":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.3.3.tgz#e1b1a65a3a0ebde53cd81ecbc77f5926a24022da"
-  integrity sha512-61ltE1vx81r/OSrrHaEte1m2QixsCVLBT8koBmWu7wmITGltjEzjkIJNNUs/A0d4aZzlUVOa+6tnRq22clQu3w==
+    bignumber.js "^9.1.2"
 
 "@kadena/types@^0.5.0":
   version "0.5.2"
@@ -3159,11 +3136,6 @@
   resolved "https://registry.yarnpkg.com/@types/http-cache-semantics/-/http-cache-semantics-4.0.4.tgz#b979ebad3919799c979b17c72621c0bc0a31c6c4"
   integrity sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==
 
-"@types/isomorphic-fetch@~0.0.36":
-  version "0.0.36"
-  resolved "https://registry.yarnpkg.com/@types/isomorphic-fetch/-/isomorphic-fetch-0.0.36.tgz#3a6d8f63974baf26b10fd1314db910633108a769"
-  integrity sha512-ulw4d+vW1HKn4oErSmNN2HYEcHGq0N1C5exlrMM0CRqX1UUpFhGb5lwiom5j9KN3LBJJDLRmYIZz1ghm7FIzZw==
-
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0", "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@types/istanbul-lib-coverage/-/istanbul-lib-coverage-2.0.4.tgz#8467d4b3c087805d63580480890791277ce35c44"
@@ -3797,7 +3769,7 @@
     "@walletconnect/logger" "^2.0.1"
     events "^3.3.0"
 
-"@walletconnect/types@2.8.6", "@walletconnect/types@~2.8.1":
+"@walletconnect/types@2.8.6":
   version "2.8.6"
   resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.8.6.tgz#71426144db3fa693170a95f89f5d6e594ab2d901"
   integrity sha512-Z/PFa3W1XdxeTcCtdR6lUsFgZfU/69wWJBPyclPwn7cu1+eriuCr6XZXQpJjib3flU+HnwHiXeUuqZaheehPxw==
@@ -4840,10 +4812,10 @@ bignumber.js@^9.0.0, bignumber.js@^9.0.1:
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.1.1.tgz#c4df7dc496bd849d4c9464344c1aa74228b4dac6"
   integrity sha512-pHm4LsMJ6lzgNGVfZHjMoO8sdoRhOzOH4MLmY65Jg70bpxCKu5iOHNJyfF6OyvYw7t8Fpf35RuzUyqnQsj8Vig==
 
-bignumber.js@^9.0.2:
-  version "9.1.0"
-  resolved "https://registry.npmjs.org/bignumber.js/-/bignumber.js-9.1.0.tgz"
-  integrity sha512-4LwHK4nfDOraBCtst+wOWIHbu1vhvAPJK8g8nROd4iuc3PSEjWif/qwbkh8jwCJz6yDBvtU4KPynETgrfh7y3A==
+bignumber.js@^9.1.2:
+  version "9.1.2"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.1.2.tgz#b7c4242259c008903b13707983b5f4bbd31eda0c"
+  integrity sha512-2/mKyZH9K85bzOEfhXDBFZTGd1CTs+5IHpeFQo9luiBG7hghdC851Pj2WAhb6E3R6b9tZj/XKhbg4fum+Kepug==
 
 binary-extensions@^1.0.0:
   version "1.13.1"
@@ -6711,13 +6683,6 @@ encodeurl@~1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/encodeurl/-/encodeurl-1.0.2.tgz#ad3ff4c86ec2d029322f5a02c3a9a606c95b3f59"
   integrity sha512-TPJXq8JqFaVYm2CWmPvnP2Iyo4ZSM7/QKcSmuMLDObfpH5fi7RUGmd/rTDf+rut/saiDiQEeVTNgAmJEdAOx0w==
-
-encoding@~0.1.13:
-  version "0.1.13"
-  resolved "https://registry.yarnpkg.com/encoding/-/encoding-0.1.13.tgz#56574afdd791f54a8e9b2785c0582a2d26210fa9"
-  integrity sha512-ETBauow1T35Y/WZMkio9jiM0Z5xjHHmJ4XmjZOq1l/dXz3lr2sRn87nJy20RupqSh1F2m3HHPSp8ShIPQJrJ3A==
-  dependencies:
-    iconv-lite "^0.6.2"
 
 end-of-stream@^1.0.0, end-of-stream@^1.1.0, end-of-stream@^1.4.1:
   version "1.4.4"
@@ -8713,13 +8678,6 @@ iconv-lite@0.4.24:
   integrity sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
-
-iconv-lite@^0.6.2:
-  version "0.6.3"
-  resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.6.3.tgz#a52f80bf38da1952eb5c681790719871a1a72501"
-  integrity sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==
-  dependencies:
-    safer-buffer ">= 2.1.2 < 3.0.0"
 
 icss-utils@^4.0.0, icss-utils@^4.1.1:
   version "4.1.1"
@@ -10942,7 +10900,7 @@ node-addon-api@^2.0.0:
   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-2.0.2.tgz#432cfa82962ce494b132e9d72a15b29f71ff5d32"
   integrity sha512-Ntyt4AIXyaLIuMHF6IOoTakB3K+RWxwtsHNRxllEoA6vPwP9o4866g6YWDLUdnucilZhmkxiHwHr11gAENw+QA==
 
-node-fetch@2.6.7, node-fetch@~2.6.2:
+node-fetch@2.6.7:
   version "2.6.7"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
   integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
@@ -13430,7 +13388,7 @@ safe-stable-stringify@^2.1.0, safe-stable-stringify@^2.3.1:
   resolved "https://registry.yarnpkg.com/safe-stable-stringify/-/safe-stable-stringify-2.4.3.tgz#138c84b6f6edb3db5f8ef3ef7115b8f55ccbf886"
   integrity sha512-e2bDA2WJT0wxseVd4lsDP4+3ONX6HpMXQa1ZhFQ7SU+GjvORCmShbCMltrtIDfkYhVHrOcPtj+KhmDBdPdZD1g==
 
-"safer-buffer@>= 2.1.2 < 3", "safer-buffer@>= 2.1.2 < 3.0.0", safer-buffer@^2.0.2, safer-buffer@^2.1.0, safer-buffer@~2.1.0:
+"safer-buffer@>= 2.1.2 < 3", safer-buffer@^2.0.2, safer-buffer@^2.1.0, safer-buffer@~2.1.0:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
@@ -15986,11 +15944,6 @@ yaml@^1.10.0:
   version "1.10.2"
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-1.10.2.tgz#2301c5ffbf12b467de8da2333a459e29e7920e4b"
   integrity sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==
-
-yaml@~2.1.1:
-  version "2.1.3"
-  resolved "https://registry.npmjs.org/yaml/-/yaml-2.1.3.tgz"
-  integrity sha512-AacA8nRULjKMX2DvWvOAdBZMOfQlypSFkjcOcu9FalllIDJ1kvlREzcdIZmidQUqqeMv7jorHjq2HlLv/+c2lg==
 
 yargs-parser@^13.1.2:
   version "13.1.2"
