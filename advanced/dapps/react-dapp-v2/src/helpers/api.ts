@@ -4,10 +4,24 @@ import { apiGetKadenaAccountBalance } from "./kadena";
 import { AssetData } from "./types";
 import { PactCommand } from "@kadena/client";
 
-export const rpcProvidersByChainId: Record<number, any> = {
+export type RpcProvidersByChainId = Record<
+  number,
+  {
+    name: string;
+    baseURL: string;
+    token: {
+      name: string;
+      symbol: string;
+    };
+  }
+>;
+
+const WALLETCONNECT_RPC_BASE_URL = `https://rpc.walletconnect.com/v1?projectId=${process.env.NEXT_PUBLIC_PROJECT_ID}`;
+
+export const rpcProvidersByChainId: RpcProvidersByChainId = {
   1: {
     name: "Ethereum Mainnet",
-    baseURL: "https://mainnet.infura.io/v3/5dc0df7abe4645dfb06a9a8c39ede422",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:1",
     token: {
       name: "Ether",
       symbol: "ETH",
@@ -15,7 +29,7 @@ export const rpcProvidersByChainId: Record<number, any> = {
   },
   5: {
     name: "Ethereum Goerli",
-    baseURL: "https://goerli.infura.io/v3/5dc0df7abe4645dfb06a9a8c39ede422",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:5",
     token: {
       name: "Ether",
       symbol: "ETH",
@@ -23,7 +37,7 @@ export const rpcProvidersByChainId: Record<number, any> = {
   },
   137: {
     name: "Polygon Mainnet",
-    baseURL: "https://polygon-rpc.com",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:137",
     token: {
       name: "Matic",
       symbol: "MATIC",
@@ -31,7 +45,7 @@ export const rpcProvidersByChainId: Record<number, any> = {
   },
   280: {
     name: "zkSync Era Testnet",
-    baseURL: "https://testnet.era.zksync.dev",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:280",
     token: {
       name: "Ether",
       symbol: "ETH",
@@ -39,7 +53,7 @@ export const rpcProvidersByChainId: Record<number, any> = {
   },
   324: {
     name: "zkSync Era",
-    baseURL: "https://mainnet.era.zksync.io",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:324",
     token: {
       name: "Ether",
       symbol: "ETH",
@@ -47,7 +61,7 @@ export const rpcProvidersByChainId: Record<number, any> = {
   },
   80001: {
     name: "Polygon Mumbai",
-    baseURL: "https://rpc-mumbai.maticvigil.com",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:80001",
     token: {
       name: "Matic",
       symbol: "MATIC",
@@ -55,7 +69,7 @@ export const rpcProvidersByChainId: Record<number, any> = {
   },
   10: {
     name: "Optimism",
-    baseURL: "https://mainnet.optimism.io",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:10",
     token: {
       name: "Ether",
       symbol: "ETH",
@@ -63,7 +77,7 @@ export const rpcProvidersByChainId: Record<number, any> = {
   },
   420: {
     name: "Optimism Goerli",
-    baseURL: "https://goerli.optimism.io",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:420",
     token: {
       name: "Ether",
       symbol: "ETH",
@@ -71,7 +85,7 @@ export const rpcProvidersByChainId: Record<number, any> = {
   },
   42161: {
     name: "Arbitrum",
-    baseURL: "https://arb1.arbitrum.io/rpc",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:42161",
     token: {
       name: "Ether",
       symbol: "ETH",
@@ -95,14 +109,14 @@ export const rpcProvidersByChainId: Record<number, any> = {
   },
   42220: {
     name: "Celo",
-    baseURL: "https://forno.celo.org",
+    baseURL: "https://rpc.walletconnect.com/v1",
     token: {
       name: "CELO",
       symbol: "CELO",
     },
   },
   44787: {
-    name: "Celo",
+    name: "Celo Alfajores",
     baseURL: "https://alfajores-forno.celo-testnet.org",
     token: {
       name: "CELO",
@@ -112,7 +126,7 @@ export const rpcProvidersByChainId: Record<number, any> = {
 };
 
 const api: AxiosInstance = axios.create({
-  baseURL: "https://ethereum-api.xyz",
+  baseURL: "https://rpc.walletconnect.com/v1",
   timeout: 10000, // 10 secs
   headers: {
     Accept: "application/json",

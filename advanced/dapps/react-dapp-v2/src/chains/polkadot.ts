@@ -1,4 +1,3 @@
-import { BLOCKCHAIN_LOGO_BASE_URL } from "../constants";
 import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
 import {
   NamespaceMetadata,
