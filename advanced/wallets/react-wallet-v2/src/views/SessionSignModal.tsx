@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { Col, Divider, Row, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
+import { Fragment, useCallback } from 'react'
 
 import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
@@ -25,12 +26,12 @@ export default function SessionSignModal() {
   // Get required request data
   const { topic, params } = requestEvent
   const { request, chainId } = params
-
+  console.log('sign modal', JSON.parse(JSON.stringify(requestEvent)))
   // Get message, convert it to UTF8 string if it is valid hex
   const message = getSignParamsMessage(request.params)
 
   // Handle approve action (logic varies based on request method)
-  async function onApprove() {
+  const onApprove = useCallback(async () => {
     if (requestEvent) {
       const response = await approveEIP155Request(requestEvent)
       try {
@@ -40,14 +41,13 @@ export default function SessionSignModal() {
         })
       } catch (e) {
         styledToast((e as Error).message, 'error')
-        return
       }
       ModalStore.close()
     }
-  }
+  }, [requestEvent, topic])
 
   // Handle reject action
-  async function onReject() {
+  const onReject = useCallback(async () => {
     if (requestEvent) {
       const response = rejectEIP155Request(requestEvent)
       try {
@@ -57,11 +57,10 @@ export default function SessionSignModal() {
         })
       } catch (e) {
         styledToast((e as Error).message, 'error')
-        return
       }
       ModalStore.close()
     }
-  }
+  }, [requestEvent, topic])
 
   return (
     <RequestModal
