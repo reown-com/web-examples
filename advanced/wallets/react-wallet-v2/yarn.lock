@@ -5898,10 +5898,10 @@ pbkdf2@^3.0.9, pbkdf2@^3.1.2:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-permissionless@0.0.16:
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.0.16.tgz#d1f40b7134bd9d83a384b05dcbb5237651dab473"
-  integrity sha512-tuGMf1l6X+WD8X2/WZAaF0Rqj7ysWX++eiUNgG/A+Qe1vP+e4Oik57jVUOW7Yo/VXQ9zU3luEC2GmwrFeo4b8w==
+permissionless@0.0.20:
+  version "0.0.20"
+  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.0.20.tgz#23c4fe50b9f58595f0dd48eef16ccea6b23cea19"
+  integrity sha512-vTlefC0I9Z41kxhpmyliaFLpqFqaD6xQU1DCedbL2xniXp2uHdCUiUAplKyv8FXAfyVoWeGkd5b8wU//iHxDDw==
 
 picocolors@^1.0.0:
   version "1.0.0"
