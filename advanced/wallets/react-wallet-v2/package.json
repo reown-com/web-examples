@@ -24,7 +24,7 @@
     "@multiversx/sdk-core": "12.16.0",
     "@multiversx/sdk-wallet": "4.2.0",
     "@near-wallet-selector/wallet-utils": "^7.0.2",
-    "@nextui-org/react": "1.0.8-beta.5",
+    "@nextui-org/react": "2.2.9",
     "@polkadot/keyring": "^10.1.2",
     "@polkadot/types": "^9.3.3",
     "@solana/web3.js": "1.78.4",
