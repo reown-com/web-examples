@@ -1,6 +1,5 @@
 import React, { PropsWithChildren, FC } from "react";
 import styled from "styled-components";
-import { ChainData } from "caip-api";
 
 import Asset from "./Asset";
 import Button from "./Button";
@@ -93,7 +92,7 @@ interface BlockchainProps {
 }
 
 interface BlockchainDisplayData {
-  data: ChainData;
+  data: any;
   meta: ChainMetadata;
 }
 
@@ -108,7 +107,8 @@ function getBlockchainDisplayData(
   } catch (e) {
     return undefined;
   }
-  const data: ChainData = chainData[namespace][reference];
+  if (typeof chainData[namespace] === "undefined") return undefined;
+  const data = chainData[namespace][reference];
   if (typeof data === "undefined") return undefined;
   return { data, meta };
 }

@@ -131,7 +131,6 @@ const api: AxiosInstance = axios.create({
 });
 
 export const apiGetAccountNonce = async (address: string, chainId: string): Promise<number> => {
-  debugger;
   const ethChainId = chainId.split(":")[1];
   const { baseURL } = rpcProvidersByChainId[Number(ethChainId)];
   const response = await api.post(baseURL, {
