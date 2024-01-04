@@ -36,7 +36,6 @@
     "@web3modal/standalone": "^2.3.7",
     "axios": "^1.0.0",
     "blockies-ts": "^1.0.0",
-    "caip-api": "^2.0.0-beta.1",
     "cosmos-wallet": "^1.1.0",
     "eth-sig-util": "^2.5.3",
     "ethereumjs-util": "^7.0.6",
