@@ -819,10 +819,10 @@
     buffer "^6.0.3"
     tweetnacl "^1.0.3"
 
-"@kadena/types@^0.5.0":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.5.2.tgz#46fb45ceaaba67763e220e499c82361c96fa80c3"
-  integrity sha512-sCTCBKQXb5LF427FiPYQcRpwmcRSIyY6Mkc2VMpy8tkddyxn/Szo6IQdbzzqOdbA7cM75FAVrQ8nTrLyHi9D2g==
+"@kadena/types@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@kadena/types/-/types-0.6.0.tgz#2fe5af3cf6e555d5b17f29ff7421a0b31115c49a"
+  integrity sha512-tWwpPs7OT3eA2d5aATa1p4QxXKMLxt8/+Gr7SB83KjtUYxCIsjFmwNbjM84osufjDqAXHNJzfVEs4zBA9nCFNw==
 
 "@material-ui/core@^4.12.4":
   version "4.12.4"
