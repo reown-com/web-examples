@@ -29,7 +29,7 @@
     "@polkadot/types": "^9.3.3",
     "@solana/web3.js": "1.88.0",
     "@taquito/signer": "^15.1.0",
-    "@taquito/taquito": "^15.1.0",
+    "@taquito/taquito": "^17.0.0",
     "@walletconnect/web3wallet": "1.10.0",
     "borsh": "^1.0.0",
     "bs58": "5.0.0",
