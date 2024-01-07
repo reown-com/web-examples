@@ -14,7 +14,7 @@
     "@emotion/styled": "^11.10.0",
     "@walletconnect/auth-client": "2.1.1",
     "@web3modal/standalone": "^2.2.2",
-    "better-sqlite3": "^7.6.2",
+    "better-sqlite3": "^9.0.0",
     "ethers": "^5.7.0",
     "events": "^3.3.0",
     "framer-motion": "^7.0.0",
