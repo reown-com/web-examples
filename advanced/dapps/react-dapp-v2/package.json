@@ -30,7 +30,7 @@
     "cosmos-wallet": "^1.2.0",
     "eth-sig-util": "^2.5.3",
     "ethereumjs-util": "^7.0.6",
-    "ethers": "^5.3.0",
+    "ethers": "^6.0.0",
     "fp-ts": "^2.13.1",
     "next": "12.2.4",
     "prop-types": "^15.7.2",

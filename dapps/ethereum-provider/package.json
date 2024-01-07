@@ -11,7 +11,7 @@
   "dependencies": {
     "@walletconnect/ethereum-provider": "^2.9.1",
     "@walletconnect/modal": "^2.6.1",
-    "ethers": "^5.7.1",
+    "ethers": "^6.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
