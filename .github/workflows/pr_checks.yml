@@ -11,10 +11,12 @@ concurrency:
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_TEAM_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.UI_TEST_WALLET_V2_VERCEL_PROJECT_ID }}
+
 on:
   push:
     branches-ignore:
       - main
+
 jobs:
   preview:
     runs-on: ubuntu-latest
@@ -33,7 +35,6 @@ jobs:
       - name: preview
         id: preview
         run: echo "PREVIEW_URL=$(cat preview.txt | tail -n 1)" >> "$GITHUB_OUTPUT"
-
 
   ui-test:
     needs: preview
