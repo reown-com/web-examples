@@ -45,5 +45,5 @@ jobs:
       command: playwright:test:wallet
     uses: WalletConnect/web3modal/.github/workflows/ui_tests.yml@feat/optional_webserver2
     secrets:
-      NEXT_PUBLIC_PROJECT_ID: 942cb705fcbddae9f61bc75f7fa14855
-      TESTS_NEXTAUTH_SECRET: test
+      NEXT_PUBLIC_PROJECT_ID: ${{ secrets.UI_TEST_PROJECT_ID }}
+      TESTS_NEXTAUTH_SECRET: ${{ secrets.TESTS_NEXTAUTH_SECRET }}
