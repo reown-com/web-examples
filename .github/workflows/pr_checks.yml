@@ -40,7 +40,7 @@ jobs:
     needs: preview
     with:
       base-url: https://lab.web3modal.com/
-      wallet-url: ${{ needs.preview.outputs.preview-url }}
+      wallet-url: ${{ needs.preview.outputs.preview-url }}/
       skip-playwright-webserver: true
       branch: feat/optional_webserver2
       command: playwright:test:wallet
