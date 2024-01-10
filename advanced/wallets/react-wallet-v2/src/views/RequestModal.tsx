@@ -1,5 +1,5 @@
 import { Fragment, ReactNode, useMemo, useState } from 'react'
-import { Divider, Loading, Text } from '@nextui-org/react'
+import { Divider } from '@nextui-org/react'
 import { CoreTypes } from '@walletconnect/types'
 
 import ModalFooter, { LoaderProps } from '@/components/ModalFooter'
@@ -70,6 +70,7 @@ export default function RequestModal({
       </>
     )
   }, [
+    approveLoader,
     children,
     disabledApprove,
     infoBoxCondition,
@@ -77,7 +78,8 @@ export default function RequestModal({
     intention,
     metadata,
     onApprove,
-    onReject
+    onReject,
+    rejectLoader
   ])
   return <Fragment>{isScam && !threatAcknowledged ? threatPromptContent : modalContent}</Fragment>
 }

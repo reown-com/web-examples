@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Col, Grid, Row, Text, styled } from '@nextui-org/react'
+import { Col, Grid, Loading, Row, Text, styled } from '@nextui-org/react'
 import { useCallback, useMemo, useState } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
+import { SignClientTypes } from '@walletconnect/types'
 
 import DoneIcon from '@mui/icons-material/Done'
 import CloseIcon from '@mui/icons-material/Close'
@@ -31,6 +32,7 @@ import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
 import RequestModal from './RequestModal'
+import { useSnapshot } from 'valtio'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -42,10 +44,12 @@ const StyledSpan = styled('span', {
 
 export default function SessionProposalModal() {
   // Get proposal data and wallet address from store
-  const proposal = ModalStore.state.data?.proposal
+  const data = useSnapshot(ModalStore.state)
+  const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
+
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  console.log('proposal', proposal)
+  console.log('proposal', data.data?.proposal)
   const supportedNamespaces = useMemo(() => {
     // eip155
     const eip155Chains = Object.keys(EIP155_CHAINS)
@@ -212,16 +216,6 @@ export default function SessionProposalModal() {
     }
   }, [])
 
-  // Ensure proposal is defined
-  if (!proposal) {
-    return <Text>Missing proposal data</Text>
-  }
-
-  // Get required proposal data
-  const { id, params } = proposal
-
-  const { proposer, relays } = params
-
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
     if (proposal) {
@@ -235,8 +229,7 @@ export default function SessionProposalModal() {
 
       try {
         await web3wallet.approveSession({
-          id,
-          relayProtocol: relays[0].protocol,
+          id: proposal.id,
           namespaces
         })
       } catch (e) {
@@ -247,7 +240,7 @@ export default function SessionProposalModal() {
     }
     setIsLoadingApprove(false)
     ModalStore.close()
-  }, [id, proposal, relays, supportedNamespaces])
+  }, [proposal, supportedNamespaces])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -257,7 +250,7 @@ export default function SessionProposalModal() {
         setIsLoadingReject(true)
         await new Promise(resolve => setTimeout(resolve, 1000))
         await web3wallet.rejectSession({
-          id,
+          id: proposal.id,
           reason: getSdkError('USER_REJECTED_METHODS')
         })
       } catch (e) {
@@ -268,9 +261,16 @@ export default function SessionProposalModal() {
     }
     setIsLoadingReject(false)
     ModalStore.close()
-  }, [id, proposal])
+  }, [proposal])
 
-  return (
+  return !proposal ? (
+    <>
+      <br />
+      <Loading size="lg" color="primary" type="default" />
+      <Text>Attempting to pair...</Text>
+      <br />
+    </>
+  ) : (
     <RequestModal
       metadata={proposal.params.proposer.metadata}
       onApprove={onApprove}

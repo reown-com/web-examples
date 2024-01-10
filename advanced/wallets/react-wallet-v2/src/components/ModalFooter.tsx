@@ -69,7 +69,7 @@ export default function ModalFooter({
           data-testid="session-approve-button"
         >
           {approveLoader && approveLoader.active ? (
-            <Loading size="md" type="points" color={approveLoader.color || 'success'} />
+            <Loading size="md" type="points" color={approveLoader.color || approveButtonColor} />
           ) : (
             'Approve'
           )}
