@@ -1,4 +1,4 @@
-name: Checks
+name: UI Tests
 
 concurrency:
   # Support push/pr as event types with different behaviors each:
@@ -13,8 +13,8 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.UI_TEST_WALLET_V2_VERCEL_PROJECT_ID }}
 
 on:
-  push:
-    branches-ignore:
+  pull_request:
+    branches:
       - main
 
 jobs:
