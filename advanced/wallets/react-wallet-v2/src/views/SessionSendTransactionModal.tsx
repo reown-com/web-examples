@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { useCallback, useState } from 'react'
 import { Divider, Text } from '@nextui-org/react'
 
@@ -19,20 +18,15 @@ export default function SessionSendTransactionModal() {
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
 
-  // Ensure request and wallet are defined
-  if (!requestEvent || !requestSession) {
-    return <Text>Missing request data</Text>
-  }
-
-  // Get required proposal data
-
-  const { topic, params } = requestEvent
-  const { request, chainId } = params
-  const transaction = request.params[0]
+  const topic = requestEvent?.topic
+  const params = requestEvent?.params
+  const chainId = params?.chainId
+  const request = params?.request
+  const transaction = request?.params[0]
 
   // Handle approve action
   const onApprove = useCallback(async () => {
-    if (requestEvent) {
+    if (requestEvent && topic) {
       setIsLoadingApprove(true)
       try {
         const response = await approveEIP155Request(requestEvent)
@@ -52,7 +46,7 @@ export default function SessionSendTransactionModal() {
 
   // Handle reject action
   const onReject = useCallback(async () => {
-    if (requestEvent) {
+    if (requestEvent && topic) {
       setIsLoadingReject(true)
       const response = rejectEIP155Request(requestEvent)
       try {
@@ -70,10 +64,10 @@ export default function SessionSendTransactionModal() {
     }
   }, [requestEvent, topic])
 
-  return (
+  return request && requestSession ? (
     <RequestModal
       intention="sign a transaction"
-      metadata={requestSession.peer.metadata}
+      metadata={requestSession?.peer.metadata}
       onApprove={onApprove}
       onReject={onReject}
       approveLoader={{ active: isLoadingApprove }}
@@ -81,9 +75,11 @@ export default function SessionSendTransactionModal() {
     >
       <RequestDataCard data={transaction} />
       <Divider y={1} />
-      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
+      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession?.relay.protocol} />
       <Divider y={1} />
       <RequestMethodCard methods={[request.method]} />
     </RequestModal>
+  ) : (
+    <Text>Request not found</Text>
   )
 }
