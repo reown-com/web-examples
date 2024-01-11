@@ -1,19 +1,26 @@
 import SettingsStore from '@/store/SettingsStore'
-import { Button, Modal, Row } from '@nextui-org/react'
+import { Button, Modal, Row, Loading } from '@nextui-org/react'
 import { useMemo } from 'react'
 import { useSnapshot } from 'valtio'
-
+export interface LoaderProps {
+  color?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'white'
+  active?: boolean
+}
 interface Props {
   onApprove: () => void
   onReject: () => void
   infoBoxCondition?: boolean
   infoBoxText?: string
   disabledApprove?: boolean
+  approveLoader?: LoaderProps
+  rejectLoader?: LoaderProps
 }
 
 export default function ModalFooter({
   onApprove,
+  approveLoader,
   onReject,
+  rejectLoader,
   infoBoxCondition,
   infoBoxText,
   disabledApprove
@@ -47,7 +54,11 @@ export default function ModalFooter({
           onPress={onReject}
           data-testid="session-reject-button"
         >
-          Reject
+          {rejectLoader && rejectLoader.active ? (
+            <Loading size="md" type="points" color={rejectLoader.color || 'white'} />
+          ) : (
+            'Reject'
+          )}
         </Button>
         <Button
           auto
@@ -57,7 +68,11 @@ export default function ModalFooter({
           onPress={onApprove}
           data-testid="session-approve-button"
         >
-          Approve
+          {approveLoader && approveLoader.active ? (
+            <Loading size="md" type="points" color={approveLoader.color || approveButtonColor} />
+          ) : (
+            'Approve'
+          )}
         </Button>
       </Row>
     </Modal.Footer>

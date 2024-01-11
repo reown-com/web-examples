@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 
 import Banner from "../components/Banner";
 import Blockchain from "../components/Blockchain";
@@ -42,6 +43,7 @@ import { useJsonRpc } from "../contexts/JsonRpcContext";
 import { useChainData } from "../contexts/ChainDataContext";
 import Icon from "../components/Icon";
 import OriginSimulationDropdown from "../components/OriginSimulationDropdown";
+import LoaderModal from "../modals/LoaderModal";
 
 // Normal import does not work here
 const { version } = require("@walletconnect/sign-client/package.json");
@@ -53,6 +55,7 @@ const Home: NextPage = () => {
   const openPairingModal = () => setModal("pairing");
   const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
+  const openDisconnectModal = () => setModal("disconnect");
 
   // Initialize the WalletConnect client.
   const {
@@ -116,6 +119,18 @@ const Home: NextPage = () => {
     openPingModal();
     await ping();
   };
+
+  const onDisconnect = useCallback(async () => {
+    openDisconnectModal();
+    try {
+      await disconnect();
+    } catch (error) {
+      toast.error((error as Error).message, {
+        position: "bottom-left",
+      });
+    }
+    closeModal();
+  }, [disconnect]);
 
   async function emit() {
     if (typeof client === "undefined") {
@@ -443,6 +458,8 @@ const Home: NextPage = () => {
         );
       case "ping":
         return <PingModal pending={isRpcRequestPending} result={rpcResult} />;
+      case "disconnect":
+        return <LoaderModal title={"Disconnecting..."} />;
       default:
         return null;
     }
@@ -522,7 +539,7 @@ const Home: NextPage = () => {
       <Column maxWidth={1000} spanHeight>
         <Header
           ping={onPing}
-          disconnect={disconnect}
+          disconnect={onDisconnect}
           session={session}
           emit={emit}
         />

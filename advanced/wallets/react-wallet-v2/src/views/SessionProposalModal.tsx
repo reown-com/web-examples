@@ -1,12 +1,12 @@
-import { Col, Divider, Grid, Row, Text, styled } from '@nextui-org/react'
-import { Fragment, useCallback, useMemo } from 'react'
+/* eslint-disable react-hooks/rules-of-hooks */
+import { Col, Grid, Loading, Row, Text, styled } from '@nextui-org/react'
+import { useCallback, useMemo, useState } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
+import { SignClientTypes } from '@walletconnect/types'
 
 import DoneIcon from '@mui/icons-material/Done'
 import CloseIcon from '@mui/icons-material/Close'
 
-import ProjectInfoCard from '@/components/ProjectInfoCard'
-import RequestModalContainer from '@/components/RequestModalContainer'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
@@ -31,9 +31,8 @@ import { TRON_CHAINS, TRON_SIGNING_METHODS } from '@/data/TronData'
 import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
-import VerifyInfobox from '@/components/VerifyInfobox'
-import ModalFooter from '@/components/ModalFooter'
 import RequestModal from './RequestModal'
+import { useSnapshot } from 'valtio'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -45,8 +44,12 @@ const StyledSpan = styled('span', {
 
 export default function SessionProposalModal() {
   // Get proposal data and wallet address from store
-  const proposal = ModalStore.state.data?.proposal
-  console.log('proposal', proposal)
+  const data = useSnapshot(ModalStore.state)
+  const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
+
+  const [isLoadingApprove, setIsLoadingApprove] = useState(false)
+  const [isLoadingReject, setIsLoadingReject] = useState(false)
+  console.log('proposal', data.data?.proposal)
   const supportedNamespaces = useMemo(() => {
     // eip155
     const eip155Chains = Object.keys(EIP155_CHAINS)
@@ -213,30 +216,10 @@ export default function SessionProposalModal() {
     }
   }, [])
 
-  const approveButtonColor: any = useMemo(() => {
-    switch (proposal?.verifyContext.verified.validation) {
-      case 'INVALID':
-        return 'error'
-      case 'UNKNOWN':
-        return 'warning'
-      default:
-        return 'success'
-    }
-  }, [proposal])
-
-  // Ensure proposal is defined
-  if (!proposal) {
-    return <Text>Missing proposal data</Text>
-  }
-
-  // Get required proposal data
-  const { id, params } = proposal
-
-  const { proposer, relays } = params
-
   // Hanlde approve action, construct session namespace
-  async function onApprove() {
+  const onApprove = useCallback(async () => {
     if (proposal) {
+      setIsLoadingApprove(true)
       const namespaces = buildApprovedNamespaces({
         proposal: proposal.params,
         supportedNamespaces
@@ -246,39 +229,54 @@ export default function SessionProposalModal() {
 
       try {
         await web3wallet.approveSession({
-          id,
-          relayProtocol: relays[0].protocol,
+          id: proposal.id,
           namespaces
         })
       } catch (e) {
+        setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
         return
       }
     }
+    setIsLoadingApprove(false)
     ModalStore.close()
-  }
+  }, [proposal, supportedNamespaces])
 
   // Hanlde reject action
-  async function onReject() {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const onReject = useCallback(async () => {
     if (proposal) {
       try {
+        setIsLoadingReject(true)
+        await new Promise(resolve => setTimeout(resolve, 1000))
         await web3wallet.rejectSession({
-          id,
+          id: proposal.id,
           reason: getSdkError('USER_REJECTED_METHODS')
         })
       } catch (e) {
+        setIsLoadingReject(false)
         styledToast((e as Error).message, 'error')
         return
       }
     }
+    setIsLoadingReject(false)
     ModalStore.close()
-  }
+  }, [proposal])
 
-  return (
+  return !proposal ? (
+    <>
+      <br />
+      <Loading size="lg" color="primary" type="default" />
+      <Text>Attempting to pair...</Text>
+      <br />
+    </>
+  ) : (
     <RequestModal
       metadata={proposal.params.proposer.metadata}
       onApprove={onApprove}
       onReject={onReject}
+      approveLoader={{ active: isLoadingApprove }}
+      rejectLoader={{ active: isLoadingReject }}
       infoBoxCondition={notSupportedChains.length > 0}
       infoBoxText={`The following required chains are not supported by your wallet - ${notSupportedChains.toString()}`}
       disabledApprove={notSupportedChains.length > 0}

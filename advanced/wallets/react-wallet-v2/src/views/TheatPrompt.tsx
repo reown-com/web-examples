@@ -1,14 +1,8 @@
-import { Fragment, ReactNode, useMemo } from 'react'
 import { Col, Divider, Link, Row, Text, styled } from '@nextui-org/react'
 import { CoreTypes } from '@walletconnect/types'
 import NewReleasesIcon from '@mui/icons-material/NewReleases'
 
-import ModalFooter from '@/components/ModalFooter'
-import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
-import VerifyInfobox from '@/components/VerifyInfobox'
-import { useSnapshot } from 'valtio'
-import SettingsStore from '@/store/SettingsStore'
 
 interface IProps {
   metadata: CoreTypes.Metadata

@@ -1,23 +1,22 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { Divider, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
 
-import ModalFooter from '@/components/ModalFooter'
-import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
-import RequestModalContainer from '@/components/RequestModalContainer'
-import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { getSignTypedDataParamsData, styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
+import { useCallback, useState } from 'react'
 
 export default function SessionSignTypedDataModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
+  const [isLoadingApprove, setIsLoadingApprove] = useState(false)
+  const [isLoadingReject, setIsLoadingReject] = useState(false)
 
   // Ensure request and wallet are defined
   if (!requestEvent || !requestSession) {
@@ -32,8 +31,9 @@ export default function SessionSignTypedDataModal() {
   const data = getSignTypedDataParamsData(request.params)
 
   // Handle approve action (logic varies based on request method)
-  async function onApprove() {
+  const onApprove = useCallback(async () => {
     if (requestEvent) {
+      setIsLoadingApprove(true)
       const response = await approveEIP155Request(requestEvent)
       try {
         await web3wallet.respondSessionRequest({
@@ -41,16 +41,19 @@ export default function SessionSignTypedDataModal() {
           response
         })
       } catch (e) {
+        setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
         return
       }
+      setIsLoadingApprove(false)
       ModalStore.close()
     }
-  }
+  }, [requestEvent, topic])
 
   // Handle reject action
-  async function onReject() {
+  const onReject = useCallback(async () => {
     if (requestEvent) {
+      setIsLoadingReject(true)
       const response = rejectEIP155Request(requestEvent)
       try {
         await web3wallet.respondSessionRequest({
@@ -58,12 +61,14 @@ export default function SessionSignTypedDataModal() {
           response
         })
       } catch (e) {
+        setIsLoadingReject(false)
         styledToast((e as Error).message, 'error')
         return
       }
+      setIsLoadingReject(false)
       ModalStore.close()
     }
-  }
+  }, [requestEvent, topic])
   return (
     <RequestModal
       intention="sign a message"

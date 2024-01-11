@@ -1,8 +1,8 @@
 import { Fragment, ReactNode, useMemo, useState } from 'react'
-import { Divider, Text } from '@nextui-org/react'
+import { Divider } from '@nextui-org/react'
 import { CoreTypes } from '@walletconnect/types'
 
-import ModalFooter from '@/components/ModalFooter'
+import ModalFooter, { LoaderProps } from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import VerifyInfobox from '@/components/VerifyInfobox'
@@ -19,12 +19,16 @@ interface IProps {
   infoBoxCondition?: boolean
   infoBoxText?: string
   disabledApprove?: boolean
+  approveLoader?: LoaderProps
+  rejectLoader?: LoaderProps
 }
 export default function RequestModal({
   children,
   metadata,
   onApprove,
   onReject,
+  approveLoader,
+  rejectLoader,
   intention,
   infoBoxCondition,
   infoBoxText,
@@ -57,6 +61,8 @@ export default function RequestModal({
         <ModalFooter
           onApprove={onApprove}
           onReject={onReject}
+          approveLoader={approveLoader}
+          rejectLoader={rejectLoader}
           infoBoxCondition={infoBoxCondition}
           infoBoxText={infoBoxText}
           disabledApprove={disabledApprove}
@@ -64,6 +70,7 @@ export default function RequestModal({
       </>
     )
   }, [
+    approveLoader,
     children,
     disabledApprove,
     infoBoxCondition,
@@ -71,7 +78,8 @@ export default function RequestModal({
     intention,
     metadata,
     onApprove,
-    onReject
+    onReject,
+    rejectLoader
   ])
   return <Fragment>{isScam && !threatAcknowledged ? threatPromptContent : modalContent}</Fragment>
 }

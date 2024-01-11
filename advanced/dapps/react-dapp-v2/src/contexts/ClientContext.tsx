@@ -200,17 +200,11 @@ export function ClientContextProvider({
       throw new Error("Session is not connected");
     }
 
-    try {
-      await client.disconnect({
-        topic: session.topic,
-        reason: getSdkError("USER_DISCONNECTED"),
-      });
-    } catch (error) {
-      toast.error((error as Error).message, {
-        position: "bottom-left",
-      });
-      return;
-    }
+    await client.disconnect({
+      topic: session.topic,
+      reason: getSdkError("USER_DISCONNECTED"),
+    });
+
     // Reset app state after disconnect.
     reset();
   }, [client, session]);
