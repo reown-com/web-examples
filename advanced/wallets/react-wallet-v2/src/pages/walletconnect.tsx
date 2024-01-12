@@ -3,11 +3,12 @@ import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { styledToast } from '@/utils/HelperUtil'
 import ModalStore from '@/store/ModalStore'
 
-export default function WalletConnectPage() {
+export default function WalletConnectPage(params: { deepLink?: string }) {
+  const { deepLink } = params
   const [uri, setUri] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -37,6 +38,12 @@ export default function WalletConnectPage() {
       setUri('')
     }
   }
+
+  useMemo(() => {
+    if (deepLink) {
+      onConnect(deepLink)
+    }
+  }, [deepLink])
 
   return (
     <Fragment>
