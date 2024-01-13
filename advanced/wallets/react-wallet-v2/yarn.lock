@@ -1083,10 +1083,10 @@
     tweetnacl "1.0.3"
     uuid "8.3.2"
 
-"@near-wallet-selector/core@8.9.1":
-  version "8.9.1"
-  resolved "https://registry.yarnpkg.com/@near-wallet-selector/core/-/core-8.9.1.tgz#7d4de41ff18cde6530d0153e8335d5e366c07452"
-  integrity sha512-EY8PmKyNoW/pWsZFZM9V2sluSMn1DPQ8PDj+veiOCbuMP2USJ5j9qxJd1iJy07JbmI/40EuCA6IAZ6SbukzaUQ==
+"@near-wallet-selector/core@8.9.2":
+  version "8.9.2"
+  resolved "https://registry.yarnpkg.com/@near-wallet-selector/core/-/core-8.9.2.tgz#738583255f2a7a57a9731de503e187f6a651abfb"
+  integrity sha512-vCUoVOezCn5+5etHT0ejzgJ7DpnkUjLasYLYjjUh+E2BlUzrI63qMWfvdL8eoUoELXY7vtJVMEy/Td1kgrt10w==
   dependencies:
     borsh "0.7.0"
     events "3.3.0"
@@ -1094,11 +1094,11 @@
     rxjs "7.8.1"
 
 "@near-wallet-selector/wallet-utils@^8.0.0":
-  version "8.9.1"
-  resolved "https://registry.yarnpkg.com/@near-wallet-selector/wallet-utils/-/wallet-utils-8.9.1.tgz#69087d180a85b7fcd5325970f456946aee4776cb"
-  integrity sha512-T7KXOLfeFXc+LL3hMvmqBEVB4LhlQD4l8VSNM+AuaZIBAg16gPbT1Q1580oH6kH3SILogvIjIDetLIVtdhGi7w==
+  version "8.9.2"
+  resolved "https://registry.yarnpkg.com/@near-wallet-selector/wallet-utils/-/wallet-utils-8.9.2.tgz#e5c5ab50c6ebca422585c318bf7cd59ff1107dce"
+  integrity sha512-k2Sr66Al9q2T25xQRUlWR4hIEL4LXH24VIHdmKPG9zXT3hlR7zKdHcxEz6vEYgm3fwqva9P9s3WgsZ1+GORtCQ==
   dependencies:
-    "@near-wallet-selector/core" "8.9.1"
+    "@near-wallet-selector/core" "8.9.2"
     bn.js "5.2.1"
 
 "@next/env@12.1.5":
