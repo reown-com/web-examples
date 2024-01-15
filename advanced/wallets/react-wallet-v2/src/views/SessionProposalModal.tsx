@@ -33,6 +33,7 @@ import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
 import RequestModal from './RequestModal'
 import { useSnapshot } from 'valtio'
+import SettingsStore from '@/store/SettingsStore'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -232,6 +233,7 @@ export default function SessionProposalModal() {
           id: proposal.id,
           namespaces
         })
+        SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
       } catch (e) {
         setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
