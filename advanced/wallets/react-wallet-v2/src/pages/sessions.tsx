@@ -1,11 +1,12 @@
 import PageHeader from '@/components/PageHeader'
 import SessionCard from '@/components/SessionCard'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
-import { Fragment, useState } from 'react'
+import { Fragment } from 'react'
+import { useSnapshot } from 'valtio'
 
 export default function SessionsPage() {
-  const [sessions] = useState(Object.values(web3wallet.getActiveSessions()))
+  const { sessions } = useSnapshot(SettingsStore.state)
 
   if (!sessions.length) {
     return (
