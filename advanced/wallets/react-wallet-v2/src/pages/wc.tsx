@@ -7,8 +7,9 @@ export default function DeepLinkPairingPage() {
   const router = useRouter()
 
   const uri = router.query.uri as string
+  const requestId = router.query.requestId as string
 
-  if (!uri) {
+  if (!uri && !requestId) {
     return (
       <Fragment>
         <Text css={{ opacity: '0.5', textAlign: 'center', marginTop: '$20' }}>

@@ -125,7 +125,12 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       web3wallet.on('auth_request', onAuthRequest)
       // TODOs
       web3wallet.engine.signClient.events.on('session_ping', data => console.log('ping', data))
-      web3wallet.on('session_delete', data => console.log('delete', data))
+      web3wallet.on('session_delete', data => {
+        console.log('session_delete event received', data)
+        SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+      })
+      // load sessions on init
+      SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
     }
   }, [initialized, onAuthRequest, onSessionProposal, onSessionRequest])
 }
