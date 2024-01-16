@@ -16,6 +16,7 @@ export const EIP155Colors = {
   polygon: "130, 71, 229",
   celo: "60, 203, 132",
   arbitrum: "44, 55, 75",
+  zkatana: "46 129 242",
 };
 
 export const EIP155ChainData = {
@@ -124,6 +125,13 @@ export const EIP155ChainData = {
     slip44: 60,
     testnet: true,
   },
+  "1261120": {
+    name: "Astar zKatana",
+    id: "eip155:1261120",
+    rpc: ["https://rpc.startale.com/zkatana", "https://rpc.zkatana.gelato.digital"],
+    slip44: 60,
+    testnet: true,
+  },
 };
 
 export const EIP155Metadata: NamespaceMetadata = {
@@ -179,6 +187,11 @@ export const EIP155Metadata: NamespaceMetadata = {
   "421611": {
     logo: "/assets/" + "eip155:421611.png",
     rgb: EIP155Colors.arbitrum,
+  },
+  "1261120": {
+    name: "Astar zKatana",
+    logo: "/assets/" + "eip155:1261120.png",
+    rgb: EIP155Colors.zkatana,
   },
 };
 export function getChainMetadata(chainId: string): ChainMetadata {
