@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { Col, Grid, Loading, Row, Text, styled } from '@nextui-org/react'
 import { useCallback, useMemo, useState } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
@@ -265,14 +264,7 @@ export default function SessionProposalModal() {
     ModalStore.close()
   }, [proposal])
 
-  return !proposal ? (
-    <>
-      <br />
-      <Loading size="lg" color="primary" type="default" />
-      <Text>Attempting to pair...</Text>
-      <br />
-    </>
-  ) : (
+  return (
     <RequestModal
       metadata={proposal.params.proposer.metadata}
       onApprove={onApprove}

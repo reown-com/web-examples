@@ -3,7 +3,7 @@ import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { styledToast } from '@/utils/HelperUtil'
 import ModalStore from '@/store/ModalStore'
 
@@ -27,7 +27,6 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     })
     try {
       setLoading(true)
-      ModalStore.open('SessionProposalModal', {})
       web3wallet.core.pairing.events.on('pairing_expire', pairingExpiredListener)
       await web3wallet.pair({ uri })
     } catch (error) {
@@ -39,7 +38,7 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     }
   }
 
-  useMemo(() => {
+  useEffect(() => {
     if (deepLink) {
       onConnect(deepLink)
     }
@@ -48,34 +47,35 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
   return (
     <Fragment>
       <PageHeader title="WalletConnect" />
+      <>
+        <QrReader onConnect={onConnect} />
 
-      <QrReader onConnect={onConnect} />
+        <Text size={13} css={{ textAlign: 'center', marginTop: '$10', marginBottom: '$10' }}>
+          or use walletconnect uri
+        </Text>
 
-      <Text size={13} css={{ textAlign: 'center', marginTop: '$10', marginBottom: '$10' }}>
-        or use walletconnect uri
-      </Text>
-
-      <Input
-        css={{ width: '100%' }}
-        bordered
-        aria-label="wc url connect input"
-        placeholder="e.g. wc:a281567bb3e4..."
-        onChange={e => setUri(e.target.value)}
-        value={uri}
-        data-testid="uri-input"
-        contentRight={
-          <Button
-            size="xs"
-            disabled={!uri}
-            css={{ marginLeft: -60 }}
-            onClick={() => onConnect(uri)}
-            color="gradient"
-            data-testid="uri-connect-button"
-          >
-            {loading ? <Loading size="md" type="points" color={'white'} /> : 'Connect'}
-          </Button>
-        }
-      />
+        <Input
+          css={{ width: '100%' }}
+          bordered
+          aria-label="wc url connect input"
+          placeholder="e.g. wc:a281567bb3e4..."
+          onChange={e => setUri(e.target.value)}
+          value={uri}
+          data-testid="uri-input"
+          contentRight={
+            <Button
+              size="xs"
+              disabled={!uri}
+              css={{ marginLeft: -60 }}
+              onClick={() => onConnect(uri)}
+              color="gradient"
+              data-testid="uri-connect-button"
+            >
+              {loading ? <Loading size="md" type="points" color={'white'} /> : 'Connect'}
+            </Button>
+          }
+        />
+      </>
     </Fragment>
   )
 }
