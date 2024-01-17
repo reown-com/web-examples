@@ -183,7 +183,7 @@ export function ClientContextProvider({
         toast.error((e as Error).message, {
           position: "bottom-left",
         });
-        // ignore rejection
+        throw e;
       } finally {
         // close modal in case it was open
         web3Modal.closeModal();
