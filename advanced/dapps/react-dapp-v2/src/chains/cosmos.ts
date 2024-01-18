@@ -40,7 +40,7 @@ export const CosmosChainData: ChainsMap = {
 
 export const CosmosMetadata: NamespaceMetadata = {
   "cosmoshub-4": {
-    logo: "/assets/" + "cosmos:cosmoshub-4.png",
+    logo: "/assets/" + "cosmos-cosmoshub-4.png",
     rgb: "27, 31, 53",
   },
 };
