@@ -131,65 +131,65 @@ export const EIP155ChainData: ChainsMap = {
 export const EIP155Metadata: NamespaceMetadata = {
   "1": {
     name: "Ethereum",
-    logo: "/assets/" + "eip155:1.png",
+    logo: "/assets/" + "eip155-1.png",
     rgb: EIP155Colors.ethereum,
   },
   "5": {
-    logo: "/assets/" + "eip155:1.png",
+    logo: "/assets/" + "eip155-1.png",
     rgb: EIP155Colors.ethereum,
   },
   "10": {
     name: "Optimism",
-    logo: "/assets/" + "eip155:10.png",
+    logo: "/assets/" + "eip155-10.png",
     rgb: EIP155Colors.optimism,
   },
   "42": {
-    logo: "/assets/" + "eip155:42.png",
+    logo: "/assets/" + "eip155-42.png",
     rgb: EIP155Colors.ethereum,
   },
   "420": {
-    logo: "/assets/" + "eip155:420.png",
+    logo: "/assets/" + "eip155-420.png",
     rgb: EIP155Colors.optimism,
   },
   "100": {
-    logo: "/assets/" + "eip155:100.png",
+    logo: "/assets/" + "eip155-100.png",
     rgb: EIP155Colors.xdai,
   },
   "280": {
     name: "zkSync Era Testnet",
-    logo: "/assets/" + "eip155:324.svg",
+    logo: "/assets/" + "eip155-324.svg",
     rgb: EIP155Colors.zksync,
   },
   "324": {
     name: "zkSync Era",
-    logo: "/assets/" + "eip155:324.svg",
+    logo: "/assets/" + "eip155-324.svg",
     rgb: EIP155Colors.zksync,
   },
   "137": {
     name: "Polygon",
-    logo: "/assets/" + "eip155:137.png",
+    logo: "/assets/" + "eip155-137.png",
     rgb: EIP155Colors.polygon,
   },
   "80001": {
-    logo: "/assets/" + "eip155:80001.png",
+    logo: "/assets/" + "eip155-80001.png",
     rgb: EIP155Colors.polygon,
   },
   "42161": {
     name: "Arbitrum",
-    logo: "/assets/" + "eip155:42161.png",
+    logo: "/assets/" + "eip155-42161.png",
     rgb: EIP155Colors.arbitrum,
   },
   "42220": {
     name: "Celo",
-    logo: "/assets/" + "eip155:42220.png",
+    logo: "/assets/" + "eip155-42220.png",
     rgb: EIP155Colors.celo,
   },
   "44787": {
-    logo: "/assets/" + "eip155:44787.png",
+    logo: "/assets/" + "eip155-44787.png",
     rgb: EIP155Colors.celo,
   },
   "421611": {
-    logo: "/assets/" + "eip155:421611.png",
+    logo: "/assets/" + "eip155-421611.png",
     rgb: EIP155Colors.arbitrum,
   },
 };
