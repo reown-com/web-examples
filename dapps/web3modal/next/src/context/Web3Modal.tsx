@@ -12,7 +12,9 @@ import { walletConnect } from 'wagmi/connectors'
 const queryClient = new QueryClient()
 
 // 1. Get projectId at https://cloud.walletconnect.com
-const projectId = 'bd4997ce3ede37c95770ba10a3804dad'
+const projectId = process.env.NEXT_PUBLIC_PROJECT_ID || ''
+
+if (!projectId) throw new Error('WalletConnect Project ID is undefined')
 
 // 2. Create wagmiConfig
 const metadata = {
@@ -30,7 +32,7 @@ export const wagmiConfig = createConfig({
 		[mainnet.id]: http(),
 		[sepolia.id]: http(),
 	},
-	connectors: [walletConnect({ projectId, metadata, showQrModal: true })],
+	connectors: [walletConnect({ projectId, metadata, showQrModal: false })],
 	ssr: true,
 	storage: createStorage({
 		storage: cookieStorage,
