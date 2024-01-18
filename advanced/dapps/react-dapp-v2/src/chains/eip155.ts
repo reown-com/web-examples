@@ -157,12 +157,12 @@ export const EIP155Metadata: NamespaceMetadata = {
   },
   "280": {
     name: "zkSync Era Testnet",
-    logo: "/assets/" + "eip155:324.svg",
+    logo: "/assets/" + "eip155-324.svg",
     rgb: EIP155Colors.zksync,
   },
   "324": {
     name: "zkSync Era",
-    logo: "/assets/" + "eip155:324.svg",
+    logo: "/assets/" + "eip155-324.svg",
     rgb: EIP155Colors.zksync,
   },
   "137": {
