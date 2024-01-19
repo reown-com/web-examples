@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { createWeb3Modal } from "@web3modal/wagmi/react";
 
 import { http, createConfig, WagmiProvider } from "wagmi";
-import { mainnet, arbitrum } from "wagmi/chains";
+import { mainnet, arbitrum } from "viem/chains";
 import { walletConnect, coinbaseWallet } from "wagmi/connectors";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
