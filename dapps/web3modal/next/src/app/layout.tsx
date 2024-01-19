@@ -3,8 +3,9 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { headers } from 'next/headers'
 
-import { Web3Modal, wagmiConfig } from '@/context/Web3Modal'
+import { Web3Modal } from '@/context/Web3Modal'
 import { cookieToInitialState } from 'wagmi'
+import { wagmiConfig } from '@/context/wagmiConfig'
 
 const inter = Inter({ subsets: ['latin'] })
 
