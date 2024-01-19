@@ -1,6 +1,5 @@
 import { createWeb3Modal } from "@web3modal/wagmi"
 import { cookieStorage, createConfig, createStorage, http } from "wagmi"
-import { getConnectors, watchConnectors } from "wagmi/actions"
 import { Chain, mainnet, sepolia } from "wagmi/chains"
 import { injected, walletConnect } from "wagmi/connectors"
 
@@ -32,10 +31,6 @@ export const wagmiConfig = createConfig({
 	}),
 })
 
-const connectors = getConnectors(wagmiConfig)
-console.log(connectors)
-
-watchConnectors(wagmiConfig, { onChange(cone){ console.log(cone) } })
 // 3. Create modal
 createWeb3Modal({ wagmiConfig, projectId, chains })
 
