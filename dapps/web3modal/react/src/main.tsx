@@ -24,7 +24,7 @@ const metadata = {
 };
 
 // Define chains
-const chains = [mainnet, arbitrum];
+const chains = [mainnet, arbitrum] as const
 
 const wagmiConfig = createConfig({
   chains, // Use the defined chains here
@@ -42,7 +42,7 @@ const wagmiConfig = createConfig({
 });
 
 // 3. Create modal
-createWeb3Modal({ wagmiConfig, projectId, chains });
+createWeb3Modal({ wagmiConfig, projectId });
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
