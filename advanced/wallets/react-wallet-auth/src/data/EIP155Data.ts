@@ -42,7 +42,14 @@ export const EIP155_TEST_CHAINS = {
     logo: '/chain-logos/eip155-137.png',
     rgb: '130, 71, 229',
     rpc: 'https://matic-mumbai.chainstacklabs.com'
-  }
+  },
+  "eip155:1261120": {
+    chainId: 1261120,
+    name: "Astar zKatana",
+    logo: '/chain-logos/eip155-1261120.png',
+    rgb: "46 129 242",
+    rpc: "https://rpc.startale.com/zkatana",
+  },
 }
 
 export const EIP155_CHAINS = { ...EIP155_MAINNET_CHAINS, ...EIP155_TEST_CHAINS }

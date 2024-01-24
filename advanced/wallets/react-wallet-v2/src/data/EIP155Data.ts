@@ -113,7 +113,15 @@ export const EIP155_TEST_CHAINS: Record<string,EIP155TestChain> = {
     rgb: '242, 242, 242',
     rpc: 'https://testnet.era.zksync.dev/',
     namespace: 'eip155'
-  }
+  },
+  "eip155:1261120": {
+    chainId: 1261120,
+    name: "Astar zKatana",
+    logo: '/chain-logos/eip155-1261120.png',
+    rgb: "46 129 242",
+    rpc: "https://rpc.startale.com/zkatana",
+    namespace: "eip155",
+  },
 }
 
 export const EIP155_CHAINS = { ...EIP155_MAINNET_CHAINS, ...EIP155_TEST_CHAINS }
