@@ -3693,10 +3693,10 @@
     "@typescript-eslint/types" "5.59.7"
     eslint-visitor-keys "^3.3.0"
 
-"@walletconnect/core@2.10.6-canary-3d4d866":
-  version "2.10.6-canary-3d4d866"
-  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.10.6-canary-3d4d866.tgz#ae06462ce0bb68fbf477d16feac7366e0751d061"
-  integrity sha512-0o65ldGC6NcfAp6Nrm1og5WYpsmQvI3lJ/6JQz9irC0Pa32g19ekac2L25GfI+wZ0hG7bjYvIeh9Yg1EkvtpyQ==
+"@walletconnect/core@2.11.0-canary-3c05d1":
+  version "2.11.0-canary-3c05d1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.11.0-canary-3c05d1.tgz#86fb535c8a88e6d839224dd8d883a5af0e633e45"
+  integrity sha512-fWOlm7ehnRsQ/9d7rv4ukxUdbKe6MW0WoLbMT1zV2xxuyg5lW5eNRPQ30JRAIRBGW/4q3dLCqhAcuKq/al2gZw==
   dependencies:
     "@walletconnect/heartbeat" "1.2.1"
     "@walletconnect/jsonrpc-provider" "1.0.13"
@@ -3709,9 +3709,10 @@
     "@walletconnect/relay-auth" "^1.0.4"
     "@walletconnect/safe-json" "^1.0.2"
     "@walletconnect/time" "^1.0.2"
-    "@walletconnect/types" "2.10.6-canary-3d4d866"
-    "@walletconnect/utils" "2.10.6-canary-3d4d866"
+    "@walletconnect/types" "2.11.0-canary-3c05d1"
+    "@walletconnect/utils" "2.11.0-canary-3c05d1"
     events "^3.3.0"
+    isomorphic-unfetch "3.1.0"
     lodash.isequal "4.5.0"
     uint8arrays "^3.1.0"
 
@@ -3869,19 +3870,19 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/sign-client@2.10.6-canary-3d4d866":
-  version "2.10.6-canary-3d4d866"
-  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.10.6-canary-3d4d866.tgz#6be1b476d2b0c3d10a513927abbd08b70693e955"
-  integrity sha512-wVFK4mNHpv0qJQ3xd/B+ZTd6MEYAMum04D151v61pcplBdY2+7g9WLbNuVt6LnPJq/naSTfBkX8tedpPSxUHVQ==
+"@walletconnect/sign-client@2.11.0-canary-3c05d1":
+  version "2.11.0-canary-3c05d1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.11.0-canary-3c05d1.tgz#83917472670f0c1e5c935c4015fdfb4b8ab1446a"
+  integrity sha512-ezfCt/dnhqp/UkgYXDNACWfXC4QlvaxYoMtn1R4iQ3hVmzLQBVgqoqUdkWr/5CUJE36B1b3xqp05Z2QGS9kHLg==
   dependencies:
-    "@walletconnect/core" "2.10.6-canary-3d4d866"
+    "@walletconnect/core" "2.11.0-canary-3c05d1"
     "@walletconnect/events" "^1.0.1"
     "@walletconnect/heartbeat" "1.2.1"
     "@walletconnect/jsonrpc-utils" "1.0.8"
     "@walletconnect/logger" "^2.0.1"
     "@walletconnect/time" "^1.0.2"
-    "@walletconnect/types" "2.10.6-canary-3d4d866"
-    "@walletconnect/utils" "2.10.6-canary-3d4d866"
+    "@walletconnect/types" "2.11.0-canary-3c05d1"
+    "@walletconnect/utils" "2.11.0-canary-3c05d1"
     events "^3.3.0"
 
 "@walletconnect/sign-client@~2.8.1":
@@ -3906,10 +3907,10 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/types@2.10.6-canary-3d4d866":
-  version "2.10.6-canary-3d4d866"
-  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.10.6-canary-3d4d866.tgz#f896d8f154a657a1a881af49cbdb4ef9140ac6eb"
-  integrity sha512-Qv8HgekdTXDK2EgC5YEyGXX6ZoMFf4NMLSAUm7wRpqFBRdbK45oD4zDoPMeO1hEtTAyNa2W7S2HimvQn5bIZxg==
+"@walletconnect/types@2.11.0-canary-3c05d1":
+  version "2.11.0-canary-3c05d1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.11.0-canary-3c05d1.tgz#922ee87f35f83cba69f675ce633000a6f324de3b"
+  integrity sha512-aj0S3zMLMGURutCZKGif0cXwPgTjHrYrrssVo9gwzpuOV6+ZT+NQ7L3T1vh6jvSf1L4gvk8HMEl/eB9mltjZHQ==
   dependencies:
     "@walletconnect/events" "^1.0.1"
     "@walletconnect/heartbeat" "1.2.1"
@@ -3930,10 +3931,10 @@
     "@walletconnect/logger" "^2.0.1"
     events "^3.3.0"
 
-"@walletconnect/utils@2.10.6-canary-3d4d866":
-  version "2.10.6-canary-3d4d866"
-  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.10.6-canary-3d4d866.tgz#c90b3bf632f0e5380b59a4390e82cc847819d5fd"
-  integrity sha512-8kOo5x+HJuD4hsm7+7RnccmRDuJ5l++UE2JGCdcSlFg+ZQLEqdydp7U3JrtNAlJEl+MuYYTbhnaHShmyIAgojw==
+"@walletconnect/utils@2.11.0-canary-3c05d1":
+  version "2.11.0-canary-3c05d1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.11.0-canary-3c05d1.tgz#845ecc1664fb19623b59a39afd7b0c97a92d2284"
+  integrity sha512-oB+DipSv7WsM2F6V1mDLZ59XiU7klb+3oiNaIplX7sBc37tAhczQKfSI2Ej27qZ+XPMgdDneWJLXZcMtAbx1Ng==
   dependencies:
     "@stablelib/chacha20poly1305" "1.0.1"
     "@stablelib/hkdf" "1.0.1"
@@ -3943,7 +3944,7 @@
     "@walletconnect/relay-api" "^1.0.9"
     "@walletconnect/safe-json" "^1.0.2"
     "@walletconnect/time" "^1.0.2"
-    "@walletconnect/types" "2.10.6-canary-3d4d866"
+    "@walletconnect/types" "2.11.0-canary-3c05d1"
     "@walletconnect/window-getters" "^1.0.1"
     "@walletconnect/window-metadata" "^1.0.1"
     detect-browser "5.3.0"
@@ -9608,6 +9609,14 @@ isobject@^3.0.0, isobject@^3.0.1:
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-3.0.1.tgz#4e431e92b11a9731636aa1f9c8d1ccbcfdab78df"
   integrity sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg==
 
+isomorphic-unfetch@3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/isomorphic-unfetch/-/isomorphic-unfetch-3.1.0.tgz#87341d5f4f7b63843d468438128cb087b7c3e98f"
+  integrity sha512-geDJjpoZ8N0kWexiwkX8F9NkTsXhetLPVbZFQ+JTW239QNOwvB0gniuR1Wc6f0AMTn7/mFGyXvHTifrCp/GH8Q==
+  dependencies:
+    node-fetch "^2.6.1"
+    unfetch "^4.2.0"
+
 isomorphic-ws@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#55fd4cd6c5e6491e76dc125938dd863f5cd4f2dc"
@@ -11283,7 +11292,7 @@ node-fetch@2.6.7, node-fetch@~2.6.2:
   dependencies:
     whatwg-url "^5.0.0"
 
-node-fetch@^2.6.12, node-fetch@^2.7.0:
+node-fetch@^2.6.1, node-fetch@^2.6.12, node-fetch@^2.7.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
   integrity sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==
@@ -15256,6 +15265,11 @@ unenv@^1.7.4:
     mime "^3.0.0"
     node-fetch-native "^1.4.1"
     pathe "^1.1.1"
+
+unfetch@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/unfetch/-/unfetch-4.2.0.tgz#7e21b0ef7d363d8d9af0fb929a5555f6ef97a3be"
+  integrity sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==
 
 unicode-canonical-property-names-ecmascript@^2.0.0:
   version "2.0.0"

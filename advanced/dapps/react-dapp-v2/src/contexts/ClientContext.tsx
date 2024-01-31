@@ -180,7 +180,7 @@ export function ClientContextProvider({
 
           web3Modal.openModal({ uri, standaloneChains });
         }
-        const res = await response;
+        const res = await response();
         console.log("response from sessionAuthenticate:", res);
         const session = res.session;
         console.log("Established session:", session);
