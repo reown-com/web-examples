@@ -1,14 +1,12 @@
 import ModalStore from '@/store/ModalStore'
 import SessionProposalModal from '@/views/SessionProposalModal'
 import SessionSendTransactionModal from '@/views/SessionSendTransactionModal'
-import SessionSignCosmosModal from '@/views/SessionSignCosmosModal'
 import SessionRequestModal from '@/views/SessionSignModal'
 import SessionSignNearModal from '@/views/SessionSignNearModal'
 import SessionSignPolkadotModal from '@/views/SessionSignPolkadotModal'
 import SessionSignSolanaModal from '@/views/SessionSignSolanaModal'
 import SessionSignMultiversxModal from '@/views/SessionSignMultiversxModal'
 import SessionSignTronModal from '@/views/SessionSignTronModal'
-import SessionSignTezosModal from '@/views/SessionSignTezosModal'
 import SessionSignKadenaModal from '@/views/SessionSignKadenaModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
@@ -39,8 +37,6 @@ export default function Modal() {
         return <SessionSendTransactionModal />
       case 'SessionUnsuportedMethodModal':
         return <SessionUnsuportedMethodModal />
-      case 'SessionSignCosmosModal':
-        return <SessionSignCosmosModal />
       case 'SessionSignSolanaModal':
         return <SessionSignSolanaModal />
       case 'SessionSignPolkadotModal':
@@ -51,8 +47,6 @@ export default function Modal() {
         return <SessionSignMultiversxModal />
       case 'SessionSignTronModal':
         return <SessionSignTronModal />
-      case 'SessionSignTezosModal':
-        return <SessionSignTezosModal />
       case 'SessionSignKadenaModal':
         return <SessionSignKadenaModal />
       case 'AuthRequestModal':

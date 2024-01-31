@@ -7,12 +7,10 @@ import DoneIcon from '@mui/icons-material/Done'
 import CloseIcon from '@mui/icons-material/Close'
 
 import ModalStore from '@/store/ModalStore'
-import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
-import { tezosAddresses } from '@/utils/TezosWalletUtil'
 import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
@@ -93,12 +91,6 @@ export default function SessionProposalModal() {
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
       },
-      cosmos: {
-        chains: cosmosChains,
-        methods: cosmosMethods,
-        events: [],
-        accounts: cosmosChains.map(chain => `${chain}:${cosmosAddresses[0]}`).flat()
-      },
       kadena: {
         chains: kadenaChains,
         methods: kadenaMethods,
@@ -131,14 +123,6 @@ export default function SessionProposalModal() {
         events: [],
         accounts: solanaChains
           .map(chain => solanaAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      tezos: {
-        chains: tezosChains,
-        methods: tezosMethods,
-        events: [],
-        accounts: tezosChains
-          .map(chain => tezosAddresses.map(address => `${chain}:${address}`))
           .flat()
       },
       tron: {
@@ -197,8 +181,6 @@ export default function SessionProposalModal() {
     switch (namespace) {
       case 'eip155':
         return eip155Addresses[0]
-      case 'cosmos':
-        return cosmosAddresses[0]
       case 'kadena':
         return kadenaAddresses[0]
       case 'mvx':
@@ -209,8 +191,6 @@ export default function SessionProposalModal() {
         return polkadotAddresses[0]
       case 'solana':
         return solanaAddresses[0]
-      case 'tezos':
-        return tezosAddresses[0]
       case 'tron':
         return tronAddresses[0]
     }
