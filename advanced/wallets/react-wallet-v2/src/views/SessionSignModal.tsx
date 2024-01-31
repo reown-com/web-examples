@@ -19,7 +19,7 @@ export default function SessionSignModal() {
   if (!requestEvent || !requestSession) {
     return <Text>Missing request data</Text>
   }
-  
+
 
   // Get required request data
   const { topic, params } = requestEvent
@@ -28,6 +28,7 @@ export default function SessionSignModal() {
   // Get message, convert it to UTF8 string if it is valid hex
   const message = getSignParamsMessage(request.params)
 
+  
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
     if (requestEvent) {
