@@ -19,6 +19,7 @@ export default function SessionSignModal() {
   if (!requestEvent || !requestSession) {
     return <Text>Missing request data</Text>
   }
+  
 
   // Get required request data
   const { topic, params } = requestEvent
