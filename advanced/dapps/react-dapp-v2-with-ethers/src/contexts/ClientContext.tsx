@@ -9,7 +9,6 @@ import {
 } from "react";
 
 import { Web3Modal } from "@web3modal/standalone";
-import { apiGetChainNamespace, ChainsMap } from "caip-api";
 import UniversalProvider from "@walletconnect/universal-provider";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import Client from "@walletconnect/sign-client";
@@ -17,6 +16,7 @@ import Client from "@walletconnect/sign-client";
 import { DEFAULT_LOGGER, DEFAULT_PROJECT_ID, DEFAULT_RELAY_URL } from "../constants";
 import { providers, utils } from "ethers";
 import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../helpers";
+import { EIP155ChainData } from "../chains/eip155";
 /**
  * Types
  */
@@ -77,12 +77,16 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     const chainData: ChainNamespaces = {};
     await Promise.all(
       namespaces.map(async namespace => {
-        let chains: ChainsMap | undefined;
-        try {
-          chains = await apiGetChainNamespace(namespace);
-        } catch (e) {
-          // ignore error
+        let chains;
+        switch (namespace) {
+          case "eip155":
+            chains = EIP155ChainData;
+            break;
+
+          default:
+            console.error("Unknown chain namespace: ", namespace);
         }
+
         if (typeof chains !== "undefined") {
           chainData[namespace] = chains;
         }
@@ -195,7 +199,9 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
             ],
             chains: [`eip155:${chainId}`],
             events: ["chainChanged", "accountsChanged"],
-            rpcMap: {chainId: `https://rpc.walletconnect.com?chainId=eip155:${chainId}&projectId=${DEFAULT_PROJECT_ID}`,},
+            rpcMap: {
+              chainId: `https://rpc.walletconnect.com?chainId=eip155:${chainId}&projectId=${DEFAULT_PROJECT_ID}`,
+            },
           },
         },
         pairingTopic: pairing?.topic,

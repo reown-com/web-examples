@@ -1,4 +1,4 @@
-import { Verify } from '@walletconnect/types'
+import { Verify, SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
 
 /**
@@ -19,6 +19,7 @@ interface State {
   relayerRegionURL: string
   activeChainId: string
   currentRequestVerifyContext?: Verify.Context
+  sessions: SessionTypes.Struct[]
 }
 
 /**
@@ -37,7 +38,8 @@ const state = proxy<State>({
   tronAddress: '',
   tezosAddress: '',
   kadenaAddress: '',
-  relayerRegionURL: ''
+  relayerRegionURL: '',
+  sessions: []
 })
 
 /**
@@ -94,6 +96,9 @@ const SettingsStore = {
   setCurrentRequestVerifyContext(context: Verify.Context) {
     state.currentRequestVerifyContext = context
   },
+  setSessions(sessions: SessionTypes.Struct[]) {
+    state.sessions = sessions
+  },
 
   toggleTestNets() {
     state.testNets = !state.testNets
@@ -102,7 +107,7 @@ const SettingsStore = {
     } else {
       localStorage.removeItem('TEST_NETS')
     }
-  },
+  }
 }
 
 export default SettingsStore

@@ -1,12 +1,9 @@
-import { Fragment } from 'react'
+/* eslint-disable react-hooks/rules-of-hooks */
+import { useCallback, useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { Col, Divider, Row, Text, Code } from '@nextui-org/react'
+import { Col, Row, Text, Code } from '@nextui-org/react'
 import { getSdkError } from '@walletconnect/utils'
 
-import ModalFooter from '@/components/ModalFooter'
-import ProjectInfoCard from '@/components/ProjectInfoCard'
-import RequestModalContainer from '@/components/RequestModalContainer'
-import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
@@ -15,6 +12,8 @@ import RequestModal from './RequestModal'
 
 export default function AuthRequestModal() {
   const { account } = useSnapshot(SettingsStore.state)
+  const [isLoadingApprove, setIsLoadingApprove] = useState(false)
+  const [isLoadingReject, setIsLoadingReject] = useState(false)
   console.log('modal data', ModalStore.state.data, account)
   // Get request and wallet data from store
   const request = ModalStore.state.data?.request
@@ -32,8 +31,9 @@ export default function AuthRequestModal() {
   const message = web3wallet.formatMessage(params.cacaoPayload, iss)
 
   // Handle approve action (logic varies based on request method)
-  async function onApprove() {
+  const onApprove = useCallback(async () => {
     if (request) {
+      setIsLoadingApprove(true)
       const signature = await eip155Wallets[address].signMessage(message)
       await web3wallet.respondAuthRequest(
         {
@@ -45,13 +45,15 @@ export default function AuthRequestModal() {
         },
         iss
       )
+      setIsLoadingApprove(false)
       ModalStore.close()
     }
-  }
+  }, [request, address, message, iss])
 
   // Handle reject action
-  async function onReject() {
+  const onReject = useCallback(async () => {
     if (request) {
+      setIsLoadingReject(true)
       await web3wallet.respondAuthRequest(
         {
           id: request.id,
@@ -59,15 +61,19 @@ export default function AuthRequestModal() {
         },
         iss
       )
+      setIsLoadingReject(false)
       ModalStore.close()
     }
-  }
+  }, [request, iss])
+
   return (
     <RequestModal
       intention="request a signature"
       metadata={request.params.requester.metadata}
       onApprove={onApprove}
       onReject={onReject}
+      approveLoader={{ active: isLoadingApprove }}
+      rejectLoader={{ active: isLoadingReject }}
     >
       <Row>
         <Col>

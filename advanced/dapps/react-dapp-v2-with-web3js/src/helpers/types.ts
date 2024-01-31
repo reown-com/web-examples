@@ -1,5 +1,3 @@
-import { ChainsMap } from "caip-api";
-
 export interface AssetData {
   symbol: string;
   balance: string;
@@ -144,7 +142,15 @@ export interface NamespaceMetadata {
   [reference: string]: ChainMetadata;
 }
 export interface ChainNamespaces {
-  [namespace: string]: ChainsMap;
+  [namespace: string]: {
+    [reference: string]: {
+      name: string;
+      id: string;
+      rpc: string[];
+      slip44: number;
+      testnet: boolean;
+    };
+  };
 }
 
 export interface AccountAction {

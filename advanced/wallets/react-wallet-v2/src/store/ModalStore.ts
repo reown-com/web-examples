@@ -11,6 +11,7 @@ interface ModalData {
   requestSession?: SessionTypes.Struct
   request?: Web3WalletTypes.AuthRequest
   authRequest?: SignClientTypes.EventArguments['session_authenticate']
+  loadingMessage?: string
 }
 
 interface State {
@@ -31,6 +32,7 @@ interface State {
     | 'SessionSignKadenaModal'
     | 'AuthRequestModal'
     | 'SessionAuthenticateModal'
+    | 'LoadingModal'
   data?: ModalData
 }
 
