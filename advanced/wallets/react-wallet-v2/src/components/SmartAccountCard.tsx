@@ -1,6 +1,6 @@
 import ChainCard from '@/components/ChainCard'
 import SettingsStore from '@/store/SettingsStore'
-import { truncate } from '@/utils/HelperUtil'
+import { styledToast, truncate } from '@/utils/HelperUtil'
 import { updateSignClientChainId } from '@/utils/WalletConnectUtil'
 import { Avatar, Button, Text, Tooltip, Loading } from '@nextui-org/react'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
@@ -134,7 +134,7 @@ export default function SmartAccountCard({
             css={{ marginTop: 10, width: '100%' }}
             onClick={onCreateSmartAccount}
           >
-            {loading ? <Loading size="sm" /> : 'Create Smart Account'}
+            {loading ? <Loading size="sm" css={{ paddingTop: 10 }} /> : 'Create Smart Account'}
           </Button>
         </>
       )}
