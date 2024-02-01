@@ -296,7 +296,6 @@ export default function SessionProposalModal() {
       rejectLoader={{ active: isLoadingReject }}
       infoBoxCondition={notSupportedChains.length > 0}
       infoBoxText={`The following required chains are not supported by your wallet - ${notSupportedChains.toString()}`}
-      disabledApprove={notSupportedChains.length > 0}
     >
       <Row>
         <Col>

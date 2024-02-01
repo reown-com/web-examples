@@ -11,7 +11,6 @@ interface Props {
   onReject: () => void
   infoBoxCondition?: boolean
   infoBoxText?: string
-  disabledApprove?: boolean
   approveLoader?: LoaderProps
   rejectLoader?: LoaderProps
 }
@@ -23,7 +22,6 @@ export default function ModalFooter({
   rejectLoader,
   infoBoxCondition,
   infoBoxText,
-  disabledApprove,
 }: Props) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const validation = currentRequestVerifyContext?.verified.validation
@@ -53,7 +51,7 @@ export default function ModalFooter({
           style={{ color: 'white', backgroundColor: 'grey' }}
           onPress={onReject}
           data-testid="session-reject-button"
-          disabled={disabledApprove || rejectLoader?.active}
+          disabled={rejectLoader?.active}
         >
           {rejectLoader && rejectLoader.active ? (
             <Loading size="md" type="points" color={rejectLoader.color || 'white'} />
@@ -65,7 +63,7 @@ export default function ModalFooter({
           auto
           flat
           color={approveButtonColor}
-          disabled={disabledApprove || approveLoader?.active}
+          disabled={approveLoader?.active}
           onPress={onApprove}
           data-testid="session-approve-button"
         >
