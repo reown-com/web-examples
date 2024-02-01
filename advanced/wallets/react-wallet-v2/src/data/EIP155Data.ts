@@ -8,7 +8,7 @@
  */
 export type TEIP155Chain = keyof typeof EIP155_CHAINS
 
-export type EIP155TestChain = {
+export type EIP155Chain = {
   chainId: number
   name: string
   logo: string
@@ -21,7 +21,7 @@ export type EIP155TestChain = {
 /**
  * Chains
  */
-export const EIP155_MAINNET_CHAINS = {
+export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
   'eip155:1': {
     chainId: 1,
     name: 'Ethereum',
@@ -64,7 +64,7 @@ export const EIP155_MAINNET_CHAINS = {
   }
 }
 
-export const EIP155_TEST_CHAINS: Record<string,EIP155TestChain> = {
+export const EIP155_TEST_CHAINS: Record<string,EIP155Chain> = {
   'eip155:5': {
     chainId: 5,
     name: 'Ethereum Goerli',
@@ -81,6 +81,7 @@ export const EIP155_TEST_CHAINS: Record<string,EIP155TestChain> = {
     rgb: '99, 125, 234',
     rpc: 'https://rpc.sepolia.org',
     namespace: 'eip155',
+    smartAccountEnabled: true,
   },
   'eip155:43113': {
     chainId: 43113,
@@ -96,7 +97,8 @@ export const EIP155_TEST_CHAINS: Record<string,EIP155TestChain> = {
     logo: '/chain-logos/eip155-137.png',
     rgb: '130, 71, 229',
     rpc: 'https://matic-mumbai.chainstacklabs.com',
-    namespace: 'eip155'
+    namespace: 'eip155',
+    smartAccountEnabled: true,
   },
   'eip155:420': {
     chainId: 420,

@@ -5,9 +5,10 @@ import { updateSignClientChainId } from '@/utils/WalletConnectUtil'
 import { Avatar, Button, Text, Tooltip, Loading } from '@nextui-org/react'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccount from '@/hooks/useSmartAccount'
+import { Chain, FAUCET_URLS, allowedChains } from '@/utils/SmartAccountUtils'
 
 interface Props {
   name: string
@@ -28,13 +29,14 @@ export default function SmartAccountCard({
 }: Props) {
   const [copied, setCopied] = useState(false)
   const { activeChainId } = useSnapshot(SettingsStore.state)
+  const chain = allowedChains.find((c) => c.id.toString() === chainId.split(':')[1]) as Chain
   const {
     deploy,
     isDeployed,
     address: smartAccountAddress,
     loading,
     sendTestTransaction,
-  } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
+  } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`, chain)
 
   function onCopy() {
     navigator?.clipboard?.writeText(address)
@@ -56,9 +58,7 @@ export default function SmartAccountCard({
       console.error(error)
     }
   }
-
-  const getFaucetUrl = () => `https://${name?.toLowerCase()?.replace('ethereum', '')?.trim()}faucet.com`
-
+  
   return (
     <ChainCard rgb={rgb} flexDirection="row" alignItems="center" flexWrap="wrap">
       <Avatar src={logo} />
@@ -124,7 +124,7 @@ export default function SmartAccountCard({
             disabled={!isActiveChain || loading}
             size="sm"
             css={{ marginTop: 20, width: '100%' }}
-            onClick={() => window.open(getFaucetUrl(), '_blank')}
+            onClick={() => window.open(FAUCET_URLS[chain?.name], '_blank')}
           >
             {name} Faucet
           </Button>

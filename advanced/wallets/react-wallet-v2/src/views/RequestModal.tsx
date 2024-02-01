@@ -18,7 +18,6 @@ interface IProps {
   intention?: string
   infoBoxCondition?: boolean
   infoBoxText?: string
-  disabledApprove?: boolean
   approveLoader?: LoaderProps
   rejectLoader?: LoaderProps
 }
@@ -32,7 +31,6 @@ export default function RequestModal({
   intention,
   infoBoxCondition,
   infoBoxText,
-  disabledApprove
 }: IProps) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const isScam = currentRequestVerifyContext?.verified.isScam
@@ -65,14 +63,12 @@ export default function RequestModal({
           rejectLoader={rejectLoader}
           infoBoxCondition={infoBoxCondition}
           infoBoxText={infoBoxText}
-          disabledApprove={disabledApprove}
         />
       </>
     )
   }, [
     approveLoader,
     children,
-    disabledApprove,
     infoBoxCondition,
     infoBoxText,
     intention,

@@ -16,6 +16,7 @@ import { tezosWallets } from '@/utils/TezosWalletUtil'
 export default function SettingsPage() {
   const {
     testNets,
+    smartAccountSponsorshipEnabled,
     eip155Address,
     cosmosAddress,
     solanaAddress,
@@ -49,6 +50,20 @@ export default function SettingsPage() {
           data-testid="settings-toggle-testnets"
         />
         <Text>{testNets ? 'Enabled' : 'Disabled'}</Text>
+      </Row>
+
+      <Divider y={2} />
+
+      <Text h4 css={{ marginBottom: '$5' }}>
+        Smart Account Sponsorship (Pimlico)
+      </Text>
+      <Row justify="space-between" align="center">
+        <Switch
+          checked={smartAccountSponsorshipEnabled}
+          onChange={SettingsStore.toggleSmartAccountSponsorship}
+          data-testid="settings-toggle-smart-account-sponsorship"
+        />
+        <Text>{smartAccountSponsorshipEnabled ? 'Enabled' : 'Disabled'}</Text>
       </Row>
 
       <Divider y={2} />

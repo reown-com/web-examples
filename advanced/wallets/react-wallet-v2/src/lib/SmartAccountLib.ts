@@ -1,134 +1,267 @@
-import { createSmartAccountClient } from 'permissionless'
+import { BundlerActions, BundlerClient, bundlerActions, createSmartAccountClient, getAccountNonce } from 'permissionless'
 import { privateKeyToSafeSmartAccount } from 'permissionless/accounts'
 import * as chains from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
-import { type Chain, createWalletClient, formatEther, createPublicClient, http } from 'viem'
-import { createPimlicoBundlerClient } from 'permissionless/clients/pimlico'
+import { createWalletClient, formatEther, createPublicClient, http, Address, Hex, PublicClient, createClient, WalletClient } from 'viem'
+import { PimlicoPaymasterClient, createPimlicoPaymasterClient } from 'permissionless/clients/pimlico'
+import { UserOperation } from 'permissionless/types'
+import { providers } from 'ethers'
+import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/actions/pimlico'
+import { Chain, ENTRYPOINT_ADDRESSES, PAYMASTER_ADDRESSES, USDC_ADDRESSES, VITALIK_ADDRESS, approveUSDCSpendCallData, bundlerUrl, paymasterUrl, publicRPCUrl } from '@/utils/SmartAccountUtils'
 
-export type SmartAccountEnabledChains = 'sepolia' | 'goerli'
+type SmartAccountLibOptions = {
+  privateKey: `0x${string}`
+  chain: Chain
+  sponsored?: boolean
+};
 
 // -- Helpers -----------------------------------------------------------------
-const bundlerApiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
+const pimlicoApiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
 const projectId = process.env.NEXT_PUBLIC_PROJECT_ID
 
 // -- Sdk ---------------------------------------------------------------------
 export class SmartAccountLib {
   public chain: Chain
-  private bundlerApiKey: string
-  #signerPrivateKey: `0x${string}`;
   public isDeployed: boolean = false;
   public address?: `0x${string}`;
+  public sponsored: boolean = true;
+  
+  private publicClient: PublicClient
+  private paymasterClient: PimlicoPaymasterClient
+  private bundlerClient: BundlerClient & BundlerActions & PimlicoBundlerActions
+  private signerClient: WalletClient
 
-  public constructor(privateKey: `0x${string}`, chain: SmartAccountEnabledChains = 'goerli') {
-    if (!bundlerApiKey) {
-      throw new Error('Missing required data in SmartAccountSdk')
+  #signerPrivateKey: `0x${string}`;
+
+
+  public constructor({ privateKey, chain, sponsored = true }: SmartAccountLibOptions) {
+    if (!pimlicoApiKey) {
+      throw new Error('A Pimlico API Key is required')
     }
-    this.bundlerApiKey = bundlerApiKey
-    this.chain = chains[chain] as Chain
-    this.#signerPrivateKey = privateKey
-  }
 
-  // -- Public ------------------------------------------------------------------
+    this.chain = chain
+    this.sponsored = sponsored
+    this.#signerPrivateKey = privateKey
+    this.publicClient = createPublicClient({
+      transport: http(publicRPCUrl({ chain: this.chain }))
+    })
+
+    this.paymasterClient = createPimlicoPaymasterClient({
+      transport: http(paymasterUrl({ chain: this.chain }))
+    })
+
+    this.bundlerClient = createClient({
+      transport: http(bundlerUrl({ chain: this.chain })),
+      chain: this.chain
+    })
+      .extend(bundlerActions)
+      .extend(pimlicoBundlerActions)
+
+    this.signerClient = createWalletClient({
+      account: privateKeyToAccount(this.#signerPrivateKey),
+      chain: this.chain,
+      transport: http(publicRPCUrl({ chain: this.chain }))
+    })
+
+  }
 
 
   // -- Private -----------------------------------------------------------------
-  private getWalletConnectTransport = () => http(
-    `https://rpc.walletconnect.com/v1/?chainId=EIP155:${this.chain.id}&projectId=${projectId}`,
-    { retryDelay: 1000 }
-  );
-
-  private getBundlerTransport = () => http(
-    `https://api.pimlico.io/v1/${this.chain.name.toLowerCase()}/rpc?apikey=${this.bundlerApiKey}`,
-    { retryDelay: 1000 }
-  );
-
-  
-  private getBundlerClient = () => createPimlicoBundlerClient({
-    chain: this.chain,
-    transport: this.getBundlerTransport()
-  })
-
-  private getPublicClient = () => createPublicClient({
-    chain: this.chain,
-    transport: this.getWalletConnectTransport()
-  })
-
-  private getSignerClient = () => {
-    const signerAccount = privateKeyToAccount(this.#signerPrivateKey)
-    return createWalletClient({
-      account: signerAccount,
+  private getSmartAccountClient = async (
+    sponsorUserOperation?: (args: {
+      userOperation: UserOperation
+      entryPoint: Address
+    }) => Promise<UserOperation>
+  ) => {
+    const account = await this.getAccount()
+    return createSmartAccountClient({
+      account,
       chain: this.chain,
-      transport: this.getWalletConnectTransport()
-    })
+      transport: http(bundlerUrl({ chain: this.chain })),
+      sponsorUserOperation: sponsorUserOperation
+        ? sponsorUserOperation
+        : this.sponsored ? this.paymasterClient.sponsorUserOperation : undefined
+    }).extend(pimlicoBundlerActions)
   }
 
-  private getSmartAccountClient = async () => {  
-    const smartAccount = await privateKeyToSafeSmartAccount(this.getPublicClient(), {
-      privateKey: this.#signerPrivateKey,
-      safeVersion: '1.4.1',
-      entryPoint: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
-    })
-  
-    return createSmartAccountClient({
-      account: smartAccount,
-      chain: this.chain,
-      transport: this.getBundlerTransport()
+  public getNonce = async () => {
+    const smartAccountClient = await this.getSmartAccountClient()
+    return getAccountNonce(this.publicClient, {
+      sender: smartAccountClient.account.address as Hex,
+      entryPoint: ENTRYPOINT_ADDRESSES[this.chain.name]
     })
   }
 
   private prefundSmartAccount = async (address: `0x${string}`) => {
-    const signerAccountViemClient = this.getSignerClient();
-    const publicClient = this.getPublicClient();
-    const bundlerClient = this.getBundlerClient();
-    const smartAccountBalance = await publicClient.getBalance({ address })
-  
+    if (this.sponsored) {
+      return
+    }
+
+    const smartAccountBalance = await this.publicClient.getBalance({ address })
+
     console.log(`Smart Account Balance: ${formatEther(smartAccountBalance)} ETH`)
     if (smartAccountBalance < 1n) {
       console.log(`Smart Account has no balance. Starting prefund`)
-      const { fast: fastPrefund } = await bundlerClient.getUserOperationGasPrice()
-      const prefundHash = await signerAccountViemClient.sendTransaction({
+      const { fast: fastPrefund } = await this.bundlerClient.getUserOperationGasPrice()
+      const prefundHash = await this.signerClient.sendTransaction({
         to: address,
+        chain: this.chain,
+        account: this.signerClient.account!,
         value: 10000000000000000n,
         maxFeePerGas: fastPrefund.maxFeePerGas,
         maxPriorityFeePerGas: fastPrefund.maxPriorityFeePerGas
       })
-  
-      await publicClient.waitForTransactionReceipt({ hash: prefundHash })
+
+      await this.publicClient.waitForTransactionReceipt({ hash: prefundHash })
       console.log(`Prefunding Success`)
-  
-      const newSmartAccountBalance = await publicClient.getBalance({ address })
+
+      const newSmartAccountBalance = await this.publicClient.getBalance({ address })
       console.log(
         `Smart Account Balance: ${formatEther(newSmartAccountBalance)} ETH`
       )
     }
   }
 
-  // By default first transaction will deploy the smart contract if it hasn't been deployed yet
-  public sendTestTransaction = async () => {
-    const publicClient = this.getPublicClient();
-    const bundlerClient = this.getBundlerClient();
-    const smartAccountClient = await this.getSmartAccountClient();
-    const { fast: testGas, } = await bundlerClient.getUserOperationGasPrice()
-
-    const testHash = await smartAccountClient.sendTransaction({
-      to: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' as `0x${string}`,
-      value: 0n,
-      maxFeePerGas: testGas.maxFeePerGas,
-      maxPriorityFeePerGas: testGas.maxPriorityFeePerGas,
-    })
-
-    console.log(`Sending Test Transaction With Hash: ${testHash}`)
-
-    await publicClient.waitForTransactionReceipt({ hash: testHash })
-    console.log(`Test Transaction Success`)
+  private getSmartAccountUSDCBalance = async () => {
+    const params = {
+      abi: [
+          {
+            inputs: [{ name: "_owner", type: "address" }],
+            name: "balanceOf",
+            outputs: [{ name: "balance", type: "uint256" }],
+            type: "function",
+          }
+      ],
+      address: USDC_ADDRESSES[this.chain.name] as Hex,
+      functionName: "balanceOf",
+      args: [this.address!]
+    }
+    const usdcBalance = await this.publicClient.readContract(params) as bigint
+    return usdcBalance
   }
 
+  private sponsorUserOperation = async ({ userOperation }: { userOperation: UserOperation }) => {
+    const userOperationWithPaymasterAndData = {
+      ...userOperation,
+      paymasterAndData: PAYMASTER_ADDRESSES[this.chain.name]
+    }
+
+    console.log('Estimating gas limits...', userOperationWithPaymasterAndData)
+
+    const gasLimits = await this.bundlerClient.estimateUserOperationGas({
+      userOperation: userOperationWithPaymasterAndData,
+      entryPoint: ENTRYPOINT_ADDRESSES[this.chain.name]
+    })
+
+    return {
+      ...userOperationWithPaymasterAndData,
+      callGasLimit: gasLimits.callGasLimit,
+      verificationGasLimit: gasLimits.verificationGasLimit,
+      preVerificationGas: gasLimits.preVerificationGas
+    }
+  }
+
+  // -- Public ------------------------------------------------------------------
+  public getAccount = async () =>
+    privateKeyToSafeSmartAccount(this.publicClient, {
+      privateKey: this.#signerPrivateKey,
+      safeVersion: '1.4.1', // simple version
+      entryPoint: ENTRYPOINT_ADDRESSES[this.chain.name], // global entrypoint
+      setupTransactions: [
+        {
+          to: USDC_ADDRESSES[this.chain.name],
+          value: 0n,
+          data: approveUSDCSpendCallData({
+            to: PAYMASTER_ADDRESSES[this.chain.name],
+            amount: 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffn
+          })
+        }
+      ]
+    })
+
+  static isSmartAccount = async (address: Address, chain: Chain) => {
+    const client = createPublicClient({
+      chain,
+      transport: http(
+        `https://rpc.walletconnect.com/v1/?chainId=EIP155:${chains.goerli.id}&projectId=${projectId}`,
+        { retryDelay: 1000 }
+      )
+    })
+    const bytecode = await client.getBytecode({ address })
+    return Boolean(bytecode)
+  }
+  
+  public sendTransaction = async ({
+    to,
+    value,
+    data
+  }: { to: Address; value: bigint; data: Hex }) => {
+    console.log(`Sending Transaction to ${to} with value ${value.toString()} and data ${data}`)
+    const smartAccountClient = await this.getSmartAccountClient()
+    const gasPrices = await smartAccountClient.getUserOperationGasPrice()
+    return smartAccountClient.sendTransaction({
+      to,
+      value,
+      data,
+      maxFeePerGas: gasPrices.fast.maxFeePerGas,
+      maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas
+    })
+  }
+
+  public signMessage = async (message: string) => {
+    const client = await this.getSmartAccountClient()
+    return client.signMessage({ message })
+  }
+  public _signTypedData = async (domain: any, types: any, data: any, primaryType: any) => {
+    const client = await this.getSmartAccountClient()
+    return client.signTypedData({ account: client.account, domain, types, primaryType, message: data })
+  }
+
+  public connect = async (_provider: providers.JsonRpcProvider) => {
+    return this.getSmartAccountClient()
+  }
+
+  public signTransaction = async (transaction: any) => {
+    const smartAccountClient = await this.getSmartAccountClient()
+    return smartAccountClient.account.signTransaction(transaction)
+  }
+
+  public sendUSDCSponsoredTransaction = async ({
+    to,
+    value,
+    data
+  }: { to: Address; value: bigint; data: Hex }) => {
+    // 1. Check USDC Balance on smart account
+    const usdcBalance = await this.getSmartAccountUSDCBalance()
+
+    if (usdcBalance < 1_000_000n) {
+        throw new Error(
+            `insufficient USDC balance for counterfactual wallet address ${this.address}: ${
+                Number(usdcBalance) / 1000000
+            } USDC, required at least 1 USDC`
+        )
+    }
+
+    const smartAccountClient = await this.getSmartAccountClient(this.sponsorUserOperation)
+    const gasPrices = await smartAccountClient.getUserOperationGasPrice()
+
+    return smartAccountClient.sendTransaction({
+      to,
+      value,
+      data,
+      maxFeePerGas: gasPrices.fast.maxFeePerGas,
+      maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas
+    })
+  }
+
+
   public checkIfSmartAccountDeployed = async () => {
-    console.log('checking if deployed')
     const smartAccountClient = await this.getSmartAccountClient();
-    const publicClient = this.getPublicClient();
-    const bytecode = await publicClient.getBytecode({ address: smartAccountClient.account.address })
+    console.log('Checking if deployed', smartAccountClient.account.address, this.chain.name)
+    
+    const bytecode = await this.publicClient.getBytecode({ address: smartAccountClient.account.address })
     this.isDeployed = Boolean(bytecode)
+    
     console.log(`Smart Account Deployed: ${this.isDeployed}`)
     if (this.isDeployed) {
       this.address = smartAccountClient.account.address
@@ -145,7 +278,11 @@ export class SmartAccountLib {
         await this.prefundSmartAccount(smartAccountClient.account.address)
 
         // Step 4: Create account by sending test tx
-        await this.sendTestTransaction()
+        await this.sendTransaction({
+          to: VITALIK_ADDRESS,
+          value: 0n,
+          data: '0x'
+        })
         await this.checkIfSmartAccountDeployed()
         console.log(`Account Created`)
     }

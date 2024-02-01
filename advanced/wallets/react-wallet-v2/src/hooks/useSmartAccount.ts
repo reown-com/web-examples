@@ -1,18 +1,24 @@
 import { SmartAccountLib } from "@/lib/SmartAccountLib";
-import { styledToast } from "@/utils/HelperUtil";
+import SettingsStore from "@/store/SettingsStore";
+import { Chain, VITALIK_ADDRESS } from "@/utils/SmartAccountUtils";
 import { useCallback, useEffect, useState } from "react";
+import { useSnapshot } from "valtio";
+import { Hex } from "viem";
+import { styledToast } from "@/utils/HelperUtil";
 import { TransactionExecutionError } from "viem";
 
-export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
+export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
     const [loading, setLoading] = useState(false)
     const [client, setClient] = useState<SmartAccountLib>();
     const [isDeployed, setIsDeployed] = useState(false)
-    const [address, setAddress] = useState<`0x${string}`>()
+    const [address, setAddress] = useState<Hex>()
+    const { smartAccountSponsorshipEnabled } = useSnapshot(SettingsStore.state);
 
     const execute = useCallback(async (callback: () => void) => {
       try {
         setLoading(true)
-        await callback()
+        const res = await callback()
+        console.log('result:', res)
         setLoading(false)
       }
       catch (e) {
@@ -34,13 +40,22 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
 
     const sendTestTransaction = useCallback(async () => {
       if (!client) return
-      execute(client?.sendTestTransaction)
+      execute(() => client?.sendTransaction({
+        to: VITALIK_ADDRESS,
+        value: 0n,
+        data: '0x',
+      }))
     }, [client, execute])
 
     useEffect(() => {
-        const smartAccountClient = new SmartAccountLib(signerPrivateKey, 'goerli')
-        setClient(smartAccountClient)
-    }, [signerPrivateKey])
+      if (!signerPrivateKey || !chain) return
+      const smartAccountClient = new SmartAccountLib({
+        chain,
+        privateKey: signerPrivateKey,
+        sponsored: smartAccountSponsorshipEnabled,
+      })
+      setClient(smartAccountClient)
+    }, [signerPrivateKey, smartAccountSponsorshipEnabled, chain])
 
     useEffect(() => {
         client?.checkIfSmartAccountDeployed()
@@ -48,7 +63,7 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
                 setIsDeployed(deployed)
                 setAddress(client?.address)
             })
-    }, [client])
+    }, [client, chain])
 
 
     return {
