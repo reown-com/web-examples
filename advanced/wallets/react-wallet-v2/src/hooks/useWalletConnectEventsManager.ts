@@ -1,4 +1,5 @@
 import { Web3WalletTypes } from '@walletconnect/web3wallet'
+import { COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
 import { POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
@@ -11,6 +12,7 @@ import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
+import { TEZOS_SIGNING_METHODS } from '@/data/TezosData'
 import { KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
@@ -58,6 +60,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
           return ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
 
+        case COSMOS_SIGNING_METHODS.COSMOS_SIGN_DIRECT:
+        case COSMOS_SIGNING_METHODS.COSMOS_SIGN_AMINO:
+          return ModalStore.open('SessionSignCosmosModal', { requestEvent, requestSession })
+
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
           return ModalStore.open('SessionSignSolanaModal', { requestEvent, requestSession })
@@ -92,6 +98,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case TRON_SIGNING_METHODS.TRON_SIGN_MESSAGE:
         case TRON_SIGNING_METHODS.TRON_SIGN_TRANSACTION:
           return ModalStore.open('SessionSignTronModal', { requestEvent, requestSession })
+        case TEZOS_SIGNING_METHODS.TEZOS_GET_ACCOUNTS:
+        case TEZOS_SIGNING_METHODS.TEZOS_SEND:
+        case TEZOS_SIGNING_METHODS.TEZOS_SIGN:
+          return ModalStore.open('SessionSignTezosModal', { requestEvent, requestSession })
         case KADENA_SIGNING_METHODS.KADENA_GET_ACCOUNTS:
         case KADENA_SIGNING_METHODS.KADENA_SIGN:
         case KADENA_SIGNING_METHODS.KADENA_QUICKSIGN:

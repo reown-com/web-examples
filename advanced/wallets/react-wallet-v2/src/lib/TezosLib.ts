@@ -1,7 +1,7 @@
 import { TezosToolkit } from '@taquito/taquito'
 import { InMemorySigner } from '@taquito/signer'
 import { localForger } from '@taquito/local-forging'
-import Keyring from 'mnemonic-keyring'
+import { Wallet } from 'ethers/'
 
 /**
  * Constants
@@ -50,7 +50,7 @@ export default class TezosLib {
 
   static async init({ mnemonic, path, curve }: IInitArguments) {
     const params = {
-      mnemonic: mnemonic ?? Keyring.generateMnemonic(),
+      mnemonic: mnemonic ?? Wallet.createRandom().mnemonic.phrase,
       derivationPath: path ?? DEFAULT_PATH,
       curve: curve ?? DEFAULT_CURVE
     }

@@ -1,3 +1,4 @@
+import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
@@ -29,6 +30,7 @@ export default function RequestDetailsCard({ chains, protocol }: IProps) {
               .map(
                 chain =>
                   EIP155_CHAINS[chain as TEIP155Chain]?.name ??
+                  COSMOS_MAINNET_CHAINS[chain as TCosmosChain]?.name ??
                   SOLANA_CHAINS[chain as TSolanaChain]?.name ??
                   NEAR_TEST_CHAINS[chain as TNearChain]?.name ??
                   MULTIVERSX_CHAINS[chain as TMultiversxChain]?.name ??
@@ -46,9 +48,7 @@ export default function RequestDetailsCard({ chains, protocol }: IProps) {
       <Row>
         <Col>
           <Text h5>Relay Protocol</Text>
-          <Text color="$gray400" data-testid="request-detauls-realy-protocol">
-            {protocol}
-          </Text>
+          <Text color="$gray400" data-testid="request-detauls-realy-protocol">{protocol}</Text>
         </Col>
       </Row>
     </Fragment>

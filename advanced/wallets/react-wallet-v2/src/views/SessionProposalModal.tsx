@@ -19,11 +19,13 @@ import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 import { MULTIVERSX_CHAINS, MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
 import { NEAR_CHAINS, NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { POLKADOT_CHAINS, POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
 import { SOLANA_CHAINS, SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
+import { TEZOS_CHAINS, TEZOS_SIGNING_METHODS } from '@/data/TezosData'
 import { TRON_CHAINS, TRON_SIGNING_METHODS } from '@/data/TronData'
 import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
@@ -52,6 +54,9 @@ export default function SessionProposalModal() {
     // eip155
     const eip155Chains = Object.keys(EIP155_CHAINS)
     const eip155Methods = Object.values(EIP155_SIGNING_METHODS)
+    // cosmos
+    const cosmosChains = Object.keys(COSMOS_MAINNET_CHAINS)
+    const cosmosMethods = Object.values(COSMOS_SIGNING_METHODS)
 
     // Kadena
     const kadenaChains = Object.keys(KADENA_CHAINS)
@@ -72,6 +77,10 @@ export default function SessionProposalModal() {
     // solana
     const solanaChains = Object.keys(SOLANA_CHAINS)
     const solanaMethods = Object.values(SOLANA_SIGNING_METHODS)
+
+    // tezos
+    const tezosChains = Object.keys(TEZOS_CHAINS)
+    const tezosMethods = Object.values(TEZOS_SIGNING_METHODS)
 
     // tron
     const tronChains = Object.keys(TRON_CHAINS)
