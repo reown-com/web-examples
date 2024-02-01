@@ -12,6 +12,7 @@ import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
 import { Hex } from 'viem'
+import { allowedChains } from './SmartAccountUtils'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 
@@ -22,12 +23,11 @@ const getWallet = async (params: any) => {
     return eoaWallet
   }
 
-  // TODO improve for multichain
   const deployedSmartAccounts = await Promise.all(Object.values(eip155Wallets).map(async (wallet) => {
     const smartAccount = new SmartAccountLib({
       privateKey: wallet.getPrivateKey() as Hex,
-      chain: 'goerli',
-      sponsored: true, // Sponsor for now but should be dynamic according to SettingsStore
+      chain: allowedChains[0], // TODO: FIX FOR MULTI NETWORK
+      sponsored: true, // TODO: Sponsor for now but should be dynamic according to SettingsStore
     })
     const isDeployed = await smartAccount.checkIfSmartAccountDeployed()
     if (isDeployed) {
@@ -35,7 +35,7 @@ const getWallet = async (params: any) => {
     }
     return null
   }));
-  const validSmartAccounts = deployedSmartAccounts.filter(val => !!val) as Array<SmartAccountLib>
+  const validSmartAccounts = deployedSmartAccounts.filter(Boolean) as Array<SmartAccountLib>
   const smartAccountAddress = getWalletAddressFromParams(validSmartAccounts.map(acc => acc.address!), params)
 
   return validSmartAccounts.find((smartAccount) => smartAccount?.address === smartAccountAddress) as SmartAccountLib

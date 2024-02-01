@@ -5,9 +5,10 @@ import { updateSignClientChainId } from '@/utils/WalletConnectUtil'
 import { Avatar, Button, Text, Tooltip, Loading } from '@nextui-org/react'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import Image from 'next/image'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccount from '@/hooks/useSmartAccount'
+import { Chain, allowedChains } from '@/utils/SmartAccountUtils'
 
 interface Props {
   name: string
@@ -28,13 +29,14 @@ export default function SmartAccountCard({
 }: Props) {
   const [copied, setCopied] = useState(false)
   const { activeChainId } = useSnapshot(SettingsStore.state)
+  const chain = allowedChains.find((c) => c.id.toString() === chainId.split(':')[0]) as Chain
   const {
     deploy,
     isDeployed,
     address: smartAccountAddress,
     loading,
     sendTestTransaction,
-  } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`)
+  } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`, chain)
 
   function onCopy() {
     navigator?.clipboard?.writeText(address)

@@ -36,6 +36,7 @@ import { Hex } from 'viem'
 import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
+import { allowedChains } from '@/utils/SmartAccountUtils'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -236,9 +237,10 @@ export default function SessionProposalModal() {
 
       // TODO: improve for multi network
       console.log('checking if SA is deployed', eip155Wallets[eip155Addresses[0]])
+      const chainId = namespaces['eip155'].chains?.[0]
       const smartAccountClient = new SmartAccountLib({
         privateKey: eip155Wallets[eip155Addresses[0]].getPrivateKey() as Hex,
-        chain: 'goerli',
+        chain: allowedChains.find(chain => chain.id.toString() === chainId)!,
         sponsored: smartAccountSponsorshipEnabled,
       })
       const isDeployed = await smartAccountClient.checkIfSmartAccountDeployed()

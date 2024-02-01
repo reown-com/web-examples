@@ -1,10 +1,11 @@
 import { SmartAccountLib } from "@/lib/SmartAccountLib";
 import SettingsStore from "@/store/SettingsStore";
+import { Chain, VITALIK_ADDRESS } from "@/utils/SmartAccountUtils";
 import { useCallback, useEffect, useState } from "react";
 import { useSnapshot } from "valtio";
 import { Hex } from "viem";
 
-export default function useSmartAccount(signerPrivateKey?: Hex) {
+export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
     const [loading, setLoading] = useState(false)
     const [client, setClient] = useState<SmartAccountLib>();
     const [isDeployed, setIsDeployed] = useState(false)
@@ -14,7 +15,8 @@ export default function useSmartAccount(signerPrivateKey?: Hex) {
     const execute = useCallback(async (callback: () => void) => {
       try {
         setLoading(true)
-        await callback()
+        const res = await callback()
+        console.log('result:', res)
         setLoading(false)
       }
       catch (e) {
@@ -30,18 +32,23 @@ export default function useSmartAccount(signerPrivateKey?: Hex) {
 
     const sendTestTransaction = useCallback(async () => {
       if (!client) return
-      execute(client?.sendTestTransaction)
+      execute(() => client?.sendTransaction({
+        to: VITALIK_ADDRESS,
+        value: 0n,
+        data: '0x',
+      }))
     }, [client, execute])
 
     useEffect(() => {
-      if (!signerPrivateKey) return
+      console.log('chain', chain)
+      if (!signerPrivateKey || !chain) return
       const smartAccountClient = new SmartAccountLib({
+        chain,
         privateKey: signerPrivateKey,
-        chain: 'goerli',
         sponsored: smartAccountSponsorshipEnabled,
       })
       setClient(smartAccountClient)
-    }, [signerPrivateKey, smartAccountSponsorshipEnabled])
+    }, [signerPrivateKey, smartAccountSponsorshipEnabled, chain])
 
     useEffect(() => {
         client?.checkIfSmartAccountDeployed()
@@ -49,7 +56,7 @@ export default function useSmartAccount(signerPrivateKey?: Hex) {
                 setIsDeployed(deployed)
                 setAddress(client?.address)
             })
-    }, [client])
+    }, [client, chain])
 
 
     return {

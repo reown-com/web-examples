@@ -20,11 +20,11 @@ export default function App({ Component, pageProps }: AppProps) {
   useWalletConnectEventsManager(initialized)
   useEffect(() => {
     if (!initialized) return
-    web3wallet.core.relayer.on(RELAYER_EVENTS.connect, () => {
+    web3wallet?.core.relayer.on(RELAYER_EVENTS.connect, () => {
       styledToast('Network connection is restored!', 'success')
     })
 
-    web3wallet.core.relayer.on(RELAYER_EVENTS.disconnect, () => {
+    web3wallet?.core.relayer.on(RELAYER_EVENTS.disconnect, () => {
       styledToast('Network connection lost.', 'error')
     })
   }, [initialized])

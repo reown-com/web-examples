@@ -3,6 +3,9 @@ import { Hex } from 'viem'
 import ChainAddressMini from './ChainAddressMini'
 import { createOrRestoreEIP155Wallet, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { Spinner } from '@nextui-org/react'
+import { Chain, allowedChains } from '@/utils/SmartAccountUtils'
+import { useSnapshot } from 'valtio'
+import SettingsStore from '@/store/SettingsStore'
 
 interface Props {
   namespace: string
@@ -18,7 +21,8 @@ const getKey = (namespace?: string) => {
 }
 
 export default function ChainSmartAddressMini({ namespace }: Props) {
-  const { address } = useSmartAccount(getKey(namespace) as `0x${string}`)
+  const { activeChainId } = useSnapshot(SettingsStore.state)
+  const { address } = useSmartAccount(getKey(namespace) as `0x${string}`, allowedChains.find((c) => c.id.toString() === activeChainId) as Chain)
 
   if (!address) return <Spinner />
   return (
