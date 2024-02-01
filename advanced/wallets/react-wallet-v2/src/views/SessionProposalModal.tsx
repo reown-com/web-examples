@@ -8,7 +8,7 @@ import CloseIcon from '@mui/icons-material/Close'
 
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
-import { eip155Addresses } from '@/utils/EIP155WalletUtil'
+import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
@@ -33,6 +33,7 @@ import { getChainData } from '@/data/chainsUtil'
 import RequestModal from './RequestModal'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
+import { SmartAccountEnabledChains, SmartAccountLib } from '@/lib/SmartAccountLib'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -49,6 +50,7 @@ export default function SessionProposalModal() {
 
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
+  const [smartAccountAddress, setSmartAccountAddress] = useState('')
   console.log('proposal', data.data?.proposal)
   const supportedNamespaces = useMemo(() => {
     // eip155
@@ -216,6 +218,29 @@ export default function SessionProposalModal() {
     }
   }, [])
 
+  // connect potential smart account address to wallet
+  {supportedChains.length &&
+    supportedChains.map((chain, i) => {
+        let enabledChain
+        switch (chain?.chainId) {
+          case 5:
+            enabledChain = 'goerli'
+            break;        
+          case 11155111:
+            enabledChain = 'sepolia'
+            break;
+        }
+
+        const pKey = eip155Wallets[getAddress(chain?.namespace) as `0x${string}`].getPrivateKey() as `0x${string}`
+        const smartAccountClient = new SmartAccountLib(pKey, enabledChain as SmartAccountEnabledChains)
+      
+        smartAccountClient.getSmartAccountAddress().then(res => {
+          if (res) {
+            setSmartAccountAddress(res)
+          }
+        })
+    })}
+
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
     if (proposal) {
@@ -303,10 +328,17 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }}>Accounts</Row>
           {supportedChains.length &&
             supportedChains.map((chain, i) => {
+
               return (
-                <Row key={i}>
-                  <ChainAddressMini key={i} address={getAddress(chain?.namespace)} />
-                </Row>
+                <>
+                  <Row key={i}>
+                    <ChainAddressMini key={i} address={getAddress(chain?.namespace)} />
+                  </Row>
+                  { smartAccountAddress && <Row key={i + 1}>
+                    <ChainAddressMini key={i + 1} address={smartAccountAddress} />
+                  </Row>}
+                  
+                </>
               )
             })}
         </Grid>

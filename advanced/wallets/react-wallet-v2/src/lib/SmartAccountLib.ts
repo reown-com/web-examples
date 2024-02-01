@@ -29,7 +29,13 @@ export class SmartAccountLib {
   }
 
   // -- Public ------------------------------------------------------------------
-
+  public getSmartAccountAddress = async () => {
+    if (!this.address) {
+      const smartAccountClient = await this.getSmartAccountClient();
+      this.address = smartAccountClient.account.address
+    }
+    return this.address
+  }
 
   // -- Private -----------------------------------------------------------------
   private getWalletConnectTransport = () => http(
