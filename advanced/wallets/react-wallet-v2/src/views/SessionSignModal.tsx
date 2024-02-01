@@ -9,7 +9,6 @@ import { getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 export default function SessionSignModal() {
-  const [loading, setLoading] = useState(false)
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession

@@ -12,7 +12,6 @@ import RequestModal from './RequestModal'
 import { useCallback, useState } from 'react'
 
 export default function SessionSignTypedDataModal() {
-  const [loading, setLoading] = useState(false)
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
@@ -44,7 +43,6 @@ export default function SessionSignTypedDataModal() {
       } catch (e) {
         setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
-        setLoading(false)
         return
       }
       setIsLoadingApprove(false)
@@ -77,6 +75,8 @@ export default function SessionSignTypedDataModal() {
       metadata={requestSession.peer.metadata}
       onApprove={onApprove}
       onReject={onReject}
+      approveLoader={{ active: isLoadingApprove }}
+      rejectLoader={{ active: isLoadingReject }}
     >
       <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
       <Divider y={1} />
