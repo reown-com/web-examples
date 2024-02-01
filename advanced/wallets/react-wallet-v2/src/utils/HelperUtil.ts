@@ -1,11 +1,9 @@
 import toast from 'react-hot-toast'
-import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
 import { NEAR_CHAINS, NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { POLKADOT_CHAINS, TPolkadotChain } from '@/data/PolkadotData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
-import { TEZOS_CHAINS, TTezosChain } from '@/data/TezosData'
 import { TRON_CHAINS, TTronChain } from '@/data/TronData'
 import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
 
@@ -90,13 +88,6 @@ export function isEIP155Chain(chain: string) {
 }
 
 /**
- * Check if chain is part of COSMOS standard
- */
-export function isCosmosChain(chain: string) {
-  return chain.includes('cosmos')
-}
-
-/**
  * Check if chain is part of SOLANA standard
  */
 export function isSolanaChain(chain: string) {
@@ -139,25 +130,16 @@ export function isTronChain(chain: string) {
 }
 
 /**
- * Check if chain is part of Tezos standard
- */
-export function isTezosChain(chain: string) {
-  return chain.includes('tezos')
-}
-
-/**
  * Formats chainId to its name
  */
 export function formatChainName(chainId: string) {
   return (
-    COSMOS_MAINNET_CHAINS[chainId as TCosmosChain]?.name ??
     EIP155_CHAINS[chainId as TEIP155Chain]?.name ??
     MULTIVERSX_CHAINS[chainId as TMultiversxChain]?.name ??
     NEAR_TEST_CHAINS[chainId as TNearChain]?.name ??
     POLKADOT_CHAINS[chainId as TPolkadotChain]?.name ??
     SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
     TRON_CHAINS[chainId as TTronChain]?.name ??
-    TEZOS_CHAINS[chainId as TTezosChain]?.name ??
     KADENA_CHAINS[chainId as TKadenaChain]?.name ??
     chainId
   )
