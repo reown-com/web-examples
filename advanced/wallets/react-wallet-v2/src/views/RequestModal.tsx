@@ -1,8 +1,8 @@
 import { Fragment, ReactNode, useMemo, useState } from 'react'
-import { Divider, Text } from '@nextui-org/react'
+import { Divider } from '@nextui-org/react'
 import { CoreTypes } from '@walletconnect/types'
 
-import ModalFooter from '@/components/ModalFooter'
+import ModalFooter, { LoaderProps } from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import VerifyInfobox from '@/components/VerifyInfobox'
@@ -19,18 +19,20 @@ interface IProps {
   infoBoxCondition?: boolean
   infoBoxText?: string
   disabledApprove?: boolean
-  loading?: boolean
+  approveLoader?: LoaderProps
+  rejectLoader?: LoaderProps
 }
 export default function RequestModal({
   children,
   metadata,
   onApprove,
   onReject,
+  approveLoader,
+  rejectLoader,
   intention,
   infoBoxCondition,
   infoBoxText,
   disabledApprove,
-  loading = false,
 }: IProps) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const isScam = currentRequestVerifyContext?.verified.isScam
@@ -59,14 +61,16 @@ export default function RequestModal({
         <ModalFooter
           onApprove={onApprove}
           onReject={onReject}
+          approveLoader={approveLoader}
+          rejectLoader={rejectLoader}
           infoBoxCondition={infoBoxCondition}
           infoBoxText={infoBoxText}
           disabledApprove={disabledApprove}
-          loading={loading}
         />
       </>
     )
   }, [
+    approveLoader,
     children,
     disabledApprove,
     infoBoxCondition,
@@ -75,7 +79,7 @@ export default function RequestModal({
     metadata,
     onApprove,
     onReject,
-    loading,
+    rejectLoader
   ])
   return <Fragment>{isScam && !threatAcknowledged ? threatPromptContent : modalContent}</Fragment>
 }

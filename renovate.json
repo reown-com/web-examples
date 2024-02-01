@@ -53,6 +53,10 @@
       "matchPackagePatterns": ["*"],
       "matchDepTypes": ["devDependencies"],
       "enabled": false
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ]
 }

@@ -1,4 +1,3 @@
-import SignClient from "@walletconnect/sign-client";
 import { ISignClient, PairingTypes, SessionTypes } from "@walletconnect/types";
 import UniversalProvider, { IUniversalProvider } from "@walletconnect/universal-provider";
 import { Web3Modal } from "@web3modal/standalone";
@@ -18,7 +17,7 @@ import {
   DEFAULT_RELAY_URL,
 } from "../constants";
 import { AccountBalances, ChainNamespaces, getAllChainNamespaces } from "../helpers";
-import { apiGetChainNamespace, ChainsMap } from "caip-api";
+import { CosmosChainData } from "../chains/cosmos";
 
 /**
  * Types
@@ -74,12 +73,16 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
     const chainData: ChainNamespaces = {};
     await Promise.all(
       namespaces.map(async namespace => {
-        let chains: ChainsMap | undefined;
-        try {
-          chains = await apiGetChainNamespace(namespace);
-        } catch (e) {
-          // ignore error
+        let chains;
+        switch (namespace) {
+          case "cosmos":
+            chains = CosmosChainData;
+            break;
+
+          default:
+            console.error("Unknown chain namespace: ", namespace);
         }
+
         if (typeof chains !== "undefined") {
           chainData[namespace] = chains;
         }
@@ -161,7 +164,7 @@ export function ClientContextProvider({ children }: { children: ReactNode | Reac
           cosmos: {
             methods: DEFAULT_COSMOS_METHODS,
             chains: [caipChainId],
-            events: ["chainChanged", "accountsChanged"],
+            events: [],
           },
         },
       });

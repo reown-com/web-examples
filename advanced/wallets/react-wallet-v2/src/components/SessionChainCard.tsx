@@ -44,7 +44,9 @@ export default function SessionChainCard({ namespace }: IProps) {
   namespace.accounts.forEach(account => {
     const [type, chain] = account.split(':')
     const chainId = `${type}:${chain}`
-    chains.push(chainId)
+    if (!chains.includes(chainId)) {
+      chains.push(chainId)
+    }
   })
 
   return (

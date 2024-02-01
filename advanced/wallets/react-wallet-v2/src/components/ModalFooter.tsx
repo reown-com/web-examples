@@ -1,24 +1,29 @@
 import SettingsStore from '@/store/SettingsStore'
-import { Button, Loading, Modal, Row } from '@nextui-org/react'
+import { Button, Modal, Row, Loading } from '@nextui-org/react'
 import { useMemo } from 'react'
 import { useSnapshot } from 'valtio'
-
+export interface LoaderProps {
+  color?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'white'
+  active?: boolean
+}
 interface Props {
   onApprove: () => void
   onReject: () => void
   infoBoxCondition?: boolean
   infoBoxText?: string
   disabledApprove?: boolean
-  loading?: boolean
+  approveLoader?: LoaderProps
+  rejectLoader?: LoaderProps
 }
 
 export default function ModalFooter({
   onApprove,
+  approveLoader,
   onReject,
+  rejectLoader,
   infoBoxCondition,
   infoBoxText,
   disabledApprove,
-  loading = false,
 }: Props) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const validation = currentRequestVerifyContext?.verified.validation
@@ -48,22 +53,28 @@ export default function ModalFooter({
           style={{ color: 'white', backgroundColor: 'grey' }}
           onPress={onReject}
           data-testid="session-reject-button"
-          disabled={loading}
+          disabled={disabledApprove || rejectLoader?.active}
         >
-          Reject
+          {rejectLoader && rejectLoader.active ? (
+            <Loading size="md" type="points" color={rejectLoader.color || 'white'} />
+          ) : (
+            'Reject'
+          )}
         </Button>
-        {loading ? <Loading style={{ width: '25%' }} size="sm" /> : (
-          <Button
-            auto
-            flat
-            color={approveButtonColor}
-            disabled={disabledApprove || loading}
-            onPress={onApprove}
-            data-testid="session-approve-button"
-          >
-            Approve
-          </Button>
-        )}
+        <Button
+          auto
+          flat
+          color={approveButtonColor}
+          disabled={disabledApprove || approveLoader?.active}
+          onPress={onApprove}
+          data-testid="session-approve-button"
+        >
+          {approveLoader && approveLoader.active ? (
+            <Loading size="md" type="points" color={approveLoader.color || approveButtonColor} />
+          ) : (
+            'Approve'
+          )}
+        </Button>
       </Row>
     </Modal.Footer>
   )

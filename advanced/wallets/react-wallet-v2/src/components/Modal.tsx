@@ -14,8 +14,9 @@ import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import AuthRequestModal from '@/views/AuthRequestModal'
+import LoadingModal from '@/views/LoadingModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -26,6 +27,43 @@ export default function Modal() {
     }
   }, [open])
 
+  const componentView = useMemo(() => {
+    switch (view) {
+      case 'SessionProposalModal':
+        return <SessionProposalModal />
+      case 'SessionSignModal':
+        return <SessionRequestModal />
+      case 'SessionSignTypedDataModal':
+        return <SessionSignTypedDataModal />
+      case 'SessionSendTransactionModal':
+        return <SessionSendTransactionModal />
+      case 'SessionUnsuportedMethodModal':
+        return <SessionUnsuportedMethodModal />
+      case 'SessionSignCosmosModal':
+        return <SessionSignCosmosModal />
+      case 'SessionSignSolanaModal':
+        return <SessionSignSolanaModal />
+      case 'SessionSignPolkadotModal':
+        return <SessionSignPolkadotModal />
+      case 'SessionSignNearModal':
+        return <SessionSignNearModal />
+      case 'SessionSignMultiversxModal':
+        return <SessionSignMultiversxModal />
+      case 'SessionSignTronModal':
+        return <SessionSignTronModal />
+      case 'SessionSignTezosModal':
+        return <SessionSignTezosModal />
+      case 'SessionSignKadenaModal':
+        return <SessionSignKadenaModal />
+      case 'AuthRequestModal':
+        return <AuthRequestModal />
+      case 'LoadingModal':
+        return <LoadingModal />
+      default:
+        return null
+    }
+  }, [view])
+
   return (
     <NextModal
       blur
@@ -33,20 +71,7 @@ export default function Modal() {
       open={open}
       style={{ border: '1px solid rgba(139, 139, 139, 0.4)' }}
     >
-      {view === 'SessionProposalModal' && <SessionProposalModal />}
-      {view === 'SessionSignModal' && <SessionRequestModal />}
-      {view === 'SessionSignTypedDataModal' && <SessionSignTypedDataModal />}
-      {view === 'SessionSendTransactionModal' && <SessionSendTransactionModal />}
-      {view === 'SessionUnsuportedMethodModal' && <SessionUnsuportedMethodModal />}
-      {view === 'SessionSignCosmosModal' && <SessionSignCosmosModal />}
-      {view === 'SessionSignSolanaModal' && <SessionSignSolanaModal />}
-      {view === 'SessionSignPolkadotModal' && <SessionSignPolkadotModal />}
-      {view === 'SessionSignNearModal' && <SessionSignNearModal />}
-      {view === 'SessionSignMultiversxModal' && <SessionSignMultiversxModal />}
-      {view === 'SessionSignTronModal' && <SessionSignTronModal />}
-      {view === 'SessionSignTezosModal' && <SessionSignTezosModal />}
-      {view === 'SessionSignKadenaModal' && <SessionSignKadenaModal />}
-      {view === 'AuthRequestModal' && <AuthRequestModal />}
+      {componentView}
     </NextModal>
   )
 }

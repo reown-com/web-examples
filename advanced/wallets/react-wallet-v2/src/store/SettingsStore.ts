@@ -1,4 +1,4 @@
-import { Verify } from '@walletconnect/types'
+import { Verify, SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
 
 /**
@@ -18,7 +18,8 @@ interface State {
   kadenaAddress: string
   relayerRegionURL: string
   activeChainId: string
-  currentRequestVerifyContext?: Verify.Context,
+  currentRequestVerifyContext?: Verify.Context
+  sessions: SessionTypes.Struct[]
   smartAccountSponsorshipEnabled: boolean
 }
 
@@ -39,6 +40,7 @@ const state = proxy<State>({
   tezosAddress: '',
   kadenaAddress: '',
   relayerRegionURL: '',
+  sessions: [],
   smartAccountSponsorshipEnabled: false,
 })
 
@@ -95,6 +97,9 @@ const SettingsStore = {
 
   setCurrentRequestVerifyContext(context: Verify.Context) {
     state.currentRequestVerifyContext = context
+  },
+  setSessions(sessions: SessionTypes.Struct[]) {
+    state.sessions = sessions
   },
 
   toggleTestNets() {
