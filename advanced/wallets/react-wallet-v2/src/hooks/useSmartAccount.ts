@@ -1,5 +1,7 @@
 import { SmartAccountLib } from "@/lib/SmartAccountLib";
+import { styledToast } from "@/utils/HelperUtil";
 import { useCallback, useEffect, useState } from "react";
+import { TransactionExecutionError } from "viem";
 
 export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
     const [loading, setLoading] = useState(false)
@@ -14,6 +16,12 @@ export default function useSmartAccount(signerPrivateKey: `0x${string}`) {
         setLoading(false)
       }
       catch (e) {
+        if (e instanceof TransactionExecutionError) {
+          // shorten the error message
+          styledToast(e.cause.message, 'error')
+        } else if (e instanceof Error) {
+          styledToast(e.message, 'error')
+        }
         console.error(e)
         setLoading(false)
       }  

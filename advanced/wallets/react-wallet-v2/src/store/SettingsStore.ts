@@ -8,13 +8,11 @@ interface State {
   testNets: boolean
   account: number
   eip155Address: string
-  cosmosAddress: string
   solanaAddress: string
   polkadotAddress: string
   nearAddress: string
   multiversxAddress: string
   tronAddress: string
-  tezosAddress: string
   kadenaAddress: string
   relayerRegionURL: string
   activeChainId: string
@@ -30,13 +28,11 @@ const state = proxy<State>({
   account: 0,
   activeChainId: '1',
   eip155Address: '',
-  cosmosAddress: '',
   solanaAddress: '',
   polkadotAddress: '',
   nearAddress: '',
   multiversxAddress: '',
   tronAddress: '',
-  tezosAddress: '',
   kadenaAddress: '',
   relayerRegionURL: '',
   sessions: []
@@ -54,10 +50,6 @@ const SettingsStore = {
 
   setEIP155Address(eip155Address: string) {
     state.eip155Address = eip155Address
-  },
-
-  setCosmosAddress(cosmosAddresses: string) {
-    state.cosmosAddress = cosmosAddresses
   },
 
   setSolanaAddress(solanaAddress: string) {
@@ -83,10 +75,6 @@ const SettingsStore = {
 
   setTronAddress(tronAddress: string) {
     state.tronAddress = tronAddress
-  },
-
-  setTezosAddress(tezosAddress: string) {
-    state.tezosAddress = tezosAddress
   },
 
   setActiveChainId(value: string) {
