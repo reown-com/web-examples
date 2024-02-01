@@ -38,6 +38,7 @@ export class SmartAccountLib {
     if (!pimlicoApiKey) {
       throw new Error('A Pimlico API Key is required')
     }
+
     this.chain = chain
     this.sponsored = sponsored
     this.#signerPrivateKey = privateKey
@@ -256,7 +257,7 @@ export class SmartAccountLib {
 
   public checkIfSmartAccountDeployed = async () => {
     const smartAccountClient = await this.getSmartAccountClient();
-    console.log('checking if deployed', smartAccountClient.account.address, this.chain.name)
+    console.log('Checking if deployed', smartAccountClient.account.address, this.chain.name)
     
     const bytecode = await this.publicClient.getBytecode({ address: smartAccountClient.account.address })
     this.isDeployed = Boolean(bytecode)

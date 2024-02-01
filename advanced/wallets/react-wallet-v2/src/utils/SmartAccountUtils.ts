@@ -46,6 +46,14 @@ export const PIMLICO_NETWORK_NAMES: Record<Chain['name'], string> = {
   Goerli: 'goerli'
 }
 
+export const FAUCET_URLS: Record<Chain['name'], string> = {
+  Sepolia: 'https://sepoliafaucet.com',
+  'Polygon Mumbai': 'https://faucet.polygon.technology',
+  Goerli: 'https://goerlifaucet.com'
+}
+
+export const USDC_FAUCET_URL = 'https://faucet.circle.com/'
+
 export const VITALIK_ADDRESS = '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' as Hex
 
 export const publicRPCUrl = ({ chain }: UrlConfig) => RPC_URLS[chain.name]

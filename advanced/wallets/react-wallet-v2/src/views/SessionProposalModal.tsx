@@ -236,7 +236,7 @@ export default function SessionProposalModal() {
       })
 
       // TODO: improve for multi network
-      console.log('checking if SA is deployed', eip155Wallets[eip155Addresses[0]])
+      console.log('Checking if SA is deployed', eip155Wallets[eip155Addresses[0]])
       const chainId = namespaces['eip155'].chains?.[0]
       const smartAccountClient = new SmartAccountLib({
         privateKey: eip155Wallets[eip155Addresses[0]].getPrivateKey() as Hex,

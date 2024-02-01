@@ -40,7 +40,6 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
     }, [client, execute])
 
     useEffect(() => {
-      console.log('chain', chain)
       if (!signerPrivateKey || !chain) return
       const smartAccountClient = new SmartAccountLib({
         chain,
