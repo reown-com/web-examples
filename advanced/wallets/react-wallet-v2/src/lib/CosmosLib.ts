@@ -3,7 +3,7 @@ import { fromHex } from '@cosmjs/encoding'
 import { DirectSecp256k1Wallet } from '@cosmjs/proto-signing'
 // @ts-expect-error
 import { SignDoc } from '@cosmjs/proto-signing/build/codec/cosmos/tx/v1beta1/tx'
-import Keyring from 'mnemonic-keyring'
+import { Wallet } from 'ethers'
 
 /**
  * Constants
@@ -24,27 +24,29 @@ interface IInitArguments {
  * Library
  */
 export default class CosmosLib {
-  private keyring: Keyring
+  private mnemonic: string
   private directSigner: DirectSecp256k1Wallet
   private aminoSigner: Secp256k1Wallet
 
-  constructor(keyring: Keyring, directSigner: DirectSecp256k1Wallet, aminoSigner: Secp256k1Wallet) {
+  constructor(mnemonic: string, directSigner: DirectSecp256k1Wallet, aminoSigner: Secp256k1Wallet) {
     this.directSigner = directSigner
-    this.keyring = keyring
+    this.mnemonic = mnemonic
     this.aminoSigner = aminoSigner
   }
 
   static async init({ mnemonic, path, prefix }: IInitArguments) {
-    const keyring = await Keyring.init({ mnemonic: mnemonic ?? Keyring.generateMnemonic() })
-    const privateKey = fromHex(keyring.getPrivateKey(path ?? DEFAULT_PATH))
+    const wallet = mnemonic
+      ? Wallet.fromMnemonic(mnemonic, path ?? DEFAULT_PATH)
+      : Wallet.createRandom({ path: path ?? DEFAULT_PATH })
+    const privateKey = fromHex(wallet.privateKey.replace('0x', ''))
     const directSigner = await DirectSecp256k1Wallet.fromKey(privateKey, prefix ?? DEFAULT_PREFIX)
     const aminoSigner = await Secp256k1Wallet.fromKey(privateKey, prefix ?? DEFAULT_PREFIX)
 
-    return new CosmosLib(keyring, directSigner, aminoSigner)
+    return new CosmosLib(wallet.mnemonic.phrase, directSigner, aminoSigner)
   }
 
   public getMnemonic() {
-    return this.keyring.mnemonic
+    return this.mnemonic
   }
 
   public async getAddress() {

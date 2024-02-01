@@ -4,6 +4,8 @@ import { Chain, VITALIK_ADDRESS } from "@/utils/SmartAccountUtils";
 import { useCallback, useEffect, useState } from "react";
 import { useSnapshot } from "valtio";
 import { Hex } from "viem";
+import { styledToast } from "@/utils/HelperUtil";
+import { TransactionExecutionError } from "viem";
 
 export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
     const [loading, setLoading] = useState(false)
@@ -20,6 +22,12 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
         setLoading(false)
       }
       catch (e) {
+        if (e instanceof TransactionExecutionError) {
+          // shorten the error message
+          styledToast(e.cause.message, 'error')
+        } else if (e instanceof Error) {
+          styledToast(e.message, 'error')
+        }
         console.error(e)
         setLoading(false)
       }  
