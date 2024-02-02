@@ -12,33 +12,34 @@ import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
 import { Hex } from 'viem'
-import { allowedChains } from './SmartAccountUtils'
+import { Chain, allowedChains } from './SmartAccountUtils'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 
 const getWallet = async (params: any) => {
-  const requestParams: Array<any> = params?.request?.params || []
+  console.log('get wallet params', params)
+  const chainId = params?.chainId?.split(':')[1]
+  console.log('chain id', chainId)
   const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
   if (eoaWallet) {
     return eoaWallet
   }
 
-  const deployedSmartAccounts = await Promise.all(Object.values(eip155Wallets).map(async (wallet) => {
+  const smartAccountEnabledChain = allowedChains.find((chain) => chain.id.toString() === chainId) as Chain
+  console.log('smart account enabled chain', smartAccountEnabledChain)
+  const smartAccounts = await Promise.all(Object.values(eip155Wallets).map(async (wallet) => {
     const smartAccount = new SmartAccountLib({
       privateKey: wallet.getPrivateKey() as Hex,
-      chain: allowedChains[0], // TODO: FIX FOR MULTI NETWORK
+      chain: smartAccountEnabledChain,
       sponsored: true, // TODO: Sponsor for now but should be dynamic according to SettingsStore
     })
-    const isDeployed = await smartAccount.checkIfSmartAccountDeployed()
-    if (isDeployed) {
-      return smartAccount
-    }
-    return null
+    await smartAccount.init()
+    return smartAccount
   }));
-  const validSmartAccounts = deployedSmartAccounts.filter(Boolean) as Array<SmartAccountLib>
-  const smartAccountAddress = getWalletAddressFromParams(validSmartAccounts.map(acc => acc.address!), params)
 
-  return validSmartAccounts.find((smartAccount) => smartAccount?.address === smartAccountAddress) as SmartAccountLib
+  const smartAccountAddress = getWalletAddressFromParams(smartAccounts.map(acc => acc.address!), params)
+
+  return smartAccounts.find((smartAccount) => smartAccount?.address === smartAccountAddress) as SmartAccountLib
 }
 
 
