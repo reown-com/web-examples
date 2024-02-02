@@ -1,4 +1,4 @@
-# EVM E2E Test Dapp for Wallets
+# Run the app
 
 ```ts
 pnpm install
