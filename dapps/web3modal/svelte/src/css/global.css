@@ -1,0 +1,48 @@
+@font-face {
+  font-family: 'montserrat';
+  src: url('../fonts/montserrat.ttf');
+}
+
+*, *:before, *:after{
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  
+  scrollbar-width: thin;
+  scrollbar-color: #fff #141414;
+}
+
+body, html{
+  width: 100%;
+  min-height: 100vh;
+  background-color: #141414;
+  color: #fff;
+  font-family: 'montserrat';
+}
+
+*::selection{
+  background-color: rgb(255, 255, 255);
+  color: #141414;
+}
+
+::-webkit-scrollbar {
+  background: #141414;
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 20px;
+  background: #fff;
+}
+
+::-webkit-scrollbar-corner {
+  background: #141414;
+}
+
+a{
+  color: #fff;
+  line-height: 0;
+}
