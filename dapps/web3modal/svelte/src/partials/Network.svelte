@@ -9,20 +9,20 @@
 			<span id="title">Chain ID:</span>
 			{$chainId}
 		</span>
-    {#if $account.chain}
-    <span>
-      <span id="title">Network:</span>
-      {$account.chain?.name}
-    </span>
-    <span>
-      <span id="title">Decimals:</span>
-      {$account.chain?.nativeCurrency.decimals}
-    </span>
-    <span>
-      <span id="title">Currency:</span>
-      {$account.chain?.nativeCurrency.name}
-    </span>
-    {/if}
+		{#if $account.chain}
+			<span>
+				<span id="title">Network:</span>
+				{$account.chain?.name}
+			</span>
+			<span>
+				<span id="title">Decimals:</span>
+				{$account.chain?.nativeCurrency.decimals}
+			</span>
+			<span>
+				<span id="title">Currency:</span>
+				{$account.chain?.nativeCurrency.name}
+			</span>
+		{/if}
 	</Card>
 {/if}
 
