@@ -4,7 +4,6 @@
 	import Network from '../partials/Network.svelte'
 	import SignMessage from '../partials/SignMessage.svelte'
 	import SignTypeData from '../partials/SignTypeData.svelte'
-	import SwitchChain from '../partials/SwitchChain.svelte'
 	import Transaction from '../partials/Transaction.svelte'
 	import Wallet from '../partials/Wallet.svelte'
 </script>
@@ -15,7 +14,6 @@
 	{#if $account.isConnected}
 		<SignMessage />
 		<SignTypeData />
-		<SwitchChain />
 		<Transaction />
 	{/if}
 </div>

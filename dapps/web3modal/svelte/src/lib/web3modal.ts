@@ -1,6 +1,12 @@
 import { defaultWagmiConfig, createWeb3Modal } from '@web3modal/wagmi'
 
-import { getAccount, getChainId, reconnect, watchAccount, watchChainId } from '@wagmi/core'
+import {
+	getAccount,
+	getChainId,
+	reconnect,
+	watchAccount,
+	watchChainId,
+} from '@wagmi/core'
 import { readable, writable } from 'svelte/store'
 
 import {
@@ -64,20 +70,24 @@ createWeb3Modal({
 	projectId,
 	themeMode: 'dark',
 	featuredWalletIds: [],
-  enableAnalytics: true
+	enableAnalytics: true,
 })
 
-export const chainId = readable(getChainId(wagmiConfig), (set) => watchChainId(wagmiConfig, { onChange: set }))
-export const account = readable(getAccount(wagmiConfig), (set) => watchAccount(wagmiConfig, { onChange: set }))
+export const chainId = readable(getChainId(wagmiConfig), (set) =>
+	watchChainId(wagmiConfig, { onChange: set }),
+)
+export const account = readable(getAccount(wagmiConfig), (set) =>
+	watchAccount(wagmiConfig, { onChange: set }),
+)
 export const provider = readable<ExtendedProvider | undefined>(
 	undefined,
 	(set) =>
 		watchAccount(wagmiConfig, {
-      onChange: async (account) => {
-			if (!account.connector) return set(undefined)
-			set(await account.connector?.getProvider())
-		}
-    }),
+			onChange: async (account) => {
+				if (!account.connector) return set(undefined)
+				set(await account.connector?.getProvider())
+			},
+		}),
 )
 
 export const supported_chains = writable<string[]>([])

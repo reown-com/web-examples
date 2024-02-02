@@ -9,9 +9,6 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  
-  scrollbar-width: thin;
-  scrollbar-color: #fff #141414;
 }
 
 body, html{
@@ -20,11 +17,6 @@ body, html{
   background-color: #141414;
   color: #fff;
   font-family: 'montserrat';
-}
-
-*::selection{
-  background-color: rgb(255, 255, 255);
-  color: #141414;
 }
 
 ::-webkit-scrollbar {
