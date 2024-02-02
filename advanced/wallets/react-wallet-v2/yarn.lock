@@ -5836,10 +5836,10 @@ randombytes@^2.0.1:
   dependencies:
     safe-buffer "^5.1.0"
 
-react-code-blocks@0.1.5:
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/react-code-blocks/-/react-code-blocks-0.1.5.tgz#8514c6b7bee5b238366278aaee3c0d6cc6f07851"
-  integrity sha512-p57YPvry1OY0fS/oDVfK7BBgy89jHJguyyzNbjZvMUR2/90oB0iv3D6aS/PBjuQp7JyjlRoaZ/2WRxvOyyAAEw==
+react-code-blocks@0.1.6:
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/react-code-blocks/-/react-code-blocks-0.1.6.tgz#ec64e7899223d3e910eb916465a66d95ce1ae1b2"
+  integrity sha512-ENNuxG07yO+OuX1ChRje3ieefPRz6yrIpHmebQlaFQgzcAHbUfVeTINpOpoI9bSRSObeYo/OdHsporeToZ7fcg==
   dependencies:
     "@babel/runtime" "^7.10.4"
     react-syntax-highlighter "^15.5.0"
