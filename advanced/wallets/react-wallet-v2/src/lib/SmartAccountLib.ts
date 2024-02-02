@@ -162,8 +162,13 @@ export class SmartAccountLib {
   }
 
   // -- Public ------------------------------------------------------------------
-  public getAccount = async () =>
-    privateKeyToSafeSmartAccount(this.publicClient, {
+  public async init() {
+    await this.checkIfSmartAccountDeployed()
+    this.address = (await this.getAccount()).address
+  }
+
+  public getAccount = async () => {
+    const account = await privateKeyToSafeSmartAccount(this.publicClient, {
       privateKey: this.#signerPrivateKey,
       safeVersion: '1.4.1', // simple version
       entryPoint: ENTRYPOINT_ADDRESSES[this.chain.name], // global entrypoint
@@ -178,6 +183,10 @@ export class SmartAccountLib {
         }
       ]
     })
+    this.address = account.address
+    
+    return account;
+  }
 
   static isSmartAccount = async (address: Address, chain: Chain) => {
     const client = createPublicClient({
@@ -263,9 +272,7 @@ export class SmartAccountLib {
     this.isDeployed = Boolean(bytecode)
     
     console.log(`Smart Account Deployed: ${this.isDeployed}`)
-    if (this.isDeployed) {
-      this.address = smartAccountClient.account.address
-    }
+  
     return this.isDeployed;
 }
 

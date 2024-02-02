@@ -58,9 +58,9 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
     }, [signerPrivateKey, smartAccountSponsorshipEnabled, chain])
 
     useEffect(() => {
-        client?.checkIfSmartAccountDeployed()
-            .then((deployed: boolean) => {
-                setIsDeployed(deployed)
+        client?.init()
+            .then(() => {
+                setIsDeployed(client?.isDeployed)
                 setAddress(client?.address)
             })
     }, [client, chain])

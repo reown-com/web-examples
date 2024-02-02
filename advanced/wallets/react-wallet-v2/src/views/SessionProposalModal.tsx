@@ -36,7 +36,7 @@ import { Hex } from 'viem'
 import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
-import { allowedChains } from '@/utils/SmartAccountUtils'
+import { Chain, allowedChains } from '@/utils/SmartAccountUtils'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -236,18 +236,28 @@ export default function SessionProposalModal() {
       })
 
       // TODO: improve for multi network
-      console.log('Checking if SA is deployed', eip155Wallets[eip155Addresses[0]])
-      const chainId = namespaces['eip155'].chains?.[0]
-      const smartAccountClient = new SmartAccountLib({
-        privateKey: eip155Wallets[eip155Addresses[0]].getPrivateKey() as Hex,
-        chain: allowedChains.find(chain => chain.id.toString() === chainId)!,
-        sponsored: smartAccountSponsorshipEnabled,
-      })
-      const isDeployed = await smartAccountClient.checkIfSmartAccountDeployed()
-      console.log('isDeployed', isDeployed)
-
-      if (isDeployed) {
-        namespaces.eip155.accounts = [...namespaces.eip155.accounts, `eip155:5:${smartAccountClient.address}`]
+      console.log('namespaces', namespaces['eip155'])
+      const namespaceChains = namespaces['eip155'].chains?.map((c: string) => c.split(':')[1])
+      const smartAccountEnabledChains: Chain[] = allowedChains.filter(chain => namespaceChains?.includes(chain.id.toString()))
+      // We find a request for a chain that is enabled for smart account
+      if (smartAccountEnabledChains.length) {
+        const signerAddress = namespaces['eip155'].accounts[0].split(':')[2]
+        const wallet = eip155Wallets[signerAddress]
+        const chain = smartAccountEnabledChains[0]
+        if (wallet) {
+          const smartAccountClient = new SmartAccountLib({
+            privateKey: wallet.getPrivateKey() as Hex,
+            chain,
+            sponsored: smartAccountSponsorshipEnabled,
+          })
+          await smartAccountClient.init()
+          const isDeployed = await smartAccountClient.checkIfSmartAccountDeployed()
+          console.log('isDeployed', isDeployed, smartAccountClient.address)
+    
+          if (isDeployed) {
+            namespaces.eip155.accounts = [...namespaces.eip155.accounts, `eip155:${chain.id}:${smartAccountClient.address}`]
+          }
+        }
       }
 
       console.log('approving namespaces:', namespaces)

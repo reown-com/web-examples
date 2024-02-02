@@ -100,7 +100,6 @@ export default function SmartAccountCard({
       >
         {activeChainId === chainId ? `✅` : `🔄`}
       </Button>
-
       {smartAccountAddress ? (
         <>
           <Text h5 css={{ marginTop: 20 }}>
@@ -109,15 +108,17 @@ export default function SmartAccountCard({
           <Text small css={{ marginTop: 5 }}>
             {smartAccountAddress}
           </Text>
-          <Button
-            size="md"
-            css={{ marginTop: 20, width: '100%' }}
-            onClick={sendTestTransaction}
-            disabled={!isActiveChain || loading}
-          >
-            {loading ? <Loading size="sm" /> : 'Send Test TX'}
-          </Button>
         </>
+      ) : null}
+      {isDeployed && smartAccountAddress ? (
+        <Button
+          size="md"
+          css={{ marginTop: 20, width: '100%' }}
+          onClick={sendTestTransaction}
+          disabled={!isActiveChain || loading}
+        >
+          {loading ? <Loading size="sm" /> : 'Send Test TX'}
+        </Button>
       ) : (
         <>
           <Button
