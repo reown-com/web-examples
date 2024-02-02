@@ -2,6 +2,12 @@
 
 Catalogue of various wallet and dapp examples implementing WalletConnect's **SDKs and APIs**. Each example contains its own README with further instructions and explanations.
 
+### Web3Modal SDK
+
+- [Next App router + Web3Modal](https://github.com/WalletConnect/web-examples/tree/main/dapps/web3modal/next)
+- [React + Web3Modal](https://github.com/WalletConnect/web-examples/tree/main/dapps/web3modal/react)
+- [SvelteKit + Web3Modal](https://github.com/WalletConnect/web-examples/tree/main/dapps/web3modal/svelte) ([Demo](https://evmtest.walletconnect.com/))
+
 ### Web3Wallet SDK
 
 **Wallets:**
