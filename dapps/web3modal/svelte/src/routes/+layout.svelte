@@ -14,7 +14,7 @@
 	<span class="btn">
 		<w3m-button />
 		<a
-			href="https://github.com/WalletConnect/evm-e2e-dapp"
+			href="https://github.com/WalletConnect/web-examples/tree/main/dapps/web3modal/svelte"
 			target="_blank"
 			rel="noreferrer nofollow"
 		>
