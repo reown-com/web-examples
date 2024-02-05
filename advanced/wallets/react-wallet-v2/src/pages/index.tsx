@@ -134,6 +134,7 @@ export default function HomePage() {
             Testnets
           </Text>
           {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb, chainId, smartAccountEnabled }]) => {
+            console.log(name)
             if (smartAccountEnabled) {
               return (
                 <SmartAccountCard

@@ -23,7 +23,6 @@ const getKey = (namespace?: string) => {
 export default function ChainSmartAddressMini({ namespace }: Props) {
   const { activeChainId } = useSnapshot(SettingsStore.state)
   const { address } = useSmartAccount(getKey(namespace) as `0x${string}`, allowedChains.find((c) => c.id.toString() === activeChainId) as Chain)
-
   if (!address) return <Spinner />
   return (
       <ChainAddressMini address={address}/>

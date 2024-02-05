@@ -6,6 +6,7 @@ import { useSnapshot } from "valtio";
 import { Hex } from "viem";
 import { styledToast } from "@/utils/HelperUtil";
 import { TransactionExecutionError } from "viem";
+import { SmartAccount } from "permissionless/accounts";
 
 export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
     const [loading, setLoading] = useState(false)
@@ -58,13 +59,12 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
     }, [signerPrivateKey, smartAccountSponsorshipEnabled, chain])
 
     useEffect(() => {
-        client?.checkIfSmartAccountDeployed()
-            .then((deployed: boolean) => {
-                setIsDeployed(deployed)
-                setAddress(client?.address)
+        client?.getAccount()
+            .then((account: SmartAccount) => {
+                setIsDeployed(true)
+                setAddress(account.address)
             })
     }, [client, chain])
-
 
     return {
         address,

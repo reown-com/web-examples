@@ -37,6 +37,7 @@ import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
 import { allowedChains } from '@/utils/SmartAccountUtils'
+import { chain } from '@polkadot/types/interfaces/definitions'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -51,7 +52,6 @@ export default function SessionProposalModal() {
   // Get proposal data and wallet address from store
   const data = useSnapshot(ModalStore.state)
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
-
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
   console.log('proposal', data.data?.proposal)
@@ -170,6 +170,9 @@ export default function SessionProposalModal() {
       optional.push(chains)
     }
     console.log('requestedChains', [...new Set([...required.flat(), ...optional.flat()])])
+    //const [reqChain] = [...new Set([...required.flat(), ...optional.flat()])]
+    //SettingsStore.setActiveChainId(reqChain?.replace('eip155:', '') as string)
+
     return [...new Set([...required.flat(), ...optional.flat()])]
   }, [proposal])
 
@@ -234,25 +237,26 @@ export default function SessionProposalModal() {
         proposal: proposal.params,
         supportedNamespaces
       })
-
       // TODO: improve for multi network
-      console.log('Checking if SA is deployed', eip155Wallets[eip155Addresses[0]])
       const chainId = namespaces['eip155'].chains?.[0]
+      const chainIdParsed = chainId?.replace('eip155:', '')
+      console.log('chainId', chainId, namespaces['eip155'].chains)
       const smartAccountClient = new SmartAccountLib({
         privateKey: eip155Wallets[eip155Addresses[0]].getPrivateKey() as Hex,
-        chain: allowedChains.find(chain => chain.id.toString() === chainId)!,
+        chain: allowedChains.find(chain => chain.id.toString() === chainIdParsed)!,
         sponsored: smartAccountSponsorshipEnabled,
       })
-      const isDeployed = await smartAccountClient.checkIfSmartAccountDeployed()
-      console.log('isDeployed', isDeployed)
+      const smartAccount = await smartAccountClient.getAccount()
 
-      if (isDeployed) {
-        namespaces.eip155.accounts = [...namespaces.eip155.accounts, `eip155:5:${smartAccountClient.address}`]
+      if (smartAccount) {
+        namespaces.eip155.accounts = [...namespaces.eip155.accounts, `eip155:${chainIdParsed}:${smartAccount.address}`]
       }
 
       console.log('approving namespaces:', namespaces)
 
       try {
+        console.log(proposal.id, namespaces, "TESTING")
+        
         await web3wallet.approveSession({
           id: proposal.id,
           namespaces

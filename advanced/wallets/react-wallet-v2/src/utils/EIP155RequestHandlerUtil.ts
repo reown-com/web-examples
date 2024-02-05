@@ -11,13 +11,14 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
-import { Hex } from 'viem'
-import { allowedChains } from './SmartAccountUtils'
+import { Chain, Hex } from 'viem'
+import { chains } from './SmartAccountUtils'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 
 const getWallet = async (params: any) => {
   const requestParams: Array<any> = params?.request?.params || []
+  const chainId = params?.chainId.replace('eip155:', '')
   const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
   if (eoaWallet) {
     return eoaWallet
@@ -26,14 +27,16 @@ const getWallet = async (params: any) => {
   const deployedSmartAccounts = await Promise.all(Object.values(eip155Wallets).map(async (wallet) => {
     const smartAccount = new SmartAccountLib({
       privateKey: wallet.getPrivateKey() as Hex,
-      chain: allowedChains[0], // TODO: FIX FOR MULTI NETWORK
+      chain: chains[chainId],
       sponsored: true, // TODO: Sponsor for now but should be dynamic according to SettingsStore
     })
     const isDeployed = await smartAccount.checkIfSmartAccountDeployed()
     if (isDeployed) {
       return smartAccount
+    } else {
+      await smartAccount.deploySmartAccount()
+      return smartAccount
     }
-    return null
   }));
   const validSmartAccounts = deployedSmartAccounts.filter(Boolean) as Array<SmartAccountLib>
   const smartAccountAddress = getWalletAddressFromParams(validSmartAccounts.map(acc => acc.address!), params)
