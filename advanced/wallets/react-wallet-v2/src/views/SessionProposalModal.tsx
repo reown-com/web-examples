@@ -169,8 +169,6 @@ export default function SessionProposalModal() {
       optional.push(chains)
     }
     console.log('requestedChains', [...new Set([...required.flat(), ...optional.flat()])])
-    //const [reqChain] = [...new Set([...required.flat(), ...optional.flat()])]
-    //SettingsStore.setActiveChainId(reqChain?.replace('eip155:', '') as string)
 
     return [...new Set([...required.flat(), ...optional.flat()])]
   }, [proposal])
@@ -263,9 +261,7 @@ export default function SessionProposalModal() {
 
       console.log('approving namespaces:', namespaces)
 
-      try {
-        console.log(proposal.id, namespaces, "TESTING")
-        
+      try {        
         await web3wallet.approveSession({
           id: proposal.id,
           namespaces
