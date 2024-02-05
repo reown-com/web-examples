@@ -10,8 +10,6 @@ export const chains = allowedChains.reduce((acc, chain) => {
   acc[chain.id] = chain
   return acc
 }, {} as any)
-// show me explicit example of how to use the type
-export const sepoliaChain = chains[sepolia.id]
 export type Chain = (typeof allowedChains)[number]
 export type UrlConfig = {
   chain: Chain
