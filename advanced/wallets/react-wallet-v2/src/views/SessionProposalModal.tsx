@@ -237,7 +237,7 @@ export default function SessionProposalModal() {
 
       // TODO: improve for multi network
       console.log('namespaces', namespaces['eip155'])
-      const namespaceChains = namespaces['eip155'].chains?.map((c: string) => c.split(':')[1])
+      const namespaceChains = namespaces['eip155']?.chains?.map((c: string) => c.split(':')[1])
       const smartAccountEnabledChains: Chain[] = allowedChains.filter(chain => namespaceChains?.includes(chain.id.toString()))
       // We find a request for a chain that is enabled for smart account
       if (smartAccountEnabledChains.length) {
