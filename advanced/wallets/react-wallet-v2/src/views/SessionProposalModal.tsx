@@ -37,6 +37,7 @@ import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
 import { Chain, allowedChains } from '@/utils/SmartAccountUtils'
 import { Hex } from 'viem'
+import useSmartAccount from '@/hooks/useSmartAccount'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -184,6 +185,10 @@ export default function SessionProposalModal() {
     [supportedChains]
   )
 
+
+
+  console.log(smartAccountChains, "smartAccountChains")
+
   // get required chains that are not supported by the wallet
   const notSupportedChains = useMemo(() => {
     if (!proposal) return []
@@ -226,37 +231,26 @@ export default function SessionProposalModal() {
     }
   }, [])
 
+  const namespaces = buildApprovedNamespaces({
+    proposal: proposal.params,
+    supportedNamespaces
+  })
+  const chainId = namespaces['eip155'].chains?.[0]
+  const chainIdParsed = chainId?.replace('eip155:', '')
+  const signerAddress = namespaces['eip155'].accounts[0].split(':')[2]
+  const wallet = eip155Wallets[signerAddress]
+  const chain = allowedChains.find(chain => chain.id.toString() === chainIdParsed)!
+
+  const {
+    address: smartAccountAddress,
+  } = useSmartAccount(wallet.getPrivateKey() as Hex, chain)
+
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
     if (proposal) {
       setIsLoadingApprove(true)
-      const namespaces = buildApprovedNamespaces({
-        proposal: proposal.params,
-        supportedNamespaces
-      })
-      // TODO: improve for multi network
-      console.log('namespaces', namespaces['eip155'])
-      const namespaceChains = namespaces['eip155']?.chains?.map((c: string) => c.split(':')[1])
-      const smartAccountEnabledChains: Chain[] = allowedChains.filter(chain => namespaceChains?.includes(chain.id.toString()))
-      // We find a request for a chain that is enabled for smart account
-      if (smartAccountEnabledChains.length) {
-        const signerAddress = namespaces['eip155'].accounts[0].split(':')[2]
-        const wallet = eip155Wallets[signerAddress]
-        const chain = smartAccountEnabledChains[0]
-        if (wallet) {
-          const smartAccountClient = new SmartAccountLib({
-            privateKey: wallet.getPrivateKey() as Hex,
-            chain,
-            sponsored: smartAccountSponsorshipEnabled,
-          })
-          await smartAccountClient.init()
-          const isDeployed = await smartAccountClient.checkIfSmartAccountDeployed()
-          console.log('isDeployed', isDeployed, smartAccountClient.address)
-    
-          if (isDeployed) {
-            namespaces.eip155.accounts = [...namespaces.eip155.accounts, `eip155:${chain.id}:${smartAccountClient.address}`]
-          }
-        }
+      if (wallet && smartAccountAddress) {
+        namespaces.eip155.accounts = [...namespaces.eip155.accounts, `eip155:${chain.id}:${smartAccountAddress}`]
       }
 
       console.log('approving namespaces:', namespaces)
@@ -275,7 +269,7 @@ export default function SessionProposalModal() {
     }
     setIsLoadingApprove(false)
     ModalStore.close()
-  }, [proposal, supportedNamespaces, smartAccountSponsorshipEnabled])
+  }, [chain, namespaces, proposal, smartAccountAddress, wallet])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -344,14 +338,11 @@ export default function SessionProposalModal() {
             })}
 
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
-          {smartAccountChains.length &&
-            smartAccountChains.map((chain, i) => {
-              return (
-                <Row key={i}>
-                  <ChainSmartAddressMini namespace={chain?.namespace!} />
-                </Row>
-              )
-            })}
+          {smartAccountAddress &&
+            <Row key={1}>
+              <ChainAddressMini key={1} address={smartAccountAddress} />
+            </Row>
+          }
         </Grid>
         <Grid>
           <Row style={{ color: 'GrayText' }} justify="flex-end">
