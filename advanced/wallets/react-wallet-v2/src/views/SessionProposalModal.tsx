@@ -181,7 +181,6 @@ export default function SessionProposalModal() {
 
       if (!chainData) return null
 
-      SettingsStore.setActiveChainId(chainData.chainId)
       return chainData
     }),
     [requestedChains]
