@@ -31,13 +31,27 @@ export default function SmartAccountCard({
   const { activeChainId } = useSnapshot(SettingsStore.state)
   const chain = allowedChains.find((c) => c.id.toString() === chainId.split(':')[1]) as Chain
   const {
+    deploy,
+    isDeployed,
     address: smartAccountAddress,
+    loading,
+    sendTestTransaction,
   } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`, chain)
 
   function onCopy() {
     navigator?.clipboard?.writeText(address)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+  }
+
+  async function onCreateSmartAccount() {
+    try {
+      if (!isDeployed) {
+        await deploy()
+      }
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   async function onChainChanged(chainId: string, address: string) {
@@ -96,16 +110,35 @@ export default function SmartAccountCard({
           </Text>
         </>
       ) : null}
+      {isDeployed && smartAccountAddress ? (
+        <Button
+          size="md"
+          css={{ marginTop: 20, width: '100%' }}
+          onClick={sendTestTransaction}
+          disabled={!isActiveChain || loading}
+        >
+          {loading ? <Loading size="sm" /> : 'Send Test TX'}
+        </Button>
+      ) : (
         <>
           <Button
-            disabled={!isActiveChain}
+            disabled={!isActiveChain || loading}
             size="sm"
             css={{ marginTop: 20, width: '100%' }}
             onClick={() => window.open(FAUCET_URLS[chain?.name], '_blank')}
           >
             {name} Faucet
           </Button>
+          <Button
+            disabled={!isActiveChain || loading}
+            size="sm"
+            css={{ marginTop: 10, width: '100%' }}
+            onClick={onCreateSmartAccount}
+          >
+            {loading ? <Loading size="sm" css={{ paddingTop: 10 }} /> : 'Create Smart Account'}
+          </Button>
         </>
+      )}
     </ChainCard>
   )
 }
