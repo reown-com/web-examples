@@ -14,6 +14,7 @@ import { providers } from 'ethers'
 import { chains } from './SmartAccountUtils'
 import { Hex } from 'viem'
 import { Chain, allowedChains } from './SmartAccountUtils'
+import SettingsStore from '@/store/SettingsStore'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 
@@ -52,6 +53,9 @@ const getWallet = async (params: any) => {
 export async function approveEIP155Request(requestEvent: RequestEventArgs) {
   const { params, id } = requestEvent
   const { chainId, request } = params
+
+  SettingsStore.setActiveChainId(chainId)
+
   const wallet = await getWallet(params)
 
   switch (request.method) {

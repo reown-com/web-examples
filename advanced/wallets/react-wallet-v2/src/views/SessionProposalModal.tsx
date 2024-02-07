@@ -347,7 +347,7 @@ export default function SessionProposalModal() {
             supportedChains.map((chain, i) => {
               return (
                 <Row key={i}>
-                  <ChainAddressMini key={i} address={getAddress(chain?.namespace)} />
+                  <ChainAddressMini key={i} address={getAddress(chain?.namespace) || 'test'} />
                 </Row>
               )
             })}
@@ -355,9 +355,13 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
           {smartAccountChains.length &&
             smartAccountChains.map((chain, i) => {
+              if (!chain) {
+                return <></>
+              }
+
               return (
                 <Row key={i}>
-                  <ChainSmartAddressMini namespace={chain?.namespace!} />
+                  <ChainSmartAddressMini chain={chain} />
                 </Row>
               )
             })}
