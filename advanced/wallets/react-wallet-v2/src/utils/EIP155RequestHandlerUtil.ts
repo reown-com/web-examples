@@ -18,6 +18,7 @@ type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 
 
 
 const getWallet = async (params: any) => {
+  const typedChains: Record<number, Chain> = chains;
   console.log('get wallet params', params)
   const chainId = params?.chainId?.split(':')[1]
   console.log('chain id', chainId)
@@ -31,16 +32,15 @@ const getWallet = async (params: any) => {
   const smartAccounts = await Promise.all(Object.values(eip155Wallets).map(async (wallet) => {
     const smartAccount = new SmartAccountLib({
       privateKey: wallet.getPrivateKey() as Hex,
-      chain: chains[chainId],
+      chain: typedChains[chainId],
       sponsored: true, // TODO: Sponsor for now but should be dynamic according to SettingsStore
     })
+
     const isDeployed = await smartAccount.checkIfSmartAccountDeployed()
-    if (isDeployed) {
-      return smartAccount
-    } else {
+    if (!isDeployed) {
       await smartAccount.deploySmartAccount()
-      return smartAccount
     }
+    return smartAccount
   }));
 
   const smartAccountAddress = getWalletAddressFromParams(smartAccounts.map(acc => acc.address!), params)

@@ -9,7 +9,7 @@ export const allowedChains = [sepolia, polygonMumbai, goerli] as const
 export const chains = allowedChains.reduce((acc, chain) => {
   acc[chain.id] = chain
   return acc
-}, {} as any)
+}, {} as Record<Chain['id'], Chain>)
 export type Chain = (typeof allowedChains)[number]
 export type UrlConfig = {
   chain: Chain
