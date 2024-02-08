@@ -31,6 +31,8 @@ const getWallet = async (params: any) => {
   const smartAccountEnabledChain = allowedChains.find((chain) => chain.id.toString() === chainId) as Chain
   console.log('smart account enabled chain', smartAccountEnabledChain)
   const smartAccounts = await Promise.all(Object.values(eip155Wallets).map(async (wallet) => {
+    console.log('typeed chains', typedChains[chainId])
+   
     const smartAccount = new SmartAccountLib({
       privateKey: wallet.getPrivateKey() as Hex,
       chain: typedChains[chainId],
@@ -53,6 +55,8 @@ const getWallet = async (params: any) => {
 export async function approveEIP155Request(requestEvent: RequestEventArgs) {
   const { params, id } = requestEvent
   const { chainId, request } = params
+
+  console.log(requestEvent, chainId, "tests")
 
   SettingsStore.setActiveChainId(chainId)
 

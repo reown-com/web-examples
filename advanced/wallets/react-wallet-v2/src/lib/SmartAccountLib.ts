@@ -39,6 +39,8 @@ export class SmartAccountLib {
       throw new Error('A Pimlico API Key is required')
     }
 
+    console.log('investigate 2', chain, privateKey, sponsored)
+
     this.chain = chain
     this.sponsored = sponsored
     this.#signerPrivateKey = privateKey
