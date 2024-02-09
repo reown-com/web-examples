@@ -79,7 +79,7 @@ export const EIP155_TEST_CHAINS: Record<string,EIP155Chain> = {
     name: 'Ethereum Sepolia',
     logo: '/chain-logos/eip155-1.png',
     rgb: '99, 125, 234',
-    rpc: 'https://rpc.sepolia.org',
+    rpc: 'https://gateway.tenderly.co/public/sepolia',
     namespace: 'eip155',
     smartAccountEnabled: true,
   },

@@ -5,6 +5,11 @@ const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
 
 // Types
 export const allowedChains = [sepolia, polygonMumbai, goerli] as const
+// build chains so I can access them by id
+export const chains = allowedChains.reduce((acc, chain) => {
+  acc[chain.id] = chain
+  return acc
+}, {} as Record<Chain['id'], Chain>)
 export type Chain = (typeof allowedChains)[number]
 export type UrlConfig = {
   chain: Chain
@@ -56,7 +61,11 @@ export const USDC_FAUCET_URL = 'https://faucet.circle.com/'
 
 export const VITALIK_ADDRESS = '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' as Hex
 
-export const publicRPCUrl = ({ chain }: UrlConfig) => RPC_URLS[chain.name]
+export const publicRPCUrl = ({ chain }: UrlConfig) => {
+  console.log("investigate", chain)
+  return RPC_URLS[chain?.name]
+}
+
 export const paymasterUrl = ({ chain }: UrlConfig) =>
   `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
 export const bundlerUrl = ({ chain }: UrlConfig) =>

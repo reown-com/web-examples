@@ -32,11 +32,12 @@ import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
 import RequestModal from './RequestModal'
 import { SmartAccountLib } from '@/lib/SmartAccountLib'
-import { Hex } from 'viem'
 import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
 import { Chain, allowedChains } from '@/utils/SmartAccountUtils'
+import { Hex } from 'viem'
+import useSmartAccount from '@/hooks/useSmartAccount'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -51,7 +52,6 @@ export default function SessionProposalModal() {
   // Get proposal data and wallet address from store
   const data = useSnapshot(ModalStore.state)
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
-
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
   console.log('proposal', data.data?.proposal)
@@ -170,12 +170,19 @@ export default function SessionProposalModal() {
       optional.push(chains)
     }
     console.log('requestedChains', [...new Set([...required.flat(), ...optional.flat()])])
+
     return [...new Set([...required.flat(), ...optional.flat()])]
   }, [proposal])
 
   // the chains that are supported by the wallet from the proposal
   const supportedChains = useMemo(
-    () => requestedChains.map(chain => getChainData(chain!)),
+    () => requestedChains.map(chain => {
+      const chainData = getChainData(chain!)
+
+      if (!chainData) return null
+
+      return chainData
+    }),
     [requestedChains]
   )
 
@@ -226,43 +233,50 @@ export default function SessionProposalModal() {
     }
   }, [])
 
+  const namespaces = buildApprovedNamespaces({
+    proposal: proposal.params,
+    supportedNamespaces
+  })
+
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
     if (proposal) {
       setIsLoadingApprove(true)
-      const namespaces = buildApprovedNamespaces({
-        proposal: proposal.params,
-        supportedNamespaces
-      })
+        // get keys of namespaces
+      const namespaceKeys = Object.keys(namespaces)
+      const [nameSpaceKey] = namespaceKeys
 
-      // TODO: improve for multi network
-      console.log('namespaces', namespaces['eip155'])
-      const namespaceChains = namespaces['eip155']?.chains?.map((c: string) => c.split(':')[1])
-      const smartAccountEnabledChains: Chain[] = allowedChains.filter(chain => namespaceChains?.includes(chain.id.toString()))
-      // We find a request for a chain that is enabled for smart account
-      if (smartAccountEnabledChains.length) {
-        const signerAddress = namespaces['eip155'].accounts[0].split(':')[2]
+      // get chain ids from namespaces
+      const [chainIds] = namespaceKeys.map(key => namespaces[key].chains)
+
+      if (chainIds) {
+        const allowedChainIds = chainIds.filter(id => {
+          const chainId = id.replace(`${nameSpaceKey}:`, '')
+          return allowedChains.map(chain => chain.id.toString()).includes(chainId)
+        })
+
+        console.log('allowedChainIds', allowedChainIds)
+
+        const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
+        const signerAddress = namespaces[nameSpaceKey].accounts[0].split(':')[2]
         const wallet = eip155Wallets[signerAddress]
-        const chain = smartAccountEnabledChains[0]
-        if (wallet) {
-          const smartAccountClient = new SmartAccountLib({
-            privateKey: wallet.getPrivateKey() as Hex,
-            chain,
-            sponsored: smartAccountSponsorshipEnabled,
-          })
-          await smartAccountClient.init()
-          const isDeployed = await smartAccountClient.checkIfSmartAccountDeployed()
-          console.log('isDeployed', isDeployed, smartAccountClient.address)
-    
-          if (isDeployed) {
-            namespaces.eip155.accounts = [...namespaces.eip155.accounts, `eip155:${chain.id}:${smartAccountClient.address}`]
-          }
+        const chain = allowedChains.find(chain => chain.id.toString() === chainIdParsed)!
+  
+        const smartAccountClient = new SmartAccountLib({
+          privateKey: wallet.getPrivateKey() as Hex,
+          chain: allowedChains.find(chain => chain.id.toString() === chainIdParsed)!,
+          sponsored: smartAccountSponsorshipEnabled,
+        })
+
+        const smartAccountAddress = await smartAccountClient.getAccount()
+        if (wallet && smartAccountAddress) {
+          namespaces.eip155.accounts = [...namespaces.eip155.accounts, `${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`]
         }
+  
+        console.log('approving namespaces:', namespaces.eip155.accounts)
       }
 
-      console.log('approving namespaces:', namespaces)
-
-      try {
+      try {        
         await web3wallet.approveSession({
           id: proposal.id,
           namespaces
@@ -276,7 +290,7 @@ export default function SessionProposalModal() {
     }
     setIsLoadingApprove(false)
     ModalStore.close()
-  }, [proposal, supportedNamespaces, smartAccountSponsorshipEnabled])
+  }, [namespaces, proposal, smartAccountSponsorshipEnabled])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -339,7 +353,7 @@ export default function SessionProposalModal() {
             supportedChains.map((chain, i) => {
               return (
                 <Row key={i}>
-                  <ChainAddressMini key={i} address={getAddress(chain?.namespace)} />
+                  <ChainAddressMini key={i} address={getAddress(chain?.namespace) || 'test'} />
                 </Row>
               )
             })}
@@ -347,9 +361,13 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
           {smartAccountChains.length &&
             smartAccountChains.map((chain, i) => {
+              if (!chain) {
+                return <></>
+              }
+
               return (
                 <Row key={i}>
-                  <ChainSmartAddressMini namespace={chain?.namespace!} />
+                  <ChainSmartAddressMini chain={chain} />
                 </Row>
               )
             })}

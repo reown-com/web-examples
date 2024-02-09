@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function ChainAddressMini({ address }: Props) {
-  if (!address) return <></>
+  if (!address || address === 'N/A') return <></>
   return (
     <>
       <Row>

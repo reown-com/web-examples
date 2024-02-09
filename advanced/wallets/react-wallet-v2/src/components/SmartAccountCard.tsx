@@ -44,11 +44,6 @@ export default function SmartAccountCard({
     setTimeout(() => setCopied(false), 1500)
   }
 
-  async function onChainChanged(chainId: string, address: string) {
-    SettingsStore.setActiveChainId(chainId)
-    await updateSignClientChainId(chainId.toString(), address)
-  }
-
   async function onCreateSmartAccount() {
     try {
       if (!isDeployed) {
@@ -57,6 +52,11 @@ export default function SmartAccountCard({
     } catch (error) {
       console.error(error)
     }
+  }
+
+  async function onChainChanged(chainId: string, address: string) {
+    SettingsStore.setActiveChainId(chainId)
+    await updateSignClientChainId(chainId.toString(), address)
   }
   
   return (
