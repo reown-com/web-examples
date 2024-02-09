@@ -180,7 +180,6 @@ export function styledToast(message: string, type: string) {
         borderRadius: '10px',
         background: '#333',
         color: '#fff',
-        zIndex: 11000
       }
     })
   }
