@@ -242,41 +242,47 @@ export default function SessionProposalModal() {
   const onApprove = useCallback(async () => {
     if (proposal) {
       setIsLoadingApprove(true)
+
+      try {
         // get keys of namespaces
-      const namespaceKeys = Object.keys(namespaces)
-      const [nameSpaceKey] = namespaceKeys
+        const namespaceKeys = Object.keys(namespaces)
+        const [nameSpaceKey] = namespaceKeys
 
-      // get chain ids from namespaces
-      const [chainIds] = namespaceKeys.map(key => namespaces[key].chains)
+        // get chain ids from namespaces
+        const [chainIds] = namespaceKeys.map(key => namespaces[key].chains)
 
-      if (chainIds) {
-        const allowedChainIds = chainIds.filter(id => {
-          const chainId = id.replace(`${nameSpaceKey}:`, '')
-          return allowedChains.map(chain => chain.id.toString()).includes(chainId)
-        })
+        if (chainIds) {
+          const allowedChainIds = chainIds.filter(id => {
+            const chainId = id.replace(`${nameSpaceKey}:`, '')
+            return allowedChains.map(chain => chain.id.toString()).includes(chainId)
+          })
 
-        console.log('allowedChainIds', allowedChainIds)
+          console.log('allowedChainIds', allowedChainIds)
 
-        const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
-        const signerAddress = namespaces[nameSpaceKey].accounts[0].split(':')[2]
-        const wallet = eip155Wallets[signerAddress]
-        const chain = allowedChains.find(chain => chain.id.toString() === chainIdParsed)!
-  
-        const smartAccountClient = new SmartAccountLib({
-          privateKey: wallet.getPrivateKey() as Hex,
-          chain: allowedChains.find(chain => chain.id.toString() === chainIdParsed)!,
-          sponsored: smartAccountSponsorshipEnabled,
-        })
+          if (allowedChainIds.length) {
+            const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
 
-        const smartAccountAddress = await smartAccountClient.getAccount()
-        if (wallet && smartAccountAddress) {
-          namespaces.eip155.accounts = [...namespaces.eip155.accounts, `${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`]
+            if (namespaces[nameSpaceKey].accounts) {
+              const signerAddress = namespaces[nameSpaceKey].accounts[0].split(':')[2]
+              const wallet = eip155Wallets[signerAddress]
+              const chain = allowedChains.find(chain => chain.id.toString() === chainIdParsed)!
+        
+              const smartAccountClient = new SmartAccountLib({
+                privateKey: wallet.getPrivateKey() as Hex,
+                chain: allowedChains.find(chain => chain.id.toString() === chainIdParsed)!,
+                sponsored: smartAccountSponsorshipEnabled,
+              })
+    
+              const smartAccountAddress = await smartAccountClient.getAccount()
+              if (wallet && smartAccountAddress) {
+                namespaces.eip155.accounts = [...namespaces.eip155.accounts, `${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`]
+              }
+        
+              console.log('approving namespaces:', namespaces.eip155.accounts) 
+            }
+          }
         }
-  
-        console.log('approving namespaces:', namespaces.eip155.accounts)
-      }
 
-      try {        
         await web3wallet.approveSession({
           id: proposal.id,
           namespaces
