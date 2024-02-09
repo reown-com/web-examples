@@ -250,44 +250,46 @@ export default function SessionProposalModal() {
       const [chainIds] = namespaceKeys.map(key => namespaces[key].chains)
 
       if (chainIds) {
-        const chainIdParsed = chainIds[0].replace(`${nameSpaceKey}:`, '')
+        const allowedChainIds = chainIds.filter(id => {
+          const chainId = id.replace(`${nameSpaceKey}:`, '')
+          return allowedChains.map(chain => chain.id.toString()).includes(chainId)
+        })
+
+        console.log('allowedChainIds', allowedChainIds)
+
+        const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
         const signerAddress = namespaces[nameSpaceKey].accounts[0].split(':')[2]
         const wallet = eip155Wallets[signerAddress]
         const chain = allowedChains.find(chain => chain.id.toString() === chainIdParsed)!
-
-        console.log(chain, "chains")
-
-        if (chain) {
-          const smartAccountClient = new SmartAccountLib({
-            privateKey: wallet.getPrivateKey() as Hex,
-            chain: allowedChains.find(chain => chain.id.toString() === chainIdParsed)!,
-            sponsored: smartAccountSponsorshipEnabled,
-          })
   
-          const smartAccountAddress = await smartAccountClient.getAccount()
-          if (wallet && smartAccountAddress) {
-            namespaces.eip155.accounts = [...namespaces.eip155.accounts, `${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`]
-          }
-    
-          console.log('approving namespaces:', namespaces)
+        const smartAccountClient = new SmartAccountLib({
+          privateKey: wallet.getPrivateKey() as Hex,
+          chain: allowedChains.find(chain => chain.id.toString() === chainIdParsed)!,
+          sponsored: smartAccountSponsorshipEnabled,
+        })
 
-          try {        
-            await web3wallet.approveSession({
-              id: proposal.id,
-              namespaces
-            })
-            SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
-          } catch (e) {
-            setIsLoadingApprove(false)
-            styledToast((e as Error).message, 'error')
-            return
-          }
-          setIsLoadingApprove(false)
-          ModalStore.close()
+        const smartAccountAddress = await smartAccountClient.getAccount()
+        if (wallet && smartAccountAddress) {
+          namespaces.eip155.accounts = [...namespaces.eip155.accounts, `${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`]
         }
+  
+        console.log('approving namespaces:', namespaces.eip155.accounts)
+      }
+
+      try {        
+        await web3wallet.approveSession({
+          id: proposal.id,
+          namespaces
+        })
+        SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+      } catch (e) {
+        setIsLoadingApprove(false)
+        styledToast((e as Error).message, 'error')
+        return
       }
     }
-
+    setIsLoadingApprove(false)
+    ModalStore.close()
   }, [namespaces, proposal, smartAccountSponsorshipEnabled])
 
   // Hanlde reject action
