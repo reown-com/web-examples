@@ -275,7 +275,15 @@ export default function SessionProposalModal() {
     
               const smartAccountAddress = await smartAccountClient.getAccount()
               if (wallet && smartAccountAddress) {
-                namespaces.eip155.accounts = [...namespaces.eip155.accounts, `${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`]
+                const allowedAccounts = allowedChainIds.map(id => {
+                  // check if id is a part of any of these array elements namespaces.eip155.accounts
+                  const accountIsAllowed = namespaces.eip155.accounts.findIndex(account => account.includes(id))
+
+                  return namespaces.eip155.accounts[accountIsAllowed]
+                })
+                
+                // when SA available, make it 1st on dApp
+                namespaces.eip155.accounts = [`${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`, ...allowedAccounts]
               }
         
               console.log('approving namespaces:', namespaces.eip155.accounts) 
