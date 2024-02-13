@@ -282,10 +282,9 @@ export default function SessionProposalModal() {
                   return namespaces.eip155.accounts[accountIsAllowed]
                 })
                 
-                // when SA available, make it 1st on dApp
-                namespaces.eip155.accounts = [`${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`, ...allowedAccounts]
+                // when SA available, make it last on dApp
+                namespaces.eip155.accounts = [...allowedAccounts,`${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`]
               }
-        
               console.log('approving namespaces:', namespaces.eip155.accounts) 
             }
           }
