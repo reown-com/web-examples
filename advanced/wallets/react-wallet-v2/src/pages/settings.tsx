@@ -23,7 +23,8 @@ export default function SettingsPage() {
     multiversxAddress,
     tronAddress,
     tezosAddress,
-    kadenaAddress
+    kadenaAddress,
+    smartAccountEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -64,6 +65,20 @@ export default function SettingsPage() {
           data-testid="settings-toggle-smart-account-sponsorship"
         />
         <Text>{smartAccountSponsorshipEnabled ? 'Enabled' : 'Disabled'}</Text>
+      </Row>
+
+      <Divider y={2} />
+
+      <Text h4 css={{ marginBottom: '$5' }}>
+        Smart Account Enabled
+      </Text>
+      <Row justify="space-between" align="center">
+        <Switch
+          checked={smartAccountEnabled}
+          onChange={SettingsStore.toggleSmartAccountEnabled}
+          data-testid="settings-toggle-smart-account-enabled"
+        />
+        <Text>{smartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
       </Row>
 
       <Divider y={2} />
