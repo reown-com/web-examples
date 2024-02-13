@@ -20,7 +20,8 @@ interface State {
   activeChainId: string
   currentRequestVerifyContext?: Verify.Context
   sessions: SessionTypes.Struct[]
-  smartAccountSponsorshipEnabled: boolean
+  smartAccountSponsorshipEnabled: boolean,
+  smartAccountEnabled: boolean,
 }
 
 /**
@@ -42,6 +43,7 @@ const state = proxy<State>({
   relayerRegionURL: '',
   sessions: [],
   smartAccountSponsorshipEnabled: false,
+  smartAccountEnabled: false,
 })
 
 /**
@@ -116,6 +118,10 @@ const SettingsStore = {
   toggleSmartAccountSponsorship() {
     if (!state.testNets) return
     state.smartAccountSponsorshipEnabled = !state.smartAccountSponsorshipEnabled
+  },
+
+  toggleSmartAccountEnabled() {
+    state.smartAccountEnabled = !state.smartAccountEnabled
   }
 }
 
