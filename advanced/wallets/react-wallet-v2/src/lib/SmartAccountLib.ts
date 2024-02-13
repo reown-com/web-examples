@@ -80,7 +80,7 @@ export class SmartAccountLib {
       transport: http(bundlerUrl({ chain: this.chain })),
       sponsorUserOperation: sponsorUserOperation
         ? sponsorUserOperation
-        : this.sponsored ? this.paymasterClient.sponsorUserOperation : undefined
+        : this.paymasterClient.sponsorUserOperation
     }).extend(pimlicoBundlerActions)
   }
 
@@ -125,18 +125,21 @@ export class SmartAccountLib {
   private getSmartAccountUSDCBalance = async () => {
     const params = {
       abi: [
-          {
-            inputs: [{ name: "_owner", type: "address" }],
-            name: "balanceOf",
-            outputs: [{ name: "balance", type: "uint256" }],
-            type: "function",
-          }
+        {
+          inputs: [{ name: "_owner", type: "address" }],
+          name: "balanceOf",
+          outputs: [{ name: "balance", type: "uint256" }],
+          type: "function",
+          stateMutability: "view"
+      }
       ],
       address: USDC_ADDRESSES[this.chain.name] as Hex,
       functionName: "balanceOf",
       args: [this.address!]
     }
+    console.log(USDC_ADDRESSES[this.chain.name], 'usdcAddress')
     const usdcBalance = await this.publicClient.readContract(params) as bigint
+    console.log(usdcBalance, 'usdcBalance')
     return usdcBalance
   }
 
@@ -251,8 +254,32 @@ export class SmartAccountLib {
         )
     }
 
-    const smartAccountClient = await this.getSmartAccountClient(this.sponsorUserOperation)
+    const smartAccountClient = await this.getSmartAccountClient(async ({ userOperation }) => {
+      const userOperationWithPaymasterAndData = {
+        ...userOperation,
+        paymasterAndData: PAYMASTER_ADDRESSES[this.chain.name]
+      }
+
+      console.log('Estimating gas limits...', userOperationWithPaymasterAndData)
+
+      const gasLimits = await this.paymasterClient.sponsorUserOperation({
+        userOperation: userOperationWithPaymasterAndData,
+        entryPoint: ENTRYPOINT_ADDRESSES[this.chain.name]
+      })
+
+      console.log(gasLimits, 'gasLimits sponsorUserOperation')
+
+      return {
+        ...userOperationWithPaymasterAndData,
+        callGasLimit: gasLimits.callGasLimit,
+        verificationGasLimit: gasLimits.verificationGasLimit,
+        preVerificationGas: gasLimits.preVerificationGas
+      }
+    })
+
     const gasPrices = await smartAccountClient.getUserOperationGasPrice()
+
+    console.log('gasPrices getUserOperationGasPrice', gasPrices)
 
     return smartAccountClient.sendTransaction({
       to,

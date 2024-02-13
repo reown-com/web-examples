@@ -36,7 +36,7 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
 
     const sendTestTransaction = useCallback(async () => {
       if (!client) return
-      execute(() => client?.sendTransaction({
+      execute(() => client?.sendUSDCSponsoredTransaction({
         to: VITALIK_ADDRESS,
         value: 0n,
         data: '0x',
@@ -50,6 +50,7 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
 
     useEffect(() => {
       if (!signerPrivateKey || !chain) return
+      console.log("CHAIN", chain)
       const smartAccountClient = new SmartAccountLib({
         chain,
         privateKey: signerPrivateKey,
@@ -61,6 +62,7 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
     useEffect(() => {
         client?.getAccount()
             .then((account: SmartAccount) => {
+                setIsDeployed(true)
                 setAddress(account.address)
             })
     }, [client, chain])
