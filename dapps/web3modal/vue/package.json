@@ -8,7 +8,11 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@wagmi/connectors": "^4.1.14",
+    "@wagmi/core": "^2.6.5",
+    "@web3modal/wagmi": "^4.0.5",
     "core-js": "^3.8.3",
+    "viem": "^2.7.9",
     "vue": "^3.2.13"
   },
   "devDependencies": {
