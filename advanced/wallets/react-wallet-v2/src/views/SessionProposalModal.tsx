@@ -48,7 +48,7 @@ const StyledSpan = styled('span', {
 } as any)
 
 export default function SessionProposalModal() {
-  const { smartAccountSponsorshipEnabled } = useSnapshot(SettingsStore.state)
+  const { smartAccountSponsorshipEnabled, smartAccountEnabled } = useSnapshot(SettingsStore.state)
   // Get proposal data and wallet address from store
   const data = useSnapshot(ModalStore.state)
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
@@ -262,7 +262,7 @@ export default function SessionProposalModal() {
           if (allowedChainIds.length) {
             const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
 
-            if (namespaces[nameSpaceKey].accounts) {
+            if (namespaces[nameSpaceKey].accounts && smartAccountEnabled) {
               const signerAddress = namespaces[nameSpaceKey].accounts[0].split(':')[2]
               const wallet = eip155Wallets[signerAddress]
               const chain = allowedChains.find(chain => chain.id.toString() === chainIdParsed)!
@@ -280,12 +280,10 @@ export default function SessionProposalModal() {
                   const accountIsAllowed = namespaces.eip155.accounts.findIndex(account => account.includes(id))
 
                   return namespaces.eip155.accounts[accountIsAllowed]
-                })
-                
-                // when SA available, make it 1st on dApp
+                })                
+                // when SA available, make it first on dApp
                 namespaces.eip155.accounts = [`${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`, ...allowedAccounts]
               }
-        
               console.log('approving namespaces:', namespaces.eip155.accounts) 
             }
           }
@@ -304,7 +302,7 @@ export default function SessionProposalModal() {
     }
     setIsLoadingApprove(false)
     ModalStore.close()
-  }, [namespaces, proposal, smartAccountSponsorshipEnabled])
+  }, [namespaces, proposal, smartAccountSponsorshipEnabled, smartAccountEnabled])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks
