@@ -1,6 +1,5 @@
 <script setup>
   import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi'
-
   import { mainnet, arbitrum } from 'viem/chains'
   import { reconnect } from '@wagmi/core'
 
@@ -38,4 +37,6 @@
 <template>
   <w3m-button />
 </template>
+
+
 
