@@ -1,10 +1,10 @@
 import { Hex, createPublicClient, encodeFunctionData, http } from "viem"
-import { goerli, polygonMumbai, sepolia } from 'viem/chains'
+import { sepolia, polygon } from 'viem/chains'
 
 const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
 
 // Types
-export const allowedChains = [sepolia] as const
+export const allowedChains = [sepolia, polygon] as const
 // build chains so I can access them by id
 export const chains = allowedChains.reduce((acc, chain) => {
   acc[chain.id] = chain
@@ -18,31 +18,37 @@ export type UrlConfig = {
 // Entrypoints [I think this is constant but JIC]
 export const ENTRYPOINT_ADDRESSES: Record<Chain['name'], Hex> = {
   Sepolia: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+  Polygon: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
 }
 
 // Paymasters
 // https://docs.pimlico.io/paymaster/erc20-paymaster/contract-addresses
 export const PAYMASTER_ADDRESSES: Record<Chain['name'], Hex> = {
   Sepolia: '0x0000000000325602a77416A16136FDafd04b299f',
+  Polygon: '0xa683b47e447De6c8A007d9e294e87B6Db333Eb18',
 }
 
 // USDC
 export const USDC_ADDRESSES: Record<Chain['name'], Hex> = {
   Sepolia: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+  Polygon: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
 }
 
 // RPC URLs
 export const RPC_URLS: Record<Chain['name'], string> = {
   Sepolia: 'https://rpc.ankr.com/eth_sepolia',
+  Polygon: 'https://polygon-rpc.com',
 }
 
 // Pimlico RPC names
 export const PIMLICO_NETWORK_NAMES: Record<Chain['name'], string> = {
   Sepolia: 'sepolia',
+  Polygon: 'polygon',
 }
 
 export const FAUCET_URLS: Record<Chain['name'], string> = {
   Sepolia: 'https://sepoliafaucet.com',
+  Polygon: 'https://faucet.polygon.technology/',
 }
 
 export const USDC_FAUCET_URL = 'https://faucet.circle.com/'

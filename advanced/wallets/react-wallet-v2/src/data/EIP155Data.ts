@@ -44,7 +44,7 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/eip155-137.png',
     rgb: '130, 71, 229',
     rpc: 'https://polygon-rpc.com/',
-    namespace: 'eip155'
+    namespace: 'eip155',
   },
   'eip155:10': {
     chainId: 10,

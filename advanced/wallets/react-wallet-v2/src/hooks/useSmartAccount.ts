@@ -3,7 +3,7 @@ import SettingsStore from "@/store/SettingsStore";
 import { Chain, VITALIK_ADDRESS } from "@/utils/SmartAccountUtils";
 import { useCallback, useEffect, useState } from "react";
 import { useSnapshot } from "valtio";
-import { Hex } from "viem";
+import { Hex, RpcRequestError } from "viem";
 import { styledToast } from "@/utils/HelperUtil";
 import { TransactionExecutionError } from "viem";
 import { SmartAccount } from "permissionless/accounts";
@@ -26,6 +26,8 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
         if (e instanceof TransactionExecutionError) {
           // shorten the error message
           styledToast(e.cause.message, 'error')
+        }  else if (e instanceof RpcRequestError) {
+          styledToast("User should have at least 34 USDC in Smart Account wallet to execute the first transaction.", 'error')
         } else if (e instanceof Error) {
           styledToast(e.message, 'error')
         }
@@ -36,11 +38,20 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
 
     const sendTestTransaction = useCallback(async () => {
       if (!client) return
-      execute(() => client?.sendUSDCSponsoredTransaction({
+      execute(() => client?.sendTransaction({
         to: VITALIK_ADDRESS,
         value: 0n,
         data: '0x',
       }))
+    }, [client, execute])
+
+    const sendWithUSDCPaymaster = useCallback(async () => {
+      if (!client) return
+      execute(() => client?.sendUSDCSponsoredTransaction({
+        to: VITALIK_ADDRESS,
+        value: 0n,
+        data: '0x',
+      }).then(res => styledToast(res, 'success')))
     }, [client, execute])
 
     const deploy = useCallback(async () => {
@@ -72,6 +83,7 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
         isDeployed,
         loading,
         sendTestTransaction,
+        sendWithUSDCPaymaster,
         deploy
     }
 }
