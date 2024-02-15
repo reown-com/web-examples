@@ -143,27 +143,6 @@ export class SmartAccountLib {
     return usdcBalance
   }
 
-  private sponsorUserOperation = async ({ userOperation }: { userOperation: UserOperation }) => {
-    const userOperationWithPaymasterAndData = {
-      ...userOperation,
-      paymasterAndData: PAYMASTER_ADDRESSES[this.chain.name]
-    }
-
-    console.log('Estimating gas limits...', userOperationWithPaymasterAndData)
-
-    const gasLimits = await this.bundlerClient.estimateUserOperationGas({
-      userOperation: userOperationWithPaymasterAndData,
-      entryPoint: ENTRYPOINT_ADDRESSES[this.chain.name]
-    })
-
-    return {
-      ...userOperationWithPaymasterAndData,
-      callGasLimit: gasLimits.callGasLimit,
-      verificationGasLimit: gasLimits.verificationGasLimit,
-      preVerificationGas: gasLimits.preVerificationGas
-    }
-  }
-
   // -- Public ------------------------------------------------------------------
   public async init() {
     await this.checkIfSmartAccountDeployed()
