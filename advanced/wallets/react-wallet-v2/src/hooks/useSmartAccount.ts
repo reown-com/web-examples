@@ -27,7 +27,7 @@ export default function useSmartAccount(signerPrivateKey: Hex, chain: Chain) {
           // shorten the error message
           styledToast(e.cause.message, 'error')
         }  else if (e instanceof RpcRequestError) {
-          styledToast("User should have at least 34 USDC in Smart Account wallet to execute the first transaction.", 'error')
+          styledToast(e.message, 'error')
         } else if (e instanceof Error) {
           styledToast(e.message, 'error')
         }
