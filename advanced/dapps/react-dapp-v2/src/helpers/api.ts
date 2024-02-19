@@ -35,6 +35,14 @@ export const rpcProvidersByChainId: RpcProvidersByChainId = {
       symbol: "ETH",
     },
   },
+  11155111: {
+    name: "Ethereum Sepolia",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:11155111",
+    token: {
+      name: "Ether",
+      symbol: "ETH",
+    },
+  },
   137: {
     name: "Polygon Mainnet",
     baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:137",

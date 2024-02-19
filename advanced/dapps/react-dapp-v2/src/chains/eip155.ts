@@ -35,6 +35,13 @@ export const EIP155ChainData: ChainsMap = {
     slip44: 60,
     testnet: true,
   },
+  "11155111": {
+    name: "Ethereum Sepolia",
+    id: "eip155:11155111",
+    rpc: ["https://gateway.tenderly.co/public/sepolia	"],
+    slip44: 60,
+    testnet: true,
+  },
   "10": {
     name: "Optimism Mainnet",
     id: "eip155:10",
@@ -135,6 +142,10 @@ export const EIP155Metadata: NamespaceMetadata = {
     rgb: EIP155Colors.ethereum,
   },
   "5": {
+    logo: "/assets/" + "eip155-1.png",
+    rgb: EIP155Colors.ethereum,
+  },
+  "11155111": {
     logo: "/assets/" + "eip155-1.png",
     rgb: EIP155Colors.ethereum,
   },

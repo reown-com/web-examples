@@ -67,7 +67,12 @@ export default function ProjectInfoCard({ metadata, intention }: IProps) {
       </Row>
       <Row align="center">
         <Col>
-          {validation == 'VALID' ? <StyledVerifiedIcon src="/icons/verified-domain.svg" /> : null}
+          {validation == 'VALID' ? (
+            <StyledVerifiedIcon
+              src="/icons/verified-domain.svg"
+              data-testid="session-info-verified"
+            />
+          ) : null}
           <Link style={{ verticalAlign: 'middle' }} href={url} data-testid="session-info-card-url">
             <StyledLink>{url}</StyledLink>
           </Link>

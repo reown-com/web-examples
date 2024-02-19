@@ -49,7 +49,7 @@ export default function useInitialization() {
   // restart transport if relayer region changes
   const onRelayerRegionChange = useCallback(() => {
     try {
-      web3wallet.core.relayer.restartTransport(relayerRegionURL)
+      web3wallet?.core?.relayer.restartTransport(relayerRegionURL)
       prevRelayerURLValue.current = relayerRegionURL
     } catch (err: unknown) {
       alert(err)

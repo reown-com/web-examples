@@ -39,7 +39,7 @@ export default class EIP155Lib {
     return this.wallet.signMessage(message)
   }
 
-  _signTypedData(domain: any, types: any, data: any) {
+  _signTypedData(domain: any, types: any, data: any, _primaryType?: string) {
     return this.wallet._signTypedData(domain, types, data)
   }
 

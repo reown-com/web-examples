@@ -24,6 +24,7 @@ export const DEFAULT_MAIN_CHAINS = [
 export const DEFAULT_TEST_CHAINS = [
   // testnets
   "eip155:5",
+  "eip155:11155111",
   "eip155:280",
   "eip155:420",
   "eip155:80001",

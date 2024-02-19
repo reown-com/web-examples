@@ -75,6 +75,8 @@ export default function SessionSignTypedDataModal() {
       metadata={requestSession.peer.metadata}
       onApprove={onApprove}
       onReject={onReject}
+      approveLoader={{ active: isLoadingApprove }}
+      rejectLoader={{ active: isLoadingReject }}
     >
       <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
       <Divider y={1} />

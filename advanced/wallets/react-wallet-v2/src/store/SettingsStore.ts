@@ -20,6 +20,8 @@ interface State {
   activeChainId: string
   currentRequestVerifyContext?: Verify.Context
   sessions: SessionTypes.Struct[]
+  smartAccountSponsorshipEnabled: boolean,
+  smartAccountEnabled: boolean,
 }
 
 /**
@@ -39,7 +41,9 @@ const state = proxy<State>({
   tezosAddress: '',
   kadenaAddress: '',
   relayerRegionURL: '',
-  sessions: []
+  sessions: [],
+  smartAccountSponsorshipEnabled: false,
+  smartAccountEnabled: false,
 })
 
 /**
@@ -103,10 +107,21 @@ const SettingsStore = {
   toggleTestNets() {
     state.testNets = !state.testNets
     if (state.testNets) {
+      state.smartAccountSponsorshipEnabled = true
       localStorage.setItem('TEST_NETS', 'YES')
     } else {
+      state.smartAccountSponsorshipEnabled = false
       localStorage.removeItem('TEST_NETS')
     }
+  },
+
+  toggleSmartAccountSponsorship() {
+    if (!state.testNets) return
+    state.smartAccountSponsorshipEnabled = !state.smartAccountSponsorshipEnabled
+  },
+
+  toggleSmartAccountEnabled() {
+    state.smartAccountEnabled = !state.smartAccountEnabled
   }
 }
 

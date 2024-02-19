@@ -8,7 +8,7 @@ import CloseIcon from '@mui/icons-material/Close'
 
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
-import { eip155Addresses } from '@/utils/EIP155WalletUtil'
+import { createOrRestoreEIP155Wallet, eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
@@ -18,7 +18,7 @@ import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { EIP155Chain, EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 import { MULTIVERSX_CHAINS, MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
@@ -31,8 +31,13 @@ import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
 import RequestModal from './RequestModal'
+import { SmartAccountLib } from '@/lib/SmartAccountLib'
+import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
+import { Chain, allowedChains } from '@/utils/SmartAccountUtils'
+import { Hex } from 'viem'
+import useSmartAccount from '@/hooks/useSmartAccount'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -43,10 +48,10 @@ const StyledSpan = styled('span', {
 } as any)
 
 export default function SessionProposalModal() {
+  const { smartAccountSponsorshipEnabled, smartAccountEnabled } = useSnapshot(SettingsStore.state)
   // Get proposal data and wallet address from store
   const data = useSnapshot(ModalStore.state)
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
-
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
   console.log('proposal', data.data?.proposal)
@@ -165,13 +170,25 @@ export default function SessionProposalModal() {
       optional.push(chains)
     }
     console.log('requestedChains', [...new Set([...required.flat(), ...optional.flat()])])
+
     return [...new Set([...required.flat(), ...optional.flat()])]
   }, [proposal])
 
   // the chains that are supported by the wallet from the proposal
   const supportedChains = useMemo(
-    () => requestedChains.map(chain => getChainData(chain!)),
+    () => requestedChains.map(chain => {
+      const chainData = getChainData(chain!)
+
+      if (!chainData) return null
+
+      return chainData
+    }),
     [requestedChains]
+  )
+
+  const smartAccountChains = useMemo(
+    () => supportedChains.filter(chain =>(chain as any)?.smartAccountEnabled),
+    [supportedChains]
   )
 
   // get required chains that are not supported by the wallet
@@ -216,18 +233,62 @@ export default function SessionProposalModal() {
     }
   }, [])
 
+  const namespaces = buildApprovedNamespaces({
+    proposal: proposal.params,
+    supportedNamespaces
+  })
+
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
     if (proposal) {
       setIsLoadingApprove(true)
-      const namespaces = buildApprovedNamespaces({
-        proposal: proposal.params,
-        supportedNamespaces
-      })
-
-      console.log('approving namespaces:', namespaces)
 
       try {
+        // get keys of namespaces
+        const namespaceKeys = Object.keys(namespaces)
+        const [nameSpaceKey] = namespaceKeys
+
+        // get chain ids from namespaces
+        const [chainIds] = namespaceKeys.map(key => namespaces[key].chains)
+
+        if (chainIds) {
+          const allowedChainIds = chainIds.filter(id => {
+            const chainId = id.replace(`${nameSpaceKey}:`, '')
+            return allowedChains.map(chain => chain.id.toString()).includes(chainId)
+          })
+
+          console.log('allowedChainIds', allowedChainIds)
+
+          if (allowedChainIds.length) {
+            const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
+
+            if (namespaces[nameSpaceKey].accounts && smartAccountEnabled) {
+              const signerAddress = namespaces[nameSpaceKey].accounts[0].split(':')[2]
+              const wallet = eip155Wallets[signerAddress]
+              const chain = allowedChains.find(chain => chain.id.toString() === chainIdParsed)!
+        
+              const smartAccountClient = new SmartAccountLib({
+                privateKey: wallet.getPrivateKey() as Hex,
+                chain: allowedChains.find(chain => chain.id.toString() === chainIdParsed)!,
+                sponsored: smartAccountSponsorshipEnabled,
+              })
+    
+              const smartAccountAddress = await smartAccountClient.getAccount()
+              if (wallet && smartAccountAddress) {
+                const allowedAccounts = allowedChainIds.map(id => {
+                  // check if id is a part of any of these array elements namespaces.eip155.accounts
+                  const accountIsAllowed = namespaces.eip155.accounts.findIndex(account => account.includes(id))
+
+                  return namespaces.eip155.accounts[accountIsAllowed]
+                })                
+                // when SA available, make it first on dApp
+                namespaces.eip155.accounts = [`${nameSpaceKey}:${chain.id}:${smartAccountAddress.address}`, ...allowedAccounts]
+              }
+              console.log('approving namespaces:', namespaces.eip155.accounts) 
+            }
+          }
+        }
+
         await web3wallet.approveSession({
           id: proposal.id,
           namespaces
@@ -241,7 +302,7 @@ export default function SessionProposalModal() {
     }
     setIsLoadingApprove(false)
     ModalStore.close()
-  }, [proposal, supportedNamespaces])
+  }, [namespaces, proposal, smartAccountSponsorshipEnabled, smartAccountEnabled])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -273,7 +334,6 @@ export default function SessionProposalModal() {
       rejectLoader={{ active: isLoadingReject }}
       infoBoxCondition={notSupportedChains.length > 0}
       infoBoxText={`The following required chains are not supported by your wallet - ${notSupportedChains.toString()}`}
-      disabledApprove={notSupportedChains.length > 0}
     >
       <Row>
         <Col>
@@ -305,7 +365,21 @@ export default function SessionProposalModal() {
             supportedChains.map((chain, i) => {
               return (
                 <Row key={i}>
-                  <ChainAddressMini key={i} address={getAddress(chain?.namespace)} />
+                  <ChainAddressMini key={i} address={getAddress(chain?.namespace) || 'test'} />
+                </Row>
+              )
+            })}
+
+          <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
+          {smartAccountChains.length &&
+            smartAccountChains.map((chain, i) => {
+              if (!chain) {
+                return <></>
+              }
+
+              return (
+                <Row key={i}>
+                  <ChainSmartAddressMini chain={chain} />
                 </Row>
               )
             })}
