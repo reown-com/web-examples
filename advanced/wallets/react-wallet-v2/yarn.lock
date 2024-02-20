@@ -2605,10 +2605,10 @@
     events "^3.3.0"
     isomorphic-unfetch "^3.1.0"
 
-"@walletconnect/core@2.11.1-canary-1d8e1f841de":
-  version "2.11.1-canary-1d8e1f841de"
-  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.11.1-canary-1d8e1f841de.tgz#0bef868e6ecc0f8b9d0389a1a40cc66d353d98e0"
-  integrity sha512-LxJ/ShCQQ8H1bCAhlDnPMmScmSjX/SQ185Af1UV9WvhkFWeSEg6h6l7DvJOuEeIcm9LiSSF8jpQB1XjpiJuGEQ==
+"@walletconnect/core@2.11.1-canary-0062c56":
+  version "2.11.1-canary-0062c56"
+  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.11.1-canary-0062c56.tgz#177e2cb210e77401d113af7d5692237a04f94aa5"
+  integrity sha512-MtgVCwkKS2GPOaWainLHFdviqY7wpB2mwFiZKebdCedtGV27oMdl+rTzFZpDHIrhKEtZ9qCgmicBbqdHjCJEow==
   dependencies:
     "@walletconnect/heartbeat" "1.2.1"
     "@walletconnect/jsonrpc-provider" "1.0.13"
@@ -2621,8 +2621,8 @@
     "@walletconnect/relay-auth" "^1.0.4"
     "@walletconnect/safe-json" "^1.0.2"
     "@walletconnect/time" "^1.0.2"
-    "@walletconnect/types" "2.11.1-canary-1d8e1f841de"
-    "@walletconnect/utils" "2.11.1-canary-1d8e1f841de"
+    "@walletconnect/types" "2.11.1-canary-0062c56"
+    "@walletconnect/utils" "2.11.1-canary-0062c56"
     events "^3.3.0"
     isomorphic-unfetch "3.1.0"
     lodash.isequal "4.5.0"
@@ -2754,19 +2754,19 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/sign-client@2.11.1-canary-1d8e1f841de":
-  version "2.11.1-canary-1d8e1f841de"
-  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.11.1-canary-1d8e1f841de.tgz#8cbcbc43b693972127478ec449a4d6d46c7cdc03"
-  integrity sha512-O6c0E5mxA8Ot0akBkTlenm0W9RN/wmCgWbjL8+U3ZLqZfsNuM5hV0J797QOSrwaAwbiTMSk5Z6F1F5PR9Y4DSQ==
+"@walletconnect/sign-client@2.11.1-canary-0062c56":
+  version "2.11.1-canary-0062c56"
+  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.11.1-canary-0062c56.tgz#b17e729d87fd285fd23ed644e9434934c0e3eced"
+  integrity sha512-bEuBrbxXlRKOToLo232/hx8gltPBeL9HLeg0gJJ+XYYAYJn8CO3O7F+OqSqrVwV8EYkJMmk4xQSUhj/zpm2ouQ==
   dependencies:
-    "@walletconnect/core" "2.11.1-canary-1d8e1f841de"
+    "@walletconnect/core" "2.11.1-canary-0062c56"
     "@walletconnect/events" "^1.0.1"
     "@walletconnect/heartbeat" "1.2.1"
     "@walletconnect/jsonrpc-utils" "1.0.8"
     "@walletconnect/logger" "^2.0.1"
     "@walletconnect/time" "^1.0.2"
-    "@walletconnect/types" "2.11.1-canary-1d8e1f841de"
-    "@walletconnect/utils" "2.11.1-canary-1d8e1f841de"
+    "@walletconnect/types" "2.11.1-canary-0062c56"
+    "@walletconnect/utils" "2.11.1-canary-0062c56"
     events "^3.3.0"
 
 "@walletconnect/time@^1.0.2":
@@ -2788,10 +2788,10 @@
     "@walletconnect/logger" "^2.0.1"
     events "^3.3.0"
 
-"@walletconnect/types@2.11.1-canary-1d8e1f841de":
-  version "2.11.1-canary-1d8e1f841de"
-  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.11.1-canary-1d8e1f841de.tgz#13f9b9ec5f95ef8c1ff377d4f873aedf68aa0983"
-  integrity sha512-Wq55+1mB6sdEK/5iZns4MRaSVtIrNeAETE2CL81PTwosv+jiCtQTDQua0p92fVqbIH2xeUmr+4ipAqqgJ/bjKg==
+"@walletconnect/types@2.11.1-canary-0062c56":
+  version "2.11.1-canary-0062c56"
+  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.11.1-canary-0062c56.tgz#46e95c4721598850e205da5756addf1f0e38be51"
+  integrity sha512-QCUqxw3nVoONMoRXO/PHWjEuvyqMOw+2ZLAUZyDVnVO33BXi8/Qxq55TZWt0lP9eruvLCLRyfTt3+wiuZy5auw==
   dependencies:
     "@walletconnect/events" "^1.0.1"
     "@walletconnect/heartbeat" "1.2.1"
@@ -2820,10 +2820,10 @@
     query-string "7.1.3"
     uint8arrays "^3.1.0"
 
-"@walletconnect/utils@2.11.1-canary-1d8e1f841de":
-  version "2.11.1-canary-1d8e1f841de"
-  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.11.1-canary-1d8e1f841de.tgz#c6d23218c0a7d694dc694839c755fd72ac40505d"
-  integrity sha512-F3u6260kdrOutnxYwx8y5xjwbIfvFuqPIKZ/wQl7AZgmQCE3UzsIqKaCnh5em1aFceuM0UCmhPvzC5lb3uSuKQ==
+"@walletconnect/utils@2.11.1-canary-0062c56":
+  version "2.11.1-canary-0062c56"
+  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.11.1-canary-0062c56.tgz#d2371b5995fec8d0257a956244a54e59bbcb08d7"
+  integrity sha512-mHTUCrTHdndlS2E5jj0aoM6g8NVbTLpVFQOhUQdy8F7BQtgGHoyWqg3XeATB/TYZKyliaY2INu5TZvcJcRDbaw==
   dependencies:
     "@stablelib/chacha20poly1305" "1.0.1"
     "@stablelib/hkdf" "1.0.1"
@@ -2833,26 +2833,26 @@
     "@walletconnect/relay-api" "^1.0.9"
     "@walletconnect/safe-json" "^1.0.2"
     "@walletconnect/time" "^1.0.2"
-    "@walletconnect/types" "2.11.1-canary-1d8e1f841de"
+    "@walletconnect/types" "2.11.1-canary-0062c56"
     "@walletconnect/window-getters" "^1.0.1"
     "@walletconnect/window-metadata" "^1.0.1"
     detect-browser "5.3.0"
     query-string "7.1.3"
     uint8arrays "^3.1.0"
 
-"@walletconnect/web3wallet@2.10.1-canary-1d8e1f841de":
-  version "2.10.1-canary-1d8e1f841de"
-  resolved "https://registry.yarnpkg.com/@walletconnect/web3wallet/-/web3wallet-2.10.1-canary-1d8e1f841de.tgz#dff385e41e5bca08c8e6edf401c0d248765342aa"
-  integrity sha512-/QUlHKsxDjX+1bq9VHpbRcpBHP+CXzg4dU49zWIhKlaTAq1rjG4r1jOY4wxsV9KkN2T77ov2/h/11JY56xw6dQ==
+"@walletconnect/web3wallet@2.10.1-canary-0062c56":
+  version "2.10.1-canary-0062c56"
+  resolved "https://registry.yarnpkg.com/@walletconnect/web3wallet/-/web3wallet-2.10.1-canary-0062c56.tgz#6bb8ee65e7bbcf6c4a5038678c4a3ca7548bdd4b"
+  integrity sha512-dvPahSCWmsu2MiwoOrto7AmQzDgjjsf4q+TchdYFxxU/ykwgdViHjbOrZNd5zD9XcurNYQ3VcHVRyhmmkFQiiw==
   dependencies:
     "@walletconnect/auth-client" "2.1.2"
-    "@walletconnect/core" "2.11.1-canary-1d8e1f841de"
+    "@walletconnect/core" "2.11.1-canary-0062c56"
     "@walletconnect/jsonrpc-provider" "1.0.13"
     "@walletconnect/jsonrpc-utils" "1.0.8"
     "@walletconnect/logger" "2.0.1"
-    "@walletconnect/sign-client" "2.11.1-canary-1d8e1f841de"
-    "@walletconnect/types" "2.11.1-canary-1d8e1f841de"
-    "@walletconnect/utils" "2.11.1-canary-1d8e1f841de"
+    "@walletconnect/sign-client" "2.11.1-canary-0062c56"
+    "@walletconnect/types" "2.11.1-canary-0062c56"
+    "@walletconnect/utils" "2.11.1-canary-0062c56"
 
 "@walletconnect/window-getters@^1.0.1":
   version "1.0.1"

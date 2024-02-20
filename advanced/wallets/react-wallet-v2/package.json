@@ -30,7 +30,7 @@
     "@solana/web3.js": "1.89.0",
     "@taquito/signer": "^15.1.0",
     "@taquito/taquito": "^15.1.0",
-    "@walletconnect/web3wallet": "2.10.1-canary-1d8e1f841de",
+    "@walletconnect/web3wallet": "2.10.1-canary-0062c56",
     "borsh": "^1.0.0",
     "bs58": "5.0.0",
     "cosmos-wallet": "1.2.0",
