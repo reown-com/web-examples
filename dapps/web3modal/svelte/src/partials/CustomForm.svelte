@@ -114,7 +114,7 @@
 		color: #1A202C;
 		font-size: 1rem;
 		font-weight: 700;
-		height: 56px;
+		height: 45px;
 		text-decoration: none;
 		border-radius: 8px;
 		cursor: pointer;
