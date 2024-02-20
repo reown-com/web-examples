@@ -1,7 +1,7 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { Col, Divider, Row, Text, Code } from '@nextui-org/react'
-import { buildAuthObject, getSdkError } from '@walletconnect/utils'
+import { Col, Divider, Row, Text, Code, Checkbox, Grid } from '@nextui-org/react'
+import { buildAuthObject, getSdkError, populateAuthPayload } from '@walletconnect/utils'
 
 import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
@@ -12,99 +12,145 @@ import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { styledToast } from '@/utils/HelperUtil'
 
 export default function SessionAuthenticateModal() {
-  const { account } = useSnapshot(SettingsStore.state)
-  const [messages, setMessages] = useState<string[]>([])
-  console.log('modal data', ModalStore.state.data, account)
   // Get request and wallet data from store
   const authRequest = ModalStore.state.data?.authRequest
-  // Ensure request and wallet are defined
 
-  if (!authRequest) {
-    return <Text>Missing authRequest data</Text>
-  }
+  const { account } = useSnapshot(SettingsStore.state)
+  const [messages, setMessages] = useState<
+    { authPayload: any; message: string; id: number; iss: string }[]
+  >([])
+  const [supportedChains] = useState<string[]>(Object.keys(EIP155_CHAINS))
+  const [supportedMethods] = useState<string[]>(Object.values(EIP155_SIGNING_METHODS))
+  const [signStrategy, setSignStrategy] = useState(1)
+  // Ensure request and wallet are defined
 
   const address = eip155Addresses[account]
 
-  // Get required request data
-  const { id, params } = authRequest
-  const { requester, authPayload } = params
-
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  useMemo(() => {
-    if (authRequest && !messages.length) {
-      const messagesToSign: string[] = []
-      authPayload.chains.forEach(async chainId => {
-        const iss = `${chainId}:${address}`
+  const getMessageToSign = useCallback(
+    authPayload => {
+      const iss = `eip155:1:${address}`
+      const message = web3wallet.engine.signClient.formatAuthMessage({
+        request: authPayload,
+        iss
+      })
+      console.log('message', message)
+      return message
+    },
+    [address]
+  )
+
+  useEffect(() => {
+    if (!authRequest?.params?.authPayload) return
+    if (signStrategy === 1) {
+      try {
+        const newAuthPayload = populateAuthPayload({
+          authPayload: authRequest?.params?.authPayload,
+          chains: supportedChains,
+          methods: supportedMethods
+        })
+        const message = getMessageToSign(newAuthPayload)
+        console.log('newAuthPayload', newAuthPayload)
+        setMessages([
+          {
+            authPayload: newAuthPayload,
+            message,
+            id: authRequest.id,
+            iss: `${newAuthPayload.chains[0]}:${address}`
+          }
+        ])
+      } catch (e) {
+        console.log('error', e)
+        styledToast((e as Error).message, 'error')
+        ModalStore.close()
+      }
+    } else if (signStrategy === 2) {
+      const messagesToSign: any[] = []
+      authRequest.params.authPayload.chains.forEach((chain: string) => {
+        const iss = `${chain}:${address}`
         const message = web3wallet.engine.signClient.formatAuthMessage({
-          request: authPayload,
+          request: authRequest.params.authPayload,
           iss
         })
-        console.log('message', message)
-        messagesToSign.push(message)
+        messagesToSign.push({
+          authPayload: authRequest.params.authPayload,
+          message,
+          iss,
+          id: authRequest.id
+        })
       })
       setMessages(messagesToSign)
     }
-  }, [address, authPayload, authRequest, messages])
+  }, [address, authRequest, getMessageToSign, signStrategy, supportedChains, supportedMethods])
 
   // Handle approve action (logic varies based on request method)
-  async function onApprove() {
-    if (authPayload && messages.length) {
-      const signedAuths: any[] = []
-      authPayload.chains.forEach(async chainId => {
-        const iss = `${chainId}:${address}`
-        const message = web3wallet.engine.signClient.formatAuthMessage({
-          request: authPayload,
-          iss
-        })
-
-        const signature = await eip155Wallets[address].signMessage(message)
+  const onApprove = useCallback(async () => {
+    if (messages.length) {
+      const signedAuths = []
+      for (const message of messages) {
+        const signature = await eip155Wallets[address].signMessage(message.message)
         const signedCacao = buildAuthObject(
-          authPayload,
+          message.authPayload,
           {
             t: 'eip191',
             s: signature
           },
-          iss
+          message.iss
         )
-        console.log('signedCacao', signedCacao)
         signedAuths.push(signedCacao)
-      })
+      }
 
       await web3wallet.engine.signClient.approveSessionAuthenticate({
-        id,
+        id: messages[0].id,
         auths: signedAuths
       })
 
       ModalStore.close()
     }
-  }
+  }, [address, messages])
 
   // Handle reject action
-  async function onReject() {
-    if (authPayload) {
+  const onReject = useCallback(async () => {
+    if (authRequest?.params?.authPayload) {
       await web3wallet.engine.signClient.rejectSessionAuthenticate({
-        id,
+        id: authRequest.id,
         reason: getSdkError('USER_REJECTED')
       })
       ModalStore.close()
     }
-  }
+  }, [authRequest])
+
   return (
     <RequestModal
       intention="request a signature"
-      metadata={requester.metadata}
+      metadata={authRequest?.params?.requester.metadata!}
       onApprove={onApprove}
       onReject={onReject}
     >
+      <Grid.Container>
+        <Grid>
+          <Checkbox onChange={() => setSignStrategy(1)} checked={signStrategy === 1}>
+            Sign One
+          </Checkbox>
+        </Grid>
+        <Grid style={{ marginLeft: '10px' }}>
+          <Checkbox onChange={() => setSignStrategy(2)} checked={signStrategy === 2}>
+            Sign All
+          </Checkbox>
+        </Grid>
+      </Grid.Container>
       <Row>
         <Col>
           <Text h5>Messages to Sign ({messages.length})</Text>
           {messages.map((message, index) => {
+            console.log('@loop messageToSign', message)
             return (
               <Code key={index}>
-                <Text color="$gray400">{message}</Text>
+                <Text color="$gray400">{message.message}</Text>
               </Code>
             )
           })}

@@ -191,8 +191,9 @@ const Home: NextPage = () => {
     };
 
     let availableActions: AccountAction[] = [];
-
-    session?.namespaces?.["eip155"].methods.forEach((methodName) => {
+    const namespaces =
+      session?.namespaces?.["eip155"] || session?.namespaces?.["eip155:1"];
+    namespaces?.methods.forEach((methodName) => {
       const action: AccountAction | undefined =
         actions[methodName as keyof typeof actions];
       if (action) {
