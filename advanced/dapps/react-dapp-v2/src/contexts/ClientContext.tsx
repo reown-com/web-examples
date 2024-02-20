@@ -49,6 +49,8 @@ interface IContext {
   setChains: any;
   setRelayerRegion: any;
   origin: string;
+  onlySiwe?: boolean;
+  setOnlySiwe?: any;
 }
 
 /**
@@ -89,6 +91,7 @@ export function ClientContextProvider({
   const [relayerRegion, setRelayerRegion] = useState<string>(
     DEFAULT_RELAY_URL!
   );
+  const [onlySiwe, setOnlySiwe] = useState<boolean>(false);
   const [origin, setOrigin] = useState<string>(getAppMetadata().url);
   const reset = () => {
     setSession(undefined);
@@ -163,12 +166,21 @@ export function ClientContextProvider({
         //   optionalNamespaces,
         // });
 
+        const supportedMethods = [
+          "eth_sign",
+          "eth_sendTransaction",
+          "eth_signTransaction",
+          "personal_sign",
+          "eth_signTypedData_v4",
+        ];
+        console.log("onlySiwe:", onlySiwe);
+
         const { uri, response } = await client.sessionAuthenticate({
           chains: chains,
           domain: getAppMetadata().url,
           nonce: "1",
           aud: "aud",
-          methods: ["personal_sign", "eth_signTypedData_v4"],
+          methods: onlySiwe ? [] : supportedMethods,
         });
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
@@ -201,7 +213,7 @@ export function ClientContextProvider({
         web3Modal.closeModal();
       }
     },
-    [chains, client, onSessionConnected]
+    [chains, client, onSessionConnected, onlySiwe]
   );
 
   const disconnect = useCallback(async () => {
@@ -376,6 +388,8 @@ export function ClientContextProvider({
       setChains,
       setRelayerRegion,
       origin,
+      onlySiwe,
+      setOnlySiwe,
     }),
     [
       pairings,
@@ -393,6 +407,8 @@ export function ClientContextProvider({
       setChains,
       setRelayerRegion,
       origin,
+      onlySiwe,
+      setOnlySiwe,
     ]
   );
 

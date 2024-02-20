@@ -73,6 +73,8 @@ const Home: NextPage = () => {
     setChains,
     setRelayerRegion,
     origin,
+    onlySiwe,
+    setOnlySiwe,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -437,6 +439,11 @@ const Home: NextPage = () => {
     setLocaleStorageTestnetFlag(nextIsTestnetState);
   };
 
+  const toggleOnlySiwe = () => {
+    const shouldUseOnlySiwe = !onlySiwe;
+    setOnlySiwe(shouldUseOnlySiwe);
+  };
+
   const handleChainSelectionClick = (chainId: string) => {
     if (chains.includes(chainId)) {
       setChains(chains.filter((chain) => chain !== chainId));
@@ -484,6 +491,10 @@ const Home: NextPage = () => {
           <SToggleContainer>
             <p>Testnets Only?</p>
             <Toggle active={isTestnet} onClick={toggleTestnets} />
+          </SToggleContainer>
+          <SToggleContainer>
+            <p>SIWE Only?</p>
+            <Toggle active={onlySiwe} onClick={toggleOnlySiwe} />
           </SToggleContainer>
           {chainOptions.map((chainId) => (
             <Blockchain
