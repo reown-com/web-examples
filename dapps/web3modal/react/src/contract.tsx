@@ -17,17 +17,20 @@ export default function Contracts() {
       args: [name, value],
     })
   }
+  
   const data = useReadContract({
     address: ContractAddress,
     abi: ABI,
     functionName: 'readData',
     args: [value],
   })
+
   useEffect(() => {
     setData(data?.data as string)
   }, [data])
 
-  if (!isConnected) return <div></div>
+  if (!isConnected) return null
+
   return (
     <>
       <br />
