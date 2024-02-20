@@ -27,8 +27,16 @@ import {
 	saigon,
 } from 'viem/chains'
 import type { ExtendedProvider } from './types'
+import { CUSTOM_WALLET } from './constants'
 
 export const projectId = import.meta.env.VITE_PROJECT_ID
+
+let storedCustomWallet;
+if(typeof window !== 'undefined'){
+	storedCustomWallet = localStorage.getItem(CUSTOM_WALLET)
+}
+
+const _customWallet = storedCustomWallet ? JSON.parse(storedCustomWallet) : undefined
 
 const metadata = {
 	name: 'Web3Modal',
@@ -71,6 +79,7 @@ createWeb3Modal({
 	themeMode: 'dark',
 	featuredWalletIds: [],
 	enableAnalytics: true,
+	customWallets: [_customWallet]
 })
 
 export const chainId = readable(getChainId(wagmiConfig), (set) =>
@@ -89,5 +98,17 @@ export const provider = readable<ExtendedProvider | undefined>(
 			},
 		}),
 )
+
+export const customWallet = writable({
+	id: undefined,
+	name: undefined,
+	homepage: undefined,
+	image_url: undefined,
+	mobile_link: undefined,
+	desktop_link: undefined,
+	webapp_link: undefined,
+	app_store: undefined,
+	play_store: undefined
+})
 
 export const supported_chains = writable<string[]>([])
