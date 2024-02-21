@@ -197,14 +197,11 @@ export function ClientContextProvider({
         const session = res.session;
         console.log("Established session:", session);
 
-        if (onlySiwe) {
-          const auths = res.auths;
-          toast.success(
-            `Signature received - ${auths[0]?.s?.s?.slice(0, 10)}...`,
-            {
-              position: "bottom-left",
-            }
-          );
+        if (onlySiwe && res.auths && res.auths.length > 0) {
+          const auth = res.auths[0];
+          toast.success(`Signature received - ${auth.s?.s?.slice(0, 10)}...`, {
+            position: "bottom-left",
+          });
         }
 
         if (!session) {
