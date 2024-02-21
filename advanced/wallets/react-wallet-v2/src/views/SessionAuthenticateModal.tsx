@@ -32,8 +32,7 @@ export default function SessionAuthenticateModal() {
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const getMessageToSign = useCallback(
-    authPayload => {
-      const iss = `eip155:1:${address}`
+    (authPayload, iss) => {
       const message = web3wallet.engine.signClient.formatAuthMessage({
         request: authPayload,
         iss
@@ -48,19 +47,22 @@ export default function SessionAuthenticateModal() {
     if (!authRequest?.params?.authPayload) return
     if (signStrategy === 1) {
       try {
+        console.log('authRequest', authRequest)
+        console.log('supportedChains', supportedChains)
         const newAuthPayload = populateAuthPayload({
           authPayload: authRequest?.params?.authPayload,
           chains: supportedChains,
           methods: supportedMethods
         })
-        const message = getMessageToSign(newAuthPayload)
         console.log('newAuthPayload', newAuthPayload)
+        const iss = `${newAuthPayload.chains[0]}:${address}`
+        const message = getMessageToSign(newAuthPayload, iss)
         setMessages([
           {
             authPayload: newAuthPayload,
             message,
             id: authRequest.id,
-            iss: `${newAuthPayload.chains[0]}:${address}`
+            iss
           }
         ])
       } catch (e) {
