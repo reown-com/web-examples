@@ -36,7 +36,10 @@ import { getPublicKeysFromAccounts } from "../helpers/solana";
 interface IContext {
   client: Client | undefined;
   session: SessionTypes.Struct | undefined;
-  connect: (pairing?: { topic: string }) => Promise<void>;
+  connect: (params?: {
+    pairing?: { topic: string };
+    strategy?: 1 | 2 | 3 | 4;
+  }) => Promise<void>;
   disconnect: () => Promise<void>;
   isInitializing: boolean;
   chains: string[];
@@ -144,11 +147,14 @@ export function ClientContextProvider({
   );
 
   const connect = useCallback(
-    async (pairing: any) => {
+    async (params?: {
+      pairing?: { topic: string };
+      strategy?: 1 | 2 | 3 | 4;
+    }) => {
       if (typeof client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
-      console.log("connect, pairing topic is:", pairing?.topic);
+      console.log("connect, pairing topic is:", params?.pairing?.topic);
       try {
         const requiredNamespaces = getRequiredNamespaces(chains);
         console.log(
@@ -175,12 +181,42 @@ export function ClientContextProvider({
         ];
         console.log("onlySiwe:", onlySiwe);
 
+        let resourcesData = [];
+
+        switch (params?.strategy) {
+          case 1:
+            break;
+          case 2:
+            resourcesData.push(
+              "https://walletconnect.com/eth",
+              "https://walletconnect.com/solana",
+              "https://walletconnect.com/terra"
+            );
+            break;
+          case 3:
+            resourcesData.push(
+              "urn:recap:eyJhdHQiOnsiaHR0cHM6Ly9leGFtcGxlLmNvbSI6eyJwdWJsaXNoL3BpY3R1cmUiOlt7fV0sInB1Ymxpc2gvdmlkZW8iOlt7fV19fX0=",
+              "urn:recap:eyJhdHQiOnsiaHR0cHM6Ly93ZWIzaW5ib3guY29tIjp7InB1c2gvYWxlcnRzIjpbe31dLCJwdXNoL25vdGlmaWNhdGlvbnMiOlt7fV19fX0="
+            );
+            break;
+          case 4:
+            resourcesData.push(
+              "https://walletconnect.com/eth",
+              "urn:recap:eyJhdHQiOnsiaHR0cHM6Ly9leGFtcGxlLmNvbSI6eyJwdWJsaXNoL3BpY3R1cmUiOlt7fV0sInB1Ymxpc2gvdmlkZW8iOlt7fV19fX0=",
+              "https://walletconnect.com/solana",
+              "urn:recap:eyJhdHQiOnsiaHR0cHM6Ly93ZWIzaW5ib3guY29tIjp7InB1c2gvYWxlcnRzIjpbe31dLCJwdXNoL25vdGlmaWNhdGlvbnMiOlt7fV19fX0=",
+              "https://walletconnect.com/terra"
+            );
+            break;
+        }
+        console.log("resourcesData:", resourcesData);
         const { uri, response } = await client.sessionAuthenticate({
           chains: chains,
           domain: getAppMetadata().url,
           nonce: "1",
           aud: "aud",
           methods: onlySiwe ? [] : supportedMethods,
+          resources: resourcesData,
         });
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).

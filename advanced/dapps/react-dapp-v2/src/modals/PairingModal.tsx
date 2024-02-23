@@ -12,18 +12,22 @@ import toast from "react-hot-toast";
 
 interface PairingModalProps {
   pairings: PairingTypes.Struct[];
-  connect: (pairing?: { topic: string }) => Promise<void>;
+  connect: (params?: {
+    pairing?: { topic: string };
+    strategy?: 1 | 2 | 3 | 4;
+  }) => Promise<void>;
+  strategy?: 1 | 2 | 3 | 4;
 }
 
 const PairingModal = (props: PairingModalProps) => {
-  const { pairings, connect } = props;
+  const { pairings, connect, strategy } = props;
   const [pairing, setPairing] = React.useState<PairingTypes.Struct>();
-
+  console.log("pairing", strategy);
   const onConnect = React.useCallback(
     async (pairing: PairingTypes.Struct) => {
       try {
         setPairing(pairing);
-        await connect({ topic: pairing.topic });
+        await connect({ pairing, strategy });
       } catch (error) {
         toast.error((error as Error).message, {
           position: "bottom-left",
@@ -31,7 +35,7 @@ const PairingModal = (props: PairingModalProps) => {
         setPairing(undefined);
       }
     },
-    [connect]
+    [connect, strategy]
   );
   return pairing ? (
     <LoaderModal
@@ -50,7 +54,7 @@ const PairingModal = (props: PairingModalProps) => {
           />
         ))}
       </STable>
-      <Button onClick={() => connect()}>{`New Pairing`}</Button>
+      <Button onClick={() => connect({ strategy })}>{`New Pairing`}</Button>
     </SModalContainer>
   );
 };

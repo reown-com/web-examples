@@ -30,8 +30,8 @@ export const SConnectButton = styled(Button as any)`
   border-radius: 8px;
   font-size: ${fonts.size.medium};
   height: 44px;
-  width: 100%;
-  margin: 12px 0;
+  // width: 100%;
+  margin: 6px 6px;
 `;
 
 export const SAccountsContainer = styled(SLanding as any)`
