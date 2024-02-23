@@ -46,7 +46,7 @@
     "react-qr-reader-es6": "2.2.1-2",
     "solana-wallet": "^1.0.2",
     "tronweb": "^4.4.0",
-    "valtio": "1.13.0",
+    "valtio": "1.13.1",
     "viem": "1.21.4"
   },
   "devDependencies": {

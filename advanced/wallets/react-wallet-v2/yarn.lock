@@ -5794,10 +5794,10 @@ protobufjs@~6.10.2:
     "@types/node" "^13.7.0"
     long "^4.0.0"
 
-proxy-compare@2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/proxy-compare/-/proxy-compare-2.5.1.tgz#17818e33d1653fbac8c2ec31406bce8a2966f600"
-  integrity sha512-oyfc0Tx87Cpwva5ZXezSp5V9vht1c7dZBhvuV/y3ctkgMVUmiAGDVeeB0dKhGSyT0v1ZTEQYpe/RXlBVBNuCLA==
+proxy-compare@2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/proxy-compare/-/proxy-compare-2.6.0.tgz#5e8c8b5c3af7e7f17e839bf6cf1435bcc4d315b0"
+  integrity sha512-8xuCeM3l8yqdmbPoYeLbrAXCBWu19XEYc5/F28f5qOaoAIMyfmBUkl5axiK+x9olUvRlcekvnm98AP9RDngOIw==
 
 punycode@^2.1.0:
   version "2.3.1"
@@ -6691,13 +6691,13 @@ validator@^13.7.0:
   resolved "https://registry.yarnpkg.com/validator/-/validator-13.11.0.tgz#23ab3fd59290c61248364eabf4067f04955fbb1b"
   integrity sha512-Ii+sehpSfZy+At5nPdnyMhx78fEoPDkR2XW/zimHEL3MyGJQOCQ7WeP20jPYRz7ZCpcKLB21NxuXHF3bxjStBQ==
 
-valtio@1.13.0:
-  version "1.13.0"
-  resolved "https://registry.yarnpkg.com/valtio/-/valtio-1.13.0.tgz#6ee62629b658bc88a72703817e4eb1827b3d8754"
-  integrity sha512-s2VkxxFyaJwjpIheJonRa/34HWS1EpsEjw9OW9l3j8G4cbIw7lruspOjyv+z2o4BrGx351BH+VWb8sZHkrlyYA==
+valtio@1.13.1:
+  version "1.13.1"
+  resolved "https://registry.yarnpkg.com/valtio/-/valtio-1.13.1.tgz#6709fb21a331519dbc9ceba725ce33e4c7029ae2"
+  integrity sha512-zowA+lrJPnj6YfIMrVzLKlpBJ/mrIJtMoStPoVLfFMQzvmqdB/JAFNBsxRJ707Oso0lyRgxRfaq4QbE9Uz0tYg==
   dependencies:
     derive-valtio "0.1.0"
-    proxy-compare "2.5.1"
+    proxy-compare "2.6.0"
     use-sync-external-store "1.2.0"
 
 viem@1.21.4:
