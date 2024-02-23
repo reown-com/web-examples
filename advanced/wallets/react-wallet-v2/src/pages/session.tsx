@@ -4,7 +4,7 @@ import ProjectInfoCard from '@/components/ProjectInfoCard'
 import SessionChainCard from '@/components/SessionChainCard'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { Button, Divider, Loading, Row, Text } from '@nextui-org/react'
+import { Button, Col, Divider, Loading, Row, Text } from '@nextui-org/react'
 import { getSdkError } from '@walletconnect/utils'
 import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
@@ -20,6 +20,7 @@ export default function SessionPage() {
   const [pingLoading, setPingLoading] = useState(false)
   const [emitLoading, setEmitLoading] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [pendingRequests, setPendingRequests] = useState<any[]>([])
 
   useEffect(() => {
     if (query?.topic) {
@@ -35,6 +36,20 @@ export default function SessionPage() {
 
   // Get necessary data from session
   const expiryDate = useMemo(() => new Date(session?.expiry! * 1000), [session])
+  const getPendingRequests = useCallback(() => {
+    if (!session) return
+    const allPending = web3wallet.getPendingSessionRequests()
+    const requestsForSession = allPending?.filter(r => r.topic === session.topic)
+    setPendingRequests(requestsForSession)
+  }, [session])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      getPendingRequests()
+    }, 1000)
+    getPendingRequests()
+    return () => clearInterval(interval)
+  }, [getPendingRequests])
 
   // Handle deletion of a session
   const onDeleteSession = useCallback(async () => {
@@ -98,7 +113,6 @@ export default function SessionPage() {
     setUpdateLoading(false)
   }, [topic])
 
-  console.log('session', session)
   return !session ? (
     <></>
   ) : (
@@ -108,7 +122,32 @@ export default function SessionPage() {
       <ProjectInfoCard metadata={session.peer.metadata} />
 
       <Divider y={2} />
-
+      {pendingRequests.length > 0 ? (
+        <Fragment>
+          <Text h4 css={{ marginBottom: '$5' }}>
+            Pending Requests ({pendingRequests.length})
+          </Text>
+          {pendingRequests.map((request, index) => {
+            return (
+              <Fragment key={index}>
+                <Row>
+                  <Col>
+                    <Text css={{ color: '$gray400' }}>
+                      {request.id} - ⏳{' '}
+                      {(
+                        (request.params.request?.expiryTimestamp * 1000 - Date.now()) /
+                        1000
+                      ).toFixed(0)}
+                      s
+                    </Text>
+                  </Col>
+                </Row>
+              </Fragment>
+            )
+          })}
+          <Divider y={2} />
+        </Fragment>
+      ) : null}
       {namespaces &&
         Object.keys(namespaces).map(chain => {
           return (
