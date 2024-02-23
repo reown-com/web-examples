@@ -14,7 +14,7 @@
     "@json-rpc-tools/utils": "1.7.6",
     "@nextui-org/react": "1.0.8-beta.5",
     "@polkadot/keyring": "^10.1.2",
-    "@solana/web3.js": "1.89.0",
+    "@solana/web3.js": "1.90.0",
     "@walletconnect/auth-client": "^2.1.0",
     "@walletconnect/core": "^2.7.6",
     "@walletconnect/push-client": "0.10.4",
