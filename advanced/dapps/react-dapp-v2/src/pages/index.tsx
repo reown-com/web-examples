@@ -1,5 +1,11 @@
 import type { NextPage } from "next";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
 
 import Banner from "../components/Banner";
@@ -44,6 +50,7 @@ import { useChainData } from "../contexts/ChainDataContext";
 import Icon from "../components/Icon";
 import OriginSimulationDropdown from "../components/OriginSimulationDropdown";
 import LoaderModal from "../modals/LoaderModal";
+import { set } from "fp-ts";
 
 // Normal import does not work here
 const { version } = require("@walletconnect/sign-client/package.json");
@@ -56,6 +63,7 @@ const Home: NextPage = () => {
   const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
   const openDisconnectModal = () => setModal("disconnect");
+  const [connectStrategy, setConnectStrategy] = useState<1 | 2 | 3 | 4>(1);
 
   // Initialize the WalletConnect client.
   const {
@@ -73,6 +81,8 @@ const Home: NextPage = () => {
     setChains,
     setRelayerRegion,
     origin,
+    onlySiwe,
+    setOnlySiwe,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -102,16 +112,17 @@ const Home: NextPage = () => {
     }
   }, [session, modal]);
 
-  const onConnect = () => {
+  const onConnect = (connectStrategy: 1 | 2 | 3 | 4) => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
+    setConnectStrategy(connectStrategy);
     // Suggest existing pairings (if any).
     if (pairings.length) {
       openPairingModal();
     } else {
       // If no existing pairings are available, trigger `WalletConnectClient.connect`.
-      connect();
+      connect({ strategy: connectStrategy });
     }
   };
 
@@ -191,8 +202,9 @@ const Home: NextPage = () => {
     };
 
     let availableActions: AccountAction[] = [];
-
-    session?.namespaces?.["eip155"].methods.forEach((methodName) => {
+    const namespaces =
+      session?.namespaces?.["eip155"] || session?.namespaces?.["eip155:1"];
+    namespaces?.methods.forEach((methodName) => {
       const action: AccountAction | undefined =
         actions[methodName as keyof typeof actions];
       if (action) {
@@ -436,6 +448,11 @@ const Home: NextPage = () => {
     setLocaleStorageTestnetFlag(nextIsTestnetState);
   };
 
+  const toggleOnlySiwe = () => {
+    const shouldUseOnlySiwe = !onlySiwe;
+    setOnlySiwe(shouldUseOnlySiwe);
+  };
+
   const handleChainSelectionClick = (chainId: string) => {
     if (chains.includes(chainId)) {
       setChains(chains.filter((chain) => chain !== chainId));
@@ -445,13 +462,20 @@ const Home: NextPage = () => {
   };
 
   // Renders the appropriate model for the given request that is currently in-flight.
-  const renderModal = () => {
+  const renderModal = useMemo(() => {
+    console.log("strategy", connectStrategy);
     switch (modal) {
       case "pairing":
         if (typeof client === "undefined") {
           throw new Error("WalletConnect is not initialized");
         }
-        return <PairingModal pairings={pairings} connect={connect} />;
+        return (
+          <PairingModal
+            pairings={pairings}
+            strategy={connectStrategy}
+            connect={connect}
+          />
+        );
       case "request":
         return (
           <RequestModal pending={isRpcRequestPending} result={rpcResult} />
@@ -463,7 +487,15 @@ const Home: NextPage = () => {
       default:
         return null;
     }
-  };
+  }, [
+    client,
+    connect,
+    connectStrategy,
+    isRpcRequestPending,
+    modal,
+    pairings,
+    rpcResult,
+  ]);
 
   const [openSelect, setOpenSelect] = useState(false);
 
@@ -484,6 +516,10 @@ const Home: NextPage = () => {
             <p>Testnets Only?</p>
             <Toggle active={isTestnet} onClick={toggleTestnets} />
           </SToggleContainer>
+          <SToggleContainer>
+            <p>SIWE Only?</p>
+            <Toggle active={onlySiwe} onClick={toggleOnlySiwe} />
+          </SToggleContainer>
           {chainOptions.map((chainId) => (
             <Blockchain
               key={chainId}
@@ -493,9 +529,36 @@ const Home: NextPage = () => {
               active={chains.includes(chainId)}
             />
           ))}
-          <SConnectButton left onClick={onConnect} disabled={!chains.length}>
-            Connect
-          </SConnectButton>
+          <div style={{ display: "flex" }}>
+            <SConnectButton
+              left
+              onClick={() => onConnect(1)}
+              disabled={!chains.length}
+            >
+              Connect
+            </SConnectButton>
+            <SConnectButton
+              left
+              onClick={() => onConnect(2)}
+              disabled={!chains.length}
+            >
+              Multiple Resources
+            </SConnectButton>
+            <SConnectButton
+              left
+              onClick={() => onConnect(3)}
+              disabled={!chains.length}
+            >
+              Extra ReCaps
+            </SConnectButton>
+            <SConnectButton
+              left
+              onClick={() => onConnect(4)}
+              disabled={!chains.length}
+            >
+              Mixed
+            </SConnectButton>
+          </div>
           <SDropDownContainer>
             <RelayRegionDropdown
               relayerRegion={relayerRegion}
@@ -546,7 +609,7 @@ const Home: NextPage = () => {
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>
-        {renderModal()}
+        {renderModal}
       </Modal>
     </SLayout>
   );

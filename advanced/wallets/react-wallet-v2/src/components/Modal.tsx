@@ -16,6 +16,7 @@ import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
 import { useCallback, useMemo } from 'react'
 import AuthRequestModal from '@/views/AuthRequestModal'
+import SessionAuthenticateModal from '@/views/SessionAuthenticateModal'
 import LoadingModal from '@/views/LoadingModal'
 
 export default function Modal() {
@@ -59,6 +60,8 @@ export default function Modal() {
         return <AuthRequestModal />
       case 'LoadingModal':
         return <LoadingModal />
+      case 'SessionAuthenticateModal':
+        return <SessionAuthenticateModal />
       default:
         return null
     }
