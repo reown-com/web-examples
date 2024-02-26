@@ -44,7 +44,7 @@ jobs:
       skip-playwright-webserver: true
       branch: V4
       command: playwright:test:wallet
-    uses: WalletConnect/web3modal/.github/workflows/ui_tests.yml@V3
+    uses: WalletConnect/web3modal/.github/workflows/ui_tests.yml@V4
     secrets:
       NEXT_PUBLIC_PROJECT_ID: ${{ secrets.UI_TEST_PROJECT_ID }}
       TESTS_NEXTAUTH_SECRET: ${{ secrets.TESTS_NEXTAUTH_SECRET }}
