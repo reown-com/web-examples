@@ -6,6 +6,7 @@
 	import SignTypeData from '../partials/SignTypeData.svelte'
 	import Transaction from '../partials/Transaction.svelte'
 	import Wallet from '../partials/Wallet.svelte'
+	import CustomForm from '../partials/CustomForm.svelte'
 </script>
 
 <div class="main">
@@ -15,6 +16,8 @@
 		<SignMessage />
 		<SignTypeData />
 		<Transaction />
+	{:else}
+		<CustomForm/>
 	{/if}
 </div>
 
