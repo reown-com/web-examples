@@ -1,5 +1,5 @@
 <script setup>
-  import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi'
+  import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi/vue'
   import { mainnet, arbitrum } from 'viem/chains'
   import { reconnect } from '@wagmi/core'
 
