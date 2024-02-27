@@ -56,7 +56,8 @@
 		font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI',
 			Roboto, Ubuntu, 'Helvetica Neue', sans-serif;
 		font-weight: 600;
-		font-size: 24px;	
+		font-size: 24px;
+    width: 100%;
 	}
 
 	form{
@@ -66,6 +67,7 @@
 		justify-content: center;
 
 		width: 100%;
+    max-width: 1000px;
 		gap: 40px;
 		padding-bottom: 100px;
 	}
