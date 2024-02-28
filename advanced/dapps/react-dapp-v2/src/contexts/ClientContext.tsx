@@ -210,7 +210,7 @@ export function ClientContextProvider({
             break;
         }
         console.log("resourcesData:", resourcesData);
-        const { uri, response } = await client.sessionAuthenticate({
+        const { uri, response } = await client.authenticate({
           chains: chains,
           domain: getAppMetadata().url,
           nonce: "1",
