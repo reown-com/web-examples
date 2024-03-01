@@ -45,15 +45,16 @@ export default function SessionAuthenticateModal() {
 
   useEffect(() => {
     if (!authRequest?.params?.authPayload) return
+    console.log('authRequest', authRequest)
+    console.log('supportedChains', supportedChains)
+    const newAuthPayload = populateAuthPayload({
+      authPayload: authRequest?.params?.authPayload,
+      chains: supportedChains,
+      methods: supportedMethods
+    })
+
     if (signStrategy === 1) {
       try {
-        console.log('authRequest', authRequest)
-        console.log('supportedChains', supportedChains)
-        const newAuthPayload = populateAuthPayload({
-          authPayload: authRequest?.params?.authPayload,
-          chains: supportedChains,
-          methods: supportedMethods
-        })
         console.log('newAuthPayload', newAuthPayload)
         const iss = `${newAuthPayload.chains[0]}:${address}`
         const message = getMessageToSign(newAuthPayload, iss)
@@ -72,14 +73,14 @@ export default function SessionAuthenticateModal() {
       }
     } else if (signStrategy === 2) {
       const messagesToSign: any[] = []
-      authRequest.params.authPayload.chains.forEach((chain: string) => {
+      newAuthPayload.chains.forEach((chain: string) => {
         const iss = `${chain}:${address}`
         const message = web3wallet.engine.signClient.formatAuthMessage({
-          request: authRequest.params.authPayload,
+          request: newAuthPayload,
           iss
         })
         messagesToSign.push({
-          authPayload: authRequest.params.authPayload,
+          authPayload: newAuthPayload,
           message,
           iss,
           id: authRequest.id
