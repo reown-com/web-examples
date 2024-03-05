@@ -39,12 +39,12 @@ jobs:
   ui-test:
     needs: preview
     with:
-      base-url: https://lab.web3modal.com/
+      base-url: http://localhost:3000/
       wallet-url: ${{ needs.preview.outputs.preview-url }}/
-      skip-playwright-webserver: true
+      skip-playwright-webserver: false
       branch: V4
       command: playwright:test:wallet
-    uses: WalletConnect/web3modal/.github/workflows/ui_tests.yml@V3
+    uses: WalletConnect/web3modal/.github/workflows/ui_tests.yml@V4
     secrets:
       NEXT_PUBLIC_PROJECT_ID: ${{ secrets.UI_TEST_PROJECT_ID }}
       TESTS_NEXTAUTH_SECRET: ${{ secrets.TESTS_NEXTAUTH_SECRET }}

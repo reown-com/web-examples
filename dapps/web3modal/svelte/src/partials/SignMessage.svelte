@@ -21,7 +21,6 @@
 			if (_signature !== 'null') {
 				signature = _signature
 				toast.success('Message signed successfully')
-				signature = '_ personal_sign'
 			} else {
 				toast.error('The signature was rejected')
 				signature = '_ personal_sign'

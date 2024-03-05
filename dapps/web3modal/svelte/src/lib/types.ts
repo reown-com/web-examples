@@ -1,5 +1,3 @@
-import type { InjectedConnector } from '@wagmi/core'
-
 export type Metadata = {
 	name?: string
 	description?: string
@@ -20,4 +18,4 @@ export type ExtendedProvider = {
 			}
 		}
 	}
-} & InjectedConnector
+}
