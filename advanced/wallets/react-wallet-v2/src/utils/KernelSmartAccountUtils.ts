@@ -18,6 +18,7 @@ export function isAllowedKernelChain(chainId: number): boolean {
    return allowedChains.some(chain => chain.id === chainId)
 }
 
+
 export async function createOrRestoreKernelSmartAccount(privateKey: string){
     const lib = new KernelSmartAccountLib({privateKey, chain: sepolia })
     await lib.init()
