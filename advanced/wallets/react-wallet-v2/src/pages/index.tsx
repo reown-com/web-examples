@@ -14,13 +14,12 @@ import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
-import SmartAccountCard from '@/components/SmartAccountCard'
+import { isAllowedKernelChain } from '@/utils/KernelSmartAccountUtils'
 
 export default function HomePage() {
   const {
     testNets,
     eip155Address,
-    activeChainId,
     cosmosAddress,
     solanaAddress,
     polkadotAddress,
@@ -28,7 +27,9 @@ export default function HomePage() {
     multiversxAddress,
     tronAddress,
     tezosAddress,
-    kadenaAddress
+    kadenaAddress,
+    kernelSmartAccountAddress,
+    smartAccountEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -133,33 +134,31 @@ export default function HomePage() {
           <Text h4 css={{ marginBottom: '$5' }}>
             Testnets
           </Text>
-          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb, chainId, smartAccountEnabled }]) => {
-            if (smartAccountEnabled) {
+          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={eip155Address}
+              chainId={caip10.toString()}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
+          ))}
+          {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb, chainId }]) => {
+            if (smartAccountEnabled && isAllowedKernelChain(chainId)) {
               return (
-                <SmartAccountCard
+                <AccountCard
                   key={name}
-                  name={name}
+                  name={`Kernel Smart Account \n ${name}`}
                   logo={logo}
                   rgb={rgb}
-                  address={eip155Address}
+                  address={kernelSmartAccountAddress}
                   chainId={caip10.toString()}
                   data-testid={'chain-card-' + caip10.toString()}
-                  isActiveChain={activeChainId === `eip155:${chainId}`}
                 />
               )
             }
-
-            return (
-              <AccountCard
-                key={name}
-                name={name}
-                logo={logo}
-                rgb={rgb}
-                address={eip155Address}
-                chainId={caip10.toString()}
-                data-testid={'chain-card-' + caip10.toString()}
-              />
-            )
           })}
           {Object.entries(SOLANA_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
             <AccountCard
