@@ -17,7 +17,7 @@ export const SOLANA_MAINNET_CHAINS = {
     namespace: 'solana'
   },
   'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': {
-    chainId: '4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ',
+    chainId: '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
     name: 'Solana',
     logo: '/chain-logos/solana-5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp.png',
     rgb: '30, 240, 166',
