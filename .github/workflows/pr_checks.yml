@@ -48,3 +48,4 @@ jobs:
     secrets:
       NEXT_PUBLIC_PROJECT_ID: ${{ secrets.UI_TEST_PROJECT_ID }}
       TESTS_NEXTAUTH_SECRET: ${{ secrets.TESTS_NEXTAUTH_SECRET }}
+      TESTS_MAILSEC_API_KEY: ${{ secrets.MAILSAC_API_KEY }}
