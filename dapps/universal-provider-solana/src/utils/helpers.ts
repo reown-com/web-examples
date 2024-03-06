@@ -11,8 +11,8 @@ import bs58 from "bs58";
 import nacl from "tweetnacl";
 
 export enum SolanaChains {
-  MainnetBeta = "4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ",
-  Devnet = "8E9rvCKLFQia2Y35HXjjpWzj8weVo44K",
+  MainnetBeta = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+  Devnet = "EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
 }
 
 export function verifyTransactionSignature(
@@ -42,7 +42,6 @@ export function verifyMessageSignature(
 const isVersionedTransaction = (
   transaction: Transaction | VersionedTransaction
 ): transaction is VersionedTransaction => "version" in transaction;
-
 
 export const getProviderUrl = (chainId: string) => {
   return `https://rpc.walletconnect.com/v1/?chainId=${chainId}&projectId=${
@@ -106,7 +105,7 @@ export const sendTransaction = async (
 
   const { blockhash } = await connection.getLatestBlockhash();
 
-  const transaction:Transaction | VersionedTransaction = new Transaction({
+  const transaction: Transaction | VersionedTransaction = new Transaction({
     feePayer: senderPublicKey,
     recentBlockhash: blockhash,
   }).add(
@@ -118,27 +117,25 @@ export const sendTransaction = async (
   );
 
   let rawTransaction: string;
-      let legacyTransaction: Transaction | VersionedTransaction | undefined;
+  let legacyTransaction: Transaction | VersionedTransaction | undefined;
 
-      if (isVersionedTransaction(transaction)) {
-        // V0 transactions are serialized and passed in the `transaction` property
-        rawTransaction = Buffer.from(transaction.serialize()).toString(
-          "base64"
-        );
+  if (isVersionedTransaction(transaction)) {
+    // V0 transactions are serialized and passed in the `transaction` property
+    rawTransaction = Buffer.from(transaction.serialize()).toString("base64");
 
-        if (transaction.version === "legacy") {
-          // For backwards-compatible, legacy transactions are spread in the params
-          legacyTransaction = Transaction.from(transaction.serialize());
-        }
-      } else {
-        rawTransaction = transaction
-          .serialize({
-            requireAllSignatures: false,
-            verifySignatures: false,
-          })
-          .toString("base64");
-        legacyTransaction = transaction;
-      }
+    if (transaction.version === "legacy") {
+      // For backwards-compatible, legacy transactions are spread in the params
+      legacyTransaction = Transaction.from(transaction.serialize());
+    }
+  } else {
+    rawTransaction = transaction
+      .serialize({
+        requireAllSignatures: false,
+        verifySignatures: false,
+      })
+      .toString("base64");
+    legacyTransaction = transaction;
+  }
 
   try {
     const result = await provider!.request<{ signature: string }>({
