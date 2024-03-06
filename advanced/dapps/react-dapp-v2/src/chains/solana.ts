@@ -18,6 +18,13 @@ export const SolanaChainData: ChainsMap = {
     slip44: 501,
     testnet: true,
   },
+  "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z": {
+    id: "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
+    name: "Solana Testnet",
+    rpc: ["https://api.testnet.solana.com"],
+    slip44: 501,
+    testnet: true,
+  },
 };
 
 export const SolanaMetadata: NamespaceMetadata = {
@@ -28,6 +35,11 @@ export const SolanaMetadata: NamespaceMetadata = {
   },
   // Solana Devnet
   EtWTRABZaYq6iMfeYKouRu166VU2xqa1: {
+    logo: "/assets/solana_logo.png",
+    rgb: "0, 0, 0",
+  },
+  // Solana Testnet
+  "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z": {
     logo: "/assets/solana_logo.png",
     rgb: "0, 0, 0",
   },
