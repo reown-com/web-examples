@@ -34,7 +34,7 @@ export default function ChainSmartAddressMini({ chain }: Props) {
   if (!kernelSmartAccountAddress) return <Spinner />
   return (
     <Row>
-      <Row>Kernel</Row>
+      <Row>(Kernel)</Row>
       <ChainAddressMini address={kernelSmartAccountAddress} />
     </Row>
   )

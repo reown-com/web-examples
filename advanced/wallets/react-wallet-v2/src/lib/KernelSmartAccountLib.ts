@@ -88,6 +88,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         if (!this.client) {
             throw new Error("Client not initialized");
         }
+        console.log('Signing typed data with Kernel Smart Account');
         const primaryType = _primaryType || ''
         const signature = await this.client.account?.signTypedData({ domain, types, primaryType, message: data })
         return signature || ''

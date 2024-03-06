@@ -15,7 +15,9 @@ export const chains = allowedChains.reduce((acc, chain) => {
  */
 
 export function isAllowedKernelChain(chainId: number): boolean {
-   return allowedChains.some(chain => chain.id === chainId)
+  console.log('Checking isAllowedKernelChain',{allowedChains, chainId});
+  
+   return allowedChains.some(chain => chain.id == chainId)
 }
 
 
