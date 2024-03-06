@@ -31,6 +31,7 @@ export const DEFAULT_TEST_CHAINS = [
   "eip155:421611",
   "eip155:44787",
   "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+  "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
   "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
   "near:testnet",
   "mvx:D",
