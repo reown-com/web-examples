@@ -26,10 +26,14 @@ export default function SessionSignTypedDataModal() {
   // Get required request data
   const { topic, params } = requestEvent
   const { request, chainId } = params
-
+  let method = request.method
   // Get data
   const data = getSignTypedDataParamsData(request.params)
 
+  const isPermissionRequest = data?.message?.type === 'eth_getPermissions_v1'
+  if (isPermissionRequest) {
+    method = 'eth_getPermissions_v1'
+  }
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
     if (requestEvent) {
@@ -80,9 +84,9 @@ export default function SessionSignTypedDataModal() {
     >
       <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
       <Divider y={1} />
-      <RequestDataCard data={data} />
+      {isPermissionRequest ? <p>Parsed permission object</p> : <RequestDataCard data={data} />}
       <Divider y={1} />
-      <RequestMethodCard methods={[request.method]} />
+      <RequestMethodCard methods={[method]} />
     </RequestModal>
   )
 }
