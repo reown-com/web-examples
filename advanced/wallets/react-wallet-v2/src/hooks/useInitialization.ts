@@ -49,6 +49,7 @@ export default function useInitialization() {
       await createWeb3Wallet(relayerRegionURL)
       setInitialized(true)
     } catch (err: unknown) {
+      console.error('Initialization failed',err)
       alert(err)
     }
   }, [relayerRegionURL, smartAccountEnabled])
