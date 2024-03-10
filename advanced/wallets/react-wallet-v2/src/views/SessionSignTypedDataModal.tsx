@@ -30,7 +30,8 @@ export default function SessionSignTypedDataModal() {
   // Get data
   const data = getSignTypedDataParamsData(request.params)
 
-  const isPermissionRequest = data?.message?.type === 'eth_getPermissions_v1'
+  const isPermissionRequest = data?.domain?.name === 'eth_getPermissions_v1'
+
   if (isPermissionRequest) {
     method = 'eth_getPermissions_v1'
   }

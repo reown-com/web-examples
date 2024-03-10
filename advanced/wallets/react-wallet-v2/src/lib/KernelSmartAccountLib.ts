@@ -9,12 +9,14 @@ import {
     addressToEmptyAccount,
     createKernelAccount,
     createKernelAccountClient,
+    createZeroDevPaymasterClient,
     KernelAccountClient
 } from '@zerodev/sdk'
 import { sepolia } from 'viem/chains'
-import { serializeSessionKeyAccount, signerToSessionKeyValidator } from '@zerodev/session-key'
+import { deserializeSessionKeyAccount, serializeSessionKeyAccount, signerToSessionKeyValidator } from '@zerodev/session-key'
 import { donutContractAbi } from '@/utils/ContractUtil'
 import { createWeightedECDSAValidator, getUpdateConfigCall } from '@zerodev/weighted-ecdsa-validator'
+import { BundlerActions, bundlerActions, BundlerClient } from 'permissionless'
 
 type SmartAccountLibOptions = {
     privateKey: string
@@ -30,7 +32,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     public sponsored: boolean = true;
     private signer: PrivateKeyAccount;
     private client: KernelAccountClient | undefined
-    private publicClient: PublicClient | undefined
+    private publicClient: PublicClient & BundlerClient & BundlerActions| undefined
     private validator: KernelValidator | undefined
 
 
@@ -53,7 +55,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         const bundlerRpc = http(`https://rpc.zerodev.app/api/v2/bundler/${projectId}`)
         this.publicClient = createPublicClient({
             transport: bundlerRpc,  // use your RPC provider or bundler
-        })
+        }).extend(bundlerActions)
 
         this.validator = await createWeightedECDSAValidator(this.publicClient, {
             config: {
@@ -74,17 +76,19 @@ export class KernelSmartAccountLib implements EIP155Wallet {
             account,
             chain: sepolia,
             transport: bundlerRpc,
-        })
+            sponsorUserOperation: async ({ userOperation }) => { 
+                const zerodevPaymaster = createZeroDevPaymasterClient({ 
+                  chain: sepolia, 
+                  transport: http(`https://rpc.zerodev.app/api/v2/paymaster/${projectId}`), 
+                }) 
+                return zerodevPaymaster.sponsorUserOperation({ 
+                  userOperation 
+                }) 
+              } 
+        }).extend(bundlerActions)
         //@ts-ignore
         this.client = client
         console.log('Smart account initialized',{address: account.address, chain: client.chain.name});
-
-
-        const signer1 = privateKeyToAccount(generatePrivateKey())
-        const signer2 = privateKeyToAccount(generatePrivateKey())
-        const res = await this.updateCoSigners(signer1.address, signer2.address)
-        console.log('Co-Signers updated',{res});
-        
     }
 
     getMnemonic(): string {
@@ -122,10 +126,10 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         return this
     }
     async signTransaction(transaction: any): Promise<string> {
-        if (!this.client) {
+        if (!this.client || !this.client.account) {
             throw new Error("Client not initialized");
         }
-        const signature = await this.client.account?.signTransaction(transaction)
+        const signature = await this.client.account.signTransaction(transaction)
         return signature || ''
     }
     async sendTransaction({
@@ -134,14 +138,16 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         data
       }: { to: Address; value: bigint; data: Hex }){
         console.log('Sending transaction from smart account',{to,value,data})
-        if (!this.client) {
+        if (!this.client || !this.client.account) {
             throw new Error("Client not initialized");
         }
-        //@ts-ignore
+   
         const txResult = await this.client.sendTransaction({
             to,
             value,
-            data
+            data,
+            account: this.client.account,
+            chain: this.chain
         })
         console.log('Transaction completed',{txResult});
         
@@ -150,18 +156,14 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     }
 
     async issueSessionKey(address: `0x${string}`): Promise<string> {
-
-        /**
-         * Permissions
-         */
-    
-
         if (!this.publicClient) {
             throw new Error("Client not initialized");
         }
- 
-      
+        if(!address){
+            throw new Error("Target address is required");
+        }
         const sessionKeyAddress = address
+        console.log('Issuing new session key',{sessionKeyAddress});
         const emptySessionKeySigner = addressToEmptyAccount(sessionKeyAddress)
  
         const sessionKeyValidator = await signerToSessionKeyValidator(this.publicClient, {
@@ -175,13 +177,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
                     // @ts-ignore
                     functionName: 'purchase'
                 },
-                {
-                    target: zeroAddress,
-                    abi: donutContractAbi,
-                    valueLimit: parseEther('10'),
-                    // @ts-ignore
-                    functionName: 'restock'
-                },
+
             ],
         },
         })
@@ -197,31 +193,34 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         
     }
 
-    async updateCoSigners(signer1: `0x${string}`, signer2: `0x${string}`){
-        if (!this.client) {
+    async updateCoSigners(signers: `0x${string}`[]){
+        if (!this.client || !this.publicClient || !this.client.account) {
             throw new Error("Client not initialized");
         }
-        const currentAddress = this.client.account?.address
-        if (!currentAddress) {
-            throw new Error("Client not initialized");
-        }
-        console.log('Updating account Co-Signers',{
-            currentAddress,
-            coSigner1: signer1,
-            coSigner2: signer2
-        });
+        const currentAddress = this.signer.address
         
-        return this.client.sendTransaction(
-             // @ts-ignore
-            getUpdateConfigCall({
-              threshold: 100,
-              signers: [
-                { address: currentAddress, weight: 100 },
-                { address: signer1, weight: 50 },
-                { address: signer2, weight: 50 },
-              ],
-            }),
-          )
+        if (signers.length === 0 || signers.length > 2) {
+            throw new Error("Invalid signer setup");
+        }
+        const coSigners = signers.map(address => {
+            return {
+                address,
+                weight: 100/signers.length
+            }
+        })
+        const newSigners = [
+            { address: currentAddress, weight: 100 },
+            ...coSigners
+        ]
+        console.log('Updating account Co-Signers',{newSigners});
+
+      
+        const updateCall = getUpdateConfigCall({
+            threshold: 100,
+            signers: newSigners,
+        })
+        
+        await this.sendTransaction(updateCall)      
     }
 
 

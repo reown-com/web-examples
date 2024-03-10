@@ -70,7 +70,15 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4:
       try {
+        
         const { domain, types, message: data, primaryType } = getSignTypedDataParamsData(request.params)
+        
+        // intercept for smart account getPermissions mock
+        if(domain.name === 'eth_getPermissions_v1' && wallet instanceof KernelSmartAccountLib){
+          const sessionKey = await wallet.issueSessionKey(data.targetAddress)
+          return formatJsonRpcResult(id, sessionKey)
+        }
+
         // https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
         delete types.EIP712Domain
         const signedData = await wallet._signTypedData(domain, types, data, primaryType)
