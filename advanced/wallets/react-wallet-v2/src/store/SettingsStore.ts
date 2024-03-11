@@ -3,7 +3,7 @@ import { proxy } from 'valtio'
 
 const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
 const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
-
+const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 /**
  * Types
  */
@@ -26,6 +26,7 @@ interface State {
   sessions: SessionTypes.Struct[]
   smartAccountSponsorshipEnabled: boolean,
   smartAccountEnabled: boolean,
+  kernelSmartAccountEnabled: boolean
 }
 
 /**
@@ -49,6 +50,7 @@ const state = proxy<State>({
   sessions: [],
   smartAccountSponsorshipEnabled: false,
   smartAccountEnabled: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(SMART_ACCOUNTS_ENABLED_KEY)) : false,
+  kernelSmartAccountEnabled: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY)) : false,
 })
 
 /**
@@ -135,6 +137,15 @@ const SettingsStore = {
       localStorage.setItem(SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
       localStorage.removeItem(SMART_ACCOUNTS_ENABLED_KEY)
+    }
+  },
+
+  toggleKernelSmartAccountsEnabled() {
+    state.kernelSmartAccountEnabled = !state.kernelSmartAccountEnabled
+    if(state.kernelSmartAccountEnabled){
+      localStorage.setItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY)
     }
   }
 }

@@ -1,18 +1,12 @@
-import { Col, Grid, Loading, Row, Text, styled } from '@nextui-org/react'
+import { Col, Grid, Row, Text, styled } from '@nextui-org/react'
 import { useCallback, useMemo, useState } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
 import { SignClientTypes } from '@walletconnect/types'
-
 import DoneIcon from '@mui/icons-material/Done'
 import CloseIcon from '@mui/icons-material/Close'
-
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
-import {
-  createOrRestoreEIP155Wallet,
-  eip155Addresses,
-  eip155Wallets
-} from '@/utils/EIP155WalletUtil'
+import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
 import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
@@ -49,7 +43,9 @@ const StyledSpan = styled('span', {
 } as any)
 
 export default function SessionProposalModal() {
-  const { smartAccountEnabled, kernelSmartAccountAddress } = useSnapshot(SettingsStore.state)
+  const { smartAccountEnabled, kernelSmartAccountAddress, kernelSmartAccountEnabled } = useSnapshot(
+    SettingsStore.state
+  )
   // Get proposal data and wallet address from store
   const data = useSnapshot(ModalStore.state)
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
@@ -257,24 +253,26 @@ export default function SessionProposalModal() {
           /**
            * If our kernel account supports any of the requested chainIds, put it in the first spot
            */
-          const allowedChainIds = chainIds.filter(id => {
-            const chainId = id.replace(`${nameSpaceKey}:`, '')
-            return allowedChains.map(chain => chain.id.toString()).includes(chainId)
-          })
-          const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
-          const chain = allowedChains.find(chain => chain.id.toString() === chainIdParsed)!
-          if (allowedChainIds.length > 0 && kernelSmartAccountAddress) {
-            const allowedAccounts = allowedChainIds.map(id => {
-              // check if id is a part of any of these array elements namespaces.eip155.accounts
-              const accountIsAllowed = namespaces.eip155.accounts.findIndex(account =>
-                account.includes(id)
-              )
-              return namespaces.eip155.accounts[accountIsAllowed]
+          if (kernelSmartAccountEnabled) {
+            const allowedChainIds = chainIds.filter(id => {
+              const chainId = id.replace(`${nameSpaceKey}:`, '')
+              return allowedChains.map(chain => chain.id.toString()).includes(chainId)
             })
-            namespaces.eip155.accounts = [
-              `${nameSpaceKey}:${chain.id}:${kernelSmartAccountAddress}`,
-              ...allowedAccounts
-            ]
+            const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
+            const chain = allowedChains.find(chain => chain.id.toString() === chainIdParsed)!
+            if (allowedChainIds.length > 0 && kernelSmartAccountAddress) {
+              const allowedAccounts = allowedChainIds.map(id => {
+                // check if id is a part of any of these array elements namespaces.eip155.accounts
+                const accountIsAllowed = namespaces.eip155.accounts.findIndex(account =>
+                  account.includes(id)
+                )
+                return namespaces.eip155.accounts[accountIsAllowed]
+              })
+              namespaces.eip155.accounts = [
+                `${nameSpaceKey}:${chain.id}:${kernelSmartAccountAddress}`,
+                ...allowedAccounts
+              ]
+            }
           }
         }
 
@@ -291,7 +289,13 @@ export default function SessionProposalModal() {
     }
     setIsLoadingApprove(false)
     ModalStore.close()
-  }, [namespaces, proposal, smartAccountEnabled, kernelSmartAccountAddress])
+  }, [
+    namespaces,
+    proposal,
+    smartAccountEnabled,
+    kernelSmartAccountAddress,
+    kernelSmartAccountEnabled
+  ])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks

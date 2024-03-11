@@ -17,7 +17,7 @@ export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
   const prevRelayerURLValue = useRef<string>('')
 
-  const { relayerRegionURL, smartAccountEnabled } = useSnapshot(SettingsStore.state)
+  const { relayerRegionURL, smartAccountEnabled, kernelSmartAccountEnabled } = useSnapshot(SettingsStore.state)
 
   const onInitialize = useCallback(async () => {
     try {
@@ -33,8 +33,10 @@ export default function useInitialization() {
       
 
       if(smartAccountEnabled){
-        const {kernelSmartAccountAddress} = await createOrRestoreKernelSmartAccount(eip155Wallets[eip155Addresses[0]].getPrivateKey())
-        SettingsStore.setKernelSmartAccountAddress(kernelSmartAccountAddress)
+        if(kernelSmartAccountEnabled){
+          const {kernelSmartAccountAddress} = await createOrRestoreKernelSmartAccount(eip155Wallets[eip155Addresses[0]].getPrivateKey())
+          SettingsStore.setKernelSmartAccountAddress(kernelSmartAccountAddress)
+        }
       }
 
       SettingsStore.setEIP155Address(eip155Addresses[0])
@@ -52,7 +54,7 @@ export default function useInitialization() {
       console.error('Initialization failed',err)
       alert(err)
     }
-  }, [relayerRegionURL, smartAccountEnabled])
+  }, [relayerRegionURL, smartAccountEnabled, kernelSmartAccountEnabled])
 
   // restart transport if relayer region changes
   const onRelayerRegionChange = useCallback(() => {
