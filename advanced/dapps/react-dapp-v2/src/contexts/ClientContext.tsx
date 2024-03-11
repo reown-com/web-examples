@@ -173,11 +173,11 @@ export function ClientContextProvider({
         // });
 
         const supportedMethods = [
-          "eth_sign",
+          // "eth_sign",
           "eth_sendTransaction",
-          "eth_signTransaction",
+          // "eth_signTransaction",
           "personal_sign",
-          "eth_signTypedData_v4",
+          // "eth_signTypedData_v4",
         ];
         console.log("onlySiwe:", onlySiwe);
 
@@ -195,28 +195,28 @@ export function ClientContextProvider({
             break;
           case 3:
             resourcesData.push(
-              "urn:recap:eyJhdHQiOnsiaHR0cHM6Ly9leGFtcGxlLmNvbSI6eyJwdWJsaXNoL3BpY3R1cmUiOlt7fV0sInB1Ymxpc2gvdmlkZW8iOlt7fV19fX0=",
-              "urn:recap:eyJhdHQiOnsiaHR0cHM6Ly93ZWIzaW5ib3guY29tIjp7InB1c2gvYWxlcnRzIjpbe31dLCJwdXNoL25vdGlmaWNhdGlvbnMiOlt7fV19fX0="
+              "urn:recap:eyJhdHQiOnsiaHR0cHM6Ly9ub3RpZnkud2FsbGV0Y29ubmVjdC5jb20iOnsibWFuYWdlL2FsbC1hcHBzLW5vdGlmaWNhdGlvbnMiOlt7fV19fX0"
             );
             break;
           case 4:
             resourcesData.push(
               "https://walletconnect.com/eth",
-              "urn:recap:eyJhdHQiOnsiaHR0cHM6Ly9leGFtcGxlLmNvbSI6eyJwdWJsaXNoL3BpY3R1cmUiOlt7fV0sInB1Ymxpc2gvdmlkZW8iOlt7fV19fX0=",
               "https://walletconnect.com/solana",
-              "urn:recap:eyJhdHQiOnsiaHR0cHM6Ly93ZWIzaW5ib3guY29tIjp7InB1c2gvYWxlcnRzIjpbe31dLCJwdXNoL25vdGlmaWNhdGlvbnMiOlt7fV19fX0=",
-              "https://walletconnect.com/terra"
+              "https://walletconnect.com/terra",
+              "urn:recap:eyJhdHQiOnsiaHR0cHM6Ly9ub3RpZnkud2FsbGV0Y29ubmVjdC5jb20iOnsibWFuYWdlL2FsbC1hcHBzLW5vdGlmaWNhdGlvbnMiOlt7fV19fX0"
             );
             break;
         }
         console.log("resourcesData:", resourcesData);
         const { uri, response } = await client.authenticate({
           chains: chains,
-          domain: getAppMetadata().url,
-          nonce: "1",
-          aud: "aud",
+          domain: "app.web3inbox", //getAppMetadata().url,
+          nonce: "32891756",
+          uri: "https://app.web3inbox.com/login",
           methods: onlySiwe ? [] : supportedMethods,
           resources: resourcesData,
+          statement:
+            "I accept the ServiceOrg Terms of Service: https://app.web3inbox.com/tos",
         });
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
