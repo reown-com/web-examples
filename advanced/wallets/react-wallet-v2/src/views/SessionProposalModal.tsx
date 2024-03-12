@@ -392,6 +392,20 @@ export default function SessionProposalModal() {
                 </Row>
               )
             })}
+          <Row style={{ color: 'GrayText' }} justify="flex-end">
+            Chains
+          </Row>
+          {smartAccountChains.length &&
+            smartAccountChains.map((chain, i) => {
+              if (!chain) {
+                return <></>
+              }
+              return (
+                <Row key={i}>
+                  <ChainDataMini key={i} chainId={`${chain?.namespace}:${chain?.chainId}`} />
+                </Row>
+              )
+            })}
         </Grid>
       </Grid.Container>
     </RequestModal>
