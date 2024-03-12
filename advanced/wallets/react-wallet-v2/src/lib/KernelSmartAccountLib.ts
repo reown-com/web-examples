@@ -1,10 +1,9 @@
 import { Chain } from '@/utils/SmartAccountUtils'
-
 import { Address, createPublicClient, Hex, http, parseEther, PrivateKeyAccount, PublicClient, zeroAddress } from 'viem'
-import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
+import { privateKeyToAccount } from 'viem/accounts'
 import { EIP155Wallet } from './EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { KernelValidator, signerToEcdsaValidator } from '@zerodev/ecdsa-validator'
+import { KernelValidator } from '@zerodev/ecdsa-validator'
 import {
     addressToEmptyAccount,
     createKernelAccount,
@@ -13,8 +12,7 @@ import {
     KernelAccountClient
 } from '@zerodev/sdk'
 import { sepolia } from 'viem/chains'
-import { deserializeSessionKeyAccount, serializeSessionKeyAccount, signerToSessionKeyValidator } from '@zerodev/session-key'
-import { donutContractAbi } from '@/utils/ContractUtil'
+import { serializeSessionKeyAccount, signerToSessionKeyValidator } from '@zerodev/session-key'
 import { createWeightedECDSAValidator, getUpdateConfigCall } from '@zerodev/weighted-ecdsa-validator'
 import { BundlerActions, bundlerActions, BundlerClient } from 'permissionless'
 
@@ -155,13 +153,14 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         
     }
 
-    async issueSessionKey(address: `0x${string}`): Promise<string> {
+    async issueSessionKey(address: `0x${string}`, permissions: string): Promise<string> {
         if (!this.publicClient) {
             throw new Error("Client not initialized");
         }
         if(!address){
             throw new Error("Target address is required");
         }
+        const parsedPermissions = JSON.parse(permissions)
         const sessionKeyAddress = address
         console.log('Issuing new session key',{sessionKeyAddress});
         const emptySessionKeySigner = addressToEmptyAccount(sessionKeyAddress)
@@ -169,16 +168,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         const sessionKeyValidator = await signerToSessionKeyValidator(this.publicClient, {
         signer: emptySessionKeySigner,
         validatorData: {
-            permissions: [
-                {
-                    target: zeroAddress,
-                    abi: donutContractAbi,
-                    valueLimit: parseEther('10'),
-                    // @ts-ignore
-                    functionName: 'purchase'
-                },
-
-            ],
+            permissions: parsedPermissions
         },
         })
         const sessionKeyAccount = await createKernelAccount(this.publicClient, {
