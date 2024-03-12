@@ -294,10 +294,7 @@ export function ClientContextProvider({
         metadata: {
           ...(getAppMetadata() || DEFAULT_APP_METADATA),
           url: claimedOrigin,
-          verifyUrl:
-            claimedOrigin === "unknown"
-              ? "http://non-existent-url"
-              : DEFAULT_APP_METADATA.verifyUrl, // simulates `UNKNOWN` verify context
+          verifyUrl: DEFAULT_APP_METADATA.verifyUrl,
         },
       });
 
@@ -319,6 +316,23 @@ export function ClientContextProvider({
     relayerRegion,
     origin,
   ]);
+
+  useEffect(() => {
+    const claimedOrigin =
+      localStorage.getItem("wallet_connect_dapp_origin") || origin;
+    let interval: NodeJS.Timer;
+    // simulates `UNKNOWN` validation by removing the verify iframe thus preventing POST message
+    if (claimedOrigin === "unknown") {
+      //The interval is needed as Verify tries to init new iframe(with different urls) multiple times
+      interval = setInterval(
+        () => document.getElementById("verify-api")?.remove(),
+        500
+      );
+    }
+    return () => {
+      clearInterval(interval);
+    };
+  }, [origin]);
 
   useEffect(() => {
     if (!client) {
