@@ -33,6 +33,7 @@ import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
 import { allowedChains } from '@/utils/KernelSmartAccountUtils'
+import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -236,44 +237,16 @@ export default function SessionProposalModal() {
     supportedNamespaces
   })
 
+  const reorderedEip155Accounts = usePriorityAccounts({ namespaces })
+
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
     if (proposal) {
       setIsLoadingApprove(true)
 
       try {
-        // get keys of namespaces
-        const namespaceKeys = Object.keys(namespaces)
-        const [nameSpaceKey] = namespaceKeys
-
-        // get chain ids from namespaces
-        const [chainIds] = namespaceKeys.map(key => namespaces[key].chains)
-
-        if (smartAccountEnabled && chainIds) {
-          /**
-           * If our kernel account supports any of the requested chainIds, put it in the first spot
-           */
-          if (kernelSmartAccountEnabled) {
-            const allowedChainIds = chainIds.filter(id => {
-              const chainId = id.replace(`${nameSpaceKey}:`, '')
-              return allowedChains.map(chain => chain.id.toString()).includes(chainId)
-            })
-            const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
-            const chain = allowedChains.find(chain => chain.id.toString() === chainIdParsed)!
-            if (allowedChainIds.length > 0 && kernelSmartAccountAddress) {
-              const allowedAccounts = allowedChainIds.map(id => {
-                // check if id is a part of any of these array elements namespaces.eip155.accounts
-                const accountIsAllowed = namespaces.eip155.accounts.findIndex(account =>
-                  account.includes(id)
-                )
-                return namespaces.eip155.accounts[accountIsAllowed]
-              })
-              namespaces.eip155.accounts = [
-                `${nameSpaceKey}:${chain.id}:${kernelSmartAccountAddress}`,
-                ...allowedAccounts
-              ]
-            }
-          }
+        if (reorderedEip155Accounts.length > 0) {
+          namespaces.eip155.accounts = reorderedEip155Accounts
         }
 
         await web3wallet.approveSession({
@@ -289,13 +262,7 @@ export default function SessionProposalModal() {
     }
     setIsLoadingApprove(false)
     ModalStore.close()
-  }, [
-    namespaces,
-    proposal,
-    smartAccountEnabled,
-    kernelSmartAccountAddress,
-    kernelSmartAccountEnabled
-  ])
+  }, [namespaces, proposal, reorderedEip155Accounts])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks
