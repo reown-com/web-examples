@@ -332,6 +332,7 @@ export default function SessionProposalModal() {
 
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
           {smartAccountChains.length &&
+            smartAccountEnabled &&
             smartAccountChains.map((chain, i) => {
               if (!chain) {
                 return <></>
@@ -363,6 +364,7 @@ export default function SessionProposalModal() {
             Chains
           </Row>
           {smartAccountChains.length &&
+            smartAccountEnabled &&
             smartAccountChains.map((chain, i) => {
               if (!chain) {
                 return <></>
