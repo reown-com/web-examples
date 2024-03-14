@@ -2900,31 +2900,31 @@
     "@walletconnect/window-getters" "^1.0.1"
     tslib "1.14.1"
 
-"@zerodev/ecdsa-validator@^5.1.0":
+"@zerodev/ecdsa-validator@5.1.0":
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.1.0.tgz#74bd4f6f2df9ff32560ed70109ece24b08d8492f"
   integrity sha512-mjoRXn/XuKEeyXXjapZMnExNeNnqbRbEHJA/wMhY1pHb+p+29E9oY3JSTgsOKF9ICLsAzD9ZxQTAQJLtrfP2fQ==
 
-"@zerodev/presets@^5.1.4":
+"@zerodev/presets@5.1.4":
   version "5.1.4"
   resolved "https://registry.yarnpkg.com/@zerodev/presets/-/presets-5.1.4.tgz#0ec567973dfa2622a2228e49c51f15fefb5b9d2a"
   integrity sha512-V5n5afSobyHWbNUOiEPZuV4VwQSMq42iYeOXZuV9GCsx8oZozIVDgrvgr9Jd7qnbyKliv8dPf3/o7+VOwpQWnA==
 
-"@zerodev/sdk@^5.1.8":
+"@zerodev/sdk@5.1.8":
   version "5.1.8"
   resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.1.8.tgz#662b240659676e73cb4a1d75d780362f0ea41516"
   integrity sha512-36/mqN2YEYyfCnYWvxqmo8/8HIhFVsn0Jy6ifAqPQ3abvhYO4iOAlNjHhJ/+ddL2peJFLergrISPVxB/R4g+vQ==
   dependencies:
     permissionless "^0.0.34"
 
-"@zerodev/session-key@^5.1.1":
+"@zerodev/session-key@5.1.1":
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/@zerodev/session-key/-/session-key-5.1.1.tgz#e05e3520203e22758a86775c850546f0cb041772"
   integrity sha512-F8oUt4eqMXNoc9yxxHaxAfYJE4uAfC6XIucm4UT/EsoMMXC7C9kmXdLKgIDyoQQL9ycAkjZtFZwIUebkvKKirQ==
   dependencies:
     merkletreejs "^0.3.11"
 
-"@zerodev/weighted-ecdsa-validator@^5.1.0":
+"@zerodev/weighted-ecdsa-validator@5.1.0":
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/@zerodev/weighted-ecdsa-validator/-/weighted-ecdsa-validator-5.1.0.tgz#29e31bc7b8fe3c16ef3bf96ee5e9d98f984c16f2"
   integrity sha512-DU4w2VPiDsSAA48qzUTrPTRwo7Atj9S5mRxu/QfM7fW/UAJM9Xzu3qwMLIeAJ71oPuhdTVtYRNObeQv214dH6A==
