@@ -12,7 +12,7 @@ import { providers } from 'ethers'
 import { chains } from './SmartAccountUtils'
 import { Chain } from './SmartAccountUtils'
 import { isAllowedKernelChain } from './KernelSmartAccountUtils'
-import { KernelSmartAccountLib } from '@/lib/KernelSmartAccountLib'
+import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import SettingsStore from '@/store/SettingsStore'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 

@@ -10,7 +10,7 @@ import {
   zeroAddress
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { EIP155Wallet } from './EIP155Lib'
+import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { KernelValidator } from '@zerodev/ecdsa-validator'
 import {

@@ -1,4 +1,4 @@
-import { KernelSmartAccountLib } from '@/lib/KernelSmartAccountLib'
+import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import { sepolia } from 'viem/chains'
 import { SessionTypes } from '@walletconnect/types'
 // Types
