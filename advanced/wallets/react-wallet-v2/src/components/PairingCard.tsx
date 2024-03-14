@@ -43,11 +43,18 @@ export default function PairingCard({ logo, name, url, topic, onDelete }: IProps
           <Link href={url} css={{ marginLeft: '$9' }}>
             <a data-testid={'pairing-text-' + topic}>
               {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
-            </a>            
+            </a>
           </Link>
         </div>
         <Tooltip content="Delete" placement="left">
-          <Button size="sm" color="error" flat onClick={onDelete} css={{ minWidth: 'auto' }} data-testid={'pairing-delete-' + topic}>
+          <Button
+            size="sm"
+            color="error"
+            flat
+            onClick={onDelete}
+            css={{ minWidth: 'auto' }}
+            data-testid={'pairing-delete-' + topic}
+          >
             <Image src={'/icons/delete-icon.svg'} width={15} height={15} alt="delete icon" />
           </Button>
         </Tooltip>

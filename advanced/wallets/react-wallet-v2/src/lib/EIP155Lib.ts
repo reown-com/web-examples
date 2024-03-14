@@ -11,7 +11,7 @@ export interface EIP155Wallet {
   getPrivateKey(): string
   getAddress(): string
   signMessage(message: string): Promise<string>
-  _signTypedData(domain: any, types: any, data: any, _primaryType?: string):  Promise<string>
+  _signTypedData(domain: any, types: any, data: any, _primaryType?: string): Promise<string>
   connect(provider: providers.JsonRpcProvider): Wallet
   signTransaction(transaction: providers.TransactionRequest): Promise<string>
 }

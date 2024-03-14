@@ -45,12 +45,18 @@ export default function SessionCard({ logo, name, url, topic }: IProps) {
             </Text>
             <Link href={url} css={{ marginLeft: '$9' }}>
               <a data-testid={`session-link`}>
-              {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
+                {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
               </a>
             </Link>
           </div>
 
-          <Image src={'/icons/arrow-right-icon.svg'} width={20} height={20} alt="session icon" data-testid={`session-icon`} />
+          <Image
+            src={'/icons/arrow-right-icon.svg'}
+            width={20}
+            height={20}
+            alt="session icon"
+            data-testid={`session-icon`}
+          />
         </Card.Body>
       </Card>
     </NextLink>

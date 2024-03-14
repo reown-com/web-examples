@@ -179,7 +179,7 @@ export function styledToast(message: string, type: string) {
       style: {
         borderRadius: '10px',
         background: '#333',
-        color: '#fff',
+        color: '#fff'
       }
     })
   }

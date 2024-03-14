@@ -25,13 +25,12 @@ export default class TronLib {
   }
 
   static async init({ privateKey }: IInitArguments) {
-    if(!privateKey){
-      const account = TronWeb.utils.accounts.generateAccount();
+    if (!privateKey) {
+      const account = TronWeb.utils.accounts.generateAccount()
       return new TronLib(account.privateKey)
     } else {
       return new TronLib(privateKey)
     }
-
   }
 
   public getAddress() {

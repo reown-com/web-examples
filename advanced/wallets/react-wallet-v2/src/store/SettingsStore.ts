@@ -24,8 +24,8 @@ interface State {
   activeChainId: string
   currentRequestVerifyContext?: Verify.Context
   sessions: SessionTypes.Struct[]
-  smartAccountSponsorshipEnabled: boolean,
-  smartAccountEnabled: boolean,
+  smartAccountSponsorshipEnabled: boolean
+  smartAccountEnabled: boolean
   kernelSmartAccountEnabled: boolean
 }
 
@@ -33,7 +33,10 @@ interface State {
  * State
  */
 const state = proxy<State>({
-  testNets: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(TEST_NETS_ENABLED_KEY)) : true,
+  testNets:
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(TEST_NETS_ENABLED_KEY))
+      : true,
   account: 0,
   activeChainId: '1',
   eip155Address: '',
@@ -49,8 +52,14 @@ const state = proxy<State>({
   relayerRegionURL: '',
   sessions: [],
   smartAccountSponsorshipEnabled: false,
-  smartAccountEnabled: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(SMART_ACCOUNTS_ENABLED_KEY)) : false,
-  kernelSmartAccountEnabled: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY)) : false,
+  smartAccountEnabled:
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(SMART_ACCOUNTS_ENABLED_KEY))
+      : false,
+  kernelSmartAccountEnabled:
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY))
+      : false
 })
 
 /**
@@ -133,7 +142,7 @@ const SettingsStore = {
 
   toggleSmartAccountEnabled() {
     state.smartAccountEnabled = !state.smartAccountEnabled
-    if(state.smartAccountEnabled){
+    if (state.smartAccountEnabled) {
       localStorage.setItem(SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
       localStorage.removeItem(SMART_ACCOUNTS_ENABLED_KEY)
@@ -142,7 +151,7 @@ const SettingsStore = {
 
   toggleKernelSmartAccountsEnabled() {
     state.kernelSmartAccountEnabled = !state.kernelSmartAccountEnabled
-    if(state.kernelSmartAccountEnabled){
+    if (state.kernelSmartAccountEnabled) {
       localStorage.setItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
       localStorage.removeItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY)

@@ -15,7 +15,13 @@ interface IProps {
 /**
  * Component
  */
-export default function AccountSelectCard({ address, selected, index, onSelect, isRequired }: IProps) {
+export default function AccountSelectCard({
+  address,
+  selected,
+  index,
+  onSelect,
+  isRequired
+}: IProps) {
   return (
     <Card
       onClick={onSelect}
@@ -27,8 +33,8 @@ export default function AccountSelectCard({ address, selected, index, onSelect, 
       }}
       data-testid={`account-select-card-${isRequired ? 'req' : 'opt'}-${index + 1}`}
     >
-      <Row justify="space-between" align="center">        
-        <Checkbox size="lg" color="success" checked={selected}/>                  
+      <Row justify="space-between" align="center">
+        <Checkbox size="lg" color="success" checked={selected} />
 
         <Text data-testid={`account-select-text-${index + 1}`}>
           {`${truncate(address, 14)} - Account ${index + 1}`}
