@@ -1,14 +1,5 @@
 import { Chain } from '@/utils/SmartAccountUtils'
-import {
-  Address,
-  createPublicClient,
-  Hex,
-  http,
-  parseEther,
-  PrivateKeyAccount,
-  PublicClient,
-  zeroAddress
-} from 'viem'
+import { Address, createPublicClient, Hex, http, PrivateKeyAccount, PublicClient } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'

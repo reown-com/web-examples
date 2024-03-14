@@ -1,7 +1,7 @@
 import SettingsStore from '@/store/SettingsStore'
 import { SessionTypes } from '@walletconnect/types'
 import { useSnapshot } from 'valtio'
-import { allowedChains, kernelAddressPriority } from '@/utils/KernelSmartAccountUtils'
+import { kernelAddressPriority } from '@/utils/KernelSmartAccountUtils'
 interface IProps {
   namespaces: SessionTypes.Namespaces
 }
