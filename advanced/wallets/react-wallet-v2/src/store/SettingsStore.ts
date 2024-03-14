@@ -1,6 +1,9 @@
 import { Verify, SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
 
+const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
+const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
+const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 /**
  * Types
  */
@@ -15,6 +18,7 @@ interface State {
   multiversxAddress: string
   tronAddress: string
   tezosAddress: string
+  kernelSmartAccountAddress: string
   kadenaAddress: string
   relayerRegionURL: string
   activeChainId: string
@@ -22,13 +26,14 @@ interface State {
   sessions: SessionTypes.Struct[]
   smartAccountSponsorshipEnabled: boolean,
   smartAccountEnabled: boolean,
+  kernelSmartAccountEnabled: boolean
 }
 
 /**
  * State
  */
 const state = proxy<State>({
-  testNets: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem('TEST_NETS')) : true,
+  testNets: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(TEST_NETS_ENABLED_KEY)) : true,
   account: 0,
   activeChainId: '1',
   eip155Address: '',
@@ -39,11 +44,13 @@ const state = proxy<State>({
   multiversxAddress: '',
   tronAddress: '',
   tezosAddress: '',
+  kernelSmartAccountAddress: '',
   kadenaAddress: '',
   relayerRegionURL: '',
   sessions: [],
   smartAccountSponsorshipEnabled: false,
-  smartAccountEnabled: false,
+  smartAccountEnabled: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(SMART_ACCOUNTS_ENABLED_KEY)) : false,
+  kernelSmartAccountEnabled: typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY)) : false,
 })
 
 /**
@@ -93,6 +100,10 @@ const SettingsStore = {
     state.tezosAddress = tezosAddress
   },
 
+  setKernelSmartAccountAddress(smartAccountAddress: string) {
+    state.kernelSmartAccountAddress = smartAccountAddress
+  },
+
   setActiveChainId(value: string) {
     state.activeChainId = value
   },
@@ -108,10 +119,10 @@ const SettingsStore = {
     state.testNets = !state.testNets
     if (state.testNets) {
       state.smartAccountSponsorshipEnabled = true
-      localStorage.setItem('TEST_NETS', 'YES')
+      localStorage.setItem(TEST_NETS_ENABLED_KEY, 'YES')
     } else {
       state.smartAccountSponsorshipEnabled = false
-      localStorage.removeItem('TEST_NETS')
+      localStorage.removeItem(TEST_NETS_ENABLED_KEY)
     }
   },
 
@@ -122,6 +133,20 @@ const SettingsStore = {
 
   toggleSmartAccountEnabled() {
     state.smartAccountEnabled = !state.smartAccountEnabled
+    if(state.smartAccountEnabled){
+      localStorage.setItem(SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(SMART_ACCOUNTS_ENABLED_KEY)
+    }
+  },
+
+  toggleKernelSmartAccountsEnabled() {
+    state.kernelSmartAccountEnabled = !state.kernelSmartAccountEnabled
+    if(state.kernelSmartAccountEnabled){
+      localStorage.setItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY)
+    }
   }
 }
 

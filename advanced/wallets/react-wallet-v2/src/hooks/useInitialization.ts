@@ -11,16 +11,17 @@ import { createWeb3Wallet, web3wallet } from '@/utils/WalletConnectUtil'
 import { createOrRestoreKadenaWallet } from '@/utils/KadenaWalletUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
+import { createOrRestoreKernelSmartAccount } from '@/utils/KernelSmartAccountUtils'
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
   const prevRelayerURLValue = useRef<string>('')
 
-  const { relayerRegionURL } = useSnapshot(SettingsStore.state)
+  const { relayerRegionURL, smartAccountEnabled, kernelSmartAccountEnabled } = useSnapshot(SettingsStore.state)
 
   const onInitialize = useCallback(async () => {
     try {
-      const { eip155Addresses } = createOrRestoreEIP155Wallet()
+      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
       const { cosmosAddresses } = await createOrRestoreCosmosWallet()
       const { solanaAddresses } = await createOrRestoreSolanaWallet()
       const { polkadotAddresses } = await createOrRestorePolkadotWallet()
@@ -29,6 +30,14 @@ export default function useInitialization() {
       const { tronAddresses } = await createOrRestoreTronWallet()
       const { tezosAddresses } = await createOrRestoreTezosWallet()
       const { kadenaAddresses } = await createOrRestoreKadenaWallet()
+      
+
+      if(smartAccountEnabled){
+        if(kernelSmartAccountEnabled){
+          const {kernelSmartAccountAddress} = await createOrRestoreKernelSmartAccount(eip155Wallets[eip155Addresses[0]].getPrivateKey())
+          SettingsStore.setKernelSmartAccountAddress(kernelSmartAccountAddress)
+        }
+      }
 
       SettingsStore.setEIP155Address(eip155Addresses[0])
       SettingsStore.setCosmosAddress(cosmosAddresses[0])
@@ -42,9 +51,10 @@ export default function useInitialization() {
       await createWeb3Wallet(relayerRegionURL)
       setInitialized(true)
     } catch (err: unknown) {
+      console.error('Initialization failed',err)
       alert(err)
     }
-  }, [relayerRegionURL])
+  }, [relayerRegionURL, smartAccountEnabled, kernelSmartAccountEnabled])
 
   // restart transport if relayer region changes
   const onRelayerRegionChange = useCallback(() => {

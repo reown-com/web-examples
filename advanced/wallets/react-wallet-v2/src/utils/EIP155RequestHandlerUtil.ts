@@ -1,6 +1,4 @@
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
-import EIP155Lib from '@/lib/EIP155Lib'
-import { SmartAccountLib } from '@/lib/SmartAccountLib'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import {
   getSignParamsMessage,
@@ -12,43 +10,36 @@ import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
 import { chains } from './SmartAccountUtils'
-import { Hex } from 'viem'
-import { Chain, allowedChains } from './SmartAccountUtils'
+import { Chain } from './SmartAccountUtils'
+import { isAllowedKernelChain } from './KernelSmartAccountUtils'
+import { KernelSmartAccountLib } from '@/lib/KernelSmartAccountLib'
 import SettingsStore from '@/store/SettingsStore'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 
 const getWallet = async (params: any) => {
-  const typedChains: Record<number, Chain> = chains;
-  console.log('get wallet params', params)
-  const chainId = params?.chainId?.split(':')[1]
-  console.log('chain id', chainId)
   const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
   if (eoaWallet) {
     return eoaWallet
   }
 
-  const smartAccountEnabledChain = allowedChains.find((chain) => chain.id.toString() === chainId) as Chain
-  console.log('smart account enabled chain', smartAccountEnabledChain)
-  const smartAccounts = await Promise.all(Object.values(eip155Wallets).map(async (wallet) => {
-    console.log('typeed chains', typedChains[chainId])
-   
-    const smartAccount = new SmartAccountLib({
-      privateKey: wallet.getPrivateKey() as Hex,
+  /**
+   * Smart accounts
+   */
+  const privateKey = Object.values(eip155Wallets)[0].getPrivateKey()
+  const typedChains: Record<number, Chain> = chains;
+  const chainId = params?.chainId?.split(':')[1]
+  console.log('Chain ID',{chainId});
+  
+  if(isAllowedKernelChain(chainId)){
+    const lib = new KernelSmartAccountLib({
+      privateKey,
       chain: typedChains[chainId],
-      sponsored: true, // TODO: Sponsor for now but should be dynamic according to SettingsStore
     })
-
-    const isDeployed = await smartAccount.checkIfSmartAccountDeployed()
-    if (!isDeployed) {
-      await smartAccount.deploySmartAccount()
-    }
-    return smartAccount
-  }));
-
-  const smartAccountAddress = getWalletAddressFromParams(smartAccounts.map(acc => acc.address!), params)
-
-  return smartAccounts.find((smartAccount) => smartAccount?.address === smartAccountAddress) as SmartAccountLib
+    await lib.init() 
+    return lib
+  }
+  throw new Error('Cannot find wallet for requested address')
 }
 
 
@@ -79,7 +70,15 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4:
       try {
+        
         const { domain, types, message: data, primaryType } = getSignTypedDataParamsData(request.params)
+        
+        // intercept for smart account getPermissions mock
+        if(domain.name === 'eth_getPermissions_v1' && wallet instanceof KernelSmartAccountLib){
+          const sessionKey = await wallet.issueSessionKey(data.targetAddress,data.permissions)
+          return formatJsonRpcResult(id, sessionKey)
+        }
+
         // https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
         delete types.EIP712Domain
         const signedData = await wallet._signTypedData(domain, types, data, primaryType)

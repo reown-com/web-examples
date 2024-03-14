@@ -31,6 +31,11 @@
     "@taquito/signer": "^15.1.0",
     "@taquito/taquito": "^15.1.0",
     "@walletconnect/web3wallet": "1.10.2",
+    "@zerodev/ecdsa-validator": "^5.1.0",
+    "@zerodev/presets": "^5.1.4",
+    "@zerodev/sdk": "^5.1.8",
+    "@zerodev/session-key": "^5.1.1",
+    "@zerodev/weighted-ecdsa-validator": "^5.1.0",
     "borsh": "^1.0.0",
     "bs58": "5.0.0",
     "cosmos-wallet": "1.2.0",
@@ -38,7 +43,7 @@
     "framer-motion": "6.5.1",
     "near-api-js": "^0.45.0",
     "next": "12.1.5",
-    "permissionless": "0.0.20",
+    "permissionless": "0.0.36",
     "react": "17.0.2",
     "react-code-blocks": "0.1.5",
     "react-dom": "17.0.2",
@@ -47,7 +52,7 @@
     "solana-wallet": "^1.0.2",
     "tronweb": "^4.4.0",
     "valtio": "1.13.0",
-    "viem": "1.21.4"
+    "viem": "2.7.20"
   },
   "devDependencies": {
     "@types/node": "17.0.35",

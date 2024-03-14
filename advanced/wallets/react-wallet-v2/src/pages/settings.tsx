@@ -7,7 +7,7 @@ import { solanaWallets } from '@/utils/SolanaWalletUtil'
 import { multiversxWallets } from '@/utils/MultiversxWalletUtil'
 import { tronWallets } from '@/utils/TronWalletUtil'
 import { kadenaWallets } from '@/utils/KadenaWalletUtil'
-import { Card, Divider, Row, Switch, Text } from '@nextui-org/react'
+import { Card, Col, Divider, Row, Switch, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 import packageJSON from '../../package.json'
@@ -24,7 +24,8 @@ export default function SettingsPage() {
     tronAddress,
     tezosAddress,
     kadenaAddress,
-    smartAccountEnabled
+    smartAccountEnabled,
+    kernelSmartAccountEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -55,30 +56,51 @@ export default function SettingsPage() {
 
       <Divider y={2} />
 
-      <Text h4 css={{ marginBottom: '$5' }}>
-        Smart Account Sponsorship (Pimlico)
-      </Text>
-      <Row justify="space-between" align="center">
-        <Switch
-          checked={smartAccountSponsorshipEnabled}
-          onChange={SettingsStore.toggleSmartAccountSponsorship}
-          data-testid="settings-toggle-smart-account-sponsorship"
-        />
-        <Text>{smartAccountSponsorshipEnabled ? 'Enabled' : 'Disabled'}</Text>
-      </Row>
+      <Row>
+        <Col>
+          <Text h4 css={{ marginBottom: '$5' }}>
+            Smart Accounts
+          </Text>
+          <Text h4 css={{ marginBottom: '$5' }}>
+            Enabled
+          </Text>
+          <Row justify="space-between" align="center">
+            <Switch
+              checked={smartAccountEnabled}
+              onChange={SettingsStore.toggleSmartAccountEnabled}
+              data-testid="settings-toggle-smart-account-enabled"
+            />
+            <Text>{smartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
+          </Row>
 
-      <Divider y={2} />
+          {smartAccountEnabled ? (
+            <>
+              <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
+                ZeroDev Smart Account
+              </Text>
+              <Row justify="space-between" align="center">
+                <Switch
+                  checked={kernelSmartAccountEnabled}
+                  onChange={SettingsStore.toggleKernelSmartAccountsEnabled}
+                  data-testid="settings-toggle-smart-account-sponsorship"
+                />
+                <Text>{kernelSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
+              </Row>
 
-      <Text h4 css={{ marginBottom: '$5' }}>
-        Smart Account Enabled
-      </Text>
-      <Row justify="space-between" align="center">
-        <Switch
-          checked={smartAccountEnabled}
-          onChange={SettingsStore.toggleSmartAccountEnabled}
-          data-testid="settings-toggle-smart-account-enabled"
-        />
-        <Text>{smartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
+              <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
+                Sponsorship (Pimlico)
+              </Text>
+              <Row justify="space-between" align="center">
+                <Switch
+                  checked={smartAccountSponsorshipEnabled}
+                  onChange={SettingsStore.toggleSmartAccountSponsorship}
+                  data-testid="settings-toggle-smart-account-sponsorship"
+                />
+                <Text>{smartAccountSponsorshipEnabled ? 'Enabled' : 'Disabled'}</Text>
+              </Row>
+            </>
+          ) : null}
+        </Col>
       </Row>
 
       <Divider y={2} />

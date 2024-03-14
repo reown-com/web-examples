@@ -1,15 +1,4 @@
-import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
-import { eip155Addresses } from '@/utils/EIP155WalletUtil'
-import { polkadotAddresses } from '@/utils/PolkadotWalletUtil'
-import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
-import { tronAddresses } from '@/utils/TronWalletUtil'
-import { tezosAddresses } from '@/utils/TezosWalletUtil'
-import { solanaAddresses } from '@/utils/SolanaWalletUtil'
-import { nearAddresses } from '@/utils/NearWalletUtil'
-import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
-import { useMemo } from 'react'
 import { Row } from '@nextui-org/react'
-import { getChainData } from '@/data/chainsUtil'
 
 interface Props {
   address?: string
