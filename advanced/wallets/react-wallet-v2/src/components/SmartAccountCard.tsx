@@ -30,12 +30,14 @@ export default function SmartAccountCard({
   const [copied, setCopied] = useState(false)
   const { activeChainId } = useSnapshot(SettingsStore.state)
   const chain = allowedChains.find((c) => c.id.toString() === chainId.split(':')[1]) as Chain
+
   const {
     deploy,
     isDeployed,
     address: smartAccountAddress,
     loading,
     sendTestTransaction,
+    sendWithUSDCPaymaster,
   } = useSmartAccount(eip155Wallets[address].getPrivateKey() as `0x${string}`, chain)
 
   function onCopy() {
@@ -111,14 +113,24 @@ export default function SmartAccountCard({
         </>
       ) : null}
       {isDeployed && smartAccountAddress ? (
-        <Button
+        <>
+          <Button
           size="md"
           css={{ marginTop: 20, width: '100%' }}
           onClick={sendTestTransaction}
           disabled={!isActiveChain || loading}
-        >
-          {loading ? <Loading size="sm" /> : 'Send Test TX'}
-        </Button>
+          >
+            {loading ? <Loading size="sm" /> : 'Send Test TX'}
+          </Button>
+          <Button
+                size="md"
+                css={{ marginTop: 20, width: '100%' }}
+                onClick={sendWithUSDCPaymaster}
+                disabled={!isActiveChain || loading}
+              >
+                {loading ? <Loading size="sm" /> : 'Send Test TX (USDC paymaster)'}
+              </Button>
+        </>
       ) : (
         <>
           <Button
