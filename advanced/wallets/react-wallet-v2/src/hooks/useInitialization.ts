@@ -17,7 +17,9 @@ export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
   const prevRelayerURLValue = useRef<string>('')
 
-  const { relayerRegionURL, smartAccountEnabled, kernelSmartAccountEnabled } = useSnapshot(SettingsStore.state)
+  const { relayerRegionURL, smartAccountEnabled, kernelSmartAccountEnabled } = useSnapshot(
+    SettingsStore.state
+  )
 
   const onInitialize = useCallback(async () => {
     try {
@@ -30,11 +32,12 @@ export default function useInitialization() {
       const { tronAddresses } = await createOrRestoreTronWallet()
       const { tezosAddresses } = await createOrRestoreTezosWallet()
       const { kadenaAddresses } = await createOrRestoreKadenaWallet()
-      
 
-      if(smartAccountEnabled){
-        if(kernelSmartAccountEnabled){
-          const {kernelSmartAccountAddress} = await createOrRestoreKernelSmartAccount(eip155Wallets[eip155Addresses[0]].getPrivateKey())
+      if (smartAccountEnabled) {
+        if (kernelSmartAccountEnabled) {
+          const { kernelSmartAccountAddress } = await createOrRestoreKernelSmartAccount(
+            eip155Wallets[eip155Addresses[0]].getPrivateKey()
+          )
           SettingsStore.setKernelSmartAccountAddress(kernelSmartAccountAddress)
         }
       }
@@ -51,7 +54,7 @@ export default function useInitialization() {
       await createWeb3Wallet(relayerRegionURL)
       setInitialized(true)
     } catch (err: unknown) {
-      console.error('Initialization failed',err)
+      console.error('Initialization failed', err)
       alert(err)
     }
   }, [relayerRegionURL, smartAccountEnabled, kernelSmartAccountEnabled])

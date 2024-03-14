@@ -1,19 +1,48 @@
-import { BundlerActions, BundlerClient, bundlerActions, createSmartAccountClient, getAccountNonce } from 'permissionless'
+import {
+  BundlerActions,
+  BundlerClient,
+  bundlerActions,
+  createSmartAccountClient,
+  getAccountNonce
+} from 'permissionless'
 import { privateKeyToSafeSmartAccount } from 'permissionless/accounts'
 import * as chains from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
-import { createWalletClient, formatEther, createPublicClient, http, Address, Hex, PublicClient, createClient, WalletClient } from 'viem'
-import { PimlicoPaymasterClient, createPimlicoPaymasterClient } from 'permissionless/clients/pimlico'
+import {
+  createWalletClient,
+  formatEther,
+  createPublicClient,
+  http,
+  Address,
+  Hex,
+  PublicClient,
+  createClient,
+  WalletClient
+} from 'viem'
+import {
+  PimlicoPaymasterClient,
+  createPimlicoPaymasterClient
+} from 'permissionless/clients/pimlico'
 import { UserOperation } from 'permissionless/types'
 import { providers } from 'ethers'
 import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/actions/pimlico'
-import { Chain, ENTRYPOINT_ADDRESSES, PAYMASTER_ADDRESSES, USDC_ADDRESSES, VITALIK_ADDRESS, approveUSDCSpendCallData, bundlerUrl, paymasterUrl, publicRPCUrl } from '@/utils/SmartAccountUtils'
+import {
+  Chain,
+  ENTRYPOINT_ADDRESSES,
+  PAYMASTER_ADDRESSES,
+  USDC_ADDRESSES,
+  VITALIK_ADDRESS,
+  approveUSDCSpendCallData,
+  bundlerUrl,
+  paymasterUrl,
+  publicRPCUrl
+} from '@/utils/SmartAccountUtils'
 
 type SmartAccountLibOptions = {
   privateKey: `0x${string}`
   chain: Chain
   sponsored?: boolean
-};
+}
 
 // -- Helpers -----------------------------------------------------------------
 const pimlicoApiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
@@ -22,17 +51,16 @@ const projectId = process.env.NEXT_PUBLIC_PROJECT_ID
 // -- Sdk ---------------------------------------------------------------------
 export class SmartAccountLib {
   public chain: Chain
-  public isDeployed: boolean = false;
-  public address?: `0x${string}`;
-  public sponsored: boolean = true;
-  
+  public isDeployed: boolean = false
+  public address?: `0x${string}`
+  public sponsored: boolean = true
+
   private publicClient: PublicClient
   private paymasterClient: PimlicoPaymasterClient
   private bundlerClient: BundlerClient & BundlerActions & PimlicoBundlerActions
   private signerClient: WalletClient
 
-  #signerPrivateKey: `0x${string}`;
-
+  #signerPrivateKey: `0x${string}`
 
   public constructor({ privateKey, chain, sponsored = true }: SmartAccountLibOptions) {
     if (!pimlicoApiKey) {
@@ -62,9 +90,7 @@ export class SmartAccountLib {
       chain: this.chain,
       transport: http(publicRPCUrl({ chain: this.chain }))
     })
-
   }
-
 
   // -- Private -----------------------------------------------------------------
   private getSmartAccountClient = async (
@@ -80,7 +106,9 @@ export class SmartAccountLib {
       transport: http(bundlerUrl({ chain: this.chain })),
       sponsorUserOperation: sponsorUserOperation
         ? sponsorUserOperation
-        : this.sponsored ? this.paymasterClient.sponsorUserOperation : undefined
+        : this.sponsored
+        ? this.paymasterClient.sponsorUserOperation
+        : undefined
     }).extend(pimlicoBundlerActions)
   }
 
@@ -116,27 +144,25 @@ export class SmartAccountLib {
       console.log(`Prefunding Success`)
 
       const newSmartAccountBalance = await this.publicClient.getBalance({ address })
-      console.log(
-        `Smart Account Balance: ${formatEther(newSmartAccountBalance)} ETH`
-      )
+      console.log(`Smart Account Balance: ${formatEther(newSmartAccountBalance)} ETH`)
     }
   }
 
   private getSmartAccountUSDCBalance = async () => {
     const params = {
       abi: [
-          {
-            inputs: [{ name: "_owner", type: "address" }],
-            name: "balanceOf",
-            outputs: [{ name: "balance", type: "uint256" }],
-            type: "function",
-          }
+        {
+          inputs: [{ name: '_owner', type: 'address' }],
+          name: 'balanceOf',
+          outputs: [{ name: 'balance', type: 'uint256' }],
+          type: 'function'
+        }
       ],
       address: USDC_ADDRESSES[this.chain.name] as Hex,
-      functionName: "balanceOf",
+      functionName: 'balanceOf',
       args: [this.address!]
     }
-    const usdcBalance = await this.publicClient.readContract(params) as bigint
+    const usdcBalance = (await this.publicClient.readContract(params)) as bigint
     return usdcBalance
   }
 
@@ -184,8 +210,8 @@ export class SmartAccountLib {
       ]
     })
     this.address = account.address
-    
-    return account;
+
+    return account
   }
 
   static isSmartAccount = async (address: Address, chain: Chain) => {
@@ -199,12 +225,16 @@ export class SmartAccountLib {
     const bytecode = await client.getBytecode({ address })
     return Boolean(bytecode)
   }
-  
+
   public sendTransaction = async ({
     to,
     value,
     data
-  }: { to: Address; value: bigint; data: Hex }) => {
+  }: {
+    to: Address
+    value: bigint
+    data: Hex
+  }) => {
     console.log(`Sending Transaction to ${to} with value ${value.toString()} and data ${data}`)
     const smartAccountClient = await this.getSmartAccountClient()
     const gasPrices = await smartAccountClient.getUserOperationGasPrice()
@@ -223,7 +253,13 @@ export class SmartAccountLib {
   }
   public _signTypedData = async (domain: any, types: any, data: any, primaryType: any) => {
     const client = await this.getSmartAccountClient()
-    return client.signTypedData({ account: client.account, domain, types, primaryType, message: data })
+    return client.signTypedData({
+      account: client.account,
+      domain,
+      types,
+      primaryType,
+      message: data
+    })
   }
 
   public connect = async (_provider: providers.JsonRpcProvider) => {
@@ -239,16 +275,20 @@ export class SmartAccountLib {
     to,
     value,
     data
-  }: { to: Address; value: bigint; data: Hex }) => {
+  }: {
+    to: Address
+    value: bigint
+    data: Hex
+  }) => {
     // 1. Check USDC Balance on smart account
     const usdcBalance = await this.getSmartAccountUSDCBalance()
 
     if (usdcBalance < 1_000_000n) {
-        throw new Error(
-            `insufficient USDC balance for counterfactual wallet address ${this.address}: ${
-                Number(usdcBalance) / 1000000
-            } USDC, required at least 1 USDC`
-        )
+      throw new Error(
+        `insufficient USDC balance for counterfactual wallet address ${this.address}: ${
+          Number(usdcBalance) / 1000000
+        } USDC, required at least 1 USDC`
+      )
     }
 
     const smartAccountClient = await this.getSmartAccountClient(this.sponsorUserOperation)
@@ -263,35 +303,36 @@ export class SmartAccountLib {
     })
   }
 
-
   public checkIfSmartAccountDeployed = async () => {
-    const smartAccountClient = await this.getSmartAccountClient();
+    const smartAccountClient = await this.getSmartAccountClient()
     console.log('Checking if deployed', smartAccountClient.account.address, this.chain.name)
-    
-    const bytecode = await this.publicClient.getBytecode({ address: smartAccountClient.account.address })
+
+    const bytecode = await this.publicClient.getBytecode({
+      address: smartAccountClient.account.address
+    })
     this.isDeployed = Boolean(bytecode)
-    
+
     console.log(`Smart Account Deployed: ${this.isDeployed}`)
-  
-    return this.isDeployed;
-}
+
+    return this.isDeployed
+  }
 
   public deploySmartAccount = async () => {
-    const smartAccountClient = await this.getSmartAccountClient();
+    const smartAccountClient = await this.getSmartAccountClient()
     const isDeployed = await this.checkIfSmartAccountDeployed()
     if (!isDeployed) {
-    // If not deployed, prefund smart account from signer
-        // Step 3: Send prefund transaction from signer to smart account if empty
-        await this.prefundSmartAccount(smartAccountClient.account.address)
+      // If not deployed, prefund smart account from signer
+      // Step 3: Send prefund transaction from signer to smart account if empty
+      await this.prefundSmartAccount(smartAccountClient.account.address)
 
-        // Step 4: Create account by sending test tx
-        await this.sendTransaction({
-          to: VITALIK_ADDRESS,
-          value: 0n,
-          data: '0x'
-        })
-        await this.checkIfSmartAccountDeployed()
-        console.log(`Account Created`)
+      // Step 4: Create account by sending test tx
+      await this.sendTransaction({
+        to: VITALIK_ADDRESS,
+        value: 0n,
+        data: '0x'
+      })
+      await this.checkIfSmartAccountDeployed()
+      console.log(`Account Created`)
     }
   }
 }

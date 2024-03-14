@@ -30,7 +30,7 @@ export default function RequestModal({
   rejectLoader,
   intention,
   infoBoxCondition,
-  infoBoxText,
+  infoBoxText
 }: IProps) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const isScam = currentRequestVerifyContext?.verified.isScam

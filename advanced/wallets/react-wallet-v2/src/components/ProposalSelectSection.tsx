@@ -20,7 +20,7 @@ export default function ProposalSelectSection({
   selectedAddresses,
   chain,
   onSelect,
-  isRequired,
+  isRequired
 }: IProps) {
   return (
     <Row>
@@ -32,7 +32,7 @@ export default function ProposalSelectSection({
             address={address}
             index={index}
             onSelect={() => onSelect(chain, address)}
-            selected={selectedAddresses?.includes(address) ?? false}          
+            selected={selectedAddresses?.includes(address) ?? false}
             isRequired={isRequired}
           />
         ))}

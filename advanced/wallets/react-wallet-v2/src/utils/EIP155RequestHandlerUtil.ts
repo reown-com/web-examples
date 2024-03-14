@@ -16,7 +16,6 @@ import { KernelSmartAccountLib } from '@/lib/KernelSmartAccountLib'
 import SettingsStore from '@/store/SettingsStore'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
-
 const getWallet = async (params: any) => {
   const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
   if (eoaWallet) {
@@ -27,27 +26,26 @@ const getWallet = async (params: any) => {
    * Smart accounts
    */
   const privateKey = Object.values(eip155Wallets)[0].getPrivateKey()
-  const typedChains: Record<number, Chain> = chains;
+  const typedChains: Record<number, Chain> = chains
   const chainId = params?.chainId?.split(':')[1]
-  console.log('Chain ID',{chainId});
-  
-  if(isAllowedKernelChain(chainId)){
+  console.log('Chain ID', { chainId })
+
+  if (isAllowedKernelChain(chainId)) {
     const lib = new KernelSmartAccountLib({
       privateKey,
-      chain: typedChains[chainId],
+      chain: typedChains[chainId]
     })
-    await lib.init() 
+    await lib.init()
     return lib
   }
   throw new Error('Cannot find wallet for requested address')
 }
 
-
 export async function approveEIP155Request(requestEvent: RequestEventArgs) {
   const { params, id } = requestEvent
   const { chainId, request } = params
 
-  console.log(requestEvent, chainId, "tests")
+  console.log(requestEvent, chainId, 'tests')
 
   SettingsStore.setActiveChainId(chainId)
 
@@ -70,12 +68,16 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4:
       try {
-        
-        const { domain, types, message: data, primaryType } = getSignTypedDataParamsData(request.params)
-        
+        const {
+          domain,
+          types,
+          message: data,
+          primaryType
+        } = getSignTypedDataParamsData(request.params)
+
         // intercept for smart account getPermissions mock
-        if(domain.name === 'eth_getPermissions_v1' && wallet instanceof KernelSmartAccountLib){
-          const sessionKey = await wallet.issueSessionKey(data.targetAddress,data.permissions)
+        if (domain.name === 'eth_getPermissions_v1' && wallet instanceof KernelSmartAccountLib) {
+          const sessionKey = await wallet.issueSessionKey(data.targetAddress, data.permissions)
           return formatJsonRpcResult(id, sessionKey)
         }
 

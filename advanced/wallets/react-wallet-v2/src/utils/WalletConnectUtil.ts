@@ -44,7 +44,9 @@ export async function updateSignClientChainId(chainId: string, address: string) 
           ],
           accounts: [
             ...new Set(
-              [`${chainId}:${address}`].concat(Array.from(session?.namespaces?.[namespace]?.accounts || []))
+              [`${chainId}:${address}`].concat(
+                Array.from(session?.namespaces?.[namespace]?.accounts || [])
+              )
             )
           ]
         }

@@ -21,7 +21,7 @@ export default function ModalFooter({
   onReject,
   rejectLoader,
   infoBoxCondition,
-  infoBoxText,
+  infoBoxText
 }: Props) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const validation = currentRequestVerifyContext?.verified.validation
@@ -44,7 +44,7 @@ export default function ModalFooter({
           <span>{infoBoxText || ''}</span>
         </Row>
       )}
-      <Row justify="space-between" align='center'>
+      <Row justify="space-between" align="center">
         <Button
           auto
           flat
