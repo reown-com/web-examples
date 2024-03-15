@@ -32,8 +32,8 @@ import RequestModal from './RequestModal'
 import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
-import { allowedChains } from '@/utils/KernelSmartAccountUtils'
 import usePriorityAccounts from '@/hooks/usePriorityAccounts'
+import useSmartAccounts from '@/hooks/useSmartAccounts'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -44,15 +44,14 @@ const StyledSpan = styled('span', {
 } as any)
 
 export default function SessionProposalModal() {
-  const { smartAccountEnabled, kernelSmartAccountAddress, kernelSmartAccountEnabled } = useSnapshot(
-    SettingsStore.state
-  )
+  const { smartAccountEnabled } = useSnapshot(SettingsStore.state)
   // Get proposal data and wallet address from store
   const data = useSnapshot(ModalStore.state)
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  console.log('proposal', data.data?.proposal)
+  const { getAvailableSmartAccounts } = useSmartAccounts()
+
   const supportedNamespaces = useMemo(() => {
     // eip155
     const eip155Chains = Object.keys(EIP155_CHAINS)
@@ -185,11 +184,6 @@ export default function SessionProposalModal() {
     [requestedChains]
   )
 
-  const smartAccountChains = useMemo(
-    () => supportedChains.filter(chain => (chain as any)?.smartAccountEnabled),
-    [supportedChains]
-  )
-
   // get required chains that are not supported by the wallet
   const notSupportedChains = useMemo(() => {
     if (!proposal) return []
@@ -238,6 +232,7 @@ export default function SessionProposalModal() {
   })
 
   const reorderedEip155Accounts = usePriorityAccounts({ namespaces })
+  console.log('Reordrered accounts', { reorderedEip155Accounts })
 
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
@@ -331,15 +326,14 @@ export default function SessionProposalModal() {
             })}
 
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
-          {smartAccountChains.length &&
-            smartAccountEnabled &&
-            smartAccountChains.map((chain, i) => {
-              if (!chain) {
+          {smartAccountEnabled &&
+            getAvailableSmartAccounts().map((account, i) => {
+              if (!account) {
                 return <></>
               }
               return (
                 <Row key={i}>
-                  <ChainSmartAddressMini chain={chain} />
+                  <ChainSmartAddressMini account={account} />
                 </Row>
               )
             })}
@@ -363,15 +357,14 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>
-          {smartAccountChains.length &&
-            smartAccountEnabled &&
-            smartAccountChains.map((chain, i) => {
+          {smartAccountEnabled &&
+            getAvailableSmartAccounts().map(({ chain }, i) => {
               if (!chain) {
                 return <></>
               }
               return (
                 <Row key={i}>
-                  <ChainDataMini key={i} chainId={`${chain?.namespace}:${chain?.chainId}`} />
+                  <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
                 </Row>
               )
             })}

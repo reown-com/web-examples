@@ -1,28 +1,21 @@
 import ChainAddressMini from './ChainAddressMini'
 import { Row, Spinner } from '@nextui-org/react'
-import SettingsStore from '@/store/SettingsStore'
-import { useSnapshot } from 'valtio'
 
-interface Props {
-  chain:
-    | {
-        chainId: string
-        name: string
-        logo: string
-        rgb: string
-        namespace: string
-      }
-    | undefined
+type SmartAccount = {
+  address: string
+  type: string
 }
 
-export default function ChainSmartAddressMini({ chain }: Props) {
-  const { kernelSmartAccountAddress } = useSnapshot(SettingsStore.state)
+interface Props {
+  account: SmartAccount
+}
 
-  if (!kernelSmartAccountAddress) return <Spinner />
+export default function ChainSmartAddressMini({ account }: Props) {
+  if (!account) return <Spinner />
   return (
     <Row>
-      <Row>(Kernel)</Row>
-      <ChainAddressMini address={kernelSmartAccountAddress} />
+      <Row>({account.type})</Row>
+      <ChainAddressMini address={account.address} />
     </Row>
   )
 }

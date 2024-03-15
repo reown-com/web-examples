@@ -14,7 +14,7 @@ import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
-import { isAllowedKernelChain } from '@/utils/KernelSmartAccountUtils'
+import { isAllowedKernelChain, isAllowedSafeChain } from '@/utils/SmartAccountUtil'
 
 export default function HomePage() {
   const {
@@ -29,6 +29,7 @@ export default function HomePage() {
     tezosAddress,
     kadenaAddress,
     kernelSmartAccountAddress,
+    safeSmartAccountAddress,
     smartAccountEnabled
   } = useSnapshot(SettingsStore.state)
 
@@ -146,17 +147,33 @@ export default function HomePage() {
             />
           ))}
           {Object.entries(EIP155_TEST_CHAINS).map(([caip10, { name, logo, rgb, chainId }]) => {
-            if (smartAccountEnabled && isAllowedKernelChain(chainId)) {
+            if (smartAccountEnabled) {
               return (
-                <AccountCard
-                  key={name}
-                  name={`Kernel Smart Account \n ${name}`}
-                  logo={logo}
-                  rgb={rgb}
-                  address={kernelSmartAccountAddress}
-                  chainId={caip10.toString()}
-                  data-testid={'chain-card-' + caip10.toString()}
-                />
+                <div key={`${name}-smart`} style={{ marginBottom: 10 }}>
+                  {isAllowedKernelChain(chainId) ? (
+                    <AccountCard
+                      key={`${name}-kernel`}
+                      name={`Kernel Smart Account \n ${name}`}
+                      logo={logo}
+                      rgb={rgb}
+                      address={kernelSmartAccountAddress}
+                      chainId={caip10.toString()}
+                      data-testid={`chain-card-${caip10.toString()}-kernel`}
+                    />
+                  ) : null}
+
+                  {isAllowedSafeChain(chainId) ? (
+                    <AccountCard
+                      key={`${name}-safe`}
+                      name={`Safe Smart Account \n ${name}`}
+                      logo={logo}
+                      rgb={rgb}
+                      address={safeSmartAccountAddress}
+                      chainId={caip10.toString()}
+                      data-testid={`chain-card-${caip10.toString()}-safe`}
+                    />
+                  ) : null}
+                </div>
               )
             }
           })}

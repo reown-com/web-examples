@@ -9,11 +9,9 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
-import { chains } from './SmartAccountUtils'
-import { Chain } from './SmartAccountUtils'
-import { isAllowedKernelChain } from './KernelSmartAccountUtils'
-import { KernelSmartAccountLib } from '@/lib/KernelSmartAccountLib'
+import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import SettingsStore from '@/store/SettingsStore'
+import { smartAccountWallets } from './SmartAccountUtil'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 const getWallet = async (params: any) => {
@@ -25,19 +23,36 @@ const getWallet = async (params: any) => {
   /**
    * Smart accounts
    */
-  const privateKey = Object.values(eip155Wallets)[0].getPrivateKey()
-  const typedChains: Record<number, Chain> = chains
   const chainId = params?.chainId?.split(':')[1]
   console.log('Chain ID', { chainId })
+  console.log('PARAMS', { params })
 
-  if (isAllowedKernelChain(chainId)) {
-    const lib = new KernelSmartAccountLib({
-      privateKey,
-      chain: typedChains[chainId]
+  const address = getWalletAddressFromParams(
+    Object.keys(smartAccountWallets)
+      .filter(key => {
+        const parts = key.split(':')
+        return parts[0] === chainId
+      })
+      .map(key => {
+        return key.split(':')[1]
+      }),
+    params
+  )
+  if (!address) {
+    console.log('Library not initialized for requested address', {
+      address,
+      values: Object.keys(smartAccountWallets)
     })
-    await lib.init()
+    throw new Error('Library not initialized for requested address')
+  }
+  const lib = smartAccountWallets[`${chainId}:${address}`]
+  if (lib) {
     return lib
   }
+  console.log('Library not found', {
+    target: `${chainId}:address`,
+    values: Object.keys(smartAccountWallets)
+  })
   throw new Error('Cannot find wallet for requested address')
 }
 

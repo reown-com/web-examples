@@ -1,16 +1,6 @@
-import { Chain } from '@/utils/SmartAccountUtils'
-import {
-  Address,
-  createPublicClient,
-  Hex,
-  http,
-  parseEther,
-  PrivateKeyAccount,
-  PublicClient,
-  zeroAddress
-} from 'viem'
+import { Address, createPublicClient, Hex, http, PrivateKeyAccount, PublicClient } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { EIP155Wallet } from './EIP155Lib'
+import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { KernelValidator } from '@zerodev/ecdsa-validator'
 import {
@@ -27,6 +17,7 @@ import {
   getUpdateConfigCall
 } from '@zerodev/weighted-ecdsa-validator'
 import { BundlerActions, bundlerActions, BundlerClient } from 'permissionless'
+import { Chain } from '@/consts/smartAccounts'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -43,8 +34,10 @@ export class KernelSmartAccountLib implements EIP155Wallet {
   private client: KernelAccountClient | undefined
   private publicClient: (PublicClient & BundlerClient & BundlerActions) | undefined
   private validator: KernelValidator | undefined
+  public initialized = false
 
   #signerPrivateKey: string
+  public type: string = 'Kernel'
 
   public constructor({ privateKey, chain, sponsored = false }: SmartAccountLibOptions) {
     this.chain = chain
@@ -53,8 +46,6 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     this.signer = privateKeyToAccount(privateKey as Hex)
   }
   async init() {
-    console.log('Initializing Smart Account')
-
     const projectId = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID
     if (!projectId) {
       throw new Error('ZeroDev project id expected')
@@ -93,7 +84,12 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     }).extend(bundlerActions)
     //@ts-ignore
     this.client = client
-    console.log('Smart account initialized', { address: account.address, chain: client.chain.name })
+    console.log('Smart account initialized', {
+      address: account.address,
+      chain: client.chain.name,
+      type: this.type
+    })
+    this.initialized = true
   }
 
   getMnemonic(): string {

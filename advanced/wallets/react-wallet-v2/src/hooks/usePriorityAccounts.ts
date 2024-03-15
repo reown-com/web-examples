@@ -1,22 +1,31 @@
 import SettingsStore from '@/store/SettingsStore'
+import {
+  kernelAllowedChains,
+  safeAllowedChains,
+  supportedAddressPriority
+} from '@/utils/SmartAccountUtil'
 import { SessionTypes } from '@walletconnect/types'
 import { useSnapshot } from 'valtio'
-import { allowedChains, kernelAddressPriority } from '@/utils/KernelSmartAccountUtils'
+
 interface IProps {
   namespaces: SessionTypes.Namespaces
 }
 
 export default function usePriorityAccounts({ namespaces }: IProps) {
-  const { smartAccountEnabled, kernelSmartAccountAddress, kernelSmartAccountEnabled } = useSnapshot(
-    SettingsStore.state
-  )
+  const {
+    smartAccountEnabled,
+    kernelSmartAccountAddress,
+    kernelSmartAccountEnabled,
+    safeSmartAccountAddress,
+    safeSmartAccountEnabled
+  } = useSnapshot(SettingsStore.state)
 
   if (smartAccountEnabled) {
-    /**
-     * If our kernel account supports any of the requested chainIds, put it in the first spot
-     */
+    if (safeSmartAccountEnabled) {
+      return supportedAddressPriority(namespaces, safeSmartAccountAddress, safeAllowedChains)
+    }
     if (kernelSmartAccountEnabled) {
-      return kernelAddressPriority(namespaces, kernelSmartAccountAddress)
+      return supportedAddressPriority(namespaces, kernelSmartAccountAddress, kernelAllowedChains)
     }
   }
   return []
