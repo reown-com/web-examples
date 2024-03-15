@@ -2,16 +2,13 @@ import {
   Hex,
   PrivateKeyAccount,
   PublicClient,
-  WalletClient,
   createPublicClient,
   http,
-  createWalletClient,
   createClient,
   HttpTransport,
   Address
 } from 'viem'
 import { EIP155Wallet } from '../EIP155Lib'
-import { TransactionRequest } from '@ethersproject/abstract-provider'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { privateKeyToAccount } from 'viem/accounts'
 import {
@@ -27,14 +24,8 @@ import {
   createSmartAccountClient
 } from 'permissionless'
 import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/actions/pimlico'
-import {
-  Chain,
-  ENTRYPOINT_ADDRESSES,
-  bundlerUrl,
-  paymasterUrl,
-  publicRPCUrl
-} from '@/utils/SmartAccountUtils'
-import { signerToSafeSmartAccount } from 'permissionless/accounts'
+import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl } from '@/utils/SmartAccountUtil'
+import { Chain } from '@/consts/smartAccounts'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -61,7 +52,17 @@ export abstract class SmartAccountLib implements EIP155Wallet {
   protected bundlerUrl: HttpTransport
   protected paymasterUrl: HttpTransport
 
+  // Utility
+  public type: string
+  public initialized = false
+
   public constructor({ privateKey, chain, sponsored = false }: SmartAccountLibOptions) {
+    const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
+    const paymasterUrl = ({ chain }: UrlConfig) =>
+      `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
+    const bundlerUrl = ({ chain }: UrlConfig) =>
+      `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
+
     this.chain = chain
     this.sponsored = sponsored
     this.#signerPrivateKey = privateKey
@@ -84,6 +85,9 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     })
       .extend(bundlerActions)
       .extend(pimlicoBundlerActions)
+
+    const name = this.constructor.name.replace('SmartAccountLib', '')
+    this.type = name && name.length > 0 ? name : 'Unknown'
   }
 
   abstract getClientConfig(): Promise<SmartAccountClientConfig>
@@ -91,6 +95,12 @@ export abstract class SmartAccountLib implements EIP155Wallet {
   async init() {
     const config = await this.getClientConfig()
     this.client = createSmartAccountClient(config).extend(pimlicoBundlerActions)
+    console.log('Smart account initialized', {
+      address: this.client.account?.address,
+      chain: this.chain.name,
+      type: this.type
+    })
+    this.initialized = true
   }
 
   getMnemonic(): string {
@@ -121,7 +131,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     if (!this.client) {
       throw new Error('Client not initialized')
     }
-    console.log('Signing typed data with Kernel Smart Account')
+    console.log('Signing typed data with Smart Account', { type: this.type, domain, types, data })
     const primaryType = _primaryType || ''
     const signature = await this.client.account?.signTypedData({
       domain,
@@ -145,7 +155,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     return signature || ''
   }
   async sendTransaction({ to, value, data }: { to: Address; value: bigint; data: Hex }) {
-    console.log('Sending transaction from smart account', { to, value, data })
+    console.log('Sending transaction from smart account', { type: this.type, to, value, data })
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }

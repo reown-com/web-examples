@@ -1,7 +1,7 @@
 import { SmartAccountClientConfig } from 'permissionless'
 import { SmartAccountLib } from './SmartAccountLib'
 import { signerToSafeSmartAccount } from 'permissionless/accounts'
-import { ENTRYPOINT_ADDRESSES } from '@/utils/SmartAccountUtils'
+import { ENTRYPOINT_ADDRESSES } from '@/utils/SmartAccountUtil'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig> {
@@ -15,6 +15,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       //@ts-ignore
       entryPoint: ENTRYPOINT_ADDRESSES[this.chain.name],
       chain: this.chain,
+      transport: this.bundlerUrl,
       bundlerTransport: this.bundlerUrl,
       middleware: {
         gasPrice: async () => (await this.bundlerClient.getUserOperationGasPrice()).fast, // use pimlico bundler to get gas prices

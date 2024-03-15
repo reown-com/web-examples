@@ -25,7 +25,8 @@ export default function SettingsPage() {
     tezosAddress,
     kadenaAddress,
     smartAccountEnabled,
-    kernelSmartAccountEnabled
+    kernelSmartAccountEnabled,
+    safeSmartAccountEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -85,6 +86,18 @@ export default function SettingsPage() {
                   data-testid="settings-toggle-smart-account-sponsorship"
                 />
                 <Text>{kernelSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
+              </Row>
+
+              <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
+                Safe Smart Account
+              </Text>
+              <Row justify="space-between" align="center">
+                <Switch
+                  checked={safeSmartAccountEnabled}
+                  onChange={SettingsStore.toggleSafeSmartAccountsEnabled}
+                  data-testid="settings-toggle-smart-account-sponsorship"
+                />
+                <Text>{safeSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
               </Row>
 
               <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
