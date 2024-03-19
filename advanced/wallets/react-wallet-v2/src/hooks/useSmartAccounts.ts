@@ -1,5 +1,6 @@
 import SettingsStore from '@/store/SettingsStore'
 import {
+  createOrRestoreBiconomySmartAccount,
   createOrRestoreKernelSmartAccount,
   createOrRestoreSafeSmartAccount,
   smartAccountWallets
@@ -24,8 +25,8 @@ export default function useSmartAccounts() {
       }
 
       if (biconomySmartAccountEnabled) {
-        const { safeSmartAccountAddress } = await createOrRestoreSafeSmartAccount(privateKey)
-        SettingsStore.setSafeSmartAccountAddress(safeSmartAccountAddress)
+        const { biconomySmartAccountAddress } = await createOrRestoreBiconomySmartAccount(privateKey)
+        SettingsStore.setBiconomySmartAccountAddress(biconomySmartAccountAddress)
       }
     }
   }

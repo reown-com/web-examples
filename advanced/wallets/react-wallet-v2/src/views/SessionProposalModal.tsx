@@ -36,6 +36,7 @@ import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { smartAccountWallets } from '@/utils/SmartAccountUtil'
 import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
+import { getWallet } from '@/utils/EIP155RequestHandlerUtil'
 
 
 const StyledText = styled(Text, {
@@ -251,7 +252,11 @@ export default function SessionProposalModal() {
         if (reorderedEip155Accounts.length > 0) {
           namespaces.eip155.accounts = reorderedEip155Accounts
         }
-        const smartAccount = smartAccountWallets[0] as SmartAccountLib
+
+        console.log('SmartAccountWallets', smartAccountWallets)
+        console.log('namespaces', namespaces)
+        const smartAccount = Object.values(smartAccountWallets).find(acc => acc.type === 'biconomy') as SmartAccountLib
+        console.log('smartAccount', smartAccount)
         const sessionProperties = await smartAccount.getSessionProperties()
         await web3wallet.engine.signClient.approve({
           id: proposal.id,

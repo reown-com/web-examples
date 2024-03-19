@@ -4,6 +4,7 @@ import { signerToBiconomySmartAccount } from 'permissionless/accounts'
 import { ENTRYPOINT_ADDRESSES } from '@/utils/SmartAccountUtil'
 
 export class BiconomySmartAccountLib extends SmartAccountLib {
+  public type = 'biconomy'
   async getClientConfig(): Promise<SmartAccountClientConfig> {
     const biconomyAccount = await signerToBiconomySmartAccount(this.publicClient, {
       entryPoint: ENTRYPOINT_ADDRESSES[this.chain.name],

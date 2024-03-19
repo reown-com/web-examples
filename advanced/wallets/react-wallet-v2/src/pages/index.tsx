@@ -30,6 +30,7 @@ export default function HomePage() {
     kadenaAddress,
     kernelSmartAccountAddress,
     safeSmartAccountAddress,
+    biconomySmartAccountAddress,
     smartAccountEnabled
   } = useSnapshot(SettingsStore.state)
 
@@ -175,13 +176,13 @@ export default function HomePage() {
                   ) : null}
                   {isAllowedBiconomnyChain(chainId) ? (
                     <AccountCard
-                      key={`${name}-safe`}
-                      name={`Safe Smart Account \n ${name}`}
+                      key={`${name}-biconomy`}
+                      name={`Biconomy Smart Account \n ${name}`}
                       logo={logo}
                       rgb={rgb}
-                      address={safeSmartAccountAddress}
+                      address={biconomySmartAccountAddress}
                       chainId={caip10.toString()}
-                      data-testid={`chain-card-${caip10.toString()}-safe`}
+                      data-testid={`chain-card-${caip10.toString()}-biconomy`}
                     />
                   ) : null}
                 </div>

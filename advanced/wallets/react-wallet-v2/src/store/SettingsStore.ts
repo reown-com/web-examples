@@ -24,6 +24,7 @@ interface State {
   kadenaAddress: string
   kernelSmartAccountAddress: string
   safeSmartAccountAddress: string
+  biconomySmartAccountAddress: string
   relayerRegionURL: string
   activeChainId: string
   currentRequestVerifyContext?: Verify.Context
@@ -56,6 +57,7 @@ const state = proxy<State>({
   kadenaAddress: '',
   kernelSmartAccountAddress: '',
   safeSmartAccountAddress: '',
+  biconomySmartAccountAddress: '',
   relayerRegionURL: '',
   sessions: [],
   smartAccountSponsorshipEnabled: false,
@@ -131,6 +133,10 @@ const SettingsStore = {
     state.safeSmartAccountAddress = smartAccountAddress
   },
 
+  setBiconomySmartAccountAddress(smartAccountAddress: string) {
+    state.biconomySmartAccountAddress = smartAccountAddress
+  },
+
   setActiveChainId(value: string) {
     state.activeChainId = value
   },
@@ -182,6 +188,15 @@ const SettingsStore = {
       localStorage.setItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
       localStorage.removeItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY)
+    }
+  },
+
+  toggleBiconomySmartAccountsEnabled() {
+    state.biconomySmartAccountEnabled = !state.biconomySmartAccountEnabled
+    if (state.biconomySmartAccountEnabled) {
+      localStorage.setItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY)
     }
   }
 }

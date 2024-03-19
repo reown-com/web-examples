@@ -99,10 +99,13 @@ export default function SettingsPage() {
                     />
                     <Text>{safeSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>
+                  <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
+                    Biconomy Smart Account
+                  </Text>
                   <Row justify="space-between" align="center">
                     <Switch
                       checked={biconomySmartAccountEnabled}
-                      onChange={SettingsStore.toggleSmartAccountSponsorship}
+                      onChange={SettingsStore.toggleBiconomySmartAccountsEnabled}
                       data-testid="settings-toggle-smart-account-sponsorship"
                     />
                     <Text>{biconomySmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>

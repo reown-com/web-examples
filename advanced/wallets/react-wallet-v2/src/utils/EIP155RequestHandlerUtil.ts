@@ -14,7 +14,7 @@ import SettingsStore from '@/store/SettingsStore'
 import { smartAccountWallets } from './SmartAccountUtil'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
-const getWallet = async (params: any) => {
+export const getWallet = async (params: any) => {
   const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
   if (eoaWallet) {
     return eoaWallet
