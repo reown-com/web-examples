@@ -14,7 +14,6 @@ import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
-import { isAllowedKernelChain, isAllowedSafeChain } from '@/utils/SmartAccountUtil'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 
 export default function HomePage() {
