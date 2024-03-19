@@ -67,7 +67,7 @@ const state = proxy<State>({
       : false,
   safeSmartAccountEnabled:
     typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY))
+      ? Boolean(localStorage.getItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY))
       : false
 })
 
