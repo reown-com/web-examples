@@ -1,5 +1,6 @@
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
+import { BiconomySmartAccountLib } from '@/lib/smart-accounts/BiconomySmartAccountLib'
 import { goerli, polygonMumbai, sepolia } from 'viem/chains'
 
 // Types
@@ -13,5 +14,6 @@ export type Chain = typeof allowedChains[number]
 
 export const availableSmartAccounts = {
   safe: SafeSmartAccountLib,
-  kernel: KernelSmartAccountLib
+  kernel: KernelSmartAccountLib,
+  biconomy: BiconomySmartAccountLib
 }

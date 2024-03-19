@@ -5,6 +5,7 @@ const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
 const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
 const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
+const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
 
 /**
  * Types
@@ -31,6 +32,7 @@ interface State {
   smartAccountEnabled: boolean
   kernelSmartAccountEnabled: boolean
   safeSmartAccountEnabled: boolean
+  biconomySmartAccountEnabled: boolean
 }
 
 /**
@@ -68,6 +70,10 @@ const state = proxy<State>({
   safeSmartAccountEnabled:
     typeof localStorage !== 'undefined'
       ? Boolean(localStorage.getItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY))
+      : false,
+    biconomySmartAccountEnabled: 
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY))
       : false
 })
 

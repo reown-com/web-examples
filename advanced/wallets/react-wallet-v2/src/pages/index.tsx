@@ -14,7 +14,7 @@ import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
-import { isAllowedKernelChain, isAllowedSafeChain } from '@/utils/SmartAccountUtil'
+import { isAllowedBiconomnyChain, isAllowedKernelChain, isAllowedSafeChain } from '@/utils/SmartAccountUtil'
 
 export default function HomePage() {
   const {
@@ -163,6 +163,17 @@ export default function HomePage() {
                   ) : null}
 
                   {isAllowedSafeChain(chainId) ? (
+                    <AccountCard
+                      key={`${name}-safe`}
+                      name={`Safe Smart Account \n ${name}`}
+                      logo={logo}
+                      rgb={rgb}
+                      address={safeSmartAccountAddress}
+                      chainId={caip10.toString()}
+                      data-testid={`chain-card-${caip10.toString()}-safe`}
+                    />
+                  ) : null}
+                  {isAllowedBiconomnyChain(chainId) ? (
                     <AccountCard
                       key={`${name}-safe`}
                       name={`Safe Smart Account \n ${name}`}

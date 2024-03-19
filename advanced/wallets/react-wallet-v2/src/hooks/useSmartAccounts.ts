@@ -8,7 +8,7 @@ import {
 import { useSnapshot } from 'valtio'
 
 export default function useSmartAccounts() {
-  const { smartAccountEnabled, kernelSmartAccountEnabled, safeSmartAccountEnabled } = useSnapshot(
+  const { smartAccountEnabled, kernelSmartAccountEnabled, safeSmartAccountEnabled, biconomySmartAccountEnabled } = useSnapshot(
     SettingsStore.state
   )
 
@@ -19,6 +19,11 @@ export default function useSmartAccounts() {
         SettingsStore.setKernelSmartAccountAddress(kernelSmartAccountAddress)
       }
       if (safeSmartAccountEnabled) {
+        const { safeSmartAccountAddress } = await createOrRestoreSafeSmartAccount(privateKey)
+        SettingsStore.setSafeSmartAccountAddress(safeSmartAccountAddress)
+      }
+
+      if (biconomySmartAccountEnabled) {
         const { safeSmartAccountAddress } = await createOrRestoreSafeSmartAccount(privateKey)
         SettingsStore.setSafeSmartAccountAddress(safeSmartAccountAddress)
       }

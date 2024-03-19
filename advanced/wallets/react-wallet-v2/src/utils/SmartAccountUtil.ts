@@ -81,6 +81,7 @@ export function supportedAddressPriority(
 
 export const kernelAllowedChains = [sepolia]
 export const safeAllowedChains = [sepolia]
+export const biconomyAllowedChains = [sepolia]
 export let smartAccountWallets: Record<string, SmartAccountLib | KernelSmartAccountLib> = {}
 
 export function isAllowedKernelChain(chainId: number): boolean {
@@ -104,7 +105,24 @@ export function isAllowedSafeChain(chainId: number): boolean {
   return safeAllowedChains.some(chain => chain.id == chainId)
 }
 
+export function isAllowedBiconomnyChain(chainId: number): boolean {
+  return safeAllowedChains.some(chain => chain.id == chainId)
+}
+
 export async function createOrRestoreSafeSmartAccount(privateKey: string) {
+  const lib = new SafeSmartAccountLib({ privateKey, chain: sepolia })
+  await lib.init()
+  const address = lib.getAddress()
+  const key = `${sepolia.id}:${address}`
+  if (!smartAccountWallets[key]) {
+    smartAccountWallets[key] = lib
+  }
+  return {
+    safeSmartAccountAddress: address
+  }
+}
+
+export async function createOrRestoreBiconomySmartAccount(privateKey: string) {
   const lib = new SafeSmartAccountLib({ privateKey, chain: sepolia })
   await lib.init()
   const address = lib.getAddress()

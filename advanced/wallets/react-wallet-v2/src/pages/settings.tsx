@@ -26,7 +26,8 @@ export default function SettingsPage() {
     kadenaAddress,
     smartAccountEnabled,
     kernelSmartAccountEnabled,
-    safeSmartAccountEnabled
+    safeSmartAccountEnabled,
+    biconomySmartAccountEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -110,6 +111,14 @@ export default function SettingsPage() {
                   data-testid="settings-toggle-smart-account-sponsorship"
                 />
                 <Text>{smartAccountSponsorshipEnabled ? 'Enabled' : 'Disabled'}</Text>
+              </Row>
+              <Row justify="space-between" align="center">
+                <Switch
+                  checked={biconomySmartAccountEnabled}
+                  onChange={SettingsStore.toggleSmartAccountSponsorship}
+                  data-testid="settings-toggle-smart-account-sponsorship"
+                />
+                <Text>{biconomySmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
               </Row>
             </>
           ) : null}

@@ -34,6 +34,9 @@ import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
 import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
+import { smartAccountWallets } from '@/utils/SmartAccountUtil'
+import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
+
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -243,10 +246,12 @@ export default function SessionProposalModal() {
         if (reorderedEip155Accounts.length > 0) {
           namespaces.eip155.accounts = reorderedEip155Accounts
         }
-
-        await web3wallet.approveSession({
+        const smartAccount = smartAccountWallets[0] as SmartAccountLib
+        const sessionProperties = await smartAccount.getSessionProperties()
+        await web3wallet.engine.signClient.approve({
           id: proposal.id,
-          namespaces
+          namespaces,
+          sessionProperties,
         })
         SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
       } catch (e) {

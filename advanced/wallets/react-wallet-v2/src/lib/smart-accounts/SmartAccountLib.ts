@@ -6,7 +6,8 @@ import {
   http,
   createClient,
   HttpTransport,
-  Address
+  Address,
+  slice
 } from 'viem'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -170,5 +171,21 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     console.log('Transaction completed', { txResult })
 
     return txResult
+  }
+
+  async getSessionProperties() {
+    if (!this.client) {
+      throw new Error('Client not initialized')
+    }
+
+    const initCode = await this.client.account?.getInitCode()!
+
+    return {
+      smartAccountAddress: this.client.account?.address,
+      factory: slice(initCode, 0, 20),
+      factoryData: slice(initCode, 20),
+      entryPointAddress: this.client.account?.entryPoint,
+      userOperationConstructorAddress: '0x1029321039123' // TODO: get from smart account
+    } as Record<string, string>
   }
 }
