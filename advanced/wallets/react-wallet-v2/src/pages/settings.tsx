@@ -62,57 +62,60 @@ export default function SettingsPage() {
           <Text h4 css={{ marginBottom: '$5' }}>
             Smart Accounts
           </Text>
-          <Text h4 css={{ marginBottom: '$5' }}>
-            Enabled
-          </Text>
-          <Row justify="space-between" align="center">
-            <Switch
-              checked={smartAccountEnabled}
-              onChange={SettingsStore.toggleSmartAccountEnabled}
-              data-testid="settings-toggle-smart-account-enabled"
-            />
-            <Text>{smartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
-          </Row>
-
-          {smartAccountEnabled ? (
+          {testNets ? (
             <>
-              <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
-                ZeroDev Smart Account
-              </Text>
               <Row justify="space-between" align="center">
                 <Switch
-                  checked={kernelSmartAccountEnabled}
-                  onChange={SettingsStore.toggleKernelSmartAccountsEnabled}
-                  data-testid="settings-toggle-smart-account-sponsorship"
+                  checked={smartAccountEnabled}
+                  onChange={SettingsStore.toggleSmartAccountEnabled}
+                  data-testid="settings-toggle-smart-account-enabled"
                 />
-                <Text>{kernelSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
+                <Text>{smartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
               </Row>
 
-              <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
-                Safe Smart Account
-              </Text>
-              <Row justify="space-between" align="center">
-                <Switch
-                  checked={safeSmartAccountEnabled}
-                  onChange={SettingsStore.toggleSafeSmartAccountsEnabled}
-                  data-testid="settings-toggle-smart-account-sponsorship"
-                />
-                <Text>{safeSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
-              </Row>
+              {smartAccountEnabled ? (
+                <>
+                  <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
+                    ZeroDev Smart Account
+                  </Text>
+                  <Row justify="space-between" align="center">
+                    <Switch
+                      checked={kernelSmartAccountEnabled}
+                      onChange={SettingsStore.toggleKernelSmartAccountsEnabled}
+                      data-testid="settings-toggle-smart-account-sponsorship"
+                    />
+                    <Text>{kernelSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
+                  </Row>
 
-              <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
-                Sponsorship (Pimlico)
-              </Text>
-              <Row justify="space-between" align="center">
-                <Switch
-                  checked={smartAccountSponsorshipEnabled}
-                  onChange={SettingsStore.toggleSmartAccountSponsorship}
-                  data-testid="settings-toggle-smart-account-sponsorship"
-                />
-                <Text>{smartAccountSponsorshipEnabled ? 'Enabled' : 'Disabled'}</Text>
-              </Row>
+                  <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
+                    Safe Smart Account
+                  </Text>
+                  <Row justify="space-between" align="center">
+                    <Switch
+                      checked={safeSmartAccountEnabled}
+                      onChange={SettingsStore.toggleSafeSmartAccountsEnabled}
+                      data-testid="settings-toggle-smart-account-sponsorship"
+                    />
+                    <Text>{safeSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
+                  </Row>
+
+                  <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
+                    Sponsorship (Pimlico)
+                  </Text>
+                  <Row justify="space-between" align="center">
+                    <Switch
+                      checked={smartAccountSponsorshipEnabled}
+                      onChange={SettingsStore.toggleSmartAccountSponsorship}
+                      data-testid="settings-toggle-smart-account-sponsorship"
+                    />
+                    <Text>{smartAccountSponsorshipEnabled ? 'Enabled' : 'Disabled'}</Text>
+                  </Row>
+                </>
+              ) : null}
             </>
-          ) : null}
+          ) : (
+            <Text color="$gray400">This feature requires testnets</Text>
+          )}
         </Col>
       </Row>
 
