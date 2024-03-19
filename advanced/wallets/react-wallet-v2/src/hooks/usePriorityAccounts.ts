@@ -8,7 +8,7 @@ import { SessionTypes } from '@walletconnect/types'
 import { useSnapshot } from 'valtio'
 
 interface IProps {
-  namespaces: SessionTypes.Namespaces
+  namespaces?: SessionTypes.Namespaces
 }
 
 export default function usePriorityAccounts({ namespaces }: IProps) {
@@ -19,6 +19,7 @@ export default function usePriorityAccounts({ namespaces }: IProps) {
     safeSmartAccountAddress,
     safeSmartAccountEnabled
   } = useSnapshot(SettingsStore.state)
+  if (!namespaces) return []
 
   if (smartAccountEnabled) {
     if (safeSmartAccountEnabled) {
