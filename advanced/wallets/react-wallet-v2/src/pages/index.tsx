@@ -12,29 +12,9 @@ import { TEZOS_MAINNET_CHAINS, TEZOS_TEST_CHAINS } from '@/data/TezosData'
 import { KADENA_MAINNET_CHAINS, KADENA_TEST_CHAINS } from '@/data/KadenaData'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
-import { Fragment, useEffect } from 'react'
+import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
-import { isAllowedBiconomnyChain, isAllowedKernelChain, isAllowedSafeChain, smartAccountWallets } from '@/utils/SmartAccountUtil'
-import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
-import { Hex } from 'viem'
-
-const test = async () => {
-  const lib = smartAccountWallets['11155111:0x4aA1887EE11B418e88661B6D747DCFc6B0017D7C'] as SmartAccountLib
-  if (!lib) {
-    console.log('Library not found')
-    console.log(smartAccountWallets)
-    return
-  }
-  const account = lib.getAccount()
-  console.log('Biconomy Smart Account:', lib.getAccount())
-  const tx = {
-    to: '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B' as Hex,
-    value: 0n,
-    data: '0x123' as Hex
-  }
-  const callData = account?.encodeCallData(tx)
-  console.log('CallData', callData)
-}
+import { isAllowedBiconomnyChain, isAllowedKernelChain, isAllowedSafeChain } from '@/utils/SmartAccountUtil'
 
 export default function HomePage() {
   const {
@@ -53,10 +33,6 @@ export default function HomePage() {
     biconomySmartAccountAddress,
     smartAccountEnabled
   } = useSnapshot(SettingsStore.state)
-
-  useEffect(() => {
-    test()
-  }, [])
 
   return (
     <Fragment>
