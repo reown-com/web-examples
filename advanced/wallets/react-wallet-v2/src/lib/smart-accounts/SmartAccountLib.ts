@@ -178,19 +178,16 @@ export abstract class SmartAccountLib implements EIP155Wallet {
       throw new Error('Client not initialized')
     }
 
-    const initCode = await this.client.account?.getInitCode()!
-    const emptyInitCode = initCode === '0x'
     const properties = {
       smartAccountAddress: this.client.account?.address,
-      factory: !emptyInitCode ? slice(initCode, 0, 20) : undefined,
-      factoryData: !emptyInitCode ? slice(initCode, 20): undefined,
       entryPointAddress: this.client.account?.entryPoint,
       userOperationConstructorAddress: '0x1029321039123' // TODO: get from smart account
     } as Record<string, string>
     
-    if (emptyInitCode) {
-      delete properties.factory
-      delete properties.factoryData
+    const initCode = await this.client.account?.getInitCode()!
+    if (initCode !== '0x') {
+      properties.factory = slice(initCode, 0, 20),
+      properties.factoryData =  slice(initCode, 20)
     }
 
     return properties
