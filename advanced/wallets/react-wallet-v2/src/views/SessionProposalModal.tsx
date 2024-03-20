@@ -36,8 +36,6 @@ import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { smartAccountWallets } from '@/utils/SmartAccountUtil'
 import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
-import { getWallet } from '@/utils/EIP155RequestHandlerUtil'
-
 
 const StyledText = styled(Text, {
   fontWeight: 400
