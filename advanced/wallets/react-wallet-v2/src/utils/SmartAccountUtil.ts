@@ -5,6 +5,7 @@ import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLi
 import { sepolia } from 'viem/chains'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
+import { BiconomyV3SmartAccountLib } from '@/lib/smart-accounts/BiconomyV3SmartAccountLib'
 
 export type UrlConfig = {
   chain: Chain
@@ -116,3 +117,16 @@ export async function createOrRestoreSafeSmartAccount(privateKey: string) {
     safeSmartAccountAddress: address
   }
 }
+export async function createOrRestoreBiconomyV3SmartAccount(privateKey: string){
+  const lib = new BiconomyV3SmartAccountLib({ privateKey, chain: sepolia, entryPointVersion: 7 })
+  await lib.init()
+  const address = lib.getAddress()
+  const key = `${sepolia.id}:${address}`
+  if (!smartAccountWallets[key]) {
+    smartAccountWallets[key] = lib
+  }
+  return {
+    biconomyV3SmartAccountAddress: address
+  }
+}
+

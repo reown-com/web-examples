@@ -5,7 +5,7 @@ const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
 const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
 const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
-
+const BICONOMY_V3_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_V3_SMART_ACCOUNTS_ENABLED_KEY'
 /**
  * Types
  */
@@ -23,6 +23,7 @@ interface State {
   kadenaAddress: string
   kernelSmartAccountAddress: string
   safeSmartAccountAddress: string
+  biconomyV3SmartAccountAddress: string
   relayerRegionURL: string
   activeChainId: string
   currentRequestVerifyContext?: Verify.Context
@@ -31,6 +32,7 @@ interface State {
   smartAccountEnabled: boolean
   kernelSmartAccountEnabled: boolean
   safeSmartAccountEnabled: boolean
+  biconomyV3SmartAccountEnabled: boolean
 }
 
 /**
@@ -54,6 +56,7 @@ const state = proxy<State>({
   kadenaAddress: '',
   kernelSmartAccountAddress: '',
   safeSmartAccountAddress: '',
+  biconomyV3SmartAccountAddress: '',
   relayerRegionURL: '',
   sessions: [],
   smartAccountSponsorshipEnabled: false,
@@ -68,7 +71,11 @@ const state = proxy<State>({
   safeSmartAccountEnabled:
     typeof localStorage !== 'undefined'
       ? Boolean(localStorage.getItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY))
-      : false
+      : false,
+  biconomyV3SmartAccountEnabled:
+  typeof localStorage !== 'undefined'
+    ? Boolean(localStorage.getItem(BICONOMY_V3_SMART_ACCOUNTS_ENABLED_KEY))
+    : false,    
 })
 
 /**
@@ -124,6 +131,9 @@ const SettingsStore = {
   setSafeSmartAccountAddress(smartAccountAddress: string) {
     state.safeSmartAccountAddress = smartAccountAddress
   },
+  setBiconomyV3SmartAccountAddress(smartAccountAddress: string) {
+    state.biconomyV3SmartAccountAddress = smartAccountAddress
+  },
 
   setActiveChainId(value: string) {
     state.activeChainId = value
@@ -176,6 +186,15 @@ const SettingsStore = {
       localStorage.setItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
       localStorage.removeItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY)
+    }
+  },
+
+  toggleBiconomyV3SmartAccountEnabled() {
+    state.biconomyV3SmartAccountEnabled = !state.biconomyV3SmartAccountEnabled
+    if (state.biconomyV3SmartAccountEnabled) {
+      localStorage.setItem(BICONOMY_V3_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(BICONOMY_V3_SMART_ACCOUNTS_ENABLED_KEY)
     }
   }
 }

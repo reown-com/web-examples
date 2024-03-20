@@ -26,7 +26,8 @@ export default function SettingsPage() {
     kadenaAddress,
     smartAccountEnabled,
     kernelSmartAccountEnabled,
-    safeSmartAccountEnabled
+    safeSmartAccountEnabled,
+    biconomyV3SmartAccountEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -97,6 +98,18 @@ export default function SettingsPage() {
                       data-testid="settings-toggle-smart-account-sponsorship"
                     />
                     <Text>{safeSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
+                  </Row>
+
+                  <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
+                    Biconomy V3 Smart Account
+                  </Text>
+                  <Row justify="space-between" align="center">
+                    <Switch
+                      checked={biconomyV3SmartAccountEnabled}
+                      onChange={SettingsStore.toggleBiconomyV3SmartAccountEnabled}
+                      data-testid="settings-toggle-smart-account-sponsorship"
+                    />
+                    <Text>{biconomyV3SmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>
 
                   <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
