@@ -1,4 +1,14 @@
-import { Address, createPublicClient, getAbiItem, Hex, http, PrivateKeyAccount, PublicClient, toFunctionSelector, zeroAddress } from 'viem'
+import {
+  Address,
+  createPublicClient,
+  getAbiItem,
+  Hex,
+  http,
+  PrivateKeyAccount,
+  PublicClient,
+  toFunctionSelector,
+  zeroAddress
+} from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -12,10 +22,16 @@ import {
   KernelV3ExecuteAbi
 } from '@zerodev/sdk'
 import { sepolia } from 'viem/chains'
-import { BundlerActions, bundlerActions, BundlerClient, ENTRYPOINT_ADDRESS_V07 } from 'permissionless'
+import {
+  BundlerActions,
+  bundlerActions,
+  BundlerClient,
+  ENTRYPOINT_ADDRESS_V07
+} from 'permissionless'
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/_types/types'
 import { signerToDonutValidator } from './toDonutValidator'
+import { ENTRYPOINT_ADDRESS_V07_TYPE } from 'permissionless/types/entrypoint'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -23,7 +39,7 @@ type SmartAccountLibOptions = {
   sponsored?: boolean
 }
 
-const DONUT_VALIDATOR_ADDRESS = "0xC26abD34b53C6E61ec8CbE34b841228E04CfFA62";
+const DONUT_VALIDATOR_ADDRESS = '0xC26abD34b53C6E61ec8CbE34b841228E04CfFA62'
 
 export class KernelSmartAccountLib implements EIP155Wallet {
   public chain: Chain
@@ -31,9 +47,11 @@ export class KernelSmartAccountLib implements EIP155Wallet {
   public address?: `0x${string}`
   public sponsored: boolean = true
   private signer: PrivateKeyAccount
-  private client: KernelAccountClient | undefined
-  private publicClient: (PublicClient & BundlerClient<EntryPoint> & BundlerActions<EntryPoint>) | undefined
-  private validator: KernelValidator | undefined
+  private client: KernelAccountClient<EntryPoint> | undefined
+  private publicClient:
+    | (PublicClient & BundlerClient<EntryPoint> & BundlerActions<EntryPoint>)
+    | undefined
+  private validator: KernelValidator<ENTRYPOINT_ADDRESS_V07_TYPE, 'ECDSAValidator'> | undefined
   public initialized = false
 
   #signerPrivateKey: string
@@ -58,14 +76,14 @@ export class KernelSmartAccountLib implements EIP155Wallet {
 
     this.validator = await signerToEcdsaValidator(this.publicClient, {
       signer: this.signer,
-      entryPoint: ENTRYPOINT_ADDRESS_V07,
+      entryPoint: ENTRYPOINT_ADDRESS_V07
     })
 
     const account = await createKernelAccount(this.publicClient, {
       entryPoint: ENTRYPOINT_ADDRESS_V07,
       plugins: {
         sudo: this.validator,
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
+        entryPoint: ENTRYPOINT_ADDRESS_V07
       }
     })
 
@@ -73,17 +91,19 @@ export class KernelSmartAccountLib implements EIP155Wallet {
       account,
       entryPoint: ENTRYPOINT_ADDRESS_V07,
       chain: sepolia,
-      transport: bundlerRpc,
-      sponsorUserOperation: async ({ userOperation }) => {
-        const zerodevPaymaster = createZeroDevPaymasterClient({
-          chain: sepolia,
-          transport: http(`https://rpc.zerodev.app/api/v2/paymaster/${projectId}`),
-          entryPoint: ENTRYPOINT_ADDRESS_V07,
-        })
-        return zerodevPaymaster.sponsorUserOperation({
-          userOperation,
-          entryPoint: ENTRYPOINT_ADDRESS_V07,
-        })
+      bundlerTransport: bundlerRpc,
+      middleware: {
+        sponsorUserOperation: async ({ userOperation }) => {
+          const zerodevPaymaster = createZeroDevPaymasterClient({
+            chain: sepolia,
+            transport: http(`https://rpc.zerodev.app/api/v2/paymaster/${projectId}`),
+            entryPoint: ENTRYPOINT_ADDRESS_V07
+          })
+          return zerodevPaymaster.sponsorUserOperation({
+            userOperation,
+            entryPoint: ENTRYPOINT_ADDRESS_V07
+          })
+        }
       }
       // @ts-ignore
     }).extend(bundlerActions)
@@ -98,15 +118,18 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     this.initialized = true
 
     // just testing
-    console.log('permissionsContext:', await this.getPermissionsContext('0x957c92075bB364B66560A89e141637BFBda76d5a', BigInt(100)))
+    console.log(
+      'permissionsContext:',
+      await this.getPermissionsContext('0x957c92075bB364B66560A89e141637BFBda76d5a', BigInt(100))
+    )
   }
 
   async getPermissionsContext(sessionPublicKey: Address, limit: bigint): Promise<Hex> {
     const donutValidator = await signerToDonutValidator(this.publicClient!, {
       signer: addressToEmptyAccount(sessionPublicKey),
       donutLimit: limit,
-      validatorAddress: DONUT_VALIDATOR_ADDRESS,
-    });
+      validatorAddress: DONUT_VALIDATOR_ADDRESS
+    })
 
     const account = await createKernelAccount(this.publicClient!, {
       entryPoint: ENTRYPOINT_ADDRESS_V07,
@@ -115,15 +138,13 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         regular: donutValidator,
         entryPoint: ENTRYPOINT_ADDRESS_V07,
         executorData: {
-          selector: toFunctionSelector(
-            getAbiItem({ abi: KernelV3ExecuteAbi, name: "execute" })
-          ),
-          executor: zeroAddress,
-        },
+          selector: toFunctionSelector(getAbiItem({ abi: KernelV3ExecuteAbi, name: 'execute' })),
+          executor: zeroAddress
+        }
       }
     })
 
-    return await account.kernelPluginManager.getPluginEnableSignature(account.address);
+    return await account.kernelPluginManager.getPluginEnableSignature(account.address)
   }
 
   getMnemonic(): string {
