@@ -1,12 +1,18 @@
 import {
   Address,
   createPublicClient,
+  encodeAbiParameters,
+  encodePacked,
   getAbiItem,
   Hex,
+  Hex,
   http,
+  parseAbiParameters,
   PrivateKeyAccount,
   PublicClient,
+  toBytes,
   toFunctionSelector,
+  toHex,
   zeroAddress
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
@@ -131,6 +137,10 @@ export class KernelSmartAccountLib implements EIP155Wallet {
       validatorAddress: DONUT_VALIDATOR_ADDRESS
     })
 
+    const executeSelector = toFunctionSelector(
+      getAbiItem({ abi: KernelV3ExecuteAbi, name: "execute" })
+    )
+
     const account = await createKernelAccount(this.publicClient!, {
       entryPoint: ENTRYPOINT_ADDRESS_V07,
       plugins: {
@@ -138,13 +148,38 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         regular: donutValidator,
         entryPoint: ENTRYPOINT_ADDRESS_V07,
         executorData: {
-          selector: toFunctionSelector(getAbiItem({ abi: KernelV3ExecuteAbi, name: 'execute' })),
+          selector: executeSelector,
           executor: zeroAddress
         }
       }
     })
 
-    return await account.kernelPluginManager.getPluginEnableSignature(account.address)
+    console.log('factory:', await account.getFactory())
+    console.log('factory data:', await account.getFactoryData())
+
+    const enableSig = await account.kernelPluginManager.getPluginEnableSignature(account.address)
+
+    return encodePacked(
+      ['bytes1', 'bytes1', 'address', 'address', 'bytes'],
+      [
+        '0x01',
+        '0x01',
+        DONUT_VALIDATOR_ADDRESS,
+        zeroAddress,
+        encodeAbiParameters(
+          parseAbiParameters('bytes, bytes, bytes4, bytes'),
+          [
+            encodePacked(
+              ['address', 'uint256'],
+              [sessionPublicKey, limit],
+            ),
+            '0x',
+            executeSelector,
+            enableSig,
+          ]
+        ),
+      ]
+    )
   }
 
   getMnemonic(): string {
