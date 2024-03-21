@@ -2112,6 +2112,18 @@
     "@noble/hashes" "~1.3.2"
     "@scure/base" "~1.1.4"
 
+"@simplewebauthn/browser@^9.0.1":
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/@simplewebauthn/browser/-/browser-9.0.1.tgz#46a12c2bcefcb199f7fcb6a7e883531cd6efde17"
+  integrity sha512-wD2WpbkaEP4170s13/HUxPcAV5y4ZXaKo1TfNklS5zDefPinIgXOpgz1kpEvobAsaLPa2KeH7AKKX/od1mrBJw==
+  dependencies:
+    "@simplewebauthn/types" "^9.0.1"
+
+"@simplewebauthn/types@^9.0.1":
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/@simplewebauthn/types/-/types-9.0.1.tgz#3a68d50e63d8821cf2067de3324c68d5e8120d0c"
+  integrity sha512-tGSRP1QvsAvsJmnOlRQyw/mvK9gnPtjEc5fg2+m8n+QUa+D7rvrKkOYyfpy42GTs90X3RDOnqJgfHt+qO67/+w==
+
 "@solana/buffer-layout@^4.0.0", "@solana/buffer-layout@^4.0.1":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@solana/buffer-layout/-/buffer-layout-4.0.1.tgz#b996235eaec15b1e0b5092a8ed6028df77fa6c15"
@@ -2908,34 +2920,26 @@
     "@walletconnect/window-getters" "^1.0.1"
     tslib "1.14.1"
 
-"@zerodev/ecdsa-validator@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.1.0.tgz#74bd4f6f2df9ff32560ed70109ece24b08d8492f"
-  integrity sha512-mjoRXn/XuKEeyXXjapZMnExNeNnqbRbEHJA/wMhY1pHb+p+29E9oY3JSTgsOKF9ICLsAzD9ZxQTAQJLtrfP2fQ==
+"@zerodev/ecdsa-validator@5.2.0-alpha-0":
+  version "5.2.0-alpha-0"
+  resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.2.0-alpha-0.tgz#45c8c7deec7d861ae391f24e4b5796ac5e8f2c7e"
+  integrity sha512-Fo5KRi/fBOMMm6YrF8WQW+TUY6ZkskuE6IMeK6fKmHHJs64BUkIf2eVGSrg1HaHluEKz5rg/yrBR1K9zB3KkOA==
 
-"@zerodev/presets@5.1.4":
-  version "5.1.4"
-  resolved "https://registry.yarnpkg.com/@zerodev/presets/-/presets-5.1.4.tgz#0ec567973dfa2622a2228e49c51f15fefb5b9d2a"
-  integrity sha512-V5n5afSobyHWbNUOiEPZuV4VwQSMq42iYeOXZuV9GCsx8oZozIVDgrvgr9Jd7qnbyKliv8dPf3/o7+VOwpQWnA==
-
-"@zerodev/sdk@5.1.8":
-  version "5.1.8"
-  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.1.8.tgz#662b240659676e73cb4a1d75d780362f0ea41516"
-  integrity sha512-36/mqN2YEYyfCnYWvxqmo8/8HIhFVsn0Jy6ifAqPQ3abvhYO4iOAlNjHhJ/+ddL2peJFLergrISPVxB/R4g+vQ==
+"@zerodev/permission-validator@5.0.0-beta.0":
+  version "5.0.0-beta.0"
+  resolved "https://registry.yarnpkg.com/@zerodev/permission-validator/-/permission-validator-5.0.0-beta.0.tgz#9110bcd9950e2ce2b78fcfdd9b8dcb92cae51d83"
+  integrity sha512-H5QIbd2NotNL0xoMZLaCX4lpGoAFANlC5TOk89QTOsESrv/krVfHPUSW9RecwSBVNqDTZrHMlUqbwYm5LgNRDA==
   dependencies:
-    permissionless "^0.0.34"
-
-"@zerodev/session-key@5.1.1":
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/@zerodev/session-key/-/session-key-5.1.1.tgz#e05e3520203e22758a86775c850546f0cb041772"
-  integrity sha512-F8oUt4eqMXNoc9yxxHaxAfYJE4uAfC6XIucm4UT/EsoMMXC7C9kmXdLKgIDyoQQL9ycAkjZtFZwIUebkvKKirQ==
-  dependencies:
+    "@simplewebauthn/browser" "^9.0.1"
     merkletreejs "^0.3.11"
 
-"@zerodev/weighted-ecdsa-validator@5.1.0":
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/@zerodev/weighted-ecdsa-validator/-/weighted-ecdsa-validator-5.1.0.tgz#29e31bc7b8fe3c16ef3bf96ee5e9d98f984c16f2"
-  integrity sha512-DU4w2VPiDsSAA48qzUTrPTRwo7Atj9S5mRxu/QfM7fW/UAJM9Xzu3qwMLIeAJ71oPuhdTVtYRNObeQv214dH6A==
+"@zerodev/sdk@5.2.0-alpha-0":
+  version "5.2.0-alpha-0"
+  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.2.0-alpha-0.tgz#d5cc69176af413cd1852f53c8c8bbee8020dcc0f"
+  integrity sha512-72KN5cmXel1lkaz84EqRS+Rq2j/b8ukMifBLPcD5mLj3MHZ2Fal6yBKlatYAC1hDGb0IEXu+LcZqCseA5WLUfw==
+  dependencies:
+    permissionless "^0.1.4"
+    semver "^7.6.0"
 
 JSONStream@^1.3.5:
   version "1.3.5"
@@ -5766,10 +5770,10 @@ permissionless@0.1.10:
   resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.1.10.tgz#992da1cb024e86511aaff96bcddccb2ccd1d697b"
   integrity sha512-LVjGVLRfARHhuWSktiO5wd2tA0iTzP+Se8oDKRVyzb5Z/X4jCL+3hqWJMeERkjn3bOK0al2cv55sIABFOo+XKg==
 
-permissionless@^0.0.34:
-  version "0.0.34"
-  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.0.34.tgz#479ee4c02068c6982a308df7a64351eea626a00d"
-  integrity sha512-lP59+7VmjLO7dPctH69kgcJ8evxGkrjQ9hruOA+7ymWvUMiuXAfVxvXSWCV+lg67N2TGs1JneEuhwK+iI3kPvA==
+permissionless@^0.1.4:
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.1.11.tgz#482998988851b9f79e82684c0eb48cf2d7a99471"
+  integrity sha512-nk5F8EP+PNN7zRWNLCaUFqdMZrl+N6b23iqI2SPZ/thGUJSmJNIEfAJBpyOVejYHsWM5KXhG5u/lSZUZPQOQ8g==
 
 picocolors@^1.0.0:
   version "1.0.0"
@@ -6277,6 +6281,13 @@ semver@^7.3.7:
   version "7.5.4"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.5.4.tgz#483986ec4ed38e1c6c48c34894a9182dbff68a6e"
   integrity sha512-1bCSESV6Pv+i21Hvpxp3Dx+pSD8lIPt8uVjRrxAUt/nbswYc+tK6Y2btiULjd4+fnq15PX+nqQDC7Oft7WkwcA==
+  dependencies:
+    lru-cache "^6.0.0"
+
+semver@^7.6.0:
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.6.0.tgz#1a46a4db4bffcccd97b743b5005c8325f23d4e2d"
+  integrity sha512-EnwXhrlwXMk9gKu5/flx5sv/an57AkRplG3hTK68W7FRDN+k+OWBj65M7719OkA82XLBxrcX0KSHj+X5COhOVg==
   dependencies:
     lru-cache "^6.0.0"
 
