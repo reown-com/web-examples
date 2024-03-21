@@ -24,7 +24,15 @@ export class BiconomyV3SmartAccountLib extends SmartAccountLib {
       bundlerTransport: this.bundlerUrl,
       middleware: {
         gasPrice: async () => (await this.bundlerClient.getUserOperationGasPrice()).fast, // use pimlico bundler to get gas prices
-        sponsorUserOperation: this.sponsored ? this.paymasterClient.sponsorUserOperation : undefined
+        sponsorUserOperation: this.sponsored ? this.paymasterClient.sponsorUserOperation : undefined,
+        // sponsorUserOperation: async (args) => { 
+        //   const sponsored = await this.paymasterClient.sponsorUserOperation(args)
+        //   sponsored.preVerificationGas = 250_000n
+        //   return {
+        //     ...sponsored,
+        //     preVerificationGas: 250_000n
+        //   }
+        // }
       }
     }
   }

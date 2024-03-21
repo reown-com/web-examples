@@ -176,16 +176,39 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
+    // const txResult = await this.client.sendTransaction({
+    //   to,
+    //   value,
+    //   data,
+    //   account: this.client.account,
+    //   chain: this.chain
+    // })
+    // return txResult
+    const userOp = await this.client.prepareUserOperationRequest({
+      userOperation: {
+        callData: await this.client.account.encodeCallData({
+          to,
+          value,
+          data,
+        })
+      },
+      account: this.client.account
+    })
 
-    const txResult = await this.client.sendTransaction({
-      to,
-      value,
-      data,
-      account: this.client.account,
-      chain: this.chain
+    userOp.preVerificationGas = 250_000n
+    const newSignature = await this.client.account.signUserOperation(userOp)
+    console.log('Signatures',{old: userOp.signature, new: newSignature});
+    
+    userOp.signature = newSignature
+
+    const userOpHash = await this.bundlerClient.sendUserOperation({
+      userOperation: userOp
+    })
+    const txResult = await this.bundlerClient.getUserOperationReceipt({
+      hash: userOpHash
     })
     console.log('Transaction completed', { txResult })
 
-    return txResult
+    return txResult?.receipt.transactionHash
   }
 }
