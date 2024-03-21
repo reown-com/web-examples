@@ -18,7 +18,8 @@ export default function usePriorityAccounts({ namespaces }: IProps) {
     kernelSmartAccountEnabled,
     safeSmartAccountAddress,
     safeSmartAccountEnabled,
-    biconomyV3SmartAccountEnabled
+    biconomyV3SmartAccountEnabled,
+    biconomyV3SmartAccountAddress
   } = useSnapshot(SettingsStore.state)
   if (!namespaces) return []
 
@@ -30,7 +31,7 @@ export default function usePriorityAccounts({ namespaces }: IProps) {
       return supportedAddressPriority(namespaces, kernelSmartAccountAddress, kernelAllowedChains)
     }
     if (biconomyV3SmartAccountEnabled) {
-      return supportedAddressPriority(namespaces, kernelSmartAccountAddress, kernelAllowedChains)
+      return supportedAddressPriority(namespaces, biconomyV3SmartAccountAddress, kernelAllowedChains)
     }
   }
   return []
