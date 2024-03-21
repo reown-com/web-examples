@@ -84,7 +84,7 @@ const BICONOMY_ADDRESSES: {
     ACCOUNT_V3_0_LOGIC: Address
     FACTORY_ADDRESS: Address
 } = {
-    K1_VALIDATOR_MODULE: "0x7f0368d075179a7a807aA4eBd51241B7d2761A02",
+    K1_VALIDATOR_MODULE: "0x2C3aC29AFF6cbFCAeFb3EB3C13763141f79FC70B",
     ACCOUNT_V3_0_LOGIC: "0x26A1fe54198494Ba1a1aaD2D5E8255E91674C539",
     FACTORY_ADDRESS: "0x7769425B703A3c6AC8BbA33d0afd8eF94763DA2E"
 }
@@ -289,6 +289,7 @@ export async function signerToBiconomySmartAccountV3<
 
         // Sign a user operation
         async signUserOperation(userOperation) {
+            
             const hash = getUserOperationHash({
                 userOperation: {
                     ...userOperation,
@@ -297,10 +298,15 @@ export async function signerToBiconomySmartAccountV3<
                 entryPoint: entryPointAddress,
                 chainId: chainId
             })
+            console.log('userOpHash');
+            
             const signature = await signMessage(client, {
                 account: viemSigner,
                 message: { raw: hash }
             })
+
+        
+            return signature
             // userOp signature is encoded module signature + module address
             const signatureWithModuleAddress = encodeAbiParameters(
                 parseAbiParameters("bytes, address"),
@@ -395,10 +401,11 @@ export async function signerToBiconomySmartAccountV3<
                 MODE_DEFAULT,
                 MODE_PAYLOAD
             ])
-
+            console.log('ENCODE PACKED',{ to, value, data });
+            
             const executionCalldata = encodePacked(
                 ["address", "uint256", "bytes"],
-                [to, value, data]
+                [to, value, data || '0x00']
             )
             // Encode a simple call
             return encodeFunctionData({
