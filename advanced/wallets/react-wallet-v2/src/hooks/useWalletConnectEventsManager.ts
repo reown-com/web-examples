@@ -5,15 +5,16 @@ import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
 import { POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
 import { MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
 import { TRON_SIGNING_METHODS } from '@/data/TronData'
+import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
+import { TEZOS_SIGNING_METHODS } from '@/data/TezosData'
+import { KADENA_SIGNING_METHODS } from '@/data/KadenaData'
+import { XRPL_SIGNING_METHODS } from '@/data/XRPLData'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
-import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
-import { TEZOS_SIGNING_METHODS } from '@/data/TezosData'
-import { KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -106,6 +107,9 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case KADENA_SIGNING_METHODS.KADENA_SIGN:
         case KADENA_SIGNING_METHODS.KADENA_QUICKSIGN:
           return ModalStore.open('SessionSignKadenaModal', { requestEvent, requestSession })
+        case XRPL_SIGNING_METHODS.XRPL_SIGN_TRANSACTION:
+        case XRPL_SIGNING_METHODS.XRPL_SIGN_TRANSACTION_FOR:
+          return ModalStore.open('SessionSignXrplModal', { requestEvent, requestSession })
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }

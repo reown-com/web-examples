@@ -29,6 +29,7 @@ interface State {
     | 'SessionSignTronModal'
     | 'SessionSignTezosModal'
     | 'SessionSignKadenaModal'
+    | 'SessionSignXrplModal'
     | 'AuthRequestModal'
     | 'LoadingModal'
   data?: ModalData

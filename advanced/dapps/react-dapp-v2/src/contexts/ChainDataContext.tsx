@@ -16,6 +16,7 @@ import { CosmosChainData } from "../chains/cosmos";
 import { EIP155ChainData } from "../chains/eip155";
 import { TezosChainData } from "../chains/tezos";
 import { KadenaChainData } from "../chains/kadena";
+import { XrplChainData } from "../chains/xrpl";
 
 /**
  * Types
@@ -73,6 +74,8 @@ export function ChainDataContextProvider({
           case "kadena":
             chains = KadenaChainData;
             break;
+          case "xrpl":
+            chains = XrplChainData;
           default:
             console.error("Unknown chain namespace: ", namespace);
         }

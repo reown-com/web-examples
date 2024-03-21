@@ -7,6 +7,7 @@ import { multiversxAddresses } from '@/utils/MultiversxWalletUtil'
 import { tronAddresses } from '@/utils/TronWalletUtil'
 import { tezosAddresses } from '@/utils/TezosWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
+import { xrplAddresses } from '@/utils/XrplWalletUtil'
 import { useSnapshot } from 'valtio'
 
 export default function AccountPicker() {
@@ -24,6 +25,7 @@ export default function AccountPicker() {
     SettingsStore.setTronAddress(tronAddresses[account])
     SettingsStore.setTezosAddress(tezosAddresses[account])
     SettingsStore.setKadenaAddress(kadenaAddresses[account])
+    SettingsStore.setXrplAddress(xrplAddresses[account])
   }
 
   return (

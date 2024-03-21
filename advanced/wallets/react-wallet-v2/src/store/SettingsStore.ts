@@ -21,6 +21,7 @@ interface State {
   tronAddress: string
   tezosAddress: string
   kadenaAddress: string
+  xrplAddress: string
   kernelSmartAccountAddress: string
   safeSmartAccountAddress: string
   relayerRegionURL: string
@@ -52,6 +53,7 @@ const state = proxy<State>({
   tronAddress: '',
   tezosAddress: '',
   kadenaAddress: '',
+  xrplAddress: '',
   kernelSmartAccountAddress: '',
   safeSmartAccountAddress: '',
   relayerRegionURL: '',
@@ -101,6 +103,9 @@ const SettingsStore = {
   },
   setKadenaAddress(kadenaAddress: string) {
     state.kadenaAddress = kadenaAddress
+  },
+  setXrplAddress(xrplAddress: string) {
+    state.xrplAddress = xrplAddress
   },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL

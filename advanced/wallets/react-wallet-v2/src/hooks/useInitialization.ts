@@ -7,8 +7,9 @@ import { createOrRestoreNearWallet } from '@/utils/NearWalletUtil'
 import { createOrRestoreMultiversxWallet } from '@/utils/MultiversxWalletUtil'
 import { createOrRestoreTronWallet } from '@/utils/TronWalletUtil'
 import { createOrRestoreTezosWallet } from '@/utils/TezosWalletUtil'
-import { createWeb3Wallet, web3wallet } from '@/utils/WalletConnectUtil'
 import { createOrRestoreKadenaWallet } from '@/utils/KadenaWalletUtil'
+import { createOrRestoreXrplWallet } from '@/utils/XrplWalletUtil'
+import { createWeb3Wallet, web3wallet } from '@/utils/WalletConnectUtil'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccounts from './useSmartAccounts'
@@ -31,6 +32,7 @@ export default function useInitialization() {
       const { tronAddresses } = await createOrRestoreTronWallet()
       const { tezosAddresses } = await createOrRestoreTezosWallet()
       const { kadenaAddresses } = await createOrRestoreKadenaWallet()
+      const { xrplAddresses } = await createOrRestoreXrplWallet()
       await initializeSmartAccounts(eip155Wallets[eip155Addresses[0]].getPrivateKey())
 
       SettingsStore.setEIP155Address(eip155Addresses[0])
@@ -42,6 +44,7 @@ export default function useInitialization() {
       SettingsStore.setTronAddress(tronAddresses[0])
       SettingsStore.setTezosAddress(tezosAddresses[0])
       SettingsStore.setKadenaAddress(kadenaAddresses[0])
+      SettingsStore.setXrplAddress(xrplAddresses[0])
       await createWeb3Wallet(relayerRegionURL)
       setInitialized(true)
     } catch (err: unknown) {
