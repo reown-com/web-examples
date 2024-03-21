@@ -15,6 +15,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       signer: this.signer,
       safeVersion: '1.4.1'
     })
+    
     return {
       account: safeAccount as SmartAccount<EntryPoint>,
       entryPoint: this.entryPoint,

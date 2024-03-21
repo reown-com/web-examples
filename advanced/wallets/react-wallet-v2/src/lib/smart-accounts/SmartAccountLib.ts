@@ -6,7 +6,8 @@ import {
   http,
   createClient,
   HttpTransport,
-  Address
+  Address,
+  encodeFunctionData
 } from 'viem'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -23,7 +24,8 @@ import {
   SmartAccountClient,
   SmartAccountClientConfig,
   bundlerActions,
-  createSmartAccountClient
+  createSmartAccountClient,
+  signUserOperationHashWithECDSA
 } from 'permissionless'
 import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/actions/pimlico'
 import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl } from '@/utils/SmartAccountUtil'
