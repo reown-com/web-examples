@@ -119,7 +119,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
 
     // just testing
     console.log(
-      'permissionsContext:',
+      'test permissionsContext:',
       await this.getPermissionsContext('0x957c92075bB364B66560A89e141637BFBda76d5a', BigInt(100))
     )
   }
