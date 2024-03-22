@@ -9,9 +9,7 @@ import {
   parseAbiParameters,
   PrivateKeyAccount,
   PublicClient,
-  toBytes,
   toFunctionSelector,
-  toHex,
   zeroAddress
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
@@ -73,7 +71,9 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     if (!projectId) {
       throw new Error('ZeroDev project id expected')
     }
-    const bundlerRpc = http(`https://rpc.zerodev.app/api/v2/bundler/${projectId}`)
+
+    //const bundlerRpc = http(`https://rpc.zerodev.app/api/v2/bundler/${projectId}`)
+    const bundlerRpc = http(`https://meta-aa-provider.onrender.com/api/v3/bundler/${projectId}?provider=PIMLICO`)
     this.publicClient = createPublicClient({
       transport: bundlerRpc // use your RPC provider or bundler
       // @ts-ignore
@@ -97,19 +97,19 @@ export class KernelSmartAccountLib implements EIP155Wallet {
       entryPoint: ENTRYPOINT_ADDRESS_V07,
       chain: sepolia,
       bundlerTransport: bundlerRpc,
-      middleware: {
-        sponsorUserOperation: async ({ userOperation }) => {
-          const zerodevPaymaster = createZeroDevPaymasterClient({
-            chain: sepolia,
-            transport: http(`https://rpc.zerodev.app/api/v2/paymaster/${projectId}`),
-            entryPoint: ENTRYPOINT_ADDRESS_V07
-          })
-          return zerodevPaymaster.sponsorUserOperation({
-            userOperation,
-            entryPoint: ENTRYPOINT_ADDRESS_V07
-          })
-        }
-      }
+      // middleware: {
+      //   sponsorUserOperation: async ({ userOperation }) => {
+      //     const zerodevPaymaster = createZeroDevPaymasterClient({
+      //       chain: sepolia,
+      //       transport: http(`https://rpc.zerodev.app/api/v2/paymaster/${projectId}`),
+      //       entryPoint: ENTRYPOINT_ADDRESS_V07
+      //     })
+      //     return zerodevPaymaster.sponsorUserOperation({
+      //       userOperation,
+      //       entryPoint: ENTRYPOINT_ADDRESS_V07
+      //     })
+      //   }
+      // }
       // @ts-ignore
     }).extend(bundlerActions)
     //@ts-ignore
@@ -173,7 +173,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
               [sessionPublicKey, limit],
             ),
             '0x',
-            executeSelector,
+            '0xe9ae5c5300000000000000000000000000000000000000000000000000000000000000000000000000000000',
             enableSig,
           ]
         ),

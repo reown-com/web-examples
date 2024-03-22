@@ -30,6 +30,7 @@ import { ENTRYPOINT_ADDRESS_V07_TYPE, EntryPoint } from "permissionless/types/en
 import { SignTransactionNotSupportedBySmartAccount, SmartAccount, SmartAccountSigner, toSmartAccount } from "permissionless/accounts"
 import { getAccountNonce, getSenderAddress, getUserOperationHash, isSmartAccountDeployed } from "permissionless"
 import { Prettify } from "viem/chains"
+import { hexlify } from "ethers/lib/utils"
 
 export type BiconomySmartAccountV3<
     entryPoint extends ENTRYPOINT_ADDRESS_V07_TYPE,
@@ -279,11 +280,18 @@ export async function signerToBiconomySmartAccountV3<
 
         // Get the nonce of the smart account
         async getNonce() {
+            const key = BigInt(pad(ecdsaValidatorAddress, { size: 24, dir: 'right' }))
+            console.log('KEY',{
+                key,
+                hexKey: hexlify(key),
+                padded: pad(ecdsaValidatorAddress, { size: 24, dir: 'right' })
+            });
+            
             return getAccountNonce(client, {
                 sender: accountAddress,
                 entryPoint: entryPointAddress,
                 // Review
-                key: BigInt(pad(ecdsaValidatorAddress, { size: 24 }))
+                key,
             })
         },
 
