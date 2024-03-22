@@ -5,7 +5,6 @@ import {
   encodePacked,
   getAbiItem,
   Hex,
-  Hex,
   http,
   parseAbiParameters,
   PrivateKeyAccount,
