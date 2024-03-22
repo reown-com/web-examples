@@ -167,7 +167,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         DONUT_VALIDATOR_ADDRESS,
         zeroAddress,
         encodeAbiParameters(
-          parseAbiParameters('bytes, bytes, bytes4, bytes'),
+          parseAbiParameters('bytes, bytes, bytes, bytes'),
           [
             encodePacked(
               ['address', 'uint256'],
