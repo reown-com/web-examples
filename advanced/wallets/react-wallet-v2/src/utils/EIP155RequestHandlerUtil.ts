@@ -12,6 +12,12 @@ import { providers } from 'ethers'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import SettingsStore from '@/store/SettingsStore'
 import { smartAccountWallets } from './SmartAccountUtil'
+import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
+import { useSnapshot } from 'valtio'
+import { UserOperation } from 'permissionless'
+import { PartialBy } from 'viem/chains'
+import { Hex } from 'viem'
+
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 const getWallet = async (params: any) => {
@@ -59,6 +65,7 @@ const getWallet = async (params: any) => {
 export async function approveEIP155Request(requestEvent: RequestEventArgs) {
   const { params, id } = requestEvent
   const { chainId, request } = params
+  const { smartAccountSponsorshipEnabled } = SettingsStore.state
 
   console.log(requestEvent, chainId, 'tests')
 
@@ -131,6 +138,28 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
         return formatJsonRpcError(id, error.message)
       }
 
+    case EIP155_SIGNING_METHODS.ETH_SIGN_USER_OPERATION:
+      try {
+        const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
+        const userOperation = request.params[0] as UserOperation
+        const entryPoint = request.params[1] as Hex
+        const connectedWallet = await wallet.connect(provider) as SmartAccountLib
+        const account = connectedWallet.getAccount()
+
+        // Need to have a dummy signature for this to work
+        // console.log('Paymaster', userOperation.paymasterAndData, smartAccountSponsorshipEnabled)
+        // if (userOperation.paymasterAndData === '0x' && smartAccountSponsorshipEnabled) {
+        //   const paymasterAndData = await connectedWallet.paymasterClient.sponsorUserOperation({ userOperation, entryPoint })
+        //   console.log('Sponsored user operation', paymasterAndData)
+        // }
+
+        const signature = await account?.signUserOperation(userOperation)
+        return formatJsonRpcResult(id, signature)
+      } catch (error: any) {
+        console.error(error)
+        alert(error.message)
+        return formatJsonRpcError(id, error.message)
+      }
     default:
       throw new Error(getSdkError('INVALID_METHOD').message)
   }

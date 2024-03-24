@@ -31,6 +31,7 @@ interface State {
     | 'SessionSignKadenaModal'
     | 'AuthRequestModal'
     | 'LoadingModal'
+    | 'SessionSignUserOperationModal'
   data?: ModalData
 }
 

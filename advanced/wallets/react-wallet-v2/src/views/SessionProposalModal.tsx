@@ -247,20 +247,23 @@ export default function SessionProposalModal() {
       setIsLoadingApprove(true)
 
       try {
-        if (reorderedEip155Accounts.length > 0) {
-          namespaces.eip155.accounts = reorderedEip155Accounts
-        }
-
-        console.log('SmartAccountWallets', smartAccountWallets)
-        console.log('namespaces', namespaces)
-        const smartAccount = Object.values(smartAccountWallets).find(acc => acc.type === 'biconomy') as SmartAccountLib
-        console.log('smartAccount', smartAccount)
-        const sessionProperties = await smartAccount.getSessionProperties()
-        await web3wallet.engine.signClient.approve({
+        const sessionParams = {
           id: proposal.id,
           namespaces,
-          sessionProperties,
-        })
+          sessionProperties: {}
+        }
+        if (reorderedEip155Accounts.length > 0) {
+          namespaces.eip155.accounts = reorderedEip155Accounts
+          const [smartAccountCaipAddress] = reorderedEip155Accounts
+          const [_, chainId, address] = smartAccountCaipAddress.split(':')
+          console.log('Smart Account Address', smartAccountCaipAddress, chainId, address)
+          const smartAccount = Object.values(smartAccountWallets).find(
+            acc => acc.getAddress() === address && acc.chain.id === parseInt(chainId)
+          ) as SmartAccountLib
+          const sessionProperties = await smartAccount?.getSessionProperties()
+          sessionParams.sessionProperties = sessionProperties
+        }
+        await web3wallet.engine.signClient.approve(sessionParams)
         SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
       } catch (e) {
         setIsLoadingApprove(false)

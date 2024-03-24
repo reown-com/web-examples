@@ -45,7 +45,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
 
   // Clients
   protected publicClient: PublicClient
-  protected paymasterClient: PimlicoPaymasterClient
+  public paymasterClient: PimlicoPaymasterClient
   protected bundlerClient: BundlerClient & BundlerActions & PimlicoBundlerActions
   protected client: (SmartAccountClient & PimlicoBundlerActions) | undefined
 
@@ -196,5 +196,15 @@ export abstract class SmartAccountLib implements EIP155Wallet {
 
   getAccount() {
     return this.client?.account
+  }
+
+  async createDummySig() {
+    const client = this.client
+    const dummySig = await client?.signMessage({
+      account: this.getAddress() as Hex,
+      message: 'dummy signature plz',
+    })
+
+    console.log('Dummy signature', dummySig)
   }
 }
