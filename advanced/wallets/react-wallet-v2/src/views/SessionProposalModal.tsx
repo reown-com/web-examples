@@ -237,7 +237,7 @@ export default function SessionProposalModal() {
   }, [proposal.params, supportedNamespaces])
 
   const reorderedEip155Accounts = usePriorityAccounts({ namespaces })
-  console.log('Reordrered accounts', { reorderedEip155Accounts })
+  console.log('Reordered accounts', { reorderedEip155Accounts })
 
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
