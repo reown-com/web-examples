@@ -368,7 +368,7 @@ export default function SessionProposalModal() {
                 return <></>
               }
               return (
-                <Row key={i}>
+                <Row key={i} style={{ marginTop: '24px' }}>
                   <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
                 </Row>
               )
