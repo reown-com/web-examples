@@ -1,5 +1,6 @@
 import SettingsStore from '@/store/SettingsStore'
 import {
+  biconomyAllowedChains,
   kernelAllowedChains,
   safeAllowedChains,
   supportedAddressPriority
@@ -17,7 +18,9 @@ export default function usePriorityAccounts({ namespaces }: IProps) {
     kernelSmartAccountAddress,
     kernelSmartAccountEnabled,
     safeSmartAccountAddress,
-    safeSmartAccountEnabled
+    safeSmartAccountEnabled,
+    biconomySmartAccountAddress,
+    biconomySmartAccountEnabled
   } = useSnapshot(SettingsStore.state)
   if (!namespaces) return []
 
@@ -27,6 +30,9 @@ export default function usePriorityAccounts({ namespaces }: IProps) {
     }
     if (kernelSmartAccountEnabled) {
       return supportedAddressPriority(namespaces, kernelSmartAccountAddress, kernelAllowedChains)
+    }
+    if (biconomySmartAccountEnabled) {
+      return supportedAddressPriority(namespaces, biconomySmartAccountAddress, biconomyAllowedChains)
     }
   }
   return []

@@ -5,6 +5,7 @@ const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
 const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
 const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
+const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
 
 /**
  * Types
@@ -23,6 +24,7 @@ interface State {
   kadenaAddress: string
   kernelSmartAccountAddress: string
   safeSmartAccountAddress: string
+  biconomySmartAccountAddress: string
   relayerRegionURL: string
   activeChainId: string
   currentRequestVerifyContext?: Verify.Context
@@ -31,6 +33,7 @@ interface State {
   smartAccountEnabled: boolean
   kernelSmartAccountEnabled: boolean
   safeSmartAccountEnabled: boolean
+  biconomySmartAccountEnabled: boolean
 }
 
 /**
@@ -54,6 +57,7 @@ const state = proxy<State>({
   kadenaAddress: '',
   kernelSmartAccountAddress: '',
   safeSmartAccountAddress: '',
+  biconomySmartAccountAddress: '',
   relayerRegionURL: '',
   sessions: [],
   smartAccountSponsorshipEnabled: false,
@@ -68,7 +72,11 @@ const state = proxy<State>({
   safeSmartAccountEnabled:
     typeof localStorage !== 'undefined'
       ? Boolean(localStorage.getItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY))
-      : false
+      : false,
+  biconomySmartAccountEnabled:
+  typeof localStorage !== 'undefined'
+    ? Boolean(localStorage.getItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY))
+    : false
 })
 
 /**
@@ -124,6 +132,9 @@ const SettingsStore = {
   setSafeSmartAccountAddress(smartAccountAddress: string) {
     state.safeSmartAccountAddress = smartAccountAddress
   },
+  setBiconomySmartAccountAddress(smartAccountAddress: string) {
+    state.biconomySmartAccountAddress = smartAccountAddress
+  },
 
   setActiveChainId(value: string) {
     state.activeChainId = value
@@ -176,6 +187,15 @@ const SettingsStore = {
       localStorage.setItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
       localStorage.removeItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY)
+    }
+  },
+
+  toggleBiconomySmartAccountsEnabled() {
+    state.biconomySmartAccountEnabled = !state.biconomySmartAccountEnabled
+    if (state.biconomySmartAccountEnabled) {
+      localStorage.setItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY)
     }
   }
 }
