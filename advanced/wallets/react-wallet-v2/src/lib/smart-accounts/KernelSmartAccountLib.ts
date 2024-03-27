@@ -18,6 +18,7 @@ import {
 } from '@zerodev/weighted-ecdsa-validator'
 import { BundlerActions, bundlerActions, BundlerClient } from 'permissionless'
 import { Chain } from '@/consts/smartAccounts'
+import { EntryPoint } from 'permissionless/types/entrypoint'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -32,7 +33,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
   public sponsored: boolean = true
   private signer: PrivateKeyAccount
   private client: KernelAccountClient | undefined
-  private publicClient: (PublicClient & BundlerClient & BundlerActions) | undefined
+  private publicClient: (PublicClient & BundlerClient<EntryPoint> & BundlerActions<EntryPoint>) | undefined
   private validator: KernelValidator | undefined
   public initialized = false
 
@@ -53,6 +54,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     const bundlerRpc = http(`https://rpc.zerodev.app/api/v2/bundler/${projectId}`)
     this.publicClient = createPublicClient({
       transport: bundlerRpc // use your RPC provider or bundler
+      //@ts-ignore
     }).extend(bundlerActions)
 
     this.validator = await createWeightedECDSAValidator(this.publicClient, {
@@ -81,11 +83,12 @@ export class KernelSmartAccountLib implements EIP155Wallet {
           userOperation
         })
       }
+      //@ts-ignore
     }).extend(bundlerActions)
-    //@ts-ignore
     this.client = client
     console.log('Smart account initialized', {
       address: account.address,
+      //@ts-ignore
       chain: client.chain.name,
       type: this.type
     })
