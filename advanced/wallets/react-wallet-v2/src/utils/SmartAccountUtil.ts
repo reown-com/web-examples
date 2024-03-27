@@ -1,3 +1,4 @@
+import { BiconomySmartAccountLib } from './../lib/smart-accounts/BiconomySmartAccountLib';
 import { Hex } from 'viem'
 import { SessionTypes } from '@walletconnect/types'
 import { Chain, allowedChains } from '@/consts/smartAccounts'
@@ -114,5 +115,18 @@ export async function createOrRestoreSafeSmartAccount(privateKey: string) {
   }
   return {
     safeSmartAccountAddress: address
+  }
+}
+
+export async function createOrRestoreBiconomySmartAccount(privateKey: string) {
+  const lib = new BiconomySmartAccountLib({ privateKey, chain: sepolia })
+  await lib.init()
+  const address = lib.getAddress()
+  const key = `${sepolia.id}:${address}`
+  if (!smartAccountWallets[key]) {
+    smartAccountWallets[key] = lib
+  }
+  return {
+    biconomySmartAccountAddress: address
   }
 }
