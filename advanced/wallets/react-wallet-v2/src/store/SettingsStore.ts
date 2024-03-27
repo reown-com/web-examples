@@ -132,6 +132,9 @@ const SettingsStore = {
   setSafeSmartAccountAddress(smartAccountAddress: string) {
     state.safeSmartAccountAddress = smartAccountAddress
   },
+  setBiconomySmartAccountAddress(smartAccountAddress: string) {
+    state.biconomySmartAccountAddress = smartAccountAddress
+  },
 
   setActiveChainId(value: string) {
     state.activeChainId = value

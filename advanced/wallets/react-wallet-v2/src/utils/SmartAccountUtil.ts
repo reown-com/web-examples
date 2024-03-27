@@ -82,6 +82,8 @@ export function supportedAddressPriority(
 
 export const kernelAllowedChains = [sepolia]
 export const safeAllowedChains = [sepolia]
+export const biconomyAllowedChains = [sepolia]
+
 export let smartAccountWallets: Record<string, SmartAccountLib | KernelSmartAccountLib> = {}
 
 export function isAllowedKernelChain(chainId: number): boolean {
