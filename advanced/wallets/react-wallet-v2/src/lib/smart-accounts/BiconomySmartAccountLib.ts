@@ -5,6 +5,7 @@ import { EntryPoint } from 'permissionless/types/entrypoint'
 
 export class BiconomySmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
+    this.type = 'Biconomy'
     if (this.entryPoint !== ENTRYPOINT_ADDRESS_V06) {
       throw new Error('Only entrypoint V6 is supported')
     }
