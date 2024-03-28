@@ -1,3 +1,4 @@
+import { BiconomySmartAccountLib } from './../lib/smart-accounts/BiconomySmartAccountLib';
 import { Hex } from 'viem'
 import { SessionTypes } from '@walletconnect/types'
 import { Chain, allowedChains } from '@/consts/smartAccounts'
@@ -81,6 +82,8 @@ export function supportedAddressPriority(
 
 export const kernelAllowedChains = [sepolia]
 export const safeAllowedChains = [sepolia]
+export const biconomyAllowedChains = [sepolia]
+
 export let smartAccountWallets: Record<string, SmartAccountLib | KernelSmartAccountLib> = {}
 
 export function isAllowedKernelChain(chainId: number): boolean {
@@ -114,5 +117,18 @@ export async function createOrRestoreSafeSmartAccount(privateKey: string) {
   }
   return {
     safeSmartAccountAddress: address
+  }
+}
+
+export async function createOrRestoreBiconomySmartAccount(privateKey: string) {
+  const lib = new BiconomySmartAccountLib({ privateKey, chain: sepolia })
+  await lib.init()
+  const address = lib.getAddress()
+  const key = `${sepolia.id}:${address}`
+  if (!smartAccountWallets[key]) {
+    smartAccountWallets[key] = lib
+  }
+  return {
+    biconomySmartAccountAddress: address
   }
 }
