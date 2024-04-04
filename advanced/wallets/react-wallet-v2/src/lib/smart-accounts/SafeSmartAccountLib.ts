@@ -13,7 +13,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const safeAccount = await signerToSafeSmartAccount(this.publicClient, {
       entryPoint: this.entryPoint,
       signer: this.signer,
-      safeVersion: '1.4.1'
+      safeVersion: '1.4.1',
+      safe4337ModuleAddress:'0x7D668E0A7acfeACC7907C33127c045418fe3c51a'
     })
     
     return {
