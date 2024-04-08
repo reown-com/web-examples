@@ -245,7 +245,6 @@ export default function SessionProposalModal() {
   const onApprove = useCallback(async () => {
     if (proposal && namespaces) {
       setIsLoadingApprove(true)
-      debugger
       try {
         if (reorderedEip155Accounts.length > 0) {
           namespaces.eip155.accounts = reorderedEip155Accounts
