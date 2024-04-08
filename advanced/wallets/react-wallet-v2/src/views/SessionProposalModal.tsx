@@ -174,13 +174,15 @@ export default function SessionProposalModal() {
   // the chains that are supported by the wallet from the proposal
   const supportedChains = useMemo(
     () =>
-      requestedChains.map(chain => {
-        const chainData = getChainData(chain!)
+      requestedChains
+        .map(chain => {
+          const chainData = getChainData(chain!)
 
-        if (!chainData) return null
+          if (!chainData) return null
 
-        return chainData
-      }),
+          return chainData
+        })
+        .filter(chain => chain), // removes null values
     [requestedChains]
   )
 
@@ -201,7 +203,7 @@ export default function SessionProposalModal() {
             .includes(chain!)
       )
   }, [proposal, supportedChains])
-  console.log('notSupportedChains', notSupportedChains)
+  console.log('notSupportedChains', { notSupportedChains, supportedChains })
   const getAddress = useCallback((namespace?: string) => {
     if (!namespace) return 'N/A'
     switch (namespace) {
@@ -243,7 +245,6 @@ export default function SessionProposalModal() {
   const onApprove = useCallback(async () => {
     if (proposal && namespaces) {
       setIsLoadingApprove(true)
-
       try {
         if (reorderedEip155Accounts.length > 0) {
           namespaces.eip155.accounts = reorderedEip155Accounts
@@ -284,7 +285,7 @@ export default function SessionProposalModal() {
     setIsLoadingReject(false)
     ModalStore.close()
   }, [proposal])
-
+  console.log('notSupportedChains', notSupportedChains)
   return (
     <RequestModal
       metadata={proposal.params.proposer.metadata}
@@ -292,8 +293,9 @@ export default function SessionProposalModal() {
       onReject={onReject}
       approveLoader={{ active: isLoadingApprove }}
       rejectLoader={{ active: isLoadingReject }}
-      infoBoxCondition={notSupportedChains.length > 0}
-      infoBoxText={`The following required chains are not supported by your wallet - ${notSupportedChains.toString()}`}
+      infoBoxCondition={notSupportedChains.length > 0 || supportedChains.length === 0}
+      disableApprove={notSupportedChains.length > 0 || supportedChains.length === 0}
+      infoBoxText={`The session cannot be approved because the wallet does not the support some or all of the proposed chains. Please inspect the console for more information.`}
     >
       <Row>
         <Col>
@@ -321,14 +323,14 @@ export default function SessionProposalModal() {
       <Grid.Container style={{ marginBottom: '10px', marginTop: '10px' }} justify={'space-between'}>
         <Grid>
           <Row style={{ color: 'GrayText' }}>Accounts</Row>
-          {supportedChains.length &&
+          {(supportedChains.length > 1 &&
             supportedChains.map((chain, i) => {
               return (
                 <Row key={i}>
                   <ChainAddressMini key={i} address={getAddress(chain?.namespace) || 'test'} />
                 </Row>
               )
-            })}
+            })) || <Row>Non available</Row>}
 
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
           {smartAccountEnabled &&
@@ -347,7 +349,7 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>
-          {supportedChains.length &&
+          {(supportedChains.length > 1 &&
             supportedChains.map((chain, i) => {
               if (!chain) {
                 return <></>
@@ -358,7 +360,7 @@ export default function SessionProposalModal() {
                   <ChainDataMini key={i} chainId={`${chain?.namespace}:${chain?.chainId}`} />
                 </Row>
               )
-            })}
+            })) || <Row>Non available</Row>}
           <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>
