@@ -20,6 +20,8 @@ interface IProps {
   infoBoxText?: string
   approveLoader?: LoaderProps
   rejectLoader?: LoaderProps
+  disableApprove?: boolean
+  disableReject?: boolean
 }
 export default function RequestModal({
   children,
@@ -30,7 +32,9 @@ export default function RequestModal({
   rejectLoader,
   intention,
   infoBoxCondition,
-  infoBoxText
+  infoBoxText,
+  disableApprove,
+  disableReject
 }: IProps) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const isScam = currentRequestVerifyContext?.verified.isScam
@@ -63,6 +67,8 @@ export default function RequestModal({
           rejectLoader={rejectLoader}
           infoBoxCondition={infoBoxCondition}
           infoBoxText={infoBoxText}
+          disableApprove={disableApprove}
+          disableReject={disableReject}
         />
       </>
     )
@@ -75,7 +81,9 @@ export default function RequestModal({
     metadata,
     onApprove,
     onReject,
-    rejectLoader
+    rejectLoader,
+    disableApprove,
+    disableReject
   ])
   return <Fragment>{isScam && !threatAcknowledged ? threatPromptContent : modalContent}</Fragment>
 }

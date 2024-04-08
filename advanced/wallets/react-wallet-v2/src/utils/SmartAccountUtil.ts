@@ -1,4 +1,4 @@
-import { BiconomySmartAccountLib } from './../lib/smart-accounts/BiconomySmartAccountLib';
+import { BiconomySmartAccountLib } from './../lib/smart-accounts/BiconomySmartAccountLib'
 import { Hex } from 'viem'
 import { SessionTypes } from '@walletconnect/types'
 import { Chain, allowedChains } from '@/consts/smartAccounts'
@@ -67,6 +67,7 @@ export function supportedAddressPriority(
     const chainId = id.replace(`${nameSpaceKey}:`, '')
     return providedAllowedChains.map(chain => chain?.id.toString()).includes(chainId)
   })
+  if (allowedChainIds.length === 0) return []
   const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
   const chain = providedAllowedChains.find(chain => chain?.id.toString() === chainIdParsed)!
   if (allowedChainIds.length > 0 && smartAccountAddress) {
