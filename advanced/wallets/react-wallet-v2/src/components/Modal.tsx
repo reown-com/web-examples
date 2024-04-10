@@ -12,6 +12,7 @@ import SessionSignTezosModal from '@/views/SessionSignTezosModal'
 import SessionSignKadenaModal from '@/views/SessionSignKadenaModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
+import SessionSendCallsModal from '@/views/SessionSendCallsModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
 import { useCallback, useMemo } from 'react'
@@ -37,6 +38,8 @@ export default function Modal() {
         return <SessionSignTypedDataModal />
       case 'SessionSendTransactionModal':
         return <SessionSendTransactionModal />
+      case 'SessionSendCallsModal':
+        return <SessionSendCallsModal />
       case 'SessionUnsuportedMethodModal':
         return <SessionUnsuportedMethodModal />
       case 'SessionSignCosmosModal':

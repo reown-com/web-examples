@@ -1,4 +1,4 @@
-import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS, EIP5792_METHODS, SendCallsParams, TEIP155Chain } from '@/data/EIP155Data'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import {
   getSignParamsMessage,
@@ -12,6 +12,7 @@ import { providers } from 'ethers'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import SettingsStore from '@/store/SettingsStore'
 import { smartAccountWallets } from './SmartAccountUtil'
+import { Address, Hex } from 'viem'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 const getWallet = async (params: any) => {
@@ -131,6 +132,25 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
         return formatJsonRpcError(id, error.message)
       }
 
+      case EIP5792_METHODS.WALLET_SEND_CALLS:
+        try {
+          // chainId on request Params should be same as request Event 
+          const sendCallParams:SendCallsParams = request.params as SendCallsParams
+          if(chainId.split(':')[1] !== BigInt(sendCallParams.chainId).toString()) 
+            return formatJsonRpcError(id, "ChainId mismatch")
+    
+          const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
+          const sendCalls = sendCallParams.calls
+          const connectedWallet = await wallet.connect(provider)
+          const hash = await connectedWallet.sendBatchTransaction(sendCalls)
+          const receipt = typeof hash === 'string' ? hash : hash?.hash // TODO improve interface
+          return formatJsonRpcResult(id, receipt)
+        } catch (error: any) {
+          console.error(error)
+          alert(error.message)
+          return formatJsonRpcError(id, error.message)
+        }
+        
     default:
       throw new Error(getSdkError('INVALID_METHOD').message)
   }

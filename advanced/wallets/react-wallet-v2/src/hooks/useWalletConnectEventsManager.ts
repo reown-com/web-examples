@@ -1,6 +1,9 @@
 import { Web3WalletTypes } from '@walletconnect/web3wallet'
 import { COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
-import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { EIP155_SIGNING_METHODS,
+  EIP5792_METHODS,
+  GetCapabilitiesResult,
+  supportedEIP5792Capabilities } from '@/data/EIP155Data'
 import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
 import { POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
 import { MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
@@ -14,6 +17,7 @@ import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
 import { TEZOS_SIGNING_METHODS } from '@/data/TezosData'
 import { KADENA_SIGNING_METHODS } from '@/data/KadenaData'
+import { formatJsonRpcResult } from '@json-rpc-tools/utils'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -41,12 +45,24 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   const onSessionRequest = useCallback(
     async (requestEvent: SignClientTypes.EventArguments['session_request']) => {
       console.log('session_request', requestEvent)
-      const { topic, params, verifyContext } = requestEvent
+      const { topic, params, verifyContext, id } = requestEvent
       const { request } = params
       const requestSession = web3wallet.engine.signClient.session.get(topic)
       // set the verify context so it can be displayed in the projectInfoCard
       SettingsStore.setCurrentRequestVerifyContext(verifyContext)
-
+      console.log("Got request for : ",request.method)
+      /**
+       * if the request method is wallet_getCapabilities, no need of open modal just need to
+       * send the supported EIP5792 capabilities,
+      */
+      if(request.method === EIP5792_METHODS.WALLET_GET_CAPABILITIES) {
+        const response = formatJsonRpcResult<GetCapabilitiesResult>(id, supportedEIP5792Capabilities)
+        await web3wallet.respondSessionRequest({
+          topic,
+          response
+        })
+        return
+      }
       switch (request.method) {
         case EIP155_SIGNING_METHODS.ETH_SIGN:
         case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
@@ -60,7 +76,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
         case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
           return ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
-
+        
+        case EIP5792_METHODS.WALLET_SEND_CALLS:
+          return ModalStore.open('SessionSendCallsModal', { requestEvent, requestSession })
+        
         case COSMOS_SIGNING_METHODS.COSMOS_SIGN_DIRECT:
         case COSMOS_SIGNING_METHODS.COSMOS_SIGN_AMINO:
           return ModalStore.open('SessionSignCosmosModal', { requestEvent, requestSession })

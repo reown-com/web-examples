@@ -133,3 +133,48 @@ export const EIP155_SIGNING_METHODS = {
   ETH_SEND_RAW_TRANSACTION: 'eth_sendRawTransaction',
   ETH_SEND_TRANSACTION: 'eth_sendTransaction'
 }
+
+/**
+ * EIP5792Methods
+ */
+export const EIP5792_METHODS = {
+  WALLET_GET_CAPABILITIES:'wallet_getCapabilities',
+  WALLET_SEND_CALLS:'wallet_sendCalls',
+}
+// capability names as string literals
+export type CapabilityName = 'atomicBatch' | 'paymasterService' | 'sessionKey';
+// Capability type where each key is a capability name and value has `supported` field
+export type Capabilities = {
+  [K in CapabilityName]?: {
+    supported: boolean;
+  };
+};
+// GetCapabilitiesResult type using mapped types
+export type GetCapabilitiesResult = Record<string, Capabilities>;
+
+// supportedEIP5792Capabilities object
+export const supportedEIP5792Capabilities: GetCapabilitiesResult = {
+  "0xaa36a7": {
+    // paymasterService: {
+    //   supported: true,
+    // },
+    // sessionKey: {
+    //   supported: true,
+    // },
+    atomicBatch: {
+      supported: true,
+    },
+  }
+};
+
+export type SendCallsParams = {
+  version: string;
+  chainId: `0x${string}`; // Hex chain id
+  from: `0x${string}`;
+  calls: {
+    to?: `0x${string}` | undefined;
+    data?: `0x${string}` | undefined;
+    value?: `0x${string}` | undefined; // Hex value
+  }[];
+  capabilities?: Record<string, any> | undefined;
+};

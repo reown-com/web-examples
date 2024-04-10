@@ -163,6 +163,21 @@ export class KernelSmartAccountLib implements EIP155Wallet {
 
     return txResult
   }
+  async sendBatchTransaction(args:{
+    to: Address;
+    value: bigint;
+    data: Hex;
+  }[]) {
+    console.log('Sending transaction from smart account', { type: this.type, args })
+    if (!this.client || !this.client.account) {
+    throw new Error('Client not initialized')
+    }
+    const txResult = await this.client.sendTransactions({
+      transactions: args,
+      account: this.client.account,
+    })
+    return txResult
+  }
 
   async issueSessionKey(address: `0x${string}`, permissions: string): Promise<string> {
     if (!this.publicClient) {
