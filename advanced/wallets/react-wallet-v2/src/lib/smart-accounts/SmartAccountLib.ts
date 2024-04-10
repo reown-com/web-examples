@@ -194,6 +194,14 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     if (!this.client || !this.client.account) {
     throw new Error('Client not initialized')
     }
+
+    /**
+     * instead of sending the transaction and waiting for transaction receipt
+     * I think it should submit the userOperation and return the userOperation hash,
+     * Might need to add getTransactionStatus(userOpHash) to get the status,
+     * might need to add getReceipt(userOpsHash) method to get the receipt.
+     */
+
     const txResult = await this.client.sendTransactions({
       transactions: args,
       account: this.client.account,

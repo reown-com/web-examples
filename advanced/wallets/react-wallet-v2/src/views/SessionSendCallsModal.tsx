@@ -1,14 +1,13 @@
 import { useCallback, useState } from 'react'
 import { Divider, Text } from '@nextui-org/react'
-
 import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
-import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
+import { approveEIP5792Request, rejectEIP5792Request } from '@/utils/EIP5792RequestHandlerUtils'
 
 export default function SessionSendCallsModal() {
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
@@ -30,7 +29,7 @@ export default function SessionSendCallsModal() {
       setIsLoadingApprove(true)
       try {
         console.log('Calls approved.')
-        const response = await approveEIP155Request(requestEvent)
+        const response = await approveEIP5792Request(requestEvent)
         await web3wallet.respondSessionRequest({
           topic,
           response
@@ -49,7 +48,7 @@ export default function SessionSendCallsModal() {
   const onReject = useCallback(async () => {
     if (requestEvent && topic) {
       setIsLoadingReject(true)
-      const response = rejectEIP155Request(requestEvent)
+      const response = rejectEIP5792Request(requestEvent)
       try {
         await web3wallet.respondSessionRequest({
           topic,

@@ -16,7 +16,7 @@ import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { EIP155_CHAINS, EIP155_SIGNING_METHODS, EIP5792_METHODS} from '@/data/EIP155Data'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS} from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 import { MULTIVERSX_CHAINS, MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
@@ -34,6 +34,7 @@ import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
 import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
+import { EIP5792_METHODS } from '@/data/EIP5792Data'
 
 const StyledText = styled(Text, {
   fontWeight: 400
