@@ -202,28 +202,29 @@ export abstract class SmartAccountLib implements EIP155Wallet {
      * might need to add getReceipt(userOpsHash) method to get the receipt.
      */
 
-    const txResult = await this.client.sendTransactions({
-      transactions: args,
-      account: this.client.account,
+    // const txResult = await this.client.sendTransactions({
+    //   transactions: args,
+    //   account: this.client.account,
+    // })
+    // return txResult
+
+    const userOp = await this.client.prepareUserOperationRequest({
+    userOperation: {
+      callData: await this.client.account.encodeCallData(args)
+    },
+    account: this.client.account
     })
-    return txResult
 
-    // const userOp = await this.client.prepareUserOperationRequest({
-    // userOperation: {
-    //   callData: await this.client.account.encodeCallData(args)
-    // },
-    // account: this.client.account
-    // })
+    userOp.preVerificationGas = 250_000n
+    const newSignature = await this.client.account.signUserOperation(userOp)
+    console.log('Signatures',{old: userOp.signature, new: newSignature});
 
-    // userOp.preVerificationGas = 250_000n
-    // const newSignature = await this.client.account.signUserOperation(userOp)
-    // console.log('Signatures',{old: userOp.signature, new: newSignature});
+    userOp.signature = newSignature
 
-    // userOp.signature = newSignature
-
-    // const userOpHash = await this.bundlerClient.sendUserOperation({
-    // userOperation: userOp
-    // })
+    const userOpHash = await this.bundlerClient.sendUserOperation({
+    userOperation: userOp
+    })
+    return userOpHash;
     // let userOpsReceipt = await this.bundlerClient.waitForUserOperationReceipt({
     //   hash: userOpHash
     // });
