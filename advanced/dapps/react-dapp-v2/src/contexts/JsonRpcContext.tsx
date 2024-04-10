@@ -30,6 +30,7 @@ import { PactNumber } from "@kadena/pactjs";
 import {
   KadenaAccount,
   eip712,
+  formatTestBatchCall,
   formatTestTransaction,
   getLocalStorageTestnetFlag,
   getProviderUrl,
@@ -49,6 +50,9 @@ import {
   DEFAULT_TEZOS_METHODS,
   DEFAULT_KADENA_METHODS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
+  DEFAULT_EIP5792_METHODS,
+  SendCallsParams,
+  GetCapabilitiesResult,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -62,6 +66,7 @@ import {
 } from "@multiversx/sdk-core";
 import { UserVerifier } from "@multiversx/sdk-wallet/out/userVerifier";
 import { SignClient } from "@walletconnect/sign-client/dist/types/client";
+import { parseEther } from "ethers/lib/utils";
 
 /**
  * Types
@@ -88,6 +93,8 @@ interface IContext {
     testSignPersonalMessage: TRpcRequestCallback;
     testSignTypedData: TRpcRequestCallback;
     testSignTypedDatav4: TRpcRequestCallback;
+    testWalletGetCapabilities: TRpcRequestCallback;
+    testWalletSendCalls: TRpcRequestCallback;
   };
   cosmosRpc: {
     testSignDirect: TRpcRequestCallback;
@@ -493,6 +500,86 @@ export function JsonRpcContextProvider({
           address,
           valid,
           result: signature,
+        };
+      }
+    ),
+    testWalletGetCapabilities: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        const params = [address]
+        // send request for wallet_getCapabilities
+        const capabilities = await client!.request<GetCapabilitiesResult>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
+            params: params,
+          },
+        });
+
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
+
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
+        }
+
+        // format displayed result
+        return {
+          method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
+          address,
+          valid: true,
+          result: JSON.stringify(capabilities),
+        };
+      }
+    ),
+    testWalletSendCalls: _createJsonRpcRequestHandler(
+      //Sample test call - batch multiple native send tx
+
+      async (chainId: string, address: string) => {
+        const caipAccountAddress = `${chainId}:${address}`;
+        const account = accounts.find(
+          (account) => account === caipAccountAddress
+        );
+        if (account === undefined)
+          throw new Error(`Account for ${caipAccountAddress} not found`);
+
+        const balance = BigNumber.from(balances[account][0].balance || "0");
+        if (balance.lt(parseEther('0.0002'))) {
+          return {
+            method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
+            address,
+            valid: false,
+            result: "Insufficient funds for batch call [minimum 0.0002ETH required excluding gas].",
+          };
+        }
+        
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
+        }
+        const sendCallsRequestParams:SendCallsParams = await formatTestBatchCall(account)
+        // send batch Tx
+        const txId = await client!.request<string>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
+            params: sendCallsRequestParams,
+          },
+        });
+        // format displayed result
+        return {
+          method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
+          address,
+          valid: true,
+          result: txId,
         };
       }
     ),

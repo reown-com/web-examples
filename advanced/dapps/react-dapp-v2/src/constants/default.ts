@@ -56,6 +56,37 @@ export const DEFAULT_APP_METADATA = {
 };
 
 /**
+ * EIP5792
+ */
+export enum DEFAULT_EIP5792_METHODS {
+  WALLET_GET_CAPABILITIES = "wallet_getCapabilities",
+  WALLET_SEND_CALLS = "wallet_sendCalls"
+}
+
+export type SendCallsParams = {
+  version: string;
+  chainId: `0x${string}`; // Hex chain id
+  from: `0x${string}`;
+  calls: {
+    to?: `0x${string}` | undefined;
+    data?: `0x${string}` | undefined;
+    value?: `0x${string}` | undefined; // Hex value
+  }[];
+  capabilities?: Record<string, any> | undefined;
+};
+
+// capability names as string literals
+export type CapabilityName = 'atomicBatch' | 'paymasterService' | 'sessionKey';
+// Capability type where each key is a capability name and value has `supported` field
+export type Capabilities = {
+  [K in CapabilityName]: {
+    supported: boolean;
+  };
+};
+// GetCapabilitiesResult type using mapped types
+export type GetCapabilitiesResult = Record<string, Capabilities>;
+
+/**
  * EIP155
  */
 export enum DEFAULT_EIP155_METHODS {
@@ -68,6 +99,12 @@ export enum DEFAULT_EIP155_OPTIONAL_METHODS {
   ETH_SIGN = "eth_sign",
   ETH_SIGN_TYPED_DATA = "eth_signTypedData",
   ETH_SIGN_TYPED_DATA_V4 = "eth_signTypedData_v4",
+  /**
+   * EIP5792 methods
+   * Adding it here so when session is requested following permission are also requested
+   */
+  WALLET_GET_CAPABILITIES = "wallet_getCapabilities",
+  WALLET_SEND_CALLS = "wallet_sendCalls"
 }
 
 export enum DEFAULT_EIP_155_EVENTS {
