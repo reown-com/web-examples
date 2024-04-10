@@ -9,7 +9,7 @@ const SLightbox = styled.div<{
 }>`
   transition: opacity 0.1s ease-in-out;
   text-align: center;
-  position: absolute;
+  position: fixed;
   width: 100vw;
   height: 100%;
   margin-left: -50vw;
