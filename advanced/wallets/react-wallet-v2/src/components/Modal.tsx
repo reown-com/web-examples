@@ -17,6 +17,7 @@ import { useSnapshot } from 'valtio'
 import { useCallback, useMemo } from 'react'
 import AuthRequestModal from '@/views/AuthRequestModal'
 import LoadingModal from '@/views/LoadingModal'
+import SessionSendCallsModal from '@/views/SessionSendCallsModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -37,6 +38,8 @@ export default function Modal() {
         return <SessionSignTypedDataModal />
       case 'SessionSendTransactionModal':
         return <SessionSendTransactionModal />
+      case 'SessionSendCallsModal':
+        return <SessionSendCallsModal />
       case 'SessionUnsuportedMethodModal':
         return <SessionUnsuportedMethodModal />
       case 'SessionSignCosmosModal':

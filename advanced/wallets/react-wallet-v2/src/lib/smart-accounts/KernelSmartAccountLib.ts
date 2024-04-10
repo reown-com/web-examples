@@ -1,5 +1,6 @@
 import {
   Address,
+  createClient,
   createPublicClient,
   encodeAbiParameters,
   encodePacked,
@@ -35,6 +36,9 @@ import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/_types/types'
 import { signerToDonutValidator } from './toDonutValidator'
 import { ENTRYPOINT_ADDRESS_V07_TYPE } from 'permissionless/types/entrypoint'
+import { PIMLICO_NETWORK_NAMES, UrlConfig } from '@/utils/SmartAccountUtil'
+import { createPimlicoBundlerClient } from 'permissionless/clients/pimlico'
+import { pimlicoBundlerActions } from 'permissionless/actions/pimlico'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -71,7 +75,6 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     if (!projectId) {
       throw new Error('ZeroDev project id expected')
     }
-
     //const bundlerRpc = http(`https://rpc.zerodev.app/api/v2/bundler/${projectId}`)
     const bundlerRpc = http(`https://meta-aa-provider.onrender.com/api/v3/bundler/${projectId}?provider=PIMLICO`)
     this.publicClient = createPublicClient({
@@ -255,5 +258,51 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     console.log('Transaction completed', { txResult })
 
     return txResult
+  }
+
+  async sendBatchTransaction(args:{
+      to: Address;
+      value: bigint;
+      data: Hex;
+  }[]) {
+    console.log('Sending transaction from smart account', { type: this.type, args })
+    if (!this.client || !this.client.account) {
+    throw new Error('Client not initialized')
+    }
+    const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
+    const bundlerUrl = http(`https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[this.chain.name]}/rpc?apikey=${apiKey}`)
+    
+    const pimlicoBundlerClient =  createClient({
+      transport: bundlerUrl,
+      chain: this.chain
+    }).extend(bundlerActions(ENTRYPOINT_ADDRESS_V07))
+    .extend(pimlicoBundlerActions(ENTRYPOINT_ADDRESS_V07))
+    
+    const userOp = await this.client.prepareUserOperationRequest({
+      userOperation: {
+        callData: await this.client.account.encodeCallData(args)
+      },
+      account: this.client.account
+    })
+   
+
+    const pimlicoGasPrice =  (await pimlicoBundlerClient.getUserOperationGasPrice()).fast
+    userOp.maxFeePerGas = pimlicoGasPrice.maxFeePerGas
+    userOp.maxPriorityFeePerGas = pimlicoGasPrice.maxPriorityFeePerGas
+
+    userOp.preVerificationGas = 250_000n
+    const newSignature = await this.client.account.signUserOperation(userOp)
+    console.log('Signatures',{old: userOp.signature, new: newSignature});
+    
+    userOp.signature = newSignature
+
+    const userOpHash = await this.client.sendUserOperation({
+      userOperation: userOp,
+      account: this.client.account
+    })
+    let userOpsReceipt = await pimlicoBundlerClient.waitForUserOperationReceipt({
+        hash: userOpHash
+      });
+    return userOpsReceipt?.receipt.transactionHash;
   }
 }

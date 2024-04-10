@@ -20,6 +20,7 @@ interface State {
     | 'SessionSignModal'
     | 'SessionSignTypedDataModal'
     | 'SessionSendTransactionModal'
+    | 'SessionSendCallsModal'
     | 'SessionUnsuportedMethodModal'
     | 'SessionSignCosmosModal'
     | 'SessionSignSolanaModal'

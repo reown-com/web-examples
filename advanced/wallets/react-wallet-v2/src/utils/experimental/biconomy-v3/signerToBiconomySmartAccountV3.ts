@@ -386,13 +386,29 @@ export async function signerToBiconomySmartAccountV3<
                     MODE_DEFAULT,
                     MODE_PAYLOAD
                 ])
-
+                const batchExecutionCalldata =  encodeAbiParameters(
+                    [
+                      {
+                        type: 'tuple[]',
+                        components: [
+                          { name: 'target', type: 'address' },
+                          { name: 'value', type: 'uint256' },
+                          { name: 'callData', type: 'bytes' },
+                        ],
+                      },
+                    ],
+                    [argsArray.map(({ to, value, data }) => {return {
+                      target: to,
+                      value,
+                      callData: data,
+                    }})],
+                  );
                 return encodeFunctionData({
                     abi: BiconomyExecuteAbi,
                     functionName: "execute",
                     args: [
                         mode,
-                        "0x" // abi.encode(executions) // TODO for args
+                        batchExecutionCalldata
                     ]
                 })
             }

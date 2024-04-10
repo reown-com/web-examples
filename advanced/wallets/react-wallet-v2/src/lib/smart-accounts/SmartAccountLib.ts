@@ -21,6 +21,7 @@ import {
   BundlerClient,
   ENTRYPOINT_ADDRESS_V06,
   ENTRYPOINT_ADDRESS_V07,
+  GetUserOperationReceiptReturnType,
   SmartAccountClient,
   SmartAccountClientConfig,
   bundlerActions,
@@ -171,6 +172,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const signature = await this.client.account.signTransaction(transaction)
     return signature || ''
   }
+
   async sendTransaction({ to, value, data }: { to: Address; value: bigint; data: Hex }) {
     console.log('Sending transaction from smart account', { type: this.type, to, value, data })
     if (!this.client || !this.client.account) {
@@ -204,11 +206,48 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const userOpHash = await this.bundlerClient.sendUserOperation({
       userOperation: userOp
     })
-    const txResult = await this.bundlerClient.getUserOperationReceipt({
-      hash: userOpHash
-    })
-    console.log('Transaction completed', { txResult })
+    let userOpsReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+        hash: userOpHash
+      });
+    return userOpsReceipt.receipt.transactionHash;
+  }
 
-    return txResult?.receipt.transactionHash
+  async sendBatchTransaction(args:{
+          to: Address;
+          value: bigint;
+          data: Hex;
+      }[]) {
+    console.log('Sending transaction from smart account', { type: this.type, args })
+    if (!this.client || !this.client.account) {
+      throw new Error('Client not initialized')
+    }
+    // const txResult = await this.client.sendTransaction({
+    //   to,
+    //   value,
+    //   data,
+    //   account: this.client.account,
+    //   chain: this.chain
+    // })
+    // return txResult
+    const userOp = await this.client.prepareUserOperationRequest({
+      userOperation: {
+        callData: await this.client.account.encodeCallData(args)
+      },
+      account: this.client.account
+    })
+
+    userOp.preVerificationGas = 250_000n
+    const newSignature = await this.client.account.signUserOperation(userOp)
+    console.log('Signatures',{old: userOp.signature, new: newSignature});
+    
+    userOp.signature = newSignature
+
+    const userOpHash = await this.bundlerClient.sendUserOperation({
+      userOperation: userOp
+    })
+    let userOpsReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+        hash: userOpHash
+      });
+    return userOpsReceipt.receipt.transactionHash;
   }
 }
