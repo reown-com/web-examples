@@ -203,6 +203,13 @@ const Home: NextPage = () => {
           await ethereumRpc.testWalletSendCalls(chainId, address);
         },
       },
+      [DEFAULT_EIP5792_METHODS.WALLET_GET_CALLS_STATUS]: {
+        method: DEFAULT_EIP5792_METHODS.WALLET_GET_CALLS_STATUS,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testWalletGetCallsStatus(chainId, address);
+        },
+      },
     };
 
     let availableActions: AccountAction[] = [];

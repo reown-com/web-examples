@@ -58,10 +58,11 @@ export const DEFAULT_APP_METADATA = {
 /**
  * EIP5792
  */
-export enum DEFAULT_EIP5792_METHODS {
-  WALLET_GET_CAPABILITIES = "wallet_getCapabilities",
-  WALLET_SEND_CALLS = "wallet_sendCalls"
-}
+export const DEFAULT_EIP5792_METHODS = {
+  WALLET_GET_CAPABILITIES : "wallet_getCapabilities",
+  WALLET_SEND_CALLS : "wallet_sendCalls",
+  WALLET_GET_CALLS_STATUS : 'wallet_getCallsStatus'
+} as const
 
 export type SendCallsParams = {
   version: string;
@@ -86,26 +87,41 @@ export type Capabilities = {
 // GetCapabilitiesResult type using mapped types
 export type GetCapabilitiesResult = Record<string, Capabilities>;
 
+export type GetCallsResult = {
+  status: 'PENDING' | 'CONFIRMED';
+  receipts?: {
+    logs: {
+      address: `0x${string}`;
+      data: `0x${string}`;
+      topics: `0x${string}`[];
+    }[];
+    status: `0x${string}`; // Hex 1 or 0 for success or failure, respectively
+    blockHash: `0x${string}`;
+    blockNumber: `0x${string}`;
+    gasUsed: `0x${string}`;
+    transactionHash: `0x${string}`;
+  }[];
+};
+
 /**
  * EIP155
  */
-export enum DEFAULT_EIP155_METHODS {
-  ETH_SEND_TRANSACTION = "eth_sendTransaction",
-  PERSONAL_SIGN = "personal_sign",
+export const DEFAULT_EIP155_METHODS = {
+  ETH_SEND_TRANSACTION : "eth_sendTransaction",
+  PERSONAL_SIGN : "personal_sign",
 }
 
-export enum DEFAULT_EIP155_OPTIONAL_METHODS {
-  ETH_SIGN_TRANSACTION = "eth_signTransaction",
-  ETH_SIGN = "eth_sign",
-  ETH_SIGN_TYPED_DATA = "eth_signTypedData",
-  ETH_SIGN_TYPED_DATA_V4 = "eth_signTypedData_v4",
-  /**
-   * EIP5792 methods
-   * Adding it here so when session is requested following permission are also requested
-   */
-  WALLET_GET_CAPABILITIES = "wallet_getCapabilities",
-  WALLET_SEND_CALLS = "wallet_sendCalls"
-}
+export const DEFAULT_EIP155_OPTIONAL_METHODS = {
+  ETH_SIGN_TRANSACTION : "eth_signTransaction",
+  ETH_SIGN : "eth_sign",
+  ETH_SIGN_TYPED_DATA : "eth_signTypedData",
+  ETH_SIGN_TYPED_DATA_V4 : "eth_signTypedData_v4",
+} as const
+
+export const DEFAULT_OPTIONAL_METHODS = {
+    ...DEFAULT_EIP155_OPTIONAL_METHODS ,
+    ...DEFAULT_EIP5792_METHODS
+  }
 
 export enum DEFAULT_EIP_155_EVENTS {
   ETH_CHAIN_CHANGED = "chainChanged",

@@ -53,6 +53,7 @@ import {
   DEFAULT_EIP5792_METHODS,
   SendCallsParams,
   GetCapabilitiesResult,
+  GetCallsResult,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -95,6 +96,7 @@ interface IContext {
     testSignTypedDatav4: TRpcRequestCallback;
     testWalletGetCapabilities: TRpcRequestCallback;
     testWalletSendCalls: TRpcRequestCallback;
+    testWalletGetCallsStatus: TRpcRequestCallback;
   };
   cosmosRpc: {
     testSignDirect: TRpcRequestCallback;
@@ -505,6 +507,16 @@ export function JsonRpcContextProvider({
     ),
     testWalletGetCapabilities: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
+
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
+        }
+
         const params = [address]
         // send request for wallet_getCapabilities
         const capabilities = await client!.request<GetCapabilitiesResult>({
@@ -516,6 +528,17 @@ export function JsonRpcContextProvider({
           },
         });
 
+        // format displayed result
+        return {
+          method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
+          address,
+          valid: true,
+          result: JSON.stringify(capabilities),
+        };
+      }
+    ),
+    testWalletGetCallsStatus: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
         //  split chainId
         const [namespace, reference] = chainId.split(":");
         const rpc = rpcProvidersByChainId[Number(reference)];
@@ -525,13 +548,24 @@ export function JsonRpcContextProvider({
             `Missing rpcProvider definition for chainId: ${chainId}`
           );
         }
+        //hardcoded valid userOpHash
+        const params = ['0xbab6e5b397964c0d867ccef539f929cb7ed2d0da3ae128a81ba8804bd92c572a']
+        // send request for wallet_getCallsStatus
+        const getCallsStatusResult = await client!.request<GetCallsResult>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_EIP5792_METHODS.WALLET_GET_CALLS_STATUS,
+            params: params,
+          },
+        });
 
         // format displayed result
         return {
           method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
           address,
           valid: true,
-          result: JSON.stringify(capabilities),
+          result: JSON.stringify(getCallsStatusResult),
         };
       }
     ),
@@ -555,7 +589,6 @@ export function JsonRpcContextProvider({
             result: "Insufficient funds for batch call [minimum 0.0002ETH required excluding gas].",
           };
         }
-        
         //  split chainId
         const [namespace, reference] = chainId.split(":");
         const rpc = rpcProvidersByChainId[Number(reference)];
@@ -571,7 +604,7 @@ export function JsonRpcContextProvider({
           chainId,
           request: {
             method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
-            params: sendCallsRequestParams,
+            params: [sendCallsRequestParams],
           },
         });
         // format displayed result
