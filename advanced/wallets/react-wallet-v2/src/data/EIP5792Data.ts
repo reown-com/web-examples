@@ -20,13 +20,14 @@ export type Capabilities = {
 export type GetCapabilitiesResult = Record<string, Capabilities>;
 
 export type GetCallsParams = string;
+export type ShowCallsParams = string;
 
 export type SendCallsParams = {
   version: string;
   chainId: `0x${string}`; // Hex chain id
   from: `0x${string}`;
   calls: {
-    to?: `0x${string}` | undefined;
+    to: `0x${string}`;
     data?: `0x${string}` | undefined;
     value?: `0x${string}` | undefined; // Hex value
   }[];

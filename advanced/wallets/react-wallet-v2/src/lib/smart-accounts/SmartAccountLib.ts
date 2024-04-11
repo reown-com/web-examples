@@ -20,6 +20,7 @@ import {
   BundlerClient,
   ENTRYPOINT_ADDRESS_V06,
   ENTRYPOINT_ADDRESS_V07,
+  GetUserOperationReceiptReturnType,
   SmartAccountClient,
   SmartAccountClientConfig,
   bundlerActions,
@@ -195,19 +196,6 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     throw new Error('Client not initialized')
     }
 
-    /**
-     * instead of sending the transaction and waiting for transaction receipt
-     * I think it should submit the userOperation and return the userOperation hash,
-     * Might need to add getTransactionStatus(userOpHash) to get the status,
-     * might need to add getReceipt(userOpsHash) method to get the receipt.
-     */
-
-    // const txResult = await this.client.sendTransactions({
-    //   transactions: args,
-    //   account: this.client.account,
-    // })
-    // return txResult
-
     const userOp = await this.client.prepareUserOperationRequest({
     userOperation: {
       callData: await this.client.account.encodeCallData(args)
@@ -225,9 +213,6 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     userOperation: userOp
     })
     return userOpHash;
-    // let userOpsReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-    //   hash: userOpHash
-    // });
-    // return userOpsReceipt.receipt.transactionHash;
+    
   }
 }

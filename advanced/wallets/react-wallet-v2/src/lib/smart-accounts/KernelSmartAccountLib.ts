@@ -172,11 +172,6 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     if (!this.client || !this.client.account) {
     throw new Error('Client not initialized')
     }
-    // const txResult = await this.client.sendTransactions({
-    //   transactions: args,
-    //   account: this.client.account,
-    // })
-    // return txResult
     const userOp = await this.client.prepareUserOperationRequest({
     userOperation: {
       callData: await this.client.account.encodeCallData(args)

@@ -21,7 +21,7 @@ export default function SessionSendCallsModal() {
   const params = requestEvent?.params
   const chainId = params?.chainId
   const request = params?.request
-  const transaction = request?.params.calls
+  const transaction = request?.params[0].calls
 
   // Handle approve action
   const onApprove = useCallback(async () => {
