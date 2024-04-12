@@ -10,12 +10,48 @@ import { ENTRYPOINT_ADDRESS_V06, GetUserOperationReceiptReturnType, createBundle
 import { http, toHex } from 'viem'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
+const getCallsReceipt = async (getCallParams:GetCallsParams) =>{
+    /**
+     * This is hardcode implementation of wallet_getCallsStatus
+     * as we are not maintaining the data for calls bundled right now.
+     * Getting directly from bundler the receipt on sepolia chain.
+     */
+  const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
+  const bundlerClient = createBundlerClient({
+    entryPoint: ENTRYPOINT_ADDRESS_V06,
+    transport: http(`https://api.pimlico.io/v1/sepolia/rpc?apikey=${apiKey}`)
+  }) 
+  const userOpReceipt = await bundlerClient.getUserOperationReceipt({
+      hash: getCallParams as `0x${string}`
+    }) as GetUserOperationReceiptReturnType|null
+  const receipt:GetCallsResult = {
+    status: userOpReceipt? 'CONFIRMED': 'PENDING',
+    receipts: userOpReceipt ?[
+      {
+        logs:userOpReceipt.logs.map(log => ({data:log.data,address:log.address,topics:log.topics})),
+        blockHash:userOpReceipt.receipt.blockHash,
+        blockNumber:toHex(userOpReceipt.receipt.blockNumber),
+        gasUsed:toHex(userOpReceipt.actualGasUsed) ,
+        transactionHash:userOpReceipt.receipt.transactionHash,
+        status: userOpReceipt.success?'0x1':'0x0'
+      }
+    ]:undefined
+  }
+  return receipt;
+}
+
+const getSendCallData = (sendCallParams:SendCallsParams) =>{
+  return sendCallParams.calls.map(call => ({
+    to:call.to,
+    value:BigInt(call.value || 0),
+    data:call.data||'0x'
+  }))
+}
 
 export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
   const { params, id } = requestEvent
   const { chainId, request } = params
   SettingsStore.setActiveChainId(chainId)
-
   switch (request.method) {
     case EIP5792_METHODS.WALLET_GET_CAPABILITIES:{
       const wallet = await getWallet(params)
@@ -26,34 +62,8 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
     }
     case EIP5792_METHODS.WALLET_GET_CALLS_STATUS:{
       try {
-        /**
-         * This is pretty much hardcode implementation of wallet_getCallsStatus
-         * as we are not maintaining the data for calls bundled right now.
-         */
-        const chain = EIP155_CHAINS[chainId as TEIP155Chain] 
-        const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
-        const bundlerClient = createBundlerClient({
-          entryPoint: ENTRYPOINT_ADDRESS_V06,
-          transport: http(`https://api.pimlico.io/v1/sepolia/rpc?apikey=${apiKey}`)
-        }) 
         const getCallParams = request.params[0] as GetCallsParams
-        const userOpReceipt = await bundlerClient.getUserOperationReceipt({
-            hash: getCallParams as `0x${string}`
-          }) as GetUserOperationReceiptReturnType|null
-        console.log(`userOpReceipt: ${userOpReceipt}`)
-        const receipt:GetCallsResult = {
-          status: userOpReceipt? 'CONFIRMED': 'PENDING',
-          receipts: userOpReceipt ?[
-            {
-              logs:userOpReceipt.logs.map(log => ({data:log.data,address:log.address,topics:log.topics})),
-              blockHash:userOpReceipt.receipt.blockHash,
-              blockNumber:toHex(userOpReceipt.receipt.blockNumber),
-              gasUsed:toHex(userOpReceipt.actualGasUsed) ,
-              transactionHash:userOpReceipt.receipt.transactionHash,
-              status: userOpReceipt.success?'0x1':'0x0'
-            }
-          ]:undefined
-        }
+        const receipt = await getCallsReceipt(getCallParams)
         return formatJsonRpcResult(id, receipt)
       } catch (error: any) {
         console.error(error)
@@ -70,25 +80,14 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
       try {
         const wallet = await getWallet(params)
         if(wallet instanceof EIP155Lib){
-          /**
-          * Not Supporting for batch calls on EOA for Now.
-          * if EOA, we can submit call one by one, but need to have a data structure
-          * to return bundle id, for all the calls, 
-          */
           return formatJsonRpcError(id, "Wallet currently don't support batch call for EOA")
         } 
         const isChainSupported = supportedEIP5792CapabilitiesForSCA[toHex(EIP155_CHAINS[chainId as TEIP155Chain].chainId)].atomicBatch?.supported || false
         if(!isChainSupported) return formatJsonRpcError(id, `Wallet currently don't support batch call for chainId ${chainId}`)
         // chainId on request Params should be same as request Event 
-        console.log(request.params)
         const sendCallParams:SendCallsParams = request.params[0] as SendCallsParams
-        if(chainId.split(':')[1] !== BigInt(sendCallParams.chainId).toString()) 
-          return formatJsonRpcError(id, "ChainId mismatch")
-        const sendCalls = sendCallParams.calls.map(call => ({
-          to:call.to,
-          value:BigInt(call.value || 0),
-          data:call.data||'0x'
-        }))
+        if(chainId.split(':')[1] !== BigInt(sendCallParams.chainId).toString())  return formatJsonRpcError(id, "ChainId mismatch")
+        const sendCalls = getSendCallData(sendCallParams)
         const userOpHash = await wallet.sendBatchTransaction(sendCalls)
         return formatJsonRpcResult(id, userOpHash)
       } catch (error: any) {

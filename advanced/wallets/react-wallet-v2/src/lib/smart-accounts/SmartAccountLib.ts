@@ -203,7 +203,6 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     account: this.client.account
     })
 
-    userOp.preVerificationGas = 250_000n
     const newSignature = await this.client.account.signUserOperation(userOp)
     console.log('Signatures',{old: userOp.signature, new: newSignature});
 
