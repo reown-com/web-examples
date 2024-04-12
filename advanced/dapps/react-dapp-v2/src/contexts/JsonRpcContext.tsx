@@ -562,7 +562,7 @@ export function JsonRpcContextProvider({
 
         // format displayed result
         return {
-          method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
+          method: DEFAULT_EIP5792_METHODS.WALLET_GET_CALLS_STATUS,
           address,
           valid: true,
           result: JSON.stringify(getCallsStatusResult),
