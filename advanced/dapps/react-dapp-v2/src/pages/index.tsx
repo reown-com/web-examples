@@ -21,6 +21,7 @@ import {
   DEFAULT_TRON_METHODS,
   DEFAULT_TEZOS_METHODS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
+  DEFAULT_EIP5792_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -186,6 +187,27 @@ const Home: NextPage = () => {
         callback: async (chainId: string, address: string) => {
           openRequestModal();
           await ethereumRpc.testSignTypedDatav4(chainId, address);
+        },
+      },
+      [DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES]: {
+        method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testWalletGetCapabilities(chainId, address);
+        },
+      },
+      [DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS]: {
+        method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testWalletSendCalls(chainId, address);
+        },
+      },
+      [DEFAULT_EIP5792_METHODS.WALLET_GET_CALLS_STATUS]: {
+        method: DEFAULT_EIP5792_METHODS.WALLET_GET_CALLS_STATUS,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testWalletGetCallsStatus(chainId, address);
         },
       },
     };

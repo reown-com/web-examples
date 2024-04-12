@@ -16,7 +16,7 @@ import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS} from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 import { MULTIVERSX_CHAINS, MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
@@ -34,6 +34,7 @@ import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
 import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
+import { EIP5792_METHODS } from '@/data/EIP5792Data'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -56,6 +57,11 @@ export default function SessionProposalModal() {
     // eip155
     const eip155Chains = Object.keys(EIP155_CHAINS)
     const eip155Methods = Object.values(EIP155_SIGNING_METHODS)
+
+    //eip5792
+    const eip5792Chains = Object.keys(EIP155_CHAINS)
+    const eip5792Methods = Object.values(EIP5792_METHODS)
+
     // cosmos
     const cosmosChains = Object.keys(COSMOS_MAINNET_CHAINS)
     const cosmosMethods = Object.values(COSMOS_SIGNING_METHODS)
@@ -91,7 +97,7 @@ export default function SessionProposalModal() {
     return {
       eip155: {
         chains: eip155Chains,
-        methods: eip155Methods,
+        methods: eip155Methods.concat(eip5792Methods),
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
       },

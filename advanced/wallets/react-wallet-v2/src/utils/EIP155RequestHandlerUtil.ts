@@ -1,9 +1,8 @@
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
-import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
+import { getWallet } from '@/utils/EIP155WalletUtil'
 import {
   getSignParamsMessage,
   getSignTypedDataParamsData,
-  getWalletAddressFromParams
 } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
@@ -11,56 +10,12 @@ import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import SettingsStore from '@/store/SettingsStore'
-import { smartAccountWallets } from './SmartAccountUtil'
+
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
-
-const getWallet = async (params: any) => {
-  const eoaWallet = eip155Wallets[getWalletAddressFromParams(eip155Addresses, params)]
-  if (eoaWallet) {
-    return eoaWallet
-  }
-
-  /**
-   * Smart accounts
-   */
-  const chainId = params?.chainId?.split(':')[1]
-  console.log('Chain ID', { chainId })
-  console.log('PARAMS', { params })
-
-  const address = getWalletAddressFromParams(
-    Object.keys(smartAccountWallets)
-      .filter(key => {
-        const parts = key.split(':')
-        return parts[0] === chainId
-      })
-      .map(key => {
-        return key.split(':')[1]
-      }),
-    params
-  )
-  if (!address) {
-    console.log('Library not initialized for requested address', {
-      address,
-      values: Object.keys(smartAccountWallets)
-    })
-    throw new Error('Library not initialized for requested address')
-  }
-  const lib = smartAccountWallets[`${chainId}:${address}`]
-  if (lib) {
-    return lib
-  }
-  console.log('Library not found', {
-    target: `${chainId}:address`,
-    values: Object.keys(smartAccountWallets)
-  })
-  throw new Error('Cannot find wallet for requested address')
-}
 
 export async function approveEIP155Request(requestEvent: RequestEventArgs) {
   const { params, id } = requestEvent
   const { chainId, request } = params
-
-  console.log(requestEvent, chainId, 'tests')
 
   SettingsStore.setActiveChainId(chainId)
 
@@ -130,7 +85,6 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
         alert(error.message)
         return formatJsonRpcError(id, error.message)
       }
-
     default:
       throw new Error(getSdkError('INVALID_METHOD').message)
   }

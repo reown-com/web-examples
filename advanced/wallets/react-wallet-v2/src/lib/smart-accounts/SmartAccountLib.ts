@@ -20,6 +20,7 @@ import {
   BundlerClient,
   ENTRYPOINT_ADDRESS_V06,
   ENTRYPOINT_ADDRESS_V07,
+  GetUserOperationReceiptReturnType,
   SmartAccountClient,
   SmartAccountClientConfig,
   bundlerActions,
@@ -183,5 +184,34 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     console.log('Transaction completed', { txResult })
 
     return txResult
+  }
+
+  async sendBatchTransaction(args:{
+    to: Address;
+    value: bigint;
+    data: Hex;
+  }[]) {
+    console.log('Sending transaction from smart account', { type: this.type, args })
+    if (!this.client || !this.client.account) {
+    throw new Error('Client not initialized')
+    }
+
+    const userOp = await this.client.prepareUserOperationRequest({
+    userOperation: {
+      callData: await this.client.account.encodeCallData(args)
+    },
+    account: this.client.account
+    })
+
+    const newSignature = await this.client.account.signUserOperation(userOp)
+    console.log('Signatures',{old: userOp.signature, new: newSignature});
+
+    userOp.signature = newSignature
+
+    const userOpHash = await this.bundlerClient.sendUserOperation({
+    userOperation: userOp
+    })
+    return userOpHash;
+    
   }
 }
