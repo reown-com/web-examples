@@ -16,7 +16,7 @@ import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { EIP155_CHAINS, EIP155_SIGNING_METHODS} from '@/data/EIP155Data'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 import { MULTIVERSX_CHAINS, MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
@@ -253,7 +253,8 @@ export default function SessionProposalModal() {
       setIsLoadingApprove(true)
       try {
         if (reorderedEip155Accounts.length > 0) {
-          namespaces.eip155.accounts = reorderedEip155Accounts
+          // we should append the smart accounts to the available eip155 accounts
+          namespaces.eip155.accounts = namespaces.eip155.accounts.concat(reorderedEip155Accounts)
         }
 
         await web3wallet.approveSession({
