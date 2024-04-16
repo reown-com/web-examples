@@ -169,38 +169,9 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     return signature || ''
   }
   async sendTransaction({ to, value, data }: { to: Address; value: bigint; data: Hex }) {
-    console.log('Sending transaction from smart account', { type: this.type, to, value, data })
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
-    const accountDeployed = await isSmartAccountDeployed(this.publicClient,this.client.account.address)
-    /**
-     * this is just a temporary fix for safe7579 modular account
-     * is safe7579Account is not depoyed the need to create 
-     * one useroperation which first deploy and setup the account ,
-     * second user operation will be used to call the desired actions 
-     * */ 
-    if(this.type === "Safe" && this.client.name === "Safe7579SmartAccount" && !accountDeployed){
-      const setUpUserOp = await this.client.prepareUserOperationRequest({
-        userOperation: {
-          callData: await this.client.account.encodeCallData({ to, value, data }),
-        },
-        account: this.client.account,
-        })
-        const newSignature = await this.client.account.signUserOperation(setUpUserOp)
-        console.log('Signatures',{old: setUpUserOp.signature, new: newSignature});
-
-        setUpUserOp.signature = newSignature
-
-        const setUpUserOpHash = await this.bundlerClient.sendUserOperation({
-        userOperation: setUpUserOp
-        })
-        const txHash = await this.bundlerClient.waitForUserOperationReceipt({
-          hash:setUpUserOpHash
-        })
-        console.log(`safe setup txHash: ${txHash}`)
-    }
-
     const txResult = await this.client.sendTransaction({
       to,
       value,
@@ -208,7 +179,6 @@ export abstract class SmartAccountLib implements EIP155Wallet {
       account: this.client.account,
       chain: this.chain
     })
-    console.log('Transaction completed', { txResult })
 
     return txResult
   }
@@ -218,38 +188,10 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     value: bigint;
     data: Hex;
   }[]) {
-    console.log('Sending transaction from smart account', { type: this.type, args })
     if (!this.client || !this.client.account) {
-    throw new Error('Client not initialized')
+      throw new Error('Client not initialized')
     }
-    const accountDeployed = await isSmartAccountDeployed(this.publicClient,this.client.account.address)
-    /**
-     * this is just a temporary fix for safe7579 modular account
-     * is safe7579Account is not depoyed the need to create 
-     * one useroperation which first deploy and setup the account ,
-     * second user operation will be used to call the desired actions 
-     * */ 
-    if(this.type === "Safe" && this.client.name === "Safe7579SmartAccount" && !accountDeployed){
-      const setUpUserOp = await this.client.prepareUserOperationRequest({
-        userOperation: {
-          callData: await this.client.account.encodeCallData(args),
-        },
-        account: this.client.account,
-        })
-        const newSignature = await this.client.account.signUserOperation(setUpUserOp)
-        console.log('Signatures',{old: setUpUserOp.signature, new: newSignature});
-
-        setUpUserOp.signature = newSignature
-
-        const setUpUserOpHash = await this.bundlerClient.sendUserOperation({
-        userOperation: setUpUserOp
-        })
-        const txHash = await this.bundlerClient.waitForUserOperationReceipt({
-          hash:setUpUserOpHash
-        })
-        console.log(`safe setup txHash: ${txHash}`)
-    }
-
+    
     const userOp = await this.client.prepareUserOperationRequest({
     userOperation: {
       callData: await this.client.account.encodeCallData(args)
@@ -258,8 +200,6 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     })
 
     const newSignature = await this.client.account.signUserOperation(userOp)
-    console.log('Signatures',{old: userOp.signature, new: newSignature});
-
     userOp.signature = newSignature
 
     const userOpHash = await this.bundlerClient.sendUserOperation({

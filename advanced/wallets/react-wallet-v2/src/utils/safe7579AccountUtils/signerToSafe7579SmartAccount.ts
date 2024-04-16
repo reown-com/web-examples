@@ -268,7 +268,6 @@ export type SignerToSafe7579SmartAccountParameters<
 > = Prettify<{
     signer: SmartAccountSigner<TSource, TAddress>
     entryPoint: entryPoint
-    address?: Address
     index?: bigint
     factoryAddress?: Address
     initialValidatorAddress?: Address
@@ -277,12 +276,11 @@ export type SignerToSafe7579SmartAccountParameters<
 /**
  * Build a Safe7579 modular smart account from a private key, that use the ECDSA signer behind the scene
  * @param client
- * @param privateKey
+ * @param signer
  * @param entryPoint
  * @param index
  * @param factoryAddress
- * @param accountLogicAddress
- * @param ecdsaValidatorAddress
+ * @param initialValidatorAddress
  */
 export async function signerToSafe7579SmartAccount<
     entryPoint extends ENTRYPOINT_ADDRESS_V07_TYPE,
@@ -294,7 +292,6 @@ export async function signerToSafe7579SmartAccount<
     client: Client<TTransport, TChain, undefined>,
     {
         signer,
-        address,
         entryPoint: entryPointAddress,
         index = 0n,
         factoryAddress = SAFE_ACCOUNT_FACTORY_ADDRESS,
@@ -319,8 +316,7 @@ export async function signerToSafe7579SmartAccount<
 
     // Fetch account address and chain id
     const [accountAddress, chainId] = await Promise.all([
-        address ??
-            getAccountAddress<entryPoint, TTransport, TChain>({
+        getAccountAddress<entryPoint, TTransport, TChain>({
                 client,
                 factoryAddress,
                 initialValidatorAddress,
