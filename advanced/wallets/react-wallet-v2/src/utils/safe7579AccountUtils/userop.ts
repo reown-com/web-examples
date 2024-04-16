@@ -1,9 +1,9 @@
-import AccountInterface from "./abis/Account.json";
+import { executeAbi } from "./abis/Account";
 import {  Address,  Hex, encodeFunctionData,  encodeAbiParameters,  encodePacked, } from "viem";
 
 export const CALL_TYPE = {
-  SINGLE: "0x0000000000000000000000000000000000000000000000000000000000000000",
-  BATCH: "0x0100000000000000000000000000000000000000000000000000000000000000",
+  SINGLE: "0x0000000000000000000000000000000000000000000000000000000000000000" as `0x${string}`,
+  BATCH: "0x0100000000000000000000000000000000000000000000000000000000000000" as `0x${string}`,
 };
 
 export function encodeUserOpCallData({
@@ -17,7 +17,7 @@ export function encodeUserOpCallData({
     const { target, value, callData } = actions[0];
     return encodeFunctionData({
       functionName: "execute",
-      abi: AccountInterface.abi,
+      abi: executeAbi,
       args: [
         CALL_TYPE.SINGLE,
         encodePacked(
@@ -29,7 +29,7 @@ export function encodeUserOpCallData({
   } else {
     return encodeFunctionData({
       functionName: "execute",
-      abi: AccountInterface.abi,
+      abi: executeAbi,
       args: [
         CALL_TYPE.BATCH,
         encodeAbiParameters(

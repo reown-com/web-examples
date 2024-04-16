@@ -1,7 +1,4 @@
 import type {  TypedData } from "viem"
-import Launchpad from "./abis/Launchpad.json";
-import AccountFactory from "./abis/AccountFactory.json";
-import AccountInterface from "./abis/Account.json";
 import {
     type Address,
     type Chain,
@@ -27,6 +24,9 @@ import { getAccountNonce, getUserOperationHash, isSmartAccountDeployed } from "p
 import { Prettify, } from "viem/chains"
 import { LAUNCHPAD_ADDRESS, SAFE_7579_ADDRESS, SAFE_ACCOUNT_FACTORY_ADDRESS, SAFE_SINGLETON_ADDRESS, VALIDATOR_ADDRESS } from "./constants"
 import { CALL_TYPE, encodeUserOpCallData } from "./userop"
+import { initSafe7579Abi, preValidationSetupAbi, predictSafeAddressAbi, setupSafeAbi } from "./abis/Launchpad";
+import { createProxyWithNonceAbi, proxyCreationCodeAbi } from "./abis/AccountFactory";
+import {  executeAbi } from "./abis/Account";
 
 export type Safe7579SmartAccount<
     entryPoint extends ENTRYPOINT_ADDRESS_V07_TYPE,
@@ -144,7 +144,7 @@ const getInitData= (owner:Address,initialValidators:InitialModule[]) => {
     threshold: BigInt(1),
     setupTo: LAUNCHPAD_ADDRESS,
     setupData: encodeFunctionData({
-      abi: Launchpad.abi,
+      abi: initSafe7579Abi,
       functionName: "initSafe7579",
       args: [
         SAFE_7579_ADDRESS,
@@ -192,7 +192,7 @@ const getAccountInitCode = async ({
     const initData = getInitData(owner,initialValidators)
     const initHash = keccak256(encodeAbiParameters(initDataAbi, [initData]));
     const factoryInitializer = encodeFunctionData({
-      abi: Launchpad.abi,
+      abi: preValidationSetupAbi,
       functionName: "preValidationSetup",
       args: [initHash, zeroAddress, ""],
     });
@@ -200,9 +200,9 @@ const getAccountInitCode = async ({
     const salt = keccak256(stringToBytes(index.toString()));
    
     const initCode =  encodeFunctionData({
-          abi: AccountFactory.abi,
+          abi: createProxyWithNonceAbi,
           functionName: "createProxyWithNonce",
-          args: [LAUNCHPAD_ADDRESS, factoryInitializer, salt],
+          args: [LAUNCHPAD_ADDRESS, factoryInitializer, BigInt(salt)],
         });
     return initCode
 }
@@ -231,7 +231,7 @@ const getAccountAddress = async <
   const initData = getInitData(owner,initialValidators)
   const initHash = keccak256(encodeAbiParameters(initDataAbi, [initData]));
   const factoryInitializer = encodeFunctionData({
-    abi: Launchpad.abi,
+    abi: preValidationSetupAbi,
     functionName: "preValidationSetup",
     args: [initHash, zeroAddress, ""],
   });
@@ -240,14 +240,14 @@ const getAccountAddress = async <
   
   const safeProxyCreationCode = (await publicClient.readContract({
     address:  factoryAddress, // SAFE_ACCOUNT_FACTORY_ADDRESS,
-    abi: AccountFactory.abi,
+    abi: proxyCreationCodeAbi,
     functionName: "proxyCreationCode",
     args: [],
   })) as Hex;
 
   const address = (await publicClient.readContract({
     address: LAUNCHPAD_ADDRESS,
-    abi: Launchpad.abi,
+    abi: predictSafeAddressAbi,
     functionName: "predictSafeAddress",
     args: [
       LAUNCHPAD_ADDRESS,
@@ -465,7 +465,7 @@ export async function signerToSafe7579SmartAccount<
       if (!smartAccountDeployed) {
         const initData = getInitData(viemSigner.address,getInitialValidators([initialValidatorAddress]))
         return encodeFunctionData({
-          abi: Launchpad.abi,
+          abi: setupSafeAbi,
           functionName: "setupSafe",
           args: [initData],
         })
@@ -481,7 +481,7 @@ export async function signerToSafe7579SmartAccount<
         console.log("argsArray", argsArray)
         return encodeFunctionData({
           functionName: "execute",
-          abi: AccountInterface.abi,
+          abi: executeAbi,
           args: [
             CALL_TYPE.BATCH,
             encodeAbiParameters(
@@ -518,7 +518,7 @@ export async function signerToSafe7579SmartAccount<
       }
       return encodeFunctionData({
         functionName: "execute",
-        abi: AccountInterface.abi,
+        abi: executeAbi,
         args: [
           CALL_TYPE.SINGLE,
           encodePacked(
