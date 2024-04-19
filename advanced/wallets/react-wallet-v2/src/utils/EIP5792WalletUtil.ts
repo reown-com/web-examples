@@ -8,11 +8,10 @@ export function getWalletCapabilities(addresses:string[]){
       // address will be the last index element whether
       // its a simple address or namespace:chainId:address
       const addr = namespacesAddress[namespacesAddress.length - 1 ] ;
-      
-      if(eip155Addresses.includes(addr) && Object.keys(supportedEIP5792CapabilitiesForEOA).length !== 0){
-        walletCapabilities[addr] = supportedEIP5792CapabilitiesForEOA
+      if(eip155Addresses.includes(addr)){
+        // no capabilities support for EOA for now.
+        return;
       }
-      
       walletCapabilities[addr] = supportedEIP5792CapabilitiesForSCA
       
   })
