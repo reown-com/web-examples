@@ -35,6 +35,7 @@ import SettingsStore from '@/store/SettingsStore'
 import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
+import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -253,13 +254,17 @@ export default function SessionProposalModal() {
       setIsLoadingApprove(true)
       try {
         if (reorderedEip155Accounts.length > 0) {
-          // we should append the smart accounts to the available eip155 accounts
-          namespaces.eip155.accounts = namespaces.eip155.accounts.concat(reorderedEip155Accounts)
+          // reorderedEip155Accounts includes Smart Accounts(if enabled) and EOA's
+          namespaces.eip155.accounts = reorderedEip155Accounts
         }
-
+        //get capabilities for all reorderedEip155Accounts in wallet
+        const capabilities = getWalletCapabilities(reorderedEip155Accounts)
+        const sessionProperties = { capabilities: JSON.stringify(capabilities) }
+       
         await web3wallet.approveSession({
           id: proposal.id,
-          namespaces
+          namespaces,
+          sessionProperties
         })
         SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
       } catch (e) {

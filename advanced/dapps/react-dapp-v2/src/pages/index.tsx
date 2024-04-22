@@ -22,6 +22,7 @@ import {
   DEFAULT_TEZOS_METHODS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
   DEFAULT_EIP5792_METHODS,
+  GetCapabilitiesResult,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -45,6 +46,7 @@ import { useChainData } from "../contexts/ChainDataContext";
 import Icon from "../components/Icon";
 import OriginSimulationDropdown from "../components/OriginSimulationDropdown";
 import LoaderModal from "../modals/LoaderModal";
+import { numberToHex } from "@walletconnect/encoding";
 
 // Normal import does not work here
 const { version } = require("@walletconnect/sign-client/package.json");
@@ -145,7 +147,7 @@ const Home: NextPage = () => {
     });
   }
 
-  const getEthereumActions = (): AccountAction[] => {
+  const getEthereumActions = (chainId:string,address:string): AccountAction[] => {
     const actions = {
       [DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION]: {
         method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
@@ -213,17 +215,35 @@ const Home: NextPage = () => {
     };
 
     let availableActions: AccountAction[] = [];
-
+    const chainIdAsHex = `0x${numberToHex(parseInt(chainId))}`
+    const capabilitiesJson = session?.sessionProperties?.['capabilities']
+    const walletCapabilities = capabilitiesJson && JSON.parse(capabilitiesJson)
     session?.namespaces?.["eip155"].methods.forEach((methodName) => {
-      const action: AccountAction | undefined =
-        actions[methodName as keyof typeof actions];
-      if (action) {
-        availableActions.push(action);
+        const action: AccountAction | undefined = actions[methodName as keyof typeof actions];
+        // Determine if the method requires additional capability checks
+        const requiresCapabilityCheck = ["wallet_sendCalls", "wallet_getCallsStatus"].includes(methodName);
+        // Check capabilities only if the method requires it
+        if (!requiresCapabilityCheck || hasEIP7592RequiredCapabilities(address, chainIdAsHex, walletCapabilities)) {
+          availableActions.push(action);
+        }
       }
-    });
+    );
 
     return availableActions;
   };
+
+  const hasEIP7592RequiredCapabilities = (address: string, chainId: string, walletCapabilities: any): boolean => {
+    if(!walletCapabilities) return false;
+    const addressCapabilities: GetCapabilitiesResult | undefined = walletCapabilities[address];
+    if (
+      addressCapabilities &&
+      addressCapabilities[chainId] &&
+      (addressCapabilities[chainId]['atomicBatch']?.supported ||
+        addressCapabilities[chainId]['paymasterService']?.supported ||
+        addressCapabilities[chainId]['sessionKey']?.supported)
+    ) return true; // Capabilities are supported
+    return false; // Capabilities are not supported or not defined
+  }
 
   const getCosmosActions = (): AccountAction[] => {
     const onSignDirect = async (chainId: string, address: string) => {
@@ -425,11 +445,11 @@ const Home: NextPage = () => {
     ];
   };
 
-  const getBlockchainActions = (chainId: string) => {
-    const [namespace] = chainId.split(":");
+  const getBlockchainActions = (account:string) => {
+    const [namespace, chainId, address] = account.split(":");
     switch (namespace) {
       case "eip155":
-        return getEthereumActions();
+        return getEthereumActions(chainId,address);
       case "cosmos":
         return getCosmosActions();
       case "solana":
@@ -547,7 +567,7 @@ const Home: NextPage = () => {
                 address={address}
                 chainId={chainId}
                 balances={balances}
-                actions={getBlockchainActions(chainId)}
+                actions={getBlockchainActions(account)}
               />
             );
           })}
