@@ -41,38 +41,6 @@ type TPrimaryType =
  * The account creation ABI for Safe7579 Smart Account
  */
 
-const createAccountAbi = [
-    {
-        inputs: [
-            {
-                internalType: "address",
-                name: "validationModule",
-                type: "address"
-            },
-            {
-                internalType: "bytes",
-                name: "moduleInstallData",
-                type: "bytes"
-            },
-            {
-                internalType: "uint256",
-                name: "index",
-                type: "uint256"
-            }
-        ],
-        name: "createAccount",
-        outputs: [
-            {
-                internalType: "address payable",
-                name: "",
-                type: "address"
-            }
-        ],
-        stateMutability: "payable",
-        type: "function"
-    }
-] as const
-
 type InitialModule = {
   module: Address;
   initData: Hex;
@@ -87,56 +55,7 @@ function getInitialValidators(initialValidatorModuleAddress:Address[]): InitialM
   })
   return initialValidators;
 }
-const initDataAbi = [
-  {
-    components: [
-      {
-        name: "singleton",
-        type: "address",
-      },
-      {
-        name: "owners",
-        type: "address[]",
-      },
-      {
-        name: "threshold",
-        type: "uint256",
-      },
-      {
-        name: "setupTo",
-        type: "address",
-      },
-      {
-        name: "setupData",
-        type: "bytes",
-      },
-      {
-        name: "safe7579",
-        type: "address",
-      },
-      {
-        components: [
-          {
-            name: "module",
-            type: "address",
-          },
-          {
-            name: "initData",
-            type: "bytes",
-          },
-        ],
-        name: "validators",
-        type: "tuple[]",
-      },
-      {
-        name: "callData",
-        type: "bytes",
-      },
-    ],
-    name: "InitData",
-    type: "tuple",
-  },
-];
+
 const getInitData= (owner:Address,initialValidators:InitialModule[]) => {
   return {
     singleton: SAFE_SINGLETON_ADDRESS,
@@ -193,7 +112,6 @@ const getAccountInitCode = async <
     const initialValidators = getInitialValidators([initialValidatorAddress]);
     const initData = getInitData(owner,initialValidators)
     const publicClient = client.extend(publicActions)
-    // const initHash = keccak256(encodeAbiParameters(initDataAbi, [initData]));
     const initHash = (await publicClient.readContract({
       address: LAUNCHPAD_ADDRESS,
       abi: hashAbi,
@@ -239,7 +157,6 @@ const getAccountAddress = async <
   const initialValidators = getInitialValidators([initialValidatorAddress]);
   const publicClient = client.extend(publicActions)
   const initData = getInitData(owner,initialValidators)
-  // const initHash = keccak256(encodeAbiParameters(initDataAbi, [initData]));
   const initHash = (await publicClient.readContract({
     address: LAUNCHPAD_ADDRESS,
     abi: hashAbi,
