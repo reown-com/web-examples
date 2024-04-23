@@ -155,7 +155,7 @@ export function JsonRpcContextProvider({
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<IFormattedRpcResponse | null>();
   const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
-
+  const [lastTxId, setLastTxId] = useState<`0x${string}`>()
   const [kadenaAccount, setKadenaAccount] = useState<KadenaAccount | null>(
     null
   );
@@ -548,8 +548,9 @@ export function JsonRpcContextProvider({
             `Missing rpcProvider definition for chainId: ${chainId}`
           );
         }
+        if(lastTxId == undefined) throw new Error(`transaction id  ${lastTxId}, make sure call sendCalls returns successfully. `);
         //hardcoded valid userOpHash
-        const params = ['0xbab6e5b397964c0d867ccef539f929cb7ed2d0da3ae128a81ba8804bd92c572a']
+        const params = [lastTxId] 
         // send request for wallet_getCallsStatus
         const getCallsStatusResult = await client!.request<GetCallsResult>({
           topic: session!.topic,
@@ -607,6 +608,8 @@ export function JsonRpcContextProvider({
             params: [sendCallsRequestParams],
           },
         });
+        // store the last transactionId to use it for wallet_getCallsReceipt
+        setLastTxId((txId && txId.startsWith('0x')) ? txId as `0x${string}` : undefined)
         // format displayed result
         return {
           method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
