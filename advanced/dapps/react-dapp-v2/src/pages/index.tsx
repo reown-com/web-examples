@@ -47,6 +47,7 @@ import Icon from "../components/Icon";
 import OriginSimulationDropdown from "../components/OriginSimulationDropdown";
 import LoaderModal from "../modals/LoaderModal";
 import { numberToHex } from "@walletconnect/encoding";
+import RequestLoaderModal from "../modals/RequestLoaderModal";
 
 // Normal import does not work here
 const { version } = require("@walletconnect/sign-client/package.json");
@@ -58,6 +59,7 @@ const Home: NextPage = () => {
   const openPairingModal = () => setModal("pairing");
   const openPingModal = () => setModal("ping");
   const openRequestModal = () => setModal("request");
+  const openRequestLoaderModal = () => setModal("requestLoader");
   const openDisconnectModal = () => setModal("disconnect");
 
   // Initialize the WalletConnect client.
@@ -194,7 +196,7 @@ const Home: NextPage = () => {
       [DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES]: {
         method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
         callback: async (chainId: string, address: string) => {
-          openRequestModal();
+          openRequestLoaderModal();
           await ethereumRpc.testWalletGetCapabilities(chainId, address);
         },
       },
@@ -500,6 +502,8 @@ const Home: NextPage = () => {
         );
       case "ping":
         return <PingModal pending={isRpcRequestPending} result={rpcResult} />;
+      case "requestLoader":
+        return <RequestLoaderModal pending={isRpcRequestPending} result={rpcResult} />;
       case "disconnect":
         return <LoaderModal title={"Disconnecting..."} />;
       default:

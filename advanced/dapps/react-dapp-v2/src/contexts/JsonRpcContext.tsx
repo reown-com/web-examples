@@ -518,15 +518,21 @@ export function JsonRpcContextProvider({
         }
 
         const params = [address]
+        // check the session.sessioProperties first for capabilities
+        const chainIdAsHex = `0x${encoding.numberToHex(parseInt(chainId))}`
+        const capabilitiesJson = session?.sessionProperties?.['capabilities']
+        const walletCapabilities = capabilitiesJson && JSON.parse(capabilitiesJson)
+        let capabilities = walletCapabilities[address] as GetCapabilitiesResult|undefined
         // send request for wallet_getCapabilities
-        const capabilities = await client!.request<GetCapabilitiesResult>({
-          topic: session!.topic,
-          chainId,
-          request: {
-            method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
-            params: params,
-          },
-        });
+        if(!capabilities)
+          capabilities = await client!.request<GetCapabilitiesResult>({
+            topic: session!.topic,
+            chainId,
+            request: {
+              method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
+              params: params,
+            },
+          });
 
         // format displayed result
         return {
@@ -548,7 +554,7 @@ export function JsonRpcContextProvider({
             `Missing rpcProvider definition for chainId: ${chainId}`
           );
         }
-        if(lastTxId == undefined) throw new Error(`transaction id  ${lastTxId}, make sure call sendCalls returns successfully. `);
+        if(lastTxId == undefined) throw new Error(`Last transaction id  ${lastTxId}, make sure call to sendCalls returns successfully. `);
         //hardcoded valid userOpHash
         const params = [lastTxId] 
         // send request for wallet_getCallsStatus
