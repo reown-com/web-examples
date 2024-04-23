@@ -24,7 +24,7 @@ import { getAccountNonce, getUserOperationHash, isSmartAccountDeployed } from "p
 import { Prettify, } from "viem/chains"
 import { LAUNCHPAD_ADDRESS, SAFE_7579_ADDRESS, SAFE_ACCOUNT_FACTORY_ADDRESS, SAFE_SINGLETON_ADDRESS, VALIDATOR_ADDRESS } from "./constants"
 import { CALL_TYPE, encodeUserOpCallData } from "./userop"
-import { initSafe7579Abi, preValidationSetupAbi, predictSafeAddressAbi, setupSafeAbi } from "./abis/Launchpad";
+import { hashAbi, initSafe7579Abi, preValidationSetupAbi, predictSafeAddressAbi, setupSafeAbi } from "./abis/Launchpad";
 import { createProxyWithNonceAbi, proxyCreationCodeAbi } from "./abis/AccountFactory";
 import {  executeAbi } from "./abis/Account";
 
@@ -148,15 +148,11 @@ const getInitData= (owner:Address,initialValidators:InitialModule[]) => {
       functionName: "initSafe7579",
       args: [
         SAFE_7579_ADDRESS,
-        [],
-        [],
-        [],
-        {
-          module: zeroAddress,
-          initData: "0x",
-        },
-        [],
-        0,
+        [], // executors
+        [], // fallbacks
+        [], // hooks
+        [], // attesters
+        0, // threshold
       ],
     }),
     safe7579: SAFE_7579_ADDRESS,
@@ -178,19 +174,32 @@ const getInitData= (owner:Address,initialValidators:InitialModule[]) => {
  * @param index
  * @param initialValidatorAddress
  */
-const getAccountInitCode = async ({
+const getAccountInitCode = async <
+  entryPoint extends EntryPoint,
+  TTransport extends Transport = Transport,
+  TChain extends Chain | undefined = Chain | undefined
+  >({
+    client,
     owner,
     index,
     initialValidatorAddress
-}: {
-    owner: Address
-    index: bigint
-    initialValidatorAddress: Address
-}): Promise<Hex> => {
+  }: {
+      client: Client<TTransport, TChain>,
+      owner: Address
+      index: bigint
+      initialValidatorAddress: Address
+  }): Promise<Hex> => {
     if (!owner) throw new Error("Owner account not found")
     const initialValidators = getInitialValidators([initialValidatorAddress]);
     const initData = getInitData(owner,initialValidators)
-    const initHash = keccak256(encodeAbiParameters(initDataAbi, [initData]));
+    const publicClient = client.extend(publicActions)
+    // const initHash = keccak256(encodeAbiParameters(initDataAbi, [initData]));
+    const initHash = (await publicClient.readContract({
+      address: LAUNCHPAD_ADDRESS,
+      abi: hashAbi,
+      functionName: "hash",
+      args: [initData],
+    })) as Hex;
     const factoryInitializer = encodeFunctionData({
       abi: preValidationSetupAbi,
       functionName: "preValidationSetup",
@@ -228,15 +237,20 @@ const getAccountAddress = async <
 }): Promise<Address> => {
   const salt = keccak256(stringToBytes(index.toString()));
   const initialValidators = getInitialValidators([initialValidatorAddress]);
+  const publicClient = client.extend(publicActions)
   const initData = getInitData(owner,initialValidators)
-  const initHash = keccak256(encodeAbiParameters(initDataAbi, [initData]));
+  // const initHash = keccak256(encodeAbiParameters(initDataAbi, [initData]));
+  const initHash = (await publicClient.readContract({
+    address: LAUNCHPAD_ADDRESS,
+    abi: hashAbi,
+    functionName: "hash",
+    args: [initData],
+  })) as Hex;
   const factoryInitializer = encodeFunctionData({
     abi: preValidationSetupAbi,
     functionName: "preValidationSetup",
     args: [initHash, zeroAddress, ""],
   });
-
-  const publicClient = client.extend(publicActions)
   
   const safeProxyCreationCode = (await publicClient.readContract({
     address:  factoryAddress, // SAFE_ACCOUNT_FACTORY_ADDRESS,
@@ -309,6 +323,7 @@ export async function signerToSafe7579SmartAccount<
     // Helper to generate the init code for the smart account
     const generateInitCode = () =>
         getAccountInitCode({
+            client,
             owner: viemSigner.address,
             index,
             initialValidatorAddress

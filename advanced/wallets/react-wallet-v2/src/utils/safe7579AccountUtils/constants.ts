@@ -10,14 +10,14 @@ export const SAFE_ACCOUNT_FACTORY_ADDRESS: Address =
 export const SAFE_SINGLETON_ADDRESS: Address =
   "0x8d70ae4ae3fb2a73e78f57da16e6e1edbe9fd3eb";
 
-export const SAFE_7579_ADDRESS: Address =
-  "0xa0bb7b562A0A483A93d00387c8d4A049E5FA6523";
+export const SAFE_7579_ADDRESS: Address = 
+  "0xD2Aa2F19Bf6700bE99E140A0b283fE9EF9438A15";
 
 export const REGISTRY_ADDRESS: Address =
   "0x1d8c40f958fb6998067e9b8b26850d2ae30b7c70";
 
-export const LAUNCHPAD_ADDRESS: Address =
-  "0xbf0ee27528bf3182fb0b5e820115adf6d96b7771";
+export const LAUNCHPAD_ADDRESS: Address = 
+  "0x1EC6A1e000dD440995667e48cB880785C7d6831C";
 
 export const VALIDATOR_ADDRESS: Address =
   "0x503b54Ed1E62365F0c9e4caF1479623b08acbe77";
