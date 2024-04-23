@@ -109,7 +109,10 @@ const getAccountInitCode = async <
       initialValidatorAddress: Address
   }): Promise<Hex> => {
     if (!owner) throw new Error("Owner account not found")
-    const initialValidators = getInitialValidators([initialValidatorAddress]);
+    const initialValidators = getInitialValidators([
+    initialValidatorAddress,
+    "0x6671AD9ED29E2d7a894E80bf48b7Bf03Ee64A0f4" ,// permissionValidatorAddress,
+    ]);
     const initData = getInitData(owner,initialValidators)
     const publicClient = client.extend(publicActions)
     const initHash = (await publicClient.readContract({
@@ -154,7 +157,10 @@ const getAccountAddress = async <
     index?: bigint
 }): Promise<Address> => {
   const salt = keccak256(stringToBytes(index.toString()));
-  const initialValidators = getInitialValidators([initialValidatorAddress]);
+  const initialValidators = getInitialValidators([
+    initialValidatorAddress,
+    "0x6671AD9ED29E2d7a894E80bf48b7Bf03Ee64A0f4" ,// permissionValidatorAddress,
+  ]);
   const publicClient = client.extend(publicActions)
   const initData = getInitData(owner,initialValidators)
   const initHash = (await publicClient.readContract({
@@ -395,7 +401,10 @@ export async function signerToSafe7579SmartAccount<
         accountAddress
       )
       if (!smartAccountDeployed) {
-        const initData = getInitData(viemSigner.address,getInitialValidators([initialValidatorAddress]))
+        const initData = getInitData(viemSigner.address,getInitialValidators([
+          initialValidatorAddress,
+          "0x6671AD9ED29E2d7a894E80bf48b7Bf03Ee64A0f4" ,// permissionValidatorAddress,
+        ]))
         return encodeFunctionData({
           abi: setupSafeAbi,
           functionName: "setupSafe",
