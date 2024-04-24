@@ -155,7 +155,7 @@ export function JsonRpcContextProvider({
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<IFormattedRpcResponse | null>();
   const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
-
+  const [lastTxId, setLastTxId] = useState<`0x${string}`>()
   const [kadenaAccount, setKadenaAccount] = useState<KadenaAccount | null>(
     null
   );
@@ -517,16 +517,21 @@ export function JsonRpcContextProvider({
           );
         }
 
-        const params = [address]
+        // The wallet_getCapabilities "caching" should ultimately move into the provider.
+        // check the session.sessionProperties first for capabilities
+        const capabilitiesJson = session?.sessionProperties?.['capabilities']
+        const walletCapabilities = capabilitiesJson && JSON.parse(capabilitiesJson)
+        let capabilities = walletCapabilities[address] as GetCapabilitiesResult|undefined
         // send request for wallet_getCapabilities
-        const capabilities = await client!.request<GetCapabilitiesResult>({
-          topic: session!.topic,
-          chainId,
-          request: {
-            method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
-            params: params,
-          },
-        });
+        if(!capabilities)
+          capabilities = await client!.request<GetCapabilitiesResult>({
+            topic: session!.topic,
+            chainId,
+            request: {
+              method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
+              params: [address],
+            },
+          });
 
         // format displayed result
         return {
@@ -548,8 +553,8 @@ export function JsonRpcContextProvider({
             `Missing rpcProvider definition for chainId: ${chainId}`
           );
         }
-        //hardcoded valid userOpHash
-        const params = ['0xbab6e5b397964c0d867ccef539f929cb7ed2d0da3ae128a81ba8804bd92c572a']
+        if(lastTxId === undefined) throw new Error(`Last transaction ID is undefined, make sure previous call to sendCalls returns successfully. `);
+        const params = [lastTxId] 
         // send request for wallet_getCallsStatus
         const getCallsStatusResult = await client!.request<GetCallsResult>({
           topic: session!.topic,
@@ -607,6 +612,8 @@ export function JsonRpcContextProvider({
             params: [sendCallsRequestParams],
           },
         });
+        // store the last transactionId to use it for wallet_getCallsReceipt
+        setLastTxId((txId && txId.startsWith('0x')) ? txId as `0x${string}` : undefined)
         // format displayed result
         return {
           method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
