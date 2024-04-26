@@ -200,7 +200,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
-    
+
     const userOp = await this.client.prepareUserOperationRequest({
       userOperation: {
         callData: await this.client.account.encodeCallData(args)

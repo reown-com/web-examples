@@ -1,421 +1,421 @@
 export const permissionValidatorAbi = [
   {
-    "type": "function",
-    "name": "_parsePermissionFromPermissionEnableData",
-    "inputs": [
+    type: 'function',
+    name: '_parsePermissionFromPermissionEnableData',
+    inputs: [
       {
-        "name": "_permissionEnableData",
-        "type": "bytes",
-        "internalType": "bytes"
+        name: '_permissionEnableData',
+        type: 'bytes',
+        internalType: 'bytes'
       },
       {
-        "name": "_permissionIndex",
-        "type": "uint256",
-        "internalType": "uint256"
+        name: '_permissionIndex',
+        type: 'uint256',
+        internalType: 'uint256'
       }
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "permissionChainId",
-        "type": "uint64",
-        "internalType": "uint64"
+        name: 'permissionChainId',
+        type: 'uint64',
+        internalType: 'uint64'
       },
       {
-        "name": "permissionDigest",
-        "type": "bytes32",
-        "internalType": "bytes32"
+        name: 'permissionDigest',
+        type: 'bytes32',
+        internalType: 'bytes32'
       }
     ],
-    "stateMutability": "pure"
+    stateMutability: 'pure'
   },
   {
-    "type": "function",
-    "name": "checkPermissionForSmartAccount",
-    "inputs": [
+    type: 'function',
+    name: 'checkPermissionForSmartAccount',
+    inputs: [
       {
-        "name": "smartAccount",
-        "type": "address",
-        "internalType": "address"
+        name: 'smartAccount',
+        type: 'address',
+        internalType: 'address'
       },
       {
-        "name": "permissionDataFromContext",
-        "type": "bytes",
-        "internalType": "bytes"
+        name: 'permissionDataFromContext',
+        type: 'bytes',
+        internalType: 'bytes'
       }
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "permissionPrefix",
-        "type": "bytes32",
-        "internalType": "bytes32"
+        name: 'permissionPrefix',
+        type: 'bytes32',
+        internalType: 'bytes32'
       }
     ],
-    "stateMutability": "view"
+    stateMutability: 'view'
   },
   {
-    "type": "function",
-    "name": "enabledPermissions",
-    "inputs": [
+    type: 'function',
+    name: 'enabledPermissions',
+    inputs: [
       {
-        "name": "singleSignerPermissionId",
-        "type": "bytes32",
-        "internalType": "bytes32"
+        name: 'singleSignerPermissionId',
+        type: 'bytes32',
+        internalType: 'bytes32'
       },
       {
-        "name": "smartAccount",
-        "type": "address",
-        "internalType": "address"
+        name: 'smartAccount',
+        type: 'address',
+        internalType: 'address'
       }
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "validUntil",
-        "type": "uint48",
-        "internalType": "ValidUntil"
+        name: 'validUntil',
+        type: 'uint48',
+        internalType: 'ValidUntil'
       },
       {
-        "name": "validAfter",
-        "type": "uint48",
-        "internalType": "ValidAfter"
+        name: 'validAfter',
+        type: 'uint48',
+        internalType: 'ValidAfter'
       },
       {
-        "name": "signatureValidationAlgorithm",
-        "type": "address",
-        "internalType": "address"
+        name: 'signatureValidationAlgorithm',
+        type: 'address',
+        internalType: 'address'
       },
       {
-        "name": "signer",
-        "type": "bytes",
-        "internalType": "bytes"
+        name: 'signer',
+        type: 'bytes',
+        internalType: 'bytes'
       },
       {
-        "name": "policy",
-        "type": "address",
-        "internalType": "address"
+        name: 'policy',
+        type: 'address',
+        internalType: 'address'
       },
       {
-        "name": "policyData",
-        "type": "bytes",
-        "internalType": "bytes"
+        name: 'policyData',
+        type: 'bytes',
+        internalType: 'bytes'
       }
     ],
-    "stateMutability": "view"
+    stateMutability: 'view'
   },
   {
-    "type": "function",
-    "name": "getModuleTypes",
-    "inputs": [],
-    "outputs": [
+    type: 'function',
+    name: 'getModuleTypes',
+    inputs: [],
+    outputs: [
       {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
+        name: '',
+        type: 'uint256',
+        internalType: 'uint256'
       }
     ],
-    "stateMutability": "view"
+    stateMutability: 'view'
   },
   {
-    "type": "function",
-    "name": "getPermissionId",
-    "inputs": [
+    type: 'function',
+    name: 'getPermissionId',
+    inputs: [
       {
-        "name": "permission",
-        "type": "tuple",
-        "internalType": "struct SingleSignerPermission",
-        "components": [
+        name: 'permission',
+        type: 'tuple',
+        internalType: 'struct SingleSignerPermission',
+        components: [
           {
-            "name": "validUntil",
-            "type": "uint48",
-            "internalType": "ValidUntil"
+            name: 'validUntil',
+            type: 'uint48',
+            internalType: 'ValidUntil'
           },
           {
-            "name": "validAfter",
-            "type": "uint48",
-            "internalType": "ValidAfter"
+            name: 'validAfter',
+            type: 'uint48',
+            internalType: 'ValidAfter'
           },
           {
-            "name": "signatureValidationAlgorithm",
-            "type": "address",
-            "internalType": "address"
+            name: 'signatureValidationAlgorithm',
+            type: 'address',
+            internalType: 'address'
           },
           {
-            "name": "signer",
-            "type": "bytes",
-            "internalType": "bytes"
+            name: 'signer',
+            type: 'bytes',
+            internalType: 'bytes'
           },
           {
-            "name": "policy",
-            "type": "address",
-            "internalType": "address"
+            name: 'policy',
+            type: 'address',
+            internalType: 'address'
           },
           {
-            "name": "policyData",
-            "type": "bytes",
-            "internalType": "bytes"
+            name: 'policyData',
+            type: 'bytes',
+            internalType: 'bytes'
           }
         ]
       }
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "bytes32",
-        "internalType": "bytes32"
+        name: '',
+        type: 'bytes32',
+        internalType: 'bytes32'
       }
     ],
-    "stateMutability": "pure"
+    stateMutability: 'pure'
   },
   {
-    "type": "function",
-    "name": "getPermissionIdFromUnpacked",
-    "inputs": [
+    type: 'function',
+    name: 'getPermissionIdFromUnpacked',
+    inputs: [
       {
-        "name": "validUntil",
-        "type": "uint48",
-        "internalType": "ValidUntil"
+        name: 'validUntil',
+        type: 'uint48',
+        internalType: 'ValidUntil'
       },
       {
-        "name": "validAfter",
-        "type": "uint48",
-        "internalType": "ValidAfter"
+        name: 'validAfter',
+        type: 'uint48',
+        internalType: 'ValidAfter'
       },
       {
-        "name": "signatureValidationAlgorithm",
-        "type": "address",
-        "internalType": "address"
+        name: 'signatureValidationAlgorithm',
+        type: 'address',
+        internalType: 'address'
       },
       {
-        "name": "signer",
-        "type": "bytes",
-        "internalType": "bytes"
+        name: 'signer',
+        type: 'bytes',
+        internalType: 'bytes'
       },
       {
-        "name": "policy",
-        "type": "address",
-        "internalType": "address"
+        name: 'policy',
+        type: 'address',
+        internalType: 'address'
       },
       {
-        "name": "policyData",
-        "type": "bytes",
-        "internalType": "bytes"
+        name: 'policyData',
+        type: 'bytes',
+        internalType: 'bytes'
       }
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "bytes32",
-        "internalType": "bytes32"
+        name: '',
+        type: 'bytes32',
+        internalType: 'bytes32'
       }
     ],
-    "stateMutability": "pure"
+    stateMutability: 'pure'
   },
   {
-    "type": "function",
-    "name": "isInitialized",
-    "inputs": [
+    type: 'function',
+    name: 'isInitialized',
+    inputs: [
       {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
+        name: '',
+        type: 'address',
+        internalType: 'address'
       }
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
+        name: '',
+        type: 'bool',
+        internalType: 'bool'
       }
     ],
-    "stateMutability": "pure"
+    stateMutability: 'pure'
   },
   {
-    "type": "function",
-    "name": "isModuleType",
-    "inputs": [
+    type: 'function',
+    name: 'isModuleType',
+    inputs: [
       {
-        "name": "moduleTypeId",
-        "type": "uint256",
-        "internalType": "uint256"
+        name: 'moduleTypeId',
+        type: 'uint256',
+        internalType: 'uint256'
       }
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
+        name: '',
+        type: 'bool',
+        internalType: 'bool'
       }
     ],
-    "stateMutability": "pure"
+    stateMutability: 'pure'
   },
   {
-    "type": "function",
-    "name": "isValidSignatureWithSender",
-    "inputs": [
+    type: 'function',
+    name: 'isValidSignatureWithSender',
+    inputs: [
       {
-        "name": "sender",
-        "type": "address",
-        "internalType": "address"
+        name: 'sender',
+        type: 'address',
+        internalType: 'address'
       },
       {
-        "name": "hash",
-        "type": "bytes32",
-        "internalType": "bytes32"
+        name: 'hash',
+        type: 'bytes32',
+        internalType: 'bytes32'
       },
       {
-        "name": "data",
-        "type": "bytes",
-        "internalType": "bytes"
+        name: 'data',
+        type: 'bytes',
+        internalType: 'bytes'
       }
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "bytes4",
-        "internalType": "bytes4"
+        name: '',
+        type: 'bytes4',
+        internalType: 'bytes4'
       }
     ],
-    "stateMutability": "view"
+    stateMutability: 'view'
   },
   {
-    "type": "function",
-    "name": "onInstall",
-    "inputs": [
+    type: 'function',
+    name: 'onInstall',
+    inputs: [
       {
-        "name": "data",
-        "type": "bytes",
-        "internalType": "bytes"
+        name: 'data',
+        type: 'bytes',
+        internalType: 'bytes'
       }
     ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
+    outputs: [],
+    stateMutability: 'nonpayable'
   },
   {
-    "type": "function",
-    "name": "onUninstall",
-    "inputs": [
+    type: 'function',
+    name: 'onUninstall',
+    inputs: [
       {
-        "name": "data",
-        "type": "bytes",
-        "internalType": "bytes"
+        name: 'data',
+        type: 'bytes',
+        internalType: 'bytes'
       }
     ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
+    outputs: [],
+    stateMutability: 'nonpayable'
   },
   {
-    "type": "function",
-    "name": "test",
-    "inputs": [
+    type: 'function',
+    name: 'test',
+    inputs: [
       {
-        "name": "a",
-        "type": "uint256",
-        "internalType": "uint256"
+        name: 'a',
+        type: 'uint256',
+        internalType: 'uint256'
       }
     ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
+    outputs: [],
+    stateMutability: 'nonpayable'
   },
   {
-    "type": "function",
-    "name": "validateUserOp",
-    "inputs": [
+    type: 'function',
+    name: 'validateUserOp',
+    inputs: [
       {
-        "name": "userOp",
-        "type": "tuple",
-        "internalType": "struct PackedUserOperation",
-        "components": [
+        name: 'userOp',
+        type: 'tuple',
+        internalType: 'struct PackedUserOperation',
+        components: [
           {
-            "name": "sender",
-            "type": "address",
-            "internalType": "address"
+            name: 'sender',
+            type: 'address',
+            internalType: 'address'
           },
           {
-            "name": "nonce",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'nonce',
+            type: 'uint256',
+            internalType: 'uint256'
           },
           {
-            "name": "initCode",
-            "type": "bytes",
-            "internalType": "bytes"
+            name: 'initCode',
+            type: 'bytes',
+            internalType: 'bytes'
           },
           {
-            "name": "callData",
-            "type": "bytes",
-            "internalType": "bytes"
+            name: 'callData',
+            type: 'bytes',
+            internalType: 'bytes'
           },
           {
-            "name": "accountGasLimits",
-            "type": "bytes32",
-            "internalType": "bytes32"
+            name: 'accountGasLimits',
+            type: 'bytes32',
+            internalType: 'bytes32'
           },
           {
-            "name": "preVerificationGas",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: 'preVerificationGas',
+            type: 'uint256',
+            internalType: 'uint256'
           },
           {
-            "name": "gasFees",
-            "type": "bytes32",
-            "internalType": "bytes32"
+            name: 'gasFees',
+            type: 'bytes32',
+            internalType: 'bytes32'
           },
           {
-            "name": "paymasterAndData",
-            "type": "bytes",
-            "internalType": "bytes"
+            name: 'paymasterAndData',
+            type: 'bytes',
+            internalType: 'bytes'
           },
           {
-            "name": "signature",
-            "type": "bytes",
-            "internalType": "bytes"
+            name: 'signature',
+            type: 'bytes',
+            internalType: 'bytes'
           }
         ]
       },
       {
-        "name": "userOpHash",
-        "type": "bytes32",
-        "internalType": "bytes32"
+        name: 'userOpHash',
+        type: 'bytes32',
+        internalType: 'bytes32'
       }
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "validationData",
-        "type": "uint256",
-        "internalType": "uint256"
+        name: 'validationData',
+        type: 'uint256',
+        internalType: 'uint256'
       }
     ],
-    "stateMutability": "nonpayable"
+    stateMutability: 'nonpayable'
   },
   {
-    "type": "error",
-    "name": "AlreadyInitialized",
-    "inputs": [
+    type: 'error',
+    name: 'AlreadyInitialized',
+    inputs: [
       {
-        "name": "smartAccount",
-        "type": "address",
-        "internalType": "address"
+        name: 'smartAccount',
+        type: 'address',
+        internalType: 'address'
       }
     ]
   },
   {
-    "type": "error",
-    "name": "InvalidTargetAddress",
-    "inputs": [
+    type: 'error',
+    name: 'InvalidTargetAddress',
+    inputs: [
       {
-        "name": "target",
-        "type": "address",
-        "internalType": "address"
+        name: 'target',
+        type: 'address',
+        internalType: 'address'
       }
     ]
   },
   {
-    "type": "error",
-    "name": "NotInitialized",
-    "inputs": [
+    type: 'error',
+    name: 'NotInitialized',
+    inputs: [
       {
-        "name": "smartAccount",
-        "type": "address",
-        "internalType": "address"
+        name: 'smartAccount',
+        type: 'address',
+        internalType: 'address'
       }
     ]
   }
