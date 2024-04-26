@@ -21,7 +21,6 @@ jobs:
   code_style:
     name: "Code Style"
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     strategy:
       matrix:
         style-command:
@@ -38,7 +37,6 @@ jobs:
         with:
           node-version: 18.x
       - name: install
-        timeout-minutes: 3
         working-directory: advanced/${{ matrix.project }}
         run: yarn install --immutable --immutable-cache --check-cache
       - name: check

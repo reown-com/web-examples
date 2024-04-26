@@ -74,9 +74,9 @@ const state = proxy<State>({
       ? Boolean(localStorage.getItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY))
       : false,
   biconomySmartAccountEnabled:
-  typeof localStorage !== 'undefined'
-    ? Boolean(localStorage.getItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY))
-    : false
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY))
+      : false
 })
 
 /**
