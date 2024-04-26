@@ -35,8 +35,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          cache: "npm"
-          cache-dependency-path: "package-lock.json"
       - name: install
         working-directory: ./${{ matrix.project }}
         run: npm ci
@@ -45,6 +43,7 @@ jobs:
         run: npm run ${{ matrix.style-command }}
 
   preview:
+    needs: code_style
     runs-on: ubuntu-latest
     outputs:
       preview-url: ${{ steps.preview.outputs.PREVIEW_URL }}
