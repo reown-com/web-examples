@@ -1,4 +1,4 @@
-name: UI Tests
+name: PR Checks
 
 concurrency:
   # Support push/pr as event types with different behaviors each:
@@ -38,7 +38,7 @@ jobs:
           node-version: 18.x
       - name: install
         working-directory: advanced/${{ matrix.project }}
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable --immutable-cache --check-cache
       - name: check
         working-directory: advanced/${{ matrix.project }}
         run: yarn ${{ matrix.style-command }}
