@@ -244,7 +244,7 @@ const Home: NextPage = () => {
       }
     });
 
-    // if a method is approved in the session thats not supported by the app, will result in undefined item in the array
+    // if a method is approved in the session thats not supported by the app, it will result in an undefined item in the array
     return availableActions.filter((action) => action !== undefined);
   };
 
