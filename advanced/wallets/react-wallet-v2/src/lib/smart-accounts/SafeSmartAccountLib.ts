@@ -1,19 +1,17 @@
-import { ENTRYPOINT_ADDRESS_V06, SmartAccountClientConfig, isSmartAccountDeployed } from 'permissionless'
+import { ENTRYPOINT_ADDRESS_V07, SmartAccountClientConfig, isSmartAccountDeployed } from 'permissionless'
 import { SmartAccountLib } from './SmartAccountLib'
 import { SmartAccount } from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 import { signerToSafe7579SmartAccount } from '@/utils/safe7579AccountUtils/signerToSafe7579SmartAccount'
-import { Address, Hex, concatHex, encodePacked, getAddress, keccak256, zeroAddress } from 'viem'
+import { Address, Hex, concatHex, keccak256, zeroAddress } from 'viem'
 import { signMessage } from 'viem/accounts'
 import { PERMISSION_VALIDATOR_ADDRESS, SECP256K1_SIGNATURE_VALIDATOR_ADDRESS } from '@/utils/permissionValidatorUtils/constants'
-import { PermissionContext, SingleSignerPermission, getPermissionId, getPermissionScopeData } from '@/utils/permissionValidatorUtils'
+import { PermissionContext, SingleSignerPermission, getPermissionScopeData } from '@/utils/permissionValidatorUtils'
 
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
-    if (this.entryPoint === ENTRYPOINT_ADDRESS_V06) {
-      throw new Error('Only entrypoint V7 is supported')
-    }
+    this.entryPoint = ENTRYPOINT_ADDRESS_V07
 
     const safeAccount = await signerToSafe7579SmartAccount(this.publicClient, {
       entryPoint: this.entryPoint,
