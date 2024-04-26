@@ -1,5 +1,7 @@
 name: UI Tests
 
+on: workflow_call
+
 jobs:
   preview:
     name: "Preview deployment"

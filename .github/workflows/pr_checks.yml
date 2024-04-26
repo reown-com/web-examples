@@ -48,5 +48,3 @@ jobs:
     needs: code_style
     uses: ./.github/workflows/ui_tests.yml
     secrets: inherit
-    with:
-      branch: ${{ github.ref }}
