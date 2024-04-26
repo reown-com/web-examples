@@ -1,9 +1,6 @@
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
 import { getWallet } from '@/utils/EIP155WalletUtil'
-import {
-  getSignParamsMessage,
-  getSignTypedDataParamsData,
-} from '@/utils/HelperUtil'
+import { getSignParamsMessage, getSignTypedDataParamsData } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'

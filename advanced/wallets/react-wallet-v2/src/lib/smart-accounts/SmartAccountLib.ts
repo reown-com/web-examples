@@ -42,7 +42,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
   // Options
   public chain: Chain
   public sponsored: boolean = true
-  public entryPoint: EntryPoint 
+  public entryPoint: EntryPoint
 
   // Signer
   protected signer: PrivateKeyAccount
@@ -51,7 +51,9 @@ export abstract class SmartAccountLib implements EIP155Wallet {
   // Clients
   protected publicClient: PublicClient
   protected paymasterClient: PimlicoPaymasterClient<EntryPoint>
-  protected bundlerClient: BundlerClient<EntryPoint> & BundlerActions<EntryPoint> & PimlicoBundlerActions
+  protected bundlerClient: BundlerClient<EntryPoint> &
+    BundlerActions<EntryPoint> &
+    PimlicoBundlerActions
   protected client: (SmartAccountClient<EntryPoint> & PimlicoBundlerActions) | undefined
 
   // Transport
@@ -62,16 +64,20 @@ export abstract class SmartAccountLib implements EIP155Wallet {
   public type: string
   public initialized = false
 
-  public constructor({ privateKey, chain, sponsored = false, entryPointVersion = 6 }: SmartAccountLibOptions) {
+  public constructor({
+    privateKey,
+    chain,
+    sponsored = false,
+    entryPointVersion = 6
+  }: SmartAccountLibOptions) {
     const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
     const paymasterUrl = ({ chain }: UrlConfig) =>
       `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
     const bundlerUrl = ({ chain }: UrlConfig) =>
       `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
 
-
     let entryPoint: EntryPoint = ENTRYPOINT_ADDRESS_V06
-    if(entryPointVersion === 7){
+    if (entryPointVersion === 7) {
       entryPoint = ENTRYPOINT_ADDRESS_V07
     }
     this.entryPoint = entryPoint
@@ -90,7 +96,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
 
     this.paymasterClient = createPimlicoPaymasterClient({
       transport: this.paymasterUrl,
-      entryPoint: this.entryPoint, 
+      entryPoint: this.entryPoint
     })
 
     this.bundlerClient = createClient({
@@ -186,32 +192,33 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     return txResult
   }
 
-  async sendBatchTransaction(args:{
-    to: Address;
-    value: bigint;
-    data: Hex;
-  }[]) {
+  async sendBatchTransaction(
+    args: {
+      to: Address
+      value: bigint
+      data: Hex
+    }[]
+  ) {
     console.log('Sending transaction from smart account', { type: this.type, args })
     if (!this.client || !this.client.account) {
-    throw new Error('Client not initialized')
+      throw new Error('Client not initialized')
     }
 
     const userOp = await this.client.prepareUserOperationRequest({
-    userOperation: {
-      callData: await this.client.account.encodeCallData(args)
-    },
-    account: this.client.account
+      userOperation: {
+        callData: await this.client.account.encodeCallData(args)
+      },
+      account: this.client.account
     })
 
     const newSignature = await this.client.account.signUserOperation(userOp)
-    console.log('Signatures',{old: userOp.signature, new: newSignature});
+    console.log('Signatures', { old: userOp.signature, new: newSignature })
 
     userOp.signature = newSignature
 
     const userOpHash = await this.bundlerClient.sendUserOperation({
-    userOperation: userOp
+      userOperation: userOp
     })
-    return userOpHash;
-    
+    return userOpHash
   }
 }
