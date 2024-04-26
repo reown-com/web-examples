@@ -27,6 +27,7 @@ import { CALL_TYPE, encodeUserOpCallData } from "./userop"
 import { hashAbi, initSafe7579Abi, preValidationSetupAbi, predictSafeAddressAbi, setupSafeAbi } from "./abis/Launchpad";
 import { createProxyWithNonceAbi, proxyCreationCodeAbi } from "./abis/AccountFactory";
 import {  executeAbi } from "./abis/Account";
+import { PERMISSION_VALIDATOR_ADDRESS } from "../permissionValidatorUtils/constants"
 
 export type Safe7579SmartAccount<
     entryPoint extends ENTRYPOINT_ADDRESS_V07_TYPE,
@@ -46,7 +47,11 @@ type InitialModule = {
   initData: Hex;
 };
 
-function getInitialValidators(initialValidatorModuleAddress:Address[]): InitialModule[] {
+function getInitialValidators(): InitialModule[] {
+  const initialValidatorModuleAddress:Address[] = [
+    VALIDATOR_ADDRESS,
+    PERMISSION_VALIDATOR_ADDRESS
+  ]
   const initialValidators: InitialModule[] = initialValidatorModuleAddress.map(validatorModuleAddress => {
     return {
       module: validatorModuleAddress,
@@ -109,10 +114,7 @@ const getAccountInitCode = async <
       initialValidatorAddress: Address
   }): Promise<Hex> => {
     if (!owner) throw new Error("Owner account not found")
-    const initialValidators = getInitialValidators([
-    initialValidatorAddress,
-    "0x6671AD9ED29E2d7a894E80bf48b7Bf03Ee64A0f4" ,// permissionValidatorAddress,
-    ]);
+    const initialValidators = getInitialValidators();
     const initData = getInitData(owner,initialValidators)
     const publicClient = client.extend(publicActions)
     const initHash = (await publicClient.readContract({
@@ -157,10 +159,7 @@ const getAccountAddress = async <
     index?: bigint
 }): Promise<Address> => {
   const salt = keccak256(stringToBytes(index.toString()));
-  const initialValidators = getInitialValidators([
-    initialValidatorAddress,
-    "0x6671AD9ED29E2d7a894E80bf48b7Bf03Ee64A0f4" ,// permissionValidatorAddress,
-  ]);
+  const initialValidators = getInitialValidators();
   const publicClient = client.extend(publicActions)
   const initData = getInitData(owner,initialValidators)
   const initHash = (await publicClient.readContract({
@@ -401,10 +400,7 @@ export async function signerToSafe7579SmartAccount<
         accountAddress
       )
       if (!smartAccountDeployed) {
-        const initData = getInitData(viemSigner.address,getInitialValidators([
-          initialValidatorAddress,
-          "0x6671AD9ED29E2d7a894E80bf48b7Bf03Ee64A0f4" ,// permissionValidatorAddress,
-        ]))
+        const initData = getInitData(viemSigner.address,getInitialValidators())
         return encodeFunctionData({
           abi: setupSafeAbi,
           functionName: "setupSafe",
