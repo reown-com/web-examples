@@ -32,7 +32,11 @@ export default function usePriorityAccounts({ namespaces }: IProps) {
       return supportedAddressPriority(namespaces, kernelSmartAccountAddress, kernelAllowedChains)
     }
     if (biconomySmartAccountEnabled) {
-      return supportedAddressPriority(namespaces, biconomySmartAccountAddress, biconomyAllowedChains)
+      return supportedAddressPriority(
+        namespaces,
+        biconomySmartAccountAddress,
+        biconomyAllowedChains
+      )
     }
   }
   return []

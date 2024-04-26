@@ -1,4 +1,4 @@
-name: UI Tests
+name: PR Checks
 
 concurrency:
   # Support push/pr as event types with different behaviors each:
@@ -18,34 +18,32 @@ on:
       - main
 
 jobs:
-  preview:
+  code_style:
+    name: "Code Style"
     runs-on: ubuntu-latest
-    outputs:
-      preview-url: ${{ steps.preview.outputs.PREVIEW_URL }}
+    strategy:
+      matrix:
+        style-command:
+          - lint
+          - prettier
+        project:
+          - dapps/react-dapp-v2
+          - wallets/react-wallet-v2
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.UI_TEST_VERCEL_TOKEN }}
-      - name: Build Project Artifacts
-        run: vercel build --token=${{ secrets.UI_TEST_VERCEL_TOKEN }}
-      - name: Deploy Project Artifacts to Vercel
-        run: vercel deploy --prebuilt --token=${{ secrets.UI_TEST_VERCEL_TOKEN }} > preview.txt
-      - name: preview
-        id: preview
-        run: echo "PREVIEW_URL=$(cat preview.txt | tail -n 1)" >> "$GITHUB_OUTPUT"
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup-node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: install
+        working-directory: advanced/${{ matrix.project }}
+        run: yarn install --immutable --immutable-cache --check-cache
+      - name: check
+        working-directory: advanced/${{ matrix.project }}
+        run: yarn ${{ matrix.style-command }}
 
   ui-test:
-    needs: preview
-    with:
-      base-url: http://localhost:3000/
-      wallet-url: ${{ needs.preview.outputs.preview-url }}/
-      skip-playwright-webserver: false
-      branch: V4
-      command: playwright:test:wallet
-    uses: WalletConnect/web3modal/.github/workflows/ui_tests.yml@V4
-    secrets:
-      NEXT_PUBLIC_PROJECT_ID: ${{ secrets.UI_TEST_PROJECT_ID }}
-      TESTS_NEXTAUTH_SECRET: ${{ secrets.TESTS_NEXTAUTH_SECRET }}
-      TESTS_MAILSEC_API_KEY: ${{ secrets.MAILSAC_API_KEY }}
+    name: "UI Tests"
+    uses: ./.github/workflows/ui_tests.yml
+    secrets: inherit

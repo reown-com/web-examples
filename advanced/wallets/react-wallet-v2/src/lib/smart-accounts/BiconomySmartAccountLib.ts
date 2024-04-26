@@ -1,6 +1,10 @@
 import { ENTRYPOINT_ADDRESS_V06, SmartAccountClientConfig } from 'permissionless'
 import { SmartAccountLib } from './SmartAccountLib'
-import { SmartAccount, signerToBiconomySmartAccount, signerToSafeSmartAccount } from 'permissionless/accounts'
+import {
+  SmartAccount,
+  signerToBiconomySmartAccount,
+  signerToSafeSmartAccount
+} from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 
 export class BiconomySmartAccountLib extends SmartAccountLib {
@@ -12,7 +16,7 @@ export class BiconomySmartAccountLib extends SmartAccountLib {
 
     const biconomyAccount = await signerToBiconomySmartAccount(this.publicClient, {
       entryPoint: this.entryPoint,
-      signer: this.signer,
+      signer: this.signer
     })
 
     return {

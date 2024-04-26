@@ -16,7 +16,7 @@ import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import { EIP155_CHAINS, EIP155_SIGNING_METHODS} from '@/data/EIP155Data'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 import { MULTIVERSX_CHAINS, MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
@@ -35,6 +35,7 @@ import SettingsStore from '@/store/SettingsStore'
 import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
+import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -253,12 +254,17 @@ export default function SessionProposalModal() {
       setIsLoadingApprove(true)
       try {
         if (reorderedEip155Accounts.length > 0) {
+          // reorderedEip155Accounts includes Smart Accounts(if enabled) and EOA's
           namespaces.eip155.accounts = reorderedEip155Accounts
         }
+        //get capabilities for all reorderedEip155Accounts in wallet
+        const capabilities = getWalletCapabilities(reorderedEip155Accounts)
+        const sessionProperties = { capabilities: JSON.stringify(capabilities) }
 
         await web3wallet.approveSession({
           id: proposal.id,
-          namespaces
+          namespaces,
+          sessionProperties
         })
         SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
       } catch (e) {
