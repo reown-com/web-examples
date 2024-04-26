@@ -18,6 +18,32 @@ on:
       - main
 
 jobs:
+  code_style:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        style-command:
+          - lint
+          - prettier
+        project:
+          - dapps/react-dapp-v2
+          - wallets/react-wallet-v2
+  steps:
+    - name: checkout
+      uses: actions/checkout@v3
+    - name: setup-node
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+        cache: "npm"
+        cache-dependency-path: "package-lock.json"
+    - name: install
+      working-directory: ./${{ matrix.project }}
+      run: npm ci
+    - name: check
+      working-directory: ./${{ matrix.project }}
+      run: npm run ${{ matrix.style-command }}
+
   preview:
     runs-on: ubuntu-latest
     outputs:
