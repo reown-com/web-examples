@@ -2,6 +2,10 @@ name: UI Tests
 
 on: workflow_call
 
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_TEAM_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.UI_TEST_WALLET_V2_VERCEL_PROJECT_ID }}
+
 jobs:
   preview:
     name: "Preview deployment"
