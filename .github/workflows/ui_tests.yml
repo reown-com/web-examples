@@ -27,7 +27,6 @@ jobs:
         run: echo "PREVIEW_URL=$(cat preview.txt | tail -n 1)" >> "$GITHUB_OUTPUT"
 
   ui-test:
-    name: "Playwright Tests"
     needs: preview
     with:
       base-url: http://localhost:3000/
