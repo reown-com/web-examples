@@ -37,10 +37,10 @@ jobs:
           node-version: 18.x
       - name: install
         working-directory: advanced/${{ matrix.project }}
-        run: npm ci
+        run: yarn install --frozen-lockfile
       - name: check
         working-directory: advanced/${{ matrix.project }}
-        run: npm run ${{ matrix.style-command }}
+        run: yarn ${{ matrix.style-command }}
 
   preview:
     needs: code_style
