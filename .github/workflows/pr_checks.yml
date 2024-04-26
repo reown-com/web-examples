@@ -36,10 +36,10 @@ jobs:
         with:
           node-version: 18.x
       - name: install
-        working-directory: ./${{ matrix.project }}
+        working-directory: ${{ matrix.project }}
         run: npm ci
       - name: check
-        working-directory: ./${{ matrix.project }}
+        working-directory: ${{ matrix.project }}
         run: npm run ${{ matrix.style-command }}
 
   preview:
