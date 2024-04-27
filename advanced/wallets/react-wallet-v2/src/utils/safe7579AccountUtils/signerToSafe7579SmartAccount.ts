@@ -1,4 +1,4 @@
-import type { TypedData } from 'viem'
+import type { SignableMessage, TypedData } from 'viem'
 import {
   type Address,
   type Chain,
@@ -15,7 +15,10 @@ import {
   zeroAddress,
   keccak256,
   stringToBytes,
-  publicActions
+  publicActions,
+  hashTypedData,
+  hashMessage,
+  toBytes
 } from 'viem'
 import { getChainId, signMessage, signTypedData } from 'viem/actions'
 import { ENTRYPOINT_ADDRESS_V07_TYPE, EntryPoint } from 'permissionless/types/entrypoint'
@@ -211,6 +214,45 @@ const getAccountAddress = async <
   return address
 }
 
+const adjustVInSignature = (
+  signingMethod: 'eth_sign' | 'eth_signTypedData',
+  signature: string
+): Hex => {
+  const ETHEREUM_V_VALUES = [0, 1, 27, 28]
+  const MIN_VALID_V_VALUE_FOR_SAFE_ECDSA = 27
+  let signatureV = parseInt(signature.slice(-2), 16)
+  if (!ETHEREUM_V_VALUES.includes(signatureV)) {
+    throw new Error('Invalid signature')
+  }
+  if (signingMethod === 'eth_sign') {
+    if (signatureV < MIN_VALID_V_VALUE_FOR_SAFE_ECDSA) {
+      signatureV += MIN_VALID_V_VALUE_FOR_SAFE_ECDSA
+    }
+    signatureV += 4
+  }
+  if (signingMethod === 'eth_signTypedData') {
+    if (signatureV < MIN_VALID_V_VALUE_FOR_SAFE_ECDSA) {
+      signatureV += MIN_VALID_V_VALUE_FOR_SAFE_ECDSA
+    }
+  }
+  return (signature.slice(0, -2) + signatureV.toString(16)) as Hex
+}
+
+const generateSafeMessageMessage = <
+  TTypedData extends TypedData | { [key: string]: unknown },
+  TPrimaryType extends keyof TTypedData | 'EIP712Domain' = keyof TTypedData
+>(
+  message: SignableMessage | TypedDataDefinition<TTypedData, TPrimaryType>
+): Hex => {
+  const signableMessage = message as SignableMessage
+
+  if (typeof signableMessage === 'string' || signableMessage.raw) {
+    return hashMessage(signableMessage)
+  }
+
+  return hashTypedData(message as TypedDataDefinition<TTypedData, TPrimaryType>)
+}
+
 export type SignerToSafe7579SmartAccountParameters<
   entryPoint extends ENTRYPOINT_ADDRESS_V07_TYPE,
   TSource extends string = string,
@@ -285,52 +327,60 @@ export async function signerToSafe7579SmartAccount<
   return toSmartAccount({
     address: accountAddress,
     client: client,
-    publicKey: accountAddress,
+    // publicKey: accountAddress,
     entryPoint: entryPointAddress,
     source: 'safe7579SmartAccount',
 
     async signMessage({ message }) {
-      let signature: Hex = await signMessage(client, {
-        account: viemSigner,
-        message
+      const messageHash = hashTypedData({
+        domain: {
+          chainId: chainId,
+          verifyingContract: accountAddress
+        },
+        types: {
+          SafeMessage: [{ name: 'message', type: 'bytes' }]
+        },
+        primaryType: 'SafeMessage',
+        message: {
+          message: generateSafeMessageMessage(message)
+        }
       })
-      const potentiallyIncorrectV = parseInt(signature.slice(-2), 16)
-      if (![27, 28].includes(potentiallyIncorrectV)) {
-        const correctV = potentiallyIncorrectV + 27
-        signature = (signature.slice(0, -2) + correctV.toString(16)) as Hex
-      }
-      return encodeAbiParameters(
-        [{ type: 'bytes' }, { type: 'address' }],
-        [signature, initialValidatorAddress]
+
+      return adjustVInSignature(
+        'eth_sign',
+        await signMessage(client, {
+          account: viemSigner,
+          message: {
+            raw: toBytes(messageHash)
+          }
+        })
       )
     },
 
+    async signTypedData<
+      TTypedData extends TypedData | Record<string, unknown>,
+      TPrimaryType extends keyof TTypedData | 'EIP712Domain' = keyof TTypedData
+    >(typedData: TypedDataDefinition<TTypedData, TPrimaryType>) {
+      return adjustVInSignature(
+        'eth_signTypedData',
+        await signTypedData(client, {
+          account: viemSigner,
+          domain: {
+            chainId: chainId,
+            verifyingContract: accountAddress
+          },
+          types: {
+            SafeMessage: [{ name: 'message', type: 'bytes' }]
+          },
+          primaryType: 'SafeMessage',
+          message: {
+            message: generateSafeMessageMessage<TTypedData, TPrimaryType>(typedData)
+          }
+        })
+      )
+    },
     async signTransaction(_, __) {
       throw new SignTransactionNotSupportedBySmartAccount()
-    },
-    // @ts-ignore
-    async signTypedData<TTypedData, TPrimaryType>(
-      typedData: TypedDataDefinition<TTypedData, TPrimaryType>
-    ) {
-      let signature: Hex = await signTypedData<
-        // @ts-ignore
-        TTypedData,
-        TPrimaryType,
-        TChain,
-        undefined
-      >(client, {
-        account: viemSigner,
-        ...typedData
-      })
-      const potentiallyIncorrectV = parseInt(signature.slice(-2), 16)
-      if (![27, 28].includes(potentiallyIncorrectV)) {
-        const correctV = potentiallyIncorrectV + 27
-        signature = (signature.slice(0, -2) + correctV.toString(16)) as Hex
-      }
-      return encodeAbiParameters(
-        [{ type: 'bytes' }, { type: 'address' }],
-        [signature, initialValidatorAddress]
-      )
     },
 
     // Get the nonce of the smart account
