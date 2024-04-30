@@ -2,7 +2,6 @@ import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import {
   EIP5792_METHODS,
   GetCallsParams,
-  GetCallsResult,
   GetCapabilitiesResult,
   SendCallsParams,
   supportedEIP5792CapabilitiesForEOA,
@@ -14,57 +13,10 @@ import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import SettingsStore from '@/store/SettingsStore'
 import EIP155Lib from '@/lib/EIP155Lib'
-import {
-  ENTRYPOINT_ADDRESS_V06,
-  GetUserOperationReceiptReturnType,
-  createBundlerClient
-} from 'permissionless'
-import { http, toHex } from 'viem'
+import { toHex } from 'viem'
+import { providers } from 'ethers'
+import { getCallsStatus, getSendCallData, sendBatchTransactionWithEOA } from './EIP5792WalletUtil'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
-
-const getCallsReceipt = async (getCallParams: GetCallsParams) => {
-  /**
-   * This is hardcode implementation of wallet_getCallsStatus
-   * as we are not maintaining the data for calls bundled right now.
-   * Getting directly from bundler the receipt on sepolia chain.
-   */
-  const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
-  const bundlerClient = createBundlerClient({
-    entryPoint: ENTRYPOINT_ADDRESS_V06,
-    transport: http(`https://api.pimlico.io/v1/sepolia/rpc?apikey=${apiKey}`)
-  })
-  const userOpReceipt = (await bundlerClient.getUserOperationReceipt({
-    hash: getCallParams as `0x${string}`
-  })) as GetUserOperationReceiptReturnType | null
-  const receipt: GetCallsResult = {
-    status: userOpReceipt ? 'CONFIRMED' : 'PENDING',
-    receipts: userOpReceipt
-      ? [
-          {
-            logs: userOpReceipt.logs.map(log => ({
-              data: log.data,
-              address: log.address,
-              topics: log.topics
-            })),
-            blockHash: userOpReceipt.receipt.blockHash,
-            blockNumber: toHex(userOpReceipt.receipt.blockNumber),
-            gasUsed: toHex(userOpReceipt.actualGasUsed),
-            transactionHash: userOpReceipt.receipt.transactionHash,
-            status: userOpReceipt.success ? '0x1' : '0x0'
-          }
-        ]
-      : undefined
-  }
-  return receipt
-}
-
-const getSendCallData = (sendCallParams: SendCallsParams) => {
-  return sendCallParams.calls.map(call => ({
-    to: call.to,
-    value: BigInt(call.value || 0),
-    data: call.data || '0x'
-  }))
-}
 
 export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
   const { params, id } = requestEvent
@@ -81,7 +33,7 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
     case EIP5792_METHODS.WALLET_GET_CALLS_STATUS: {
       try {
         const getCallParams = request.params[0] as GetCallsParams
-        const receipt = await getCallsReceipt(getCallParams)
+        const receipt = await getCallsStatus(getCallParams)
         return formatJsonRpcResult(id, receipt)
       } catch (error: any) {
         console.error(error)
@@ -97,8 +49,25 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
     case EIP5792_METHODS.WALLET_SEND_CALLS: {
       try {
         const wallet = await getWallet(params)
+        const sendCallParams: SendCallsParams = request.params[0] as SendCallsParams
+        const calls = getSendCallData(sendCallParams)
+        // chainId on request Params should be same as request Event
+        if (chainId.split(':')[1] !== BigInt(sendCallParams.chainId).toString())
+          return formatJsonRpcError(id, 'ChainId mismatch')
+        const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
         if (wallet instanceof EIP155Lib) {
-          return formatJsonRpcError(id, "Wallet currently don't support batch call for EOA")
+          const isChainSupported =
+            supportedEIP5792CapabilitiesForEOA[
+              toHex(EIP155_CHAINS[chainId as TEIP155Chain].chainId)
+            ].atomicBatch?.supported || false
+          if (!isChainSupported)
+            return formatJsonRpcError(
+              id,
+              `Wallet currently don't support batch call for chainId ${chainId}`
+            )
+          const connectedWallet = wallet.connect(provider)
+          const batchId = await sendBatchTransactionWithEOA(connectedWallet, calls)
+          return formatJsonRpcResult(id, batchId)
         }
         const isChainSupported =
           supportedEIP5792CapabilitiesForSCA[toHex(EIP155_CHAINS[chainId as TEIP155Chain].chainId)]
@@ -108,12 +77,7 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
             id,
             `Wallet currently don't support batch call for chainId ${chainId}`
           )
-        // chainId on request Params should be same as request Event
-        const sendCallParams: SendCallsParams = request.params[0] as SendCallsParams
-        if (chainId.split(':')[1] !== BigInt(sendCallParams.chainId).toString())
-          return formatJsonRpcError(id, 'ChainId mismatch')
-        const sendCalls = getSendCallData(sendCallParams)
-        const userOpHash = await wallet.sendBatchTransaction(sendCalls)
+        const userOpHash = await wallet.sendBatchTransaction(calls)
         return formatJsonRpcResult(id, userOpHash)
       } catch (error: any) {
         console.error(error)
