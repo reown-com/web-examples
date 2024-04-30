@@ -324,7 +324,9 @@ export function JsonRpcContextProvider({
           }
 
           try {
-            const transaction = ethers.utils.parseTransaction(signedTx);
+            const transaction = ethers.utils.parseTransaction(
+              signedTx.startsWith("0x") ? signedTx : `0x${signedTx}`
+            );
             console.log("parsed transaction", transaction);
             valid =
               transaction.data === tx.data &&
