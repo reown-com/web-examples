@@ -92,7 +92,7 @@ export function isAllowedKernelChain(chainId: number): boolean {
 }
 
 export async function createOrRestoreKernelSmartAccount(privateKey: string) {
-  const lib = new KernelSmartAccountLib({ privateKey, chain: sepolia, sponsored:true })
+  const lib = new KernelSmartAccountLib({ privateKey, chain: sepolia, sponsored: true })
   await lib.init()
   const address = lib.getAddress()
   const key = `${sepolia.id}:${address}`
@@ -109,7 +109,7 @@ export function isAllowedSafeChain(chainId: number): boolean {
 }
 
 export async function createOrRestoreSafeSmartAccount(privateKey: string) {
-  const lib = new SafeSmartAccountLib({ privateKey, chain: sepolia, sponsored:true })
+  const lib = new SafeSmartAccountLib({ privateKey, chain: sepolia, sponsored: true })
   await lib.init()
   const address = lib.getAddress()
   const key = `${sepolia.id}:${address}`
@@ -122,7 +122,7 @@ export async function createOrRestoreSafeSmartAccount(privateKey: string) {
 }
 
 export async function createOrRestoreBiconomySmartAccount(privateKey: string) {
-  const lib = new BiconomySmartAccountLib({ privateKey, chain: sepolia, sponsored:true })
+  const lib = new BiconomySmartAccountLib({ privateKey, chain: sepolia, sponsored: true })
   await lib.init()
   const address = lib.getAddress()
   const key = `${sepolia.id}:${address}`

@@ -149,7 +149,10 @@ const Home: NextPage = () => {
     });
   }
 
-  const getEthereumActions = (chainId:string,address:string): AccountAction[] => {
+  const getEthereumActions = (
+    chainId: string,
+    address: string
+  ): AccountAction[] => {
     const actions = {
       [DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION]: {
         method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
@@ -217,35 +220,52 @@ const Home: NextPage = () => {
     };
 
     let availableActions: AccountAction[] = [];
-    const chainIdAsHex = `0x${numberToHex(parseInt(chainId))}`
-    const capabilitiesJson = session?.sessionProperties?.['capabilities']
-    const walletCapabilities = capabilitiesJson && JSON.parse(capabilitiesJson)
+    const chainIdAsHex = `0x${numberToHex(parseInt(chainId))}`;
+    const capabilitiesJson = session?.sessionProperties?.["capabilities"];
+    const walletCapabilities = capabilitiesJson && JSON.parse(capabilitiesJson);
     session?.namespaces?.["eip155"].methods.forEach((methodName) => {
-        const action: AccountAction | undefined = actions[methodName as keyof typeof actions];
-        // Determine if the method requires additional capability checks
-        const requiresCapabilityCheck = ["wallet_sendCalls", "wallet_getCallsStatus"].includes(methodName);
-        // Check capabilities only if the method requires it
-        if (!requiresCapabilityCheck || hasEIP7592RequiredCapabilities(address, chainIdAsHex, walletCapabilities)) {
-          availableActions.push(action);
-        }
+      const action: AccountAction | undefined =
+        actions[methodName as keyof typeof actions];
+      // Determine if the method requires additional capability checks
+      const requiresCapabilityCheck = [
+        "wallet_sendCalls",
+        "wallet_getCallsStatus",
+      ].includes(methodName);
+      // Check capabilities only if the method requires it
+      if (
+        !requiresCapabilityCheck ||
+        hasEIP7592RequiredCapabilities(
+          address,
+          chainIdAsHex,
+          walletCapabilities
+        )
+      ) {
+        availableActions.push(action);
       }
-    );
+    });
 
-    return availableActions;
+    // if a method is approved in the session thats not supported by the app, it will result in an undefined item in the array
+    return availableActions.filter((action) => action !== undefined);
   };
 
-  const hasEIP7592RequiredCapabilities = (address: string, chainId: string, walletCapabilities: any): boolean => {
-    if(!walletCapabilities) return false;
-    const addressCapabilities: GetCapabilitiesResult | undefined = walletCapabilities[address];
+  const hasEIP7592RequiredCapabilities = (
+    address: string,
+    chainId: string,
+    walletCapabilities: any
+  ): boolean => {
+    if (!walletCapabilities) return false;
+    const addressCapabilities: GetCapabilitiesResult | undefined =
+      walletCapabilities[address];
     if (
       addressCapabilities &&
       addressCapabilities[chainId] &&
-      (addressCapabilities[chainId]['atomicBatch']?.supported ||
-        addressCapabilities[chainId]['paymasterService']?.supported ||
-        addressCapabilities[chainId]['sessionKey']?.supported)
-    ) return true; // Capabilities are supported
+      (addressCapabilities[chainId]["atomicBatch"]?.supported ||
+        addressCapabilities[chainId]["paymasterService"]?.supported ||
+        addressCapabilities[chainId]["sessionKey"]?.supported)
+    )
+      return true; // Capabilities are supported
     return false; // Capabilities are not supported or not defined
-  }
+  };
 
   const getCosmosActions = (): AccountAction[] => {
     const onSignDirect = async (chainId: string, address: string) => {
@@ -447,11 +467,11 @@ const Home: NextPage = () => {
     ];
   };
 
-  const getBlockchainActions = (account:string) => {
+  const getBlockchainActions = (account: string) => {
     const [namespace, chainId, address] = account.split(":");
     switch (namespace) {
       case "eip155":
-        return getEthereumActions(chainId,address);
+        return getEthereumActions(chainId, address);
       case "cosmos":
         return getCosmosActions();
       case "solana":
@@ -503,7 +523,12 @@ const Home: NextPage = () => {
       case "ping":
         return <PingModal pending={isRpcRequestPending} result={rpcResult} />;
       case "requestLoader":
-        return <RequestLoaderModal pending={isRpcRequestPending} result={rpcResult} />;
+        return (
+          <RequestLoaderModal
+            pending={isRpcRequestPending}
+            result={rpcResult}
+          />
+        );
       case "disconnect":
         return <LoaderModal title={"Disconnecting..."} />;
       default:

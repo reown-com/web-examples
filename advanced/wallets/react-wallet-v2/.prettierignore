@@ -1,0 +1,5 @@
+.changeset
+coverage
+.idea
+.next
+node_modules

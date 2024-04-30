@@ -29,6 +29,7 @@ export default function DeepLinkPairingPage() {
     } else if (state.view) {
       removeTimeout()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.view])
 
   useEffect(() => {

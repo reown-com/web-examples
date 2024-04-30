@@ -1,6 +1,7 @@
 {
   "extends": "next/core-web-vitals",
   "rules": {
-    "no-trailing-spaces": 1
+    "no-trailing-spaces": 1,
+    "@next/next/no-img-element": "off"
   }
 }
