@@ -1,4 +1,4 @@
-import { BigNumber, utils } from "ethers";
+import { BigNumber, ethers, utils } from "ethers";
 import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
@@ -155,7 +155,7 @@ export function JsonRpcContextProvider({
   const [pending, setPending] = useState(false);
   const [result, setResult] = useState<IFormattedRpcResponse | null>();
   const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
-  const [lastTxId, setLastTxId] = useState<`0x${string}`>()
+  const [lastTxId, setLastTxId] = useState<`0x${string}`>();
   const [kadenaAccount, setKadenaAccount] = useState<KadenaAccount | null>(
     null
   );
@@ -299,11 +299,14 @@ export function JsonRpcContextProvider({
             params: [tx],
           },
         });
-
         const CELO_ALFAJORES_CHAIN_ID = 44787;
         const CELO_MAINNET_CHAIN_ID = 42220;
 
         let valid = false;
+        console.log("rpc request", {
+          tx,
+          signedTx,
+        });
         const [, reference] = chainId.split(":");
         if (
           reference === CELO_ALFAJORES_CHAIN_ID.toString() ||
@@ -312,9 +315,24 @@ export function JsonRpcContextProvider({
           const [, signer] = recoverTransaction(signedTx);
           valid = signer.toLowerCase() === address.toLowerCase();
         } else {
-          valid = EthTransaction.fromSerializedTx(
-            signedTx as any
-          ).verifySignature();
+          try {
+            valid = EthTransaction.fromSerializedTx(
+              signedTx as any
+            ).verifySignature();
+          } catch (e) {
+            console.warn("fromSerializedTx failed", e);
+          }
+
+          try {
+            const transaction = ethers.utils.parseTransaction(signedTx);
+            console.log("parsed transaction", transaction);
+            valid =
+              transaction.data === tx.data &&
+              transaction.to === tx.to &&
+              transaction.from === tx.from;
+          } catch (e) {
+            console.warn("parseTransaction failed", e);
+          }
         }
 
         return {
@@ -519,11 +537,14 @@ export function JsonRpcContextProvider({
 
         // The wallet_getCapabilities "caching" should ultimately move into the provider.
         // check the session.sessionProperties first for capabilities
-        const capabilitiesJson = session?.sessionProperties?.['capabilities']
-        const walletCapabilities = capabilitiesJson && JSON.parse(capabilitiesJson)
-        let capabilities = walletCapabilities[address] as GetCapabilitiesResult|undefined
+        const capabilitiesJson = session?.sessionProperties?.["capabilities"];
+        const walletCapabilities =
+          capabilitiesJson && JSON.parse(capabilitiesJson);
+        let capabilities = walletCapabilities[address] as
+          | GetCapabilitiesResult
+          | undefined;
         // send request for wallet_getCapabilities
-        if(!capabilities)
+        if (!capabilities)
           capabilities = await client!.request<GetCapabilitiesResult>({
             topic: session!.topic,
             chainId,
@@ -553,8 +574,11 @@ export function JsonRpcContextProvider({
             `Missing rpcProvider definition for chainId: ${chainId}`
           );
         }
-        if(lastTxId === undefined) throw new Error(`Last transaction ID is undefined, make sure previous call to sendCalls returns successfully. `);
-        const params = [lastTxId] 
+        if (lastTxId === undefined)
+          throw new Error(
+            `Last transaction ID is undefined, make sure previous call to sendCalls returns successfully. `
+          );
+        const params = [lastTxId];
         // send request for wallet_getCallsStatus
         const getCallsStatusResult = await client!.request<GetCallsResult>({
           topic: session!.topic,
@@ -586,12 +610,13 @@ export function JsonRpcContextProvider({
           throw new Error(`Account for ${caipAccountAddress} not found`);
 
         const balance = BigNumber.from(balances[account][0].balance || "0");
-        if (balance.lt(parseEther('0.0002'))) {
+        if (balance.lt(parseEther("0.0002"))) {
           return {
             method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
             address,
             valid: false,
-            result: "Insufficient funds for batch call [minimum 0.0002ETH required excluding gas].",
+            result:
+              "Insufficient funds for batch call [minimum 0.0002ETH required excluding gas].",
           };
         }
         //  split chainId
@@ -602,7 +627,8 @@ export function JsonRpcContextProvider({
             `Missing rpcProvider definition for chainId: ${chainId}`
           );
         }
-        const sendCallsRequestParams:SendCallsParams = await formatTestBatchCall(account)
+        const sendCallsRequestParams: SendCallsParams =
+          await formatTestBatchCall(account);
         // send batch Tx
         const txId = await client!.request<string>({
           topic: session!.topic,
@@ -613,7 +639,9 @@ export function JsonRpcContextProvider({
           },
         });
         // store the last transactionId to use it for wallet_getCallsReceipt
-        setLastTxId((txId && txId.startsWith('0x')) ? txId as `0x${string}` : undefined)
+        setLastTxId(
+          txId && txId.startsWith("0x") ? (txId as `0x${string}`) : undefined
+        );
         // format displayed result
         return {
           method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
