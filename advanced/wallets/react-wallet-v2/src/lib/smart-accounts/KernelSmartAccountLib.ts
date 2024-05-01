@@ -1,13 +1,17 @@
 import {
   Address,
+  concatHex,
   createPublicClient,
+  encodeFunctionData,
   Hex,
   http,
+  keccak256,
   PrivateKeyAccount,
   PublicClient,
-  Transport
+  Transport,
+  zeroAddress
 } from 'viem'
-import { privateKeyToAccount } from 'viem/accounts'
+import { privateKeyToAccount, signMessage } from 'viem/accounts'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { KernelValidator } from '@zerodev/ecdsa-validator'
@@ -29,10 +33,15 @@ import {
   bundlerActions,
   BundlerClient,
   ENTRYPOINT_ADDRESS_V06,
-  ENTRYPOINT_ADDRESS_V07
+  ENTRYPOINT_ADDRESS_V07,
+  getPackedUserOperation
 } from 'permissionless'
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
+import { PERMISSION_VALIDATOR_ADDRESS, SECP256K1_SIGNATURE_VALIDATOR_ADDRESS } from '@/utils/permissionValidatorUtils/constants'
+import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
+import { ENTRYPOINT_ADDRESS_V07_TYPE, UserOperation } from 'permissionless/_types/types'
+import { getPermissionScopeData, PermissionContext, SingleSignerPermission } from '@/utils/permissionValidatorUtils'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -50,7 +59,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
   private signer: PrivateKeyAccount
   private client: KernelAccountClient<EntryPoint, Transport, Chain | undefined> | undefined
   private publicClient:
-    | (PublicClient & BundlerClient<EntryPoint> & BundlerActions<EntryPoint>)
+    | (PublicClient & BundlerClient<ENTRYPOINT_ADDRESS_V07_TYPE> & BundlerActions<ENTRYPOINT_ADDRESS_V07_TYPE>)
     | undefined
   private validator: KernelValidator<EntryPoint> | undefined
   public initialized = false
@@ -82,8 +91,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     const bundlerRpc = http(`https://rpc.zerodev.app/api/v2/bundler/${projectId}`)
     this.publicClient = createPublicClient({
       transport: bundlerRpc // use your RPC provider or bundler
-      //@ts-ignore
-    }).extend(bundlerActions)
+    }).extend(bundlerActions(ENTRYPOINT_ADDRESS_V07))
 
     this.validator = await createWeightedECDSAValidator(this.publicClient, {
       config: {
@@ -96,7 +104,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
 
     const account = await createKernelAccount(this.publicClient, {
       plugins: {
-        sudo: this.validator
+        sudo: this.validator,
       },
       entryPoint: this.entryPoint
     })
@@ -119,8 +127,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
           })
         }
       }
-      //@ts-ignore
-    }).extend(bundlerActions)
+    }).extend(bundlerActions(ENTRYPOINT_ADDRESS_V07))
     this.client = client
     console.log('Smart account initialized', {
       address: account.address,
@@ -284,5 +291,110 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     })
 
     await this.sendTransaction(updateCall)
+  }
+
+  async installPermissionValidatorModule(
+    args: {
+      to: Address
+      value: bigint
+      data: Hex
+    }[]
+  ) {
+    console.log('installing module from smart account', { type: this.type, args })
+    if (!this.client || !this.client.account) {
+      throw new Error('Client not initialized')
+    }
+    
+    const userOp = await this.client.prepareUserOperationRequest({
+      userOperation: {
+        callData: await this.getInstallModuleCalldata(PERMISSION_VALIDATOR_ADDRESS,zeroAddress)
+      },
+      account: this.client.account,
+    })
+    this.client.account.getNonce(BigInt(1))
+    const newSignature = await this.client.account.signUserOperation(userOp)
+    
+    userOp.signature = newSignature
+    console.log(userOp);
+    const userOpHash = await this.client.sendUserOperation({
+      userOperation: userOp,
+      account: this.client.account
+    })
+    return userOpHash
+  }
+
+  async getInstallModuleCalldata(moduleAddress:Address,initData:`0x${string}`){
+    const installModuleCallData = encodeFunctionData({
+      abi:[{
+        "type": "function",
+        "name": "installModule",
+        "inputs": [
+          { "name": "moduleType", "type": "uint256", "internalType": "uint256" },
+          { "name": "module", "type": "address", "internalType": "address" },
+          { "name": "initData", "type": "bytes", "internalType": "bytes" }
+        ],
+        "outputs": [],
+        "stateMutability": "payable"
+      }],
+      functionName:"installModule",
+      args:[BigInt(1),moduleAddress,initData]
+    })
+    return installModuleCallData;
+
+  }
+
+  async checkPermissionValidatorModuleInstalled(){
+    if (!this.client || !this.client.account) {
+      throw new Error('Client not initialized')
+    }
+    const permissionValidatorAddress = PERMISSION_VALIDATOR_ADDRESS
+
+    const isModuleInstalled = (await this.publicClient!.readContract({
+      address: this.client.account.address,
+      abi: isModuleInstalledAbi,
+      functionName: "isModuleInstalled",
+      args: [
+        BigInt(1),  // ModuleType
+        permissionValidatorAddress, // Module Address
+        "0x"    // Additional Context
+      ],
+    }));
+    console.log(`isModuleInstalled : ${isModuleInstalled}`)
+  }
+
+  async issuePermissionContext(
+    targetAddress: Address,
+    approvedPermissions: any
+  ): Promise<PermissionContext> {
+    if (!this.client || !this.client.account) {
+      throw new Error('Client not initialized')
+    }
+    // this permission have dummy policy set to zeroAddress for now,
+    // bc current version of PermissionValidator_v1 module don't consider checking policy
+    const permissions: SingleSignerPermission[] = [
+      {
+        validUntil: 0,
+        validAfter: 0,
+        signatureValidationAlgorithm: SECP256K1_SIGNATURE_VALIDATOR_ADDRESS,
+        signer: targetAddress,
+        policy: zeroAddress,
+        policyData: '0x'
+      }
+    ]
+
+    const permittedScopeData = getPermissionScopeData(permissions, this.chain)
+    // the smart account sign over the permittedScope and targetAddress
+    const permittedScopeSignature: Hex = await signMessage({
+      privateKey: this.getPrivateKey() as `0x${string}`,
+      message: { raw: concatHex([keccak256(permittedScopeData), targetAddress]) }
+    })
+
+    return {
+      accountAddress: this.client.account.address,
+      permissionValidatorAddress: PERMISSION_VALIDATOR_ADDRESS,
+      permissions: permissions,
+      permittedScopeData: permittedScopeData,
+      permittedScopeSignature: permittedScopeSignature
+    }
   }
 }
