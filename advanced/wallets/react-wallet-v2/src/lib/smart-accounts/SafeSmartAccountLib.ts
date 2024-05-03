@@ -6,8 +6,12 @@ import {
 import { SmartAccountLib } from './SmartAccountLib'
 import { SmartAccount } from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
-import { signerToSafe7579SmartAccount } from '@/utils/safe7579AccountUtils/signerToSafe7579SmartAccount'
-import { Address, Hex, concatHex, keccak256, zeroAddress } from 'viem'
+import {
+  getSafe7579InitData,
+  getSafe7579InitialValidators,
+  signerToSafe7579SmartAccount
+} from '@/utils/safe7579AccountUtils/signerToSafe7579SmartAccount'
+import { Address, Hex, concatHex, encodeFunctionData, keccak256, zeroAddress } from 'viem'
 import { signMessage } from 'viem/accounts'
 import {
   PERMISSION_VALIDATOR_ADDRESS,
@@ -18,6 +22,7 @@ import {
   SingleSignerPermission,
   getPermissionScopeData
 } from '@/utils/permissionValidatorUtils'
+import { setupSafeAbi } from '@/utils/safe7579AccountUtils/abis/Launchpad'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
@@ -46,29 +51,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       this.publicClient,
       this.client.account.address
     )
-    /**
-     * this is just a temporary fix for safe7579 modular account
-     * is safe7579Account is not depoyed then need to create
-     * one useroperation which first deploy and setup the account ,
-     * second user operation will be used to call the desired actions
-     * */
     if (!accountDeployed) {
-      const setUpUserOp = await this.client.prepareUserOperationRequest({
-        userOperation: {
-          callData: await this.client.account.encodeCallData({ to, value, data })
-        },
-        account: this.client.account
-      })
-      const newSignature = await this.client.account.signUserOperation(setUpUserOp)
-
-      setUpUserOp.signature = newSignature
-
-      const setUpUserOpHash = await this.bundlerClient.sendUserOperation({
-        userOperation: setUpUserOp
-      })
-      const txHash = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpUserOpHash
-      })
+      await this.setupSafe7579()
     }
 
     const txResult = await this.client.sendTransaction({
@@ -97,21 +81,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       this.client.account.address
     )
     if (!accountDeployed) {
-      const setUpUserOp = await this.client.prepareUserOperationRequest({
-        userOperation: {
-          callData: await this.client.account.encodeCallData(args)
-        },
-        account: this.client.account
-      })
-      const newSignature = await this.client.account.signUserOperation(setUpUserOp)
-      setUpUserOp.signature = newSignature
-
-      const setUpUserOpHash = await this.bundlerClient.sendUserOperation({
-        userOperation: setUpUserOp
-      })
-      const txHash = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpUserOpHash
-      })
+      await this.setupSafe7579()
     }
 
     const userOp = await this.client.prepareUserOperationRequest({
@@ -128,6 +98,42 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       userOperation: userOp
     })
     return userOpHash
+  }
+
+  async setupSafe7579() {
+    if (!this.client || !this.client.account) {
+      throw new Error('Client not initialized')
+    }
+
+    /**
+     * this is just a temporary fix for safe7579 modular account
+     * is safe7579Account is not depoyed then need to create
+     * one useroperation which first deploy and setup the account ,
+     * second user operation will be used to call the desired actions
+     * */
+    const initialValidators = getSafe7579InitialValidators()
+    const initData = getSafe7579InitData(this.signer.address, initialValidators)
+    const setUpSafe7579Calldata = encodeFunctionData({
+      abi: setupSafeAbi,
+      functionName: 'setupSafe',
+      args: [initData]
+    })
+    const setUpUserOp = await this.client.prepareUserOperationRequest({
+      userOperation: {
+        callData: setUpSafe7579Calldata
+      },
+      account: this.client.account
+    })
+    const newSignature = await this.client.account.signUserOperation(setUpUserOp)
+
+    setUpUserOp.signature = newSignature
+
+    const setUpUserOpHash = await this.bundlerClient.sendUserOperation({
+      userOperation: setUpUserOp
+    })
+    const txHash = await this.bundlerClient.waitForUserOperationReceipt({
+      hash: setUpUserOpHash
+    })
   }
 
   async issuePermissionContext(
