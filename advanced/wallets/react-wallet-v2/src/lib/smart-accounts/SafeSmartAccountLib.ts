@@ -23,6 +23,7 @@ import {
   getPermissionScopeData
 } from '@/utils/permissionValidatorUtils'
 import { setupSafeAbi } from '@/utils/safe7579AccountUtils/abis/Launchpad'
+import { Execution } from '@/utils/safe7579AccountUtils/userop'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
@@ -43,7 +44,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
   }
 
-  async sendTransaction({ to, value, data }: { to: Address; value: bigint; data: Hex }) {
+  async sendTransaction({ to, value, data }: Execution) {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
@@ -52,7 +53,11 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       this.client.account.address
     )
     if (!accountDeployed) {
-      await this.setupSafe7579()
+      const setUpAndExecuteUserOpHash = await this.setupSafe7579AndExecute({ to, value, data })
+      const userOpReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+        hash: setUpAndExecuteUserOpHash
+      })
+      return userOpReceipt.receipt.transactionHash
     }
 
     const txResult = await this.client.sendTransaction({
@@ -66,13 +71,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     return txResult
   }
 
-  async sendBatchTransaction(
-    args: {
-      to: Address
-      value: bigint
-      data: Hex
-    }[]
-  ) {
+  async sendBatchTransaction(calls: Execution[]) {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
@@ -81,12 +80,12 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       this.client.account.address
     )
     if (!accountDeployed) {
-      await this.setupSafe7579()
+      return await this.setupSafe7579AndExecute(calls)
     }
 
     const userOp = await this.client.prepareUserOperationRequest({
       userOperation: {
-        callData: await this.client.account.encodeCallData(args)
+        callData: await this.client.account.encodeCallData(calls)
       },
       account: this.client.account
     })
@@ -100,19 +99,13 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     return userOpHash
   }
 
-  async setupSafe7579() {
+  async setupSafe7579AndExecute(calls: Execution | Execution[]) {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
 
-    /**
-     * this is just a temporary fix for safe7579 modular account
-     * is safe7579Account is not depoyed then need to create
-     * one useroperation which first deploy and setup the account ,
-     * second user operation will be used to call the desired actions
-     * */
     const initialValidators = getSafe7579InitialValidators()
-    const initData = getSafe7579InitData(this.signer.address, initialValidators)
+    const initData = getSafe7579InitData(this.signer.address, initialValidators, calls)
     const setUpSafe7579Calldata = encodeFunctionData({
       abi: setupSafeAbi,
       functionName: 'setupSafe',
@@ -128,12 +121,11 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
     setUpUserOp.signature = newSignature
 
-    const setUpUserOpHash = await this.bundlerClient.sendUserOperation({
+    const setUpAndExecuteUserOpHash = await this.bundlerClient.sendUserOperation({
       userOperation: setUpUserOp
     })
-    const txHash = await this.bundlerClient.waitForUserOperationReceipt({
-      hash: setUpUserOpHash
-    })
+
+    return setUpAndExecuteUserOpHash
   }
 
   async issuePermissionContext(

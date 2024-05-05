@@ -37,7 +37,7 @@ import {
   SAFE_SINGLETON_ADDRESS,
   VALIDATOR_ADDRESS
 } from './constants'
-import { CALL_TYPE, encodeUserOpCallData } from './userop'
+import { CALL_TYPE, Execution, encodeUserOpCallData } from './userop'
 import {
   hashAbi,
   initSafe7579Abi,
@@ -78,7 +78,12 @@ export function getSafe7579InitialValidators(): InitialModule[] {
   return initialValidators
 }
 
-export const getSafe7579InitData = (owner: Address, initialValidators: InitialModule[]) => {
+export const getSafe7579InitData = (
+  owner: Address,
+  initialValidators: InitialModule[],
+  initialExecutions: Execution | Execution[]
+) => {
+  if (!Array.isArray(initialExecutions)) initialExecutions = [initialExecutions]
   return {
     singleton: SAFE_SINGLETON_ADDRESS,
     owners: [owner],
@@ -99,13 +104,7 @@ export const getSafe7579InitData = (owner: Address, initialValidators: InitialMo
     safe7579: SAFE_7579_ADDRESS,
     validators: initialValidators,
     callData: encodeUserOpCallData({
-      actions: [
-        {
-          target: zeroAddress as Address,
-          value: '0',
-          callData: '0x' as Hex
-        }
-      ]
+      actions: initialExecutions
     })
   }
 }
@@ -132,7 +131,14 @@ const getAccountInitCode = async <
 }): Promise<Hex> => {
   if (!owner) throw new Error('Owner account not found')
   const initialValidators = getSafe7579InitialValidators()
-  const initData = getSafe7579InitData(owner, initialValidators)
+  const dummyExecution = [
+    {
+      to: zeroAddress as Address,
+      value: BigInt('0'),
+      data: '0x' as Hex
+    }
+  ]
+  const initData = getSafe7579InitData(owner, initialValidators, dummyExecution)
   const publicClient = client.extend(publicActions)
   const initHash = (await publicClient.readContract({
     address: LAUNCHPAD_ADDRESS,
@@ -178,7 +184,14 @@ const getAccountAddress = async <
   const salt = keccak256(stringToBytes(index.toString()))
   const initialValidators = getSafe7579InitialValidators()
   const publicClient = client.extend(publicActions)
-  const initData = getSafe7579InitData(owner, initialValidators)
+  const dummyExecution = [
+    {
+      to: zeroAddress as Address,
+      value: BigInt('0'),
+      data: '0x' as Hex
+    }
+  ]
+  const initData = getSafe7579InitData(owner, initialValidators, dummyExecution)
   const initHash = (await publicClient.readContract({
     address: LAUNCHPAD_ADDRESS,
     abi: hashAbi,
@@ -453,7 +466,6 @@ export async function signerToSafe7579SmartAccount<
           value: bigint
           data: Hex
         }[]
-        console.log('argsArray', argsArray)
         return encodeFunctionData({
           functionName: 'execute',
           abi: executeAbi,
