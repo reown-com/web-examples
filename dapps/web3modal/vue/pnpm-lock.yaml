@@ -7,13 +7,13 @@ settings:
 dependencies:
   '@wagmi/connectors':
     specifier: 4.1.14
-    version: 4.1.14(@wagmi/core@2.6.5)(react-native@0.73.4)(react@18.2.0)(viem@2.9.29)
+    version: 4.1.14(@wagmi/core@2.8.0)(react-native@0.73.4)(react@18.2.0)(viem@2.9.29)
   '@wagmi/core':
-    specifier: 2.6.5
-    version: 2.6.5(react@18.2.0)(viem@2.9.29)
+    specifier: 2.8.0
+    version: 2.8.0(react@18.2.0)(viem@2.9.29)
   '@web3modal/wagmi':
     specifier: 4.1.11
-    version: 4.1.11(@wagmi/connectors@4.1.14)(@wagmi/core@2.6.5)(react@18.2.0)(viem@2.9.29)(vue@3.4.19)
+    version: 4.1.11(@wagmi/connectors@4.1.14)(@wagmi/core@2.8.0)(react@18.2.0)(viem@2.9.29)(vue@3.4.19)
   core-js:
     specifier: 3.36.0
     version: 3.36.0
@@ -3776,7 +3776,7 @@ packages:
     resolution: {integrity: sha512-Iu8Tbg3f+emIIMmI2ycSI8QcEuAUgPTgHwesDU1eKMLE4YC/c/sFbGc70QgMq31ijRftV0R7vCm9co6rldCeOA==}
     dev: true
 
-  /@wagmi/connectors@4.1.14(@wagmi/core@2.6.5)(react-native@0.73.4)(react@18.2.0)(viem@2.9.29):
+  /@wagmi/connectors@4.1.14(@wagmi/core@2.8.0)(react-native@0.73.4)(react@18.2.0)(viem@2.9.29):
     resolution: {integrity: sha512-e8I89FsNBtzhIilU3nqmgMR9xvSgCfmkWLz9iCKBTqyitbK5EJU7WTEtjjYFm1v2J//JeAwaA2XEKtG9BLR9jQ==}
     peerDependencies:
       '@wagmi/core': 2.6.5
@@ -3790,7 +3790,7 @@ packages:
       '@metamask/sdk': 0.14.3(react-native@0.73.4)(react@18.2.0)
       '@safe-global/safe-apps-provider': 0.18.1
       '@safe-global/safe-apps-sdk': 8.1.0
-      '@wagmi/core': 2.6.5(react@18.2.0)(viem@2.9.29)
+      '@wagmi/core': 2.8.0(react@18.2.0)(viem@2.9.29)
       '@walletconnect/ethereum-provider': 2.11.1(react@18.2.0)
       '@walletconnect/modal': 2.6.2(react@18.2.0)
       viem: 2.9.29
@@ -3819,8 +3819,8 @@ packages:
       - zod
     dev: false
 
-  /@wagmi/core@2.6.5(react@18.2.0)(viem@2.9.29):
-    resolution: {integrity: sha512-DLyrc0o+dx05oIhBJuxnS7ekS5e6rB5mytlqPme+Km7aLdeBdcfYB4yJyYCyWoi93OLa7M5sbflTttz3o56bKw==}
+  /@wagmi/core@2.8.0(react@18.2.0)(viem@2.9.29):
+    resolution: {integrity: sha512-u0CWfbpdv2T3jE1yZQPwxvLlUVMymMoy73g6UE4XYNilF+EjdYu43EjWNvvB9lJcfSyYk6/VdKNHxJ2G+iBxYw==}
     peerDependencies:
       '@tanstack/query-core': '>=5.0.0'
       typescript: '>=5.0.4'
@@ -4311,7 +4311,7 @@ packages:
       qrcode: 1.5.3
     dev: false
 
-  /@web3modal/wagmi@4.1.11(@wagmi/connectors@4.1.14)(@wagmi/core@2.6.5)(react@18.2.0)(viem@2.9.29)(vue@3.4.19):
+  /@web3modal/wagmi@4.1.11(@wagmi/connectors@4.1.14)(@wagmi/core@2.8.0)(react@18.2.0)(viem@2.9.29)(vue@3.4.19):
     resolution: {integrity: sha512-VoXV9idD0yV7jx0F2Xk722VXqQNCDKqDc+LR8WsuOU64TiTLJx9UDQpNcoigbC3bYCi/4Cpw41iSGgs7utbgyQ==}
     peerDependencies:
       '@wagmi/connectors': '>=4.0.0'
@@ -4328,8 +4328,8 @@ packages:
       vue:
         optional: true
     dependencies:
-      '@wagmi/connectors': 4.1.14(@wagmi/core@2.6.5)(react-native@0.73.4)(react@18.2.0)(viem@2.9.29)
-      '@wagmi/core': 2.6.5(react@18.2.0)(viem@2.9.29)
+      '@wagmi/connectors': 4.1.14(@wagmi/core@2.8.0)(react-native@0.73.4)(react@18.2.0)(viem@2.9.29)
+      '@wagmi/core': 2.8.0(react@18.2.0)(viem@2.9.29)
       '@web3modal/polyfills': 4.1.11
       '@web3modal/scaffold': 4.1.11(react@18.2.0)
       '@web3modal/scaffold-react': 4.1.11(react@18.2.0)
