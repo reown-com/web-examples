@@ -15,6 +15,7 @@ export type PermissionContext = {
   permissions: SingleSignerPermission[]
   permittedScopeData: `0x${string}`
   permittedScopeSignature: `0x${string}`
+  enableSig?: `0x${string}`
 }
 
 export function getPermissionId(permission: SingleSignerPermission): `0x${string}` {
@@ -41,16 +42,7 @@ export function getPermissionScopeData(
   for (let i = 0; i < permissions.length; i++) {
     permissionIds[i] = getPermissionId(permissions[i])
   }
-  /**
-   * permissionEnableData =
-   * [PermissionArrayLength] ----------- [uint8]
-   * [ChainIds] ------------------------ [chainIdsArray.length * uint64]
-   * [permissionIds] ------------------- [permissionIds[]]
-   * example: PermissionArrayLength = 1, chainId Array length = 1 , permissionIds ArrayLength = 1
-   * permissionEnableData = 0x [01][0000000000aa36a7][permissionId]
-   */
   let permittedScopeData: `0x${string}` = encodePacked(['uint8'], [permissions.length])
-  // considering permission is on same chain
   const chainIds = [BigInt(chain.id)]
   for (let i = 0; i < chainIds.length; ++i) {
     permittedScopeData = encodePacked(['bytes', 'uint64'], [permittedScopeData, chainIds[i]])

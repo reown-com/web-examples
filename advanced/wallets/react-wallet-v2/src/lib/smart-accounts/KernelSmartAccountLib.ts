@@ -1,20 +1,25 @@
 import {
   Address,
+  concat,
   concatHex,
   createPublicClient,
-  encodeFunctionData,
+  getTypesForEIP712Domain,
+  hashTypedData,
   Hex,
   http,
   keccak256,
   PrivateKeyAccount,
   PublicClient,
+  toFunctionSelector,
   Transport,
+  TypedDataDefinition,
+  validateTypedData,
   zeroAddress
 } from 'viem'
 import { privateKeyToAccount, signMessage } from 'viem/accounts'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
-import { KernelValidator } from '@zerodev/ecdsa-validator'
+import { KernelValidator, signerToEcdsaValidator } from '@zerodev/ecdsa-validator'
 import {
   addressToEmptyAccount,
   createKernelAccount,
@@ -24,24 +29,27 @@ import {
 } from '@zerodev/sdk'
 import { sepolia } from 'viem/chains'
 import { serializeSessionKeyAccount, signerToSessionKeyValidator } from '@zerodev/session-key'
-import {
-  createWeightedECDSAValidator,
-  getUpdateConfigCall
-} from '@zerodev/weighted-ecdsa-validator'
+import { getUpdateConfigCall } from '@zerodev/weighted-ecdsa-validator'
 import {
   BundlerActions,
   bundlerActions,
   BundlerClient,
   ENTRYPOINT_ADDRESS_V06,
-  ENTRYPOINT_ADDRESS_V07,
-  getPackedUserOperation
+  ENTRYPOINT_ADDRESS_V07
 } from 'permissionless'
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
-import { PERMISSION_VALIDATOR_ADDRESS, SECP256K1_SIGNATURE_VALIDATOR_ADDRESS } from '@/utils/permissionValidatorUtils/constants'
-import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
-import { ENTRYPOINT_ADDRESS_V07_TYPE, UserOperation } from 'permissionless/_types/types'
-import { getPermissionScopeData, PermissionContext, SingleSignerPermission } from '@/utils/permissionValidatorUtils'
+import {
+  PERMISSION_VALIDATOR_ADDRESS,
+  SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
+} from '@/utils/permissionValidatorUtils/constants'
+import { executeAbi } from '@/utils/safe7579AccountUtils/abis/Account'
+import { ENTRYPOINT_ADDRESS_V07_TYPE } from 'permissionless/_types/types'
+import {
+  getPermissionScopeData,
+  PermissionContext,
+  SingleSignerPermission
+} from '@/utils/permissionValidatorUtils'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -59,7 +67,9 @@ export class KernelSmartAccountLib implements EIP155Wallet {
   private signer: PrivateKeyAccount
   private client: KernelAccountClient<EntryPoint, Transport, Chain | undefined> | undefined
   private publicClient:
-    | (PublicClient & BundlerClient<ENTRYPOINT_ADDRESS_V07_TYPE> & BundlerActions<ENTRYPOINT_ADDRESS_V07_TYPE>)
+    | (PublicClient &
+        BundlerClient<ENTRYPOINT_ADDRESS_V07_TYPE> &
+        BundlerActions<ENTRYPOINT_ADDRESS_V07_TYPE>)
     | undefined
   private validator: KernelValidator<EntryPoint> | undefined
   public initialized = false
@@ -93,18 +103,14 @@ export class KernelSmartAccountLib implements EIP155Wallet {
       transport: bundlerRpc // use your RPC provider or bundler
     }).extend(bundlerActions(ENTRYPOINT_ADDRESS_V07))
 
-    this.validator = await createWeightedECDSAValidator(this.publicClient, {
-      config: {
-        threshold: 100,
-        signers: [{ address: this.signer.address, weight: 100 }]
-      },
-      signers: [this.signer],
+    this.validator = await signerToEcdsaValidator(this.publicClient, {
+      signer: this.signer,
       entryPoint: this.entryPoint
     })
 
     const account = await createKernelAccount(this.publicClient, {
       plugins: {
-        sudo: this.validator,
+        sudo: this.validator
       },
       entryPoint: this.entryPoint
     })
@@ -293,73 +299,26 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     await this.sendTransaction(updateCall)
   }
 
-  async installPermissionValidatorModule(
-    args: {
-      to: Address
-      value: bigint
-      data: Hex
-    }[]
-  ) {
-    console.log('installing module from smart account', { type: this.type, args })
+  async getCurrentNonce() {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
-    
-    const userOp = await this.client.prepareUserOperationRequest({
-      userOperation: {
-        callData: await this.getInstallModuleCalldata(PERMISSION_VALIDATOR_ADDRESS,zeroAddress)
-      },
-      account: this.client.account,
-    })
-    this.client.account.getNonce(BigInt(1))
-    const newSignature = await this.client.account.signUserOperation(userOp)
-    
-    userOp.signature = newSignature
-    console.log(userOp);
-    const userOpHash = await this.client.sendUserOperation({
-      userOperation: userOp,
-      account: this.client.account
-    })
-    return userOpHash
-  }
-
-  async getInstallModuleCalldata(moduleAddress:Address,initData:`0x${string}`){
-    const installModuleCallData = encodeFunctionData({
-      abi:[{
-        "type": "function",
-        "name": "installModule",
-        "inputs": [
-          { "name": "moduleType", "type": "uint256", "internalType": "uint256" },
-          { "name": "module", "type": "address", "internalType": "address" },
-          { "name": "initData", "type": "bytes", "internalType": "bytes" }
-        ],
-        "outputs": [],
-        "stateMutability": "payable"
-      }],
-      functionName:"installModule",
-      args:[BigInt(1),moduleAddress,initData]
-    })
-    return installModuleCallData;
-
-  }
-
-  async checkPermissionValidatorModuleInstalled(){
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-    const permissionValidatorAddress = PERMISSION_VALIDATOR_ADDRESS
-
-    const isModuleInstalled = (await this.publicClient!.readContract({
+    const currentNonce = await this.publicClient!.readContract({
       address: this.client.account.address,
-      abi: isModuleInstalledAbi,
-      functionName: "isModuleInstalled",
-      args: [
-        BigInt(1),  // ModuleType
-        permissionValidatorAddress, // Module Address
-        "0x"    // Additional Context
+      abi: [
+        {
+          type: 'function',
+          name: 'currentNonce',
+          inputs: [],
+          outputs: [{ name: '', type: 'uint32', internalType: 'uint32' }],
+          stateMutability: 'view'
+        }
       ],
-    }));
-    console.log(`isModuleInstalled : ${isModuleInstalled}`)
+      functionName: 'currentNonce',
+      args: []
+    })
+    console.log(`currentNonce : ${currentNonce}`)
+    return currentNonce
   }
 
   async issuePermissionContext(
@@ -389,12 +348,73 @@ export class KernelSmartAccountLib implements EIP155Wallet {
       message: { raw: concatHex([keccak256(permittedScopeData), targetAddress]) }
     })
 
+    const nonce = await this.getCurrentNonce()
+    const validatorAddress = PERMISSION_VALIDATOR_ADDRESS
+    const validatorInitData = '0x'
+    const hookAddress = zeroAddress
+    const hookData = '0x'
+    const selectorData = toFunctionSelector(executeAbi[0])
+
+    const validatorPluginEnableTypeData = {
+      domain: {
+        name: 'Kernel',
+        version: '0.3.0-beta',
+        chainId: this.chain.id,
+        verifyingContract: this.client.account.address
+      },
+      types: {
+        Enable: [
+          { name: 'validationId', type: 'bytes21' },
+          { name: 'nonce', type: 'uint32' },
+          { name: 'hook', type: 'address' },
+          { name: 'validatorData', type: 'bytes' },
+          { name: 'hookData', type: 'bytes' },
+          { name: 'selectorData', type: 'bytes' }
+        ]
+      },
+      message: {
+        validationId: concat([
+          '0x01', // indicate secondary type
+          validatorAddress
+        ]),
+        nonce: nonce,
+        hook: hookAddress,
+        validatorData: validatorInitData as `0x${string}`,
+        hookData: hookData as `0x${string}`,
+        selectorData: selectorData
+      },
+      primaryType: 'Enable' as 'Enable'
+    }
+
+    const types = {
+      EIP712Domain: getTypesForEIP712Domain({
+        domain: validatorPluginEnableTypeData.domain
+      }),
+      ...validatorPluginEnableTypeData.types
+    }
+
+    // Need to do a runtime validation check on addresses, byte ranges, integer ranges, etc
+    // as we can't statically check this with TypeScript.
+    validateTypedData({
+      domain: validatorPluginEnableTypeData.domain,
+      message: validatorPluginEnableTypeData.message,
+      primaryType: validatorPluginEnableTypeData.primaryType,
+      types: types
+    } as TypedDataDefinition)
+
+    const typedHash = hashTypedData(validatorPluginEnableTypeData)
+
+    let enableSig = await this.validator!.signMessage({
+      message: { raw: typedHash }
+    })
+
     return {
       accountAddress: this.client.account.address,
-      permissionValidatorAddress: PERMISSION_VALIDATOR_ADDRESS,
+      permissionValidatorAddress: validatorAddress,
       permissions: permissions,
       permittedScopeData: permittedScopeData,
-      permittedScopeSignature: permittedScopeSignature
+      permittedScopeSignature: permittedScopeSignature,
+      enableSig: enableSig
     }
   }
 }
