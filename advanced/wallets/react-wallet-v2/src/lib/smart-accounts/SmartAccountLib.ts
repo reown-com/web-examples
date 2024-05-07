@@ -20,11 +20,11 @@ import {
   BundlerClient,
   ENTRYPOINT_ADDRESS_V06,
   ENTRYPOINT_ADDRESS_V07,
-  GetUserOperationReceiptReturnType,
   SmartAccountClient,
   SmartAccountClientConfig,
   bundlerActions,
-  createSmartAccountClient
+  createSmartAccountClient,
+  isSmartAccountDeployed
 } from 'permissionless'
 import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/actions/pimlico'
 import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl } from '@/utils/SmartAccountUtil'
@@ -175,11 +175,9 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     return signature || ''
   }
   async sendTransaction({ to, value, data }: { to: Address; value: bigint; data: Hex }) {
-    console.log('Sending transaction from smart account', { type: this.type, to, value, data })
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
-
     const txResult = await this.client.sendTransaction({
       to,
       value,
@@ -187,7 +185,6 @@ export abstract class SmartAccountLib implements EIP155Wallet {
       account: this.client.account,
       chain: this.chain
     })
-    console.log('Transaction completed', { txResult })
 
     return txResult
   }
