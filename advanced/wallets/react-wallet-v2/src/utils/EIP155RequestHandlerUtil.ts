@@ -50,7 +50,7 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
             data.permissions
           )
           return formatJsonRpcResult(id, permissionContext)
-        } 
+        }
         if (domain.name === 'eth_getPermissions_v1' && wallet instanceof SafeSmartAccountLib) {
           const permissionContext = await wallet.issuePermissionContext(
             data.targetAddress,
