@@ -7,6 +7,7 @@ import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import SettingsStore from '@/store/SettingsStore'
+import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
@@ -46,6 +47,13 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
         if (domain.name === 'eth_getPermissions_v1' && wallet instanceof KernelSmartAccountLib) {
           const sessionKey = await wallet.issueSessionKey(data.targetAddress, data.permissions)
           return formatJsonRpcResult(id, sessionKey)
+        }
+        if (domain.name === 'eth_getPermissions_v1' && wallet instanceof SafeSmartAccountLib) {
+          const permissionContext = await wallet.issuePermissionContext(
+            data.targetAddress,
+            data.permissions
+          )
+          return formatJsonRpcResult(id, permissionContext)
         }
 
         // https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471

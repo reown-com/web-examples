@@ -109,7 +109,12 @@ export function isAllowedSafeChain(chainId: number): boolean {
 }
 
 export async function createOrRestoreSafeSmartAccount(privateKey: string) {
-  const lib = new SafeSmartAccountLib({ privateKey, chain: sepolia, sponsored: true })
+  const lib = new SafeSmartAccountLib({
+    privateKey,
+    chain: sepolia,
+    sponsored: true,
+    entryPointVersion: 7
+  })
   await lib.init()
   const address = lib.getAddress()
   const key = `${sepolia.id}:${address}`
