@@ -156,6 +156,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
 
     return {
+      accountType: 'Safe7579',
       accountAddress: this.client.account.address,
       permissionValidatorAddress: PERMISSION_VALIDATOR_ADDRESS,
       permissions: permissions,
