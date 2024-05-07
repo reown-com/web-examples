@@ -60,6 +60,13 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
           )
           return formatJsonRpcResult(id, permissionContext)
         }
+        if (domain.name === 'eth_getPermissions_v1' && wallet instanceof SafeSmartAccountLib) {
+          const permissionContext = await wallet.issuePermissionContext(
+            data.targetAddress,
+            data.permissions
+          )
+          return formatJsonRpcResult(id, permissionContext)
+        }
 
         // https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
         delete types.EIP712Domain

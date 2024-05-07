@@ -5,55 +5,49 @@ export const CALL_TYPE = {
   SINGLE: '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`,
   BATCH: '0x0100000000000000000000000000000000000000000000000000000000000000' as `0x${string}`
 }
-
-export function encodeUserOpCallData({
-  actions
-}: {
-  actions: { target: Address; value: string; callData: Hex }[]
-}): Hex {
+export type Execution = { to: Address; value: bigint; data: Hex }
+export function encodeUserOpCallData({ actions }: { actions: Execution[] }): Hex {
   if (actions.length === 0) {
     throw new Error('No actions')
-  } else if (actions.length === 1) {
-    const { target, value, callData } = actions[0]
+  }
+  if (actions.length === 1) {
+    const { to, value, data } = actions[0]
     return encodeFunctionData({
       functionName: 'execute',
       abi: executeAbi,
-      args: [
-        CALL_TYPE.SINGLE,
-        encodePacked(['address', 'uint256', 'bytes'], [target, BigInt(Number(value)), callData])
-      ]
-    })
-  } else {
-    return encodeFunctionData({
-      functionName: 'execute',
-      abi: executeAbi,
-      args: [
-        CALL_TYPE.BATCH,
-        encodeAbiParameters(
-          [
-            {
-              components: [
-                {
-                  name: 'target',
-                  type: 'address'
-                },
-                {
-                  name: 'value',
-                  type: 'uint256'
-                },
-                {
-                  name: 'callData',
-                  type: 'bytes'
-                }
-              ],
-              name: 'Execution',
-              type: 'tuple[]'
-            }
-          ],
-          // @ts-ignore
-          [actions]
-        )
-      ]
+      args: [CALL_TYPE.SINGLE, encodePacked(['address', 'uint256', 'bytes'], [to, value, data])]
     })
   }
+
+  return encodeFunctionData({
+    functionName: 'execute',
+    abi: executeAbi,
+    args: [
+      CALL_TYPE.BATCH,
+      encodeAbiParameters(
+        [
+          {
+            components: [
+              {
+                name: 'to',
+                type: 'address'
+              },
+              {
+                name: 'value',
+                type: 'uint256'
+              },
+              {
+                name: 'data',
+                type: 'bytes'
+              }
+            ],
+            name: 'Execution',
+            type: 'tuple[]'
+          }
+        ],
+        // @ts-ignore
+        [actions]
+      )
+    ]
+  })
 }

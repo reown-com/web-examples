@@ -56,6 +56,7 @@ type SmartAccountLibOptions = {
   chain: Chain
   sponsored?: boolean
   entryPointVersion?: number
+  entryPointVersion?: number
 }
 
 export class KernelSmartAccountLib implements EIP155Wallet {
@@ -64,13 +65,16 @@ export class KernelSmartAccountLib implements EIP155Wallet {
   public address?: `0x${string}`
   public sponsored: boolean = true
   public entryPoint: EntryPoint
+  public entryPoint: EntryPoint
   private signer: PrivateKeyAccount
+  private client: KernelAccountClient<EntryPoint, Transport, Chain | undefined> | undefined
   private client: KernelAccountClient<EntryPoint, Transport, Chain | undefined> | undefined
   private publicClient:
     | (PublicClient &
         BundlerClient<ENTRYPOINT_ADDRESS_V07_TYPE> &
         BundlerActions<ENTRYPOINT_ADDRESS_V07_TYPE>)
     | undefined
+  private validator: KernelValidator<EntryPoint> | undefined
   private validator: KernelValidator<EntryPoint> | undefined
   public initialized = false
 
@@ -83,10 +87,21 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     sponsored = false,
     entryPointVersion = 7
   }: SmartAccountLibOptions) {
+  public constructor({
+    privateKey,
+    chain,
+    sponsored = false,
+    entryPointVersion = 7
+  }: SmartAccountLibOptions) {
     this.chain = chain
     this.sponsored = sponsored
     this.#signerPrivateKey = privateKey
     this.signer = privateKeyToAccount(privateKey as Hex)
+    let entryPoint: EntryPoint = ENTRYPOINT_ADDRESS_V07
+    if (entryPointVersion === 6) {
+      entryPoint = ENTRYPOINT_ADDRESS_V06
+    }
+    this.entryPoint = entryPoint
     let entryPoint: EntryPoint = ENTRYPOINT_ADDRESS_V07
     if (entryPointVersion === 6) {
       entryPoint = ENTRYPOINT_ADDRESS_V06
@@ -113,10 +128,27 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         sudo: this.validator
       },
       entryPoint: this.entryPoint
+      },
+      entryPoint: this.entryPoint
     })
     const client = createKernelAccountClient({
       account,
       chain: sepolia,
+      entryPoint: this.entryPoint,
+      bundlerTransport: bundlerRpc,
+      middleware: {
+        sponsorUserOperation: async ({ userOperation }) => {
+          const zerodevPaymaster = createZeroDevPaymasterClient({
+            chain: sepolia,
+            entryPoint: this.entryPoint,
+            // Get this RPC from ZeroDev dashboard
+            transport: http(`https://rpc.zerodev.app/api/v2/paymaster/${projectId}`)
+          })
+          return zerodevPaymaster.sponsorUserOperation({
+            userOperation,
+            entryPoint: this.entryPoint
+          })
+        }
       entryPoint: this.entryPoint,
       bundlerTransport: bundlerRpc,
       middleware: {
@@ -260,11 +292,15 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         permissions: parsedPermissions
       },
       entryPoint: this.entryPoint
+      },
+      entryPoint: this.entryPoint
     })
     const sessionKeyAccount = await createKernelAccount(this.publicClient, {
       plugins: {
         sudo: this.validator,
         regular: sessionKeyValidator
+      },
+      entryPoint: this.entryPoint
       },
       entryPoint: this.entryPoint
     })
@@ -291,6 +327,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     const newSigners = [{ address: currentAddress, weight: 100 }, ...coSigners]
     console.log('Updating account Co-Signers', { newSigners })
 
+    const updateCall = getUpdateConfigCall(this.entryPoint, {
     const updateCall = getUpdateConfigCall(this.entryPoint, {
       threshold: 100,
       signers: newSigners
