@@ -409,6 +409,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     })
 
     return {
+      accountType:'KernelV3',
       accountAddress: this.client.account.address,
       permissionValidatorAddress: validatorAddress,
       permissions: permissions,
