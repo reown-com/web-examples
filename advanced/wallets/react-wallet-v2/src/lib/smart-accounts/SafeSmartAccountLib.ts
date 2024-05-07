@@ -3,13 +3,7 @@ import {
   SmartAccountClientConfig,
   isSmartAccountDeployed
 } from 'permissionless'
-import {
-  ENTRYPOINT_ADDRESS_V07,
-  SmartAccountClientConfig,
-  isSmartAccountDeployed
-} from 'permissionless'
 import { SmartAccountLib } from './SmartAccountLib'
-import { SmartAccount } from 'permissionless/accounts'
 import { SmartAccount } from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 import {
@@ -36,15 +30,10 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const safeAccount = await signerToSafe7579SmartAccount(this.publicClient, {
       entryPoint: ENTRYPOINT_ADDRESS_V07,
       signer: this.signer
-    const safeAccount = await signerToSafe7579SmartAccount(this.publicClient, {
-      entryPoint: ENTRYPOINT_ADDRESS_V07,
-      signer: this.signer
     })
     return {
       name: 'Safe7579SmartAccount',
-      name: 'Safe7579SmartAccount',
       account: safeAccount as SmartAccount<EntryPoint>,
-      entryPoint: ENTRYPOINT_ADDRESS_V07,
       entryPoint: ENTRYPOINT_ADDRESS_V07,
       chain: this.chain,
       bundlerTransport: this.bundlerUrl,
@@ -167,6 +156,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
 
     return {
+      accountType: 'Safe7579',
       accountAddress: this.client.account.address,
       permissionValidatorAddress: PERMISSION_VALIDATOR_ADDRESS,
       permissions: permissions,

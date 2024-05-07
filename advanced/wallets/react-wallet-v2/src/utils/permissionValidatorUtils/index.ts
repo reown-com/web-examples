@@ -10,7 +10,7 @@ export type SingleSignerPermission = {
 }
 
 export type PermissionContext = {
-  accountType:'KernelV3' | 'Safe7579'
+  accountType: 'KernelV3' | 'Safe7579'
   accountAddress: Address
   permissionValidatorAddress: Address
   permissions: SingleSignerPermission[]
