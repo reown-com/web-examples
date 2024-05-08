@@ -33,7 +33,7 @@
     "@taquito/taquito": "^15.1.0",
     "@types/semver": "^7.5.8",
     "@types/semver": "^7.5.8",
-    "@walletconnect/web3wallet": "1.11.1",
+    "@walletconnect/web3wallet": "1.12.0-rc-74221a202",
     "@zerodev/ecdsa-validator": "5.2.3",
     "@zerodev/presets": "5.2.2",
     "@zerodev/sdk": "5.2.10",
