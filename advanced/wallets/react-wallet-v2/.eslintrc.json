@@ -1,4 +1,12 @@
 {
   "extends": ["next/core-web-vitals","prettier"],
-  "ignorePatterns": ["next.config.js"]
+  "ignorePatterns": ["next.config.js"],
+  "overrides": [
+		{
+			"extends": ["plugin:package-json/recommended"],
+			"files": ["package.json"],
+			"parser": "jsonc-eslint-parser",
+			"plugins": ["package-json"]
+		}
+	]
 }
