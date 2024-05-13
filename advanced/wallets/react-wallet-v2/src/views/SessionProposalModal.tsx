@@ -255,7 +255,7 @@ export default function SessionProposalModal() {
       try {
         if (reorderedEip155Accounts.length > 0) {
           // we should append the smart accounts to the available eip155 accounts
-          namespaces.eip155.accounts = namespaces.eip155.accounts.concat(reorderedEip155Accounts)
+          namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
