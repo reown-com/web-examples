@@ -335,7 +335,7 @@ export default function SessionProposalModal() {
       <Grid.Container style={{ marginBottom: '10px', marginTop: '10px' }} justify={'space-between'}>
         <Grid>
           <Row style={{ color: 'GrayText' }}>Accounts</Row>
-          {(supportedChains.length > 1 &&
+          {(supportedChains.length > 0 &&
             supportedChains.map((chain, i) => {
               return (
                 <Row key={i}>
@@ -361,7 +361,7 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>
-          {(supportedChains.length > 1 &&
+          {(supportedChains.length > 0 &&
             supportedChains.map((chain, i) => {
               if (!chain) {
                 return <></>
