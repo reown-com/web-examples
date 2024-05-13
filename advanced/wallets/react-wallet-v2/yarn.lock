@@ -2944,10 +2944,10 @@
   resolved "https://registry.yarnpkg.com/@zerodev/presets/-/presets-5.2.2.tgz#3b3919407bf110414fef18297b0ed91a69827802"
   integrity sha512-2b2j5mGVE1GckUIqhOnSbEbFw4jEd7S/A1Yd2WisyS6fQBmrR5QfWIYKoBOIjXYhSFj0qbtNqtl1KFNDELRiMQ==
 
-"@zerodev/sdk@5.2.10":
-  version "5.2.10"
-  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.2.10.tgz#9cbd21c48a3571e5a5e2804ed0ab2fbb17d346e6"
-  integrity sha512-f7z0DN8AXGwCHIr8hBFH1r5+YRr5p8kde0rjo2LE4uO2Gv4BupUqqGrMK9EuJh2/pZYz93Mav89aMmpdr5d/Uw==
+"@zerodev/sdk@5.2.11":
+  version "5.2.11"
+  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.2.11.tgz#56841b9416889f0fb1fd9beb461f6c6d6a6c802e"
+  integrity sha512-42wl3vW+CPQTghOnAlVAwEiT7Aa+cb89EztY5NCX03jGHj64D38ZIRytZkIu4pleGGFHL7B29af6RYzGJPO0NQ==
   dependencies:
     semver "^7.6.0"
 
