@@ -18,6 +18,7 @@ import { useSnapshot } from 'valtio'
 import { useCallback, useMemo } from 'react'
 import AuthRequestModal from '@/views/AuthRequestModal'
 import LoadingModal from '@/views/LoadingModal'
+import SessionAuthenticateModal from '@/views/SessionAuthenticateModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -62,6 +63,8 @@ export default function Modal() {
         return <AuthRequestModal />
       case 'LoadingModal':
         return <LoadingModal />
+      case 'SessionAuthenticateModal':
+        return <SessionAuthenticateModal />
       default:
         return null
     }
