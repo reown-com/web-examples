@@ -442,7 +442,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     const calls = getSendCallData(sendCallsParam)
     const callData = await this.client.account.encodeCallData(calls)
     const capabilities = sendCallsParam.capabilities
-    if (capabilities && capabilities.get('payamasterService')) {
+    if (capabilities && capabilities['payamasterService']) {
       const paymasterService = capabilities.get(
         'payamasterService'
       ) as SendCallsPaymasterServiceCapabilityParam
