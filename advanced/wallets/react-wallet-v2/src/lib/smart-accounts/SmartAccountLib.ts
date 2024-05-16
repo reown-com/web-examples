@@ -232,7 +232,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
 
     const capabilities = sendCallsParam.capabilities
     if (capabilities && capabilities['paymasterService']) {
-      console.log("executing sendCalls with paymasterService")
+      console.log('executing sendCalls with paymasterService')
       const paymasterService = capabilities[
         'paymasterService'
       ] as SendCallsPaymasterServiceCapabilityParam
@@ -270,7 +270,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
         chain: this.chain,
         context: paymasterService.context
       })
-      console.log({paymasterStubData})
+      console.log({ paymasterStubData })
       const userOpWithStubData: UserOperation<'v0.7'> = {
         ...userOpPreStubData,
         ...paymasterStubData,
@@ -283,7 +283,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
       const gasEstimation = await this.bundlerClient.estimateUserOperationGas({
         userOperation: userOpWithStubData
       })
-      console.log({gasEstimation})
+      console.log({ gasEstimation })
       const userOpWithGasEstimates: UserOperation<'v0.7'> = {
         ...userOpWithStubData,
         ...gasEstimation
@@ -298,7 +298,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
         chain: this.chain,
         context: paymasterService.context
       })
-      console.log({paymasterData})
+      console.log({ paymasterData })
       const userOpWithPaymasterData: UserOperation<'v0.7'> = {
         ...userOpWithGasEstimates,
         ...paymasterData
@@ -314,10 +314,10 @@ export abstract class SmartAccountLib implements EIP155Wallet {
       const userOpHash = await this.bundlerClient.sendUserOperation({
         userOperation: userOp
       })
-      console.log({userOpHash})
+      console.log({ userOpHash })
       return userOpHash
     }
-    console.log("executing sendCalls")
+    console.log('executing sendCalls')
     return this.sendBatchTransaction(calls)
   }
 }
