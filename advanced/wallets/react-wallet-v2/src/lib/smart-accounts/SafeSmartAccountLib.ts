@@ -40,6 +40,7 @@ import { SendCallsParams, SendCallsPaymasterServiceCapabilityParam } from '@/dat
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
+    this.type = 'Safe'
     const safeAccount = await signerToSafe7579SmartAccount(this.publicClient, {
       entryPoint: ENTRYPOINT_ADDRESS_V07,
       signer: this.signer
@@ -184,13 +185,11 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
     const gasPrice = (await this.bundlerClient.getUserOperationGasPrice()).fast
     const calls = getSendCallData(sendCallsParam)
-    console.log({ calls })
     const accountDeployed = await isSmartAccountDeployed(
       this.publicClient,
       this.client.account.address
     )
     let callData = await this.client.account.encodeCallData(calls)
-
     if (!accountDeployed) {
       const initialValidators = getSafe7579InitialValidators()
       const initData = getSafe7579InitData(this.signer.address, initialValidators, calls)
@@ -203,11 +202,12 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
 
     const capabilities = sendCallsParam.capabilities
-    console.log({ capabilities })
-    if (capabilities && capabilities['payamasterService']) {
-      const paymasterService = capabilities.get(
-        'payamasterService'
-      ) as SendCallsPaymasterServiceCapabilityParam
+
+    if (capabilities && capabilities['paymasterService']) {
+      console.log("executing sendCalls with paymasterService")
+      const paymasterService = capabilities[
+        'paymasterService'
+      ] as SendCallsPaymasterServiceCapabilityParam
 
       const paymasterUrl = paymasterService.url
 
@@ -242,7 +242,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         chain: this.chain,
         context: paymasterService.context
       })
-
+      console.log({paymasterStubData})
       const userOpWithStubData: UserOperation<'v0.7'> = {
         ...userOpPreStubData,
         ...paymasterStubData,
@@ -255,7 +255,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       const gasEstimation = await this.bundlerClient.estimateUserOperationGas({
         userOperation: userOpWithStubData
       })
-
+      console.log({gasEstimation})
       const userOpWithGasEstimates: UserOperation<'v0.7'> = {
         ...userOpWithStubData,
         ...gasEstimation
@@ -270,7 +270,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         chain: this.chain,
         context: paymasterService.context
       })
-
+      console.log({paymasterData})
       const userOpWithPaymasterData: UserOperation<'v0.7'> = {
         ...userOpWithGasEstimates,
         ...paymasterData
@@ -286,8 +286,10 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       const userOpHash = await this.bundlerClient.sendUserOperation({
         userOperation: userOp
       })
+      console.log({userOpHash})
       return userOpHash
     }
+    console.log("executing sendCalls")
     return this.sendBatchTransaction(calls)
   }
 }

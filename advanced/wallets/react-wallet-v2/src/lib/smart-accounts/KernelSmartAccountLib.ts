@@ -440,12 +440,12 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     })
     const gasPrice = (await pimlicoBundlerClient.getUserOperationGasPrice()).fast
     const calls = getSendCallData(sendCallsParam)
-    const callData = await this.client.account.encodeCallData(calls)
     const capabilities = sendCallsParam.capabilities
-    if (capabilities && capabilities['payamasterService']) {
-      const paymasterService = capabilities.get(
-        'payamasterService'
-      ) as SendCallsPaymasterServiceCapabilityParam
+    if (capabilities && capabilities['paymasterService']) {
+      console.log("executing sendCalls with paymasterService")
+      const paymasterService = capabilities[
+        'paymasterService'
+      ] as SendCallsPaymasterServiceCapabilityParam
 
       const paymasterUrl = paymasterService.url
 
@@ -480,7 +480,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         chain: this.chain,
         context: paymasterService.context
       })
-
+      console.log({paymasterStubData})
       const userOpWithStubData: UserOperation<'v0.7'> = {
         ...userOpPreStubData,
         ...paymasterStubData,
@@ -493,7 +493,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
       const gasEstimation = await pimlicoBundlerClient.estimateUserOperationGas({
         userOperation: userOpWithStubData
       })
-
+      console.log({gasEstimation})
       const userOpWithGasEstimates: UserOperation<'v0.7'> = {
         ...userOpWithStubData,
         ...gasEstimation
@@ -508,7 +508,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         chain: this.chain,
         context: paymasterService.context
       })
-
+      console.log({paymasterData})
       const userOpWithPaymasterData: UserOperation<'v0.7'> = {
         ...userOpWithGasEstimates,
         ...paymasterData
@@ -524,8 +524,10 @@ export class KernelSmartAccountLib implements EIP155Wallet {
       const userOpHash = await pimlicoBundlerClient.sendUserOperation({
         userOperation: userOp
       })
+      console.log({userOpHash})
       return userOpHash
     }
+    console.log("executing sendCalls")
     return this.sendBatchTransaction(calls)
   }
 }
