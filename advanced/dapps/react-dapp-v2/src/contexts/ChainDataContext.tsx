@@ -16,6 +16,7 @@ import { CosmosChainData } from "../chains/cosmos";
 import { EIP155ChainData } from "../chains/eip155";
 import { TezosChainData } from "../chains/tezos";
 import { KadenaChainData } from "../chains/kadena";
+import { BtcChainData } from "../chains/bip122";
 
 /**
  * Types
@@ -41,6 +42,7 @@ export function ChainDataContextProvider({
 
   const loadChainData = async () => {
     const namespaces = getAllChainNamespaces();
+    console.log("namespaces", namespaces);
     const chainData: ChainNamespaces = {};
     await Promise.all(
       namespaces.map(async (namespace) => {
@@ -72,6 +74,10 @@ export function ChainDataContextProvider({
             break;
           case "kadena":
             chains = KadenaChainData;
+            break;
+          case "bip122":
+            console.log("BIP122", BtcChainData);
+            chains = BtcChainData;
             break;
           default:
             console.error("Unknown chain namespace: ", namespace);
