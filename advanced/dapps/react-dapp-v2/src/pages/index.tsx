@@ -581,20 +581,15 @@ const Home: NextPage = () => {
             <p>Testnets Only?</p>
             <Toggle active={isTestnet} onClick={toggleTestnets} />
           </SToggleContainer>
-          {chainOptions.map(
-            (chainId) => (
-              console.log(chainId),
-              (
-                <Blockchain
-                  key={chainId}
-                  chainId={chainId}
-                  chainData={chainData}
-                  onClick={handleChainSelectionClick}
-                  active={chains.includes(chainId)}
-                />
-              )
-            )
-          )}
+          {chainOptions.map((chainId) => (
+            <Blockchain
+              key={chainId}
+              chainId={chainId}
+              chainData={chainData}
+              onClick={handleChainSelectionClick}
+              active={chains.includes(chainId)}
+            />
+          ))}
           <SConnectButton left onClick={onConnect} disabled={!chains.length}>
             Connect
           </SConnectButton>
