@@ -261,7 +261,18 @@ export default function SessionProposalModal() {
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
-        const sessionProperties = { capabilities: JSON.stringify(capabilities) }
+        const sessionProperties = {
+          capabilities: JSON.stringify(capabilities)
+        } as Record<string, string>
+        if (namespaces.eip155) {
+          const uniqueAddresses = [
+            ...new Set(namespaces.eip155.accounts.map(account => account.split(':')[2]))
+          ]
+          // demo address labels
+          for (const [i, account] of uniqueAddresses.entries()) {
+            sessionProperties[account] = `Vault ${i + 1}`
+          }
+        }
 
         await web3wallet.approveSession({
           id: proposal.id,
