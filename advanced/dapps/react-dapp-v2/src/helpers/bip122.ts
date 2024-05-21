@@ -5,9 +5,6 @@ export async function apiGetBip122AccountBalance(
   const utxo = await apiGetAddressUtxos(address, chainId);
   const balanceInSatoshis = getAvailableBalanceFromUtxos(utxo);
   const balanceInBtc = balanceInSatoshis * 0.00000001;
-
-  console.log("utxo for address", address, utxo);
-  console.log("balance", balanceInBtc);
   return { balance: balanceInBtc.toString(), symbol: "BTC", name: "BTC" };
 }
 

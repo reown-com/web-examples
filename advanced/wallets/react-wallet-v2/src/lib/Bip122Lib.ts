@@ -44,17 +44,6 @@ export default class Bip122Lib {
     this.account = restored
     this.mnemonic = mnemonic
     this.wif = restored.toWIF()
-    console.log('btc address', this.address)
-    // console.log('key', bitcoin)
-    // const keyPair = key ? ECPair.fromWIF(key) : ECPair.makeRandom()
-    // this.privateKey = keyPair.toWIF()
-    // const { address } = bitcoin.payments.p2pkh({
-    //   pubkey: keyPair.publicKey,
-    //   network: bitcoin.networks.testnet
-    // })
-    // this.address = address!
-
-    // console.log('btc address', address)
   }
 
   static async init({ privateKey }: IInitArguments) {
@@ -75,8 +64,6 @@ export default class Bip122Lib {
     var signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed, {
       segwitType: 'p2wpkh'
     })
-    console.log('sig', signature.toString('base64'))
-    console.log('isValid', bitcoinMessage.verify(message, this.address, signature, undefined, true))
     return {
       signature: signature.toString('base64'),
       segwitType: 'p2wpkh'
@@ -102,24 +89,22 @@ export default class Bip122Lib {
     }
 
     const payment = bitcoin.payments.p2wpkh({
-      pubkey: this.account.publicKey
+      pubkey: this.account.publicKey,
+      network: bitcoin.networks.testnet
     })
 
     const utxos = await this.getUtXOs(this.address)
     if (!utxos || utxos.length === 0) {
       throw new Error(`No UTXOs found for address: ${this.address}`)
     }
-    console.log('utxos', utxos)
     const availableBalance = this.getAvailableBalance(utxos)
-    console.log('availableBalance', availableBalance)
 
     if (availableBalance < amount) {
       throw new Error(`Insufficient funds: ${availableBalance}`)
     }
 
     const amountToTransfer = Math.ceil((amount / 100) * 98) // 2% validators fee
-    console.log('amountToTransfer', amountToTransfer)
-    console.log('output', payment.output?.toString('hex'))
+
     const psbt = new bitcoin.Psbt({ network: bitcoin.networks.testnet })
 
     const scriptHash = Buffer.from(payment.output?.toString('hex')!, 'hex')
@@ -143,7 +128,6 @@ export default class Bip122Lib {
     psbt.finalizeAllInputs()
 
     const transaction = psbt.extractTransaction()
-    console.log('transaction', transaction.toHex(), psbt.getFee(), psbt.getFeeRate())
     return transaction.toHex()
   }
 

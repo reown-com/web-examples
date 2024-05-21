@@ -1638,11 +1638,6 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE;
-        console.log({
-          chainId,
-          address,
-          method,
-        });
         const message = "This is a message to be signed for BIP122";
         const result = await client!.request<{
           signature: string;
@@ -1655,7 +1650,6 @@ export function JsonRpcContextProvider({
             params: [message, address],
           },
         });
-        console.log(result, result.signature);
         const checkSegwitAlways =
           result.segwitType === ("p2wpkh" || "p2sh(p2wpkh)");
         return {
@@ -1684,13 +1678,6 @@ export function JsonRpcContextProvider({
 
         const utxos = await apiGetAddressUtxos(address, chainId);
         const availableBalance = getAvailableBalanceFromUtxos(utxos); // in satoshis
-        console.log({
-          chainId,
-          address,
-          method,
-          availableBalance,
-        });
-
         const result = await client!.request<any>({
           topic: session!.topic,
           chainId: chainId,

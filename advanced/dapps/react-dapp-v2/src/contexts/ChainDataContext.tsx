@@ -42,7 +42,6 @@ export function ChainDataContextProvider({
 
   const loadChainData = async () => {
     const namespaces = getAllChainNamespaces();
-    console.log("namespaces", namespaces);
     const chainData: ChainNamespaces = {};
     await Promise.all(
       namespaces.map(async (namespace) => {
@@ -76,7 +75,6 @@ export function ChainDataContextProvider({
             chains = KadenaChainData;
             break;
           case "bip122":
-            console.log("BIP122", BtcChainData);
             chains = BtcChainData;
             break;
           default:
