@@ -4,14 +4,13 @@ export const BtcChainData: ChainsMap = {
   "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943": {
     id: "bip122:000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943",
     name: "BTC Signet",
-    rpc: ["https://api.devnet.solana.com"],
+    rpc: [],
     slip44: 501,
     testnet: true,
   },
 };
 
 export const BtcMetadata: NamespaceMetadata = {
-  // Solana Devnet
   "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943": {
     logo: "/assets/btc-testnet.png",
     rgb: "247, 147, 25",
