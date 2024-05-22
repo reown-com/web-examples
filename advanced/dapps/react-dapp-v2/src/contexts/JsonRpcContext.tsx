@@ -172,29 +172,29 @@ export function JsonRpcContextProvider({
         address: string
       ) => Promise<IFormattedRpcResponse>
     ) =>
-      async (chainId: string, address: string) => {
-        if (typeof client === "undefined") {
-          throw new Error("WalletConnect is not initialized");
-        }
-        if (typeof session === "undefined") {
-          throw new Error("Session is not connected");
-        }
+    async (chainId: string, address: string) => {
+      if (typeof client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
+      if (typeof session === "undefined") {
+        throw new Error("Session is not connected");
+      }
 
-        try {
-          setPending(true);
-          const result = await rpcRequest(chainId, address);
-          setResult(result);
-        } catch (err: any) {
-          console.error("RPC request failed: ", err);
-          setResult({
-            address,
-            valid: false,
-            result: err?.message ?? err,
-          });
-        } finally {
-          setPending(false);
-        }
-      };
+      try {
+        setPending(true);
+        const result = await rpcRequest(chainId, address);
+        setResult(result);
+      } catch (err: any) {
+        console.error("RPC request failed: ", err);
+        setResult({
+          address,
+          valid: false,
+          result: err?.message ?? err,
+        });
+      } finally {
+        setPending(false);
+      }
+    };
 
   const _verifyEip155MessageSignature = (
     message: string,
@@ -1478,8 +1478,9 @@ export function JsonRpcContextProvider({
         }
 
         const pactCommand = new PactCommand();
-        pactCommand.code = `(coin.transfer "${kadenaAccount.account
-          }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        pactCommand.code = `(coin.transfer "${
+          kadenaAccount.account
+        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
 
         pactCommand
           .setMeta(
@@ -1530,8 +1531,9 @@ export function JsonRpcContextProvider({
         }
 
         const pactCommand = new PactCommand();
-        pactCommand.code = `(coin.transfer "${kadenaAccount.account
-          }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        pactCommand.code = `(coin.transfer "${
+          kadenaAccount.account
+        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
 
         pactCommand
           .setMeta(
