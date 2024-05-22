@@ -83,7 +83,7 @@ export default function SettingsPage() {
                     <Switch
                       checked={kernelSmartAccountEnabled}
                       onChange={SettingsStore.toggleKernelSmartAccountsEnabled}
-                      data-testid="settings-toggle-smart-account-zerodev"
+                      data-testid="settings-toggle-smart-account-kernel"
                     />
                     <Text>{kernelSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>
