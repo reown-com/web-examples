@@ -83,7 +83,7 @@ export default function SettingsPage() {
                     <Switch
                       checked={kernelSmartAccountEnabled}
                       onChange={SettingsStore.toggleKernelSmartAccountsEnabled}
-                      data-testid="settings-toggle-smart-account-sponsorship"
+                      data-testid="settings-toggle-smart-account-zerodev"
                     />
                     <Text>{kernelSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>
@@ -95,7 +95,7 @@ export default function SettingsPage() {
                     <Switch
                       checked={safeSmartAccountEnabled}
                       onChange={SettingsStore.toggleSafeSmartAccountsEnabled}
-                      data-testid="settings-toggle-smart-account-sponsorship"
+                      data-testid="settings-toggle-smart-account-safe"
                     />
                     <Text>{safeSmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>
@@ -107,7 +107,7 @@ export default function SettingsPage() {
                     <Switch
                       checked={biconomySmartAccountEnabled}
                       onChange={SettingsStore.toggleBiconomySmartAccountsEnabled}
-                      data-testid="settings-toggle-smart-account-sponsorship"
+                      data-testid="settings-toggle-smart-account-biconomy"
                     />
                     <Text>{biconomySmartAccountEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>
