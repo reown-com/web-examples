@@ -172,29 +172,29 @@ export function JsonRpcContextProvider({
         address: string
       ) => Promise<IFormattedRpcResponse>
     ) =>
-    async (chainId: string, address: string) => {
-      if (typeof client === "undefined") {
-        throw new Error("WalletConnect is not initialized");
-      }
-      if (typeof session === "undefined") {
-        throw new Error("Session is not connected");
-      }
+      async (chainId: string, address: string) => {
+        if (typeof client === "undefined") {
+          throw new Error("WalletConnect is not initialized");
+        }
+        if (typeof session === "undefined") {
+          throw new Error("Session is not connected");
+        }
 
-      try {
-        setPending(true);
-        const result = await rpcRequest(chainId, address);
-        setResult(result);
-      } catch (err: any) {
-        console.error("RPC request failed: ", err);
-        setResult({
-          address,
-          valid: false,
-          result: err?.message ?? err,
-        });
-      } finally {
-        setPending(false);
-      }
-    };
+        try {
+          setPending(true);
+          const result = await rpcRequest(chainId, address);
+          setResult(result);
+        } catch (err: any) {
+          console.error("RPC request failed: ", err);
+          setResult({
+            address,
+            valid: false,
+            result: err?.message ?? err,
+          });
+        } finally {
+          setPending(false);
+        }
+      };
 
   const _verifyEip155MessageSignature = (
     message: string,
@@ -789,46 +789,42 @@ export function JsonRpcContextProvider({
           })
         );
 
-        try {
-          const result = await client!.request<{ signature: string }>({
-            chainId,
-            topic: session!.topic,
-            request: {
-              method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
-              params: {
-                feePayer: transaction.feePayer!.toBase58(),
-                recentBlockhash: transaction.recentBlockhash,
-                instructions: transaction.instructions.map((i) => ({
-                  programId: i.programId.toBase58(),
-                  data: Array.from(i.data),
-                  keys: i.keys.map((k) => ({
-                    isSigner: k.isSigner,
-                    isWritable: k.isWritable,
-                    pubkey: k.pubkey.toBase58(),
-                  })),
-                })),
-              },
-            },
-          });
-
-          // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
-          // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
-          transaction.addSignature(
-            senderPublicKey,
-            Buffer.from(bs58.decode(result.signature))
-          );
-
-          const valid = transaction.verifySignatures();
-
-          return {
+        const result = await client!.request<{ signature: string }>({
+          chainId,
+          topic: session!.topic,
+          request: {
             method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
-            address,
-            valid,
-            result: result.signature,
-          };
-        } catch (error: any) {
-          throw new Error(error);
-        }
+            params: {
+              feePayer: transaction.feePayer!.toBase58(),
+              recentBlockhash: transaction.recentBlockhash,
+              instructions: transaction.instructions.map((i) => ({
+                programId: i.programId.toBase58(),
+                data: Array.from(i.data),
+                keys: i.keys.map((k) => ({
+                  isSigner: k.isSigner,
+                  isWritable: k.isWritable,
+                  pubkey: k.pubkey.toBase58(),
+                })),
+              })),
+            },
+          },
+        });
+
+        // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
+        // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
+        transaction.addSignature(
+          senderPublicKey,
+          Buffer.from(bs58.decode(result.signature))
+        );
+
+        const valid = transaction.verifySignatures();
+
+        return {
+          method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
+          address,
+          valid,
+          result: result.signature,
+        };
       }
     ),
     testSignMessage: _createJsonRpcRequestHandler(
@@ -849,34 +845,30 @@ export function JsonRpcContextProvider({
           )
         );
 
-        try {
-          const result = await client!.request<{ signature: string }>({
-            chainId,
-            topic: session!.topic,
-            request: {
-              method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
-              params: {
-                pubkey: senderPublicKey.toBase58(),
-                message,
-              },
-            },
-          });
-
-          const valid = verifyMessageSignature(
-            senderPublicKey.toBase58(),
-            result.signature,
-            message
-          );
-
-          return {
+        const result = await client!.request<{ signature: string }>({
+          chainId,
+          topic: session!.topic,
+          request: {
             method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
-            address,
-            valid,
-            result: result.signature,
-          };
-        } catch (error: any) {
-          throw new Error(error);
-        }
+            params: {
+              pubkey: senderPublicKey.toBase58(),
+              message,
+            },
+          },
+        });
+
+        const valid = verifyMessageSignature(
+          senderPublicKey.toBase58(),
+          result.signature,
+          message
+        );
+
+        return {
+          method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
+          address,
+          valid,
+          result: result.signature,
+        };
       }
     ),
   };
@@ -915,31 +907,27 @@ export function JsonRpcContextProvider({
           version: 4,
         };
 
-        try {
-          const result = await client!.request<{
-            payload: string;
-            signature: string;
-          }>({
-            chainId,
-            topic: session!.topic,
-            request: {
-              method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
-              params: {
-                address,
-                transactionPayload,
-              },
-            },
-          });
-
-          return {
+        const result = await client!.request<{
+          payload: string;
+          signature: string;
+        }>({
+          chainId,
+          topic: session!.topic,
+          request: {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
-            address,
-            valid: true,
-            result: result.signature,
-          };
-        } catch (error: any) {
-          throw new Error(error);
-        }
+            params: {
+              address,
+              transactionPayload,
+            },
+          },
+        });
+
+        return {
+          method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
+          address,
+          valid: true,
+          result: result.signature,
+        };
       }
     ),
     testSignMessage: _createJsonRpcRequestHandler(
@@ -949,36 +937,32 @@ export function JsonRpcContextProvider({
       ): Promise<IFormattedRpcResponse> => {
         const message = `This is an example message to be signed - ${Date.now()}`;
 
-        try {
-          const result = await client!.request<{ signature: string }>({
-            chainId,
-            topic: session!.topic,
-            request: {
-              method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
-              params: {
-                address,
-                message,
-              },
-            },
-          });
-
-          // sr25519 signatures need to wait for WASM to load
-          await cryptoWaitReady();
-          const { isValid: valid } = signatureVerify(
-            message,
-            result.signature,
-            address
-          );
-
-          return {
+        const result = await client!.request<{ signature: string }>({
+          chainId,
+          topic: session!.topic,
+          request: {
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
-            address,
-            valid,
-            result: result.signature,
-          };
-        } catch (error: any) {
-          throw new Error(error);
-        }
+            params: {
+              address,
+              message,
+            },
+          },
+        });
+
+        // sr25519 signatures need to wait for WASM to load
+        await cryptoWaitReady();
+        const { isValid: valid } = signatureVerify(
+          message,
+          result.signature,
+          address
+        );
+
+        return {
+          method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
+          address,
+          valid,
+          result: result.signature,
+        };
       }
     ),
   };
@@ -1526,9 +1510,8 @@ export function JsonRpcContextProvider({
         }
 
         const pactCommand = new PactCommand();
-        pactCommand.code = `(coin.transfer "${
-          kadenaAccount.account
-        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        pactCommand.code = `(coin.transfer "${kadenaAccount.account
+          }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
 
         pactCommand
           .setMeta(
@@ -1579,9 +1562,8 @@ export function JsonRpcContextProvider({
         }
 
         const pactCommand = new PactCommand();
-        pactCommand.code = `(coin.transfer "${
-          kadenaAccount.account
-        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        pactCommand.code = `(coin.transfer "${kadenaAccount.account
+          }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
 
         pactCommand
           .setMeta(
