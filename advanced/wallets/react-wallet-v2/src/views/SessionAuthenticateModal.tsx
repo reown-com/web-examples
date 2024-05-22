@@ -111,7 +111,7 @@ export default function SessionAuthenticateModal() {
         id: messages[0].id,
         auths: signedAuths
       })
-
+      SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
       ModalStore.close()
     }
   }, [address, messages])
