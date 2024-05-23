@@ -222,11 +222,9 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
 
     const _permissionIndex = BigInt(0)
-    // this will be provided by the dapp signer
-    const rawSignature = '0x'
 
     const encodedData = ethers.utils.defaultAbiCoder.encode(
-      ['uint256', 'tuple(uint48,uint48,address,bytes,address,bytes)', 'bytes', 'bytes', 'bytes'],
+      ['uint256', 'tuple(uint48,uint48,address,bytes,address,bytes)', 'bytes', 'bytes'],
       [
         _permissionIndex,
         [
@@ -238,8 +236,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
           permissions[0].policyData
         ],
         permittedScopeData,
-        permittedScopeSignature,
-        rawSignature
+        permittedScopeSignature
       ]
     ) as `0x${string}`
     console.log(`encoding permissionsContext bytes data...`)
