@@ -71,12 +71,7 @@ export function supportedAddressPriority(
   const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
   const chain = providedAllowedChains.find(chain => chain?.id.toString() === chainIdParsed)!
   if (allowedChainIds.length > 0 && smartAccountAddress) {
-    const allowedAccounts = allowedChainIds.map(id => {
-      // check if id is a part of any of these array elements namespaces.eip155.accounts
-      const accountIsAllowed = namespaces.eip155.accounts.findIndex(account => account.includes(id))
-      return namespaces.eip155.accounts[accountIsAllowed]
-    })
-    return [`${nameSpaceKey}:${chain.id}:${smartAccountAddress}`, ...allowedAccounts]
+    return [`${nameSpaceKey}:${chain.id}:${smartAccountAddress}`]
   }
   return []
 }
