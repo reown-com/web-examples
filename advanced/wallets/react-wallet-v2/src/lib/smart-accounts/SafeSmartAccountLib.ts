@@ -27,6 +27,7 @@ import { Execution } from '@/utils/safe7579AccountUtils/userop'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
+    this.type = 'Safe'
     const safeAccount = await signerToSafe7579SmartAccount(this.publicClient, {
       entryPoint: ENTRYPOINT_ADDRESS_V07,
       signer: this.signer
