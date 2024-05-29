@@ -254,8 +254,8 @@ export default function SessionProposalModal() {
       setIsLoadingApprove(true)
       try {
         if (reorderedEip155Accounts.length > 0) {
-          // reorderedEip155Accounts includes Smart Accounts(if enabled) and EOA's
-          namespaces.eip155.accounts = reorderedEip155Accounts
+          // we should append the smart accounts to the available eip155 accounts
+          namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
@@ -335,7 +335,7 @@ export default function SessionProposalModal() {
       <Grid.Container style={{ marginBottom: '10px', marginTop: '10px' }} justify={'space-between'}>
         <Grid>
           <Row style={{ color: 'GrayText' }}>Accounts</Row>
-          {(supportedChains.length > 1 &&
+          {(supportedChains.length > 0 &&
             supportedChains.map((chain, i) => {
               return (
                 <Row key={i}>
@@ -361,7 +361,7 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>
-          {(supportedChains.length > 1 &&
+          {(supportedChains.length > 0 &&
             supportedChains.map((chain, i) => {
               if (!chain) {
                 return <></>

@@ -146,6 +146,13 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     []
   )
 
+  const onSessionAuthenticate = useCallback(
+    (authRequest: SignClientTypes.EventArguments['session_authenticate']) => {
+      ModalStore.open('SessionAuthenticateModal', { authRequest })
+    },
+    []
+  )
+
   /******************************************************************************
    * Set up WalletConnect event listeners
    *****************************************************************************/
@@ -162,6 +169,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         console.log('session_delete event received', data)
         SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
       })
+      web3wallet.on('session_authenticate', onSessionAuthenticate)
       // load sessions on init
       SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
     }
