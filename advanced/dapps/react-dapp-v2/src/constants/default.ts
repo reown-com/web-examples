@@ -102,6 +102,55 @@ export type GetCallsResult = {
     transactionHash: `0x${string}`;
   }[];
 };
+/**
+ * EIP7715
+ */
+export const DEFAULT_EIP7715_METHODS = {
+  WALLET_ISSUE_PERMISSIONS: "wallet_issuePermissions",
+} as const;
+
+export type IssuePermissionsRequestParams = {
+  signer?: {
+    type: {
+      name: string;
+      uuid?: string;
+    };
+    data: any;
+  };
+
+  permissions: {
+    type: {
+      name: string;
+      uuid?: string;
+    };
+    data: any;
+    required: boolean;
+  }[];
+
+  expiry: number;
+};
+
+export type IssuePermissionsResponse = {
+  grantedPermissions: {
+    type: {
+      name: string;
+      uuid?: string;
+    };
+    data: any;
+  }[];
+
+  expiry: number;
+
+  signerData: {
+    userOpBuilder?: `0x${string}`;
+    submitToAddress?: `0x${string}`;
+  };
+
+  factory?: `0x${string}`;
+  factoryData?: string;
+
+  permissionsContext: string;
+};
 
 /**
  * EIP155
@@ -121,6 +170,7 @@ export const DEFAULT_EIP155_OPTIONAL_METHODS = {
 export const DEFAULT_OPTIONAL_METHODS = {
   ...DEFAULT_EIP155_OPTIONAL_METHODS,
   ...DEFAULT_EIP5792_METHODS,
+  ...DEFAULT_EIP7715_METHODS,
 };
 
 export enum DEFAULT_EIP_155_EVENTS {

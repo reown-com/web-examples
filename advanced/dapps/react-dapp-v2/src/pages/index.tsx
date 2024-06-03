@@ -23,6 +23,7 @@ import {
   DEFAULT_EIP155_OPTIONAL_METHODS,
   DEFAULT_EIP5792_METHODS,
   GetCapabilitiesResult,
+  DEFAULT_EIP7715_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -215,6 +216,13 @@ const Home: NextPage = () => {
         callback: async (chainId: string, address: string) => {
           openRequestModal();
           await ethereumRpc.testWalletGetCallsStatus(chainId, address);
+        },
+      },
+      [DEFAULT_EIP7715_METHODS.WALLET_ISSUE_PERMISSIONS]: {
+        method: DEFAULT_EIP7715_METHODS.WALLET_ISSUE_PERMISSIONS,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testWalletIssuePermissions(chainId, address);
         },
       },
     };

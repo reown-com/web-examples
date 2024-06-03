@@ -54,6 +54,9 @@ import {
   SendCallsParams,
   GetCapabilitiesResult,
   GetCallsResult,
+  DEFAULT_EIP7715_METHODS,
+  IssuePermissionsRequestParams,
+  IssuePermissionsResponse,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -96,6 +99,7 @@ interface IContext {
     testSignTypedDatav4: TRpcRequestCallback;
     testWalletGetCapabilities: TRpcRequestCallback;
     testWalletSendCalls: TRpcRequestCallback;
+    testWalletIssuePermissions: TRpcRequestCallback;
     testWalletGetCallsStatus: TRpcRequestCallback;
   };
   cosmosRpc: {
@@ -630,6 +634,74 @@ export function JsonRpcContextProvider({
           address,
           valid: true,
           result: txId,
+        };
+      }
+    ),
+    testWalletIssuePermissions: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        const caipAccountAddress = `${chainId}:${address}`;
+        const account = accounts.find(
+          (account) => account === caipAccountAddress
+        );
+        if (account === undefined)
+          throw new Error(`Account for ${caipAccountAddress} not found`);
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
+        }
+        const issuePermissionsRequestParams: IssuePermissionsRequestParams = {
+          signer: {
+            type: {
+              name: "ECDSA",
+            },
+            data: "0xc3cE257B5e2A2ad92747dd486B38d7b4B36Ac7C9",
+          },
+          permissions: [
+            {
+              type: {
+                name: "erc20_spending_limit",
+                uuid: "175e6c32-3009-483f-b320-0826f2fefa57",
+              },
+              data: {
+                erc20Address: "0x...",
+                limit: "0x...",
+              },
+              required: true,
+            },
+            {
+              type: {
+                name: "gas_limit",
+                uuid: "e9a0d387-8648-4928-9a5c-1a2fbbeda931",
+              },
+              data: {
+                limit: "0x...",
+              },
+              required: false,
+            },
+          ],
+          expiry: 1577840461,
+        } as IssuePermissionsRequestParams;
+        // send wallet_issuePermissions rpc request
+        const issuePermissionResponse =
+          await client!.request<IssuePermissionsResponse>({
+            topic: session!.topic,
+            chainId,
+            request: {
+              method: DEFAULT_EIP7715_METHODS.WALLET_ISSUE_PERMISSIONS,
+              params: [issuePermissionsRequestParams],
+            },
+          });
+
+        // format displayed result
+        return {
+          method: DEFAULT_EIP7715_METHODS.WALLET_ISSUE_PERMISSIONS,
+          address,
+          valid: true,
+          result: JSON.stringify(issuePermissionResponse),
         };
       }
     ),
