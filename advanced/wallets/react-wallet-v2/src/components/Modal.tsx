@@ -19,6 +19,7 @@ import { useCallback, useMemo } from 'react'
 import AuthRequestModal from '@/views/AuthRequestModal'
 import LoadingModal from '@/views/LoadingModal'
 import SessionAuthenticateModal from '@/views/SessionAuthenticateModal'
+import SessionIssuePermissionsModal from '@/views/SessionIssuePermissionsModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -39,6 +40,8 @@ export default function Modal() {
         return <SessionSignTypedDataModal />
       case 'SessionSendTransactionModal':
         return <SessionSendTransactionModal />
+      case 'SessionIssuePermissionsModal':
+        return <SessionIssuePermissionsModal />
       case 'SessionSendCallsModal':
         return <SessionSendCallsModal />
       case 'SessionUnsuportedMethodModal':

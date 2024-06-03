@@ -11,7 +11,15 @@ import {
   getSafe7579InitialValidators,
   signerToSafe7579SmartAccount
 } from '@/utils/safe7579AccountUtils/signerToSafe7579SmartAccount'
-import { Address, Hex, concatHex, encodeFunctionData, keccak256, zeroAddress } from 'viem'
+import {
+  Address,
+  Hex,
+  concatHex,
+  encodeFunctionData,
+  encodePacked,
+  keccak256,
+  zeroAddress
+} from 'viem'
 import { signMessage } from 'viem/accounts'
 import {
   PERMISSION_VALIDATOR_ADDRESS,
@@ -24,6 +32,10 @@ import {
 } from '@/utils/permissionValidatorUtils'
 import { setupSafeAbi } from '@/utils/safe7579AccountUtils/abis/Launchpad'
 import { Execution } from '@/utils/safe7579AccountUtils/userop'
+import { IssuePermissionsRequestParams, IssuePermissionsResponse } from '@/data/EIP7715Data'
+import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
+import { ethers } from 'ethers'
+import { SAFE7579_USER_OPERATION_BUILDER_ADDRESS } from '@/utils/safe7579AccountUtils/constants'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
@@ -129,15 +141,69 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     return setUpAndExecuteUserOpHash
   }
 
-  async issuePermissionContext(
-    targetAddress: Address,
-    approvedPermissions: any
-  ): Promise<PermissionContext> {
-    if (!this.client || !this.client.account) {
+  async issuePermissions(
+    issuePermissionsRequestParams: IssuePermissionsRequestParams
+  ): Promise<IssuePermissionsResponse> {
+    if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
+    console.log(`checking isAccountDeployed...`)
+    // check whether the account is deployed or not
+    const accountDeployed = await isSmartAccountDeployed(
+      this.publicClient,
+      this.client.account.address
+    )
+    const initialCallsAtSafeSetupPhase: Execution[] = [
+      {
+        data: '0x',
+        to: zeroAddress,
+        value: BigInt(0)
+      }
+    ]
+
+    // if account is not deployed, then deploy and setUp the safe7579 first.
+    if (!accountDeployed) {
+      console.log(`isAccountDeployed = false`)
+      console.log(`Deploying and setting up Safe7579 account...`)
+      const setUpAndExecuteUserOpHash = await this.setupSafe7579AndExecute(
+        initialCallsAtSafeSetupPhase
+      )
+      await this.bundlerClient.waitForUserOperationReceipt({
+        hash: setUpAndExecuteUserOpHash
+      })
+      console.log(`Deployment completed.`)
+    }
+    console.log(`isAccountDeployed = true`)
+    console.log(`checking isPermissionValidator Module installed...`)
+    // check whether PermissionValidator module is install or not
+    const isPermissionValidatorModuleInstalled = await this.publicClient.readContract({
+      address: this.client.account.address,
+      abi: isModuleInstalledAbi,
+      functionName: 'isModuleInstalled',
+      args: [
+        BigInt(1), // ModuleType
+        PERMISSION_VALIDATOR_ADDRESS, // Module Address
+        '0x' // Additional Context
+      ]
+    })
+    // if not then install Permissionvalidator module on Safe7579 Account.
+    if (!isPermissionValidatorModuleInstalled) {
+      console.log(`isPermissionValidatorModuleInstalled == false`)
+      console.log(`Should not have happen, need to debug initCode to check safe setUp process`)
+      throw new Error(
+        'isPermissionValidatorModuleInstalled == false \n Should not have happen, need to debug initCode to check safe setUp process'
+      )
+      // TODO: install the module , but for safe7579 PERMISSION_VALIDATOR module is
+      // part of initial validator module, so on safe setup phase it get installed.
+    }
+    console.log(`isPermissionValidatorModuleInstalled == true`)
+    // if installed then based on the approvedPermissions build the PermissionsContext value
+    // permissionsContext = [PERMISSION_VALIDATOR_ADDRESS][ENCODED_PERMISSION_SCOPE & SIGNATURE_DATA]
+
     // this permission have dummy policy set to zeroAddress for now,
     // bc current version of PermissionValidator_v1 module don't consider checking policy
+    // ideally it will have to use the permissions from issuePermissionsRequestParams
+    const targetAddress = issuePermissionsRequestParams.signer?.data
     const permissions: SingleSignerPermission[] = [
       {
         validUntil: 0,
@@ -148,21 +214,48 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         policyData: '0x'
       }
     ]
-
+    console.log(`computing permission scope data...`)
     const permittedScopeData = getPermissionScopeData(permissions, this.chain)
+    console.log(`user account signing over computed permission scope data and reguested signer...`)
     // the smart account sign over the permittedScope and targetAddress
     const permittedScopeSignature: Hex = await signMessage({
       privateKey: this.getPrivateKey() as `0x${string}`,
       message: { raw: concatHex([keccak256(permittedScopeData), targetAddress]) }
     })
 
+    const _permissionIndex = BigInt(0)
+
+    const encodedData = ethers.utils.defaultAbiCoder.encode(
+      ['uint256', 'tuple(uint48,uint48,address,bytes,address,bytes)', 'bytes', 'bytes'],
+      [
+        _permissionIndex,
+        [
+          permissions[0].validAfter,
+          permissions[0].validUntil,
+          permissions[0].signatureValidationAlgorithm,
+          permissions[0].signer,
+          permissions[0].policy,
+          permissions[0].policyData
+        ],
+        permittedScopeData,
+        permittedScopeSignature
+      ]
+    ) as `0x${string}`
+    console.log(`encoding permissionsContext bytes data...`)
+    const permissionsContext = concatHex([
+      PERMISSION_VALIDATOR_ADDRESS,
+      encodePacked(['uint8', 'bytes'], [1, encodedData])
+    ])
+    console.log(`issuing permissions...`)
+
     return {
-      accountType: 'Safe7579',
-      accountAddress: this.client.account.address,
-      permissionValidatorAddress: PERMISSION_VALIDATOR_ADDRESS,
-      permissions: permissions,
-      permittedScopeData: permittedScopeData,
-      permittedScopeSignature: permittedScopeSignature
-    }
+      permissionsContext: permissionsContext,
+      grantedPermissions: issuePermissionsRequestParams.permissions,
+      expiry: issuePermissionsRequestParams.expiry,
+      signerData: {
+        userOpBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
+        submitToAddress: this.client.account.address
+      }
+    } as IssuePermissionsResponse
   }
 }
