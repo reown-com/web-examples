@@ -11,6 +11,7 @@ import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 import { useCallback, useState } from 'react'
 import PermissionDetailsCard from '@/components/PermissionDetailsCard'
+import { useWeb3ModalProvider } from '@web3modal/ethers/react'
 
 export default function SessionSignTypedDataModal() {
   // Get request and wallet data from store
@@ -18,6 +19,7 @@ export default function SessionSignTypedDataModal() {
   const requestSession = ModalStore.state.data?.requestSession
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
+  const { walletProvider } = useWeb3ModalProvider()
 
   // Ensure request and wallet are defined
   if (!requestEvent || !requestSession) {
@@ -31,18 +33,11 @@ export default function SessionSignTypedDataModal() {
   // Get data
   const data = getSignTypedDataParamsData(request.params)
 
-  const isPermissionRequest = data?.domain?.name === 'eth_getPermissions_v1'
-  let permissionScope = []
-  if (isPermissionRequest) {
-    permissionScope = data?.message?.scope || []
-    method = 'eth_getPermissions_v1'
-    console.log({ permissionScope })
-  }
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (requestEvent) {
+    if (requestEvent && topic && walletProvider) {
       setIsLoadingApprove(true)
-      const response = await approveEIP155Request(requestEvent)
+      const response = await approveEIP155Request(requestEvent, walletProvider)
       try {
         await web3wallet.respondSessionRequest({
           topic,
@@ -56,7 +51,7 @@ export default function SessionSignTypedDataModal() {
       setIsLoadingApprove(false)
       ModalStore.close()
     }
-  }, [requestEvent, topic])
+  }, [requestEvent, topic, walletProvider])
 
   // Handle reject action
   const onReject = useCallback(async () => {
@@ -87,12 +82,6 @@ export default function SessionSignTypedDataModal() {
       rejectLoader={{ active: isLoadingReject }}
     >
       <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-      <Divider y={1} />
-      {isPermissionRequest && permissionScope.length > 0 ? (
-        <PermissionDetailsCard scope={permissionScope} />
-      ) : (
-        <RequestDataCard data={data} />
-      )}
       <Divider y={1} />
       <RequestMethodCard methods={[method]} />
     </RequestModal>

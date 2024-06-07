@@ -1,16 +1,7 @@
 import toast from 'react-hot-toast'
-import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
-import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
-import { NEAR_CHAINS, NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
-import { POLKADOT_CHAINS, TPolkadotChain } from '@/data/PolkadotData'
-import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
-import { TEZOS_CHAINS, TTezosChain } from '@/data/TezosData'
-import { TRON_CHAINS, TTronChain } from '@/data/TronData'
-import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
 
-import { utils } from 'ethers'
-import { Verify } from '@walletconnect/types'
+import { isAddress, isHexString, toUtf8String } from 'ethers'
 
 /**
  * Truncates string (in the middle) via given lenght value
@@ -32,8 +23,8 @@ export function truncate(value: string, length: number) {
  * Converts hex to utf8 string if it is valid bytes
  */
 export function convertHexToUtf8(value: string) {
-  if (utils.isHexString(value)) {
-    return utils.toUtf8String(value)
+  if (isHexString(value)) {
+    return toUtf8String(value)
   }
 
   return value
@@ -45,7 +36,7 @@ export function convertHexToUtf8(value: string) {
  * If it is a hex string, it gets converted to utf8 string
  */
 export function getSignParamsMessage(params: string[]) {
-  const message = params.filter(p => !utils.isAddress(p))[0]
+  const message = params.filter(p => !isAddress(p))[0]
 
   return convertHexToUtf8(message)
 }
@@ -56,7 +47,7 @@ export function getSignParamsMessage(params: string[]) {
  * If data is a string convert it to object
  */
 export function getSignTypedDataParamsData(params: string[]) {
-  const data = params.filter(p => !utils.isAddress(p))[0]
+  const data = params.filter(p => !isAddress(p))[0]
 
   if (typeof data === 'string') {
     return JSON.parse(data)
@@ -150,15 +141,7 @@ export function isTezosChain(chain: string) {
  */
 export function formatChainName(chainId: string) {
   return (
-    COSMOS_MAINNET_CHAINS[chainId as TCosmosChain]?.name ??
     EIP155_CHAINS[chainId as TEIP155Chain]?.name ??
-    MULTIVERSX_CHAINS[chainId as TMultiversxChain]?.name ??
-    NEAR_TEST_CHAINS[chainId as TNearChain]?.name ??
-    POLKADOT_CHAINS[chainId as TPolkadotChain]?.name ??
-    SOLANA_CHAINS[chainId as TSolanaChain]?.name ??
-    TRON_CHAINS[chainId as TTronChain]?.name ??
-    TEZOS_CHAINS[chainId as TTezosChain]?.name ??
-    KADENA_CHAINS[chainId as TKadenaChain]?.name ??
     chainId
   )
 }

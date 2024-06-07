@@ -8,12 +8,14 @@ import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155Request
 import { getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
+import { useWeb3ModalProvider } from '@web3modal/ethers/react'
 export default function SessionSignModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
+  const { walletProvider } = useWeb3ModalProvider()
 
   // Ensure request and wallet are defined
   if (!requestEvent || !requestSession) {
@@ -29,9 +31,9 @@ export default function SessionSignModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (requestEvent) {
+    if (requestEvent && topic && walletProvider) {
       setIsLoadingApprove(true)
-      const response = await approveEIP155Request(requestEvent)
+      const response = await approveEIP155Request(requestEvent, walletProvider)
       try {
         await web3wallet.respondSessionRequest({
           topic,
@@ -45,7 +47,7 @@ export default function SessionSignModal() {
       setIsLoadingApprove(false)
       ModalStore.close()
     }
-  }, [requestEvent, topic])
+  }, [requestEvent, topic, walletProvider])
 
   // Handle reject action
   const onReject = useCallback(async () => {

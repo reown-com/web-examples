@@ -10,7 +10,6 @@ interface Props {
 
 export default function ChainDataMini({ chainId }: Props) {
   const chainData = useMemo(() => getChainData(chainId), [chainId])
-  console.log(chainData)
 
   if (!chainData) return <></>
   return (
