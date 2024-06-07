@@ -1,4 +1,4 @@
-import { providers, Wallet } from 'ethers'
+import { HDNodeWallet, JsonRpcProvider, TransactionRequest } from 'ethers'
 
 /**
  * Types
@@ -12,28 +12,28 @@ export interface EIP155Wallet {
   getAddress(): string
   signMessage(message: string): Promise<string>
   _signTypedData(domain: any, types: any, data: any, _primaryType?: string): Promise<string>
-  connect(provider: providers.JsonRpcProvider): Wallet
-  signTransaction(transaction: providers.TransactionRequest): Promise<string>
+  connect(provider: JsonRpcProvider): HDNodeWallet
+  signTransaction(transaction: TransactionRequest): Promise<string>
 }
 
 /**
  * Library
  */
 export default class EIP155Lib implements EIP155Wallet {
-  wallet: Wallet
+  wallet: HDNodeWallet
 
-  constructor(wallet: Wallet) {
+  constructor(wallet: HDNodeWallet) {
     this.wallet = wallet
   }
 
   static init({ mnemonic }: IInitArgs) {
-    const wallet = mnemonic ? Wallet.fromMnemonic(mnemonic) : Wallet.createRandom()
+    const wallet = mnemonic ? HDNodeWallet.fromPhrase(mnemonic) : HDNodeWallet.createRandom()
 
     return new EIP155Lib(wallet)
   }
 
   getMnemonic() {
-    return this.wallet.mnemonic.phrase
+    return this.wallet?.mnemonic?.phrase as string
   }
 
   getPrivateKey() {
@@ -49,14 +49,14 @@ export default class EIP155Lib implements EIP155Wallet {
   }
 
   _signTypedData(domain: any, types: any, data: any, _primaryType?: string) {
-    return this.wallet._signTypedData(domain, types, data)
+    return this.wallet.signTypedData(domain, types, data)
   }
 
-  connect(provider: providers.JsonRpcProvider) {
+  connect(provider: JsonRpcProvider) {
     return this.wallet.connect(provider)
   }
 
-  signTransaction(transaction: providers.TransactionRequest) {
+  signTransaction(transaction: TransactionRequest) {
     return this.wallet.signTransaction(transaction)
   }
 }
