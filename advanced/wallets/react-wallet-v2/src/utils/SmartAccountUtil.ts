@@ -120,6 +120,12 @@ export async function createOrRestoreSafeSmartAccount(privateKey: string) {
     safeSmartAccountAddress: address
   }
 }
+export function removeSmartAccount(address: string) {
+  const key = `${sepolia.id}:${address}`
+  if (smartAccountWallets[key]) {
+    delete smartAccountWallets[key]
+  }
+}
 
 export async function createOrRestoreBiconomySmartAccount(privateKey: string) {
   const lib = new BiconomySmartAccountLib({ privateKey, chain: sepolia, sponsored: true })
