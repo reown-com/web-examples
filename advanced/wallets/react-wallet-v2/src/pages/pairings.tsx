@@ -6,7 +6,7 @@ import { getSdkError } from '@walletconnect/utils'
 import { Fragment, useState } from 'react'
 
 export default function PairingsPage() {
-  const [pairings, setPairings] = useState(web3wallet.core.pairing.getPairings())
+  const [pairings, setPairings] = useState(web3wallet?.core?.pairing?.getPairings())
 
   async function onDelete(topic: string) {
     await web3wallet.disconnectSession({ topic, reason: getSdkError('USER_DISCONNECTED') })

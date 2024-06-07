@@ -6,7 +6,7 @@ export async function createWeb3Wallet(relayerRegionURL: string) {
   const core = new Core({
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
     relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL,
-    logger: 'trace'
+    // logger: 'trace'
   })
   web3wallet = await Web3Wallet.init({
     core,
@@ -28,7 +28,6 @@ export async function createWeb3Wallet(relayerRegionURL: string) {
 }
 
 export async function updateSignClientChainId(chainId: string, address: string) {
-  console.log('chainId', chainId, address)
   // get most recent session
   const sessions = web3wallet.getActiveSessions()
   if (!sessions) return

@@ -1,34 +1,29 @@
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import { useSnapshot } from 'valtio'
-import { Col, Divider, Row, Text, Code, Checkbox, Grid } from '@nextui-org/react'
+import {  useCallback, useEffect, useState } from 'react'
+import { Col, Row, Text, Code, Checkbox, Grid } from '@nextui-org/react'
 import { buildAuthObject, getSdkError, populateAuthPayload } from '@walletconnect/utils'
 
-import ModalFooter from '@/components/ModalFooter'
-import ProjectInfoCard from '@/components/ProjectInfoCard'
-import RequestModalContainer from '@/components/RequestModalContainer'
-import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
-import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { styledToast } from '@/utils/HelperUtil'
+import { useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react'
 
 export default function SessionAuthenticateModal() {
   // Get request and wallet data from store
   const authRequest = ModalStore.state.data?.authRequest
 
-  const { account } = useSnapshot(SettingsStore.state)
   const [messages, setMessages] = useState<
     { authPayload: any; message: string; id: number; iss: string }[]
   >([])
   const [supportedChains] = useState<string[]>(Object.keys(EIP155_CHAINS))
   const [supportedMethods] = useState<string[]>(Object.values(EIP155_SIGNING_METHODS))
   const [signStrategy, setSignStrategy] = useState(1)
+  const { address } = useWeb3ModalAccount()
+  const { walletProvider } = useWeb3ModalProvider()
   // Ensure request and wallet are defined
 
-  const address = eip155Addresses[account]
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const getMessageToSign = useCallback(
@@ -37,7 +32,6 @@ export default function SessionAuthenticateModal() {
         request: authPayload,
         iss
       })
-      console.log('message', message)
       return message
     },
     [address]
@@ -45,8 +39,6 @@ export default function SessionAuthenticateModal() {
 
   useEffect(() => {
     if (!authRequest?.params?.authPayload) return
-    console.log('authRequest', authRequest)
-    console.log('supportedChains', supportedChains)
     const newAuthPayload = populateAuthPayload({
       authPayload: authRequest?.params?.authPayload,
       chains: supportedChains,
@@ -55,7 +47,6 @@ export default function SessionAuthenticateModal() {
 
     if (signStrategy === 1) {
       try {
-        console.log('newAuthPayload', newAuthPayload)
         const iss = `${newAuthPayload.chains[0]}:${address}`
         const message = getMessageToSign(newAuthPayload, iss)
         setMessages([
@@ -95,7 +86,10 @@ export default function SessionAuthenticateModal() {
     if (messages.length) {
       const signedAuths = []
       for (const message of messages) {
-        const signature = await eip155Wallets[address].signMessage(message.message)
+        const signature = await walletProvider?.request({
+          method: 'personal_sign',
+          params: [message.message, address]
+        })
         const signedCacao = buildAuthObject(
           message.authPayload,
           {
@@ -150,7 +144,6 @@ export default function SessionAuthenticateModal() {
         <Col>
           <Text h5>Messages to Sign ({messages.length})</Text>
           {messages.map((message, index) => {
-            console.log('@loop messageToSign', message)
             return (
               <Code key={index}>
                 <Text color="$gray400">{message.message}</Text>

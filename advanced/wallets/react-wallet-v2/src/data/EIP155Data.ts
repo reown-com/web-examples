@@ -15,7 +15,6 @@ export type EIP155Chain = {
   rgb: string
   rpc: string
   namespace: string
-  smartAccountEnabled?: boolean
 }
 
 /**
@@ -72,7 +71,6 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rgb: '99, 125, 234',
     rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
     namespace: 'eip155',
-    smartAccountEnabled: true
   },
   'eip155:11155111': {
     chainId: 11155111,
@@ -81,7 +79,6 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rgb: '99, 125, 234',
     rpc: 'https://gateway.tenderly.co/public/sepolia',
     namespace: 'eip155',
-    smartAccountEnabled: true
   },
   'eip155:43113': {
     chainId: 43113,
@@ -98,7 +95,6 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rgb: '130, 71, 229',
     rpc: 'https://matic-mumbai.chainstacklabs.com',
     namespace: 'eip155',
-    smartAccountEnabled: true
   },
   'eip155:420': {
     chainId: 420,
