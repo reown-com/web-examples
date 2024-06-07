@@ -11,6 +11,40 @@ import { RELAYER_EVENTS } from '@walletconnect/core'
 import { AppProps } from 'next/app'
 import '../../public/main.css'
 import { styledToast } from '@/utils/HelperUtil'
+import { createWeb3Modal, defaultConfig } from '@web3modal/ethers/react'
+import { EIP155_CHAINS } from '@/data/EIP155Data'
+
+const chains = Object.values(EIP155_CHAINS).map((chain) => ({
+  ...chain,
+  rpcUrl: chain.rpc,
+  chainId: chain.chainId,
+  explorerUrl: 'https://etherscan.io',
+  currency: 'ETH'
+}))
+
+const metadata = {
+  name: 'Web3Modal',
+  description: 'Web3Modal Laboratory',
+  url: 'https://lab.web3modal.com',
+  icons: ['https://avatars.githubusercontent.com/u/37784886'],
+}
+
+createWeb3Modal({
+  ethersConfig: defaultConfig({
+    metadata,
+    defaultChainId: 1,
+    rpcUrl: 'https://cloudflare-eth.com',
+    chains,
+  }),
+  projectId: process.env.NEXT_PUBLIC_PROJECT_ID as string,
+  chains,
+  enableAnalytics: true,
+  metadata,
+  termsConditionsUrl: 'https://walletconnect.com/terms',
+  privacyPolicyUrl: 'https://walletconnect.com/privacy',
+  enableOnramp: true
+})
+
 
 export default function App({ Component, pageProps }: AppProps) {
   // Step 1 - Initialize wallets and wallet connect client
@@ -28,14 +62,17 @@ export default function App({ Component, pageProps }: AppProps) {
       styledToast('Network connection lost.', 'error')
     })
   }, [initialized])
+
+
+
   return (
     <NextUIProvider theme={createTheme({ type: 'dark' })}>
-      <Layout initialized={initialized}>
-        <Toaster />
-        <Component {...pageProps} />
-      </Layout>
+        <Layout initialized={initialized}>
+          <Toaster />
+          <Component {...pageProps} />
+        </Layout>
 
-      <Modal />
+        <Modal />
     </NextUIProvider>
   )
 }

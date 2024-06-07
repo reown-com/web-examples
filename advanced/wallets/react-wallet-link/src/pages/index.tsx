@@ -1,13 +1,15 @@
 import AccountCard from '@/components/AccountCard'
 import AccountPicker from '@/components/AccountPicker'
 import PageHeader from '@/components/PageHeader'
-import { EIP155_MAINNET_CHAINS, EIP155_TEST_CHAINS } from '@/data/EIP155Data'
-import { Text } from '@nextui-org/react'
+import { EIP155_MAINNET_CHAINS } from '@/data/EIP155Data'
+import { Spinner, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
+import { useWeb3ModalAccount } from '@web3modal/ethers/react'
 
 export default function HomePage() {
-  const address = '0x'
-  return (
+  // const { address } = useWeb3ModalAccount()
+  const address = '0x1234567890123456789012345678901234567890'
+  return address ? (
     <Fragment>
       <PageHeader title="Accounts">
         <AccountPicker data-testid="account-picker" />
@@ -28,5 +30,5 @@ export default function HomePage() {
       ))}
     
     </Fragment>
-  )
+  ) : <Spinner />
 }
