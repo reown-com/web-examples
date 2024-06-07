@@ -1,20 +1,18 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useCallback, useState } from 'react'
-import { useSnapshot } from 'valtio'
 import { Col, Row, Text, Code } from '@nextui-org/react'
 import { getSdkError } from '@walletconnect/utils'
 
 import ModalStore from '@/store/ModalStore'
-import SettingsStore from '@/store/SettingsStore'
-import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
+import { useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react'
 
 export default function AuthRequestModal() {
-  const { account } = useSnapshot(SettingsStore.state)
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  console.log('modal data', ModalStore.state.data, account)
+  const { address } = useWeb3ModalAccount()
+  const { walletProvider } = useWeb3ModalProvider()
   // Get request and wallet data from store
   const request = ModalStore.state.data?.request
   // Ensure request and wallet are defined
@@ -22,7 +20,6 @@ export default function AuthRequestModal() {
     return <Text>Missing request data</Text>
   }
 
-  const address = eip155Addresses[account]
   const iss = `did:pkh:eip155:1:${address}`
 
   // Get required request data
@@ -34,7 +31,10 @@ export default function AuthRequestModal() {
   const onApprove = useCallback(async () => {
     if (request) {
       setIsLoadingApprove(true)
-      const signature = await eip155Wallets[address].signMessage(message)
+      const signature = await walletProvider?.request({
+        method: 'personal_sign',
+        params: [message, address]
+      })
       await web3wallet.respondAuthRequest(
         {
           id: request.id,
@@ -48,7 +48,7 @@ export default function AuthRequestModal() {
       setIsLoadingApprove(false)
       ModalStore.close()
     }
-  }, [request, address, message, iss])
+  }, [request, address, message, iss, walletProvider])
 
   // Handle reject action
   const onReject = useCallback(async () => {

@@ -8,7 +8,7 @@ import useInitialization from '@/hooks/useInitialization'
 import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { RELAYER_EVENTS } from '@walletconnect/core'
-import { AppProps } from 'next/app'
+import  type { AppProps } from 'next/app'
 import '../../public/main.css'
 import { styledToast } from '@/utils/HelperUtil'
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers/react'
@@ -44,10 +44,8 @@ const modal = createWeb3Modal({
   termsConditionsUrl: 'https://walletconnect.com/terms',
   privacyPolicyUrl: 'https://walletconnect.com/privacy',
   enableOnramp: true,
-  enableEmail: true,
+  enableWalletFeatures: true,
 })
-
-console.log('created web3modal', modal)
 
 
 export default function App({ Component, pageProps }: AppProps) {

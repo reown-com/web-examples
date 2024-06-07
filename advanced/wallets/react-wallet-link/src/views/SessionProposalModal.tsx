@@ -5,7 +5,6 @@ import { SignClientTypes } from '@walletconnect/types'
 import DoneIcon from '@mui/icons-material/Done'
 import CloseIcon from '@mui/icons-material/Close'
 import ModalStore from '@/store/ModalStore'
-import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { EIP155Chain, EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
@@ -13,13 +12,10 @@ import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
 import RequestModal from './RequestModal'
-import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
-import usePriorityAccounts from '@/hooks/usePriorityAccounts'
-import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
-import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
+import { useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -30,13 +26,13 @@ const StyledSpan = styled('span', {
 } as any)
 
 export default function SessionProposalModal() {
-  const { smartAccountEnabled } = useSnapshot(SettingsStore.state)
   // Get proposal data and wallet address from store
   const data = useSnapshot(ModalStore.state)
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  const { getAvailableSmartAccounts } = useSmartAccounts()
+  const { address } = useWeb3ModalAccount()
+  const { walletProvider } = useWeb3ModalProvider()
 
   const supportedNamespaces = useMemo(() => {
     // eip155
@@ -52,11 +48,10 @@ export default function SessionProposalModal() {
         chains: eip155Chains,
         methods: eip155Methods.concat(eip5792Methods),
         events: ['accountsChanged', 'chainChanged'],
-        accounts: eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
+        accounts: eip155Chains.map(chain => `${chain}:${address}`).flat()
       },
     }
-  }, [])
-  console.log('supportedNamespaces', supportedNamespaces, eip155Addresses)
+  }, [address])
 
   const requestedChains = useMemo(() => {
     if (!proposal) return []
@@ -71,7 +66,6 @@ export default function SessionProposalModal() {
       const chains = key.includes(':') ? key : values.chains
       optional.push(chains)
     }
-    console.log('requestedChains', [...new Set([...required.flat(), ...optional.flat()])])
 
     return [...new Set([...required.flat(), ...optional.flat()])]
   }, [proposal])
@@ -108,14 +102,13 @@ export default function SessionProposalModal() {
             .includes(chain!)
       )
   }, [proposal, supportedChains])
-  console.log('notSupportedChains', { notSupportedChains, supportedChains })
   const getAddress = useCallback((namespace?: string) => {
     if (!namespace) return 'N/A'
     switch (namespace) {
       case 'eip155':
-        return eip155Addresses[0]
+        return address
     }
-  }, [])
+  }, [address])
 
   const namespaces = useMemo(() => {
     try {
@@ -127,26 +120,15 @@ export default function SessionProposalModal() {
     } catch (e) {}
   }, [proposal.params, supportedNamespaces])
 
-  const reorderedEip155Accounts = usePriorityAccounts({ namespaces })
-  console.log('Reordered accounts', { reorderedEip155Accounts })
 
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
     if (proposal && namespaces) {
       setIsLoadingApprove(true)
       try {
-        if (reorderedEip155Accounts.length > 0) {
-          // we should append the smart accounts to the available eip155 accounts
-          namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
-        }
-        //get capabilities for all reorderedEip155Accounts in wallet
-        const capabilities = getWalletCapabilities(reorderedEip155Accounts)
-        const sessionProperties = { capabilities: JSON.stringify(capabilities) }
-
         await web3wallet.approveSession({
           id: proposal.id,
           namespaces,
-          sessionProperties
         })
         SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
       } catch (e) {
@@ -157,7 +139,7 @@ export default function SessionProposalModal() {
     }
     setIsLoadingApprove(false)
     ModalStore.close()
-  }, [namespaces, proposal, reorderedEip155Accounts])
+  }, [namespaces, proposal])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -179,7 +161,6 @@ export default function SessionProposalModal() {
     setIsLoadingReject(false)
     ModalStore.close()
   }, [proposal])
-  console.log('notSupportedChains', notSupportedChains)
   return (
     <RequestModal
       metadata={proposal.params.proposer.metadata}
@@ -227,17 +208,6 @@ export default function SessionProposalModal() {
             })) || <Row>Non available</Row>}
 
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
-          {smartAccountEnabled &&
-            getAvailableSmartAccounts().map((account, i) => {
-              if (!account) {
-                return <></>
-              }
-              return (
-                <Row key={i}>
-                  <ChainSmartAddressMini account={account} />
-                </Row>
-              )
-            })}
         </Grid>
         <Grid>
           <Row style={{ color: 'GrayText' }} justify="flex-end">
@@ -258,17 +228,6 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>
-          {smartAccountEnabled &&
-            getAvailableSmartAccounts().map(({ chain }, i) => {
-              if (!chain) {
-                return <></>
-              }
-              return (
-                <Row key={i} style={{ marginTop: '24px' }}>
-                  <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
-                </Row>
-              )
-            })}
         </Grid>
       </Grid.Container>
     </RequestModal>

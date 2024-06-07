@@ -1,14 +1,12 @@
 import AccountCard from '@/components/AccountCard'
-import AccountPicker from '@/components/AccountPicker'
 import PageHeader from '@/components/PageHeader'
 import { EIP155_MAINNET_CHAINS } from '@/data/EIP155Data'
-import { Spinner, Text } from '@nextui-org/react'
+import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useWeb3ModalAccount } from '@web3modal/ethers/react'
 import { Box } from '@mui/material'
 
 export default function HomePage() {
-  console.log('homepage')
   const { address } = useWeb3ModalAccount()
   return address ? (
     <Fragment>

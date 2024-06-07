@@ -1,25 +1,24 @@
 import SettingsStore from '@/store/SettingsStore'
-import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
 import { createWeb3Wallet, web3wallet } from '@/utils/WalletConnectUtil'
+import { useWeb3Modal, useWeb3ModalAccount } from '@web3modal/ethers/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
-import useSmartAccounts from './useSmartAccounts'
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
   const prevRelayerURLValue = useRef<string>('')
+  const { address } = useWeb3ModalAccount()
+  const modal = useWeb3Modal()
 
   const { relayerRegionURL } = useSnapshot(SettingsStore.state)
-  const { initializeSmartAccounts } = useSmartAccounts()
 
   const onInitialize = useCallback(async () => {
     try {
-      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
-      await initializeSmartAccounts(eip155Wallets[eip155Addresses[0]].getPrivateKey())
-
-      SettingsStore.setEIP155Address(eip155Addresses[0])
       await createWeb3Wallet(relayerRegionURL)
       setInitialized(true)
+      if (address) {
+        SettingsStore.setEIP155Address(address)
+      }
     } catch (err: unknown) {
       console.error('Initialization failed', err)
       alert(err)

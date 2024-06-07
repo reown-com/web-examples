@@ -1,17 +1,18 @@
 import { Web3WalletTypes } from '@walletconnect/web3wallet'
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
-import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
-import { formatJsonRpcError } from '@json-rpc-tools/utils'
-import { approveEIP5792Request } from '@/utils/EIP5792RequestHandlerUtils'
-import EIP155Lib from '@/lib/EIP155Lib'
-import { getWallet } from '@/utils/EIP155WalletUtil'
+import { useWeb3ModalProvider } from '@web3modal/ethers/react'
+import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
+import { formatJsonRpcResult } from '@json-rpc-tools/utils'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
+  const { walletProvider } = useWeb3ModalProvider()
+
+
   /******************************************************************************
    * 1. Open session proposal modal for confirmation / rejection
    *****************************************************************************/
@@ -20,6 +21,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       console.log('session_proposal', proposal)
       // set the verify context so it can be displayed in the projectInfoCard
       SettingsStore.setCurrentRequestVerifyContext(proposal.verifyContext)
+      console.log('Session Proposal - Opening modal', proposal)
       ModalStore.open('SessionProposalModal', { proposal })
     },
     []
@@ -41,50 +43,23 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       const requestSession = web3wallet.engine.signClient.session.get(topic)
       // set the verify context so it can be displayed in the projectInfoCard
       SettingsStore.setCurrentRequestVerifyContext(verifyContext)
-      switch (request.method) {
-        case EIP155_SIGNING_METHODS.ETH_SIGN:
-        case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
-          return ModalStore.open('SessionSignModal', { requestEvent, requestSession })
-
-        case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA:
-        case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
-        case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4:
-          return ModalStore.open('SessionSignTypedDataModal', { requestEvent, requestSession })
-
-        case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
-        case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
-          return ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
-
-        case EIP5792_METHODS.WALLET_GET_CAPABILITIES:
-        case EIP5792_METHODS.WALLET_GET_CALLS_STATUS:
-          return await web3wallet.respondSessionRequest({
-            topic,
-            response: await approveEIP5792Request(requestEvent)
-          })
-
-        case EIP5792_METHODS.WALLET_SHOW_CALLS_STATUS:
-          return await web3wallet.respondSessionRequest({
-            topic,
-            response: formatJsonRpcError(id, "Wallet currently don't show call status.")
-          })
-
-        case EIP5792_METHODS.WALLET_SEND_CALLS: {
-          const wallet = await getWallet(params)
-          if (wallet instanceof EIP155Lib) {
-            /**
-             * Not Supporting for batch calls on EOA for now.
-             * if EOA, we can submit call one by one, but need to have a data structure
-             * to return bundle id, for all the calls,
-             */
-            return await web3wallet.respondSessionRequest({
-              topic,
-              response: formatJsonRpcError(id, "Wallet currently don't support batch call for EOA")
-            })
-          }
-          return ModalStore.open('SessionSendCallsModal', { requestEvent, requestSession })
-        }
-        default:
-          return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
+      console.log('requestEvent', requestEvent, walletProvider)
+      if (!walletProvider) return
+      try {
+        console.log('resolving request', requestEvent)
+        const response = walletProvider.request(request)
+        console.log('response', response)
+        await web3wallet.respondSessionRequest({
+          topic,
+          response: formatJsonRpcResult(id, response)
+        })
+      } catch (e) {
+        console.error('error', e)
+        const response = rejectEIP155Request(requestEvent)
+        await web3wallet.respondSessionRequest({
+          topic,
+          response
+        })
       }
     },
     []
@@ -117,5 +92,5 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       // load sessions on init
       SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
     }
-  }, [initialized, onAuthRequest, onSessionProposal, onSessionRequest])
+  }, [initialized, onAuthRequest, onSessionProposal, onSessionRequest, onSessionAuthenticate])
 }
