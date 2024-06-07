@@ -32,6 +32,7 @@
     "@taquito/signer": "^15.1.0",
     "@taquito/taquito": "^15.1.0",
     "@types/semver": "^7.5.8",
+    "@walletconnect/core": "^2.13.1",
     "@walletconnect/web3wallet": "1.12.0",
     "@web3modal/ethers": "^4.2.3",
     "@zerodev/ecdsa-validator": "5.2.3",
@@ -50,7 +51,7 @@
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
     "react-qr-reader-es6": "2.2.1-2",
-    "valtio": "1.13.2",
+    "valtio": "1.11.2",
     "viem": "2.9.29"
   },
   "devDependencies": {

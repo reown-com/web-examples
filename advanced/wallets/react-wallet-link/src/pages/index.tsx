@@ -5,14 +5,17 @@ import { EIP155_MAINNET_CHAINS } from '@/data/EIP155Data'
 import { Spinner, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useWeb3ModalAccount } from '@web3modal/ethers/react'
+import { Box } from '@mui/material'
 
 export default function HomePage() {
-  // const { address } = useWeb3ModalAccount()
-  const address = '0x1234567890123456789012345678901234567890'
+  console.log('homepage')
+  const { address } = useWeb3ModalAccount()
   return address ? (
     <Fragment>
       <PageHeader title="Accounts">
-        <AccountPicker data-testid="account-picker" />
+        <Box display="flex" alignItems="center" width="100%">
+          <w3m-button />
+        </Box>
       </PageHeader>
       <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets
@@ -30,5 +33,5 @@ export default function HomePage() {
       ))}
     
     </Fragment>
-  ) : <Spinner />
+  ) : <w3m-connect-button />
 }

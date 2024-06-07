@@ -29,12 +29,13 @@ const metadata = {
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
 }
 
-createWeb3Modal({
+const modal = createWeb3Modal({
   ethersConfig: defaultConfig({
     metadata,
     defaultChainId: 1,
     rpcUrl: 'https://cloudflare-eth.com',
     chains,
+    enableEmail: true,
   }),
   projectId: process.env.NEXT_PUBLIC_PROJECT_ID as string,
   chains,
@@ -42,8 +43,11 @@ createWeb3Modal({
   metadata,
   termsConditionsUrl: 'https://walletconnect.com/terms',
   privacyPolicyUrl: 'https://walletconnect.com/privacy',
-  enableOnramp: true
+  enableOnramp: true,
+  enableEmail: true,
 })
+
+console.log('created web3modal', modal)
 
 
 export default function App({ Component, pageProps }: AppProps) {
