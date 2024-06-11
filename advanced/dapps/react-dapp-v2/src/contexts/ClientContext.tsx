@@ -291,15 +291,12 @@ export function ClientContextProvider({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
-        metadata: {
-          ...(getAppMetadata() || DEFAULT_APP_METADATA),
-          url: claimedOrigin,
-          verifyUrl: DEFAULT_APP_METADATA.verifyUrl,
-        },
       });
 
       setClient(_client);
       setOrigin(_client.metadata.url);
+      console.log("metadata url:", _client.metadata);
+
       prevRelayerValue.current = relayerRegion;
       await _subscribeToEvents(_client);
       await _checkPersistedState(_client);
