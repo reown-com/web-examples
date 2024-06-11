@@ -160,7 +160,7 @@ export default function SettingsPage() {
                   </Text>
                   <Row justify="space-between" align="center">
                     <Switch
-                     disabled={!biconomySmartAccountEnabled}
+                      disabled={!biconomySmartAccountEnabled}
                       checked={biconomyModuleManagementEnabled}
                       onChange={SettingsStore.toggleBiconomyModuleManagement}
                       data-testid="settings-toggle-biconomy-module-management"

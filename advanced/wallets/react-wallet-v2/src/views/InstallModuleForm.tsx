@@ -6,8 +6,8 @@ import React, { Fragment, useState, useEffect } from 'react'
 import { Chain } from 'viem'
 
 interface InstallModuleFormProps {
-  accountAddress: string,
-  allowedChains:Chain[]
+  accountAddress: string
+  allowedChains: Chain[]
 }
 
 const InstallModuleForm = ({ accountAddress, allowedChains }: InstallModuleFormProps) => {

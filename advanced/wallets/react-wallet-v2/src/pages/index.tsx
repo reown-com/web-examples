@@ -159,10 +159,12 @@ export default function HomePage() {
                     })
                     .map(account => {
                       return (
-                        <div 
-                        style={{ marginBottom: 10, cursor:'pointer' }}
-                        key={`${name}-${account.type.toLowerCase()}`}
-                        onClick={() => replace({ pathname: '/account',query:`accountType=${account.type}` })}
+                        <div
+                          style={{ marginBottom: 10, cursor: 'pointer' }}
+                          key={`${name}-${account.type.toLowerCase()}`}
+                          onClick={() =>
+                            replace({ pathname: '/account', query: `accountType=${account.type}` })
+                          }
                         >
                           <AccountCard
                             key={`${name}-${account.type.toLowerCase()}`}

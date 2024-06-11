@@ -6,7 +6,11 @@ import React, { Fragment, useState, useEffect } from 'react'
 import SettingsStore from '@/store/SettingsStore'
 import { useSnapshot } from 'valtio'
 import { Chain } from 'viem'
-import { biconomyAllowedChains, kernelAllowedChains, safeAllowedChains } from '@/utils/SmartAccountUtil'
+import {
+  biconomyAllowedChains,
+  kernelAllowedChains,
+  safeAllowedChains
+} from '@/utils/SmartAccountUtil'
 
 const InstallModulePage = () => {
   const [accountType, setAccountType] = useState('')
