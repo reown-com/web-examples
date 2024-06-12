@@ -202,8 +202,8 @@ export class KernelSmartAccountLib implements EIP155Wallet {
 
     const txResult = await this.client.sendTransaction({
       to,
-      value:BigInt(value),
-      data: data||'0x',
+      value: BigInt(value),
+      data: data || '0x',
       account: this.client.account,
       chain: this.chain
     })
