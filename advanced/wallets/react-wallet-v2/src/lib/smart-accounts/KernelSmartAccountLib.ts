@@ -194,7 +194,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     const signature = await this.client.account.signTransaction(transaction)
     return signature || ''
   }
-  async sendTransaction({ to, value, data }: { to: Address; value: Hex; data: Hex }) {
+  async sendTransaction({ to, value, data }: { to: Address; value: bigint | Hex; data: Hex }) {
     console.log('Sending transaction from smart account', { to, value, data })
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
