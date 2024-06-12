@@ -1,4 +1,4 @@
-import { MFA_VALIDATOR_ADDRESS } from '@rhinestone/module-sdk'
+import { MULTI_FACTOR_VALIDATOR_ADDRESS } from '@rhinestone/module-sdk'
 export const moduleTypeIds = {
   validator: 1,
   executor: 2,
@@ -28,7 +28,7 @@ export const supportedModules: Module[] = [
   {
     name: 'MFA',
     type: 1,
-    moduleAddress: MFA_VALIDATOR_ADDRESS,
+    moduleAddress: MULTI_FACTOR_VALIDATOR_ADDRESS,
     moduleData: ''
   },
   {
