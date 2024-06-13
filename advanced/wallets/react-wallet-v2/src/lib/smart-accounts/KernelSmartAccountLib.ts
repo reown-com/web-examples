@@ -417,4 +417,11 @@ export class KernelSmartAccountLib implements EIP155Wallet {
       enableSig: enableSig
     }
   }
+
+  getAccount() {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    return this.client.account
+  }
 }

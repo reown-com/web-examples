@@ -285,4 +285,11 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     console.log(`isModuleInstalled : ${isModuleInstalled}`)
     return isModuleInstalled
   }
+
+  getAccount() {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    return this.client.account
+  }
 }

@@ -1,10 +1,9 @@
 import { supportedModules } from '@/data/ERC7579ModuleData'
-import { onInstallModule } from '@/utils/ERC7579AccountUtils'
+import { isERC7579ModuleInstalled, installERC7579Module } from '@/utils/ERC7579AccountUtils'
 import { styledToast } from '@/utils/HelperUtil'
-import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 import { Button, Card, Loading, Row, Text } from '@nextui-org/react'
 import { Fragment, useCallback, useEffect, useState } from 'react'
-import { Address, Chain, createPublicClient, http } from 'viem'
+import { Address, Chain } from 'viem'
 
 type ModulesWithStatus = {
   isInstalled: boolean
@@ -40,7 +39,7 @@ export default function ModulesManagement({
     const moduleStatusPromises = supportedModules.map(async module => {
       const moduleType = BigInt(module.type)
       const moduleAddress = module.moduleAddress as Address
-      const isInstalled = await isModuleInstalled(
+      const isInstalled = await isERC7579ModuleInstalled(
         accountAddress as Address,
         chain,
         moduleType,
@@ -71,7 +70,7 @@ export default function ModulesManagement({
   ) => {
     setLoading(true)
     try {
-      const txHash = await onInstallModule({
+      const txHash = await installERC7579Module({
         accountAddress,
         chainId: chainId,
         moduleType: moduleType,
@@ -83,29 +82,6 @@ export default function ModulesManagement({
       styledToast((e as Error).message, 'error')
     }
     setLoading(false)
-  }
-
-  const isModuleInstalled = async (
-    accountAddress: Address,
-    chain: Chain,
-    moduleType: bigint,
-    moduleAddress: Address
-  ) => {
-    const publicClient = createPublicClient({
-      transport: http(),
-      chain: chain
-    })
-
-    return await publicClient.readContract({
-      address: accountAddress as Address,
-      abi: isModuleInstalledAbi,
-      functionName: 'isModuleInstalled',
-      args: [
-        moduleType, // ModuleType
-        moduleAddress, // Module Address
-        '0x' // Additional Context
-      ]
-    })
   }
 
   return (
