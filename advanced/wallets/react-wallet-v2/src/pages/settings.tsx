@@ -28,9 +28,7 @@ export default function SettingsPage() {
     kernelSmartAccountEnabled,
     safeSmartAccountEnabled,
     biconomySmartAccountEnabled,
-    kernelModuleManagementEnabled,
-    safeModuleManagementEnabled,
-    biconomyModuleManagementEnabled
+    moduleManagementEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -130,41 +128,18 @@ export default function SettingsPage() {
                   <Text h4 css={{ marginBottom: '$5', cursor: 'pointer' }}>
                     Module Management
                   </Text>
-                  <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
-                    ZeroDev Smart Account
-                  </Text>
                   <Row justify="space-between" align="center">
                     <Switch
-                      disabled={!kernelSmartAccountEnabled}
-                      checked={kernelModuleManagementEnabled}
-                      onChange={SettingsStore.toggleKernelModuleManagement}
+                      disabled={
+                        !kernelSmartAccountEnabled ||
+                        !safeSmartAccountEnabled ||
+                        !biconomySmartAccountEnabled
+                      }
+                      checked={moduleManagementEnabled}
+                      onChange={SettingsStore.toggleModuleManagement}
                       data-testid="settings-toggle-kernel-module-management"
                     />
-                    <Text>{kernelModuleManagementEnabled ? 'Enabled' : 'Disabled'}</Text>
-                  </Row>
-                  <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
-                    Safe Smart Account
-                  </Text>
-                  <Row justify="space-between" align="center">
-                    <Switch
-                      disabled={!safeSmartAccountEnabled}
-                      checked={safeModuleManagementEnabled}
-                      onChange={SettingsStore.toggleSafeModuleManagement}
-                      data-testid="settings-toggle-safe-module-management"
-                    />
-                    <Text>{safeModuleManagementEnabled ? 'Enabled' : 'Disabled'}</Text>
-                  </Row>
-                  <Text h4 css={{ marginBottom: '$5', marginTop: '$5' }}>
-                    Biconomy Smart Account
-                  </Text>
-                  <Row justify="space-between" align="center">
-                    <Switch
-                      disabled={!biconomySmartAccountEnabled}
-                      checked={biconomyModuleManagementEnabled}
-                      onChange={SettingsStore.toggleBiconomyModuleManagement}
-                      data-testid="settings-toggle-biconomy-module-management"
-                    />
-                    <Text>{biconomyModuleManagementEnabled ? 'Enabled' : 'Disabled'}</Text>
+                    <Text>{moduleManagementEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>
                 </>
               ) : null}

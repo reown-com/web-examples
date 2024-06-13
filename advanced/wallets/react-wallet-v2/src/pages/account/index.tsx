@@ -1,41 +1,26 @@
 import PageHeader from '@/components/PageHeader'
 import { supportedModules } from '@/data/ERC7579ModuleData'
 import SettingsStore from '@/store/SettingsStore'
-import { onInstallModule } from '@/utils/ERC7579AccountUtils'
-import { styledToast, truncate } from '@/utils/HelperUtil'
+import { truncate } from '@/utils/HelperUtil'
 import {
   biconomyAllowedChains,
   kernelAllowedChains,
   safeAllowedChains
 } from '@/utils/SmartAccountUtil'
-import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
-import { Button, Card, Divider, Loading, Row, Text } from '@nextui-org/react'
+import ModulesManagement from '@/views/ModulesManagement'
+import { Card, Divider, Row, Text } from '@nextui-org/react'
 import { useRouter } from 'next/router'
 import { isSmartAccountDeployed } from 'permissionless'
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { Address, Chain, createPublicClient, http } from 'viem'
 
-type ModulesWithStatus = {
-  isInstalled: boolean
-  name: string
-  type: number
-  description: string
-  moduleAddress: string
-  moduleData: string
-}
-
 export default function AccountPage() {
   const [accountType, setAccountType] = useState('')
   const [chainId, setChainId] = useState('')
   const [accountAddress, setAccountAddress] = useState('')
   const [isAccountDeployed, setIsAccountDeployed] = useState(false)
-  const [modulesWithStatus, setModulesWithStatus] = useState<ModulesWithStatus[]>(
-    supportedModules.map(module => ({ ...module, isInstalled: false }))
-  )
   const [selectedChain, setSelectedChain] = useState<Chain>()
-  const [isLoading, setLoading] = useState(false)
-  const [modulesStatusLoading, setModuleStatusLoading] = useState(false)
   const {
     smartAccountEnabled,
     kernelSmartAccountAddress,
@@ -43,7 +28,8 @@ export default function AccountPage() {
     safeSmartAccountAddress,
     safeSmartAccountEnabled,
     biconomySmartAccountAddress,
-    biconomySmartAccountEnabled
+    biconomySmartAccountEnabled,
+    moduleManagementEnabled
   } = useSnapshot(SettingsStore.state)
   const { query } = useRouter()
 
@@ -55,30 +41,6 @@ export default function AccountPage() {
       setChainId(query.chainId as string)
     }
   }, [query])
-
-  const checkModulesStatus = useCallback(async () => {
-    if (!selectedChain || !isAccountDeployed) return
-
-    setModuleStatusLoading(true)
-    const moduleStatusPromises = supportedModules.map(async module => {
-      const moduleType = BigInt(module.type)
-      const moduleAddress = module.moduleAddress as Address
-      const isInstalled = await isModuleInstalled(
-        accountAddress as Address,
-        selectedChain,
-        moduleType,
-        moduleAddress
-      )
-      return {
-        ...module,
-        isInstalled
-      }
-    })
-
-    const modulesWithStatus = await Promise.all(moduleStatusPromises)
-    setModulesWithStatus(modulesWithStatus)
-    setModuleStatusLoading(false)
-  }, [accountAddress, selectedChain, isAccountDeployed])
 
   const isSmartContractAccountDeployed = useCallback(
     async (accountAddress: Address, chain: Chain) => {
@@ -112,65 +74,16 @@ export default function AccountPage() {
 
       isSmartContractAccountDeployed(address as Address, chain).then(result => {
         setIsAccountDeployed(result)
-        if (result) {
-          checkModulesStatus()
-        }
       })
     }
   }, [
     accountType,
     chainId,
-    checkModulesStatus,
     isSmartContractAccountDeployed,
     kernelSmartAccountAddress,
     safeSmartAccountAddress,
     biconomySmartAccountAddress
   ])
-
-  const onInstall = async (
-    accountAddress: string,
-    chainId: string,
-    moduleType: string,
-    moduleAddress: string
-  ) => {
-    setLoading(true)
-    try {
-      const txHash = await onInstallModule({
-        accountAddress,
-        chainId: chainId,
-        moduleType: moduleType,
-        moduleAddress: moduleAddress
-      })
-      styledToast(`Module Installed Successfully`, 'success')
-    } catch (e) {
-      console.error(e)
-      styledToast((e as Error).message, 'error')
-    }
-    setLoading(false)
-  }
-
-  const isModuleInstalled = async (
-    accountAddress: Address,
-    chain: Chain,
-    moduleType: bigint,
-    moduleAddress: Address
-  ) => {
-    const publicClient = createPublicClient({
-      transport: http(),
-      chain: chain
-    })
-
-    return await publicClient.readContract({
-      address: accountAddress as Address,
-      abi: isModuleInstalledAbi,
-      functionName: 'isModuleInstalled',
-      args: [
-        moduleType, // ModuleType
-        moduleAddress, // Module Address
-        '0x' // Additional Context
-      ]
-    })
-  }
 
   if (!smartAccountEnabled) {
     return (
@@ -239,42 +152,22 @@ export default function AccountPage() {
             <Text h4>Chain</Text>
             <Text>{selectedChain?.name}</Text>
           </Row>
-          <Divider css={{ marginBottom: '$10' }} />
-          <Text h4 css={{ marginBottom: '$5' }}>
-            Module Management
-          </Text>
-          {modulesStatusLoading ? (
-            <Loading />
+
+          {moduleManagementEnabled ? (
+            <Fragment>
+              <Divider css={{ marginBottom: '$10' }} />
+              <ModulesManagement
+                accountAddress={accountAddress}
+                accountType={accountType}
+                chain={selectedChain}
+                isDeployed={isAccountDeployed}
+              />
+            </Fragment>
           ) : (
-            modulesWithStatus.map(module => (
-              <Card bordered key={module.moduleAddress} css={{ marginBottom: '$5' }}>
-                <Card.Body>
-                  <Row justify="space-between" align="center">
-                    <Text>{module.name}</Text>
-                    {module.isInstalled ? (
-                      <Button auto color={'error'} disabled>
-                        Uninstall
-                      </Button>
-                    ) : (
-                      <Button
-                        auto
-                        disabled={module.name !== 'Permission Validator'}
-                        onClick={() =>
-                          onInstall(
-                            accountAddress,
-                            selectedChain?.id.toString(),
-                            module.type.toString(),
-                            module.moduleAddress
-                          )
-                        }
-                      >
-                        Install
-                      </Button>
-                    )}
-                  </Row>
-                </Card.Body>
-              </Card>
-            ))
+            <Row justify="space-between" align="center">
+              <Text h4>Module Management</Text>
+              <Text>Disabled</Text>
+            </Row>
           )}
         </Card.Body>
       </Card>

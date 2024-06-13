@@ -13,9 +13,7 @@ const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
 const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
 const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
-const ZERO_DEV_MODULE_MANAGEMENT_ENABLED_KEY = 'ZERO_DEV_MODULE_MANAGEMENT'
-const SAFE_MODULE_MANAGEMENT_ENABLED_KEY = 'SAFE_MODULE_MANAGEMENT'
-const BICONOMY_MODULE_MANAGEMENT_ENABLED_KEY = 'BICONOMY_MODULE_MANAGEMENT'
+const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
 
 /**
  * Types
@@ -44,9 +42,7 @@ interface State {
   kernelSmartAccountEnabled: boolean
   safeSmartAccountEnabled: boolean
   biconomySmartAccountEnabled: boolean
-  kernelModuleManagementEnabled: boolean
-  safeModuleManagementEnabled: boolean
-  biconomyModuleManagementEnabled: boolean
+  moduleManagementEnabled: boolean
 }
 
 /**
@@ -90,17 +86,9 @@ const state = proxy<State>({
     typeof localStorage !== 'undefined'
       ? Boolean(localStorage.getItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY))
       : false,
-  kernelModuleManagementEnabled:
+  moduleManagementEnabled:
     typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(ZERO_DEV_MODULE_MANAGEMENT_ENABLED_KEY))
-      : false,
-  safeModuleManagementEnabled:
-    typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(SAFE_MODULE_MANAGEMENT_ENABLED_KEY))
-      : false,
-  biconomyModuleManagementEnabled:
-    typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(BICONOMY_MODULE_MANAGEMENT_ENABLED_KEY))
+      ? Boolean(localStorage.getItem(MODULE_MANAGEMENT_ENABLED_KEY))
       : false
 })
 
@@ -196,28 +184,12 @@ const SettingsStore = {
       localStorage.removeItem(SMART_ACCOUNTS_ENABLED_KEY)
     }
   },
-  toggleKernelModuleManagement() {
-    state.kernelModuleManagementEnabled = !state.kernelModuleManagementEnabled
-    if (state.kernelModuleManagementEnabled) {
-      localStorage.setItem(ZERO_DEV_MODULE_MANAGEMENT_ENABLED_KEY, 'YES')
+  toggleModuleManagement() {
+    state.moduleManagementEnabled = !state.moduleManagementEnabled
+    if (state.moduleManagementEnabled) {
+      localStorage.setItem(MODULE_MANAGEMENT_ENABLED_KEY, 'YES')
     } else {
-      localStorage.removeItem(ZERO_DEV_MODULE_MANAGEMENT_ENABLED_KEY)
-    }
-  },
-  toggleSafeModuleManagement() {
-    state.safeModuleManagementEnabled = !state.safeModuleManagementEnabled
-    if (state.safeModuleManagementEnabled) {
-      localStorage.setItem(SAFE_MODULE_MANAGEMENT_ENABLED_KEY, 'YES')
-    } else {
-      localStorage.removeItem(SAFE_MODULE_MANAGEMENT_ENABLED_KEY)
-    }
-  },
-  toggleBiconomyModuleManagement() {
-    state.biconomyModuleManagementEnabled = !state.biconomyModuleManagementEnabled
-    if (state.biconomyModuleManagementEnabled) {
-      localStorage.setItem(BICONOMY_MODULE_MANAGEMENT_ENABLED_KEY, 'YES')
-    } else {
-      localStorage.removeItem(BICONOMY_MODULE_MANAGEMENT_ENABLED_KEY)
+      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
     }
   },
 
@@ -233,8 +205,8 @@ const SettingsStore = {
     } else {
       removeSmartAccount(SettingsStore.state.kernelSmartAccountAddress)
       SettingsStore.setKernelSmartAccountAddress('')
-      state.kernelModuleManagementEnabled = false
-      localStorage.removeItem(ZERO_DEV_MODULE_MANAGEMENT_ENABLED_KEY)
+      state.moduleManagementEnabled = false
+      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
       localStorage.removeItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY)
     }
   },
@@ -251,8 +223,8 @@ const SettingsStore = {
     } else {
       removeSmartAccount(SettingsStore.state.safeSmartAccountAddress)
       SettingsStore.setSafeSmartAccountAddress('')
-      state.safeModuleManagementEnabled = false
-      localStorage.removeItem(SAFE_MODULE_MANAGEMENT_ENABLED_KEY)
+      state.moduleManagementEnabled = false
+      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
       localStorage.removeItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY)
     }
   },
@@ -269,8 +241,8 @@ const SettingsStore = {
     } else {
       removeSmartAccount(SettingsStore.state.biconomySmartAccountAddress)
       SettingsStore.setBiconomySmartAccountAddress('')
-      state.biconomyModuleManagementEnabled = false
-      localStorage.removeItem(BICONOMY_MODULE_MANAGEMENT_ENABLED_KEY)
+      state.moduleManagementEnabled = false
+      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
       localStorage.removeItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY)
     }
   }
