@@ -29,10 +29,7 @@ export default function HomePage() {
     tronAddress,
     tezosAddress,
     kadenaAddress,
-    smartAccountEnabled,
-    safeModuleManagementEnabled,
-    kernelModuleManagementEnabled,
-    biconomyModuleManagementEnabled
+    smartAccountEnabled
   } = useSnapshot(SettingsStore.state)
   const { getAvailableSmartAccounts } = useSmartAccounts()
   const { query, replace } = useRouter()
