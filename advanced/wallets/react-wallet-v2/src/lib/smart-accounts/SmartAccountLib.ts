@@ -230,8 +230,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     //check whether module already installed
     const isModuleInstalled = await this.checkModuleInstalled({
       moduleType,
-      moduleAddress,
-      moduleInitcode
+      moduleAddress
     })
 
     if (isModuleInstalled) {
@@ -266,7 +265,6 @@ export abstract class SmartAccountLib implements EIP155Wallet {
   async checkModuleInstalled(args: {
     moduleType: bigint
     moduleAddress: Address
-    moduleInitcode: Hex
   }): Promise<boolean> {
     if (!this.client?.account || !this.publicClient) {
       throw new Error('Client not initialized')

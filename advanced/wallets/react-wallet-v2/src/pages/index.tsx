@@ -163,7 +163,10 @@ export default function HomePage() {
                           style={{ marginBottom: 10, cursor: 'pointer' }}
                           key={`${name}-${account.type.toLowerCase()}`}
                           onClick={() =>
-                            replace({ pathname: '/account', query: `accountType=${account.type}` })
+                            replace({
+                              pathname: '/account',
+                              query: `accountType=${account.type}&chainId=${chainId}`
+                            })
                           }
                         >
                           <AccountCard
