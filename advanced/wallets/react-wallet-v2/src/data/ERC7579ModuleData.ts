@@ -5,7 +5,7 @@ const {
   OWNABLE_VALIDATOR_ADDRESS,
   WEBAUTHN_VALIDATOR_ADDRESS,
   SCHEDULED_ORDERS_EXECUTER_ADDRESS,
-  SCHEDULED_TRANSFERS_EXECUTER_ADDRESS,
+  SCHEDULED_TRANSFERS_EXECUTER_ADDRESS
 } = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 export const moduleTypeIds = {
