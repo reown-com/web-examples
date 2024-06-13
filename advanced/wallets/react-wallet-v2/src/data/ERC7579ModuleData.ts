@@ -32,7 +32,7 @@ export const supportedModules: Module[] = [
     moduleData: ''
   },
   {
-    name: 'OWNABLE',
+    name: 'Ownable validator',
     type: 1,
     moduleAddress: moduleSdk.OWNABLE_VALIDATOR_ADDRESS,
     description: `The Ownable Validator module is a module that allows you to add multiple ECDSA owners to an account.
@@ -40,21 +40,21 @@ export const supportedModules: Module[] = [
     moduleData: ''
   },
   {
-    name: 'WEBAUTHN',
+    name: 'WebAuthn validator',
     type: 1,
     moduleAddress: moduleSdk.WEBAUTHN_VALIDATOR_ADDRESS,
     description: 'Coming Soon',
     moduleData: ''
   },
   {
-    name: 'SCHEDULED ORDERS',
+    name: 'Schedule Orders Executor',
     type: 2,
     moduleAddress: moduleSdk.SCHEDULED_ORDERS_EXECUTER_ADDRESS,
     description: 'Coming Soon',
     moduleData: ''
   },
   {
-    name: 'SCHEDULED TRANSFERS',
+    name: 'Schedule Transfers Executor',
     type: 2,
     moduleAddress: moduleSdk.SCHEDULED_TRANSFERS_EXECUTER_ADDRESS,
     description: 'Coming Soon',

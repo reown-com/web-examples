@@ -1,5 +1,4 @@
 import PageHeader from '@/components/PageHeader'
-import { supportedModules } from '@/data/ERC7579ModuleData'
 import SettingsStore from '@/store/SettingsStore'
 import { truncate } from '@/utils/HelperUtil'
 import {
@@ -58,13 +57,13 @@ export default function AccountPage() {
 
     let address, chain
     if (accountType === 'Kernel') {
-      address = kernelSmartAccountAddress
+      address = kernelSmartAccountAddress as Address
       chain = kernelAllowedChains.find(c => c.id === parseInt(chainId))
     } else if (accountType === 'Safe') {
-      address = safeSmartAccountAddress
+      address = safeSmartAccountAddress as Address
       chain = safeAllowedChains.find(c => c.id === parseInt(chainId))
     } else if (accountType === 'Biconomy') {
-      address = biconomySmartAccountAddress
+      address = biconomySmartAccountAddress as Address
       chain = biconomyAllowedChains.find(c => c.id === parseInt(chainId))
     }
 
@@ -72,7 +71,7 @@ export default function AccountPage() {
       setAccountAddress(address)
       setSelectedChain(chain)
 
-      isSmartContractAccountDeployed(address as Address, chain).then(result => {
+      isSmartContractAccountDeployed(address, chain).then(result => {
         setIsAccountDeployed(result)
       })
     }
@@ -88,9 +87,9 @@ export default function AccountPage() {
   if (!smartAccountEnabled) {
     return (
       <Fragment>
-        <PageHeader title="Module Management" />
+        <PageHeader title="Account Details" />
         <Text css={{ opacity: '0.5', textAlign: 'center', marginTop: '$20' }}>
-          Enable smart accounts
+          Please Enable smart accounts
         </Text>
       </Fragment>
     )
@@ -102,7 +101,7 @@ export default function AccountPage() {
   ) {
     return (
       <Fragment>
-        <PageHeader title="Module Management" />
+        <PageHeader title="Account Details" />
         <Text css={{ opacity: '0.5', textAlign: 'center', marginTop: '$20' }}>
           Unknown smart account
         </Text>
@@ -117,7 +116,7 @@ export default function AccountPage() {
   ) {
     return (
       <Fragment>
-        <PageHeader title="Module Management" />
+        <PageHeader title="Account Details" />
         <Text css={{ opacity: '0.5', textAlign: 'center', marginTop: '$20' }}>
           Please enable {accountType} smart account
         </Text>

@@ -31,7 +31,7 @@ export default function ModulesManagement({
     supportedModules.map(module => ({ ...module, isInstalled: false }))
   )
   const [isLoading, setLoading] = useState(false)
-  const [modulesStatusLoading, setModuleStatusLoading] = useState(false)
+  const [modulesStatusLoading, setModuleStatusLoading] = useState(true)
 
   const checkModulesStatus = useCallback(async () => {
     if (!chain || !isDeployed) return
