@@ -47,7 +47,10 @@ export default function AccountCard({ name, logo, rgb, address = '', chainId }: 
           size="sm"
           css={{ minWidth: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
           data-testid={'chain-copy-button' + chainId}
-          onClick={onCopy}
+          onClick={e => {
+            e.stopPropagation()
+            onCopy()
+          }}
         >
           <Image
             src={copied ? '/icons/checkmark-icon.svg' : '/icons/copy-icon.svg'}
@@ -65,7 +68,8 @@ export default function AccountCard({ name, logo, rgb, address = '', chainId }: 
           marginLeft: '$5'
         }}
         data-testid={'chain-switch-button' + chainId}
-        onPress={() => {
+        onClick={e => {
+          e.stopPropagation()
           onChainChanged(chainId, address)
         }}
       >
