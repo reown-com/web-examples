@@ -1,11 +1,13 @@
-import { supportedModules } from '@/data/ERC7579ModuleData'
+import { ModuleView, supportedModules } from '@/data/ERC7579ModuleData'
 import { isERC7579ModuleInstalled, installERC7579Module } from '@/utils/ERC7579AccountUtils'
 import { styledToast } from '@/utils/HelperUtil'
-import { Button, Card, Loading, Row, Text } from '@nextui-org/react'
+import { Collapse, Loading, Text } from '@nextui-org/react'
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import { Address, Chain } from 'viem'
+import ModuleForm from '@/components/ModuleForm'
 
 type ModulesWithStatus = {
+  view?: ModuleView
   isInstalled: boolean
   name: string
   type: number
@@ -92,35 +94,18 @@ export default function ModulesManagement({
       {modulesStatusLoading ? (
         <Loading />
       ) : (
-        modulesWithStatus.map(module => (
-          <Card bordered key={module.moduleAddress} css={{ marginBottom: '$5' }}>
-            <Card.Body>
-              <Row justify="space-between" align="center">
-                <Text>{module.name}</Text>
-                {module.isInstalled ? (
-                  <Button auto color={'error'} disabled>
-                    Uninstall
-                  </Button>
-                ) : (
-                  <Button
-                    auto
-                    disabled={module.name !== 'Permission Validator' || accountType !== 'Safe'}
-                    onClick={() =>
-                      onInstall(
-                        accountAddress,
-                        chain?.id.toString(),
-                        module.type.toString(),
-                        module.moduleAddress
-                      )
-                    }
-                  >
-                    Install
-                  </Button>
-                )}
-              </Row>
-            </Card.Body>
-          </Card>
-        ))
+        <Collapse.Group>
+          {modulesWithStatus.map(module => (
+            <Collapse
+              key={module.moduleAddress}
+              title={<Text h5>{module.name}</Text>}
+              subtitle={module.isInstalled ? 'Installed' : 'Not Installed'}
+            >
+              <Text>{module.description}</Text>
+              {!module.isInstalled && <ModuleForm view={module.view} />}
+            </Collapse>
+          ))}
+        </Collapse.Group>
       )}
     </Fragment>
   )

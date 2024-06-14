@@ -15,6 +15,13 @@ export const moduleTypeIds = {
   hook: 4
 }
 export const PERMISSION_VALIDATOR_ADDRESS = '0x6671AD9ED29E2d7a894E80bf48b7Bf03Ee64A0f4'
+export type ModuleView =
+  | 'PermissionValidatorForm'
+  | 'OwnableValidatorForm'
+  | 'MFAValidatorForm'
+  | 'WebAuthnValidatorForm'
+  | 'ScheduleOrdersExecutorForm'
+  | 'ScheduleTransfersExecutorForm'
 
 export type Module = {
   name: string
@@ -22,6 +29,7 @@ export type Module = {
   description: string
   moduleAddress: string
   moduleData: string
+  view?: ModuleView
 }
 export const supportedModules: Module[] = [
   {
@@ -37,7 +45,8 @@ export const supportedModules: Module[] = [
     moduleAddress: OWNABLE_VALIDATOR_ADDRESS,
     description: `The Ownable Validator module is a module that allows you to add multiple ECDSA owners to an account.
      The owners can then be used to sign transactions to be executed on the account.`,
-    moduleData: ''
+    moduleData: '',
+    view: 'OwnableValidatorForm'
   },
   {
     name: `Muti-factor Validator`,
