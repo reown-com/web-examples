@@ -57,20 +57,10 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   }
 
   async sendTransaction({ to, value, data }: Execution) {
-    if (!this.client || !this.client.account) {
+    if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    const accountDeployed = await isSmartAccountDeployed(
-      this.publicClient,
-      this.client.account.address
-    )
-    if (!accountDeployed) {
-      const setUpAndExecuteUserOpHash = await this.setupSafe7579AndExecute({ to, value, data })
-      const userOpReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpAndExecuteUserOpHash
-      })
-      return userOpReceipt.receipt.transactionHash
-    }
+    await this.setupSafe7579({ to, value, data })
 
     const txResult = await this.client.sendTransaction({
       to,
@@ -84,16 +74,10 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   }
 
   async sendBatchTransaction(calls: Execution[]) {
-    if (!this.client || !this.client.account) {
+    if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    const accountDeployed = await isSmartAccountDeployed(
-      this.publicClient,
-      this.client.account.address
-    )
-    if (!accountDeployed) {
-      return await this.setupSafe7579AndExecute(calls)
-    }
+    await this.setupSafe7579(calls)
 
     const userOp = await this.client.prepareUserOperationRequest({
       userOperation: {
@@ -111,35 +95,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     return userOpHash
   }
 
-  async setupSafe7579AndExecute(calls: Execution | Execution[]) {
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-
-    const initialValidators = getSafe7579InitialValidators()
-    const initData = getSafe7579InitData(this.signer.address, initialValidators, calls)
-    const setUpSafe7579Calldata = encodeFunctionData({
-      abi: setupSafeAbi,
-      functionName: 'setupSafe',
-      args: [initData]
-    })
-    const setUpUserOp = await this.client.prepareUserOperationRequest({
-      userOperation: {
-        callData: setUpSafe7579Calldata
-      },
-      account: this.client.account
-    })
-    const newSignature = await this.client.account.signUserOperation(setUpUserOp)
-
-    setUpUserOp.signature = newSignature
-
-    const setUpAndExecuteUserOpHash = await this.bundlerClient.sendUserOperation({
-      userOperation: setUpUserOp
-    })
-
-    return setUpAndExecuteUserOpHash
-  }
-
   async issuePermissionContext(
     targetAddress: Address,
     approvedPermissions: any
@@ -147,24 +102,13 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    console.log(`checking isAccountDeployed...`)
-    // check whether the account is deployed or not
-    const accountDeployed = await isSmartAccountDeployed(
-      this.publicClient,
-      this.client.account.address
-    )
-    // if account is not deployed, then deploy and setUp the safe7579 first.
-    if (!accountDeployed) {
-      const setUpAndExecuteUserOpHash = await this.setupSafe7579AndExecute({
-        data: '0x',
-        to: zeroAddress,
-        value: BigInt(0)
-      })
-      await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpAndExecuteUserOpHash
-      })
-    }
-
+    // setUpSafe account
+    await this.setupSafe7579({
+      data: '0x',
+      to: zeroAddress,
+      value: BigInt(0)
+    })
+    // check permissionvalidator module is installed or not
     const isInstalled = await this.isPermissionValidatorModuleInstalled()
 
     if (!isInstalled) {
@@ -186,6 +130,42 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       permissions: permissions,
       permittedScopeData: permittedScopeData,
       permittedScopeSignature: permittedScopeSignature
+    }
+  }
+
+  private async setupSafe7579(calls: Execution | Execution[]) {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    const accountDeployed = await isSmartAccountDeployed(
+      this.publicClient,
+      this.client.account.address
+    )
+    if (!accountDeployed) {
+      const initialValidators = getSafe7579InitialValidators()
+      const initData = getSafe7579InitData(this.signer.address, initialValidators, calls)
+      const setUpSafe7579Calldata = encodeFunctionData({
+        abi: setupSafeAbi,
+        functionName: 'setupSafe',
+        args: [initData]
+      })
+      const setUpUserOp = await this.client.prepareUserOperationRequest({
+        userOperation: {
+          callData: setUpSafe7579Calldata
+        },
+        account: this.client.account
+      })
+      const newSignature = await this.client.account.signUserOperation(setUpUserOp)
+
+      setUpUserOp.signature = newSignature
+
+      const setUpAndExecuteUserOpHash = await this.bundlerClient.sendUserOperation({
+        userOperation: setUpUserOp
+      })
+      const userOpReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+        hash: setUpAndExecuteUserOpHash
+      })
+      console.log({ setupSafetxHash: userOpReceipt.receipt.transactionHash })
     }
   }
 
