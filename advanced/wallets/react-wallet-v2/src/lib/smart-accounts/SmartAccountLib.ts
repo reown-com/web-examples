@@ -6,7 +6,8 @@ import {
   http,
   createClient,
   HttpTransport,
-  Address
+  Address,
+  encodeFunctionData
 } from 'viem'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -30,6 +31,7 @@ import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/act
 import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl } from '@/utils/SmartAccountUtil'
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
+import { installModuleAbi, isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -217,5 +219,77 @@ export abstract class SmartAccountLib implements EIP155Wallet {
       userOperation: userOp
     })
     return userOpHash
+  }
+
+  async installModule(args: { moduleType: bigint; moduleAddress: Address; moduleInitcode: Hex }) {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    const { moduleType, moduleAddress, moduleInitcode } = args
+
+    //check whether module already installed
+    const isModuleInstalled = await this.checkModuleInstalled({
+      moduleType,
+      moduleAddress
+    })
+
+    if (isModuleInstalled) {
+      throw new Error('Module is already installed.')
+    }
+    const installModuleCallData = encodeFunctionData({
+      abi: installModuleAbi,
+      functionName: 'installModule',
+      args: [moduleType, moduleAddress, moduleInitcode]
+    })
+
+    const userOp = await this.client.prepareUserOperationRequest({
+      userOperation: {
+        callData: installModuleCallData
+      },
+      account: this.client.account
+    })
+    const newSignature = await this.client.account.signUserOperation(userOp)
+
+    userOp.signature = newSignature
+    console.log(userOp)
+    const userOpHash = await this.client.sendUserOperation({
+      userOperation: userOp,
+      account: this.client.account
+    })
+    const txHash = await this.bundlerClient.waitForUserOperationReceipt({
+      hash: userOpHash
+    })
+    return txHash
+  }
+
+  async checkModuleInstalled(args: {
+    moduleType: bigint
+    moduleAddress: Address
+  }): Promise<boolean> {
+    if (!this.client?.account || !this.publicClient) {
+      throw new Error('Client not initialized')
+    }
+
+    const { moduleType, moduleAddress } = args
+
+    const isModuleInstalled = await this.publicClient.readContract({
+      address: this.client.account.address,
+      abi: isModuleInstalledAbi,
+      functionName: 'isModuleInstalled',
+      args: [
+        moduleType, // ModuleType
+        moduleAddress, // Module Address
+        '0x' // Additional Context
+      ]
+    })
+    console.log(`isModuleInstalled : ${isModuleInstalled}`)
+    return isModuleInstalled
+  }
+
+  getAccount() {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    return this.client.account
   }
 }
