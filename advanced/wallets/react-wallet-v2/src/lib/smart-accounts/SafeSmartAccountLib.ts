@@ -144,7 +144,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     targetAddress: Address,
     approvedPermissions: any
   ): Promise<PermissionContext> {
-    if (!this.client || !this.client.account) {
+    if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
     console.log(`checking isAccountDeployed...`)
@@ -153,30 +153,47 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       this.publicClient,
       this.client.account.address
     )
-    const initialCallsAtSafeSetupPhase: Execution[] = [
-      {
+    // if account is not deployed, then deploy and setUp the safe7579 first.
+    if (!accountDeployed) {
+      const setUpAndExecuteUserOpHash = await this.setupSafe7579AndExecute({
         data: '0x',
         to: zeroAddress,
         value: BigInt(0)
-      }
-    ]
-
-    // if account is not deployed, then deploy and setUp the safe7579 first.
-    if (!accountDeployed) {
-      console.log(`isAccountDeployed = false`)
-      console.log(`Deploying and setting up Safe7579 account...`)
-      const setUpAndExecuteUserOpHash = await this.setupSafe7579AndExecute(
-        initialCallsAtSafeSetupPhase
-      )
+      })
       await this.bundlerClient.waitForUserOperationReceipt({
         hash: setUpAndExecuteUserOpHash
       })
-      console.log(`Deployment completed.`)
     }
-    console.log(`isAccountDeployed = true`)
-    console.log(`checking isPermissionValidator Module installed...`)
-    // check whether PermissionValidator module is install or not
-    const isPermissionValidatorModuleInstalled = await this.publicClient.readContract({
+
+    const isInstalled = await this.isPermissionValidatorModuleInstalled()
+
+    if (!isInstalled) {
+      throw new Error(
+        'isPermissionValidatorModuleInstalled == false \n Should not have happen, need to debug initCode to check safe setUp process'
+      )
+    }
+
+    const { permissionsContext, permissions, permittedScopeData, permittedScopeSignature } =
+      await this.getAllowedPermissionsAndData(targetAddress)
+
+    return {
+      accountType: 'Safe7579',
+      accountAddress: this.client.account.address,
+      permissionsContext: permissionsContext,
+      userOperationBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
+      //below are temporary additional values
+      permissionValidatorAddress: PERMISSION_VALIDATOR_ADDRESS,
+      permissions: permissions,
+      permittedScopeData: permittedScopeData,
+      permittedScopeSignature: permittedScopeSignature
+    }
+  }
+
+  private async isPermissionValidatorModuleInstalled() {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    return await this.publicClient.readContract({
       address: this.client.account.address,
       abi: isModuleInstalledAbi,
       functionName: 'isModuleInstalled',
@@ -186,17 +203,9 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         '0x' // Additional Context
       ]
     })
-    // if not then install Permissionvalidator module on Safe7579 Account.
-    if (!isPermissionValidatorModuleInstalled) {
-      console.log(`isPermissionValidatorModuleInstalled == false`)
-      console.log(`Should not have happen, need to debug initCode to check safe setUp process`)
-      throw new Error(
-        'isPermissionValidatorModuleInstalled == false \n Should not have happen, need to debug initCode to check safe setUp process'
-      )
-      // TODO: install the module , but for safe7579 PERMISSION_VALIDATOR module is
-      // part of initial validator module, so on safe setup phase it get installed.
-    }
-    console.log(`isPermissionValidatorModuleInstalled == true`)
+  }
+
+  private async getAllowedPermissionsAndData(signer: Address) {
     // if installed then based on the approvedPermissions build the PermissionsContext value
     // permissionsContext = [PERMISSION_VALIDATOR_ADDRESS][ENCODED_PERMISSION_SCOPE & SIGNATURE_DATA]
 
@@ -207,7 +216,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         validUntil: 0,
         validAfter: 0,
         signatureValidationAlgorithm: SECP256K1_SIGNATURE_VALIDATOR_ADDRESS,
-        signer: targetAddress,
+        signer: signer,
         policy: zeroAddress,
         policyData: '0x'
       }
@@ -218,7 +227,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     // the smart account sign over the permittedScope and targetAddress
     const permittedScopeSignature: Hex = await signMessage({
       privateKey: this.getPrivateKey() as `0x${string}`,
-      message: { raw: concatHex([keccak256(permittedScopeData), targetAddress]) }
+      message: { raw: concatHex([keccak256(permittedScopeData), signer]) }
     })
 
     const _permissionIndex = BigInt(0)
@@ -244,17 +253,11 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       PERMISSION_VALIDATOR_ADDRESS,
       encodePacked(['uint8', 'bytes'], [1, encodedData])
     ])
-    console.log(`issuing permissions...`)
     return {
-      accountType: 'Safe7579',
-      accountAddress: this.client.account.address,
-      permissionsContext: permissionsContext,
-      userOperationBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
-      //below are temporary additional values
-      permissionValidatorAddress: PERMISSION_VALIDATOR_ADDRESS,
-      permissions: permissions,
-      permittedScopeData: permittedScopeData,
-      permittedScopeSignature: permittedScopeSignature
+      permissionsContext,
+      permittedScopeSignature,
+      permittedScopeData,
+      permissions
     }
   }
 }
