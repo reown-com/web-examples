@@ -143,6 +143,8 @@ export enum DEFAULT_COSMOS_EVENTS {}
  */
 export enum DEFAULT_SOLANA_METHODS {
   SOL_SIGN_TRANSACTION = "solana_signTransaction",
+  SOL_SIGN_TRANSACTION_TOKEN_TRANSFER = "solana_signTransaction (token transfer)",
+  SOL_SIGN_TRANSACTION_CREATE_ASSOCIATED_TOKEN_ACCOUNT = "solana_signTransaction (token acct creation)",
   SOL_SIGN_MESSAGE = "solana_signMessage",
 }
 

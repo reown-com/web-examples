@@ -293,6 +293,14 @@ const Home: NextPage = () => {
       openRequestModal();
       await solanaRpc.testSignTransaction(chainId, address);
     };
+    const onSignTransactionTokenTransfer = async (chainId: string, address: string) => {
+      openRequestModal();
+      await solanaRpc.testSignTransactionTokenTransfer(chainId, address);
+    };
+    const onSignTransactionCreateAssociatedTokenAccount = async (chainId: string, address: string) => {
+      openRequestModal();
+      await solanaRpc.testSignTransactionCreateAssociatedTokenAccount(chainId, address);
+    };
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
       await solanaRpc.testSignMessage(chainId, address);
@@ -301,6 +309,14 @@ const Home: NextPage = () => {
       {
         method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
         callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION_TOKEN_TRANSFER,
+        callback: onSignTransactionTokenTransfer,
+      },
+      {
+        method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION_CREATE_ASSOCIATED_TOKEN_ACCOUNT,
+        callback: onSignTransactionCreateAssociatedTokenAccount,
       },
       {
         method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,

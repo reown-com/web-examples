@@ -17,7 +17,14 @@ import {
   SystemProgram,
   Transaction as SolanaTransaction,
   clusterApiUrl,
+  StakeProgram,
+  PublicKey,
 } from "@solana/web3.js";
+import {
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddress,
+  createAssociatedTokenAccountInstruction,
+} from "@solana/spl-token";
 // @ts-expect-error
 import TronWeb from "tronweb";
 import {
@@ -105,6 +112,8 @@ interface IContext {
   solanaRpc: {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
+    testSignTransactionTokenTransfer: TRpcRequestCallback;
+    testSignTransactionCreateAssociatedTokenAccount: TRpcRequestCallback;
   };
   polkadotRpc: {
     testSignMessage: TRpcRequestCallback;
@@ -827,6 +836,205 @@ export function JsonRpcContextProvider({
         };
       }
     ),
+    testSignTransactionTokenTransfer: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        if (!solanaPublicKeys) {
+          throw new Error("Could not find Solana PublicKeys.");
+        }
+        console.log("in testSignTransactionTokenTransfer");
+
+        const senderPublicKey = solanaPublicKeys[address];
+
+        // rpc.walletconnect.com doesn't support solana testnet yet
+        const connection = new Connection(
+          isTestnet ? clusterApiUrl("testnet") : getProviderUrl(chainId)
+        );
+
+        // Using deprecated `getRecentBlockhash` over `getLatestBlockhash` here, since `mainnet-beta`
+        // cluster only seems to support `connection.getRecentBlockhash` currently.
+        const { blockhash } = await connection.getRecentBlockhash();
+
+        // decoded: keys.mint.pubkey
+        const mintPubkey = new PublicKey(
+          "AjMpnWhqrbFPJTQps4wEPNnGuQPMKUcfqHUqAeEf1WM4"
+        );
+        // decoded: keys.source.pubkey
+        const tokenAccount1Pubkey = new PublicKey(
+          "37sAdhEFiYxKnQAm7CPd5GLK1ZxWovqn3p87kKjfD44c"
+        );
+        // decoded: keys.destination.pubkey
+        const tokenAccount2Pubkey = new PublicKey(
+          "CFEPU5Jd6DNj8gpjPLJ1d9i4xSJDGYNV7n6qw53zE3n1"
+        );
+
+        // decoded: keys.owner.pubkey
+        // G2FAbFQPFa5qKXCetoFZQEvF9BVvCKbvUZvodpVidnoY
+        const alice = Keypair.fromSecretKey(
+          bs58.decode(
+            "4NMwxzmYj2uvHuq8xoqhY8RXg63KSVJM1DXkpbmkUY7YQWuoyQgFnnzn6yo3CMnqZasnNPNuAT2TLwQsCaKkUddp"
+          )
+        );
+
+        // create a solana token transfer transaction
+        const transaction = new SolanaTransaction({
+          feePayer: senderPublicKey,
+          recentBlockhash: blockhash,
+        }).add(
+          createTransferCheckedInstruction(
+            tokenAccount1Pubkey, // from
+            mintPubkey, // mint
+            tokenAccount2Pubkey, // to
+            alice.publicKey, // from's owner
+            1, // amount
+            0 // decimalss
+          )
+        );
+        console.log({ transaction });
+
+        const result = await client!.request<{ signature: string }>({
+          chainId,
+          topic: session!.topic,
+          request: {
+            method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
+            params: {
+              feePayer: transaction.feePayer!.toBase58(),
+              recentBlockhash: transaction.recentBlockhash,
+              instructions: transaction.instructions.map((i) => ({
+                programId: i.programId.toBase58(),
+                data: Array.from(i.data),
+                keys: i.keys.map((k) => ({
+                  isSigner: k.isSigner,
+                  isWritable: k.isWritable,
+                  pubkey: k.pubkey.toBase58(),
+                })),
+              })),
+            },
+          },
+        });
+
+        // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
+        // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
+        transaction.addSignature(
+          senderPublicKey,
+          Buffer.from(bs58.decode(result.signature))
+        );
+
+        const valid = transaction.verifySignatures();
+
+        return {
+          method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
+          address,
+          valid,
+          result: result.signature,
+        };
+      }
+    ),
+    testSignTransactionCreateAssociatedTokenAccount:
+      _createJsonRpcRequestHandler(
+        async (
+          chainId: string,
+          address: string
+        ): Promise<IFormattedRpcResponse> => {
+          if (!solanaPublicKeys) {
+            throw new Error("Could not find Solana PublicKeys.");
+          }
+          console.log("in testSignTransactionCreateAssociatedTokenAccount");
+
+          const senderPublicKey = solanaPublicKeys[address];
+
+          // rpc.walletconnect.com doesn't support solana testnet yet
+          const connection = new Connection(
+            isTestnet ? clusterApiUrl("testnet") : getProviderUrl(chainId)
+          );
+
+          // Using deprecated `getRecentBlockhash` over `getLatestBlockhash` here, since `mainnet-beta`
+          // cluster only seems to support `connection.getRecentBlockhash` currently.
+          const { blockhash } = await connection.getRecentBlockhash();
+
+          // decoded: keys.mint.pubkey
+          const mintPubkey = new PublicKey(
+            "AjMpnWhqrbFPJTQps4wEPNnGuQPMKUcfqHUqAeEf1WM4"
+          );
+
+          // decoded: keys.owner.pubkey
+          // G2FAbFQPFa5qKXCetoFZQEvF9BVvCKbvUZvodpVidnoY
+          const alice = Keypair.fromSecretKey(
+            bs58.decode(
+              "4NMwxzmYj2uvHuq8xoqhY8RXg63KSVJM1DXkpbmkUY7YQWuoyQgFnnzn6yo3CMnqZasnNPNuAT2TLwQsCaKkUddp"
+            )
+          );
+
+          let ata = await getAssociatedTokenAddress(
+            mintPubkey, // mint
+            alice.publicKey, // owner
+            false // allow owner off curve
+          );
+          console.log(`ata: ${ata.toBase58()}`);
+
+          // create a solana token transfer transaction
+          const transaction = new SolanaTransaction({
+            feePayer: senderPublicKey,
+            recentBlockhash: blockhash,
+          }).add(
+            createAssociatedTokenAccountInstruction(
+              senderPublicKey, // payer
+              ata, // ata
+              alice.publicKey, // owner
+              mintPubkey // mint
+            )
+
+            // createTransferCheckedInstruction(
+            //   tokenAccount1Pubkey, // from
+            //   mintPubkey, // mint
+            //   tokenAccount2Pubkey, // to
+            //   alice.publicKey, // from's owner
+            //   1, // amount
+            //   0 // decimalss
+            // )
+          );
+          console.log({ transaction });
+
+          const result = await client!.request<{ signature: string }>({
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
+              params: {
+                feePayer: transaction.feePayer!.toBase58(),
+                recentBlockhash: transaction.recentBlockhash,
+                instructions: transaction.instructions.map((i) => ({
+                  programId: i.programId.toBase58(),
+                  data: Array.from(i.data),
+                  keys: i.keys.map((k) => ({
+                    isSigner: k.isSigner,
+                    isWritable: k.isWritable,
+                    pubkey: k.pubkey.toBase58(),
+                  })),
+                })),
+              },
+            },
+          });
+
+          // We only need `Buffer.from` here to satisfy the `Buffer` param type for `addSignature`.
+          // The resulting `UInt8Array` is equivalent to just `bs58.decode(...)`.
+          transaction.addSignature(
+            senderPublicKey,
+            Buffer.from(bs58.decode(result.signature))
+          );
+
+          const valid = transaction.verifySignatures();
+
+          return {
+            method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
+            address,
+            valid,
+            result: result.signature,
+          };
+        }
+      ),
     testSignMessage: _createJsonRpcRequestHandler(
       async (
         chainId: string,
