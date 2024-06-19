@@ -32,7 +32,7 @@ export default function HomePage() {
     smartAccountEnabled
   } = useSnapshot(SettingsStore.state)
   const { getAvailableSmartAccounts } = useSmartAccounts()
-  const { query, replace } = useRouter()
+  const { push } = useRouter()
   return (
     <Fragment>
       <PageHeader title="Accounts">
@@ -160,9 +160,8 @@ export default function HomePage() {
                           style={{ marginBottom: 10, cursor: 'pointer' }}
                           key={`${name}-${account.type.toLowerCase()}`}
                           onClick={() =>
-                            replace({
-                              pathname: '/account',
-                              query: `accountType=${account.type}&chainId=${chainId}`
+                            push({
+                              pathname: `/accounts/${account.type}:${chainId}:${account.address}`
                             })
                           }
                         >

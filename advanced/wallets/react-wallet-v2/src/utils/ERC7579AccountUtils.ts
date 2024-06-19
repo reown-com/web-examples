@@ -2,7 +2,7 @@ import { Address, Chain, createPublicClient, http } from 'viem'
 import { smartAccountWallets } from './SmartAccountUtil'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 import { Module } from '@rhinestone/module-sdk'
-const { getAccount, isModuleInstalled } =
+const { getAccount, isModuleInstalled, installModule } =
   require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 function getSmartWallet(accountAddress: string, chainId: string) {
@@ -21,20 +21,39 @@ function getSmartWallet(accountAddress: string, chainId: string) {
 export async function installERC7579Module(args: {
   accountAddress: string
   chainId: string
-  moduleType: string
-  moduleAddress: string
+  module: Module
 }) {
-  const { accountAddress, chainId, moduleType, moduleAddress } = args
+  const { accountAddress, chainId, module } = args
+  console.log({ accountAddress, chainId, module })
   const smartContractWallet = getSmartWallet(accountAddress, chainId)
   console.log(smartContractWallet)
-  console.log({ accountAddress, chainId, moduleType, moduleAddress })
+  if (module && smartContractWallet?.chain && smartContractWallet instanceof SafeSmartAccountLib) {
+    const client = await getPublicClient(smartContractWallet.chain)
 
-  if (smartContractWallet instanceof SafeSmartAccountLib) {
-    const txHash = await smartContractWallet.installModule({
-      moduleAddress: moduleAddress as Address,
-      moduleInitcode: '0x',
-      moduleType: BigInt(moduleType)
+    // Create the account object
+    const account = getAccount({
+      address: smartContractWallet.getAccount().address,
+      initCode: await smartContractWallet.getAccount().getInitCode(),
+      type: 'erc7579-implementation'
     })
+
+    // Get the executions required to install the module
+    const executions = await installModule({
+      client,
+      account,
+      module
+    })
+    console.log(executions)
+    const calls = executions.map(execution => {
+      return {
+        to: execution.target,
+        data: execution.callData,
+        value: BigInt(execution.value.toString())
+      }
+    })
+    const txReceipt = await smartContractWallet.installModule(calls)
+    console.log({ txReceipt })
+    return txReceipt
   }
 }
 

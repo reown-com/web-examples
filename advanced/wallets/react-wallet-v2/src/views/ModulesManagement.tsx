@@ -1,16 +1,16 @@
 import { ModuleView, supportedModules } from '@/data/ERC7579ModuleData'
-import { isERC7579ModuleInstalled, installERC7579Module } from '@/utils/ERC7579AccountUtils'
-import { styledToast } from '@/utils/HelperUtil'
-import { Collapse, Loading, Text } from '@nextui-org/react'
+import { isERC7579ModuleInstalled } from '@/utils/ERC7579AccountUtils'
+import { Loading, Row, Text, Card, Container } from '@nextui-org/react'
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import { Address, Chain } from 'viem'
-import ModuleForm from '@/components/ModuleForm'
+import { useRouter } from 'next/router'
 
 type ModulesWithStatus = {
   view?: ModuleView
   isInstalled: boolean
   name: string
   type: number
+  url: string
   description: string
   moduleAddress: string
   moduleData: string
@@ -31,7 +31,7 @@ export default function ModulesManagement({
   const [modulesWithStatus, setModulesWithStatus] = useState<ModulesWithStatus[]>(
     supportedModules.map(module => ({ ...module, isInstalled: false }))
   )
-  const [isLoading, setLoading] = useState(false)
+  const { query, push } = useRouter()
   const [modulesStatusLoading, setModuleStatusLoading] = useState(true)
 
   const checkModulesStatus = useCallback(async () => {
@@ -64,28 +64,6 @@ export default function ModulesManagement({
     }
   }, [accountType, checkModulesStatus, isDeployed])
 
-  const onInstall = async (
-    accountAddress: string,
-    chainId: string,
-    moduleType: string,
-    moduleAddress: string
-  ) => {
-    setLoading(true)
-    try {
-      const txHash = await installERC7579Module({
-        accountAddress,
-        chainId: chainId,
-        moduleType: moduleType,
-        moduleAddress: moduleAddress
-      })
-      styledToast(`Module Installed Successfully`, 'success')
-    } catch (e) {
-      console.error(e)
-      styledToast((e as Error).message, 'error')
-    }
-    setLoading(false)
-  }
-
   return (
     <Fragment>
       <Text h4 css={{ marginBottom: '$5' }}>
@@ -94,18 +72,29 @@ export default function ModulesManagement({
       {modulesStatusLoading ? (
         <Loading />
       ) : (
-        <Collapse.Group>
+        <Container gap={0} fluid>
           {modulesWithStatus.map(module => (
-            <Collapse
+            <Card
               key={module.moduleAddress}
-              title={<Text h5>{module.name}</Text>}
-              subtitle={module.isInstalled ? 'Installed' : 'Not Installed'}
+              hoverable
+              clickable
+              bordered
+              css={{ marginBottom: '$5' }}
+              onClick={() =>
+                push({
+                  pathname: `/accounts/${query.eip155Address}/modules${module.url}`
+                })
+              }
             >
-              <Text>{module.description}</Text>
-              {!module.isInstalled && <ModuleForm view={module.view} />}
-            </Collapse>
+              <Row align={'center'} justify="space-between">
+                <Text>{module.name}</Text>
+                <Text h6 color={module.isInstalled ? 'success' : 'error'}>
+                  {module.isInstalled ? 'Installed' : 'Not Installed'}
+                </Text>
+              </Row>
+            </Card>
           ))}
-        </Collapse.Group>
+        </Container>
       )}
     </Fragment>
   )
