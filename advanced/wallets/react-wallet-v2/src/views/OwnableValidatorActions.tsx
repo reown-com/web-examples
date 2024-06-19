@@ -13,8 +13,11 @@ import {
 } from '@nextui-org/react'
 import { Fragment, useState } from 'react'
 import { getAddress } from 'viem'
-const { getSetOwnableValidatorThresholdAction, getInstallOwnableValidator, getAddOwnableValidatorOwnerAction } =
-  require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
+const {
+  getSetOwnableValidatorThresholdAction,
+  getInstallOwnableValidator,
+  getAddOwnableValidatorOwnerAction
+} = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 export default function OwnableValidatorActions({
   accountAddress,
@@ -85,8 +88,8 @@ export default function OwnableValidatorActions({
     try {
       const address = addresses.split(',')
       const addOwnableValidatorOwnerAction = getAddOwnableValidatorOwnerAction({
-        owner : address[0] as `0x${string}`,
-      });
+        owner: address[0] as `0x${string}`
+      })
       const txReceipt = await manageERC7579Module({
         accountAddress,
         chainId: chainId,
@@ -189,11 +192,7 @@ export default function OwnableValidatorActions({
             </Row>
             <Row justify="flex-end">
               <Button auto onClick={addOwner}>
-                {isLoading ? (
-                  <Loading type="points" color="currentColor" size="sm" />
-                ) : (
-                  'Add Owner'
-                )}
+                {isLoading ? <Loading type="points" color="currentColor" size="sm" /> : 'Add Owner'}
               </Button>
             </Row>
           </Col>
