@@ -1,4 +1,4 @@
-import { installERC7579Module } from '@/utils/ERC7579AccountUtils'
+import { installERC7579Module, manageERC7579Module } from '@/utils/ERC7579AccountUtils'
 import { styledToast } from '@/utils/HelperUtil'
 import {
   Button,
@@ -14,7 +14,7 @@ import {
 import { Module } from '@rhinestone/module-sdk'
 import { Fragment, useState } from 'react'
 import { getAddress } from 'viem'
-const { OWNABLE_VALIDATOR_ADDRESS, getInstallOwnableValidator } =
+const { getSetOwnableValidatorThresholdAction, getInstallOwnableValidator } =
   require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 export default function OwnableValidatorActions({
@@ -55,6 +55,29 @@ export default function OwnableValidatorActions({
 
   const uninstall = async () => {
     setLoading(true)
+    setLoading(false)
+  }
+
+  const updateThreshold = async () => {
+    setLoading(true)
+    try {
+      const setOwnableValidatorThresholdAction = getSetOwnableValidatorThresholdAction({
+        threshold
+      })
+      const txReceipt = await manageERC7579Module({
+        accountAddress,
+        chainId: chainId,
+        executions: [setOwnableValidatorThresholdAction]
+      })
+      if (!txReceipt?.success) {
+        styledToast(`Some error occurred`, 'error')
+      }
+
+      styledToast(`Module Installed Successfully`, 'success')
+    } catch (e) {
+      console.error(e)
+      styledToast((e as Error).message, 'error')
+    }
     setLoading(false)
   }
 
@@ -105,7 +128,28 @@ export default function OwnableValidatorActions({
           </Row>
         </Collapse>
         <Collapse css={{ marginBottom: '$2' }} bordered title={<Text h5>Update threshold</Text>}>
-          <Text>Update Threshold</Text>
+          <Col css={{ padding: '$5', paddingTop: 0 }}>
+            <Row fluid justify="space-between" align="center" css={{ marginBottom: '$5' }}>
+              <Input
+                css={{ width: '100%' }}
+                bordered
+                value={threshold}
+                label="Threshold"
+                type="number"
+                onChange={e => setThreshold(parseInt(e.target.value))}
+                placeholder="threshold"
+              />
+            </Row>
+            <Row justify="flex-end">
+              <Button auto onClick={updateThreshold}>
+                {isLoading ? (
+                  <Loading type="points" color="currentColor" size="sm" />
+                ) : (
+                  'Update Threshold'
+                )}
+              </Button>
+            </Row>
+          </Col>
         </Collapse>
       </Container>
     </Fragment>

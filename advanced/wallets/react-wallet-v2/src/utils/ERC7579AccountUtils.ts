@@ -1,7 +1,7 @@
 import { Address, Chain, createPublicClient, http } from 'viem'
 import { smartAccountWallets } from './SmartAccountUtil'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
-import { Module } from '@rhinestone/module-sdk'
+import { Execution, Module } from '@rhinestone/module-sdk'
 const { getAccount, isModuleInstalled, installModule } =
   require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
@@ -51,6 +51,46 @@ export async function installERC7579Module(args: {
         value: BigInt(execution.value.toString())
       }
     })
+    const txReceipt = await smartContractWallet.installModule(calls)
+    console.log({ txReceipt })
+    return txReceipt
+  }
+}
+
+export async function manageERC7579Module(args: {
+  accountAddress: string
+  chainId: string
+  executions: Execution[]
+}) {
+  const { accountAddress, chainId, executions } = args
+  console.log({ accountAddress, chainId, executions })
+  const smartContractWallet = getSmartWallet(accountAddress, chainId)
+  console.log(smartContractWallet)
+  if (
+    executions &&
+    smartContractWallet?.chain &&
+    smartContractWallet instanceof SafeSmartAccountLib
+  ) {
+    const client = await getPublicClient(smartContractWallet.chain)
+
+    // Create the account object
+    const account = getAccount({
+      address: smartContractWallet.getAccount().address,
+      initCode: await smartContractWallet.getAccount().getInitCode(),
+      type: 'erc7579-implementation'
+    })
+
+    console.log(executions)
+    const calls =
+      executions &&
+      executions.map(execution => {
+        return {
+          to: execution.target,
+          data: execution.callData,
+          value: BigInt(execution.value.toString())
+        }
+      })
+
     const txReceipt = await smartContractWallet.installModule(calls)
     console.log({ txReceipt })
     return txReceipt
