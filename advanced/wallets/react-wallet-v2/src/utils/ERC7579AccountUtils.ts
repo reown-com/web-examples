@@ -24,9 +24,7 @@ export async function installERC7579Module(args: {
   module: Module
 }) {
   const { accountAddress, chainId, module } = args
-  console.log({ accountAddress, chainId, module })
   const smartContractWallet = getSmartWallet(accountAddress, chainId)
-  console.log(smartContractWallet)
   if (module && smartContractWallet?.chain && smartContractWallet instanceof SafeSmartAccountLib) {
     const client = await getPublicClient(smartContractWallet.chain)
 
@@ -43,7 +41,6 @@ export async function installERC7579Module(args: {
       account,
       module
     })
-    console.log(executions)
     const calls = executions.map(execution => {
       return {
         to: execution.target,
@@ -63,36 +60,21 @@ export async function manageERC7579Module(args: {
   executions: Execution[]
 }) {
   const { accountAddress, chainId, executions } = args
-  console.log({ accountAddress, chainId, executions })
   const smartContractWallet = getSmartWallet(accountAddress, chainId)
-  console.log(smartContractWallet)
   if (
     executions &&
     smartContractWallet?.chain &&
     smartContractWallet instanceof SafeSmartAccountLib
   ) {
-    const client = await getPublicClient(smartContractWallet.chain)
-
-    // Create the account object
-    const account = getAccount({
-      address: smartContractWallet.getAccount().address,
-      initCode: await smartContractWallet.getAccount().getInitCode(),
-      type: 'erc7579-implementation'
+    const calls = executions.map(execution => {
+      return {
+        to: execution.target,
+        data: execution.callData,
+        value: BigInt(execution.value.toString())
+      }
     })
 
-    console.log(executions)
-    const calls =
-      executions &&
-      executions.map(execution => {
-        return {
-          to: execution.target,
-          data: execution.callData,
-          value: BigInt(execution.value.toString())
-        }
-      })
-
-    const txReceipt = await smartContractWallet.installModule(calls)
-    console.log({ txReceipt })
+    const txReceipt = await smartContractWallet.sendBatchTransaction(calls)
     return txReceipt
   }
 }
