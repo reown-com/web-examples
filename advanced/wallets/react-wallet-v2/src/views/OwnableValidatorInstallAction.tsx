@@ -2,7 +2,7 @@ import { installERC7579Module } from '@/utils/ERC7579AccountUtils'
 import { styledToast } from '@/utils/HelperUtil'
 import { Button, Col, Collapse, Input, Loading, Row, Text, Textarea } from '@nextui-org/react'
 import { useState } from 'react'
-import { getAddress } from 'viem'
+import { getAddress, isAddress } from 'viem'
 const { getInstallOwnableValidator } =
   require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
@@ -16,17 +16,37 @@ export default function OwnableValidatorInstallAction({
   const [threshold, setThreshold] = useState(0)
   const [addresses, setAddresses] = useState('')
   const [isInstalling, setInstalling] = useState(false)
-  const ownerCount = addresses ? addresses.split(',').length : 0
+
+  const isValidAddressAndThreshold = (threshold: number, addresses: string) => {
+    const ownerCount = addresses ? addresses.split(',').length : 0
+
+    if (ownerCount === 0 || threshold === 0 || ownerCount < threshold) {
+      return false
+    }
+
+    const addressArray = addresses.split(',')
+
+    // Check if all addresses are valid
+    const allAddressesValid = addressArray.every(address => {
+      return isAddress(address.trim()) // Trim whitespace from each address
+    })
+
+    return allAddressesValid
+  }
 
   const onInstall = async () => {
     setInstalling(true)
     try {
       if (!addresses) {
         styledToast(`Please enter owner's addresses`, 'error')
+        setInstalling(false)
         return
       }
+      const ownerCount = addresses.split(',').length
+
       if (threshold === 0 || threshold > ownerCount) {
         styledToast(`Please enter valid threshold value`, 'error')
+        setInstalling(false)
         return
       }
       const installOwnableValidator = getInstallOwnableValidator({
@@ -53,15 +73,11 @@ export default function OwnableValidatorInstallAction({
   return (
     <Collapse css={{ marginBottom: '$2' }} bordered title={<Text h5>Install</Text>}>
       <Col css={{ padding: '$5', paddingTop: 0 }}>
-        <Row justify="space-between" align="center" css={{ marginBottom: '$5' }}>
-          <Text small css={{ paddingLeft: '$2' }}>{`Owner's Count `}</Text>
-          <Text>{ownerCount}</Text>
-        </Row>
         <Row fluid justify="space-between" align="center" css={{ marginBottom: '$5' }}>
           <Input
             css={{ width: '100%' }}
             bordered
-            value={threshold}
+            value={threshold || 0}
             label="Threshold"
             type="number"
             onChange={e => setThreshold(parseInt(e.target.value))}
@@ -79,7 +95,11 @@ export default function OwnableValidatorInstallAction({
           />
         </Row>
         <Row justify="flex-end">
-          <Button auto onClick={onInstall}>
+          <Button
+            auto
+            disabled={!isValidAddressAndThreshold(threshold, addresses)}
+            onClick={onInstall}
+          >
             {isInstalling ? <Loading type="points" color="currentColor" size="sm" /> : 'Install'}
           </Button>
         </Row>

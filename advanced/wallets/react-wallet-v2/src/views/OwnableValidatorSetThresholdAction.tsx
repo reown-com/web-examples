@@ -54,7 +54,7 @@ export default function OwnableValidatorSetThresholdAction({
           <Input
             css={{ width: '100%' }}
             bordered
-            value={threshold}
+            value={threshold || 0}
             label="Threshold"
             type="number"
             onChange={e => setThreshold(parseInt(e.target.value))}
