@@ -11,10 +11,9 @@ import {
   Text,
   Textarea
 } from '@nextui-org/react'
-import { Module } from '@rhinestone/module-sdk'
 import { Fragment, useState } from 'react'
 import { getAddress } from 'viem'
-const { getSetOwnableValidatorThresholdAction, getInstallOwnableValidator } =
+const { getSetOwnableValidatorThresholdAction, getInstallOwnableValidator, getAddOwnableValidatorOwnerAction } =
   require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 export default function OwnableValidatorActions({
@@ -73,7 +72,31 @@ export default function OwnableValidatorActions({
         styledToast(`Some error occurred`, 'error')
       }
 
-      styledToast(`Module Installed Successfully`, 'success')
+      styledToast(`Updated threshold Successfully`, 'success')
+    } catch (e) {
+      console.error(e)
+      styledToast((e as Error).message, 'error')
+    }
+    setLoading(false)
+  }
+
+  const addOwner = async () => {
+    setLoading(true)
+    try {
+      const address = addresses.split(',')
+      const addOwnableValidatorOwnerAction = getAddOwnableValidatorOwnerAction({
+        owner : address[0] as `0x${string}`,
+      });
+      const txReceipt = await manageERC7579Module({
+        accountAddress,
+        chainId: chainId,
+        executions: [addOwnableValidatorOwnerAction]
+      })
+      if (!txReceipt?.success) {
+        styledToast(`Some error occurred`, 'error')
+      }
+
+      styledToast(`Added owner Successfully`, 'success')
     } catch (e) {
       console.error(e)
       styledToast((e as Error).message, 'error')
@@ -146,6 +169,30 @@ export default function OwnableValidatorActions({
                   <Loading type="points" color="currentColor" size="sm" />
                 ) : (
                   'Update Threshold'
+                )}
+              </Button>
+            </Row>
+          </Col>
+        </Collapse>
+        <Collapse css={{ marginBottom: '$2' }} bordered title={<Text h5>Add Owner</Text>}>
+          <Col css={{ padding: '$5', paddingTop: 0 }}>
+            <Row fluid justify="space-between" align="center" css={{ marginBottom: '$5' }}>
+              <Input
+                css={{ width: '100%' }}
+                bordered
+                value={addresses}
+                label="Owner"
+                type="text"
+                onChange={e => setThreshold(parseInt(e.target.value))}
+                placeholder="add owner address"
+              />
+            </Row>
+            <Row justify="flex-end">
+              <Button auto onClick={addOwner}>
+                {isLoading ? (
+                  <Loading type="points" color="currentColor" size="sm" />
+                ) : (
+                  'Add Owner'
                 )}
               </Button>
             </Row>
