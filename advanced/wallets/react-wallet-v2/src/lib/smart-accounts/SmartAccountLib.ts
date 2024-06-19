@@ -6,8 +6,7 @@ import {
   http,
   createClient,
   HttpTransport,
-  Address,
-  encodeFunctionData
+  Address
 } from 'viem'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -31,7 +30,6 @@ import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/act
 import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl } from '@/utils/SmartAccountUtil'
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
-import { installModuleAbi, isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 
 type SmartAccountLibOptions = {
   privateKey: string
