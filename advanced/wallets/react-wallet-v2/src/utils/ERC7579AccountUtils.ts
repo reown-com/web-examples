@@ -2,7 +2,7 @@ import { Address, Chain, createPublicClient, http } from 'viem'
 import { smartAccountWallets } from './SmartAccountUtil'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 import { Execution, Module } from '@rhinestone/module-sdk'
-const { getAccount, isModuleInstalled, installModule } =
+const { getAccount, isModuleInstalled, installModule, getOwnableValidatorOwners } =
   require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 function getSmartWallet(accountAddress: string, chainId: string) {
@@ -94,6 +94,34 @@ export async function manageERC7579Module(args: {
     const txReceipt = await smartContractWallet.installModule(calls)
     console.log({ txReceipt })
     return txReceipt
+  }
+}
+
+export async function getERC7579OwnableValidatorOwners({
+  accountAddress,
+  chainId
+}: {
+  accountAddress: string
+  chainId: string
+}): Promise<Address[]> {
+  try {
+    const smartContractWallet = getSmartWallet(accountAddress, chainId)
+    if (smartContractWallet?.chain) {
+      const client = await getPublicClient(smartContractWallet.chain)
+      const account = getAccount({
+        address: smartContractWallet.getAccount().address,
+        initCode: await smartContractWallet.getAccount().getInitCode(),
+        type: 'erc7579-implementation'
+      })
+      return (await getOwnableValidatorOwners({
+        account,
+        client
+      })) as Address[]
+    }
+    return []
+  } catch (err) {
+    console.error(err)
+    return []
   }
 }
 

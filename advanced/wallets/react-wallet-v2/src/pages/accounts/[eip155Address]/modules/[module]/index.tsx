@@ -1,9 +1,9 @@
 import ModuleActions from '@/components/ModuleActions'
 import PageHeader from '@/components/PageHeader'
 import { Module, supportedModules } from '@/data/ERC7579ModuleData'
-import { Col, Loading, Row, Spacer, Text } from '@nextui-org/react'
+import { Loading, Spacer, Text } from '@nextui-org/react'
 import { useRouter } from 'next/router'
-import { Fragment, useCallback, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
 export default function ModulePage() {
   const [accountType, setAccountType] = useState('')
