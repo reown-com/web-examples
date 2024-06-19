@@ -148,7 +148,7 @@ export default function OwnableValidatorActions({
         <Collapse css={{ marginBottom: '$2' }} bordered title={<Text h5>Uninstall</Text>}>
           <Row justify="space-between" align="center">
             <Text>Uninstall module</Text>
-            <Button auto color={'error'} onClick={uninstall}>
+            <Button auto color={'error'} disabled onClick={uninstall}>
               {isLoading ? <Loading type="points" color="currentColor" size="sm" /> : 'Uninstall'}
             </Button>
           </Row>
