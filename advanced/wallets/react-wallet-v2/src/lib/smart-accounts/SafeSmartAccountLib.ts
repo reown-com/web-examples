@@ -241,7 +241,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
   }
 
-  async installModule(calls: Execution[]) {
+  async manageModule(calls: Execution[]) {
     const userOpHash = await this.sendBatchTransaction(calls)
     return await this.bundlerClient.waitForUserOperationReceipt({
       hash: userOpHash

@@ -48,7 +48,7 @@ export async function installERC7579Module(args: {
         value: BigInt(execution.value.toString())
       }
     })
-    const txReceipt = await smartContractWallet.installModule(calls)
+    const txReceipt = await smartContractWallet.manageModule(calls)
     console.log({ txReceipt })
     return txReceipt
   }
@@ -74,7 +74,7 @@ export async function manageERC7579Module(args: {
       }
     })
 
-    const txReceipt = await smartContractWallet.sendBatchTransaction(calls)
+    const txReceipt = await smartContractWallet.manageModule(calls)
     return txReceipt
   }
 }
