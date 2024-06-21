@@ -15,9 +15,9 @@ export default function OwnableValidatorSetThresholdAction({
   moduleState?: { owners: string[]; threshold: number }
 }) {
   const [threshold, setThreshold] = useState(0)
-  const [owners, setOwners] = useState<string[]>(moduleState?.owners || [])
+  const ownerCount = (moduleState?.owners || []).length
   const [isUpdatingThreshold, setUpdatingThreshold] = useState(false)
-
+  console.log({moduleState})
   const updateThreshold = async () => {
     setUpdatingThreshold(true)
     try {
@@ -41,16 +41,12 @@ export default function OwnableValidatorSetThresholdAction({
     setUpdatingThreshold(false)
   }
 
-  useEffect(() => {
-    getERC7579OwnableValidatorOwners({ accountAddress, chainId }).then(owners => setOwners(owners))
-  }, [accountAddress, chainId])
-
   return (
     <Collapse css={{ marginBottom: '$2' }} bordered title={<Text h5>Update threshold</Text>}>
       <Col css={{ padding: '$5', paddingTop: 0 }}>
         <Row justify="space-between" align="center" css={{ marginBottom: '$5' }}>
           <Text small css={{ paddingLeft: '$2' }}>{`Current Owner's Count `}</Text>
-          <Text small>{owners.length}</Text>
+          <Text small>{ownerCount}</Text>
         </Row>
         <Row fluid justify="space-between" align="center" css={{ marginBottom: '$5' }}>
           <Input
@@ -66,7 +62,7 @@ export default function OwnableValidatorSetThresholdAction({
         <Row justify="flex-end">
           <Button
             auto
-            disabled={owners.length === 0 || !threshold || threshold > owners.length}
+            disabled={ownerCount === 0 || !threshold || threshold > ownerCount}
             onClick={updateThreshold}
           >
             {isUpdatingThreshold ? (
