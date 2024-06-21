@@ -1,9 +1,10 @@
-import { Module, ModuleView, supportedModules } from '@/data/ERC7579ModuleData'
+import { Module, supportedModules } from '@/data/ERC7579ModuleData'
 import { isERC7579ModuleInstalled } from '@/utils/ERC7579AccountUtils'
 import { Loading, Row, Text, Card, Container } from '@nextui-org/react'
 import { Fragment, useCallback, useEffect, useState } from 'react'
-import { Address, Chain } from 'viem'
+import { Address } from 'viem'
 import { useRouter } from 'next/router'
+import { styledToast } from '@/utils/HelperUtil'
 
 interface ModulesManagementProps {
   accountType: string
@@ -27,8 +28,15 @@ export default function ModulesManagement({
   const [modulesStatusLoading, setModuleStatusLoading] = useState(true)
 
   const checkModulesStatus = useCallback(async () => {
-    if (!chainId || !isDeployed) return
-
+    if (!chainId) {
+      styledToast('Invalid chainId', 'error')
+      setModuleStatusLoading(false)
+      return
+    }
+    if (!isDeployed) {
+      setModuleStatusLoading(false)
+      return
+    }
     setModuleStatusLoading(true)
     const moduleStatusPromises = supportedModules.map(async module => {
       const moduleType = module.type
@@ -51,17 +59,17 @@ export default function ModulesManagement({
   }, [accountAddress, chainId, isDeployed])
 
   useEffect(() => {
-    if (isDeployed && accountType !== 'Biconomy') {
+    if (accountType !== 'Biconomy') {
       checkModulesStatus()
     }
-  }, [accountType, checkModulesStatus, isDeployed])
+  }, [accountType, checkModulesStatus])
 
   return (
     <Fragment>
       <Text h4 css={{ marginBottom: '$5' }}>
         Module Management
       </Text>
-      {modulesStatusLoading ? (
+      {modulesStatusLoading && isDeployed ? (
         <Loading />
       ) : (
         <Container gap={0} fluid>

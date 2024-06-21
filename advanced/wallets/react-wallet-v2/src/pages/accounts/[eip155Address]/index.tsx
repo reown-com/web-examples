@@ -15,6 +15,7 @@ export default function AccountPage() {
   const [accountType, setAccountType] = useState('')
   const [accountAddress, setAccountAddress] = useState('')
   const [isAccountDeployed, setIsAccountDeployed] = useState(false)
+  const [isFetching, setFetching] = useState(false)
   const [selectedChain, setSelectedChain] = useState<Chain>()
   const {
     smartAccountEnabled,
@@ -52,12 +53,15 @@ export default function AccountPage() {
   )
   useEffect(() => {
     if (!chainId || !accountAddress || !accountType) return
+    setFetching(true)
     const chain = getViemChain(parseInt(chainId))
     setSelectedChain(chain)
     chain &&
-      isSmartContractAccountDeployed(accountAddress as Address, chain).then(result => {
-        setIsAccountDeployed(result)
-      })
+      isSmartContractAccountDeployed(accountAddress as Address, chain)
+        .then(result => {
+          setIsAccountDeployed(result)
+        })
+        .finally(() => setFetching(false))
   }, [
     chainId,
     accountType,
@@ -139,12 +143,14 @@ export default function AccountPage() {
           {moduleManagementEnabled ? (
             <Fragment>
               <Divider css={{ marginBottom: '$10' }} />
-              <ModulesManagement
-                accountAddress={accountAddress}
-                accountType={accountType}
-                chainId={chainId}
-                isDeployed={isAccountDeployed}
-              />
+              {!isFetching && (
+                <ModulesManagement
+                  accountAddress={accountAddress}
+                  accountType={accountType}
+                  chainId={chainId}
+                  isDeployed={isAccountDeployed}
+                />
+              )}
             </Fragment>
           ) : (
             <Row justify="space-between" align="center">

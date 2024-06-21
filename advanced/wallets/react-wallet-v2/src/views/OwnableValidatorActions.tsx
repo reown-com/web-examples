@@ -72,31 +72,32 @@ export default function OwnableValidatorActions({
           <Text color="error">Not Installed</Text>
         )}
       </Row>
-      {isInstalled && <Fragment>
-        <Text h4 css={{ marginBottom: '$5' }}>
-          State
-        </Text>
-        <Container css={{ marginBottom: '$5' }}>
-          <Row justify="space-between" align="center" css={{ marginBottom: '$3' }}>
-            <Text>Current Threshold</Text>
-            <Text>{threshold}</Text>
-          </Row>
-          <Row justify="space-between" align="center" css={{ marginBottom: '$5' }}>
-            <Text>{`Current Owner's Count`}</Text>
-            <Text>{owners.length}</Text>
-          </Row>
-          <Textarea
-            label={`Owners Addresses`}
-            width="100%"
-            readOnly
-            bordered
-            minRows={3}
-            maxRows={3}
-            initialValue={owners.join(',')}
-          />
-        </Container>
-      </Fragment>}
-     
+      {isInstalled && (
+        <Fragment>
+          <Text h4 css={{ marginBottom: '$5' }}>
+            State
+          </Text>
+          <Container css={{ marginBottom: '$5' }}>
+            <Row justify="space-between" align="center" css={{ marginBottom: '$3' }}>
+              <Text>Current Threshold</Text>
+              <Text>{threshold}</Text>
+            </Row>
+            <Row justify="space-between" align="center" css={{ marginBottom: '$5' }}>
+              <Text>{`Current Owner's Count`}</Text>
+              <Text>{owners.length}</Text>
+            </Row>
+            <Textarea
+              label={`Owners Addresses`}
+              width="100%"
+              readOnly
+              bordered
+              minRows={3}
+              maxRows={3}
+              initialValue={owners.join(',')}
+            />
+          </Container>
+        </Fragment>
+      )}
 
       <Text h4 css={{ marginBottom: '$5' }}>
         Available Actions
