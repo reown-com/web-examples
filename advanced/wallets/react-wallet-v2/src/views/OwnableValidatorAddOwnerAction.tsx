@@ -19,7 +19,6 @@ export default function OwnableValidatorAddOwnerAction({
   const [isAddingOwner, setAddingOwner] = useState(false)
 
   const addOwner = async () => {
-    
     try {
       const ownerExists = moduleState?.owners?.some(
         owner => owner.toLowerCase() === newOwner.toLowerCase()

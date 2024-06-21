@@ -17,7 +17,7 @@ export default function OwnableValidatorSetThresholdAction({
   const [threshold, setThreshold] = useState(0)
   const ownerCount = (moduleState?.owners || []).length
   const [isUpdatingThreshold, setUpdatingThreshold] = useState(false)
-  console.log({moduleState})
+  console.log({ moduleState })
   const updateThreshold = async () => {
     setUpdatingThreshold(true)
     try {

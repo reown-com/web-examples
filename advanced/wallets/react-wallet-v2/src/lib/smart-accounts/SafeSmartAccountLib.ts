@@ -61,7 +61,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       throw new Error('Client not initialized')
     }
     const setUpSafeUserOpHash = await this.setupSafe7579({ to, value, data })
-    if(setUpSafeUserOpHash) {
+    if (setUpSafeUserOpHash) {
       const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
         hash: setUpSafeUserOpHash
       })
@@ -85,7 +85,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       throw new Error('Client not initialized')
     }
     const setUpSafeUserOpHash = await this.setupSafe7579(calls)
-    if(setUpSafeUserOpHash) return setUpSafeUserOpHash
+    if (setUpSafeUserOpHash) return setUpSafeUserOpHash
 
     //this execution starts only if safe is already setup and deployed
     const userOp = await this.client.prepareUserOperationRequest({
