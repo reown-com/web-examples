@@ -1,7 +1,8 @@
 import { Address, Chain, createPublicClient, http } from 'viem'
 import { smartAccountWallets } from './SmartAccountUtil'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
-import { Execution, Module } from '@rhinestone/module-sdk'
+import { Execution, Module, ModuleType } from '@rhinestone/module-sdk'
+import { getViemChain } from '@/data/chainsUtil'
 const { getAccount, isModuleInstalled, installModule, getOwnableValidatorOwners } =
   require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
@@ -116,29 +117,28 @@ export async function getPublicClient(chain: Chain) {
 
 export async function isERC7579ModuleInstalled(
   address: Address,
-  chain: Chain,
-  moduleType: bigint,
+  chainId: string,
+  moduleType: ModuleType,
   moduleAddress: Address
 ) {
+  const chain = getViemChain(parseInt(chainId))
+  if (!chain) throw new Error(`Invalid chainId:${chainId}.`)
   const publicClient = await getPublicClient(chain)
-  const chainId = chain.id
-  const smartWallet = getSmartWallet(address, chainId.toString())
+  const smartWallet = getSmartWallet(address, chainId)
   if (!smartWallet) throw new Error(`Account ${address} not found.`)
   const account = getAccount({
     address,
     type: 'erc7579-implementation',
     initCode: await smartWallet.getAccount().getInitCode(), // optional
-    deployedOnChains: [chainId] // optional
+    deployedOnChains: [parseInt(chainId)] // optional
   })
   const erc7579Module: Module = {
     module: moduleAddress,
-    type: 'validator'
+    type: moduleType
   }
-  const isInstalled = await isModuleInstalled({
+  return await isModuleInstalled({
     client: publicClient, // The client object of type PublicClient from viem
     account, // The account object
     module: erc7579Module // The module object
   })
-
-  return isInstalled
 }

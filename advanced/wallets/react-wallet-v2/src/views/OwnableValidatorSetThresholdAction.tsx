@@ -47,7 +47,7 @@ export default function OwnableValidatorSetThresholdAction({
     <Collapse css={{ marginBottom: '$2' }} bordered title={<Text h5>Update threshold</Text>}>
       <Col css={{ padding: '$5', paddingTop: 0 }}>
         <Row justify="space-between" align="center" css={{ marginBottom: '$5' }}>
-          <Text small css={{ paddingLeft: '$2' }}>{`Owner's Count `}</Text>
+          <Text small css={{ paddingLeft: '$2' }}>{`Current Owner's Count `}</Text>
           <Text small>{owners.length}</Text>
         </Row>
         <Row fluid justify="space-between" align="center" css={{ marginBottom: '$5' }}>

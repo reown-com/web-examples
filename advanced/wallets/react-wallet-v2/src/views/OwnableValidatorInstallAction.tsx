@@ -88,6 +88,8 @@ export default function OwnableValidatorInstallAction({
           <Textarea
             css={{ width: '100%' }}
             bordered
+            maxRows={4}
+            minRows={4}
             value={addresses}
             label="Addresses"
             onChange={e => setAddresses(e.target.value)}

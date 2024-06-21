@@ -1,49 +1,41 @@
-import { ModuleView, supportedModules } from '@/data/ERC7579ModuleData'
+import { Module, ModuleView, supportedModules } from '@/data/ERC7579ModuleData'
 import { isERC7579ModuleInstalled } from '@/utils/ERC7579AccountUtils'
 import { Loading, Row, Text, Card, Container } from '@nextui-org/react'
 import { Fragment, useCallback, useEffect, useState } from 'react'
 import { Address, Chain } from 'viem'
 import { useRouter } from 'next/router'
 
-type ModulesWithStatus = {
-  view?: ModuleView
-  isInstalled: boolean
-  name: string
-  type: number
-  url: string
-  description: string
-  moduleAddress: string
-  moduleData: string
-}
 interface ModulesManagementProps {
   accountType: string
   accountAddress: string
   isDeployed: boolean
-  chain: Chain
+  chainId: string
 }
+// Define the type for the state which combines Module and the isInstalled attribute
+type ModuleWithStatus = Module & { isInstalled: boolean }
 
 export default function ModulesManagement({
   accountAddress,
   accountType,
-  chain,
+  chainId,
   isDeployed
 }: ModulesManagementProps) {
-  const [modulesWithStatus, setModulesWithStatus] = useState<ModulesWithStatus[]>(
+  const [modulesWithStatus, setModulesWithStatus] = useState<ModuleWithStatus[]>(
     supportedModules.map(module => ({ ...module, isInstalled: false }))
   )
   const { query, push } = useRouter()
   const [modulesStatusLoading, setModuleStatusLoading] = useState(true)
 
   const checkModulesStatus = useCallback(async () => {
-    if (!chain || !isDeployed) return
+    if (!chainId || !isDeployed) return
 
     setModuleStatusLoading(true)
     const moduleStatusPromises = supportedModules.map(async module => {
-      const moduleType = BigInt(module.type)
+      const moduleType = module.type
       const moduleAddress = module.moduleAddress as Address
       const isInstalled = await isERC7579ModuleInstalled(
         accountAddress as Address,
-        chain,
+        chainId,
         moduleType,
         moduleAddress
       )
@@ -56,7 +48,7 @@ export default function ModulesManagement({
     const modulesWithStatus = await Promise.all(moduleStatusPromises)
     setModulesWithStatus(modulesWithStatus)
     setModuleStatusLoading(false)
-  }, [accountAddress, chain, isDeployed])
+  }, [accountAddress, chainId, isDeployed])
 
   useEffect(() => {
     if (isDeployed && accountType !== 'Biconomy') {

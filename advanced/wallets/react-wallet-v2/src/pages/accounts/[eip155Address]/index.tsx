@@ -31,10 +31,10 @@ export default function AccountPage() {
   useEffect(() => {
     if (query?.eip155Address) {
       const type = (query.eip155Address as string).split(':')[0]
-      const chain = (query.eip155Address as string).split(':')[1]
+      const chainId = (query.eip155Address as string).split(':')[1]
       const address = (query.eip155Address as string).split(':')[2]
       setAccountType(type)
-      setChainId(chain)
+      setChainId(chainId)
       setAccountAddress(address)
     }
   }, [query])
@@ -52,7 +52,6 @@ export default function AccountPage() {
   )
   useEffect(() => {
     if (!chainId || !accountAddress || !accountType) return
-    getChainData
     const chain = getViemChain(parseInt(chainId))
     setSelectedChain(chain)
     chain &&
@@ -143,7 +142,7 @@ export default function AccountPage() {
               <ModulesManagement
                 accountAddress={accountAddress}
                 accountType={accountType}
-                chain={selectedChain}
+                chainId={chainId}
                 isDeployed={isAccountDeployed}
               />
             </Fragment>

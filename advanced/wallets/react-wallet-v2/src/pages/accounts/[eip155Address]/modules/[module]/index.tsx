@@ -37,9 +37,7 @@ export default function ModulePage() {
       <PageHeader title={`${module.name}`} />
       <Text>{module.description}</Text>
       <Spacer y={1} />
-      {!module.isInstalled && (
-        <ModuleActions accountAddress={accountAddress} chainId={chainId} view={module?.view} />
-      )}
+      <ModuleActions accountAddress={accountAddress} chainId={chainId} view={module?.view} />
     </Fragment>
   )
 }

@@ -158,7 +158,7 @@ export default function AccountPage() {
               <ModulesManagement
                 accountAddress={accountAddress}
                 accountType={accountType}
-                chain={selectedChain}
+                chainId={chainId}
                 isDeployed={isAccountDeployed}
               />
             </Fragment>
