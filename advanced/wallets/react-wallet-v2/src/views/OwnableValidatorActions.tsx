@@ -93,7 +93,7 @@ export default function OwnableValidatorActions({
               bordered
               minRows={3}
               maxRows={3}
-              initialValue={owners.join(',')}
+              value={owners.join(',')}
             />
           </Container>
         </Fragment>
@@ -108,8 +108,16 @@ export default function OwnableValidatorActions({
         ) : (
           <Fragment>
             <OwnableValidatorUninstallActions accountAddress={accountAddress} chainId={chainId} />
-            <OwnableValidatorSetThresholdAction accountAddress={accountAddress} chainId={chainId} />
-            <OwnableValidatorAddOwnerAction accountAddress={accountAddress} chainId={chainId} />
+            <OwnableValidatorSetThresholdAction
+              accountAddress={accountAddress}
+              chainId={chainId}
+              moduleState={{ owners, threshold }}
+            />
+            <OwnableValidatorAddOwnerAction
+              accountAddress={accountAddress}
+              chainId={chainId}
+              moduleState={{ owners, threshold }}
+            />
           </Fragment>
         )}
       </Container>

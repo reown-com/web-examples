@@ -7,13 +7,15 @@ const { getSetOwnableValidatorThresholdAction } =
 
 export default function OwnableValidatorSetThresholdAction({
   accountAddress,
-  chainId
+  chainId,
+  moduleState
 }: {
   accountAddress: string
   chainId: string
+  moduleState?: { owners: string[]; threshold: number }
 }) {
   const [threshold, setThreshold] = useState(0)
-  const [owners, setOwners] = useState<string[]>([])
+  const [owners, setOwners] = useState<string[]>(moduleState?.owners || [])
   const [isUpdatingThreshold, setUpdatingThreshold] = useState(false)
 
   const updateThreshold = async () => {

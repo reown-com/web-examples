@@ -76,6 +76,7 @@ export async function manageERC7579Module(args: {
     })
 
     const txReceipt = await smartContractWallet.manageModule(calls)
+    console.log({ txReceipt })
     return txReceipt
   }
 }

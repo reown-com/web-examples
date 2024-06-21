@@ -8,17 +8,28 @@ const { getAddOwnableValidatorOwnerAction } =
 
 export default function OwnableValidatorAddOwnerAction({
   accountAddress,
-  chainId
+  chainId,
+  moduleState
 }: {
   accountAddress: string
   chainId: string
+  moduleState?: { owners: string[]; threshold: number }
 }) {
   const [newOwner, setNewOwner] = useState('')
   const [isAddingOwner, setAddingOwner] = useState(false)
 
   const addOwner = async () => {
-    setAddingOwner(true)
+    
     try {
+      const ownerExists = moduleState?.owners?.some(
+        owner => owner.toLowerCase() === newOwner.toLowerCase()
+      )
+
+      if (ownerExists) {
+        styledToast('Owner already exists', 'error')
+        return
+      }
+      setAddingOwner(true)
       const addOwnableValidatorOwnerAction = getAddOwnableValidatorOwnerAction({
         owner: newOwner as `0x${string}`
       })
@@ -33,8 +44,9 @@ export default function OwnableValidatorAddOwnerAction({
 
       styledToast(`Added owner Successfully`, 'success')
     } catch (e) {
-      console.error(e)
-      styledToast((e as Error).message, 'error')
+      console.error((e as Error).message)
+
+      styledToast('Some error occurred', 'error')
     }
     setAddingOwner(false)
   }

@@ -43,7 +43,6 @@ export default function OwnableValidatorInstallAction({
         return
       }
       const ownerCount = addresses.split(',').length
-
       if (threshold === 0 || threshold > ownerCount) {
         styledToast(`Please enter valid threshold value`, 'error')
         setInstalling(false)
@@ -64,8 +63,8 @@ export default function OwnableValidatorInstallAction({
 
       styledToast(`Module Installed Successfully`, 'success')
     } catch (e) {
-      console.error(e)
-      styledToast((e as Error).message, 'error')
+      console.error((e as Error).message)
+      styledToast(`Some error occurred`, 'error')
     }
     setInstalling(false)
   }
