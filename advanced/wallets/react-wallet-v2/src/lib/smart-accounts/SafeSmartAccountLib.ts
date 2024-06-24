@@ -25,10 +25,7 @@ import {
   PERMISSION_VALIDATOR_ADDRESS,
   SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
 } from '@/utils/permissionValidatorUtils/constants'
-import {
-  SingleSignerPermission,
-  getPermissionScopeData
-} from '@/utils/permissionValidatorUtils'
+import { SingleSignerPermission, getPermissionScopeData } from '@/utils/permissionValidatorUtils'
 import { setupSafeAbi } from '@/utils/safe7579AccountUtils/abis/Launchpad'
 import { Execution } from '@/utils/safe7579AccountUtils/userop'
 import { GrantPermissionsRequestParams, GrantPermissionsResponse } from '@/data/EIP7715Data'
