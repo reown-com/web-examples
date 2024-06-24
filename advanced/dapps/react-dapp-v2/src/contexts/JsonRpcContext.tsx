@@ -55,8 +55,8 @@ import {
   GetCapabilitiesResult,
   GetCallsResult,
   DEFAULT_EIP7715_METHODS,
-  IssuePermissionsRequestParams,
-  IssuePermissionsResponse,
+  WalletGrantPermissionsParameters,
+  WalletGrantPermissionsReturnType,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -99,7 +99,7 @@ interface IContext {
     testSignTypedDatav4: TRpcRequestCallback;
     testWalletGetCapabilities: TRpcRequestCallback;
     testWalletSendCalls: TRpcRequestCallback;
-    testWalletIssuePermissions: TRpcRequestCallback;
+    testWalletGrantPermissions: TRpcRequestCallback;
     testWalletGetCallsStatus: TRpcRequestCallback;
   };
   cosmosRpc: {
@@ -637,7 +637,7 @@ export function JsonRpcContextProvider({
         };
       }
     ),
-    testWalletIssuePermissions: _createJsonRpcRequestHandler(
+    testWalletGrantPermissions: _createJsonRpcRequestHandler(
       async (chainId: string, address: string) => {
         const caipAccountAddress = `${chainId}:${address}`;
         const account = accounts.find(
@@ -653,52 +653,41 @@ export function JsonRpcContextProvider({
             `Missing rpcProvider definition for chainId: ${chainId}`
           );
         }
-        const issuePermissionsRequestParams: IssuePermissionsRequestParams = {
-          signer: {
-            type: {
-              name: "ECDSA",
-            },
-            data: "0xc3cE257B5e2A2ad92747dd486B38d7b4B36Ac7C9",
-          },
-          permissions: [
-            {
-              type: {
-                name: "erc20_spending_limit",
-                uuid: "175e6c32-3009-483f-b320-0826f2fefa57",
-              },
+        const walletGrantPermissionsParameters: WalletGrantPermissionsParameters =
+          {
+            signer: {
+              type: "account",
               data: {
-                erc20Address: "0x...",
-                limit: "0x...",
+                id: "0xc3cE257B5e2A2ad92747dd486B38d7b4B36Ac7C9",
               },
-              required: true,
             },
-            {
-              type: {
-                name: "gas_limit",
-                uuid: "e9a0d387-8648-4928-9a5c-1a2fbbeda931",
+            permissions: [
+              {
+                type: "native-token-limit",
+                data: {
+                  amount: parseEther("0.5"),
+                },
+                policies: [],
+                required: true,
               },
-              data: {
-                limit: "0x...",
-              },
-              required: false,
-            },
-          ],
-          expiry: 1577840461,
-        } as IssuePermissionsRequestParams;
-        // send wallet_issuePermissions rpc request
+            ],
+
+            expiry: 1716846083638,
+          } as WalletGrantPermissionsParameters;
+        // send wallet_grantPermissions rpc request
         const issuePermissionResponse =
-          await client!.request<IssuePermissionsResponse>({
+          await client!.request<WalletGrantPermissionsReturnType>({
             topic: session!.topic,
             chainId,
             request: {
-              method: DEFAULT_EIP7715_METHODS.WALLET_ISSUE_PERMISSIONS,
-              params: [issuePermissionsRequestParams],
+              method: DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS,
+              params: [walletGrantPermissionsParameters],
             },
           });
 
         // format displayed result
         return {
-          method: DEFAULT_EIP7715_METHODS.WALLET_ISSUE_PERMISSIONS,
+          method: DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS,
           address,
           valid: true,
           result: JSON.stringify(issuePermissionResponse),

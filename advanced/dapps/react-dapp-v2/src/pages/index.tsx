@@ -218,11 +218,11 @@ const Home: NextPage = () => {
           await ethereumRpc.testWalletGetCallsStatus(chainId, address);
         },
       },
-      [DEFAULT_EIP7715_METHODS.WALLET_ISSUE_PERMISSIONS]: {
-        method: DEFAULT_EIP7715_METHODS.WALLET_ISSUE_PERMISSIONS,
+      [DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS]: {
+        method: DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS,
         callback: async (chainId: string, address: string) => {
           openRequestModal();
-          await ethereumRpc.testWalletIssuePermissions(chainId, address);
+          await ethereumRpc.testWalletGrantPermissions(chainId, address);
         },
       },
     };
@@ -238,6 +238,7 @@ const Home: NextPage = () => {
       const requiresCapabilityCheck = [
         "wallet_sendCalls",
         "wallet_getCallsStatus",
+        "wallet_grantPermissions",
       ].includes(methodName);
       // Check capabilities only if the method requires it
       if (

@@ -106,52 +106,48 @@ export type GetCallsResult = {
  * EIP7715
  */
 export const DEFAULT_EIP7715_METHODS = {
-  WALLET_ISSUE_PERMISSIONS: "wallet_issuePermissions",
+  WALLET_GRANT_PERMISSIONS: "wallet_grantPermissions",
 } as const;
-
-export type IssuePermissionsRequestParams = {
-  signer?: {
-    type: {
-      name: string;
-      uuid?: string;
-    };
-    data: any;
-  };
-
-  permissions: {
-    type: {
-      name: string;
-      uuid?: string;
-    };
-    data: any;
-    required: boolean;
+export type WalletGrantPermissionsParameters = {
+  signer?:
+    | {
+        type: string;
+        data?: unknown | undefined;
+      }
+    | undefined;
+  permissions: readonly {
+    data: unknown;
+    policies: readonly {
+      data: unknown;
+      type: string;
+    }[];
+    required?: boolean | undefined;
+    type: string;
   }[];
-
   expiry: number;
 };
 
-export type IssuePermissionsResponse = {
-  grantedPermissions: {
-    type: {
-      name: string;
-      uuid?: string;
-    };
-    data: any;
-  }[];
-
+export type WalletGrantPermissionsReturnType = {
   expiry: number;
-
-  signerData: {
-    userOpBuilder?: `0x${string}`;
-    submitToAddress?: `0x${string}`;
-  };
-
-  factory?: `0x${string}`;
-  factoryData?: string;
-
+  factory?: `0x${string}` | undefined;
+  factoryData?: string | undefined;
+  grantedPermissions: readonly {
+    data: unknown;
+    policies: readonly {
+      data: unknown;
+      type: string;
+    }[];
+    required?: boolean | undefined;
+    type: string;
+  }[];
   permissionsContext: string;
+  signerData?:
+    | {
+        userOpBuilder?: `0x${string}` | undefined;
+        submitToAddress?: `0x${string}` | undefined;
+      }
+    | undefined;
 };
-
 /**
  * EIP155
  */
