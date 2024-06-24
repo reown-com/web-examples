@@ -10,8 +10,12 @@ export type SingleSignerPermission = {
 }
 
 export type PermissionContext = {
-  accountType: 'KernelV3' | 'Safe7579'
   accountAddress: Address
+  initCode?: `0x${string}`
+  permissionsContext?: `0x${string}`
+  userOperationBuilder?: Address
+  // below are rn temporary values needed to cover Kernel SC flow
+  accountType: 'KernelV3' | 'Safe7579'
   permissionValidatorAddress: Address
   permissions: SingleSignerPermission[]
   permittedScopeData: `0x${string}`

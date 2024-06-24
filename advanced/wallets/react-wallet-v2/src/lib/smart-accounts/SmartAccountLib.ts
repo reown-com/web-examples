@@ -218,4 +218,11 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     })
     return userOpHash
   }
+
+  getAccount() {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    return this.client.account
+  }
 }

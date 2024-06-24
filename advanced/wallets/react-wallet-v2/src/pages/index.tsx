@@ -15,6 +15,7 @@ import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
+import { useRouter } from 'next/router'
 
 export default function HomePage() {
   const {
@@ -31,7 +32,7 @@ export default function HomePage() {
     smartAccountEnabled
   } = useSnapshot(SettingsStore.state)
   const { getAvailableSmartAccounts } = useSmartAccounts()
-
+  const { push } = useRouter()
   return (
     <Fragment>
       <PageHeader title="Accounts">
@@ -155,15 +156,25 @@ export default function HomePage() {
                     })
                     .map(account => {
                       return (
-                        <AccountCard
+                        <div
+                          style={{ marginBottom: 10, cursor: 'pointer' }}
                           key={`${name}-${account.type.toLowerCase()}`}
-                          name={`${account.type} Smart Account \n ${name}`}
-                          logo={logo}
-                          rgb={rgb}
-                          address={account.address}
-                          chainId={caip10.toString()}
-                          data-testid={`chain-card-${caip10.toString()}-${account.type.toLowerCase()}`}
-                        />
+                          onClick={() =>
+                            push({
+                              pathname: `/accounts/${account.type}:${chainId}:${account.address}`
+                            })
+                          }
+                        >
+                          <AccountCard
+                            key={`${name}-${account.type.toLowerCase()}`}
+                            name={`${account.type} Smart Account \n ${name}`}
+                            logo={logo}
+                            rgb={rgb}
+                            address={account.address}
+                            chainId={caip10.toString()}
+                            data-testid={`chain-card-${caip10.toString()}-${account.type.toLowerCase()}`}
+                          />
+                        </div>
                       )
                     })}
                 </div>
