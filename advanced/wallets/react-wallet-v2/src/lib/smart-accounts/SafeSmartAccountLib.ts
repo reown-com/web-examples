@@ -28,10 +28,11 @@ import {
 import { SingleSignerPermission, getPermissionScopeData } from '@/utils/permissionValidatorUtils'
 import { setupSafeAbi } from '@/utils/safe7579AccountUtils/abis/Launchpad'
 import { Execution } from '@/utils/safe7579AccountUtils/userop'
-import { GrantPermissionsRequestParams, GrantPermissionsResponse } from '@/data/EIP7715Data'
 import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 import { ethers } from 'ethers'
 import { SAFE7579_USER_OPERATION_BUILDER_ADDRESS } from '@/utils/safe7579AccountUtils/constants'
+import { GrantPermissionsParameters, GrantPermissionsReturnType } from 'viem/experimental'
+import { AccountSigner } from 'viem/_types/experimental/erc7715/types/signer'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
@@ -102,8 +103,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   }
 
   async grantPermissions(
-    grantPermissionsRequestParams: GrantPermissionsRequestParams
-  ): Promise<GrantPermissionsResponse> {
+    grantPermissionsRequestParams: GrantPermissionsParameters
+  ): Promise<GrantPermissionsReturnType> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
@@ -121,9 +122,14 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         'isPermissionValidatorModuleInstalled == false \n Should not have happen, need to debug initCode to check safe setUp process'
       )
     }
-
+    const signer = grantPermissionsRequestParams.signer
+    // check if signer type is  AccountSigner then it will have data.id
+    if (signer && !(signer.type === 'account')) {
+      throw Error('Currently only supporting account signer')
+    }
+    const typedSigner = signer as AccountSigner
     const { permissionsContext, permissions, permittedScopeData, permittedScopeSignature } =
-      await this.getAllowedPermissionsAndData(grantPermissionsRequestParams.signer?.data.id)
+      await this.getAllowedPermissionsAndData(typedSigner.data.id)
 
     console.log(`granting permissions...`)
 
@@ -135,7 +141,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         userOpBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
         submitToAddress: this.client.account.address
       }
-    } as GrantPermissionsResponse
+    } as GrantPermissionsReturnType
   }
 
   private async setupSafe7579(calls: Execution | Execution[]) {
@@ -184,7 +190,9 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         BigInt(1), // ModuleType
         PERMISSION_VALIDATOR_ADDRESS, // Module Address
         '0x' // Additional Context
-      ]
+      ],
+      factory: undefined,
+      factoryData: undefined
     })
   }
 

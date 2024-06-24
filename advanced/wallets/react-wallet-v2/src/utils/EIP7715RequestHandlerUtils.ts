@@ -1,14 +1,12 @@
-import { GrantPermissionsRequestParams, GrantPermissionsResponse } from '@/data/EIP7715Data'
-import { getWallet } from '@/utils/EIP155WalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import SettingsStore from '@/store/SettingsStore'
-import EIP155Lib from '@/lib/EIP155Lib'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 import { web3wallet } from './WalletConnectUtil'
 import { smartAccountWallets } from './SmartAccountUtil'
+import { GrantPermissionsParameters, GrantPermissionsReturnType } from 'viem/experimental'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 function getSmartWalletAddressFromSession(requestSession: SessionTypes.Struct) {
@@ -45,12 +43,12 @@ export async function approveEIP7715Request(requestEvent: RequestEventArgs) {
   switch (request.method) {
     case EIP7715_METHOD.WALLET_GRANT_PERMISSIONS: {
       const wallet = getSmartWalletAddressFromSession(requestSession)
-      let grantPermissionsRequestParams: GrantPermissionsRequestParams = request.params[0]
+      let grantPermissionsRequestParams: GrantPermissionsParameters = request.params[0]
       if (wallet instanceof SafeSmartAccountLib) {
-        const grantPermissionsResponse: GrantPermissionsResponse = await wallet.grantPermissions(
+        const grantPermissionsResponse: GrantPermissionsReturnType = await wallet.grantPermissions(
           grantPermissionsRequestParams
         )
-        return formatJsonRpcResult<GrantPermissionsResponse>(id, grantPermissionsResponse)
+        return formatJsonRpcResult<GrantPermissionsReturnType>(id, grantPermissionsResponse)
       }
 
       // for any other wallet instance return un_supported

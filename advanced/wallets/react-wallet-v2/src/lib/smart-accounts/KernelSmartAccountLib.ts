@@ -314,7 +314,9 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         }
       ],
       functionName: 'currentNonce',
-      args: []
+      args: [],
+      factory: undefined,
+      factoryData: undefined
     })
     console.log(`currentNonce : ${currentNonce}`)
     return currentNonce

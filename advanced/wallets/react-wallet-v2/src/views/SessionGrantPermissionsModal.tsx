@@ -10,7 +10,8 @@ import RequestModal from './RequestModal'
 import { useCallback, useState } from 'react'
 import PermissionDetailsCard from '@/components/PermissionDetailsCard'
 import { approveEIP7715Request, rejectEIP7715Request } from '@/utils/EIP7715RequestHandlerUtils'
-import { GrantPermissionsRequestParams } from '@/data/EIP7715Data'
+import { GrantPermissionsParameters } from 'viem/experimental'
+// import { GrantPermissionsRequestParams } from '@/data/EIP7715Data'
 
 export default function SessionGrantPermissionsModal() {
   // Get request and wallet data from store
@@ -30,7 +31,7 @@ export default function SessionGrantPermissionsModal() {
   let method = request.method
 
   // const isPermissionRequest = data?.domain?.name === 'eth_getPermissions_v1'
-  let grantPermissionsRequestParams: GrantPermissionsRequestParams = request.params[0]
+  let grantPermissionsRequestParams: GrantPermissionsParameters = request.params[0]
   console.log({ grantPermissionsRequestParams })
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
