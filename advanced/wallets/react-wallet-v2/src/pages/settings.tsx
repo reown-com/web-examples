@@ -131,13 +131,13 @@ export default function SettingsPage() {
                   <Row justify="space-between" align="center">
                     <Switch
                       disabled={
-                        !kernelSmartAccountEnabled ||
-                        !safeSmartAccountEnabled ||
+                        !kernelSmartAccountEnabled &&
+                        !safeSmartAccountEnabled &&
                         !biconomySmartAccountEnabled
                       }
                       checked={moduleManagementEnabled}
                       onChange={SettingsStore.toggleModuleManagement}
-                      data-testid="settings-toggle-kernel-module-management"
+                      data-testid="settings-toggle-module-management"
                     />
                     <Text>{moduleManagementEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>

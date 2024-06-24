@@ -60,8 +60,15 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    await this.setupSafe7579({ to, value, data })
+    const setUpSafeUserOpHash = await this.setupSafe7579({ to, value, data })
+    if (setUpSafeUserOpHash) {
+      const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+        hash: setUpSafeUserOpHash
+      })
+      return txReceipt.receipt.transactionHash
+    }
 
+    //This is executed only if safe is already setup and deployed
     const txResult = await this.client.sendTransaction({
       to,
       value,
@@ -77,8 +84,10 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    await this.setupSafe7579(calls)
+    const setUpSafeUserOpHash = await this.setupSafe7579(calls)
+    if (setUpSafeUserOpHash) return setUpSafeUserOpHash
 
+    //this execution starts only if safe is already setup and deployed
     const userOp = await this.client.prepareUserOperationRequest({
       userOperation: {
         callData: await this.client.account.encodeCallData(calls)
@@ -92,6 +101,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const userOpHash = await this.bundlerClient.sendUserOperation({
       userOperation: userOp
     })
+    console.log({ userOpHash })
     return userOpHash
   }
 
@@ -162,10 +172,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       const setUpAndExecuteUserOpHash = await this.bundlerClient.sendUserOperation({
         userOperation: setUpUserOp
       })
-      const userOpReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpAndExecuteUserOpHash
-      })
-      console.log({ setupSafetxHash: userOpReceipt.receipt.transactionHash })
+      console.log('SetUp Safe completed.')
+      return setUpAndExecuteUserOpHash
     }
   }
 
@@ -239,5 +247,12 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       permittedScopeData,
       permissions
     }
+  }
+
+  async manageModule(calls: Execution[]) {
+    const userOpHash = await this.sendBatchTransaction(calls)
+    return await this.bundlerClient.waitForUserOperationReceipt({
+      hash: userOpHash
+    })
   }
 }

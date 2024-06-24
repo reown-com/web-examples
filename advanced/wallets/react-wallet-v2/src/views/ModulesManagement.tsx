@@ -1,47 +1,49 @@
-import { supportedModules } from '@/data/ERC7579ModuleData'
-import { isERC7579ModuleInstalled, installERC7579Module } from '@/utils/ERC7579AccountUtils'
-import { styledToast } from '@/utils/HelperUtil'
-import { Button, Card, Loading, Row, Text } from '@nextui-org/react'
+import { Module, supportedModules } from '@/data/ERC7579ModuleData'
+import { isERC7579ModuleInstalled } from '@/utils/ERC7579AccountUtils'
+import { Loading, Row, Text, Card, Container } from '@nextui-org/react'
 import { Fragment, useCallback, useEffect, useState } from 'react'
-import { Address, Chain } from 'viem'
+import { Address } from 'viem'
+import { useRouter } from 'next/router'
+import { styledToast } from '@/utils/HelperUtil'
 
-type ModulesWithStatus = {
-  isInstalled: boolean
-  name: string
-  type: number
-  description: string
-  moduleAddress: string
-  moduleData: string
-}
 interface ModulesManagementProps {
   accountType: string
   accountAddress: string
   isDeployed: boolean
-  chain: Chain
+  chainId: string
 }
+// Define the type for the state which combines Module and the isInstalled attribute
+type ModuleWithStatus = Module & { isInstalled: boolean }
 
 export default function ModulesManagement({
   accountAddress,
   accountType,
-  chain,
+  chainId,
   isDeployed
 }: ModulesManagementProps) {
-  const [modulesWithStatus, setModulesWithStatus] = useState<ModulesWithStatus[]>(
+  const [modulesWithStatus, setModulesWithStatus] = useState<ModuleWithStatus[]>(
     supportedModules.map(module => ({ ...module, isInstalled: false }))
   )
-  const [isLoading, setLoading] = useState(false)
+  const { query, push } = useRouter()
   const [modulesStatusLoading, setModuleStatusLoading] = useState(true)
 
   const checkModulesStatus = useCallback(async () => {
-    if (!chain || !isDeployed) return
-
+    if (!chainId) {
+      styledToast('Invalid chainId', 'error')
+      setModuleStatusLoading(false)
+      return
+    }
+    if (!isDeployed) {
+      setModuleStatusLoading(false)
+      return
+    }
     setModuleStatusLoading(true)
     const moduleStatusPromises = supportedModules.map(async module => {
-      const moduleType = BigInt(module.type)
+      const moduleType = module.type
       const moduleAddress = module.moduleAddress as Address
       const isInstalled = await isERC7579ModuleInstalled(
         accountAddress as Address,
-        chain,
+        chainId,
         moduleType,
         moduleAddress
       )
@@ -54,73 +56,45 @@ export default function ModulesManagement({
     const modulesWithStatus = await Promise.all(moduleStatusPromises)
     setModulesWithStatus(modulesWithStatus)
     setModuleStatusLoading(false)
-  }, [accountAddress, chain, isDeployed])
+  }, [accountAddress, chainId, isDeployed])
 
   useEffect(() => {
-    if (isDeployed && accountType !== 'Biconomy') {
+    if (accountType !== 'Biconomy') {
       checkModulesStatus()
     }
-  }, [accountType, checkModulesStatus, isDeployed])
-
-  const onInstall = async (
-    accountAddress: string,
-    chainId: string,
-    moduleType: string,
-    moduleAddress: string
-  ) => {
-    setLoading(true)
-    try {
-      const txHash = await installERC7579Module({
-        accountAddress,
-        chainId: chainId,
-        moduleType: moduleType,
-        moduleAddress: moduleAddress
-      })
-      styledToast(`Module Installed Successfully`, 'success')
-    } catch (e) {
-      console.error(e)
-      styledToast((e as Error).message, 'error')
-    }
-    setLoading(false)
-  }
+  }, [accountType, checkModulesStatus])
 
   return (
     <Fragment>
       <Text h4 css={{ marginBottom: '$5' }}>
         Module Management
       </Text>
-      {modulesStatusLoading ? (
+      {modulesStatusLoading && isDeployed ? (
         <Loading />
       ) : (
-        modulesWithStatus.map(module => (
-          <Card bordered key={module.moduleAddress} css={{ marginBottom: '$5' }}>
-            <Card.Body>
-              <Row justify="space-between" align="center">
+        <Container gap={0} fluid>
+          {modulesWithStatus.map(module => (
+            <Card
+              key={module.moduleAddress}
+              hoverable
+              clickable
+              bordered
+              css={{ marginBottom: '$5' }}
+              onClick={() =>
+                push({
+                  pathname: `/accounts/${query.eip155Address}/modules${module.url}`
+                })
+              }
+            >
+              <Row align={'center'} justify="space-between">
                 <Text>{module.name}</Text>
-                {module.isInstalled ? (
-                  <Button auto color={'error'} disabled>
-                    Uninstall
-                  </Button>
-                ) : (
-                  <Button
-                    auto
-                    disabled={module.name !== 'Permission Validator' || accountType !== 'Safe'}
-                    onClick={() =>
-                      onInstall(
-                        accountAddress,
-                        chain?.id.toString(),
-                        module.type.toString(),
-                        module.moduleAddress
-                      )
-                    }
-                  >
-                    Install
-                  </Button>
-                )}
+                <Text h6 color={module.isInstalled ? 'success' : 'error'}>
+                  {module.isInstalled ? 'Installed' : 'Not Installed'}
+                </Text>
               </Row>
-            </Card.Body>
-          </Card>
-        ))
+            </Card>
+          ))}
+        </Container>
       )}
     </Fragment>
   )

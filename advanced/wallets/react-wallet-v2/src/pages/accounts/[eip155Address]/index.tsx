@@ -1,11 +1,7 @@
 import PageHeader from '@/components/PageHeader'
+import { getChainData, getViemChain } from '@/data/chainsUtil'
 import SettingsStore from '@/store/SettingsStore'
 import { truncate } from '@/utils/HelperUtil'
-import {
-  biconomyAllowedChains,
-  kernelAllowedChains,
-  safeAllowedChains
-} from '@/utils/SmartAccountUtil'
 import ModulesManagement from '@/views/ModulesManagement'
 import { Card, Divider, Row, Text } from '@nextui-org/react'
 import { useRouter } from 'next/router'
@@ -15,10 +11,11 @@ import { useSnapshot } from 'valtio'
 import { Address, Chain, createPublicClient, http } from 'viem'
 
 export default function AccountPage() {
-  const [accountType, setAccountType] = useState('')
   const [chainId, setChainId] = useState('')
+  const [accountType, setAccountType] = useState('')
   const [accountAddress, setAccountAddress] = useState('')
   const [isAccountDeployed, setIsAccountDeployed] = useState(false)
+  const [isFetching, setFetching] = useState(false)
   const [selectedChain, setSelectedChain] = useState<Chain>()
   const {
     smartAccountEnabled,
@@ -33,11 +30,13 @@ export default function AccountPage() {
   const { query } = useRouter()
 
   useEffect(() => {
-    if (query?.accountType) {
-      setAccountType(query.accountType as string)
-    }
-    if (query?.chainId) {
-      setChainId(query.chainId as string)
+    if (query?.eip155Address) {
+      const type = (query.eip155Address as string).split(':')[0]
+      const chainId = (query.eip155Address as string).split(':')[1]
+      const address = (query.eip155Address as string).split(':')[2]
+      setAccountType(type)
+      setChainId(chainId)
+      setAccountAddress(address)
     }
   }, [query])
 
@@ -53,31 +52,20 @@ export default function AccountPage() {
     []
   )
   useEffect(() => {
-    if (!chainId || !accountType) return
-
-    let address, chain
-    if (accountType === 'Kernel') {
-      address = kernelSmartAccountAddress as Address
-      chain = kernelAllowedChains.find(c => c.id === parseInt(chainId))
-    } else if (accountType === 'Safe') {
-      address = safeSmartAccountAddress as Address
-      chain = safeAllowedChains.find(c => c.id === parseInt(chainId))
-    } else if (accountType === 'Biconomy') {
-      address = biconomySmartAccountAddress as Address
-      chain = biconomyAllowedChains.find(c => c.id === parseInt(chainId))
-    }
-
-    if (address && chain) {
-      setAccountAddress(address)
-      setSelectedChain(chain)
-
-      isSmartContractAccountDeployed(address, chain).then(result => {
-        setIsAccountDeployed(result)
-      })
-    }
+    if (!chainId || !accountAddress || !accountType) return
+    setFetching(true)
+    const chain = getViemChain(parseInt(chainId))
+    setSelectedChain(chain)
+    chain &&
+      isSmartContractAccountDeployed(accountAddress as Address, chain)
+        .then(result => {
+          setIsAccountDeployed(result)
+        })
+        .finally(() => setFetching(false))
   }, [
-    accountType,
     chainId,
+    accountType,
+    accountAddress,
     isSmartContractAccountDeployed,
     kernelSmartAccountAddress,
     safeSmartAccountAddress,
@@ -155,12 +143,14 @@ export default function AccountPage() {
           {moduleManagementEnabled ? (
             <Fragment>
               <Divider css={{ marginBottom: '$10' }} />
-              <ModulesManagement
-                accountAddress={accountAddress}
-                accountType={accountType}
-                chainId={chainId}
-                isDeployed={isAccountDeployed}
-              />
+              {!isFetching && (
+                <ModulesManagement
+                  accountAddress={accountAddress}
+                  accountType={accountType}
+                  chainId={chainId}
+                  isDeployed={isAccountDeployed}
+                />
+              )}
             </Fragment>
           ) : (
             <Row justify="space-between" align="center">
