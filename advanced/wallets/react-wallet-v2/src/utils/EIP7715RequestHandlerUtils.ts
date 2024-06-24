@@ -1,4 +1,4 @@
-import { IssuePermissionsRequestParams, IssuePermissionsResponse } from '@/data/EIP7715Data'
+import { GrantPermissionsRequestParams, GrantPermissionsResponse } from '@/data/EIP7715Data'
 import { getWallet } from '@/utils/EIP155WalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
@@ -43,14 +43,14 @@ export async function approveEIP7715Request(requestEvent: RequestEventArgs) {
   const { chainId, request } = params
   SettingsStore.setActiveChainId(chainId)
   switch (request.method) {
-    case EIP7715_METHOD.WALLET_ISSUE_PERMISSIONS: {
+    case EIP7715_METHOD.WALLET_GRANT_PERMISSIONS: {
       const wallet = getSmartWalletAddressFromSession(requestSession)
-      let issuePermissionsRequestParams: IssuePermissionsRequestParams = request.params[0]
+      let grantPermissionsRequestParams: GrantPermissionsRequestParams = request.params[0]
       if (wallet instanceof SafeSmartAccountLib) {
-        const issuePermissionsResponse: IssuePermissionsResponse = await wallet.issuePermissions(
-          issuePermissionsRequestParams
+        const grantPermissionsResponse: GrantPermissionsResponse = await wallet.grantPermissions(
+          grantPermissionsRequestParams
         )
-        return formatJsonRpcResult<IssuePermissionsResponse>(id, issuePermissionsResponse)
+        return formatJsonRpcResult<GrantPermissionsResponse>(id, grantPermissionsResponse)
       }
 
       // for any other wallet instance return un_supported

@@ -32,7 +32,7 @@ import {
 } from '@/utils/permissionValidatorUtils'
 import { setupSafeAbi } from '@/utils/safe7579AccountUtils/abis/Launchpad'
 import { Execution } from '@/utils/safe7579AccountUtils/userop'
-import { IssuePermissionsRequestParams, IssuePermissionsResponse } from '@/data/EIP7715Data'
+import { GrantPermissionsRequestParams, GrantPermissionsResponse } from '@/data/EIP7715Data'
 import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 import { ethers } from 'ethers'
 import { SAFE7579_USER_OPERATION_BUILDER_ADDRESS } from '@/utils/safe7579AccountUtils/constants'
@@ -141,9 +141,9 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     return setUpAndExecuteUserOpHash
   }
 
-  async issuePermissions(
-    issuePermissionsRequestParams: IssuePermissionsRequestParams
-  ): Promise<IssuePermissionsResponse> {
+  async grantPermissions(
+    grantPermissionsRequestParams: GrantPermissionsRequestParams
+  ): Promise<GrantPermissionsResponse> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
@@ -202,8 +202,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
     // this permission have dummy policy set to zeroAddress for now,
     // bc current version of PermissionValidator_v1 module don't consider checking policy
-    // ideally it will have to use the permissions from issuePermissionsRequestParams
-    const targetAddress = issuePermissionsRequestParams.signer?.data
+    // ideally it will have to use the permissions from grantPermissionsRequestParams
+    const targetAddress = grantPermissionsRequestParams.signer?.data
     const permissions: SingleSignerPermission[] = [
       {
         validUntil: 0,
@@ -246,16 +246,16 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       PERMISSION_VALIDATOR_ADDRESS,
       encodePacked(['uint8', 'bytes'], [1, encodedData])
     ])
-    console.log(`issuing permissions...`)
+    console.log(`granting permissions...`)
 
     return {
       permissionsContext: permissionsContext,
-      grantedPermissions: issuePermissionsRequestParams.permissions,
-      expiry: issuePermissionsRequestParams.expiry,
+      grantedPermissions: grantPermissionsRequestParams.permissions,
+      expiry: grantPermissionsRequestParams.expiry,
       signerData: {
         userOpBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
         submitToAddress: this.client.account.address
       }
-    } as IssuePermissionsResponse
+    } as GrantPermissionsResponse
   }
 }

@@ -10,9 +10,9 @@ import RequestModal from './RequestModal'
 import { useCallback, useState } from 'react'
 import PermissionDetailsCard from '@/components/PermissionDetailsCard'
 import { approveEIP7715Request, rejectEIP7715Request } from '@/utils/EIP7715RequestHandlerUtils'
-import { IssuePermissionsRequestParams } from '@/data/EIP7715Data'
+import { GrantPermissionsRequestParams } from '@/data/EIP7715Data'
 
-export default function SessionIssuePermissionsModal() {
+export default function SessionGrantPermissionsModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
@@ -30,8 +30,8 @@ export default function SessionIssuePermissionsModal() {
   let method = request.method
 
   // const isPermissionRequest = data?.domain?.name === 'eth_getPermissions_v1'
-  let issuePermissionsRequestParams: IssuePermissionsRequestParams = request.params[0]
-  console.log({ issuePermissionsRequestParams })
+  let grantPermissionsRequestParams: GrantPermissionsRequestParams = request.params[0]
+  console.log({ grantPermissionsRequestParams })
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
     if (requestEvent) {

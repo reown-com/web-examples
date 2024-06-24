@@ -65,9 +65,9 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
           return ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
 
-        case EIP7715_METHOD.WALLET_ISSUE_PERMISSIONS: {
+        case EIP7715_METHOD.WALLET_GRANT_PERMISSIONS: {
           console.log({ request })
-          return ModalStore.open('SessionIssuePermissionsModal', { requestEvent, requestSession })
+          return ModalStore.open('SessionGrantPermissionsModal', { requestEvent, requestSession })
         }
 
         case EIP5792_METHODS.WALLET_GET_CAPABILITIES:

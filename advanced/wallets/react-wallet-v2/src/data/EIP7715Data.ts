@@ -2,10 +2,10 @@
  * EIP7715Method
  */
 export const EIP7715_METHOD = {
-  WALLET_ISSUE_PERMISSIONS: 'wallet_issuePermissions'
+  WALLET_GRANT_PERMISSIONS: 'wallet_grantPermissions'
 }
 
-export type IssuePermissionsRequestParams = {
+export type GrantPermissionsRequestParams = {
   signer?: {
     type: {
       name: string
@@ -26,7 +26,7 @@ export type IssuePermissionsRequestParams = {
   expiry: number
 }
 
-export type IssuePermissionsResponse = {
+export type GrantPermissionsResponse = {
   grantedPermissions: {
     type: {
       name: string
