@@ -26,7 +26,6 @@ import {
   SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
 } from '@/utils/permissionValidatorUtils/constants'
 import {
-  PermissionContext,
   SingleSignerPermission,
   getPermissionScopeData
 } from '@/utils/permissionValidatorUtils'
@@ -61,18 +60,15 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
-    const accountDeployed = await isSmartAccountDeployed(
-      this.publicClient,
-      this.client.account.address
-    )
-    if (!accountDeployed) {
-      const setUpAndExecuteUserOpHash = await this.setupSafe7579AndExecute({ to, value, data })
-      const userOpReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpAndExecuteUserOpHash
+    const setUpSafeUserOpHash = await this.setupSafe7579({ to, value, data })
+    if (setUpSafeUserOpHash) {
+      const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+        hash: setUpSafeUserOpHash
       })
-      return userOpReceipt.receipt.transactionHash
+      return txReceipt.receipt.transactionHash
     }
 
+    //This is executed only if safe is already setup and deployed
     const txResult = await this.client.sendTransaction({
       to,
       value,
@@ -88,14 +84,10 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
-    const accountDeployed = await isSmartAccountDeployed(
-      this.publicClient,
-      this.client.account.address
-    )
-    if (!accountDeployed) {
-      return await this.setupSafe7579AndExecute(calls)
-    }
+    const setUpSafeUserOpHash = await this.setupSafe7579(calls)
+    if (setUpSafeUserOpHash) return setUpSafeUserOpHash
 
+    //this execution starts only if safe is already setup and deployed
     const userOp = await this.client.prepareUserOperationRequest({
       userOperation: {
         callData: await this.client.account.encodeCallData(calls)
@@ -112,71 +104,82 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     return userOpHash
   }
 
-  async setupSafe7579AndExecute(calls: Execution | Execution[]) {
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-
-    const initialValidators = getSafe7579InitialValidators()
-    const initData = getSafe7579InitData(this.signer.address, initialValidators, calls)
-    const setUpSafe7579Calldata = encodeFunctionData({
-      abi: setupSafeAbi,
-      functionName: 'setupSafe',
-      args: [initData]
-    })
-    const setUpUserOp = await this.client.prepareUserOperationRequest({
-      userOperation: {
-        callData: setUpSafe7579Calldata
-      },
-      account: this.client.account
-    })
-    const newSignature = await this.client.account.signUserOperation(setUpUserOp)
-
-    setUpUserOp.signature = newSignature
-
-    const setUpAndExecuteUserOpHash = await this.bundlerClient.sendUserOperation({
-      userOperation: setUpUserOp
-    })
-
-    return setUpAndExecuteUserOpHash
-  }
-
   async grantPermissions(
     grantPermissionsRequestParams: GrantPermissionsRequestParams
   ): Promise<GrantPermissionsResponse> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    console.log(`checking isAccountDeployed...`)
-    // check whether the account is deployed or not
+    // setUpSafe account
+    await this.setupSafe7579({
+      data: '0x',
+      to: zeroAddress,
+      value: BigInt(0)
+    })
+    // check permissionvalidator module is installed or not
+    const isInstalled = await this.isPermissionValidatorModuleInstalled()
+
+    if (!isInstalled) {
+      throw new Error(
+        'isPermissionValidatorModuleInstalled == false \n Should not have happen, need to debug initCode to check safe setUp process'
+      )
+    }
+
+    const { permissionsContext, permissions, permittedScopeData, permittedScopeSignature } =
+      await this.getAllowedPermissionsAndData(grantPermissionsRequestParams.signer?.data.id)
+
+    console.log(`granting permissions...`)
+
+    return {
+      permissionsContext: permissionsContext,
+      grantedPermissions: grantPermissionsRequestParams.permissions,
+      expiry: grantPermissionsRequestParams.expiry,
+      signerData: {
+        userOpBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
+        submitToAddress: this.client.account.address
+      }
+    } as GrantPermissionsResponse
+  }
+
+  private async setupSafe7579(calls: Execution | Execution[]) {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
     const accountDeployed = await isSmartAccountDeployed(
       this.publicClient,
       this.client.account.address
     )
-    const initialCallsAtSafeSetupPhase: Execution[] = [
-      {
-        data: '0x',
-        to: zeroAddress,
-        value: BigInt(0)
-      }
-    ]
-
-    // if account is not deployed, then deploy and setUp the safe7579 first.
     if (!accountDeployed) {
-      console.log(`isAccountDeployed = false`)
-      console.log(`Deploying and setting up Safe7579 account...`)
-      const setUpAndExecuteUserOpHash = await this.setupSafe7579AndExecute(
-        initialCallsAtSafeSetupPhase
-      )
-      await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpAndExecuteUserOpHash
+      const initialValidators = getSafe7579InitialValidators()
+      const initData = getSafe7579InitData(this.signer.address, initialValidators, calls)
+      const setUpSafe7579Calldata = encodeFunctionData({
+        abi: setupSafeAbi,
+        functionName: 'setupSafe',
+        args: [initData]
       })
-      console.log(`Deployment completed.`)
+      const setUpUserOp = await this.client.prepareUserOperationRequest({
+        userOperation: {
+          callData: setUpSafe7579Calldata
+        },
+        account: this.client.account
+      })
+      const newSignature = await this.client.account.signUserOperation(setUpUserOp)
+
+      setUpUserOp.signature = newSignature
+
+      const setUpAndExecuteUserOpHash = await this.bundlerClient.sendUserOperation({
+        userOperation: setUpUserOp
+      })
+      console.log('SetUp Safe completed.')
+      return setUpAndExecuteUserOpHash
     }
-    console.log(`isAccountDeployed = true`)
-    console.log(`checking isPermissionValidator Module installed...`)
-    // check whether PermissionValidator module is install or not
-    const isPermissionValidatorModuleInstalled = await this.publicClient.readContract({
+  }
+
+  private async isPermissionValidatorModuleInstalled() {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    return await this.publicClient.readContract({
       address: this.client.account.address,
       abi: isModuleInstalledAbi,
       functionName: 'isModuleInstalled',
@@ -186,30 +189,20 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         '0x' // Additional Context
       ]
     })
-    // if not then install Permissionvalidator module on Safe7579 Account.
-    if (!isPermissionValidatorModuleInstalled) {
-      console.log(`isPermissionValidatorModuleInstalled == false`)
-      console.log(`Should not have happen, need to debug initCode to check safe setUp process`)
-      throw new Error(
-        'isPermissionValidatorModuleInstalled == false \n Should not have happen, need to debug initCode to check safe setUp process'
-      )
-      // TODO: install the module , but for safe7579 PERMISSION_VALIDATOR module is
-      // part of initial validator module, so on safe setup phase it get installed.
-    }
-    console.log(`isPermissionValidatorModuleInstalled == true`)
+  }
+
+  private async getAllowedPermissionsAndData(signer: Address) {
     // if installed then based on the approvedPermissions build the PermissionsContext value
     // permissionsContext = [PERMISSION_VALIDATOR_ADDRESS][ENCODED_PERMISSION_SCOPE & SIGNATURE_DATA]
 
     // this permission have dummy policy set to zeroAddress for now,
     // bc current version of PermissionValidator_v1 module don't consider checking policy
-    // ideally it will have to use the permissions from grantPermissionsRequestParams
-    const targetAddress = grantPermissionsRequestParams.signer?.data
     const permissions: SingleSignerPermission[] = [
       {
         validUntil: 0,
         validAfter: 0,
         signatureValidationAlgorithm: SECP256K1_SIGNATURE_VALIDATOR_ADDRESS,
-        signer: targetAddress,
+        signer: signer,
         policy: zeroAddress,
         policyData: '0x'
       }
@@ -220,7 +213,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     // the smart account sign over the permittedScope and targetAddress
     const permittedScopeSignature: Hex = await signMessage({
       privateKey: this.getPrivateKey() as `0x${string}`,
-      message: { raw: concatHex([keccak256(permittedScopeData), targetAddress]) }
+      message: { raw: concatHex([keccak256(permittedScopeData), signer]) }
     })
 
     const _permissionIndex = BigInt(0)
@@ -246,16 +239,18 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       PERMISSION_VALIDATOR_ADDRESS,
       encodePacked(['uint8', 'bytes'], [1, encodedData])
     ])
-    console.log(`granting permissions...`)
-
     return {
-      permissionsContext: permissionsContext,
-      grantedPermissions: grantPermissionsRequestParams.permissions,
-      expiry: grantPermissionsRequestParams.expiry,
-      signerData: {
-        userOpBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
-        submitToAddress: this.client.account.address
-      }
-    } as GrantPermissionsResponse
+      permissionsContext,
+      permittedScopeSignature,
+      permittedScopeData,
+      permissions
+    }
+  }
+
+  async manageModule(calls: Execution[]) {
+    const userOpHash = await this.sendBatchTransaction(calls)
+    return await this.bundlerClient.waitForUserOperationReceipt({
+      hash: userOpHash
+    })
   }
 }
