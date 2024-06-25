@@ -656,7 +656,7 @@ export function JsonRpcContextProvider({
         const walletGrantPermissionsParameters: WalletGrantPermissionsParameters =
           {
             signer: {
-              type: "account",
+              type: "key",
               data: {
                 id: "0xc3cE257B5e2A2ad92747dd486B38d7b4B36Ac7C9",
               },
