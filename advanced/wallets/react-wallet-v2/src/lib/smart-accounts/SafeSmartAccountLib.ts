@@ -32,7 +32,7 @@ import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 import { ethers } from 'ethers'
 import { SAFE7579_USER_OPERATION_BUILDER_ADDRESS } from '@/utils/safe7579AccountUtils/constants'
 import { GrantPermissionsParameters, GrantPermissionsReturnType } from 'viem/experimental'
-import { AccountSigner } from 'viem/_types/experimental/erc7715/types/signer'
+import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
@@ -109,11 +109,17 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       throw new Error('Client not initialized')
     }
     // setUpSafe account
-    await this.setupSafe7579({
+    const setUpSafeUserOpHash = await this.setupSafe7579({
       data: '0x',
       to: zeroAddress,
       value: BigInt(0)
     })
+    if (setUpSafeUserOpHash) {
+      const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+        hash: setUpSafeUserOpHash
+      })
+      console.log({ txReceipt })
+    }
     // check permissionvalidator module is installed or not
     const isInstalled = await this.isPermissionValidatorModuleInstalled()
 
@@ -124,12 +130,12 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
     const signer = grantPermissionsRequestParams.signer
     // check if signer type is  AccountSigner then it will have data.id
-    if (signer && !(signer.type === 'account')) {
-      throw Error('Currently only supporting account signer')
+    if (signer && !(signer.type === 'key')) {
+      throw Error('Currently only supporting KeySigner Type for permissions')
     }
-    const typedSigner = signer as AccountSigner
+    const typedSigner = signer as KeySigner
     const { permissionsContext, permissions, permittedScopeData, permittedScopeSignature } =
-      await this.getAllowedPermissionsAndData(typedSigner.data.id)
+      await this.getAllowedPermissionsAndData(typedSigner.data.id as `0x${string}`)
 
     console.log(`granting permissions...`)
 

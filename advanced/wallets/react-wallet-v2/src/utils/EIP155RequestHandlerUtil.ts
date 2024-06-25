@@ -44,7 +44,7 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
 
         // intercept for smart account getPermissions mock
         if (domain.name === 'eth_getPermissions_v1' && wallet instanceof KernelSmartAccountLib) {
-          const permissionContext = await wallet.issuePermissionContext(
+          const permissionContext = await wallet.issueSessionKey(
             data.targetAddress,
             data.permissions
           )
