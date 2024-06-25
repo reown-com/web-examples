@@ -61,7 +61,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const setUpSafeUserOpHash = await this.setupSafe7579({ to, value, data })
     if (setUpSafeUserOpHash) {
       const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpSafeUserOpHash
+        hash: setUpSafeUserOpHash,
+        timeout: 120000
       })
       return txReceipt.receipt.transactionHash
     }
@@ -116,7 +117,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
     if (setUpSafeUserOpHash) {
       const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpSafeUserOpHash
+        hash: setUpSafeUserOpHash,
+        timeout: 120000
       })
       console.log({ txReceipt })
     }
@@ -261,7 +263,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   async manageModule(calls: Execution[]) {
     const userOpHash = await this.sendBatchTransaction(calls)
     return await this.bundlerClient.waitForUserOperationReceipt({
-      hash: userOpHash
+      hash: userOpHash,
+      timeout: 120000
     })
   }
 }
