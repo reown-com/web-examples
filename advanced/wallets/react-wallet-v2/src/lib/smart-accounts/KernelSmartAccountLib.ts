@@ -1,11 +1,14 @@
 import {
   Address,
+  bytesToHex,
   concat,
   concatHex,
   createPublicClient,
+  getAddress,
   getTypesForEIP712Domain,
   hashTypedData,
   Hex,
+  hexToBytes,
   http,
   keccak256,
   PrivateKeyAccount,
@@ -14,9 +17,11 @@ import {
   Transport,
   TypedDataDefinition,
   validateTypedData,
+  WalletGrantPermissionsParameters,
+  WalletGrantPermissionsReturnType,
   zeroAddress
 } from 'viem'
-import { privateKeyToAccount, signMessage } from 'viem/accounts'
+import { privateKeyToAccount, publicKeyToAddress, signMessage } from 'viem/accounts'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { KernelValidator, signerToEcdsaValidator } from '@zerodev/ecdsa-validator'
@@ -44,7 +49,6 @@ import {
   SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
 } from '@/utils/permissionValidatorUtils/constants'
 import { executeAbi } from '@/utils/safe7579AccountUtils/abis/Account'
-import { ENTRYPOINT_ADDRESS_V07_TYPE } from 'permissionless/_types/types'
 import {
   getPermissionScopeData,
   PermissionContext,
@@ -52,6 +56,15 @@ import {
 } from '@/utils/permissionValidatorUtils'
 import { KERNEL_V2_4, KERNEL_V3_1 } from '@zerodev/sdk/constants'
 import { KERNEL_V2_VERSION_TYPE, KERNEL_V3_VERSION_TYPE } from '@zerodev/sdk/types'
+import { decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
+import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
+
+type DonutPurchasePermissionData = {
+  target: string
+  abi: any
+  valueLimit: bigint
+  functionName: string
+}
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -277,6 +290,66 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     console.log('Session key account initialized', { address: sessionKeyAccount.address })
     const serializedSessionKey = await serializeSessionKeyAccount(sessionKeyAccount)
     return serializedSessionKey
+  }
+
+  async grantPermissions(
+    grantPermissionsRequestParams: WalletGrantPermissionsParameters
+  ): Promise<WalletGrantPermissionsReturnType> {
+    if (!this.publicClient) {
+      throw new Error('Client not initialized')
+    }
+    console.log('grantPermissions', { grantPermissionsRequestParams })
+
+    const signer = grantPermissionsRequestParams.signer
+    // check if signer type is  AccountSigner then it will have data.id
+    if (signer && !(signer.type === 'key')) {
+      throw Error('Currently only supporting KeySigner Type for permissions')
+    }
+
+    const typedSigner = signer as KeySigner
+    const pubkey = decodeDIDToSecp256k1PublicKey(typedSigner.data.id)
+
+    const emptySessionKeySigner = addressToEmptyAccount(publicKeyToAddress(pubkey as `0x${string}`))
+
+    const permissions = grantPermissionsRequestParams.permissions
+    const zeroDevPermissions = []
+
+    for (const permission of permissions) {
+      if (permission.type === 'donut-purchase') {
+        const data = permission.data as DonutPurchasePermissionData
+        zeroDevPermissions.push({
+          target: data.target,
+          abi: data.abi,
+          valueLimit: data.valueLimit,
+          functionName: data.functionName
+        })
+      }
+    }
+    const sessionKeyValidator = await signerToSessionKeyValidator(this.publicClient, {
+      signer: emptySessionKeySigner,
+      validatorData: {
+        // @ts-ignore
+        permissions: zeroDevPermissions
+      },
+      kernelVersion: this.kernelVersion,
+      entryPoint: this.entryPoint
+    })
+    const sessionKeyAccount = await createKernelAccount(this.publicClient, {
+      plugins: {
+        sudo: this.validator,
+        regular: sessionKeyValidator
+      },
+      entryPoint: this.entryPoint,
+      kernelVersion: this.kernelVersion
+    })
+
+    const serializedSessionKey = await serializeSessionKeyAccount(sessionKeyAccount)
+
+    return {
+      permissionsContext: serializedSessionKey,
+      grantedPermissions: grantPermissionsRequestParams.permissions,
+      expiry: grantPermissionsRequestParams.expiry
+    } as WalletGrantPermissionsReturnType
   }
 
   async updateCoSigners(signers: `0x${string}`[]) {

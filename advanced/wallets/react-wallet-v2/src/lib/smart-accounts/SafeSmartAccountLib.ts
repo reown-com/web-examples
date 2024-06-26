@@ -14,6 +14,8 @@ import {
 import {
   Address,
   Hex,
+  WalletGrantPermissionsParameters,
+  WalletGrantPermissionsReturnType,
   concatHex,
   encodeFunctionData,
   encodePacked,
@@ -31,9 +33,8 @@ import { Execution } from '@/utils/safe7579AccountUtils/userop'
 import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 import { ethers } from 'ethers'
 import { SAFE7579_USER_OPERATION_BUILDER_ADDRESS } from '@/utils/safe7579AccountUtils/constants'
-import { GrantPermissionsParameters, GrantPermissionsReturnType } from 'viem/experimental'
 import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
-import { decodeDIDToSECP256k1PublicKey } from '@/utils/HelperUtil'
+import { decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
@@ -105,8 +106,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   }
 
   async grantPermissions(
-    grantPermissionsRequestParams: GrantPermissionsParameters
-  ): Promise<GrantPermissionsReturnType> {
+    grantPermissionsRequestParams: WalletGrantPermissionsParameters
+  ): Promise<WalletGrantPermissionsReturnType> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
@@ -138,7 +139,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
     const typedSigner = signer as KeySigner
     const id = typedSigner.data.id
-    const publicKey = decodeDIDToSECP256k1PublicKey(id)
+    const publicKey = decodeDIDToSecp256k1PublicKey(id)
     const targetAddress = publicKeyToAddress(publicKey as `0x${string}`)
     console.log({ targetAddress })
     const { permissionsContext } = await this.getAllowedPermissionsAndData(targetAddress)
@@ -153,7 +154,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         userOpBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
         submitToAddress: this.client.account.address
       }
-    } as GrantPermissionsReturnType
+    } as WalletGrantPermissionsReturnType
   }
 
   private async setupSafe7579(calls: Execution | Execution[]) {
