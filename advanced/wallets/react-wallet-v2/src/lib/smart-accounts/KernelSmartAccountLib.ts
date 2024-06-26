@@ -56,7 +56,6 @@ import { KERNEL_V2_VERSION_TYPE, KERNEL_V3_VERSION_TYPE } from '@zerodev/sdk/typ
 import { decodeDIDToSECP256k1PublicKey } from '@/utils/HelperUtil'
 import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 
-
 type DonutPurchasePermissionData = {
   target: string
   abi: any
@@ -296,8 +295,8 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     if (!this.publicClient) {
       throw new Error('Client not initialized')
     }
-    console.log('grantPermissions', {grantPermissionsRequestParams});
-    
+    console.log('grantPermissions', { grantPermissionsRequestParams })
+
     const signer = grantPermissionsRequestParams.signer
     // check if signer type is  AccountSigner then it will have data.id
     if (signer && !(signer.type === 'key')) {
@@ -306,9 +305,8 @@ export class KernelSmartAccountLib implements EIP155Wallet {
 
     const typedSigner = signer as KeySigner
     const id = typedSigner.data.id
-    const targetAddress = id.replace('did:ethr:','')
+    const targetAddress = id.replace('did:ethr:', '')
     const emptySessionKeySigner = addressToEmptyAccount(targetAddress as `0x${string}`)
-
 
     const permissions = grantPermissionsRequestParams.permissions
     const zeroDevPermissions = []
@@ -322,7 +320,6 @@ export class KernelSmartAccountLib implements EIP155Wallet {
           valueLimit: data.valueLimit,
           functionName: data.functionName
         })
-
       }
     }
     const sessionKeyValidator = await signerToSessionKeyValidator(this.publicClient, {
@@ -345,13 +342,11 @@ export class KernelSmartAccountLib implements EIP155Wallet {
 
     const serializedSessionKey = await serializeSessionKeyAccount(sessionKeyAccount)
 
-
     return {
       permissionsContext: serializedSessionKey,
       grantedPermissions: grantPermissionsRequestParams.permissions,
       expiry: grantPermissionsRequestParams.expiry
     } as WalletGrantPermissionsReturnType
-
   }
 
   async updateCoSigners(signers: `0x${string}`[]) {
@@ -403,8 +398,6 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     console.log(`currentNonce : ${currentNonce}`)
     return currentNonce
   }
-
- 
 
   async issuePermissionContext(
     targetAddress: Address,

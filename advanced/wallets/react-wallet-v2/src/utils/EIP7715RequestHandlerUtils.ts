@@ -47,9 +47,8 @@ export async function approveEIP7715Request(requestEvent: RequestEventArgs) {
       const wallet = getSmartWalletAddressFromSession(requestSession)
       let grantPermissionsRequestParams: WalletGrantPermissionsParameters = request.params[0]
       if (wallet instanceof SafeSmartAccountLib || wallet instanceof KernelSmartAccountLib) {
-        const grantPermissionsResponse: WalletGrantPermissionsReturnType = await wallet.grantPermissions(
-          grantPermissionsRequestParams
-        )
+        const grantPermissionsResponse: WalletGrantPermissionsReturnType =
+          await wallet.grantPermissions(grantPermissionsRequestParams)
         return formatJsonRpcResult<WalletGrantPermissionsReturnType>(id, grantPermissionsResponse)
       }
 
