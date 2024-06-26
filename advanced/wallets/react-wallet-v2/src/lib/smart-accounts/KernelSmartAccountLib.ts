@@ -1,11 +1,14 @@
 import {
   Address,
+  bytesToHex,
   concat,
   concatHex,
   createPublicClient,
+  getAddress,
   getTypesForEIP712Domain,
   hashTypedData,
   Hex,
+  hexToBytes,
   http,
   keccak256,
   PrivateKeyAccount,
@@ -53,7 +56,7 @@ import {
 } from '@/utils/permissionValidatorUtils'
 import { KERNEL_V2_4, KERNEL_V3_1 } from '@zerodev/sdk/constants'
 import { KERNEL_V2_VERSION_TYPE, KERNEL_V3_VERSION_TYPE } from '@zerodev/sdk/types'
-import { decodeDIDToSECP256k1PublicKey } from '@/utils/HelperUtil'
+import { decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
 import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 
 type DonutPurchasePermissionData = {
@@ -304,9 +307,9 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     }
 
     const typedSigner = signer as KeySigner
-    const id = typedSigner.data.id
-    const targetAddress = id.replace('did:ethr:', '')
-    const emptySessionKeySigner = addressToEmptyAccount(targetAddress as `0x${string}`)
+    const pubkey = decodeDIDToSecp256k1PublicKey(typedSigner.data.id)
+        
+    const emptySessionKeySigner = addressToEmptyAccount(publicKeyToAddress(pubkey as `0x${string}`))
 
     const permissions = grantPermissionsRequestParams.permissions
     const zeroDevPermissions = []

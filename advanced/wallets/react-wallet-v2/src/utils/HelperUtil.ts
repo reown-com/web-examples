@@ -186,7 +186,7 @@ export function styledToast(message: string, type: string) {
   }
 }
 
-export const decodeDIDToSECP256k1PublicKey = (did: string): string => {
+export const decodeDIDToSecp256k1PublicKey = (did: string): string => {
   // Check if the DID starts with the correct prefix
   if (!did.startsWith('did:key:zQ3s')) {
     throw new Error('Invalid DID format. Must start with "did:key:zQ3s"')
