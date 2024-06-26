@@ -3034,34 +3034,34 @@
   dependencies:
     tslib "^2.3.0"
 
-"@zerodev/ecdsa-validator@5.2.3":
-  version "5.2.3"
-  resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.2.3.tgz#19f55620c2254df53677662ce0715172675f28ed"
-  integrity sha512-zeJjYhOW5EWK6XnctPt3iVnrqmrHfb81p/fJKaY4yQnL2ZYPrH37ZgtY1z5COETPCDTm65+jPfc1Zn/dziyAXQ==
+"@zerodev/ecdsa-validator@5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@zerodev/ecdsa-validator/-/ecdsa-validator-5.3.0.tgz#4b837411026cb77c4e350ff3aab391f7d9402025"
+  integrity sha512-pGP6ubhbSGTCoebHdhmQajfhDJM6N/qlIdkESa97wvUOBmn8gcE/U+GvNZBzOxCtiO/MY6bKg9HLC2J4hoRJPA==
 
-"@zerodev/presets@5.2.2":
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/@zerodev/presets/-/presets-5.2.2.tgz#3b3919407bf110414fef18297b0ed91a69827802"
-  integrity sha512-2b2j5mGVE1GckUIqhOnSbEbFw4jEd7S/A1Yd2WisyS6fQBmrR5QfWIYKoBOIjXYhSFj0qbtNqtl1KFNDELRiMQ==
+"@zerodev/presets@5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@zerodev/presets/-/presets-5.3.0.tgz#cc04174a48a3da195b5959a71077ee2e47d1904e"
+  integrity sha512-7g7dhUq7gQ12uUaP+LYT4nILjzJyLbPNjYEYKuBTWsLSjX1A/yt/VMQetXiSXnRrfDq+G/UUj1nMo57DwOFZsQ==
 
-"@zerodev/sdk@5.2.11":
-  version "5.2.11"
-  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.2.11.tgz#56841b9416889f0fb1fd9beb461f6c6d6a6c802e"
-  integrity sha512-42wl3vW+CPQTghOnAlVAwEiT7Aa+cb89EztY5NCX03jGHj64D38ZIRytZkIu4pleGGFHL7B29af6RYzGJPO0NQ==
+"@zerodev/sdk@5.3.1":
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-5.3.1.tgz#e9317e786fababbc536dfd199f836cac4dc54c1b"
+  integrity sha512-zH2iVhgwuWm9UVzQA/eny5CAQxgZIfktpz+rxW9rw/W3FIErIghTzCYKdJMJ7HbNw2q1pqyQ/IfaFabhcsz0cQ==
   dependencies:
     semver "^7.6.0"
 
-"@zerodev/session-key@5.2.2":
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/@zerodev/session-key/-/session-key-5.2.2.tgz#170f4f7d1163a661acd32d6a179f0d6b45c376a6"
-  integrity sha512-jHUjoRdzdP6DH8qIsSICLDMD+FgvBwZFQQ1ipgG33oK8696pFI4qjphMBQGA3kEqVzL0syKiO7eIUV8FlwD1mQ==
+"@zerodev/session-key@5.4.0":
+  version "5.4.0"
+  resolved "https://registry.yarnpkg.com/@zerodev/session-key/-/session-key-5.4.0.tgz#847380e1b564f8799d2db76fe612e6bc6aaa86d1"
+  integrity sha512-tyJJbTwl168SodmY3l0iRA2W3j/pHRwlzG2BzsbuzFZ/88mGCUkQUjxuJAh1F+Rnl7KSNEDIEHvUTlMwNaHa8w==
   dependencies:
     merkletreejs "^0.3.11"
 
-"@zerodev/weighted-ecdsa-validator@5.2.4":
-  version "5.2.4"
-  resolved "https://registry.yarnpkg.com/@zerodev/weighted-ecdsa-validator/-/weighted-ecdsa-validator-5.2.4.tgz#c0a22bf883e736d4a4c4101ec4adea647bb854ec"
-  integrity sha512-TqgZihOpKe/qtfRDwyVFtfQjK01F3W/b8CmWqcYKGqY8eLge8PouHx8bd1PpkbhqGea/3MHFUySl2z9DCgI62Q==
+"@zerodev/weighted-ecdsa-validator@5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@zerodev/weighted-ecdsa-validator/-/weighted-ecdsa-validator-5.3.0.tgz#c357adbcb55c524390efb6c68ca1e44d318044e3"
+  integrity sha512-BvBX3G4aTJP6wmLm3fmQ+bj13Xk4/nu45XOzk0ZYsbXddQvcMXAGeOxIhwTIinOBu4ABpy5PUZcFqmXRQ5IkhA==
 
 JSONStream@^1.3.5:
   version "1.3.5"
@@ -3071,10 +3071,10 @@ JSONStream@^1.3.5:
     jsonparse "^1.2.0"
     through ">=2.2.7 <3"
 
-abitype@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/abitype/-/abitype-1.0.0.tgz#237176dace81d90d018bebf3a45cb42f2a2d9e97"
-  integrity sha512-NMeMah//6bJ56H5XRj8QCV4AwuW6hB6zqz2LnhhLdcWVQOsXki6/Pn3APeqxCma62nXIcmZWdu1DlHWS74umVQ==
+abitype@1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/abitype/-/abitype-1.0.4.tgz#a817ff44860e8a84e9a37ed22aa9b738dbb51dba"
+  integrity sha512-UivtYZOGJGE8rsrM/N5vdRkUpqEZVmuTumfTuolm7m/6O09wprd958rx8kUBwVAAAhQDveGAgD0GJdBuR8s6tw==
 
 acorn-jsx@^5.3.2:
   version "5.3.2"
@@ -5192,10 +5192,10 @@ isomorphic-ws@^4.0.1:
   resolved "https://registry.yarnpkg.com/isomorphic-ws/-/isomorphic-ws-4.0.1.tgz#55fd4cd6c5e6491e76dc125938dd863f5cd4f2dc"
   integrity sha512-BhBvN2MBpWTaSHdWRb/bwdZJ1WaehQ2L1KngkCkfLUGF0mAWAT1sQUQacEmQ0jXkFw/czDXPNQSL5u2/Krsz1w==
 
-isows@1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/isows/-/isows-1.0.3.tgz#93c1cf0575daf56e7120bab5c8c448b0809d0d74"
-  integrity sha512-2cKei4vlmg2cxEjm3wVSqn8pcoRF/LX/wpifuuNquFO4SQmPwarClT+SUCA2lt+l581tTeZIPIZuIDo2jWN1fg==
+isows@1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/isows/-/isows-1.0.4.tgz#810cd0d90cc4995c26395d2aa4cfa4037ebdf061"
+  integrity sha512-hEzjY+x9u9hPmBom9IIAqdJCwNLax+xrPb51vEPpERoFlIxgmZcHzsT5jKG06nvInKOBGvReAVz80Umed5CczQ==
 
 iterator.prototype@^1.1.2:
   version "1.1.2"
@@ -5994,10 +5994,10 @@ pbkdf2@^3.0.9, pbkdf2@^3.1.2:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-permissionless@0.1.21:
-  version "0.1.21"
-  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.1.21.tgz#794ac5cc7de56161ecec9eac0a9e6821371db131"
-  integrity sha512-/7zI4082w8pUYU/Xi4GOcWc4vhgjkW15/q7srA+b3TCn6/Uhnr1CjQl8ABJWEF1SYlVE+/x8e8RntBZ9VRDYpw==
+permissionless@0.1.31:
+  version "0.1.31"
+  resolved "https://registry.yarnpkg.com/permissionless/-/permissionless-0.1.31.tgz#aaf92e46d805221774849cffe314ed1f94f9ea6a"
+  integrity sha512-mFRJPVNPSJLQ2FlaOjKL4M24wOoQE2OcWIGpFPAOGuEQkzU3yclO7p/8jHe4cDFSAFD2z4y91KvFuHji0x9sbw==
 
 picocolors@^1.0.0:
   version "1.0.0"
@@ -7160,19 +7160,19 @@ valtio@1.13.2:
     proxy-compare "2.6.0"
     use-sync-external-store "1.2.0"
 
-viem@2.9.29:
-  version "2.9.29"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.9.29.tgz#0359dcb16eb41ebd7497ec982848d6435bc83d40"
-  integrity sha512-LWvDSyB2tftKuSMAyZTXk3pDYj3c0aaOdr2JbDZEsPJw5zVbqg3FpoPHnUkHai8KcZI8aPWRKV31TYV1cBse9A==
+viem@2.16.2:
+  version "2.16.2"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.16.2.tgz#227e14c61afc9057d2290501649e37f7ed0379be"
+  integrity sha512-qor3v1cJFR3jcPtcJxPbKfKURAH2agNf2IWZIaSReV6teNLERiu4Sr7kbqpkIeTAEpiDCVQwg336M+mub1m+pg==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
     "@noble/hashes" "1.3.2"
     "@scure/bip32" "1.3.2"
     "@scure/bip39" "1.2.1"
-    abitype "1.0.0"
-    isows "1.0.3"
-    ws "8.13.0"
+    abitype "1.0.4"
+    isows "1.0.4"
+    ws "8.17.1"
 
 web3-utils@^1.3.4:
   version "1.10.4"
@@ -7273,10 +7273,10 @@ ws@7.4.6:
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
 
-ws@8.13.0:
-  version "8.13.0"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-8.13.0.tgz#9a9fb92f93cf41512a0735c8f4dd09b8a1211cd0"
-  integrity sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==
+ws@8.17.1:
+  version "8.17.1"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.17.1.tgz#9293da530bb548febc95371d90f9c878727d919b"
+  integrity sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==
 
 ws@^7.4.5, ws@^7.5.1:
   version "7.5.9"

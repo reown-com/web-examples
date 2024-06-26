@@ -21,6 +21,7 @@ interface State {
     | 'SessionSignModal'
     | 'SessionSignTypedDataModal'
     | 'SessionSendTransactionModal'
+    | 'SessionGrantPermissionsModal'
     | 'SessionSendCallsModal'
     | 'SessionUnsuportedMethodModal'
     | 'SessionSignCosmosModal'

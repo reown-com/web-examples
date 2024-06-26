@@ -7,7 +7,6 @@ import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import SettingsStore from '@/store/SettingsStore'
-import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
@@ -45,14 +44,7 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
 
         // intercept for smart account getPermissions mock
         if (domain.name === 'eth_getPermissions_v1' && wallet instanceof KernelSmartAccountLib) {
-          const permissionContext = await wallet.issuePermissionContext(
-            data.targetAddress,
-            data.permissions
-          )
-          return formatJsonRpcResult(id, permissionContext)
-        }
-        if (domain.name === 'eth_getPermissions_v1' && wallet instanceof SafeSmartAccountLib) {
-          const permissionContext = await wallet.issuePermissionContext(
+          const permissionContext = await wallet.issueSessionKey(
             data.targetAddress,
             data.permissions
           )

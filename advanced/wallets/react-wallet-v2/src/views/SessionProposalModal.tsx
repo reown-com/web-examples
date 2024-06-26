@@ -36,6 +36,7 @@ import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
+import { EIP7715_METHOD } from '@/data/EIP7715Data'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -62,6 +63,10 @@ export default function SessionProposalModal() {
     //eip5792
     const eip5792Chains = Object.keys(EIP155_CHAINS)
     const eip5792Methods = Object.values(EIP5792_METHODS)
+
+    //eip7715
+    const eip7715Chains = Object.keys(EIP155_CHAINS)
+    const eip7715Methods = Object.values(EIP7715_METHOD)
 
     // cosmos
     const cosmosChains = Object.keys(COSMOS_MAINNET_CHAINS)
@@ -98,7 +103,7 @@ export default function SessionProposalModal() {
     return {
       eip155: {
         chains: eip155Chains,
-        methods: eip155Methods.concat(eip5792Methods),
+        methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
       },

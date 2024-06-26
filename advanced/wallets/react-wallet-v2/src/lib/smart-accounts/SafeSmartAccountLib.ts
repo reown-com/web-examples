@@ -20,21 +20,20 @@ import {
   keccak256,
   zeroAddress
 } from 'viem'
-import { signMessage } from 'viem/accounts'
+import { publicKeyToAddress, signMessage } from 'viem/accounts'
 import {
   PERMISSION_VALIDATOR_ADDRESS,
-  SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
   SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
 } from '@/utils/permissionValidatorUtils/constants'
-import {
-  PermissionContext,
-  SingleSignerPermission,
-  getPermissionScopeData
-} from '@/utils/permissionValidatorUtils'
+import { SingleSignerPermission, getPermissionScopeData } from '@/utils/permissionValidatorUtils'
 import { setupSafeAbi } from '@/utils/safe7579AccountUtils/abis/Launchpad'
 import { Execution } from '@/utils/safe7579AccountUtils/userop'
 import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 import { ethers } from 'ethers'
+import { SAFE7579_USER_OPERATION_BUILDER_ADDRESS } from '@/utils/safe7579AccountUtils/constants'
+import { GrantPermissionsParameters, GrantPermissionsReturnType } from 'viem/experimental'
+import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
+import { decodeDIDToSECP256k1PublicKey } from '@/utils/HelperUtil'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
@@ -57,13 +56,14 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   }
 
   async sendTransaction({ to, value, data }: Execution) {
-    if (!this.client?.account) {
+    if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
     const setUpSafeUserOpHash = await this.setupSafe7579({ to, value, data })
     if (setUpSafeUserOpHash) {
       const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpSafeUserOpHash
+        hash: setUpSafeUserOpHash,
+        timeout: 120000
       })
       return txReceipt.receipt.transactionHash
     }
@@ -81,7 +81,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   }
 
   async sendBatchTransaction(calls: Execution[]) {
-    if (!this.client?.account) {
+    if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
     const setUpSafeUserOpHash = await this.setupSafe7579(calls)
@@ -101,23 +101,28 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const userOpHash = await this.bundlerClient.sendUserOperation({
       userOperation: userOp
     })
-    console.log({ userOpHash })
     return userOpHash
   }
 
-  async issuePermissionContext(
-    targetAddress: Address,
-    approvedPermissions: any
-  ): Promise<PermissionContext> {
+  async grantPermissions(
+    grantPermissionsRequestParams: GrantPermissionsParameters
+  ): Promise<GrantPermissionsReturnType> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
     // setUpSafe account
-    await this.setupSafe7579({
+    const setUpSafeUserOpHash = await this.setupSafe7579({
       data: '0x',
       to: zeroAddress,
       value: BigInt(0)
     })
+    if (setUpSafeUserOpHash) {
+      const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+        hash: setUpSafeUserOpHash,
+        timeout: 120000
+      })
+      console.log({ txReceipt })
+    }
     // check permissionvalidator module is installed or not
     const isInstalled = await this.isPermissionValidatorModuleInstalled()
 
@@ -126,21 +131,29 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         'isPermissionValidatorModuleInstalled == false \n Should not have happen, need to debug initCode to check safe setUp process'
       )
     }
+    const signer = grantPermissionsRequestParams.signer
+    // check if signer type is  AccountSigner then it will have data.id
+    if (signer && !(signer.type === 'key')) {
+      throw Error('Currently only supporting KeySigner Type for permissions')
+    }
+    const typedSigner = signer as KeySigner
+    const id = typedSigner.data.id
+    const publicKey = decodeDIDToSECP256k1PublicKey(id)
+    const targetAddress = publicKeyToAddress(publicKey as `0x${string}`)
+    console.log({ targetAddress })
+    const { permissionsContext } = await this.getAllowedPermissionsAndData(targetAddress)
 
-    const { permissionsContext, permissions, permittedScopeData, permittedScopeSignature } =
-      await this.getAllowedPermissionsAndData(targetAddress)
+    console.log(`granting permissions...`)
 
     return {
-      accountType: 'Safe7579',
-      accountAddress: this.client.account.address,
       permissionsContext: permissionsContext,
-      userOperationBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
-      //below are temporary additional values
-      permissionValidatorAddress: PERMISSION_VALIDATOR_ADDRESS,
-      permissions: permissions,
-      permittedScopeData: permittedScopeData,
-      permittedScopeSignature: permittedScopeSignature
-    }
+      grantedPermissions: grantPermissionsRequestParams.permissions,
+      expiry: grantPermissionsRequestParams.expiry,
+      signerData: {
+        userOpBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
+        submitToAddress: this.client.account.address
+      }
+    } as GrantPermissionsReturnType
   }
 
   private async setupSafe7579(calls: Execution | Execution[]) {
@@ -189,7 +202,9 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         BigInt(1), // ModuleType
         PERMISSION_VALIDATOR_ADDRESS, // Module Address
         '0x' // Additional Context
-      ]
+      ],
+      factory: undefined,
+      factoryData: undefined
     })
   }
 
@@ -252,7 +267,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   async manageModule(calls: Execution[]) {
     const userOpHash = await this.sendBatchTransaction(calls)
     return await this.bundlerClient.waitForUserOperationReceipt({
-      hash: userOpHash
+      hash: userOpHash,
+      timeout: 120000
     })
   }
 }

@@ -54,6 +54,9 @@ import {
   SendCallsParams,
   GetCapabilitiesResult,
   GetCallsResult,
+  DEFAULT_EIP7715_METHODS,
+  WalletGrantPermissionsParameters,
+  WalletGrantPermissionsReturnType,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -96,6 +99,7 @@ interface IContext {
     testSignTypedDatav4: TRpcRequestCallback;
     testWalletGetCapabilities: TRpcRequestCallback;
     testWalletSendCalls: TRpcRequestCallback;
+    testWalletGrantPermissions: TRpcRequestCallback;
     testWalletGetCallsStatus: TRpcRequestCallback;
   };
   cosmosRpc: {
@@ -630,6 +634,63 @@ export function JsonRpcContextProvider({
           address,
           valid: true,
           result: txId,
+        };
+      }
+    ),
+    testWalletGrantPermissions: _createJsonRpcRequestHandler(
+      async (chainId: string, address: string) => {
+        const caipAccountAddress = `${chainId}:${address}`;
+        const account = accounts.find(
+          (account) => account === caipAccountAddress
+        );
+        if (account === undefined)
+          throw new Error(`Account for ${caipAccountAddress} not found`);
+        //  split chainId
+        const [namespace, reference] = chainId.split(":");
+        const rpc = rpcProvidersByChainId[Number(reference)];
+        if (typeof rpc === "undefined") {
+          throw new Error(
+            `Missing rpcProvider definition for chainId: ${chainId}`
+          );
+        }
+        const walletGrantPermissionsParameters: WalletGrantPermissionsParameters =
+          {
+            signer: {
+              type: "key",
+              data: {
+                id: "0xc3cE257B5e2A2ad92747dd486B38d7b4B36Ac7C9",
+              },
+            },
+            permissions: [
+              {
+                type: "native-token-limit",
+                data: {
+                  amount: parseEther("0.5"),
+                },
+                policies: [],
+                required: true,
+              },
+            ],
+
+            expiry: 1716846083638,
+          } as WalletGrantPermissionsParameters;
+        // send wallet_grantPermissions rpc request
+        const issuePermissionResponse =
+          await client!.request<WalletGrantPermissionsReturnType>({
+            topic: session!.topic,
+            chainId,
+            request: {
+              method: DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS,
+              params: [walletGrantPermissionsParameters],
+            },
+          });
+
+        // format displayed result
+        return {
+          method: DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS,
+          address,
+          valid: true,
+          result: JSON.stringify(issuePermissionResponse),
         };
       }
     ),

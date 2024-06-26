@@ -50,6 +50,8 @@ import {
   PermissionContext,
   SingleSignerPermission
 } from '@/utils/permissionValidatorUtils'
+import { KERNEL_V2_4, KERNEL_V3_1 } from '@zerodev/sdk/constants'
+import { KERNEL_V2_VERSION_TYPE, KERNEL_V3_VERSION_TYPE } from '@zerodev/sdk/types'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -64,12 +66,11 @@ export class KernelSmartAccountLib implements EIP155Wallet {
   public address?: `0x${string}`
   public sponsored: boolean = true
   public entryPoint: EntryPoint
+  public kernelVersion: KERNEL_V3_VERSION_TYPE | KERNEL_V2_VERSION_TYPE
   private signer: PrivateKeyAccount
   private client: KernelAccountClient<EntryPoint, Transport, Chain | undefined> | undefined
   private publicClient:
-    | (PublicClient &
-        BundlerClient<ENTRYPOINT_ADDRESS_V07_TYPE> &
-        BundlerActions<ENTRYPOINT_ADDRESS_V07_TYPE>)
+    | (PublicClient & BundlerClient<EntryPoint> & BundlerActions<EntryPoint>)
     | undefined
   private validator: KernelValidator<EntryPoint> | undefined
   public initialized = false
@@ -88,8 +89,10 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     this.#signerPrivateKey = privateKey
     this.signer = privateKeyToAccount(privateKey as Hex)
     this.entryPoint = ENTRYPOINT_ADDRESS_V07
+    this.kernelVersion = KERNEL_V3_1
     if (entryPointVersion === 6) {
       this.entryPoint = ENTRYPOINT_ADDRESS_V06
+      this.kernelVersion = KERNEL_V2_4
     }
   }
   async init() {
@@ -100,18 +103,20 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     const bundlerRpc = http(`https://rpc.zerodev.app/api/v2/bundler/${projectId}`)
     this.publicClient = createPublicClient({
       transport: bundlerRpc // use your RPC provider or bundler
-    }).extend(bundlerActions(ENTRYPOINT_ADDRESS_V07))
+    }).extend(bundlerActions(this.entryPoint))
 
     this.validator = await signerToEcdsaValidator(this.publicClient, {
       signer: this.signer,
-      entryPoint: this.entryPoint
+      entryPoint: this.entryPoint,
+      kernelVersion: this.kernelVersion
     })
 
     const account = await createKernelAccount(this.publicClient, {
       plugins: {
         sudo: this.validator
       },
-      entryPoint: this.entryPoint
+      entryPoint: this.entryPoint,
+      kernelVersion: this.kernelVersion
     })
     const client = createKernelAccountClient({
       account,
@@ -132,7 +137,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
           })
         }
       }
-    }).extend(bundlerActions(ENTRYPOINT_ADDRESS_V07))
+    }).extend(bundlerActions(this.entryPoint))
     this.client = client
     console.log('Smart account initialized', {
       address: account.address,
@@ -252,12 +257,13 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     const sessionKeyAddress = address
     console.log('Issuing new session key', { sessionKeyAddress })
     const emptySessionKeySigner = addressToEmptyAccount(sessionKeyAddress)
-
+    console.log(parsedPermissions)
     const sessionKeyValidator = await signerToSessionKeyValidator(this.publicClient, {
       signer: emptySessionKeySigner,
       validatorData: {
         permissions: parsedPermissions
       },
+      kernelVersion: this.kernelVersion,
       entryPoint: this.entryPoint
     })
     const sessionKeyAccount = await createKernelAccount(this.publicClient, {
@@ -265,7 +271,8 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         sudo: this.validator,
         regular: sessionKeyValidator
       },
-      entryPoint: this.entryPoint
+      entryPoint: this.entryPoint,
+      kernelVersion: this.kernelVersion
     })
     console.log('Session key account initialized', { address: sessionKeyAccount.address })
     const serializedSessionKey = await serializeSessionKeyAccount(sessionKeyAccount)
@@ -290,7 +297,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     const newSigners = [{ address: currentAddress, weight: 100 }, ...coSigners]
     console.log('Updating account Co-Signers', { newSigners })
 
-    const updateCall = getUpdateConfigCall(this.entryPoint, {
+    const updateCall = getUpdateConfigCall(this.entryPoint, this.kernelVersion, {
       threshold: 100,
       signers: newSigners
     })
@@ -314,7 +321,9 @@ export class KernelSmartAccountLib implements EIP155Wallet {
         }
       ],
       functionName: 'currentNonce',
-      args: []
+      args: [],
+      factory: undefined,
+      factoryData: undefined
     })
     console.log(`currentNonce : ${currentNonce}`)
     return currentNonce

@@ -19,6 +19,7 @@ import { formatJsonRpcError } from '@json-rpc-tools/utils'
 import { approveEIP5792Request } from '@/utils/EIP5792RequestHandlerUtils'
 import EIP155Lib from '@/lib/EIP155Lib'
 import { getWallet } from '@/utils/EIP155WalletUtil'
+import { EIP7715_METHOD } from '@/data/EIP7715Data'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -63,6 +64,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
         case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
           return ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
+
+        case EIP7715_METHOD.WALLET_GRANT_PERMISSIONS: {
+          console.log({ request })
+          return ModalStore.open('SessionGrantPermissionsModal', { requestEvent, requestSession })
+        }
 
         case EIP5792_METHODS.WALLET_GET_CAPABILITIES:
         case EIP5792_METHODS.WALLET_GET_CALLS_STATUS:

@@ -23,6 +23,7 @@ import {
   DEFAULT_EIP155_OPTIONAL_METHODS,
   DEFAULT_EIP5792_METHODS,
   GetCapabilitiesResult,
+  DEFAULT_EIP7715_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -217,6 +218,13 @@ const Home: NextPage = () => {
           await ethereumRpc.testWalletGetCallsStatus(chainId, address);
         },
       },
+      [DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS]: {
+        method: DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await ethereumRpc.testWalletGrantPermissions(chainId, address);
+        },
+      },
     };
 
     let availableActions: AccountAction[] = [];
@@ -230,6 +238,7 @@ const Home: NextPage = () => {
       const requiresCapabilityCheck = [
         "wallet_sendCalls",
         "wallet_getCallsStatus",
+        "wallet_grantPermissions",
       ].includes(methodName);
       // Check capabilities only if the method requires it
       if (
