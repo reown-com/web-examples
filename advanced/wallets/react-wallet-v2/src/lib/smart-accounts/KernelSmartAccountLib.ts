@@ -308,7 +308,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
 
     const typedSigner = signer as KeySigner
     const pubkey = decodeDIDToSecp256k1PublicKey(typedSigner.data.id)
-        
+
     const emptySessionKeySigner = addressToEmptyAccount(publicKeyToAddress(pubkey as `0x${string}`))
 
     const permissions = grantPermissionsRequestParams.permissions
