@@ -11,6 +11,7 @@ import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
 
 import { utils } from 'ethers'
 import { Verify } from '@walletconnect/types'
+import bs58 from 'bs58'
 
 /**
  * Truncates string (in the middle) via given lenght value
@@ -183,4 +184,23 @@ export function styledToast(message: string, type: string) {
       }
     })
   }
+}
+
+export const decodeDIDToSECP256k1PublicKey = (did: string): string => {
+  // Check if the DID starts with the correct prefix
+  if (!did.startsWith('did:key:zQ3s')) {
+    throw new Error('Invalid DID format. Must start with "did:key:zQ3s"')
+  }
+
+  // Extract the Base58 encoded part
+  const encodedPart = did.slice('did:key:zQ3s'.length)
+
+  // Decode the Base58 string
+  const decodedBuffer = bs58.decode(encodedPart)
+
+  // Convert the Buffer to a hex string
+  const publicKey = Buffer.from(decodedBuffer).toString('hex')
+
+  // Add the '0x' prefix
+  return '0x' + publicKey
 }
