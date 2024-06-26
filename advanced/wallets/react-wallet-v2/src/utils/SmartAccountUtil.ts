@@ -87,7 +87,12 @@ export function isAllowedKernelChain(chainId: number): boolean {
 }
 
 export async function createOrRestoreKernelSmartAccount(privateKey: string) {
-  const lib = new KernelSmartAccountLib({ privateKey, chain: sepolia, sponsored: true })
+  const lib = new KernelSmartAccountLib({
+    privateKey,
+    chain: sepolia,
+    sponsored: true,
+    entryPointVersion: 6
+  })
   await lib.init()
   const address = lib.getAddress()
   const key = `${sepolia.id}:${address}`
