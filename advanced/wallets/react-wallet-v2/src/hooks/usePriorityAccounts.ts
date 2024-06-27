@@ -39,5 +39,5 @@ export default function usePriorityAccounts({ namespaces }: IProps) {
       )
     }
   }
-  return []
+  return namespaces.eip155.accounts
 }

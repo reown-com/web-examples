@@ -84,18 +84,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           })
 
         case EIP5792_METHODS.WALLET_SEND_CALLS: {
-          const wallet = await getWallet(params)
-          if (wallet instanceof EIP155Lib) {
-            /**
-             * Not Supporting for batch calls on EOA for now.
-             * if EOA, we can submit call one by one, but need to have a data structure
-             * to return bundle id, for all the calls,
-             */
-            return await web3wallet.respondSessionRequest({
-              topic,
-              response: formatJsonRpcError(id, "Wallet currently don't support batch call for EOA")
-            })
-          }
           return ModalStore.open('SessionSendCallsModal', { requestEvent, requestSession })
         }
 

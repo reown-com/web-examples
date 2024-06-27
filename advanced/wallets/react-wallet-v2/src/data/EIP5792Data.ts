@@ -34,25 +34,31 @@ export type SendCallsParams = {
   capabilities?: Record<string, any> | undefined
 }
 
+export type CallReceipt = {
+  logs: {
+    address: `0x${string}`
+    data: `0x${string}`
+    topics: `0x${string}`[]
+  }[]
+  status: `0x${string}` // Hex 1 or 0 for success or failure, respectively
+  blockHash: `0x${string}`
+  blockNumber: `0x${string}`
+  gasUsed: `0x${string}`
+  transactionHash: `0x${string}`
+}
+
 export type GetCallsResult = {
   status: 'PENDING' | 'CONFIRMED'
-  receipts?: {
-    logs: {
-      address: `0x${string}`
-      data: `0x${string}`
-      topics: `0x${string}`[]
-    }[]
-    status: `0x${string}` // Hex 1 or 0 for success or failure, respectively
-    blockHash: `0x${string}`
-    blockNumber: `0x${string}`
-    gasUsed: `0x${string}`
-    transactionHash: `0x${string}`
-  }[]
+  receipts?: CallReceipt[]
 }
 
 // supportedEIP5792Capabilities object
 export const supportedEIP5792CapabilitiesForEOA: GetCapabilitiesResult = {
-  // Not supporting any capabilities for now on EOA account
+  '0xaa36a7': {
+    atomicBatch: {
+      supported: true
+    }
+  }
 }
 // supportedEIP5792Capabilities object
 export const supportedEIP5792CapabilitiesForSCA: GetCapabilitiesResult = {
