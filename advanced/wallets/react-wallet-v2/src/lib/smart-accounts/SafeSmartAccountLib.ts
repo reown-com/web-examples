@@ -146,21 +146,26 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       console.log({ txReceipt })
     }
     // check permissionvalidator_v2 module is installed or not
-    const isInstalled = await this.isPermissionValidatorModuleInstalled(PERMISSION_VALIDATOR_V2_ADDRESS)
+    const isInstalled = await this.isPermissionValidatorModuleInstalled(
+      PERMISSION_VALIDATOR_V2_ADDRESS
+    )
 
     if (!isInstalled) {
       console.log(`Installing PemissionValidator_v2`)
-      const initData = this.getPermissionValidatorV2InstallInitData(this.client.account.address,targetAddress)
+      const initData = this.getPermissionValidatorV2InstallInitData(
+        this.client.account.address,
+        targetAddress
+      )
       const installTxReceipt = await installERC7579Module({
         accountAddress: this.client.account.address,
-        chainId:this.client.chain?.id.toString()!,
-        module:{
-          module:PERMISSION_VALIDATOR_V2_ADDRESS,
-          type:'validator',
-          data:initData
+        chainId: this.client.chain?.id.toString()!,
+        module: {
+          module: PERMISSION_VALIDATOR_V2_ADDRESS,
+          type: 'validator',
+          data: initData
         }
       })
-      console.log({installTxReceipt})
+      console.log({ installTxReceipt })
     }
     console.log(`granting permissions...`)
     const { permissionsContext } = await this.getAllowedPermissionsAndData_V2(targetAddress)
@@ -210,7 +215,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
   }
 
-  private async isPermissionValidatorModuleInstalled(moduleAddress:Address) {
+  private async isPermissionValidatorModuleInstalled(moduleAddress: Address) {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
@@ -228,12 +233,12 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
   }
 
-  private getPermissionValidatorV2InstallInitData(accountAddress:Address, signer:Address){
+  private getPermissionValidatorV2InstallInitData(accountAddress: Address, signer: Address) {
     const sessionSigner1 = signer
     const wcSignerValidator = '0xC65Ae0bBD34075A4341AE8314BA67046ab44B326'
     const account = accountAddress
     const currentTime = BigInt(Date.now())
-  
+
     //example signerId
     const signerId = keccak256(
       encodePacked(
@@ -246,19 +251,26 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const numberOfUserOpPolicies = 0 << 16 // number of userOp policies
     const numberOfActionPolicies = 0 << 8 // number of action policies
     const numberOf1271Policies = 0 // number of 1271 policies
-  
+
     // Combine the values using bitwise OR
     const permissionDataStructureDescriptor =
       setupSignerMode | numberOfUserOpPolicies | numberOfActionPolicies | numberOf1271Policies
-  
+
     // Convert the result to a 4-byte hexadecimal string
     const permissionDataStructureDescriptorHex = `0x${permissionDataStructureDescriptor
       .toString(16)
       .padStart(8, '0')}` as `0x${string}`
-  
+
     let permissionDataWithMode = encodePacked(
-      ['bytes1','bytes32', 'bytes4', 'address', 'uint32', 'bytes'],
-      ['0x01',signerId, permissionDataStructureDescriptorHex, wcSignerValidator, 20, sessionSigner1]
+      ['bytes1', 'bytes32', 'bytes4', 'address', 'uint32', 'bytes'],
+      [
+        '0x01',
+        signerId,
+        permissionDataStructureDescriptorHex,
+        wcSignerValidator,
+        20,
+        sessionSigner1
+      ]
     )
     return permissionDataWithMode
   }
