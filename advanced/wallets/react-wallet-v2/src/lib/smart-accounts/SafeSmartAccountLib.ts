@@ -152,7 +152,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const isInstalled = await this.isPermissionValidatorModuleInstalled(
       PERMISSION_VALIDATOR_V2_ADDRESS
     )
-    console.log({isInstalled})
+    console.log({ isInstalled })
     if (!isInstalled) {
       console.log(`Installing PemissionValidator_v2`)
       const installInitData = this.getPermissionValidatorV2InstallInitData(
@@ -388,7 +388,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     )
     // Set the signature
     const permissionsContext = encodePacked(
-      ['address','bytes1', 'bytes'],
+      ['address', 'bytes1', 'bytes'],
       [
         PERMISSION_VALIDATOR_V2_ADDRESS,
         '0x01', //Enable mode
