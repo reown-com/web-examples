@@ -29,7 +29,10 @@ import { publicKeyToAddress, signMessage } from 'viem/accounts'
 import {
   PERMISSION_VALIDATOR_ADDRESS,
   PERMISSION_VALIDATOR_V2_ADDRESS,
-  SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
+  SECP256K1_SIGNATURE_VALIDATOR_ADDRESS,
+  SIMPLE_GAS_POLICY_ADDRESS,
+  TIME_FRAME_POLICY_ADDRESS,
+  USAGE_LIMIT_POLICY_ADDRESS
 } from '@/utils/permissionValidatorUtils/constants'
 import { SingleSignerPermission, getPermissionScopeData } from '@/utils/permissionValidatorUtils'
 import { setupSafeAbi } from '@/utils/safe7579AccountUtils/abis/Launchpad'
@@ -149,20 +152,26 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const isInstalled = await this.isPermissionValidatorModuleInstalled(
       PERMISSION_VALIDATOR_V2_ADDRESS
     )
-
+    console.log({isInstalled})
     if (!isInstalled) {
       console.log(`Installing PemissionValidator_v2`)
-      const initData = this.getPermissionValidatorV2InstallInitData(
+      const installInitData = this.getPermissionValidatorV2InstallInitData(
         this.client.account.address,
         targetAddress
       )
+      const data = encodeAbiParameters(parseAbiParameters(['uint256[], bytes[], bytes']), [
+        [BigInt(1), BigInt(2)],
+        ['0x', '0x'],
+        installInitData
+      ])
+      console.log({ data })
       const installTxReceipt = await installERC7579Module({
         accountAddress: this.client.account.address,
         chainId: this.client.chain?.id.toString()!,
         module: {
           module: PERMISSION_VALIDATOR_V2_ADDRESS,
           type: 'validator',
-          data: initData
+          data: data
         }
       })
       console.log({ installTxReceipt })
@@ -260,7 +269,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const permissionDataStructureDescriptorHex = `0x${permissionDataStructureDescriptor
       .toString(16)
       .padStart(8, '0')}` as `0x${string}`
-
+    console.log({ permissionDataStructureDescriptorHex })
     let permissionDataWithMode = encodePacked(
       ['bytes1', 'bytes32', 'bytes4', 'address', 'uint32', 'bytes'],
       [
@@ -272,6 +281,47 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         sessionSigner1
       ]
     )
+
+    // // userOp policies
+    // permissionDataWithMode = encodePacked(
+    //   ['bytes','address','uint32','uint256','address','uint32','uint256'],
+    //   [
+    //     permissionDataWithMode,
+    //     USAGE_LIMIT_POLICY_ADDRESS, // usageLimitPolicy address
+    //     32, // usageLimitPolicy config data length
+    //     BigInt(10), // limit
+    //     SIMPLE_GAS_POLICY_ADDRESS, // simpleGasPolicy address
+    //     32, // simpleGasPolicy config data length
+    //     BigInt(2 ** (256 - 1)) // limit
+    //   ]
+    // );
+
+    // const actionId = keccak256(encodePacked(['string'],['randomActionId'])); //action Id
+
+    // // action policies
+    // permissionDataWithMode = encodePacked(
+    //   ['bytes','bytes32','address','uint32','uint256','address','uint32','uint256'],
+    //   [
+    //     permissionDataWithMode,
+    //     actionId,
+    //     USAGE_LIMIT_POLICY_ADDRESS,
+    //     32, // usageLimitPolicy config data length
+    //     BigInt(5), // limit
+    //     TIME_FRAME_POLICY_ADDRESS,
+    //     32, // timeFramePolicy config data length
+    //     BigInt(((Date.now() + 1000) << 128) + (Date.now()))
+    //   ]
+    // )
+    //   // 1271 policies
+    // permissionDataWithMode = encodePacked(
+    //   ['bytes','address','uint32','uint256'],
+    //   [
+    //     permissionDataWithMode,
+    //     TIME_FRAME_POLICY_ADDRESS,
+    //     32, // timeFramePolicy config data length
+    //     BigInt(((Date.now() + 11_111) << 128) + (Date.now() + 500))
+    //   ]
+    // );
     return permissionDataWithMode
   }
 
@@ -338,11 +388,12 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     )
     // Set the signature
     const permissionsContext = encodePacked(
-      ['bytes1', 'uint8', 'bytes'],
+      ['address','bytes1', 'bytes'],
       [
+        PERMISSION_VALIDATOR_V2_ADDRESS,
         '0x01', //Enable mode
-        1, // index of permission in sessionEnableData
-        encodeAbiParameters(parseAbiParameters('bytes, bytes, bytes'), [
+        encodeAbiParameters(parseAbiParameters('uint8, bytes, bytes, bytes'), [
+          1, // index of permission in sessionEnableData
           permissionEnableData,
           permissionEnableDataSignature,
           permissionData
@@ -413,6 +464,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   }
 
   async manageModule(calls: Execution[]) {
+    console.log({ calls })
     const userOpHash = await this.sendBatchTransaction(calls)
     return await this.bundlerClient.waitForUserOperationReceipt({
       hash: userOpHash,
