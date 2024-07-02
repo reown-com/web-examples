@@ -105,7 +105,9 @@ export default function SessionProposalModal() {
         chains: eip155Chains,
         methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
-        accounts: eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
+        accounts: eip155Chains
+          .map(chain => [`${chain}:${eip155Addresses[0]}`, `${chain}:${eip155Addresses[1]}`])
+          .flat()
       },
       cosmos: {
         chains: cosmosChains,
@@ -264,7 +266,18 @@ export default function SessionProposalModal() {
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
-        const sessionProperties = { capabilities: JSON.stringify(capabilities) }
+        const sessionProperties = {
+          capabilities: JSON.stringify(capabilities)
+        } as Record<string, string>
+        if (namespaces.eip155) {
+          const uniqueAddresses = [
+            ...new Set(namespaces.eip155.accounts.map(account => account.split(':')[2]))
+          ]
+          // demo address labels
+          for (const [i, account] of uniqueAddresses.entries()) {
+            sessionProperties[account] = `Vault ${i + 1}`
+          }
+        }
 
         await web3wallet.approveSession({
           id: proposal.id,
