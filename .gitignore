@@ -38,3 +38,6 @@ yarn-error.log*
 
 # webstorm ide
 .idea
+
+# vscode
+.vscode/settings.json
