@@ -14,6 +14,7 @@ const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
 const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
 const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
+const LOCAL_AA_INFRA_ENABLED_KEY = 'LOCAL_AA_INFRA'
 
 /**
  * Types
@@ -43,6 +44,7 @@ interface State {
   safeSmartAccountEnabled: boolean
   biconomySmartAccountEnabled: boolean
   moduleManagementEnabled: boolean
+  localAAInfraEnabled: boolean
 }
 
 /**
@@ -89,6 +91,10 @@ const state = proxy<State>({
   moduleManagementEnabled:
     typeof localStorage !== 'undefined'
       ? Boolean(localStorage.getItem(MODULE_MANAGEMENT_ENABLED_KEY))
+      : false,
+  localAAInfraEnabled:
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(LOCAL_AA_INFRA_ENABLED_KEY))
       : false
 })
 
@@ -190,6 +196,14 @@ const SettingsStore = {
       localStorage.setItem(MODULE_MANAGEMENT_ENABLED_KEY, 'YES')
     } else {
       localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
+    }
+  },
+  toggleLocalAAInfra() {
+    state.localAAInfraEnabled = !state.localAAInfraEnabled
+    if (state.localAAInfraEnabled) {
+      localStorage.setItem(LOCAL_AA_INFRA_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(LOCAL_AA_INFRA_ENABLED_KEY)
     }
   },
 
