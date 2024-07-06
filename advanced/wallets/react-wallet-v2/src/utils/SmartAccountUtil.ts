@@ -41,7 +41,7 @@ export const RPC_URLS: Record<Chain['name'], string> = {
   Sepolia: 'https://rpc.ankr.com/eth_sepolia',
   'Polygon Mumbai': 'https://mumbai.rpc.thirdweb.com',
   Goerli: 'https://ethereum-goerli.publicnode.com',
-  Foundry: 'http://localhost:8545/'
+  Foundry: 'http://localhost:8545'
 }
 
 // Pimlico RPC names
