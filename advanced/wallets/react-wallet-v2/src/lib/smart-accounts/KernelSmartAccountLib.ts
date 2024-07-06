@@ -32,7 +32,6 @@ import {
   createZeroDevPaymasterClient,
   KernelAccountClient
 } from '@zerodev/sdk'
-import { sepolia } from 'viem/chains'
 import { serializeSessionKeyAccount, signerToSessionKeyValidator } from '@zerodev/session-key'
 import { getUpdateConfigCall } from '@zerodev/weighted-ecdsa-validator'
 import {
@@ -133,13 +132,13 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     })
     const client = createKernelAccountClient({
       account,
-      chain: sepolia,
+      chain: this.chain,
       entryPoint: this.entryPoint,
       bundlerTransport: bundlerRpc,
       middleware: {
         sponsorUserOperation: async ({ userOperation }) => {
           const zerodevPaymaster = createZeroDevPaymasterClient({
-            chain: sepolia,
+            chain: this.chain,
             entryPoint: this.entryPoint,
             // Get this RPC from ZeroDev dashboard
             transport: http(`https://rpc.zerodev.app/api/v2/paymaster/${projectId}`)

@@ -7,6 +7,7 @@ import {
 } from '@/utils/SmartAccountUtil'
 import { Verify, SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
+import { foundry, sepolia } from 'viem/chains'
 
 const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
 const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
@@ -198,26 +199,73 @@ const SettingsStore = {
       localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
     }
   },
-  toggleLocalAAInfra() {
+  async toggleLocalAAInfra() {
     state.localAAInfraEnabled = !state.localAAInfraEnabled
+
+    // Update local storage based on the state
     if (state.localAAInfraEnabled) {
       localStorage.setItem(LOCAL_AA_INFRA_ENABLED_KEY, 'YES')
     } else {
       localStorage.removeItem(LOCAL_AA_INFRA_ENABLED_KEY)
     }
+    // Define account types with corresponding properties
+    const accountTypes = [
+      {
+        enabled: state.safeSmartAccountEnabled,
+        address: SettingsStore.state.safeSmartAccountAddress,
+        createOrRestore: createOrRestoreSafeSmartAccount,
+        setter: SettingsStore.setSafeSmartAccountAddress
+      },
+      {
+        enabled: state.kernelSmartAccountEnabled,
+        address: SettingsStore.state.kernelSmartAccountAddress,
+        createOrRestore: createOrRestoreKernelSmartAccount,
+        setter: SettingsStore.setKernelSmartAccountAddress
+      },
+      {
+        enabled: state.biconomySmartAccountEnabled,
+        address: SettingsStore.state.biconomySmartAccountAddress,
+        createOrRestore: createOrRestoreBiconomySmartAccount,
+        setter: SettingsStore.setBiconomySmartAccountAddress
+      }
+    ]
+
+    // Create or restore EIP-155 wallet
+    const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+    const privateKey = eip155Wallets[eip155Addresses[0]].getPrivateKey()
+    const newChain = state.localAAInfraEnabled ? foundry : sepolia
+    const oldChain = state.localAAInfraEnabled ? sepolia : foundry
+
+    // Process account types concurrently
+    await Promise.all(
+      accountTypes.map(async account => {
+        // Remove smart account from the old chain
+        removeSmartAccount(account.address, oldChain)
+
+        if (account.enabled) {
+          // Create or restore account on the new chain
+          const result = await account.createOrRestore(privateKey, newChain)
+          const [newAddress] = Object.values(result)
+          account.setter(newAddress)
+        }
+      })
+    )
   },
 
   async toggleKernelSmartAccountsEnabled() {
     state.kernelSmartAccountEnabled = !state.kernelSmartAccountEnabled
     if (state.kernelSmartAccountEnabled) {
       const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+      const chain = state.localAAInfraEnabled ? foundry : sepolia
       const { kernelSmartAccountAddress } = await createOrRestoreKernelSmartAccount(
-        eip155Wallets[eip155Addresses[0]].getPrivateKey()
+        eip155Wallets[eip155Addresses[0]].getPrivateKey(),
+        chain
       )
       SettingsStore.setKernelSmartAccountAddress(kernelSmartAccountAddress)
       localStorage.setItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
-      removeSmartAccount(SettingsStore.state.kernelSmartAccountAddress)
+      const chain = state.localAAInfraEnabled ? foundry : sepolia
+      removeSmartAccount(SettingsStore.state.kernelSmartAccountAddress, chain)
       SettingsStore.setKernelSmartAccountAddress('')
       state.moduleManagementEnabled = false
       localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
@@ -229,13 +277,16 @@ const SettingsStore = {
     state.safeSmartAccountEnabled = !state.safeSmartAccountEnabled
     if (state.safeSmartAccountEnabled) {
       const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+      const chain = state.localAAInfraEnabled ? foundry : sepolia
       const { safeSmartAccountAddress } = await createOrRestoreSafeSmartAccount(
-        eip155Wallets[eip155Addresses[0]].getPrivateKey()
+        eip155Wallets[eip155Addresses[0]].getPrivateKey(),
+        chain
       )
       SettingsStore.setSafeSmartAccountAddress(safeSmartAccountAddress)
       localStorage.setItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
-      removeSmartAccount(SettingsStore.state.safeSmartAccountAddress)
+      const chain = state.localAAInfraEnabled ? foundry : sepolia
+      removeSmartAccount(SettingsStore.state.safeSmartAccountAddress, chain)
       SettingsStore.setSafeSmartAccountAddress('')
       state.moduleManagementEnabled = false
       localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
@@ -247,13 +298,16 @@ const SettingsStore = {
     state.biconomySmartAccountEnabled = !state.biconomySmartAccountEnabled
     if (state.biconomySmartAccountEnabled) {
       const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+      const chain = state.localAAInfraEnabled ? foundry : sepolia
       const { biconomySmartAccountAddress } = await createOrRestoreBiconomySmartAccount(
-        eip155Wallets[eip155Addresses[0]].getPrivateKey()
+        eip155Wallets[eip155Addresses[0]].getPrivateKey(),
+        chain
       )
       SettingsStore.setBiconomySmartAccountAddress(biconomySmartAccountAddress)
       localStorage.setItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
-      removeSmartAccount(SettingsStore.state.biconomySmartAccountAddress)
+      const chain = state.localAAInfraEnabled ? foundry : sepolia
+      removeSmartAccount(SettingsStore.state.biconomySmartAccountAddress, chain)
       SettingsStore.setBiconomySmartAccountAddress('')
       state.moduleManagementEnabled = false
       localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
