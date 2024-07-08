@@ -4,7 +4,7 @@ import {
   isSmartAccountDeployed
 } from 'permissionless'
 import { SmartAccountLib } from './SmartAccountLib'
-import { SmartAccount } from 'permissionless/accounts'
+import { SmartAccount, signerToSafeSmartAccount } from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 import {
   getSafe7579InitData,
@@ -22,6 +22,7 @@ import {
   keccak256,
   zeroAddress
 } from 'viem'
+import { erc7579Actions } from 'permissionless/actions/erc7579'
 import { publicKeyToAddress, signMessage } from 'viem/accounts'
 import {
   PERMISSION_VALIDATOR_ADDRESS,
@@ -39,8 +40,11 @@ import { decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
 export class SafeSmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
     this.type = 'Safe'
-    const safeAccount = await signerToSafe7579SmartAccount(this.publicClient, {
+    const safeAccount = await signerToSafeSmartAccount(this.publicClient, {
+      safeVersion: '1.4.1',
       entryPoint: ENTRYPOINT_ADDRESS_V07,
+      safe4337ModuleAddress: '0x3Fdb5BC686e861480ef99A6E3FaAe03c0b9F32e2',
+      erc7569LaunchpadAddress: '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE',
       signer: this.signer
     })
     return {
@@ -60,14 +64,14 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
-    const setUpSafeUserOpHash = await this.setupSafe7579({ to, value, data })
-    if (setUpSafeUserOpHash) {
-      const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpSafeUserOpHash,
-        timeout: 120000
-      })
-      return txReceipt.receipt.transactionHash
-    }
+    // const setUpSafeUserOpHash = await this.setupSafe7579({ to, value, data })
+    // if (setUpSafeUserOpHash) {
+    //   const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+    //     hash: setUpSafeUserOpHash,
+    //     timeout: 120000
+    //   })
+    //   return txReceipt.receipt.transactionHash
+    // }
 
     //This is executed only if safe is already setup and deployed
     const txResult = await this.client.sendTransaction({
