@@ -10,6 +10,11 @@ export async function approveTezosRequest(
   const { params, id } = requestEvent
   const { request } = params
 
+  if (!tezosWallets || Object.keys(tezosWallets).length === 0) {
+    console.error("No wallets found on Approve. Try reloading the wallet page.")
+    return formatJsonRpcError(id, "No Tezos wallets available. See the error log on wallet");
+  }
+
   const wallet = tezosWallets[request.params.account ?? Object.keys(tezosWallets)[0]]
   const allWallets = Object.keys(tezosWallets).map(key => tezosWallets[key])
 
@@ -25,9 +30,13 @@ export async function approveTezosRequest(
       )
 
     case TEZOS_SIGNING_METHODS.TEZOS_SEND:
-      const sendResponse = await wallet.signTransaction(request.params.operations)
-
-      return formatJsonRpcResult(id, { hash: sendResponse })
+      try {
+        const sendResponse = await wallet.signTransaction(request.params.operations)
+        return formatJsonRpcResult(id, { hash: sendResponse })
+      } catch (error) {
+        console.error("Tezos_send operation failed with error: ", error.message);
+        return formatJsonRpcError(id, error.message);
+      }
 
     case TEZOS_SIGNING_METHODS.TEZOS_SIGN:
       const signResponse = await wallet.signPayload(request.params.payload)
