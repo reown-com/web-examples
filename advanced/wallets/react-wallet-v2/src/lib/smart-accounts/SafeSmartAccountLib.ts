@@ -9,47 +9,39 @@ import { SmartAccountLib } from './SmartAccountLib'
 import { SmartAccount, signerToSafeSmartAccount } from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 import {
-  getSafe7579InitData,
-  getSafe7579InitialValidators,
-  signerToSafe7579SmartAccount
-} from '@/utils/safe7579AccountUtils/signerToSafe7579SmartAccount'
-import {
   Address,
   Hex,
   WalletGrantPermissionsParameters,
   WalletGrantPermissionsReturnType,
   concatHex,
-  encodeFunctionData,
   encodePacked,
   keccak256,
   zeroAddress
 } from 'viem'
-import { erc7579Actions } from 'permissionless/actions/erc7579'
 import { publicKeyToAddress, signMessage } from 'viem/accounts'
 import {
   PERMISSION_VALIDATOR_ADDRESS,
+  SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
   SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
 } from '@/utils/permissionValidatorUtils/constants'
 import { SingleSignerPermission, getPermissionScopeData } from '@/utils/permissionValidatorUtils'
-import { setupSafeAbi } from '@/utils/safe7579AccountUtils/abis/Launchpad'
-import { Execution } from '@/utils/safe7579AccountUtils/userop'
-import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 import { ethers } from 'ethers'
-import { SAFE7579_USER_OPERATION_BUILDER_ADDRESS } from '@/utils/safe7579AccountUtils/constants'
 import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 import { bigIntReplacer, decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
-import { installERC7579Module } from '@/utils/ERC7579AccountUtils'
+import { isModuleInstalledAbi } from '@/utils/ERC7579AccountUtils'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
+  protected ERC_7569_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
+  protected SAFE_4337_MODULE_ADDRESS: Address = '0x3Fdb5BC686e861480ef99A6E3FaAe03c0b9F32e2'
+
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
     this.type = 'Safe'
     const safeAccount = await signerToSafeSmartAccount(this.publicClient, {
       safeVersion: '1.4.1',
       entryPoint: ENTRYPOINT_ADDRESS_V07,
-      safe4337ModuleAddress: '0x3Fdb5BC686e861480ef99A6E3FaAe03c0b9F32e2',
-      erc7569LaunchpadAddress: '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE',
-      signer: this.signer,
-      saltNonce: BigInt(2)
+      safe4337ModuleAddress: this.SAFE_4337_MODULE_ADDRESS,
+      erc7569LaunchpadAddress: this.ERC_7569_LAUNCHPAD_ADDRESS,
+      signer: this.signer
     })
     return {
       name: 'Safe7579SmartAccount',
@@ -64,7 +56,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
   }
 
-  async sendTransaction({ to, value, data }: Execution) {
+  async sendTransaction({ to, value, data }: { to: Address; value: bigint; data: Hex }) {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
@@ -78,7 +70,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     return txResult
   }
 
-  async sendBatchTransaction(calls: Execution[]) {
+  async sendBatchTransaction(calls: { to: Address; value: bigint; data: Hex }[]) {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
@@ -284,8 +276,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
   }
 
-  async manageModule(calls: Execution[]) {
-    const userOpHash = await this.sendTransaction(calls[0])
+  async manageModule(calls: { to: Address; value: bigint; data: Hex }[]) {
+    const userOpHash = await this.sendBatchTransaction(calls)
     return await this.bundlerClient.waitForUserOperationReceipt({
       hash: userOpHash
     })
