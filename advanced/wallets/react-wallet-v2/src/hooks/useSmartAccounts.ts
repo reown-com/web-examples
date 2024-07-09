@@ -7,28 +7,35 @@ import {
 } from '@/utils/SmartAccountUtil'
 
 import { useSnapshot } from 'valtio'
+import { foundry, sepolia } from 'viem/chains'
 
 export default function useSmartAccounts() {
   const {
     smartAccountEnabled,
     kernelSmartAccountEnabled,
     safeSmartAccountEnabled,
-    biconomySmartAccountEnabled
+    biconomySmartAccountEnabled,
+    localAAInfraEnabled
   } = useSnapshot(SettingsStore.state)
 
   const initializeSmartAccounts = async (privateKey: string) => {
+    const chain = localAAInfraEnabled ? foundry : sepolia
     if (smartAccountEnabled) {
       if (kernelSmartAccountEnabled) {
-        const { kernelSmartAccountAddress } = await createOrRestoreKernelSmartAccount(privateKey)
+        const { kernelSmartAccountAddress } = await createOrRestoreKernelSmartAccount(
+          privateKey,
+          chain
+        )
         SettingsStore.setKernelSmartAccountAddress(kernelSmartAccountAddress)
       }
       if (safeSmartAccountEnabled) {
-        const { safeSmartAccountAddress } = await createOrRestoreSafeSmartAccount(privateKey)
+        const { safeSmartAccountAddress } = await createOrRestoreSafeSmartAccount(privateKey, chain)
         SettingsStore.setSafeSmartAccountAddress(safeSmartAccountAddress)
       }
       if (biconomySmartAccountEnabled) {
         const { biconomySmartAccountAddress } = await createOrRestoreBiconomySmartAccount(
-          privateKey
+          privateKey,
+          chain
         )
         SettingsStore.setBiconomySmartAccountAddress(biconomySmartAccountAddress)
       }
