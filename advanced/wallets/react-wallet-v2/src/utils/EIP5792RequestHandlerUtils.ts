@@ -16,22 +16,30 @@ import SettingsStore from '@/store/SettingsStore'
 import EIP155Lib from '@/lib/EIP155Lib'
 import {
   ENTRYPOINT_ADDRESS_V06,
+  ENTRYPOINT_ADDRESS_V07,
   GetUserOperationReceiptReturnType,
   createBundlerClient
 } from 'permissionless'
 import { http, toHex } from 'viem'
+import { foundry } from 'viem/chains'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
-const getCallsReceipt = async (getCallParams: GetCallsParams) => {
+const getCallsReceipt = async (getCallParams: GetCallsParams, chainId: string) => {
   /**
    * This is hardcode implementation of wallet_getCallsStatus
    * as we are not maintaining the data for calls bundled right now.
    * Getting directly from bundler the receipt on sepolia chain.
    */
   const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
+  let bundlerUrl = `https://api.pimlico.io/v1/sepolia/rpc?apikey=${apiKey}`
+
+  if (chainId.split(':')[1] === foundry.id.toString()) {
+    bundlerUrl = 'http://localhost:4337'
+  }
+
   const bundlerClient = createBundlerClient({
-    entryPoint: ENTRYPOINT_ADDRESS_V06,
-    transport: http(`https://api.pimlico.io/v1/sepolia/rpc?apikey=${apiKey}`)
+    entryPoint: ENTRYPOINT_ADDRESS_V07,
+    transport: http(bundlerUrl)
   })
   const userOpReceipt = (await bundlerClient.getUserOperationReceipt({
     hash: getCallParams as `0x${string}`
@@ -81,7 +89,7 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
     case EIP5792_METHODS.WALLET_GET_CALLS_STATUS: {
       try {
         const getCallParams = request.params[0] as GetCallsParams
-        const receipt = await getCallsReceipt(getCallParams)
+        const receipt = await getCallsReceipt(getCallParams, chainId)
         return formatJsonRpcResult(id, receipt)
       } catch (error: any) {
         console.error(error)

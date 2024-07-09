@@ -67,5 +67,11 @@ export const supportedEIP5792CapabilitiesForSCA: GetCapabilitiesResult = {
     atomicBatch: {
       supported: true
     }
+  },
+  // foundry chain
+  '0x7a69': {
+    atomicBatch: {
+      supported: true
+    }
   }
 }
