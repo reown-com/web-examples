@@ -74,7 +74,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const paymasterUrl = ({ chain }: UrlConfig) =>
       `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
     const bundlerUrl = ({ chain }: UrlConfig) =>
-      `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
+      `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
 
     let entryPoint: EntryPoint = ENTRYPOINT_ADDRESS_V06
     if (entryPointVersion === 7) {
@@ -87,8 +87,12 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     this.#signerPrivateKey = privateKey
     this.signer = privateKeyToAccount(privateKey as Hex)
 
-    this.bundlerUrl = http(bundlerUrl({ chain: this.chain }))
-    this.paymasterUrl = http(paymasterUrl({ chain: this.chain }))
+    this.bundlerUrl = http(bundlerUrl({ chain: this.chain }),{
+      timeout:30000
+    })
+    this.paymasterUrl = http(paymasterUrl({ chain: this.chain }),{
+      timeout:30000
+    })
 
     this.publicClient = createPublicClient({
       transport: http(publicRPCUrl({ chain: this.chain }))
