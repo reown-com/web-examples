@@ -30,6 +30,7 @@ import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/act
 import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl } from '@/utils/SmartAccountUtil'
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
+import { foundry } from 'viem/chains'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -71,10 +72,19 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     entryPointVersion = 6
   }: SmartAccountLibOptions) {
     const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
-    const paymasterUrl = ({ chain }: UrlConfig) =>
-      `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
-    const bundlerUrl = ({ chain }: UrlConfig) =>
-      `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
+    const paymasterUrl = ({ chain }: UrlConfig) => {
+      if (chain.id === foundry.id) {
+        return `http://localhost:3000`
+      }
+      return `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
+    }
+
+    const bundlerUrl = ({ chain }: UrlConfig) => {
+      if (chain.id === foundry.id) {
+        return `http://localhost:4337`
+      }
+      return `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
+    }
 
     let entryPoint: EntryPoint = ENTRYPOINT_ADDRESS_V06
     if (entryPointVersion === 7) {
@@ -96,7 +106,8 @@ export abstract class SmartAccountLib implements EIP155Wallet {
 
     this.paymasterClient = createPimlicoPaymasterClient({
       transport: this.paymasterUrl,
-      entryPoint: this.entryPoint
+      entryPoint: this.entryPoint,
+      chain: this.chain
     })
 
     this.bundlerClient = createClient({

@@ -28,7 +28,8 @@ export default function SettingsPage() {
     kernelSmartAccountEnabled,
     safeSmartAccountEnabled,
     biconomySmartAccountEnabled,
-    moduleManagementEnabled
+    moduleManagementEnabled,
+    localAAInfraEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -140,6 +141,23 @@ export default function SettingsPage() {
                       data-testid="settings-toggle-module-management"
                     />
                     <Text>{moduleManagementEnabled ? 'Enabled' : 'Disabled'}</Text>
+                  </Row>
+                  <Divider y={2} />
+                  <Text h4 css={{ marginBottom: '$5', cursor: 'pointer' }}>
+                    Local AA Infra
+                  </Text>
+                  <Row justify="space-between" align="center">
+                    <Switch
+                      disabled={
+                        !kernelSmartAccountEnabled &&
+                        !safeSmartAccountEnabled &&
+                        !biconomySmartAccountEnabled
+                      }
+                      checked={localAAInfraEnabled}
+                      onChange={SettingsStore.toggleLocalAAInfra}
+                      data-testid="settings-toggle-local-aa-infra"
+                    />
+                    <Text>{localAAInfraEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>
                 </>
               ) : null}
