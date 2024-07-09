@@ -1,6 +1,7 @@
 import {
   ENTRYPOINT_ADDRESS_V07,
   SmartAccountClientConfig,
+  UserOperation,
   getPackedUserOperation,
   isSmartAccountDeployed
 } from 'permissionless'
@@ -36,7 +37,7 @@ import { isModuleInstalledAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 import { ethers } from 'ethers'
 import { SAFE7579_USER_OPERATION_BUILDER_ADDRESS } from '@/utils/safe7579AccountUtils/constants'
 import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
-import { decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
+import { bigIntReplacer, decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
 import { installERC7579Module } from '@/utils/ERC7579AccountUtils'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
@@ -64,7 +65,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   }
 
   async sendTransaction({ to, value, data }: Execution) {
-    if (!this.client || !this.client.account) {
+    if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
     const txResult = await this.client.sendTransaction({
@@ -78,25 +79,25 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   }
 
   async sendBatchTransaction(calls: Execution[]) {
-    if (!this.client || !this.client.account) {
+    if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
 
     console.log({ calls })
 
-    const userOp = await this.client.prepareUserOperationRequest({
+    const userOp = (await this.client.prepareUserOperationRequest({
       userOperation: {
         callData: await this.client.account.encodeCallData(calls)
       },
       account: this.client.account
-    })
+    })) as UserOperation<'v0.7'>
 
     const newSignature = await this.client.account.signUserOperation(userOp)
     userOp.signature = newSignature
 
-    // const packedUserOp = getPackedUserOperation(userOp)
+    const packedUserOp = getPackedUserOperation(userOp)
 
-    // console.log('Final Packed UserOp to send', JSON.stringify(packedUserOp,this.bigIntReplacer))
+    console.log('Final Packed UserOp to send', JSON.stringify(packedUserOp, bigIntReplacer))
 
     const userOpHash = await this.bundlerClient.sendUserOperation({
       userOperation: userOp
@@ -111,92 +112,102 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     return userOpHash
   }
 
-  // bigIntReplacer(_key: string, value: any) {
-  //   if (typeof value === 'bigint') {
-  //     return value.toString()
-  //   }
-
-  //   return value
-  // }
-
   async grantPermissions(
     grantPermissionsRequestParams: WalletGrantPermissionsParameters
   ): Promise<WalletGrantPermissionsReturnType> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    // check permissionvalidator module is installed or not
-    const isInstalled = await this.isPermissionValidatorModuleInstalled()
-    console.log({ isInstalled })
-    if (!isInstalled) {
-      // install the permission validator module
-      await installERC7579Module({
-        accountAddress: this.client.account.address,
-        chainId: this.chain.id.toString(),
-        module: {
-          module: PERMISSION_VALIDATOR_ADDRESS,
-          type: 'validator',
-          data: '0x'
-        }
-      })
-    }
-    const signer = grantPermissionsRequestParams.signer
-    // check if signer type is  AccountSigner then it will have data.id
-    if (signer && !(signer.type === 'key')) {
-      throw Error('Currently only supporting KeySigner Type for permissions')
-    }
-    const typedSigner = signer as KeySigner
-    const id = typedSigner.data.id
-    const publicKey = decodeDIDToSecp256k1PublicKey(id)
-    const targetAddress = publicKeyToAddress(publicKey as `0x${string}`)
-    console.log({ targetAddress })
+
+    await this.ensureAccountDeployed()
+    await this.ensurePermissionValidatorInstalled()
+
+    const targetAddress = this.getTargetAddress(grantPermissionsRequestParams.signer)
     const { permissionsContext } = await this.getAllowedPermissionsAndData(targetAddress)
 
-    console.log(`granting permissions...`)
+    console.log('Granting permissions...')
 
     return {
-      permissionsContext: permissionsContext,
+      permissionsContext,
       grantedPermissions: grantPermissionsRequestParams.permissions,
       expiry: grantPermissionsRequestParams.expiry,
       signerData: {
         userOpBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
         submitToAddress: this.client.account.address
       }
-    } as WalletGrantPermissionsReturnType
+    }
   }
 
-  private async setupSafe7579(calls: Execution | Execution[]) {
+  private async ensureAccountDeployed(): Promise<void> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    const accountDeployed = await isSmartAccountDeployed(
+    const isAccountDeployed = await isSmartAccountDeployed(
       this.publicClient,
       this.client.account.address
     )
-    if (!accountDeployed) {
-      const initialValidators = getSafe7579InitialValidators()
-      const initData = getSafe7579InitData(this.signer.address, initialValidators, calls)
-      const setUpSafe7579Calldata = encodeFunctionData({
-        abi: setupSafeAbi,
-        functionName: 'setupSafe',
-        args: [initData]
-      })
-      const setUpUserOp = await this.client.prepareUserOperationRequest({
-        userOperation: {
-          callData: setUpSafe7579Calldata
-        },
-        account: this.client.account
-      })
-      const newSignature = await this.client.account.signUserOperation(setUpUserOp)
+    console.log({ isAccountDeployed })
 
-      setUpUserOp.signature = newSignature
-
-      const setUpAndExecuteUserOpHash = await this.bundlerClient.sendUserOperation({
-        userOperation: setUpUserOp
-      })
-      console.log('SetUp Safe completed.')
-      return setUpAndExecuteUserOpHash
+    if (!isAccountDeployed) {
+      await this.deployAccountWithPermissionValidator()
     }
+  }
+
+  private async deployAccountWithPermissionValidator(): Promise<void> {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    const deployAccountUserOpHash = await this.client.installModule({
+      account: this.client.account,
+      address: PERMISSION_VALIDATOR_ADDRESS,
+      context: '0x',
+      type: 'validator'
+    })
+    const deployAccountReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+      hash: deployAccountUserOpHash
+    })
+    console.log({ deployAccountReceipt })
+  }
+
+  private async ensurePermissionValidatorInstalled(): Promise<void> {
+    const isInstalled = await this.isPermissionValidatorModuleInstalled()
+    console.log({ isInstalled })
+
+    if (!isInstalled) {
+      await this.installPermissionValidatorModule()
+    }
+  }
+
+  private async installPermissionValidatorModule(): Promise<void> {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    const installModuleUserOpHash = await this.client.installModule({
+      account: this.client.account,
+      address: PERMISSION_VALIDATOR_ADDRESS,
+      context: '0x',
+      type: 'validator'
+    })
+    const installModuleReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+      hash: installModuleUserOpHash
+    })
+    console.log({ installModuleReceipt })
+  }
+
+  private getTargetAddress(
+    signer:
+      | {
+          type: string
+          data?: unknown | undefined
+        }
+      | undefined
+  ): `0x${string}` {
+    if (signer?.type !== 'key') {
+      throw new Error('Currently only supporting KeySigner Type for permissions')
+    }
+    const typedSigner = signer as KeySigner
+    const publicKey = decodeDIDToSecp256k1PublicKey(typedSigner.data.id)
+    return publicKeyToAddress(publicKey as `0x${string}`)
   }
 
   private async isPermissionValidatorModuleInstalled() {

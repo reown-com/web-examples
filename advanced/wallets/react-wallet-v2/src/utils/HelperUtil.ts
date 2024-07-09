@@ -204,3 +204,11 @@ export const decodeDIDToSecp256k1PublicKey = (did: string): string => {
   // Add the '0x' prefix
   return '0x' + publicKey
 }
+
+export function bigIntReplacer(_key: string, value: any) {
+  if (typeof value === 'bigint') {
+    return value.toString()
+  }
+
+  return value
+}
