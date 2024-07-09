@@ -48,7 +48,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       safe4337ModuleAddress: '0x3Fdb5BC686e861480ef99A6E3FaAe03c0b9F32e2',
       erc7569LaunchpadAddress: '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE',
       signer: this.signer,
-      saltNonce:BigInt(2)
+      saltNonce: BigInt(2)
     })
     return {
       name: 'Safe7579SmartAccount',
@@ -81,14 +81,14 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
-    
-    console.log({calls})
-    
+
+    console.log({ calls })
+
     const userOp = await this.client.prepareUserOperationRequest({
       userOperation: {
-        callData: await this.client.account.encodeCallData(calls),
+        callData: await this.client.account.encodeCallData(calls)
       },
-      account: this.client.account,
+      account: this.client.account
     })
 
     const newSignature = await this.client.account.signUserOperation(userOp)
@@ -101,25 +101,24 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const userOpHash = await this.bundlerClient.sendUserOperation({
       userOperation: userOp
     })
-   
+
     if (userOpHash) {
       const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: userOpHash,
+        hash: userOpHash
       })
       console.log({ txReceipt })
     }
     return userOpHash
   }
-  
+
   // bigIntReplacer(_key: string, value: any) {
   //   if (typeof value === 'bigint') {
   //     return value.toString()
   //   }
-  
+
   //   return value
   // }
 
-  
   async grantPermissions(
     grantPermissionsRequestParams: WalletGrantPermissionsParameters
   ): Promise<WalletGrantPermissionsReturnType> {
@@ -128,16 +127,16 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
     // check permissionvalidator module is installed or not
     const isInstalled = await this.isPermissionValidatorModuleInstalled()
-    console.log({isInstalled})
+    console.log({ isInstalled })
     if (!isInstalled) {
-     // install the permission validator module
+      // install the permission validator module
       await installERC7579Module({
         accountAddress: this.client.account.address,
-        chainId:this.chain.id.toString(),
-        module:{
-          module:PERMISSION_VALIDATOR_ADDRESS,
-          type:'validator',
-          data:'0x'
+        chainId: this.chain.id.toString(),
+        module: {
+          module: PERMISSION_VALIDATOR_ADDRESS,
+          type: 'validator',
+          data: '0x'
         }
       })
     }
@@ -277,7 +276,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   async manageModule(calls: Execution[]) {
     const userOpHash = await this.sendTransaction(calls[0])
     return await this.bundlerClient.waitForUserOperationReceipt({
-      hash: userOpHash,
+      hash: userOpHash
     })
   }
 }

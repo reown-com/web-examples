@@ -97,11 +97,11 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     this.#signerPrivateKey = privateKey
     this.signer = privateKeyToAccount(privateKey as Hex)
 
-    this.bundlerUrl = http(bundlerUrl({ chain: this.chain }),{
-      timeout:30000
+    this.bundlerUrl = http(bundlerUrl({ chain: this.chain }), {
+      timeout: 30000
     })
-    this.paymasterUrl = http(paymasterUrl({ chain: this.chain }),{
-      timeout:30000
+    this.paymasterUrl = http(paymasterUrl({ chain: this.chain }), {
+      timeout: 30000
     })
 
     this.publicClient = createPublicClient({
