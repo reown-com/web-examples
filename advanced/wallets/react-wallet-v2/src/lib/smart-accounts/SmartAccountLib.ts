@@ -76,7 +76,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const paymasterUrl = ({ chain }: UrlConfig) => {
       const localPaymasterUrl = process.env.NEXT_PUBLIC_LOCAL_PAYMASTER_URL
       if (localPaymasterUrl) {
-        return `http://localhost:3000`
+        return localPaymasterUrl
       }
       return `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
     }
@@ -84,7 +84,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const bundlerUrl = ({ chain }: UrlConfig) => {
       const localBundlerUrl = process.env.NEXT_PUBLIC_LOCAL_BUNDLER_URL
       if (localBundlerUrl) {
-        return `http://localhost:4337`
+        return localBundlerUrl
       }
       return `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
     }
