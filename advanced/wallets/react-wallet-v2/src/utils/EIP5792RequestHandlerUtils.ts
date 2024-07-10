@@ -20,7 +20,6 @@ import {
   createBundlerClient
 } from 'permissionless'
 import { http, toHex } from 'viem'
-import { foundry } from 'viem/chains'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 const getCallsReceipt = async (getCallParams: GetCallsParams) => {
   /**
