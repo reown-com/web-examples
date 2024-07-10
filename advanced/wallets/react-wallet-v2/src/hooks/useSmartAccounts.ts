@@ -13,8 +13,7 @@ export default function useSmartAccounts() {
     smartAccountEnabled,
     kernelSmartAccountEnabled,
     safeSmartAccountEnabled,
-    biconomySmartAccountEnabled,
-    localAAInfraEnabled
+    biconomySmartAccountEnabled
   } = useSnapshot(SettingsStore.state)
 
   const initializeSmartAccounts = async (privateKey: string) => {
