@@ -20,6 +20,7 @@ import {
   createBundlerClient
 } from 'permissionless'
 import { http, toHex } from 'viem'
+import { foundry } from 'viem/chains'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 const getCallsReceipt = async (getCallParams: GetCallsParams) => {
   /**
@@ -31,6 +32,8 @@ const getCallsReceipt = async (getCallParams: GetCallsParams) => {
   const localBundlerUrl = process.env.NEXT_PUBLIC_LOCAL_BUNDLER_URL
   const bundlerUrl = localBundlerUrl || `https://api.pimlico.io/v1/sepolia/rpc?apikey=${apiKey}`
   const bundlerClient = createBundlerClient({
+    entryPoint: ENTRYPOINT_ADDRESS_V07,
+    transport: http(bundlerUrl)
     entryPoint: ENTRYPOINT_ADDRESS_V07,
     transport: http(bundlerUrl)
   })
@@ -82,7 +85,7 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
     case EIP5792_METHODS.WALLET_GET_CALLS_STATUS: {
       try {
         const getCallParams = request.params[0] as GetCallsParams
-        const receipt = await getCallsReceipt(getCallParams)
+        const receipt = await getCallsReceipt(getCallParams, chainId)
         return formatJsonRpcResult(id, receipt)
       } catch (error: any) {
         console.error(error)
