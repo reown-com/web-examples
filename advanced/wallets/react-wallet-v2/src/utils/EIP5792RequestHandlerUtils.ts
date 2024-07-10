@@ -34,8 +34,6 @@ const getCallsReceipt = async (getCallParams: GetCallsParams) => {
   const bundlerClient = createBundlerClient({
     entryPoint: ENTRYPOINT_ADDRESS_V07,
     transport: http(bundlerUrl)
-    entryPoint: ENTRYPOINT_ADDRESS_V07,
-    transport: http(bundlerUrl)
   })
   const userOpReceipt = (await bundlerClient.getUserOperationReceipt({
     hash: getCallParams as `0x${string}`
@@ -85,7 +83,7 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
     case EIP5792_METHODS.WALLET_GET_CALLS_STATUS: {
       try {
         const getCallParams = request.params[0] as GetCallsParams
-        const receipt = await getCallsReceipt(getCallParams, chainId)
+        const receipt = await getCallsReceipt(getCallParams)
         return formatJsonRpcResult(id, receipt)
       } catch (error: any) {
         console.error(error)
