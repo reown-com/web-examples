@@ -1,4 +1,4 @@
-import type { SignableMessage, TypedData } from 'viem'
+import type { PublicActions, PublicRpcSchema, SignableMessage, TypedData } from 'viem'
 import {
   type Address,
   type Chain,
@@ -294,7 +294,7 @@ export async function signerToSafe7579SmartAccount<
   TSource extends string = string,
   TAddress extends Address = Address
 >(
-  client: Client<TTransport, TChain, undefined>,
+  client: Client<TTransport, TChain, undefined, PublicRpcSchema, PublicActions>,
   {
     signer,
     entryPoint: entryPointAddress,
