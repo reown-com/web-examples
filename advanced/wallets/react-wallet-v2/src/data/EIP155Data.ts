@@ -115,15 +115,6 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rgb: '242, 242, 242',
     rpc: 'https://testnet.era.zksync.dev/',
     namespace: 'eip155'
-  },
-  'eip155:31337': {
-    chainId: 31337,
-    name: 'Foundry Testnet',
-    logo: '/chain-logos/eip155-1.png',
-    rgb: '242, 242, 242',
-    rpc: 'https://localhost:8545/',
-    namespace: 'eip155',
-    smartAccountEnabled: true
   }
 }
 
