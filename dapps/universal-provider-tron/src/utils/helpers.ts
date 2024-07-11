@@ -32,7 +32,7 @@ export const signMessage = async (
         address,
         message,
       },
-    });
+    }, "tron:0x2b6653dc" );
 
     return {
       method: "tron_signMessage",
