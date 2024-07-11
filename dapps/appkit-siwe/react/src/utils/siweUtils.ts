@@ -50,7 +50,6 @@ const BASE_URL = 'http://localhost:8080';
 
 // call the server to get the session
  const getSession = async () => {
-   console.log('loadSession');
    const res = await fetch(BASE_URL+ "/session", {
     method: "GET",
     headers: {
@@ -63,12 +62,11 @@ const BASE_URL = 'http://localhost:8080';
   }
   
   const data = await res.json();
-  console.log('Session:', data);
   return data == "{}" ?  null : data as SIWESession;
 }
 
 // call the server to sign out
-const signOut =  async () => {
+const signOut =  async (): Promise<boolean> => {
   const res = await fetch(BASE_URL + "/signout", {
    method: "GET",
    credentials: 'include',
@@ -78,7 +76,7 @@ const signOut =  async () => {
   }
  
   const data = await res.json();
-  return data == "{}" ?  null : data as SIWESession;
+  return data == "{}";
 } 
 
 export const createSIWE = (chains: [number]) => {
