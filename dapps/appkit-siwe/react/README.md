@@ -1,6 +1,6 @@
 # SIWE Quickstart with WalletConnect
 
-A Minimal demo using React so developers can work their integration with WalletConnect and SIWE using this repository as a template.
+A Minimal demo using React so developers can work on their integration with WalletConnect and SIWE using this repository as a template.
 
 1. Install dependencies in the frontend: `pnpm install`
 
