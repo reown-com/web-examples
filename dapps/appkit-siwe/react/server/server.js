@@ -7,7 +7,7 @@ const app = express();
 
 // configure cors and sessions
 app.use(cors({
-  origin: 'http://localhost:5173', // frontend URL
+  origin: 'http://localhost:5174', // frontend URL
   credentials: true,
 }))
 app.use(express.json())
