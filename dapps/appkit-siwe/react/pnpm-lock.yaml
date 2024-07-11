@@ -18,7 +18,7 @@ importers:
         specifier: ^5.0.6
         version: 5.0.6(@types/react@18.3.3)(react@18.3.1)
       '@web3modal/wagmi':
-        specifier: ^5.0.4
+        specifier: 5.0.6
         version: 5.0.6(qsxauseqltllybpgkazksawdn4)
       react:
         specifier: ^18.3.1
