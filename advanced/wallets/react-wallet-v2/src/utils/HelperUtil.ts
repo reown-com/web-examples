@@ -205,21 +205,31 @@ export const decodeDIDToSecp256k1PublicKey = (did: string): string => {
   return '0x' + publicKey
 }
 
+export enum KEY_TYPES {
+  secp256k1 = 'secp256k1',
+  secp256r1 = 'secp256r1',
+  ed25519 = 'ed25519',
+  x25519 = 'x25519',
+  rsa = 'rsa',
+  'p-384' = 'p-384',
+  'p-521' = 'p-521'
+}
+
 export const decodeDIDToPublicKey = (
   did: string
 ): {
   key: `0x${string}`
-  keyType: string
+  keyType: KEY_TYPES
 } => {
   // Define the DID prefix to key type mapping
-  const didPrefixToKeyType: Record<string, string> = {
-    'did:key:zQ3s': 'secp256k1',
-    'did:key:zDn': 'secp256r1',
-    'did:key:z6Mk': 'ed25519',
-    'did:key:z6LS': 'x25519',
-    'did:key:z4MX': 'rsa',
-    'did:key:z82L': 'p-384',
-    'did:key:z2J9': 'p-521'
+  const didPrefixToKeyType: Record<string, KEY_TYPES> = {
+    'did:key:zQ3s': KEY_TYPES.secp256k1,
+    'did:key:zDn': KEY_TYPES.secp256r1,
+    'did:key:z6Mk': KEY_TYPES.ed25519,
+    'did:key:z6LS': KEY_TYPES.x25519,
+    'did:key:z4MX': KEY_TYPES.rsa,
+    'did:key:z82L': KEY_TYPES['p-384'],
+    'did:key:z2J9': KEY_TYPES['p-521']
   }
 
   // Find the matching key type prefix
