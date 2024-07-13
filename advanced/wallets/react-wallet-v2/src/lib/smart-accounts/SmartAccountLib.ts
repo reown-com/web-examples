@@ -31,6 +31,8 @@ import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl } from '@/utils/SmartAcc
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 import { foundry } from 'viem/chains'
+import { Erc7579Actions, erc7579Actions } from 'permissionless/actions/erc7579'
+import { SmartAccount } from 'permissionless/accounts'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -55,7 +57,11 @@ export abstract class SmartAccountLib implements EIP155Wallet {
   protected bundlerClient: BundlerClient<EntryPoint> &
     BundlerActions<EntryPoint> &
     PimlicoBundlerActions
-  protected client: (SmartAccountClient<EntryPoint> & PimlicoBundlerActions) | undefined
+  protected client:
+    | (SmartAccountClient<EntryPoint> &
+        PimlicoBundlerActions &
+        Erc7579Actions<EntryPoint, SmartAccount<EntryPoint> | undefined>)
+    | undefined
 
   // Transport
   protected bundlerUrl: HttpTransport
@@ -100,8 +106,12 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     this.#signerPrivateKey = privateKey
     this.signer = privateKeyToAccount(privateKey as Hex)
 
-    this.bundlerUrl = http(bundlerUrl({ chain: this.chain }))
-    this.paymasterUrl = http(paymasterUrl({ chain: this.chain }))
+    this.bundlerUrl = http(bundlerUrl({ chain: this.chain }), {
+      timeout: 30000
+    })
+    this.paymasterUrl = http(paymasterUrl({ chain: this.chain }), {
+      timeout: 30000
+    })
 
     this.publicClient = createPublicClient({
       transport: http(publicClientRPCUrl)
@@ -128,9 +138,11 @@ export abstract class SmartAccountLib implements EIP155Wallet {
 
   async init() {
     const config = await this.getClientConfig()
-    this.client = createSmartAccountClient(config).extend(pimlicoBundlerActions(this.entryPoint))
+    this.client = createSmartAccountClient(config)
+      .extend(pimlicoBundlerActions(this.entryPoint))
+      .extend(erc7579Actions({ entryPoint: this.entryPoint }))
     console.log('Smart account initialized', {
-      address: this.client.account?.address,
+      address: this.client?.account?.address,
       chain: this.chain.name,
       type: this.type
     })

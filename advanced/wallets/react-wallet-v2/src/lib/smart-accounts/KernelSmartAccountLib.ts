@@ -1,14 +1,11 @@
 import {
   Address,
-  bytesToHex,
   concat,
   concatHex,
   createPublicClient,
-  getAddress,
   getTypesForEIP712Domain,
   hashTypedData,
   Hex,
-  hexToBytes,
   http,
   keccak256,
   PrivateKeyAccount,
@@ -47,7 +44,6 @@ import {
   PERMISSION_VALIDATOR_ADDRESS,
   SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
 } from '@/utils/permissionValidatorUtils/constants'
-import { executeAbi } from '@/utils/safe7579AccountUtils/abis/Account'
 import {
   getPermissionScopeData,
   PermissionContext,
@@ -57,6 +53,7 @@ import { KERNEL_V2_4, KERNEL_V3_1 } from '@zerodev/sdk/constants'
 import { KERNEL_V2_VERSION_TYPE, KERNEL_V3_VERSION_TYPE } from '@zerodev/sdk/types'
 import { decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
 import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
+import { AccountExecuteAbi } from '@/utils/ERC7579AccountUtils'
 
 type DonutPurchasePermissionData = {
   target: string
@@ -433,7 +430,7 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     const validatorInitData = '0x'
     const hookAddress = zeroAddress
     const hookData = '0x'
-    const selectorData = toFunctionSelector(executeAbi[0])
+    const selectorData = toFunctionSelector(AccountExecuteAbi[0])
 
     const validatorPluginEnableTypeData = {
       domain: {
