@@ -75,8 +75,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       throw new Error('Client not initialized')
     }
 
-    console.log({ calls })
-
     const userOp = (await this.client.prepareUserOperationRequest({
       userOperation: {
         callData: await this.client.account.encodeCallData(calls)
@@ -87,20 +85,10 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     const newSignature = await this.client.account.signUserOperation(userOp)
     userOp.signature = newSignature
 
-    const packedUserOp = getPackedUserOperation(userOp)
-
-    console.log('Final Packed UserOp to send', JSON.stringify(packedUserOp, bigIntReplacer))
-
     const userOpHash = await this.bundlerClient.sendUserOperation({
       userOperation: userOp
     })
 
-    if (userOpHash) {
-      const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: userOpHash
-      })
-      console.log({ txReceipt })
-    }
     return userOpHash
   }
 
