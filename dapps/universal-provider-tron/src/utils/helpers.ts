@@ -2,12 +2,6 @@
 
 import UniversalProvider from "@walletconnect/universal-provider";
 import TronWeb from "tronweb";
-declare module 'tronweb' {
-  export * from '@agrozyme/types-tronweb';
-  import TronWeb from '@agrozyme/types-tronweb';
-  export default TronWeb;
-}
-
 
 export enum TronChains {
   Mainnet = "0x2b6653dc",
