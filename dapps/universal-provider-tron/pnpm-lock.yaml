@@ -48,6 +48,9 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
     devDependencies:
+      '@daochild/tronweb-typescript':
+        specifier: ^1.1.2
+        version: 1.1.2
       '@types/react':
         specifier: ^18.2.21
         version: 18.3.3
@@ -93,6 +96,9 @@ packages:
   '@babel/runtime@7.24.7':
     resolution: {integrity: sha512-UwgBRMjJP+xv857DCngvqXI3Iq6J4v0wXmwc6sapg+zyhbwmQX67LUEFrkK5tbyJ30jGuG3ZvWpBiB9LCy1kWw==}
     engines: {node: '>=6.9.0'}
+
+  '@daochild/tronweb-typescript@1.1.2':
+    resolution: {integrity: sha512-zxId3z4E4Yd35p3lILMGM/fhGH3qv/a5IszhWuexVknZB13RDaTUY3aFM+S0ZKd7+v2MZagi4RcZrW2r9bnpQg==}
 
   '@esbuild/android-arm64@0.18.20':
     resolution: {integrity: sha512-Nz4rJcchGDtENV0eMKUNa6L12zz2zBDXuhj/Vjh18zGqB44Bi7MBMSXjgunJgjRhCmKOjnPuZp4Mb6OKqtMHLQ==}
@@ -2584,6 +2590,10 @@ snapshots:
   '@babel/runtime@7.24.7':
     dependencies:
       regenerator-runtime: 0.14.1
+
+  '@daochild/tronweb-typescript@1.1.2':
+    dependencies:
+      bignumber.js: 9.1.2
 
   '@esbuild/android-arm64@0.18.20':
     optional: true

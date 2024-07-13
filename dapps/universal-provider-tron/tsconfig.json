@@ -21,7 +21,8 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src"
+    "src",
+    "./node_modules/@daochild/tronweb-typescript/dist/index.d.ts"
   ],
   "references": [
     {

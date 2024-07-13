@@ -25,6 +25,7 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
+    "@daochild/tronweb-typescript": "^1.1.2",
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
