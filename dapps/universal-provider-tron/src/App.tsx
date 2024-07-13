@@ -1,7 +1,7 @@
 import UniversalProvider from "@walletconnect/universal-provider";
 import { WalletConnectModal } from "@walletconnect/modal";
 import { useState } from "react";
-import { signMessage,signTransacion, sendTransaction, TronChains } from "./utils/helpers";
+import { signMessage,signTransacion, TronChains } from "./utils/helpers";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
