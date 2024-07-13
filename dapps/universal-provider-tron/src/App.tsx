@@ -1,7 +1,7 @@
 import UniversalProvider from "@walletconnect/universal-provider";
 import { WalletConnectModal } from "@walletconnect/modal";
 import { useState } from "react";
-import { signMessage, sendTransaction, TronChains } from "./utils/helpers";
+import { signMessage,signTransacion, sendTransaction, TronChains } from "./utils/helpers";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
@@ -83,8 +83,9 @@ const App = () => {
     console.log("-",res);
   };
 
-  const handleSend = async () => {
-    const res = await sendTransaction(address!, 1000, provider, address!);
+
+  const handleSendTransaction = async () => {
+    const res = await signTransacion(address!, provider, address!);
     console.log(res);
   };
 
@@ -93,12 +94,12 @@ const App = () => {
       {isConnected ? (
         <>
           <p>
-            <b>Public Key: </b>
+            <b>Address: </b>
             {address}
           </p>
           <div className="btn-container">
-            <button onClick={handleSign}>Sign</button>
-            <button onClick={handleSend}>Send</button>
+            <button onClick={handleSign}>Sign MSG</button>
+            <button onClick={handleSendTransaction}>Send Transaction</button>
             <button onClick={disconnect}>Disconnect</button>
           </div>
         </>

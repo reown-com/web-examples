@@ -1,8 +1,12 @@
 
 
-import UniversalProvider from "@walletconnect/universal-provider/dist/types/UniversalProvider";
-import bs58 from "bs58";
-import nacl from "tweetnacl";
+import UniversalProvider from "@walletconnect/universal-provider";
+import TronWeb from "tronweb";
+declare module 'tronweb' {
+  export * from '@agrozyme/types-tronweb';
+  import TronWeb from '@agrozyme/types-tronweb';
+  export default TronWeb;
+}
 
 
 export enum TronChains {
@@ -46,22 +50,72 @@ export const signMessage = async (
   }
 };
 
-export const sendTransaction = async (
-  to: string,
-  amount: number,
+export const signTransacion = async (
+  message: string,
   provider: UniversalProvider,
   address: string
 ) => {
-  const isTestnet = provider.session!.namespaces.tron.chains?.includes(
-    `${blockchainName}:${TronChains.Devnet}`
-  );
 
- 
+  try {
+    const isTestnet = provider.session!.namespaces.tron.chains?.includes(
+      `tron:${TronChains.Devnet}`
+    );
+
+    const fullHost = isTestnet
+      ? "https://nile.trongrid.io/"
+      : "https://api.trongrid.io/";
+
+    const tronWeb = new TronWeb({
+      fullHost,
+    });
+
+    // Take USDT as an example:
+    // Nile TestNet: https://nile.tronscan.org/#/token20/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf
+    // MainNet: https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+
+    const contract_address = isTestnet
+      ? "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
+      : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+
+      const options = {
+        feeLimit:100000000,
+        callValue:0,
+        tokenValue:10,
+        tokenId:1000001
+    };
+
+    var parameters = [{type:'address',value: address},{type:'uint256',value:100}];
+
+    const transaction = await tronWeb.transactionBuilder.triggerSmartContract(
+        contract_address, 
+        "approve(address,uint256)", 
+        options,
+        parameters, 
+        address
+      );
+    
+    const signedTransaction = await provider!.request<{result:any}>({
+        method: "tron_signTransaction",
+        params: {
+          address,
+          transaction,
+        },
+      }, "tron:0x2b6653dc" );
+      
+      const tx = signedTransaction.result;
+      console.log("transaction", tx);
+
+      const result = await tronWeb.trx.sendRawTransaction(tx);
+      //const result = await tronWeb.trx.sendHexTransaction(tx.raw_data_hex);
+      console.log("result", result);
     return {
       method: "tron_signTransaction",
       address,
-      valid: true, //valid,
-      result: "" //result.signature,
+      valid: true,
+      result: result,
     };
 
+  } catch (error: any) {
+    throw new Error(error);
+  }
 };
