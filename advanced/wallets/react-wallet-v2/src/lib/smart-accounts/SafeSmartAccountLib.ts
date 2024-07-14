@@ -13,22 +13,28 @@ import {
   Hex,
   WalletGrantPermissionsParameters,
   WalletGrantPermissionsReturnType,
-  concatHex,
+  encodeAbiParameters,
   encodePacked,
   keccak256,
-  zeroAddress
+  serializeSignature
 } from 'viem'
-import { publicKeyToAddress, signMessage } from 'viem/accounts'
+import { publicKeyToAddress, sign } from 'viem/accounts'
 import {
+  MOCK_VALIDATOR_ADDRESS,
   PERMISSION_VALIDATOR_ADDRESS,
   SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
-  SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
+  WALLET_CONNECT_COSIGNER,
+  YESPOLICY
 } from '@/utils/permissionValidatorUtils/constants'
-import { SingleSignerPermission, getPermissionScopeData } from '@/utils/permissionValidatorUtils'
-import { ethers } from 'ethers'
-import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
-import { bigIntReplacer, decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
+import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
+import { KEY_TYPES, bigIntReplacer, decodeDIDToPublicKey } from '@/utils/HelperUtil'
 import { isModuleInstalledAbi } from '@/utils/ERC7579AccountUtils'
+import { parsePublicKey as parsePasskeyPublicKey } from 'webauthn-p256'
+import {
+  WebAuthnValidationDataAbi,
+  enableSessionAbi,
+  smartSessionAbi
+} from '@/utils/permissionValidatorUtils/abi'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   protected ERC_7569_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
@@ -104,6 +110,13 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     return userOpHash
   }
 
+  async manageModule(calls: { to: Address; value: bigint; data: Hex }[]) {
+    const userOpHash = await this.sendBatchTransaction(calls)
+    return await this.bundlerClient.waitForUserOperationReceipt({
+      hash: userOpHash
+    })
+  }
+
   async grantPermissions(
     grantPermissionsRequestParams: WalletGrantPermissionsParameters
   ): Promise<WalletGrantPermissionsReturnType> {
@@ -113,14 +126,91 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
     await this.ensureAccountDeployed()
     await this.ensurePermissionValidatorInstalled()
+    const requestedSigner = grantPermissionsRequestParams.signer
+    const requestedPermissions = grantPermissionsRequestParams.permissions
+    if (!requestedSigner || requestedSigner.type !== 'keys') {
+      throw new Error('Currently only supporting KeySigner and MultiKey Type for permissions')
+    }
+    const signerId = this.generatePermissionSignerId(grantPermissionsRequestParams)
+    console.log({ signerId })
+    const typeSigner = requestedSigner as MultiKeySigner
+    const publicKeys = typeSigner.data.ids.map(id => decodeDIDToPublicKey(id))
+    // const [eoaPublicKey, passkeyPublicKey] = publicKeys
+    let eoaPublicKey, passkeyPublicKey
+    publicKeys.forEach(key => {
+      if (key.keyType === KEY_TYPES.secp256k1) {
+        eoaPublicKey = key.key
+      }
+      if (key.keyType === KEY_TYPES.secp256r1) {
+        passkeyPublicKey = key.key
+      }
+    })
+    if (!eoaPublicKey || !passkeyPublicKey) throw Error('Invalid EOA and passkey signers')
+    const targetEOAAddress = publicKeyToAddress(eoaPublicKey as `0x${string}`)
+    const parsedPasskeyPublicKey = parsePasskeyPublicKey(passkeyPublicKey as `0x${string}`)
+    const encodedSignersInitData = encodeAbiParameters(
+      [{ type: 'uint256' }, WebAuthnValidationDataAbi],
+      [
+        BigInt(targetEOAAddress),
+        {
+          pubKeyX: parsedPasskeyPublicKey.x,
+          pubKeyY: parsedPasskeyPublicKey.y
+        }
+      ]
+    )
 
-    const targetAddress = this.getTargetAddress(grantPermissionsRequestParams.signer)
-    const { permissionsContext } = await this.getAllowedPermissionsAndData(targetAddress)
+    const userOpPolicies = [
+      {
+        initData: '0x' as `0x${string}`,
+        policy: YESPOLICY
+      }
+    ]
+
+    const actions = [
+      {
+        actionId: '0x1234' as `0x${string}`,
+        actionPolicies: userOpPolicies
+      }
+    ]
+
+    const enableSessionParams = {
+      isigner: WALLET_CONNECT_COSIGNER as `0x${string}`,
+      actions: actions,
+      isignerInitData: encodedSignersInitData,
+      userOpPolicies: userOpPolicies,
+      erc1271Policies: [],
+      permissionEnableSig: '0x' as `0x${string}`
+    }
+    const enableSessionHash = await this.publicClient.readContract({
+      address: this.client.account.address,
+      abi: smartSessionAbi,
+      functionName: 'getDigest',
+      args: [signerId, this.client.account.address, enableSessionParams]
+    })
+    const signature = await sign({
+      privateKey: this.getPrivateKey() as `0x${string}`,
+      hash: enableSessionHash
+    })
+    const enableSessionScopeSignature: Hex = serializeSignature(signature)
+
+    enableSessionParams.permissionEnableSig = encodePacked(
+      ['address', 'bytes'],
+      [MOCK_VALIDATOR_ADDRESS, enableSessionScopeSignature] // TODO: VALIDATOR_ADDRESS? defaultValidator?
+    )
+    const encodedEnableSessionData = encodeAbiParameters([enableSessionAbi], [enableSessionParams])
+
+    // permissionContext = PermissionValidatorAddress [20bytes] + SignerId[bytes32] + EncodedEnableSessionData[bytes]
+    const permissionContext = encodePacked(
+      ['address', 'bytes32', 'bytes'],
+      [PERMISSION_VALIDATOR_ADDRESS, signerId, encodedEnableSessionData]
+    )
+
+    console.log({ permissionContext })
 
     console.log('Granting permissions...')
 
     return {
-      permissionsContext,
+      permissionsContext: permissionContext,
       grantedPermissions: grantPermissionsRequestParams.permissions,
       expiry: grantPermissionsRequestParams.expiry,
       signerData: {
@@ -128,6 +218,22 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         submitToAddress: this.client.account.address
       }
     }
+  }
+
+  private generatePermissionSignerId(
+    grantPermissionsRequestParams: WalletGrantPermissionsParameters
+  ) {
+    const json = JSON.stringify(grantPermissionsRequestParams, (key, value) => {
+      // Remove undefined values
+      if (value === undefined) {
+        return null
+      }
+      return value
+    })
+    const jsonBytes = new TextEncoder().encode(json)
+    const hash = keccak256(jsonBytes)
+
+    return hash
   }
 
   private async ensureAccountDeployed(): Promise<void> {
@@ -141,6 +247,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     console.log({ isAccountDeployed })
 
     if (!isAccountDeployed) {
+      console.log('Deploying the Account with permission validator')
       await this.deployAccountWithPermissionValidator()
     }
   }
@@ -166,10 +273,10 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     console.log({ isInstalled })
 
     if (!isInstalled) {
+      console.log('Installing the PermissionValidator Module')
       await this.installPermissionValidatorModule()
     }
   }
-
   private async installPermissionValidatorModule(): Promise<void> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
@@ -184,22 +291,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       hash: installModuleUserOpHash
     })
     console.log({ installModuleReceipt })
-  }
-
-  private getTargetAddress(
-    signer:
-      | {
-          type: string
-          data?: unknown | undefined
-        }
-      | undefined
-  ): `0x${string}` {
-    if (signer?.type !== 'key') {
-      throw new Error('Currently only supporting KeySigner Type for permissions')
-    }
-    const typedSigner = signer as KeySigner
-    const publicKey = decodeDIDToSecp256k1PublicKey(typedSigner.data.id)
-    return publicKeyToAddress(publicKey as `0x${string}`)
   }
 
   private async isPermissionValidatorModuleInstalled() {
@@ -217,69 +308,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       ],
       factory: undefined,
       factoryData: undefined
-    })
-  }
-
-  private async getAllowedPermissionsAndData(signer: Address) {
-    // if installed then based on the approvedPermissions build the PermissionsContext value
-    // permissionsContext = [PERMISSION_VALIDATOR_ADDRESS][ENCODED_PERMISSION_SCOPE & SIGNATURE_DATA]
-
-    // this permission have dummy policy set to zeroAddress for now,
-    // bc current version of PermissionValidator_v1 module don't consider checking policy
-    const permissions: SingleSignerPermission[] = [
-      {
-        validUntil: 0,
-        validAfter: 0,
-        signatureValidationAlgorithm: SECP256K1_SIGNATURE_VALIDATOR_ADDRESS,
-        signer: signer,
-        policy: zeroAddress,
-        policyData: '0x'
-      }
-    ]
-    console.log(`computing permission scope data...`)
-    const permittedScopeData = getPermissionScopeData(permissions, this.chain)
-    console.log(`user account signing over computed permission scope data and reguested signer...`)
-    // the smart account sign over the permittedScope and targetAddress
-    const permittedScopeSignature: Hex = await signMessage({
-      privateKey: this.getPrivateKey() as `0x${string}`,
-      message: { raw: concatHex([keccak256(permittedScopeData), signer]) }
-    })
-
-    const _permissionIndex = BigInt(0)
-
-    const encodedData = ethers.utils.defaultAbiCoder.encode(
-      ['uint256', 'tuple(uint48,uint48,address,bytes,address,bytes)', 'bytes', 'bytes'],
-      [
-        _permissionIndex,
-        [
-          permissions[0].validAfter,
-          permissions[0].validUntil,
-          permissions[0].signatureValidationAlgorithm,
-          permissions[0].signer,
-          permissions[0].policy,
-          permissions[0].policyData
-        ],
-        permittedScopeData,
-        permittedScopeSignature
-      ]
-    ) as `0x${string}`
-    console.log(`encoding permissionsContext bytes data...`)
-    const permissionsContext = concatHex([
-      PERMISSION_VALIDATOR_ADDRESS,
-      encodePacked(['uint8', 'bytes'], [1, encodedData])
-    ])
-    return {
-      permissionsContext,
-      permittedScopeSignature,
-      permittedScopeData,
-      permissions
-    }
-  }
-
-  async manageModule(calls: { to: Address; value: bigint; data: Hex }[]) {
-    const userOpHash = await this.sendBatchTransaction(calls)
-    return await this.bundlerClient.waitForUserOperationReceipt({
-      hash: userOpHash
     })
   }
 }
