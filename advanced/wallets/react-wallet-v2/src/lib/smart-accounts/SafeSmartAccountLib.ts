@@ -157,10 +157,10 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         policy: YESPOLICY
       }
     ]
-
+    const actionId = keccak256(signerId) // just a random id
     const actions = [
       {
-        actionId: '0x1234' as `0x${string}`,
+        actionId: actionId,
         actionPolicies: userOpPolicies
       }
     ]
@@ -174,7 +174,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       permissionEnableSig: '0x' as `0x${string}`
     }
     const enableSessionHash = await this.publicClient.readContract({
-      address: this.client.account.address,
+      address: PERMISSION_VALIDATOR_ADDRESS,
       abi: smartSessionAbi,
       functionName: 'getDigest',
       args: [signerId, this.client.account.address, enableSessionParams]
