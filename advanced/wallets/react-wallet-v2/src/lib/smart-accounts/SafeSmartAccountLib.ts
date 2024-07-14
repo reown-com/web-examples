@@ -37,7 +37,7 @@ import {
 } from '@/utils/permissionValidatorUtils/abi'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
-  protected ERC_7569_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
+  protected ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
   protected SAFE_4337_MODULE_ADDRESS: Address = '0x3Fdb5BC686e861480ef99A6E3FaAe03c0b9F32e2'
 
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
@@ -46,7 +46,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       safeVersion: '1.4.1',
       entryPoint: ENTRYPOINT_ADDRESS_V07,
       safe4337ModuleAddress: this.SAFE_4337_MODULE_ADDRESS,
-      erc7569LaunchpadAddress: this.ERC_7569_LAUNCHPAD_ADDRESS,
+      erc7579LaunchpadAddress: this.ERC_7579_LAUNCHPAD_ADDRESS,
       signer: this.signer
     })
     return {
@@ -81,8 +81,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       throw new Error('Client not initialized')
     }
 
-    console.log({ calls })
-
     const userOp = (await this.client.prepareUserOperationRequest({
       userOperation: {
         callData: await this.client.account.encodeCallData(calls)
@@ -101,12 +99,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       userOperation: userOp
     })
 
-    if (userOpHash) {
-      const txReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: userOpHash
-      })
-      console.log({ txReceipt })
-    }
     return userOpHash
   }
 

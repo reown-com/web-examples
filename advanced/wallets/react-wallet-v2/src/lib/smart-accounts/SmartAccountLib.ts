@@ -24,13 +24,11 @@ import {
   SmartAccountClientConfig,
   bundlerActions,
   createSmartAccountClient,
-  isSmartAccountDeployed
 } from 'permissionless'
 import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/actions/pimlico'
-import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl } from '@/utils/SmartAccountUtil'
+import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl, } from '@/utils/SmartAccountUtil'
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
-import { foundry } from 'viem/chains'
 import { Erc7579Actions, erc7579Actions } from 'permissionless/actions/erc7579'
 import { SmartAccount } from 'permissionless/accounts'
 
@@ -78,16 +76,19 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     entryPointVersion = 6
   }: SmartAccountLibOptions) {
     const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
+    const publicClientRPCUrl = process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL || publicRPCUrl({ chain })
     const paymasterUrl = ({ chain }: UrlConfig) => {
-      if (chain.id === foundry.id) {
-        return `http://localhost:3000`
+      const localPaymasterUrl = process.env.NEXT_PUBLIC_LOCAL_PAYMASTER_URL
+      if (localPaymasterUrl) {
+        return localPaymasterUrl
       }
       return `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
     }
 
     const bundlerUrl = ({ chain }: UrlConfig) => {
-      if (chain.id === foundry.id) {
-        return `http://localhost:4337`
+      const localBundlerUrl = process.env.NEXT_PUBLIC_LOCAL_BUNDLER_URL
+      if (localBundlerUrl) {
+        return localBundlerUrl
       }
       return `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
     }
@@ -111,7 +112,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     })
 
     this.publicClient = createPublicClient({
-      transport: http(publicRPCUrl({ chain: this.chain }))
+      transport: http(publicClientRPCUrl)
     }).extend(bundlerActions(this.entryPoint))
 
     this.paymasterClient = createPimlicoPaymasterClient({
