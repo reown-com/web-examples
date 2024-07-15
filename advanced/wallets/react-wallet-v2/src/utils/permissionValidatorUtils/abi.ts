@@ -27,91 +27,93 @@ export const actionDataAbi = {
   name: 'actionData',
   type: 'tuple'
 } as const
-export const enableSessionAbi = {
-  name: 'data',
-  type: 'tuple',
-  internalType: 'struct EnableSessions',
-  components: [
-    {
-      name: 'isigner',
-      type: 'address',
-      internalType: 'contract ISigner'
-    },
-    {
-      name: 'isignerInitData',
-      type: 'bytes',
-      internalType: 'bytes'
-    },
-    {
-      name: 'userOpPolicies',
-      type: 'tuple[]',
-      internalType: 'struct PolicyData[]',
-      components: [
-        {
-          name: 'policy',
-          type: 'address',
-          internalType: 'address'
-        },
-        {
-          name: 'initData',
-          type: 'bytes',
-          internalType: 'bytes'
-        }
-      ]
-    },
-    {
-      name: 'erc1271Policies',
-      type: 'tuple[]',
-      internalType: 'struct PolicyData[]',
-      components: [
-        {
-          name: 'policy',
-          type: 'address',
-          internalType: 'address'
-        },
-        {
-          name: 'initData',
-          type: 'bytes',
-          internalType: 'bytes'
-        }
-      ]
-    },
-    {
-      name: 'actions',
-      type: 'tuple[]',
-      internalType: 'struct ActionData[]',
-      components: [
-        {
-          name: 'actionId',
-          type: 'bytes32',
-          internalType: 'ActionId'
-        },
-        {
-          name: 'actionPolicies',
-          type: 'tuple[]',
-          internalType: 'struct PolicyData[]',
-          components: [
-            {
-              name: 'policy',
-              type: 'address',
-              internalType: 'address'
-            },
-            {
-              name: 'initData',
-              type: 'bytes',
-              internalType: 'bytes'
-            }
-          ]
-        }
-      ]
-    },
-    {
-      name: 'permissionEnableSig',
-      type: 'bytes',
-      internalType: 'bytes'
-    }
-  ]
-} as const
+export const enableSessionAbi = [
+  {
+    name: 'data',
+    type: 'tuple',
+    internalType: 'struct EnableSessions',
+    components: [
+      {
+        name: 'isigner',
+        type: 'address',
+        internalType: 'contract ISigner'
+      },
+      {
+        name: 'isignerInitData',
+        type: 'bytes',
+        internalType: 'bytes'
+      },
+      {
+        name: 'userOpPolicies',
+        type: 'tuple[]',
+        internalType: 'struct PolicyData[]',
+        components: [
+          {
+            name: 'policy',
+            type: 'address',
+            internalType: 'address'
+          },
+          {
+            name: 'initData',
+            type: 'bytes',
+            internalType: 'bytes'
+          }
+        ]
+      },
+      {
+        name: 'erc1271Policies',
+        type: 'tuple[]',
+        internalType: 'struct PolicyData[]',
+        components: [
+          {
+            name: 'policy',
+            type: 'address',
+            internalType: 'address'
+          },
+          {
+            name: 'initData',
+            type: 'bytes',
+            internalType: 'bytes'
+          }
+        ]
+      },
+      {
+        name: 'actions',
+        type: 'tuple[]',
+        internalType: 'struct ActionData[]',
+        components: [
+          {
+            name: 'actionId',
+            type: 'bytes32',
+            internalType: 'ActionId'
+          },
+          {
+            name: 'actionPolicies',
+            type: 'tuple[]',
+            internalType: 'struct PolicyData[]',
+            components: [
+              {
+                name: 'policy',
+                type: 'address',
+                internalType: 'address'
+              },
+              {
+                name: 'initData',
+                type: 'bytes',
+                internalType: 'bytes'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name: 'permissionEnableSig',
+        type: 'bytes',
+        internalType: 'bytes'
+      }
+    ]
+  }
+] as const
 export const policyDataAbi = {
   components: [
     {

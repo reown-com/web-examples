@@ -118,6 +118,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
     await this.ensureAccountDeployed()
     await this.ensurePermissionValidatorInstalled()
+    await this.ensureMockSignatureValidatorInstalled()
     const requestedSigner = grantPermissionsRequestParams.signer
     const requestedPermissions = grantPermissionsRequestParams.permissions
     if (!requestedSigner || requestedSigner.type !== 'keys') {
@@ -179,6 +180,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       functionName: 'getDigest',
       args: [signerId, this.client.account.address, enableSessionParams]
     })
+
+    console.log({ digest: enableSessionHash })
     const signature = await sign({
       privateKey: this.getPrivateKey() as `0x${string}`,
       hash: enableSessionHash
@@ -187,14 +190,14 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
     enableSessionParams.permissionEnableSig = encodePacked(
       ['address', 'bytes'],
-      [MOCK_VALIDATOR_ADDRESS, enableSessionScopeSignature] // TODO: VALIDATOR_ADDRESS? defaultValidator?
+      [MOCK_VALIDATOR_ADDRESS, enableSessionScopeSignature] // TODO: MOCK_VALIDATOR_ADDRESS? defaultValidator?
     )
-    const encodedEnableSessionData = encodeAbiParameters([enableSessionAbi], [enableSessionParams])
-
+    const encodedEnableSessionData = encodeAbiParameters(enableSessionAbi, [enableSessionParams])
+    console.log({ encodedEnableSessionData })
     // permissionContext = PermissionValidatorAddress [20bytes] + SignerId[bytes32] + EncodedEnableSessionData[bytes]
     const permissionContext = encodePacked(
-      ['address', 'bytes32', 'bytes'],
-      [PERMISSION_VALIDATOR_ADDRESS, signerId, encodedEnableSessionData]
+      ['address', 'bytes1', 'bytes32', 'bytes'],
+      [PERMISSION_VALIDATOR_ADDRESS, '0x02', signerId, encodedEnableSessionData]
     )
 
     console.log({ permissionContext })
@@ -269,6 +272,15 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       await this.installPermissionValidatorModule()
     }
   }
+  private async ensureMockSignatureValidatorInstalled(): Promise<void> {
+    const isMockSignatureModuleInstalled = await this.isMockSignatureValidatorModuleInstalled()
+    console.log({ isMockSignatureModuleInstalled })
+
+    if (!isMockSignatureModuleInstalled) {
+      console.log('Installing the MockSignature Module')
+      await this.installMockSignatureValidatorModule()
+    }
+  }
   private async installPermissionValidatorModule(): Promise<void> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
@@ -284,6 +296,21 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
     console.log({ installModuleReceipt })
   }
+  private async installMockSignatureValidatorModule(): Promise<void> {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    const installMockSignatureModuleUserOpHash = await this.client.installModule({
+      account: this.client.account,
+      address: MOCK_VALIDATOR_ADDRESS,
+      context: '0x',
+      type: 'validator'
+    })
+    const installMockSignatureModuleReceipt = await this.bundlerClient.waitForUserOperationReceipt({
+      hash: installMockSignatureModuleUserOpHash
+    })
+    console.log({ installMockSignatureModuleReceipt })
+  }
 
   private async isPermissionValidatorModuleInstalled() {
     if (!this.client?.account) {
@@ -297,9 +324,23 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         BigInt(1), // ModuleType
         PERMISSION_VALIDATOR_ADDRESS, // Module Address
         '0x' // Additional Context
-      ],
-      factory: undefined,
-      factoryData: undefined
+      ]
+    })
+  }
+
+  private async isMockSignatureValidatorModuleInstalled() {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    return await this.publicClient.readContract({
+      address: this.client.account.address,
+      abi: isModuleInstalledAbi,
+      functionName: 'isModuleInstalled',
+      args: [
+        BigInt(1), // ModuleType
+        MOCK_VALIDATOR_ADDRESS, // Module Address
+        '0x' // Additional Context
+      ]
     })
   }
 }
