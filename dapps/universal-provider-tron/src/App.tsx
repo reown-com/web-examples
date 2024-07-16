@@ -1,7 +1,9 @@
 import UniversalProvider from "@walletconnect/universal-provider";
 import { WalletConnectModal } from "@walletconnect/modal";
-import { useState } from "react";
-import { signMessage,signTransacion, TronChains } from "./utils/helpers";
+import { useEffect, useState } from "react";
+//import { signMessage,signTransacion, getBalance, TronChains } from "./utils/helpers";
+
+import { TronService, TronChains } from "./utils/tronService";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
@@ -11,7 +13,7 @@ const events: string[] = [];
 const chains = [`tron:${TronChains.Mainnet}`];
 
 // 2. select methods (tron)
-const methods = ["tron_signMessage", "tron_signTransaction", "eth_sendTransaction"];
+const methods = ["tron_signMessage", "tron_signTransaction"];
 
 // 3. create modal instance
 const modal = new WalletConnectModal({
@@ -31,8 +33,21 @@ const provider = await UniversalProvider.init({
   },
 });
 
+const tronService = new TronService(provider);
+
 const App = () => {
   const [isConnected, setIsConnected] = useState(false);
+  const [balance, setBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function  getBalanceInit() {
+      const res = await tronService.getBalance(address!);
+      setBalance(res!);
+    }
+    
+    if (!isConnected) return; 
+    getBalanceInit()
+  }, [isConnected]);
 
   // 5. get address once loaded
   const address =
@@ -75,17 +90,23 @@ const App = () => {
   // 9. handle signMessage and sendTransaction
   const handleSign = async () => {
     console.log("signing");
-    const res = await signMessage(
-      `Can i have authorize this request pls bossman - ${Date.now()}`,
-      provider,
+    const res = await tronService.signMessage(
+      `Can i have authorize this request pls - ${Date.now()}`,
       address!
     );
     console.log("-",res);
   };
 
+    // 9. handle get Balance
+    const handleGetBalance = async () => {
+      const res = await tronService.getBalance(address!);
+      console.log(res);
+      setBalance(res);
+    };
+
 
   const handleSendTransaction = async () => {
-    const res = await signTransacion(address!, provider, address!);
+    const res = await tronService.signTransaction(address!, 100);
     console.log(res);
   };
 
@@ -94,10 +115,11 @@ const App = () => {
       {isConnected ? (
         <>
           <p>
-            <b>Address: </b>
-            {address}
+            <b>Address: </b>{address}<br />
+            <b>Balance: </b>{balance}<br />
           </p>
           <div className="btn-container">
+          <button onClick={handleGetBalance}>get Balance</button>
             <button onClick={handleSign}>Sign MSG</button>
             <button onClick={handleSendTransaction}>Send Transaction</button>
             <button onClick={disconnect}>Disconnect</button>
