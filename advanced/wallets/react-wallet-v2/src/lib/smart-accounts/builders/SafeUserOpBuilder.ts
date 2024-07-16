@@ -3,29 +3,39 @@ import { FillUserOpParams, FillUserOpResponse, SendUserOpWithSigantureParams, Se
 import { createPublicClient, http } from "viem";
 import { signerToSafeSmartAccount } from "permissionless/accounts";
 import { createSmartAccountClient, ENTRYPOINT_ADDRESS_V07, getUserOperationHash } from "permissionless";
-import { getChainById } from "@/utils/ChainUtil";
 import { createPimlicoBundlerClient, createPimlicoPaymasterClient } from "permissionless/clients/pimlico";
+import { bundlerUrl, paymasterUrl, publicClientUrl } from "@/utils/SmartAccountUtil";
+
+import { getChainById } from "@/utils/ChainUtil";
+
 
 const PIMLICO_API_KEY = process.env['NEXT_PUBLIC_PIMLICO_KEY']
 
 export class SafeUserOpBuilder implements UserOpBuilder {
 
-    async fillUserOp(params: FillUserOpParams): Promise<FillUserOpResponse> {
 
+    async fillUserOp(params: FillUserOpParams): Promise<FillUserOpResponse> {
+        
         const privateKey = generatePrivateKey()
         const signer = privateKeyToAccount(privateKey)
-         
+        const chain = getChainById(params.chainId)
+    
         const publicClient = createPublicClient({
-            transport: http("https://rpc.ankr.com/eth_sepolia"),
+            transport: http(publicClientUrl({ chain }))
         })
 
         const paymasterClient = createPimlicoPaymasterClient({
-            transport: http("https://api.pimlico.io/v2/sepolia/rpc?apikey="+PIMLICO_API_KEY),
+            transport: http(paymasterUrl({ chain }), {
+                timeout: 30000
+              }),
             entryPoint: ENTRYPOINT_ADDRESS_V07,
         })
 
+        const bundlerTransport = http(bundlerUrl({ chain }), {
+            timeout: 30000
+        })
         const pimlicoBundlerClient = createPimlicoBundlerClient({
-            transport: http("https://api.pimlico.io/v2/sepolia/rpc?apikey="+PIMLICO_API_KEY),
+            transport: bundlerTransport,
             entryPoint: ENTRYPOINT_ADDRESS_V07,
         })
       
@@ -35,12 +45,12 @@ export class SafeUserOpBuilder implements UserOpBuilder {
             safeVersion: "1.4.1",
             address: params.account
         })
-        const chain = getChainById(params.chainId)
+        
         const smartAccountClient = createSmartAccountClient({
             account: safeAccount,
             entryPoint: ENTRYPOINT_ADDRESS_V07,
             chain,
-            bundlerTransport: http("https://api.pimlico.io/v2/sepolia/rpc?apikey="+PIMLICO_API_KEY),
+            bundlerTransport,
             middleware: {
                 sponsorUserOperation: paymasterClient.sponsorUserOperation, // optional
                 gasPrice: async () => (await pimlicoBundlerClient.getUserOperationGasPrice()).fast, // if using pimlico bundler
