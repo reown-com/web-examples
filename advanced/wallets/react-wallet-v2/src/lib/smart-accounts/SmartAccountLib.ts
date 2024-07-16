@@ -23,7 +23,7 @@ import {
   SmartAccountClient,
   SmartAccountClientConfig,
   bundlerActions,
-  createSmartAccountClient,
+  createSmartAccountClient
 } from 'permissionless'
 import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/actions/pimlico'
 import { bundlerUrl, paymasterUrl, publicClientUrl } from '@/utils/SmartAccountUtil'
@@ -75,9 +75,6 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     sponsored = false,
     entryPointVersion = 6
   }: SmartAccountLibOptions) {
-    
-    
-
     let entryPoint: EntryPoint = ENTRYPOINT_ADDRESS_V06
     if (entryPointVersion === 7) {
       entryPoint = ENTRYPOINT_ADDRESS_V07

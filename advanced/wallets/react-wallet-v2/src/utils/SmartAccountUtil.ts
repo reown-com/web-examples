@@ -7,8 +7,6 @@ import { sepolia } from 'viem/chains'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
 
-
-
 // Entrypoints [I think this is constant but JIC]
 export const ENTRYPOINT_ADDRESSES: Record<Chain['name'], Hex> = {
   Sepolia: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
@@ -147,7 +145,7 @@ export type UrlConfig = {
   chain: Chain | ViemChain
 }
 
-export const publicClientUrl = ({ chain }: UrlConfig) => { 
+export const publicClientUrl = ({ chain }: UrlConfig) => {
   return process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL || publicRPCUrl({ chain })
 }
 
