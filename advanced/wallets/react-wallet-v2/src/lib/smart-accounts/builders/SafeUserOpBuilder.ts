@@ -21,7 +21,6 @@ import { bundlerUrl, paymasterUrl, publicClientUrl } from '@/utils/SmartAccountU
 
 import { getChainById } from '@/utils/ChainUtil'
 
-const PIMLICO_API_KEY = process.env['NEXT_PUBLIC_PIMLICO_KEY']
 
 export class SafeUserOpBuilder implements UserOpBuilder {
   async fillUserOp(params: FillUserOpParams): Promise<FillUserOpResponse> {
@@ -66,6 +65,7 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       }
     })
     const account = smartAccountClient.account
+
     const userOp = await smartAccountClient.prepareUserOperationRequest({
       userOperation: {
         callData: await account.encodeCallData(params.calls)
