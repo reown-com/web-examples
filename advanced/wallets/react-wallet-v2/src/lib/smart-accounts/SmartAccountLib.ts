@@ -200,13 +200,13 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const signature = await this.client.account.signTransaction(transaction)
     return signature || ''
   }
-  async sendTransaction({ to, value, data }: { to: Address; value: bigint; data: Hex }) {
+  async sendTransaction({ to, value, data }: { to: Address; value: bigint | Hex; data: Hex }) {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
     const txResult = await this.client.sendTransaction({
       to,
-      value,
+      value: BigInt(value),
       data,
       account: this.client.account,
       chain: this.chain
