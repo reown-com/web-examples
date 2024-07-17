@@ -247,8 +247,17 @@ export enum DEFAULT_TRON_EVENTS {}
 export enum DEFAULT_TEZOS_METHODS {
   TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
   TEZOS_SEND = "tezos_send",
+  TEZOS_SEND_TRANSACTION = "tezos_send:transaction",
   TEZOS_SIGN = "tezos_sign",
 }
+
+export const DEFAULT_TEZOS_KINDS = {
+  "tezos_send:transaction": {
+      kind: "transaction",
+      amount: "1", // 1 mutez, smallest unit
+      destination: "$(address)", // send to ourselves
+  },
+};
 
 export enum DEFAULT_TEZOS_EVENTS {}
 

@@ -152,6 +152,7 @@ export interface ChainNamespaces {
 export interface AccountAction {
   method: string;
   callback: (chainId: string, address: string) => Promise<void>;
+  description?: any;
 }
 
 export interface AccountBalances {
