@@ -30,6 +30,9 @@ import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/act
 import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl } from '@/utils/SmartAccountUtil'
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
+import { foundry } from 'viem/chains'
+import { Erc7579Actions, erc7579Actions } from 'permissionless/actions/erc7579'
+import { SmartAccount } from 'permissionless/accounts'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -54,7 +57,11 @@ export abstract class SmartAccountLib implements EIP155Wallet {
   protected bundlerClient: BundlerClient<EntryPoint> &
     BundlerActions<EntryPoint> &
     PimlicoBundlerActions
-  protected client: (SmartAccountClient<EntryPoint> & PimlicoBundlerActions) | undefined
+  protected client:
+    | (SmartAccountClient<EntryPoint> &
+        PimlicoBundlerActions &
+        Erc7579Actions<EntryPoint, SmartAccount<EntryPoint> | undefined>)
+    | undefined
 
   // Transport
   protected bundlerUrl: HttpTransport
@@ -71,10 +78,22 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     entryPointVersion = 6
   }: SmartAccountLibOptions) {
     const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
-    const paymasterUrl = ({ chain }: UrlConfig) =>
-      `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
-    const bundlerUrl = ({ chain }: UrlConfig) =>
-      `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
+    const publicClientRPCUrl = process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL || publicRPCUrl({ chain })
+    const paymasterUrl = ({ chain }: UrlConfig) => {
+      const localPaymasterUrl = process.env.NEXT_PUBLIC_LOCAL_PAYMASTER_URL
+      if (localPaymasterUrl) {
+        return localPaymasterUrl
+      }
+      return `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
+    }
+
+    const bundlerUrl = ({ chain }: UrlConfig) => {
+      const localBundlerUrl = process.env.NEXT_PUBLIC_LOCAL_BUNDLER_URL
+      if (localBundlerUrl) {
+        return localBundlerUrl
+      }
+      return `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
+    }
 
     let entryPoint: EntryPoint = ENTRYPOINT_ADDRESS_V06
     if (entryPointVersion === 7) {
@@ -87,16 +106,21 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     this.#signerPrivateKey = privateKey
     this.signer = privateKeyToAccount(privateKey as Hex)
 
-    this.bundlerUrl = http(bundlerUrl({ chain: this.chain }))
-    this.paymasterUrl = http(paymasterUrl({ chain: this.chain }))
+    this.bundlerUrl = http(bundlerUrl({ chain: this.chain }), {
+      timeout: 30000
+    })
+    this.paymasterUrl = http(paymasterUrl({ chain: this.chain }), {
+      timeout: 30000
+    })
 
     this.publicClient = createPublicClient({
-      transport: http(publicRPCUrl({ chain: this.chain }))
+      transport: http(publicClientRPCUrl)
     }).extend(bundlerActions(this.entryPoint))
 
     this.paymasterClient = createPimlicoPaymasterClient({
       transport: this.paymasterUrl,
-      entryPoint: this.entryPoint
+      entryPoint: this.entryPoint,
+      chain: this.chain
     })
 
     this.bundlerClient = createClient({
@@ -114,9 +138,11 @@ export abstract class SmartAccountLib implements EIP155Wallet {
 
   async init() {
     const config = await this.getClientConfig()
-    this.client = createSmartAccountClient(config).extend(pimlicoBundlerActions(this.entryPoint))
+    this.client = createSmartAccountClient(config)
+      .extend(pimlicoBundlerActions(this.entryPoint))
+      .extend(erc7579Actions({ entryPoint: this.entryPoint }))
     console.log('Smart account initialized', {
-      address: this.client.account?.address,
+      address: this.client?.account?.address,
       chain: this.chain.name,
       type: this.type
     })
@@ -174,13 +200,13 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const signature = await this.client.account.signTransaction(transaction)
     return signature || ''
   }
-  async sendTransaction({ to, value, data }: { to: Address; value: bigint; data: Hex }) {
+  async sendTransaction({ to, value, data }: { to: Address; value: bigint | Hex; data: Hex }) {
     if (!this.client || !this.client.account) {
       throw new Error('Client not initialized')
     }
     const txResult = await this.client.sendTransaction({
       to,
-      value,
+      value: BigInt(value),
       data,
       account: this.client.account,
       chain: this.chain

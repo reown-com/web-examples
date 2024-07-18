@@ -15,13 +15,12 @@ import { getSdkError } from '@walletconnect/utils'
 import SettingsStore from '@/store/SettingsStore'
 import EIP155Lib from '@/lib/EIP155Lib'
 import {
-  ENTRYPOINT_ADDRESS_V06,
+  ENTRYPOINT_ADDRESS_V07,
   GetUserOperationReceiptReturnType,
   createBundlerClient
 } from 'permissionless'
 import { http, toHex } from 'viem'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
-
 const getCallsReceipt = async (getCallParams: GetCallsParams) => {
   /**
    * This is hardcode implementation of wallet_getCallsStatus
@@ -29,9 +28,11 @@ const getCallsReceipt = async (getCallParams: GetCallsParams) => {
    * Getting directly from bundler the receipt on sepolia chain.
    */
   const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
+  const localBundlerUrl = process.env.NEXT_PUBLIC_LOCAL_BUNDLER_URL
+  const bundlerUrl = localBundlerUrl || `https://api.pimlico.io/v1/sepolia/rpc?apikey=${apiKey}`
   const bundlerClient = createBundlerClient({
-    entryPoint: ENTRYPOINT_ADDRESS_V06,
-    transport: http(`https://api.pimlico.io/v1/sepolia/rpc?apikey=${apiKey}`)
+    entryPoint: ENTRYPOINT_ADDRESS_V07,
+    transport: http(bundlerUrl)
   })
   const userOpReceipt = (await bundlerClient.getUserOperationReceipt({
     hash: getCallParams as `0x${string}`
