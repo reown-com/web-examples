@@ -94,10 +94,10 @@ const App = () => {
       `Can i have authorize this request pls - ${Date.now()}`,
       address!
     );
-    console.log("-",res);
+    console.log("result sign: ",res);
   };
 
-    // 9. handle get Balance
+    // 10. handle get Balance
     const handleGetBalance = async () => {
       const res = await tronService.getBalance(address!);
       console.log(res);
@@ -106,8 +106,9 @@ const App = () => {
 
 
   const handleSendTransaction = async () => {
+    console.log("signing");
     const res = await tronService.signTransaction(address!, 100);
-    console.log(res);
+    console.log("result send tx: ", res);
   };
 
   return (
