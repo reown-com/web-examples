@@ -1,0 +1,18 @@
+/* styles.css */
+.centered-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  body {
+    background: linear-gradient(135deg, #00FFA3, #DC1FFF, #2A2A72);
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: Arial, sans-serif;
+  }
