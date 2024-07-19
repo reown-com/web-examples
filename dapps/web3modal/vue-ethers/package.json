@@ -8,7 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@web3modal/ethers": "^5.0.6",
+    "@web3modal/ethers": "^5.0.7",
     "core-js": "3.37.1",
     "ethers": "^6.13.1",
     "react": "^18.3.1",
