@@ -55,7 +55,10 @@ export default class TezosLib {
       curve: curve ?? DEFAULT_CURVE
     }
 
-    const Tezos = new TezosToolkit('https://mainnet.api.tez.ie')
+    // TODO: https://github.com/trilitech/web-examples/issues/2
+    // Hardcoded Tezos to use testnet
+    // Tezos should be able to switch between testnets and mainnet
+    const Tezos = new TezosToolkit('https://rpc.ghostnet.teztnets.com')
 
     const signer = InMemorySigner.fromMnemonic(params)
 

@@ -22,14 +22,14 @@ export const TezosChainData: ChainsMap = {
   mainnet: {
     name: "Tezos",
     id: "tezos:mainnet",
-    rpc: ["https://mainnet.api.tez.ie"],
+    rpc: ["https://rpc.tzbeta.net"],
     slip44: 1729,
     testnet: false,
   },
   testnet: {
     name: "Tezos Testnet",
     id: "tezos:testnet",
-    rpc: ["https://ghostnet.ecadinfra.com"],
+    rpc: ["https://rpc.ghostnet.teztnets.com"],
     slip44: 1729,
     testnet: true,
   },
