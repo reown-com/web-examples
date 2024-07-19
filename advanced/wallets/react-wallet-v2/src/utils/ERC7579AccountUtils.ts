@@ -143,3 +143,82 @@ export async function isERC7579ModuleInstalled(
     module: erc7579Module // The module object
   })
 }
+
+export const isModuleInstalledAbi = [
+  {
+    type: 'function',
+    name: 'isModuleInstalled',
+    inputs: [
+      { name: 'moduleType', type: 'uint256', internalType: 'uint256' },
+      { name: 'module', type: 'address', internalType: 'address' },
+      {
+        name: 'additionalContext',
+        type: 'bytes',
+        internalType: 'bytes'
+      }
+    ],
+    outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
+    stateMutability: 'view'
+  }
+] as const
+
+export const AccountExecuteAbi = [
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'to',
+        type: 'address'
+      },
+      {
+        internalType: 'uint256',
+        name: 'value',
+        type: 'uint256'
+      },
+      {
+        internalType: 'bytes',
+        name: 'data',
+        type: 'bytes'
+      },
+      {
+        internalType: 'enum Operation',
+        name: '',
+        type: 'uint8'
+      }
+    ],
+    name: 'execute',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function'
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: 'address',
+            name: 'to',
+            type: 'address'
+          },
+          {
+            internalType: 'uint256',
+            name: 'value',
+            type: 'uint256'
+          },
+          {
+            internalType: 'bytes',
+            name: 'data',
+            type: 'bytes'
+          }
+        ],
+        internalType: 'struct Call[]',
+        name: 'calls',
+        type: 'tuple[]'
+      }
+    ],
+    name: 'executeBatch',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function'
+  }
+] as const
