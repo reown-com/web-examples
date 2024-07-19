@@ -426,6 +426,10 @@ const Home: NextPage = () => {
       openRequestModal();
       await tezosRpc.testSignTransaction(chainId, address);
     };
+    const onSignOrigination = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignOrigination(chainId, address);
+    };
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
       await tezosRpc.testSignMessage(chainId, address);
@@ -439,6 +443,11 @@ const Home: NextPage = () => {
         method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION,
         callback: onSignTransaction,
         description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION,
+        callback: onSignOrigination,
+        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION],
       },
       {
         method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,

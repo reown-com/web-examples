@@ -248,6 +248,7 @@ export enum DEFAULT_TEZOS_METHODS {
   TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
   TEZOS_SEND = "tezos_send",
   TEZOS_SEND_TRANSACTION = "tezos_send:transaction",
+  TEZOS_SEND_ORGINATION = "tezos_send:origination",
   TEZOS_SIGN = "tezos_sign",
 }
 
@@ -256,6 +257,28 @@ export const DEFAULT_TEZOS_KINDS = {
       kind: "transaction",
       amount: "1", // 1 mutez, smallest unit
       destination: "$(address)", // send to ourselves
+      mutez: true,
+  },
+  "tezos_send:origination": {
+      kind: "origination",
+      source: "$(address)",
+      balance: '0',
+      code: [
+          { prim: 'parameter', args: [{ prim: 'unit' }] },
+          { prim: 'storage', args: [{ prim: 'unit' }] },
+          {
+              prim: 'code',
+              args: [
+                  [
+                      { prim: 'DROP' },
+                      { prim: 'UNIT' },
+                      { prim: 'NIL', args: [{ prim: 'operation' }] },
+                      { prim: 'PAIR' },
+                  ],
+              ],
+          },
+      ],
+      init: { prim: 'Unit' },
   },
 };
 
