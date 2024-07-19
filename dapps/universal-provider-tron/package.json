@@ -1,0 +1,42 @@
+{
+  "name": "sandbox",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@noble/secp256k1": "^2.1.0",
+    "@walletconnect/encoding": "^1.0.1",
+    "@walletconnect/modal": "^2.6.2",
+    "@walletconnect/sign-client": "2.14.0",
+    "@walletconnect/types": "2.14.0",
+    "@walletconnect/universal-provider": "2.14.0",
+    "@walletconnect/utils": "2.14.0",
+    "bs58": "^5.0.0",
+    "crypto-browserify": "^3.12.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tronweb": "^5.3.2",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@daochild/tronweb-typescript": "^1.1.2",
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "@vitejs/plugin-react-swc": "^3.3.2",
+    "eslint": "^8.48.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.9",
+    "vite-plugin-node-polyfills": "^0.22.0"
+  }
+}
