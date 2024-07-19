@@ -4,7 +4,7 @@
   import { reconnect } from '@wagmi/core'
 
   // 1. Define constants
-  const projectId = 'YOUR_PROJECT_ID'
+  const projectId = process.env.VUE_APP_PROJECT_ID
 
   // 2. Create wagmiConfig
   const metadata = {
@@ -26,6 +26,7 @@
   })
 
   reconnect(config)
+  
   // 3. Create modal
   createWeb3Modal({
     wagmiConfig: config,
