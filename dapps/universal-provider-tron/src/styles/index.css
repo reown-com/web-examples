@@ -15,6 +15,14 @@
   -webkit-text-size-adjust: 100%;
 }
 
+.center-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -80,4 +88,46 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.circle {
+  width: 30px; /* Adjust the size as needed */
+  height: 30px; /* Adjust the size as needed */
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: add a shadow for better visual effect */
+  margin-top: 20px;
+}
+
+.circle img {
+  width: 70%; /* Adjust as needed */
+  height: 70%; /* Adjust as needed */
+
+  align-items: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+
+body {
+  background: linear-gradient(135deg, #430a06, #0f020a);
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: Arial, sans-serif;
 }

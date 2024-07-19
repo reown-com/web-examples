@@ -72,7 +72,7 @@ export class TronService {
     }
   }
 
-  public async signTransaction(
+  public async sendTransaction(
     address: string,
     amount: number
   ) {
