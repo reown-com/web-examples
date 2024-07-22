@@ -249,6 +249,7 @@ export enum DEFAULT_TEZOS_METHODS {
   TEZOS_SEND = "tezos_send",
   TEZOS_SEND_TRANSACTION = "tezos_send:transaction",
   TEZOS_SEND_ORGINATION = "tezos_send:origination",
+  TEZOS_SEND_DELEGATION = "tezos_send:delegation",
   TEZOS_SIGN = "tezos_sign",
 }
 
@@ -279,6 +280,11 @@ export const DEFAULT_TEZOS_KINDS = {
           },
       ],
       init: { prim: 'Unit' },
+  },
+  "tezos_send:delegation": {
+    kind: "delegation",
+    source: "$(address)", // the address that is delegating
+    delegate: "$(address)", // the address that is being delegated to. Delegate to ourself for testing purposes
   },
 };
 

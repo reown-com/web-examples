@@ -128,6 +128,18 @@ export default class TezosLib {
             code: tx.code,
             init: tx.init,
           };
+        case 'delegation':
+          if (!tx.source || validateAddress(tx.source) !== 3) {
+            throw new Error(`tx.source contains invalid address ${tx.source}`);
+          }
+          if (!tx.delegate || validateAddress(tx.delegate) !== 3) {
+            throw new Error(`tx.delegate contains invalid address ${tx.delegate}`);
+          }
+          return {
+            kind: 'delegation',
+            source: tx.source,
+            delegate: tx.delegate,
+          };
         default:
           throw new Error(`Unsupported transaction kind: ${tx.kind}`);
       }
