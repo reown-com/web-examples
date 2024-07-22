@@ -250,13 +250,14 @@ export enum DEFAULT_TEZOS_METHODS {
   TEZOS_SEND_TRANSACTION = "tezos_send:transaction",
   TEZOS_SEND_ORGINATION = "tezos_send:origination",
   TEZOS_SEND_DELEGATION = "tezos_send:delegation",
+  TEZOS_SEND_UNDELEGATION = "tezos_send:undelegation",
   TEZOS_SIGN = "tezos_sign",
 }
 
 export const DEFAULT_TEZOS_KINDS = {
   "tezos_send:transaction": {
       kind: "transaction",
-      amount: "1", // 1 mutez, smallest unit
+      amount: "1000",
       destination: "$(address)", // send to ourselves
       mutez: true,
   },
@@ -284,7 +285,11 @@ export const DEFAULT_TEZOS_KINDS = {
   "tezos_send:delegation": {
     kind: "delegation",
     source: "$(address)", // the address that is delegating
-    delegate: "$(address)", // the address that is being delegated to. Delegate to ourself for testing purposes
+    delegate: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve", // Tezos Foundation Ghost Baker. Cannot delegate to ourself as that would block undelegation
+  },
+  "tezos_send:undelegation": {
+    kind: "delegation",
+    source: "$(address)", // the address that is delegating
   },
 };
 

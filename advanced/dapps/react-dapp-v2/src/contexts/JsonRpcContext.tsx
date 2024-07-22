@@ -134,6 +134,7 @@ interface IContext {
     testSignTransaction: TRpcRequestCallback;
     testSignOrigination: TRpcRequestCallback;
     testSignDelegation: TRpcRequestCallback;
+    testSignUndelegation: TRpcRequestCallback;
   };
   kadenaRpc: {
     testGetAccounts: TRpcRequestCallback;
@@ -1486,6 +1487,10 @@ export function JsonRpcContextProvider({
     testSignDelegation: signTransaction(
       DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION,
       DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION]
+    ),
+    testSignUndelegation: signTransaction(
+      DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION,
+      DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION]
     ),
     testSignMessage: _createJsonRpcRequestHandler(
       async (

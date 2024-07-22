@@ -1,6 +1,5 @@
-import { TezosToolkit } from '@taquito/taquito'
+import { TezosToolkit, TezosOperationError } from '@taquito/taquito';
 import { InMemorySigner } from '@taquito/signer'
-import { localForger } from '@taquito/local-forging'
 import { validateAddress } from '@taquito/utils';
 
 import { Wallet } from 'ethers/'
@@ -132,7 +131,13 @@ export default class TezosLib {
           if (!tx.source || validateAddress(tx.source) !== 3) {
             throw new Error(`tx.source contains invalid address ${tx.source}`);
           }
-          if (!tx.delegate || validateAddress(tx.delegate) !== 3) {
+          if (!tx.delegate) {
+            console.log(`Wallet: undelegating for ${tx.source}`);
+            return {
+              kind: 'delegation',
+              source: tx.source,
+            };
+          } else if (validateAddress(tx.delegate) !== 3) {
             throw new Error(`tx.delegate contains invalid address ${tx.delegate}`);
           }
           return {

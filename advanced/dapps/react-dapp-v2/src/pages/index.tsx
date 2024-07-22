@@ -434,6 +434,10 @@ const Home: NextPage = () => {
       openRequestModal();
       await tezosRpc.testSignDelegation(chainId, address);
     };
+    const onSignUndelegation = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignUndelegation(chainId, address);
+    };
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
       await tezosRpc.testSignMessage(chainId, address);
@@ -457,6 +461,11 @@ const Home: NextPage = () => {
         method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION,
         callback: onSignDelegation,
         description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION,
+        callback: onSignUndelegation,
+        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION],
       },
       {
         method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
