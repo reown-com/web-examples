@@ -15,26 +15,26 @@ import {
   WalletGrantPermissionsReturnType,
   encodeAbiParameters,
   encodePacked,
-  keccak256,
   serializeSignature
 } from 'viem'
 import { publicKeyToAddress, sign } from 'viem/accounts'
 import {
   MOCK_VALIDATOR_ADDRESS,
   PERMISSION_VALIDATOR_ADDRESS,
-  SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
-  WALLET_CONNECT_COSIGNER,
-  YESPOLICY
+  SAFE7579_USER_OPERATION_BUILDER_ADDRESS
 } from '@/utils/permissionValidatorUtils/constants'
 import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 import { KEY_TYPES, bigIntReplacer, decodeDIDToPublicKey } from '@/utils/HelperUtil'
 import { isModuleInstalledAbi } from '@/utils/ERC7579AccountUtils'
 import { parsePublicKey as parsePasskeyPublicKey } from 'webauthn-p256'
+import { enableSessionAbi } from '@/utils/permissionValidatorUtils/abi'
 import {
-  WebAuthnValidationDataAbi,
-  enableSessionAbi,
-  smartSessionAbi
-} from '@/utils/permissionValidatorUtils/abi'
+  generateSignerId,
+  getDigest,
+  getEOAAndPasskeySignerInitData,
+  getPermissionContext,
+  perpareMockWCCosignerEnableSession
+} from '@/utils/permissionValidatorUtils'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   protected ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
@@ -124,11 +124,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     if (!requestedSigner || requestedSigner.type !== 'keys') {
       throw new Error('Currently only supporting KeySigner and MultiKey Type for permissions')
     }
-    const signerId = this.generatePermissionSignerId(grantPermissionsRequestParams)
-    console.log({ signerId })
     const typeSigner = requestedSigner as MultiKeySigner
     const publicKeys = typeSigner.data.ids.map(id => decodeDIDToPublicKey(id))
-    // const [eoaPublicKey, passkeyPublicKey] = publicKeys
     let eoaPublicKey, passkeyPublicKey
     publicKeys.forEach(key => {
       if (key.keyType === KEY_TYPES.secp256k1) {
@@ -141,67 +138,24 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     if (!eoaPublicKey || !passkeyPublicKey) throw Error('Invalid EOA and passkey signers')
     const targetEOAAddress = publicKeyToAddress(eoaPublicKey as `0x${string}`)
     const parsedPasskeyPublicKey = parsePasskeyPublicKey(passkeyPublicKey as `0x${string}`)
-    const encodedSignersInitData = encodeAbiParameters(
-      [{ type: 'uint256' }, WebAuthnValidationDataAbi],
-      [
-        BigInt(targetEOAAddress),
-        {
-          pubKeyX: parsedPasskeyPublicKey.x,
-          pubKeyY: parsedPasskeyPublicKey.y
-        }
-      ]
-    )
-
-    const userOpPolicies = [
-      {
-        initData: '0x' as `0x${string}`,
-        policy: YESPOLICY
-      }
-    ]
-    const actionId = keccak256(signerId) // just a random id
-    const actions = [
-      {
-        actionId: actionId,
-        actionPolicies: userOpPolicies
-      }
-    ]
-
-    const enableSessionParams = {
-      isigner: WALLET_CONNECT_COSIGNER as `0x${string}`,
-      actions: actions,
-      isignerInitData: encodedSignersInitData,
-      userOpPolicies: userOpPolicies,
-      erc1271Policies: [],
-      permissionEnableSig: '0x' as `0x${string}`
-    }
-    const enableSessionHash = await this.publicClient.readContract({
-      address: PERMISSION_VALIDATOR_ADDRESS,
-      abi: smartSessionAbi,
-      functionName: 'getDigest',
-      args: [signerId, this.client.account.address, enableSessionParams]
+    const encodedSignersInitData = getEOAAndPasskeySignerInitData(targetEOAAddress, {
+      pubKeyX: parsedPasskeyPublicKey.x,
+      pubKeyY: parsedPasskeyPublicKey.y
     })
-
-    console.log({ digest: enableSessionHash })
+    const enableSession = perpareMockWCCosignerEnableSession(encodedSignersInitData)
+    const signerId = generateSignerId(grantPermissionsRequestParams)
+    const enableSessionHash = await getDigest(this.publicClient, {
+      signerId,
+      accountAddress: this.client.account.address,
+      enableSession: enableSession
+    })
     const signature = await sign({
       privateKey: this.getPrivateKey() as `0x${string}`,
       hash: enableSessionHash
     })
-    const enableSessionScopeSignature: Hex = serializeSignature(signature)
-
-    enableSessionParams.permissionEnableSig = encodePacked(
-      ['address', 'bytes'],
-      [MOCK_VALIDATOR_ADDRESS, enableSessionScopeSignature] // TODO: MOCK_VALIDATOR_ADDRESS? defaultValidator?
-    )
-    const encodedEnableSessionData = encodeAbiParameters(enableSessionAbi, [enableSessionParams])
-    console.log({ encodedEnableSessionData })
-    // permissionContext = PermissionValidatorAddress [20bytes] + SignerId[bytes32] + EncodedEnableSessionData[bytes]
-    const permissionContext = encodePacked(
-      ['address', 'bytes1', 'bytes32', 'bytes'],
-      [PERMISSION_VALIDATOR_ADDRESS, '0x02', signerId, encodedEnableSessionData]
-    )
-
+    const enableSessionSignature: Hex = serializeSignature(signature)
+    const permissionContext = getPermissionContext(signerId, enableSession, enableSessionSignature)
     console.log({ permissionContext })
-
     console.log('Granting permissions...')
 
     return {
@@ -213,22 +167,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         submitToAddress: this.client.account.address
       }
     }
-  }
-
-  private generatePermissionSignerId(
-    grantPermissionsRequestParams: WalletGrantPermissionsParameters
-  ) {
-    const json = JSON.stringify(grantPermissionsRequestParams, (key, value) => {
-      // Remove undefined values
-      if (value === undefined) {
-        return null
-      }
-      return value
-    })
-    const jsonBytes = new TextEncoder().encode(json)
-    const hash = keccak256(jsonBytes)
-
-    return hash
   }
 
   private async ensureAccountDeployed(): Promise<void> {
