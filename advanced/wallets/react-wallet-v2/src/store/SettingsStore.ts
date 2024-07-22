@@ -7,7 +7,6 @@ import {
 } from '@/utils/SmartAccountUtil'
 import { Verify, SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
-import { foundry, sepolia } from 'viem/chains'
 
 const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
 const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
