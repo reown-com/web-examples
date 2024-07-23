@@ -8,16 +8,17 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@wagmi/connectors": "5.0.21",
-    "@wagmi/core": "2.11.6",
-    "@web3modal/wagmi": "5.0.6",
+    "@web3modal/ethers5": "^5.0.7",
     "core-js": "3.37.1",
-    "viem": "2.9.29",
+    "ethers": "5.7.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "vue": "3.4.31"
   },
   "devDependencies": {
     "@babel/core": "7.12.16",
     "@babel/eslint-parser": "7.12.16",
+    "@babel/plugin-transform-private-methods": "^7.24.7",
     "@vue/cli-plugin-babel": "5.0.8",
     "@vue/cli-plugin-eslint": "5.0.0",
     "@vue/cli-service": "5.0.8",
