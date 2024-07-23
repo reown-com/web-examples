@@ -1,9 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createWeb3Modal } from "@web3modal/wagmi/react";
-
-import { http, createConfig, WagmiProvider } from "wagmi";
-import { mainnet } from "viem/chains";
+import { WagmiProvider } from "wagmi";
+import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
+import {optimismSepolia, mainnet, polygon, type Chain } from "viem/chains";
 import { walletConnect, coinbaseWallet, injected } from "wagmi/connectors";
 import type { CreateConnectorFn } from '@wagmi/core'
 
@@ -30,7 +30,7 @@ const metadata = {
 };
 
 // Define chains
-const chains = [mainnet] as const
+const chains = [optimismSepolia, mainnet, polygon] as [Chain, ...Chain[]]
 
 // create the connectors
 const connectors: CreateConnectorFn[] = []
@@ -49,12 +49,11 @@ connectors.push(authConnector({
   walletFeatures: false,
 }));
 
-const wagmiConfig = createConfig({
-  chains: [mainnet], // Use the defined chains here
-  transports: {
-    [mainnet.id]: http(),
-  },
-  connectors,
+const wagmiConfig = defaultWagmiConfig({
+  chains,
+  projectId,
+  metadata,
+  ssr: true,
 });
 
 // 3. Create a SIWE configuration object
