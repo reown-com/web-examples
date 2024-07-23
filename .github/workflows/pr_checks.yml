@@ -18,6 +18,20 @@ on:
       - main
 
 jobs:
+  check_changes:
+    name: Check for changes in react-wallet-v2
+    runs-on: ubuntu-latest
+    outputs:
+      run_ui_test: ${{ steps.filter.outputs.react_wallet_v2 }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            react_wallet_v2:
+              - 'advanced/wallets/react-wallet-v2/**'
+
   code_style:
     name: "Code Style"
     runs-on: ubuntu-latest
@@ -45,5 +59,7 @@ jobs:
 
   ui-test:
     name: "UI Tests"
+    needs: check_changes
+    if: needs.check_changes.outputs.run_ui_test == 'true'
     uses: ./.github/workflows/ui_tests.yml
     secrets: inherit
