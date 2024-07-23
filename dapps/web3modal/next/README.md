@@ -1,36 +1,25 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# WalletConnect AppKit Example App
 
-## Getting Started
+1. Go to [cloud.walletconnect.com](https://cloud.walletconnect.com) and create a new project. Copy the project ID.
 
-First, run the development server:
+2. Rename `.env.example` to `.env` and fill in the project ID that you just created in step 1.
+
+3. Run:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+...or `yarn dev`, or `pnpm dev`, or `bun dev`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+5. See examples of how you can use AppKit in your app.
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+To learn more about AppKit:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [AppKit Documentation](https://docs.walletconnect.com/appkit/overview) - learn how to use AppKit in your project.
+- [WalletConnect Docs](https://docs.walletconnect.com/) - docs for WalletConnect SDKs: AppKit (to build apps) and WalletKit (to build wallets).
+- [WalletConnect.com](https://walletconnect.com/) - tools to build user experiences that make digital ownership effortless, intuitive, and secure.
