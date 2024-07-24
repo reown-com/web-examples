@@ -1,4 +1,4 @@
-import { TezosToolkit, TezosOperationError } from '@taquito/taquito';
+import { TezosToolkit } from '@taquito/taquito';
 import { InMemorySigner } from '@taquito/signer'
 import { validateAddress } from '@taquito/utils';
 
@@ -161,7 +161,7 @@ export default class TezosLib {
     // Wait for confirmation
     await operation.confirmation();
 
-    console.log('Wallet: operation confirmed.');
+    console.log('Wallet: operation confirmed:', operation);
     return operation.hash;
   }
 

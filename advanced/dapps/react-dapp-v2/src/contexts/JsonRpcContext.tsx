@@ -167,6 +167,7 @@ export function JsonRpcContextProvider({
   const [kadenaAccount, setKadenaAccount] = useState<KadenaAccount | null>(
     null
   );
+  const [addresses, setAddresses] = useState([]);
 
   const { client, session, accounts, balances, solanaPublicKeys } =
     useWalletConnectClient();
@@ -1405,6 +1406,12 @@ export function JsonRpcContextProvider({
 
   function replacePlaceholders(obj: any, address: string): any {
     if (typeof obj === 'string') {
+      if (addresses?.length > 1) {
+        obj = obj.replace('$(peerAddress)', addresses[0] == address ? addresses[1] : addresses[0]);
+      } else {
+        obj = obj.replace('$(peerAddress)', "[ERROR: example dApp was unable to set the peerAddress. Run tezos_getAccounts on dApp first]");
+        console.error("TezosRpc found no peer addresses. Run tezos_getAccounts first.");
+      }
       return obj.replace('$(address)', address);
     } else if (Array.isArray(obj)) {
       return obj.map(item => replacePlaceholders(item, address));
@@ -1468,6 +1475,10 @@ export function JsonRpcContextProvider({
           },
         });
 
+        const addresses = result.map(account => account.address);
+        setAddresses(addresses);
+        console.log("TezosRpc stored addresses: ", addresses);
+
         return {
           method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
           address,
@@ -1475,7 +1486,7 @@ export function JsonRpcContextProvider({
           result: JSON.stringify(result, null, 2),
         };
       }
-        ),
+    ),
     testSignTransaction: signTransaction(
       DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION,
       DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION]

@@ -258,7 +258,7 @@ export const DEFAULT_TEZOS_KINDS = {
   "tezos_send:transaction": {
       kind: "transaction",
       amount: "1000",
-      destination: "$(address)", // send to ourselves
+      destination: "$(peerAddress)", // send to ourselves
       mutez: true,
   },
   "tezos_send:origination": {
