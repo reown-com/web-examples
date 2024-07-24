@@ -13,8 +13,6 @@ import {
   Hex,
   WalletGrantPermissionsParameters,
   WalletGrantPermissionsReturnType,
-  encodeAbiParameters,
-  encodePacked,
   serializeSignature
 } from 'viem'
 import { publicKeyToAddress, sign } from 'viem/accounts'
@@ -27,7 +25,6 @@ import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 import { KEY_TYPES, bigIntReplacer, decodeDIDToPublicKey } from '@/utils/HelperUtil'
 import { isModuleInstalledAbi } from '@/utils/ERC7579AccountUtils'
 import { parsePublicKey as parsePasskeyPublicKey } from 'webauthn-p256'
-import { enableSessionAbi } from '@/utils/permissionValidatorUtils/abi'
 import {
   generateSignerId,
   getDigest,
@@ -116,9 +113,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       throw new Error('Client not initialized')
     }
 
-    await this.ensureAccountDeployed()
-    await this.ensurePermissionValidatorInstalled()
-    await this.ensureMockSignatureValidatorInstalled()
+    await this.ensureAccountReadyForGrantPermissions()
     const requestedSigner = grantPermissionsRequestParams.signer
     const requestedPermissions = grantPermissionsRequestParams.permissions
     if (!requestedSigner || requestedSigner.type !== 'keys') {
@@ -169,116 +164,76 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
   }
 
-  private async ensureAccountDeployed(): Promise<void> {
+  private async ensureAccountReadyForGrantPermissions(): Promise<void> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    const isAccountDeployed = await isSmartAccountDeployed(
-      this.publicClient,
-      this.client.account.address
-    )
-    console.log({ isAccountDeployed })
+    try {
+      const isAccountDeployed = await isSmartAccountDeployed(
+        this.publicClient,
+        this.client.account.address
+      )
+      console.log({ isAccountDeployed })
 
-    if (!isAccountDeployed) {
-      console.log('Deploying the Account with permission validator')
-      await this.deployAccountWithPermissionValidator()
+      let permissionValidatorInstalled = false
+      let mockValidatorInstalled = false
+
+      if (isAccountDeployed) {
+        ;[permissionValidatorInstalled, mockValidatorInstalled] = await Promise.all([
+          this.isModuleInstalled(PERMISSION_VALIDATOR_ADDRESS),
+          this.isModuleInstalled(MOCK_VALIDATOR_ADDRESS)
+        ])
+      }
+      console.log({ permissionValidatorInstalled, mockValidatorInstalled })
+
+      if (isAccountDeployed && permissionValidatorInstalled && mockValidatorInstalled) {
+        console.log('Account is already set up with required modules')
+        return
+      }
+
+      console.log('Setting up the Account with required modules')
+
+      const installationPromises = []
+
+      if (!isAccountDeployed || !permissionValidatorInstalled) {
+        installationPromises.push(this.installModule(PERMISSION_VALIDATOR_ADDRESS))
+      }
+
+      if (isAccountDeployed && !mockValidatorInstalled) {
+        installationPromises.push(this.installModule(MOCK_VALIDATOR_ADDRESS))
+      }
+
+      await Promise.all(installationPromises)
+      console.log('Account setup completed')
+    } catch (error) {
+      console.error(`Error ensuring account is ready for grant permissions: ${error}`)
+      throw error
     }
   }
 
-  private async deployAccountWithPermissionValidator(): Promise<void> {
+  private async isModuleInstalled(address: Address): Promise<boolean> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    const deployAccountUserOpHash = await this.client.installModule({
+    return this.client.isModuleInstalled({
+      address,
+      type: 'validator',
       account: this.client.account,
-      address: PERMISSION_VALIDATOR_ADDRESS,
+      context: '0x'
+    })
+  }
+
+  private async installModule(address: Address): Promise<void> {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    const userOpHash = await this.client.installModule({
+      account: this.client.account,
+      address,
       context: '0x',
       type: 'validator'
     })
-    const deployAccountReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-      hash: deployAccountUserOpHash
-    })
-    console.log({ deployAccountReceipt })
-  }
-
-  private async ensurePermissionValidatorInstalled(): Promise<void> {
-    const isInstalled = await this.isPermissionValidatorModuleInstalled()
-    console.log({ isInstalled })
-
-    if (!isInstalled) {
-      console.log('Installing the PermissionValidator Module')
-      await this.installPermissionValidatorModule()
-    }
-  }
-  private async ensureMockSignatureValidatorInstalled(): Promise<void> {
-    const isMockSignatureModuleInstalled = await this.isMockSignatureValidatorModuleInstalled()
-    console.log({ isMockSignatureModuleInstalled })
-
-    if (!isMockSignatureModuleInstalled) {
-      console.log('Installing the MockSignature Module')
-      await this.installMockSignatureValidatorModule()
-    }
-  }
-  private async installPermissionValidatorModule(): Promise<void> {
-    if (!this.client?.account) {
-      throw new Error('Client not initialized')
-    }
-    const installModuleUserOpHash = await this.client.installModule({
-      account: this.client.account,
-      address: PERMISSION_VALIDATOR_ADDRESS,
-      context: '0x',
-      type: 'validator'
-    })
-    const installModuleReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-      hash: installModuleUserOpHash
-    })
-    console.log({ installModuleReceipt })
-  }
-  private async installMockSignatureValidatorModule(): Promise<void> {
-    if (!this.client?.account) {
-      throw new Error('Client not initialized')
-    }
-    const installMockSignatureModuleUserOpHash = await this.client.installModule({
-      account: this.client.account,
-      address: MOCK_VALIDATOR_ADDRESS,
-      context: '0x',
-      type: 'validator'
-    })
-    const installMockSignatureModuleReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-      hash: installMockSignatureModuleUserOpHash
-    })
-    console.log({ installMockSignatureModuleReceipt })
-  }
-
-  private async isPermissionValidatorModuleInstalled() {
-    if (!this.client?.account) {
-      throw new Error('Client not initialized')
-    }
-    return await this.publicClient.readContract({
-      address: this.client.account.address,
-      abi: isModuleInstalledAbi,
-      functionName: 'isModuleInstalled',
-      args: [
-        BigInt(1), // ModuleType
-        PERMISSION_VALIDATOR_ADDRESS, // Module Address
-        '0x' // Additional Context
-      ]
-    })
-  }
-
-  private async isMockSignatureValidatorModuleInstalled() {
-    if (!this.client?.account) {
-      throw new Error('Client not initialized')
-    }
-    return await this.publicClient.readContract({
-      address: this.client.account.address,
-      abi: isModuleInstalledAbi,
-      functionName: 'isModuleInstalled',
-      args: [
-        BigInt(1), // ModuleType
-        MOCK_VALIDATOR_ADDRESS, // Module Address
-        '0x' // Additional Context
-      ]
-    })
+    const receipt = await this.bundlerClient.waitForUserOperationReceipt({ hash: userOpHash })
+    console.log(`Module installation receipt:`, receipt)
   }
 }
