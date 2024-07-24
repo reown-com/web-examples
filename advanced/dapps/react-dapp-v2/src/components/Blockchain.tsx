@@ -139,6 +139,12 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
     typeof account !== "undefined" && typeof balances !== "undefined"
       ? balances[account]
       : [];
+
+  console.log("Fetched blockchain actions list ", actions); // Debug log
+
+  const [showDescription, setShowDescription] = React.useState(false);
+  const [hoveredDescription, setHoveredDescription] = React.useState<string | null>(null);
+
   return (
     <React.Fragment>
       <SAccount
@@ -181,12 +187,23 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                       left
                       rgb={chain.meta.rgb}
                       onClick={() => action.callback(chainId, address)}
+                      onMouseEnter={() => {
+                        setShowDescription(true);
+                        setHoveredDescription(JSON.stringify(action.description, null, 2));
+                      }}
+                      onMouseLeave={() => {
+                        setShowDescription(false);
+                        setHoveredDescription(null);
+                      }}
                     >
                       {action.method}
                     </SAction>
                   ))}
                 </SFullWidthContainer>
               ) : null}
+              {showDescription && hoveredDescription && (
+                <pre style={{ textAlign: 'left' }}>{hoveredDescription}</pre>
+              )}
             </>
           )}
         </SBlockchainChildrenContainer>

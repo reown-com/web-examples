@@ -20,6 +20,7 @@ import {
   DEFAULT_KADENA_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TEZOS_METHODS,
+  DEFAULT_TEZOS_KINDS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
   DEFAULT_EIP5792_METHODS,
   GetCapabilitiesResult,
@@ -425,6 +426,14 @@ const Home: NextPage = () => {
       openRequestModal();
       await tezosRpc.testSignTransaction(chainId, address);
     };
+    const onSignOrigination = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignOrigination(chainId, address);
+    };
+    const onSignDelegation = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignDelegation(chainId, address);
+    };
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
       await tezosRpc.testSignMessage(chainId, address);
@@ -435,8 +444,19 @@ const Home: NextPage = () => {
         callback: onGetAccounts,
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION,
         callback: onSignTransaction,
+        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION,
+        callback: onSignOrigination,
+        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION,
+        callback: onSignDelegation,
+        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION],
       },
       {
         method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
@@ -546,7 +566,6 @@ const Home: NextPage = () => {
   };
 
   const [openSelect, setOpenSelect] = useState(false);
-
   const openDropdown = () => {
     setOpenSelect(!openSelect);
   };

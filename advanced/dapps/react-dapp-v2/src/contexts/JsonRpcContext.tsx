@@ -57,6 +57,7 @@ import {
   DEFAULT_EIP7715_METHODS,
   WalletGrantPermissionsParameters,
   WalletGrantPermissionsReturnType,
+  DEFAULT_TEZOS_KINDS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -131,6 +132,8 @@ interface IContext {
     testGetAccounts: TRpcRequestCallback;
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
+    testSignOrigination: TRpcRequestCallback;
+    testSignDelegation: TRpcRequestCallback;
   };
   kadenaRpc: {
     testGetAccounts: TRpcRequestCallback;
@@ -1399,6 +1402,56 @@ export function JsonRpcContextProvider({
 
   // -------- TEZOS RPC METHODS --------
 
+  function replacePlaceholders(obj: any, address: string): any {
+    if (typeof obj === 'string') {
+      return obj.replace('$(address)', address);
+    } else if (Array.isArray(obj)) {
+      return obj.map(item => replacePlaceholders(item, address));
+    } else if (typeof obj === 'object' && obj !== null) {
+      const newObj: any = {};
+      for (const key in obj) {
+        newObj[key] = replacePlaceholders(obj[key], address);
+      }
+      return newObj;
+    }
+    return obj;
+  }
+
+  const signTransaction = (
+    method: DEFAULT_TEZOS_METHODS,
+    operations_with_placeholders: any
+  ) => {
+    return _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const operations = replacePlaceholders(
+          operations_with_placeholders,
+          address
+        );
+        const result = await client!.request<{ hash: string }>({
+          chainId,
+          topic: session!.topic,
+          request: {
+            method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+            params: {
+              account: address,
+              operations: [operations],
+            },
+          },
+        });
+  
+        return {
+          method,
+          address,
+          valid: true,
+          result: result.hash,
+        };
+      }
+    );
+  };
+
   const tezosRpc = {
     testGetAccounts: _createJsonRpcRequestHandler(
       async (
@@ -1421,37 +1474,18 @@ export function JsonRpcContextProvider({
           result: JSON.stringify(result, null, 2),
         };
       }
+        ),
+    testSignTransaction: signTransaction(
+      DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION,
+      DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION]
     ),
-    testSignTransaction: _createJsonRpcRequestHandler(
-      async (
-        chainId: string,
-        address: string
-      ): Promise<IFormattedRpcResponse> => {
-        const result = await client!.request<{ hash: string }>({
-          chainId,
-          topic: session!.topic,
-          request: {
-            method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
-            params: {
-              account: address,
-              operations: [
-                {
-                  kind: "transaction",
-                  amount: "1", // 1 mutez, smallest unit
-                  destination: address, // send to ourselves
-                },
-              ],
-            },
-          },
-        });
-
-        return {
-          method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
-          address,
-          valid: true,
-          result: result.hash,
-        };
-      }
+    testSignOrigination: signTransaction(
+      DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION,
+      DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION]
+    ),
+    testSignDelegation: signTransaction(
+      DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION,
+      DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION]
     ),
     testSignMessage: _createJsonRpcRequestHandler(
       async (

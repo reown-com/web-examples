@@ -247,8 +247,46 @@ export enum DEFAULT_TRON_EVENTS {}
 export enum DEFAULT_TEZOS_METHODS {
   TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
   TEZOS_SEND = "tezos_send",
+  TEZOS_SEND_TRANSACTION = "tezos_send:transaction",
+  TEZOS_SEND_ORGINATION = "tezos_send:origination",
+  TEZOS_SEND_DELEGATION = "tezos_send:delegation",
   TEZOS_SIGN = "tezos_sign",
 }
+
+export const DEFAULT_TEZOS_KINDS = {
+  "tezos_send:transaction": {
+      kind: "transaction",
+      amount: "1", // 1 mutez, smallest unit
+      destination: "$(address)", // send to ourselves
+      mutez: true,
+  },
+  "tezos_send:origination": {
+      kind: "origination",
+      source: "$(address)",
+      balance: '0',
+      code: [
+          { prim: 'parameter', args: [{ prim: 'unit' }] },
+          { prim: 'storage', args: [{ prim: 'unit' }] },
+          {
+              prim: 'code',
+              args: [
+                  [
+                      { prim: 'DROP' },
+                      { prim: 'UNIT' },
+                      { prim: 'NIL', args: [{ prim: 'operation' }] },
+                      { prim: 'PAIR' },
+                  ],
+              ],
+          },
+      ],
+      init: { prim: 'Unit' },
+  },
+  "tezos_send:delegation": {
+    kind: "delegation",
+    source: "$(address)", // the address that is delegating
+    delegate: "$(address)", // the address that is being delegated to. Delegate to ourself for testing purposes
+  },
+};
 
 export enum DEFAULT_TEZOS_EVENTS {}
 
