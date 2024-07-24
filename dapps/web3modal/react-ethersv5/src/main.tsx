@@ -38,12 +38,6 @@ const ethersConfig = defaultConfig({
   enableCoinbase: true, // true by default
   rpcUrl: '...', // used for the Coinbase SDK
   defaultChainId: 1, // used for the Coinbase SDK
-  auth: {
-    email: true,
-    socials: ['google', 'x', 'github', 'discord', 'apple'], // add social logins (this will create a non-custodial wallet)
-    showWallets: true,
-    walletFeatures: false
-  }
 })
 
 // 5. Create a Web3Modal instance
