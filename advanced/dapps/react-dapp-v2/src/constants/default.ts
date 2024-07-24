@@ -249,6 +249,7 @@ export enum DEFAULT_TEZOS_METHODS {
   TEZOS_SEND = "tezos_send",
   TEZOS_SEND_TRANSACTION = "tezos_send:transaction",
   TEZOS_SEND_ORGINATION = "tezos_send:origination",
+  TEZOS_SEND_CONTRACT_CALL = "tezos_send:contract_call",
   TEZOS_SEND_DELEGATION = "tezos_send:delegation",
   TEZOS_SEND_UNDELEGATION = "tezos_send:undelegation",
   TEZOS_SIGN = "tezos_sign",
@@ -257,30 +258,36 @@ export enum DEFAULT_TEZOS_METHODS {
 export const DEFAULT_TEZOS_KINDS = {
   "tezos_send:transaction": {
       kind: "transaction",
+      destination: "$(peerAddress)",
       amount: "1000",
-      destination: "$(peerAddress)", // send to ourselves
       mutez: true,
   },
   "tezos_send:origination": {
-      kind: "origination",
-      source: "$(address)",
-      balance: '0',
-      code: [
-          { prim: 'parameter', args: [{ prim: 'unit' }] },
-          { prim: 'storage', args: [{ prim: 'unit' }] },
-          {
-              prim: 'code',
-              args: [
-                  [
-                      { prim: 'DROP' },
-                      { prim: 'UNIT' },
-                      { prim: 'NIL', args: [{ prim: 'operation' }] },
-                      { prim: 'PAIR' },
-                  ],
-              ],
-          },
-      ],
-      init: { prim: 'Unit' },
+    kind: 'origination',
+    source: "$(address)",
+    balance: '1',
+    code: [
+      { "prim": "parameter", "args": [{ "prim": "unit" }] },
+      { "prim": "storage", "args": [{ "prim": "int" }] },
+      {
+        "prim": "code",
+        "args": [[
+          { "prim": "CDR" },
+          { "prim": "PUSH", "args": [{ "prim": "int" }, { "int": "10" }] },
+          { "prim": "ADD" },
+          { "prim": "NIL", "args": [{ "prim": "operation" }] },
+          { "prim": "PAIR" }
+        ]]
+      }
+    ],
+    init: { "int": "0" }
+  },
+  "tezos_send:contract_call": {
+    kind: "transaction",
+    destination: "$(contractAddress)",
+    amount: "0",
+    mutez: true,
+    parameters: { "entrypoint": "default" }
   },
   "tezos_send:delegation": {
     kind: "delegation",

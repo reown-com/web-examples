@@ -106,6 +106,7 @@ export default class TezosLib {
             amount: tx.amount,
             to: tx.destination,
             mutez: tx.mutez ?? false,
+            parameters: tx.parameters,
           };
         case 'origination':
           if (!tx.source || validateAddress(tx.source) !== 3) {
@@ -126,6 +127,7 @@ export default class TezosLib {
             balance: tx.balance,
             code: tx.code,
             init: tx.init,
+            parameters: tx.parameters,
           };
         case 'delegation':
           if (!tx.source || validateAddress(tx.source) !== 3) {

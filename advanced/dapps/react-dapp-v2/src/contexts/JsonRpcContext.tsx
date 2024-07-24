@@ -133,6 +133,7 @@ interface IContext {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
     testSignOrigination: TRpcRequestCallback;
+    testSignContractCall: TRpcRequestCallback;
     testSignDelegation: TRpcRequestCallback;
     testSignUndelegation: TRpcRequestCallback;
   };
@@ -1413,6 +1414,12 @@ export function JsonRpcContextProvider({
         obj = obj.replace('$(peerAddress)', "[ERROR: example dApp was unable to set the peerAddress. Run tezos_getAccounts on dApp first]");
         console.error("TezosRpc found no peer addresses. Run tezos_getAccounts first.");
       }
+      if (!contractAddress) {
+        obj = obj.replace('$(contractAddress)', "[ERROR: example dApp was unable to set the contractAddress. Run tezos_sendOrigination on dApp first]");
+        console.error("TezosRpc found no contract address. Run tezos_sendOrigination first.");
+      } else {
+        obj = obj.replace('$(contractAddress)', contractAddress);
+      }
       return obj.replace('$(address)', address);
     } else if (Array.isArray(obj)) {
       return obj.map(item => replacePlaceholders(item, address));
@@ -1502,6 +1509,10 @@ export function JsonRpcContextProvider({
     testSignOrigination: signTransaction(
       DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION,
       DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION]
+    ),
+    testSignContractCall: signTransaction(
+      DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL,
+      DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL]
     ),
     testSignDelegation: signTransaction(
       DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION,
