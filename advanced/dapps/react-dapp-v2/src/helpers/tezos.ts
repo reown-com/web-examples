@@ -38,4 +38,31 @@ export async function apiGetTezosAccountBalance(
       name: "XTZ",
     };
   }
-  
+
+  export async function apiGetContractAddress(
+    chainId: string,
+    hash: string
+  ) {
+    const [_, networkId] = chainId.split(":");
+
+    // check if networkId is in the list of TezosChainData
+    if (!TezosChainData[networkId]) {
+        throw new Error(`Unsupported networkId: ${networkId}`);
+    }
+    const api = TezosChainData[networkId].api;
+
+    return fetch(`${api}/operations/${hash}`)
+        .then((response) => response.json())
+        .then((data) => {
+        return data
+        .map((op: any) => {
+            const address = op?.status === 'applied' && op?.originatedContract?.kind === "smart_contract" ? op.originatedContract.address : '';
+            if (address) {
+                console.log('Got contract address:', address);
+            }
+            return address;
+            })
+            .filter((address: string) => address.length);
+        });
+  }
+ 

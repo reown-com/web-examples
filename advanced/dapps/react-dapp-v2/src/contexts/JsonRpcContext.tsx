@@ -72,7 +72,7 @@ import {
 import { UserVerifier } from "@multiversx/sdk-wallet/out/userVerifier";
 import { SignClient } from "@walletconnect/sign-client/dist/types/client";
 import { parseEther } from "ethers/lib/utils";
-
+import { apiGetContractAddress } from "../helpers/tezos";
 /**
  * Types
  */
@@ -168,6 +168,7 @@ export function JsonRpcContextProvider({
     null
   );
   const [addresses, setAddresses] = useState([]);
+  const [contractAddress, setContractAddress] = useState("");
 
   const { client, session, accounts, balances, solanaPublicKeys } =
     useWalletConnectClient();
@@ -1449,7 +1450,14 @@ export function JsonRpcContextProvider({
             },
           },
         });
-  
+
+        // Get the contract ID if it's an origination
+        if (method === DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION) {
+          const contractAddress = await apiGetContractAddress(chainId, result.hash);
+          setContractAddress(contractAddress);
+          console.log("TezosRpc stored contract: ", contractAddress);
+        }
+
         return {
           method,
           address,
