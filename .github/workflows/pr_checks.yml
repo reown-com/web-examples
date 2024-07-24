@@ -14,8 +14,9 @@ env:
 
 on:
   pull_request:
-    branches:
-      - main
+    paths:
+      - "advanced/wallets/react-wallet-v2/**"
+      - "advanced/dapps/react-dapp-v2/**"
 
 jobs:
   code_style:

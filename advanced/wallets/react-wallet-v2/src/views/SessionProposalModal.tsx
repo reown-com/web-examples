@@ -105,31 +105,41 @@ export default function SessionProposalModal() {
         chains: eip155Chains,
         methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
-        accounts: eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
+        accounts: eip155Chains
+          .map(chain => eip155Addresses.map(account => `${chain}:${account}`))
+          .flat()
       },
       cosmos: {
         chains: cosmosChains,
         methods: cosmosMethods,
         events: [],
-        accounts: cosmosChains.map(chain => `${chain}:${cosmosAddresses[0]}`).flat()
+        accounts: cosmosChains
+          .map(chain => cosmosAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       kadena: {
         chains: kadenaChains,
         methods: kadenaMethods,
         events: [],
-        accounts: kadenaChains.map(chain => `${chain}:${kadenaAddresses[0]}`).flat()
+        accounts: kadenaChains
+          .map(chain => kadenaAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       mvx: {
         chains: multiversxChains,
         methods: multiversxMethods,
         events: [],
-        accounts: multiversxChains.map(chain => `${chain}:${multiversxAddresses[0]}`).flat()
+        accounts: multiversxChains
+          .map(chain => multiversxAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       near: {
         chains: nearChains,
         methods: nearMethods,
         events: ['accountsChanged', 'chainChanged'],
-        accounts: nearChains.map(chain => `${chain}:${nearAddresses[0]}`).flat()
+        accounts: nearChains
+          .map(chain => nearAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       polkadot: {
         chains: polkadotChains,
@@ -159,7 +169,9 @@ export default function SessionProposalModal() {
         chains: tronChains,
         methods: tronMethods,
         events: [],
-        accounts: tronChains.map(chain => `${chain}:${tronAddresses[0]}`)
+        accounts: tronChains
+          .map(chain => tronAddresses.map(address => `${chain}:${address}`))
+          .flat()
       }
     }
   }, [])
