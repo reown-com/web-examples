@@ -1,6 +1,6 @@
 {
-  "name": "next",
-  "version": "0.1.0",
+  "name": "appkit-siwe-next-example",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -13,19 +13,19 @@
     "@web3modal/siwe": "^5.0.8",
     "@web3modal/wagmi": "^5.0.8",
     "js-cookie": "^3.0.5",
+    "next": "14.2.4",
     "next-auth": "^4.24.7",
-    "viem": "^2.17.0",
-    "wagmi": "^2.10.10",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.5"
+    "viem": "^2.17.0",
+    "wagmi": "^2.10.10"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "14.2.5"
+    "eslint-config-next": "14.2.4",
+    "typescript": "^5"
   }
 }

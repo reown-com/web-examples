@@ -6,6 +6,7 @@ import {
     formatMessage,
   } from '@web3modal/siwe'
   import { getCsrfToken, getSession as GetSessionNextAuth, signIn, signOut as SignOutNextAuth } from 'next-auth/react';
+  import { useAccount, useDisconnect } from 'wagmi';
   
 const getNonce = async (): Promise<string> => {
     const nonce = await getCsrfToken();
@@ -42,10 +43,13 @@ const getSession = async () => {
 
 const signOut =  async () => {
     try {
-        await SignOutNextAuth({
+        console.log('signing out');
+       
+        const data = await SignOutNextAuth({
             redirect: false,
           });
-  
+          
+          console.log('data', data);
         return true;
       } catch (error) {
         return false;
@@ -54,6 +58,8 @@ const signOut =  async () => {
 
 export const createSIWE = (chains: [number]) => {
     return createSIWEConfig({
+        signOutOnAccountChange: true,
+        signOutOnNetworkChange: true,
         getMessageParams: async () => ({
               domain: window.location.host,
               uri: window.location.origin, 
