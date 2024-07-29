@@ -23,3 +23,8 @@ pnpm install
 
 6. Open in your browser http://localhost:5173/ 
 (the frontend address must be the same that you have in the server cors config)
+
+## Reference
+
+- https://docs.walletconnect.com/appkit/react/core/siwe
+- https://docs.login.xyz/general-information/siwe-overview/eip-4361
