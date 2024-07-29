@@ -1,4 +1,4 @@
-# SIWE Quickstart with WalletConnect
+# Appkit SIWE Example for React 
 
 A Minimal demo using React so developers can work on their integration with WalletConnect and SIWE using this repository as a template.
 
