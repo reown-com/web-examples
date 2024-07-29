@@ -72,7 +72,7 @@ import {
 import { UserVerifier } from "@multiversx/sdk-wallet/out/userVerifier";
 import { SignClient } from "@walletconnect/sign-client/dist/types/client";
 import { parseEther } from "ethers/lib/utils";
-
+import { apiGetContractAddress } from "../helpers/tezos";
 /**
  * Types
  */
@@ -133,7 +133,9 @@ interface IContext {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
     testSignOrigination: TRpcRequestCallback;
+    testSignContractCall: TRpcRequestCallback;
     testSignDelegation: TRpcRequestCallback;
+    testSignUndelegation: TRpcRequestCallback;
   };
   kadenaRpc: {
     testGetAccounts: TRpcRequestCallback;
@@ -166,6 +168,8 @@ export function JsonRpcContextProvider({
   const [kadenaAccount, setKadenaAccount] = useState<KadenaAccount | null>(
     null
   );
+  const [addresses, setAddresses] = useState([]);
+  const [contractAddress, setContractAddress] = useState("");
 
   const { client, session, accounts, balances, solanaPublicKeys } =
     useWalletConnectClient();
@@ -1404,6 +1408,18 @@ export function JsonRpcContextProvider({
 
   function replacePlaceholders(obj: any, address: string): any {
     if (typeof obj === 'string') {
+      if (addresses?.length > 1) {
+        obj = obj.replace('$(peerAddress)', addresses[0] == address ? addresses[1] : addresses[0]);
+      } else {
+        obj = obj.replace('$(peerAddress)', "[ERROR: example dApp was unable to set the peerAddress. Run tezos_getAccounts on dApp first]");
+        console.error("TezosRpc found no peer addresses. Run tezos_getAccounts first.");
+      }
+      if (!contractAddress) {
+        obj = obj.replace('$(contractAddress)', "[ERROR: example dApp was unable to set the contractAddress. Run tezos_sendOrigination on dApp first]");
+        console.error("TezosRpc found no contract address. Run tezos_sendOrigination first.");
+      } else {
+        obj = obj.replace('$(contractAddress)', contractAddress);
+      }
       return obj.replace('$(address)', address);
     } else if (Array.isArray(obj)) {
       return obj.map(item => replacePlaceholders(item, address));
@@ -1441,7 +1457,14 @@ export function JsonRpcContextProvider({
             },
           },
         });
-  
+
+        // Get the contract ID if it's an origination
+        if (method === DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION) {
+          const contractAddress = await apiGetContractAddress(chainId, result.hash);
+          setContractAddress(contractAddress);
+          console.log("TezosRpc stored contract: ", contractAddress);
+        }
+
         return {
           method,
           address,
@@ -1467,6 +1490,10 @@ export function JsonRpcContextProvider({
           },
         });
 
+        const addresses = result.map(account => account.address);
+        setAddresses(addresses);
+        console.log("TezosRpc stored addresses: ", addresses);
+
         return {
           method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
           address,
@@ -1474,7 +1501,7 @@ export function JsonRpcContextProvider({
           result: JSON.stringify(result, null, 2),
         };
       }
-        ),
+    ),
     testSignTransaction: signTransaction(
       DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION,
       DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION]
@@ -1483,9 +1510,17 @@ export function JsonRpcContextProvider({
       DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION,
       DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION]
     ),
+    testSignContractCall: signTransaction(
+      DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL,
+      DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL]
+    ),
     testSignDelegation: signTransaction(
       DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION,
       DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION]
+    ),
+    testSignUndelegation: signTransaction(
+      DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION,
+      DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION]
     ),
     testSignMessage: _createJsonRpcRequestHandler(
       async (

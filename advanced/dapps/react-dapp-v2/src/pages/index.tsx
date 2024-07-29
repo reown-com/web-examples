@@ -430,9 +430,17 @@ const Home: NextPage = () => {
       openRequestModal();
       await tezosRpc.testSignOrigination(chainId, address);
     };
+    const onSignContractCall = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignContractCall(chainId, address);
+    };
     const onSignDelegation = async (chainId: string, address: string) => {
       openRequestModal();
       await tezosRpc.testSignDelegation(chainId, address);
+    };
+    const onSignUndelegation = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignUndelegation(chainId, address);
     };
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
@@ -454,9 +462,19 @@ const Home: NextPage = () => {
         description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION],
       },
       {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL,
+        callback: onSignContractCall,
+        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL],
+      },
+      {
         method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION,
         callback: onSignDelegation,
         description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION,
+        callback: onSignUndelegation,
+        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION],
       },
       {
         method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,

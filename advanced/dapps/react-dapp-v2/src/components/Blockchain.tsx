@@ -140,8 +140,6 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
       ? balances[account]
       : [];
 
-  console.log("Fetched blockchain actions list ", actions); // Debug log
-
   const [showDescription, setShowDescription] = React.useState(false);
   const [hoveredDescription, setHoveredDescription] = React.useState<string | null>(null);
 

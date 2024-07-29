@@ -1,6 +1,5 @@
-import { TezosToolkit } from '@taquito/taquito'
+import { TezosToolkit } from '@taquito/taquito';
 import { InMemorySigner } from '@taquito/signer'
-import { localForger } from '@taquito/local-forging'
 import { validateAddress } from '@taquito/utils';
 
 import { Wallet } from 'ethers/'
@@ -107,6 +106,7 @@ export default class TezosLib {
             amount: tx.amount,
             to: tx.destination,
             mutez: tx.mutez ?? false,
+            parameters: tx.parameters,
           };
         case 'origination':
           if (!tx.source || validateAddress(tx.source) !== 3) {
@@ -127,12 +127,19 @@ export default class TezosLib {
             balance: tx.balance,
             code: tx.code,
             init: tx.init,
+            parameters: tx.parameters,
           };
         case 'delegation':
           if (!tx.source || validateAddress(tx.source) !== 3) {
             throw new Error(`tx.source contains invalid address ${tx.source}`);
           }
-          if (!tx.delegate || validateAddress(tx.delegate) !== 3) {
+          if (!tx.delegate) {
+            console.log(`Wallet: undelegating for ${tx.source}`);
+            return {
+              kind: 'delegation',
+              source: tx.source,
+            };
+          } else if (validateAddress(tx.delegate) !== 3) {
             throw new Error(`tx.delegate contains invalid address ${tx.delegate}`);
           }
           return {
@@ -156,7 +163,7 @@ export default class TezosLib {
     // Wait for confirmation
     await operation.confirmation();
 
-    console.log('Wallet: operation confirmed.');
+    console.log('Wallet: operation confirmed:', operation);
     return operation.hash;
   }
 
