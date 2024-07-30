@@ -25,6 +25,7 @@
     "@walletconnect/types": "2.14.0",
     "@walletconnect/utils": "2.14.0",
     "@web3modal/standalone": "2.4.3",
+    "@taquito/taquito": "^15.1.0",
     "axios": "^1.0.0",
     "blockies-ts": "^1.0.0",
     "bs58": "^5.0.0",

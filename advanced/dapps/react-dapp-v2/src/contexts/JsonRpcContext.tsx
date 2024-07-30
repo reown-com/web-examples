@@ -168,7 +168,7 @@ export function JsonRpcContextProvider({
   const [kadenaAccount, setKadenaAccount] = useState<KadenaAccount | null>(
     null
   );
-  const [addresses, setAddresses] = useState([]);
+  const [addresses, setAddresses] = useState<string[]>([]);
   const [contractAddress, setContractAddress] = useState("");
 
   const { client, session, accounts, balances, solanaPublicKeys } =
@@ -1481,7 +1481,7 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const result = await client!.request<{ signature: string }>({
+        const result = await client!.request<Array<{ address: string}>>({
           chainId,
           topic: session!.topic,
           request: {

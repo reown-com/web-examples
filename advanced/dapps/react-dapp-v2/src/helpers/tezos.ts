@@ -31,7 +31,7 @@ export async function apiGetTezosAccountBalance(
     const balance = await Tezos.tz.getBalance(address);
     const balanceInTez = balance.toNumber();
     console.log(`Got balance: ${balanceInTez} ꜩ`);
-      
+
     return {
       balance: (balanceInTez).toString(),
       symbol: "XTZ",
@@ -65,4 +65,3 @@ export async function apiGetTezosAccountBalance(
             .filter((address: string) => address.length);
         });
   }
- 
