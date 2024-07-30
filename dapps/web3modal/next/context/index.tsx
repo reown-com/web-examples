@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ReactNode } from "react";
-import { config, projectId } from "@/config";
+import { config, projectId, metadata } from "@/config";
 
 import { createWeb3Modal } from "@web3modal/wagmi/react";
 
@@ -16,6 +16,7 @@ if (!projectId) throw new Error("Project ID is not defined");
 
 // Create modal
 createWeb3Modal({
+  metadata,
   wagmiConfig: config,
   projectId,
   enableAnalytics: true, // Optional - defaults to your Cloud configuration

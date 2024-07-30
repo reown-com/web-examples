@@ -61,7 +61,7 @@ const siweConfig = createSIWE(chains.map(chain => chain.id) as [number]);
 
 
 // 4. Create modal
-createWeb3Modal({ wagmiConfig, projectId, siweConfig });
+createWeb3Modal({ wagmiConfig, projectId, siweConfig, metadata });
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
