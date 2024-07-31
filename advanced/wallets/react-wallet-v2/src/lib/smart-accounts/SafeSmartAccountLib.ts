@@ -23,14 +23,13 @@ import {
 } from '@/utils/permissionValidatorUtils/constants'
 import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 import { KEY_TYPES, bigIntReplacer, decodeDIDToPublicKey } from '@/utils/HelperUtil'
-import { isModuleInstalledAbi } from '@/utils/ERC7579AccountUtils'
 import { parsePublicKey as parsePasskeyPublicKey } from 'webauthn-p256'
 import {
   generateSignerId,
   getDigest,
   getEOAAndPasskeySignerInitData,
   getPermissionContext,
-  perpareMockWCCosignerEnableSession
+  prepareMockWCCosignerEnableSession
 } from '@/utils/permissionValidatorUtils'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
@@ -137,7 +136,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       pubKeyX: parsedPasskeyPublicKey.x,
       pubKeyY: parsedPasskeyPublicKey.y
     })
-    const enableSession = perpareMockWCCosignerEnableSession(encodedSignersInitData)
+    const enableSession = prepareMockWCCosignerEnableSession(encodedSignersInitData)
     const signerId = generateSignerId(grantPermissionsRequestParams)
     const enableSessionHash = await getDigest(this.publicClient, {
       signerId,

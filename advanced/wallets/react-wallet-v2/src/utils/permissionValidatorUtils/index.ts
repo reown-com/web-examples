@@ -7,16 +7,16 @@ import {
   encodeAbiParameters,
   encodePacked,
   keccak256,
+  stringToBytes,
   toBytes
 } from 'viem'
-import { GrantPermissionsParameters } from 'viem/experimental'
 import {
   MOCK_VALIDATOR_ADDRESS,
   PERMISSION_VALIDATOR_ADDRESS,
   WALLET_CONNECT_COSIGNER,
   YESPOLICY
 } from './constants'
-import { enableSessionAbi, smartSessionAbi, WebAuthnValidationDataAbi } from './abi'
+import { enableSessionAbi, getDigestAbi, WebAuthnValidationDataAbi } from './abi'
 
 export type SingleSignerPermission = {
   validUntil: number
@@ -61,8 +61,8 @@ export type Action = {
 }
 
 export type EnableSession = {
-  isigner: `0x${string}`
-  isignerInitData: `0x${string}`
+  signer: `0x${string}`
+  signerInitData: `0x${string}`
   actions: Action[]
   userOpPolicies: UserOpPolicy[]
   erc1271Policies: ERC1271Policy[]
@@ -73,7 +73,7 @@ export type PasskeyPublicKey = {
   pubKeyY: bigint
 }
 
-export function perpareMockWCCosignerEnableSession(signersInitData: `0x${string}`): EnableSession {
+export function prepareMockWCCosignerEnableSession(signersInitData: `0x${string}`): EnableSession {
   const userOpPolicies: UserOpPolicy[] = [
     {
       initData: '0x' as `0x${string}`,
@@ -89,9 +89,9 @@ export function perpareMockWCCosignerEnableSession(signersInitData: `0x${string}
   ]
 
   const enableSessionParams: EnableSession = {
-    isigner: WALLET_CONNECT_COSIGNER as `0x${string}`,
+    signer: WALLET_CONNECT_COSIGNER as `0x${string}`,
     actions: actions,
-    isignerInitData: signersInitData,
+    signerInitData: signersInitData,
     userOpPolicies: userOpPolicies,
     erc1271Policies: [],
     permissionEnableSig: '0x' as `0x${string}`
@@ -123,7 +123,7 @@ export function generateSignerId(grantPermissionsRequestParams: WalletGrantPermi
     }
     return value
   })
-  const jsonBytes = new TextEncoder().encode(json)
+  const jsonBytes = stringToBytes(json)
   const hash = keccak256(jsonBytes)
 
   return hash
@@ -140,7 +140,7 @@ export async function getDigest(
   const { signerId, accountAddress, enableSession } = args
   return await publicClient.readContract({
     address: PERMISSION_VALIDATOR_ADDRESS,
-    abi: smartSessionAbi,
+    abi: getDigestAbi,
     functionName: 'getDigest',
     args: [signerId, accountAddress, enableSession]
   })
@@ -153,7 +153,7 @@ export function getPermissionContext(
 ) {
   enableSession.permissionEnableSig = encodePacked(
     ['address', 'bytes'],
-    [MOCK_VALIDATOR_ADDRESS, enableSessionSignature] // TODO: MOCK_VALIDATOR_ADDRESS? defaultValidator?
+    [MOCK_VALIDATOR_ADDRESS, enableSessionSignature]
   )
   const encodedEnableSessionData = encodeAbiParameters(enableSessionAbi, [enableSession])
 
