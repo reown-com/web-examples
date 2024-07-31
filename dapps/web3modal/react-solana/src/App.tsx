@@ -11,6 +11,8 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 
+const Program_Id = "9sutTcUUjWVMabvUnBFu5WcBLNkuHHv9tLWhUUeCM6Cy";
+
 const events: string[] = [];
 
 // 0. Setup chains
@@ -187,11 +189,13 @@ return (
     <div className="App center-content">
       <h2>WalletConnect AppKit + Solana v1</h2>
       <p>
-      <w3m-button balance="hide" />
-      Balance: {balance}
+        <w3m-button balance="hide" />
       </p>
       {isConnected && (
         <>
+          <p>
+            Balance: {balance}
+          </p>
           <div className="btn-container">
           <button onClick={handleFaucet}>Solana faucet</button>
           <button onClick={handleGetBalance}>Update Balance</button>
