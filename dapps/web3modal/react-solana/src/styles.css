@@ -121,16 +121,16 @@ button:focus-visible {
 }
 
 
-  body {
-    background: linear-gradient(135deg, #00FFA3, #DC1FFF, #2A2A72);
-    height: 100vh;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-family: Arial, sans-serif;
-  }
+body {
+  background: linear-gradient(135deg, #009966, #800999, #111140);
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: Arial, sans-serif;
+}
 
   .console {
     width: 90%;

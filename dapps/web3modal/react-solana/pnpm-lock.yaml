@@ -15,8 +15,8 @@ importers:
         specifier: ^1.95.2
         version: 1.95.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@web3modal/solana':
-        specifier: ^5.0.9
-        version: 5.0.9(@types/react@18.2.14)(bufferutil@4.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(utf-8-validate@5.0.10)
+        specifier: ^5.0.10
+        version: 5.0.10(@types/react@18.2.14)(bufferutil@4.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(utf-8-validate@5.0.10)
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -1564,17 +1564,17 @@ packages:
   '@walletconnect/window-metadata@1.0.1':
     resolution: {integrity: sha512-9koTqyGrM2cqFRW517BPY/iEtUDx2r1+Pwwu5m7sJ7ka79wi3EyqhqcICk/yDmv6jAS1rjKgTKXlEhanYjijcA==}
 
-  '@web3modal/common@5.0.9':
-    resolution: {integrity: sha512-oxus6niwT0q4KGbgjK09vPs0Da4u1SfBk/F5GpRIPIHI9PNTaZN5IM6wMjVGZ2IgyI7kV6xgVoB/UmRF+mpqzA==}
+  '@web3modal/common@5.0.10':
+    resolution: {integrity: sha512-yz+KiMsxGBwkZ9vf9gNiB8B6JXaIc1/ZTnXYqYppEiqqoGC9K3dz69Rrx6wYx3r26nt9TxFBC6hQ6Gyq11XoOA==}
 
-  '@web3modal/core@5.0.9':
-    resolution: {integrity: sha512-k0IZ7mMAIfcVNsvgdUmBudhGhAl9m1yDiaiJk2DFSwLeLzwkuPqmlasz8W2orfCpDcksa87pRlO2FRBfZMU9Ug==}
+  '@web3modal/core@5.0.10':
+    resolution: {integrity: sha512-CRlPW98jJKoZIwdpCrfZO10cpzpQh5kKvb2lCOVAD0j0SC4a9ElUlON6KFbXSknMSZ483qeDSGbIrhAiJ/eKIQ==}
 
-  '@web3modal/polyfills@5.0.9':
-    resolution: {integrity: sha512-taFdDL7R4xJL2mGNvKduutMBcWBc6loOzxWwRXJQNlzfrqBPPrme+NXxwdm3NFgW8PcqhPOef9k5yMNdqqWymg==}
+  '@web3modal/polyfills@5.0.10':
+    resolution: {integrity: sha512-6EbN4HhHUA/ZycsUTO6M0e6lDjJgh/Igb10go6+CtEteKMISdciE6OZfCqtj6M8fpkKetmuHtjh4sPxAU8KJlQ==}
 
-  '@web3modal/scaffold-react@5.0.9':
-    resolution: {integrity: sha512-LoIRP47nj7+5td9c484ezqPYabAT9aG11ppuRxtRTJDzRUcYmlqoJpJFJvFdUTIwmU4GyfQjD1BAsrhfjYcQhg==}
+  '@web3modal/scaffold-react@5.0.10':
+    resolution: {integrity: sha512-7eTMtMMGkPVC6zxuc6BXXy74aJe/Y8bwzoxD/tYp42HaJ2LyHsauAaYe8WW4XzJuCE0u7b7W0WppAGHZnY3SYg==}
     peerDependencies:
       react: '>=17'
       react-dom: '>=17'
@@ -1584,28 +1584,28 @@ packages:
       react-dom:
         optional: true
 
-  '@web3modal/scaffold-ui@5.0.9':
-    resolution: {integrity: sha512-JqgqqGdrjfxdkmr3afqAFlPR3Zd+RbHcyh8jr93cJ907NhIW7+3Mx4Nb/kTZqP+dPrm2f2aA00BNil+Jn/Ui0A==}
+  '@web3modal/scaffold-ui@5.0.10':
+    resolution: {integrity: sha512-5itFtUBvzvKhoHe+v3eejCklKCUHwiZa8a2RiPb9LS+tBloyY3b8+IIE+tmMGIK9SSfgxU/xmjMskNE9VyYviw==}
 
-  '@web3modal/scaffold-utils@5.0.9':
-    resolution: {integrity: sha512-aHSQqE8qoYZlqVyJ/toesscrc4IDlAPPiLFdwOSNLU57JGgoNxSKyIJlxPicjtpbFLg/ZSxmDrtoqQBb2cP2mA==}
+  '@web3modal/scaffold-utils@5.0.10':
+    resolution: {integrity: sha512-yvzRxdbsmcnKL/tkmTr4urM8N7W2hRbVSNtZCvIOU3FpBRQtrCDHadhu8qtTWj1glVfuKPX50EGEUv34dwS2sQ==}
 
-  '@web3modal/scaffold-vue@5.0.9':
-    resolution: {integrity: sha512-9e4pF24XdAq0L12wQAaIeICqepyeIZ+TjWj3g+uApwKuGti5ErPhDYGMJfOLeoeqGYFx/9k2UaghODAzz5EfDA==}
+  '@web3modal/scaffold-vue@5.0.10':
+    resolution: {integrity: sha512-XjYy86kXyUsMDpmuGfiSDVFOIXtwOjaM6B19Emi5t+fciFuYGQDQNWC6QEoLFnstz86cI83U4aWTL83ly9gi7w==}
     peerDependencies:
       vue: '>=3'
     peerDependenciesMeta:
       vue:
         optional: true
 
-  '@web3modal/scaffold@5.0.9':
-    resolution: {integrity: sha512-ZgpGazvW7h8GqDjFCpPfBeNssUcsZz5+X8ATYjLIcO8QeIT1zHXuONFvYxS53zgFOXrTaiSjQ6bX8NCdCZORxw==}
+  '@web3modal/scaffold@5.0.10':
+    resolution: {integrity: sha512-yPkz17XWtl3FLCKieesuu5KpcrKyBwqS/Jm7TLgJX1iu6un4BAtvxfEouCRKJOLpvvMdzOW2wwfNAFp2CpFutw==}
 
-  '@web3modal/siwe@5.0.9':
-    resolution: {integrity: sha512-H9P3LMeoa8RNVn58D0LzHq4MP0+9Wbqf45A2rqu6urhFE+FKuGBkYuW1xP07kmZb7uuJmZr+wCuV73RZsWpL3g==}
+  '@web3modal/siwe@5.0.10':
+    resolution: {integrity: sha512-mDyhrfLYCls5Y0DfBukwuV0/xTlJB9e9VxkE9SKHxpBiLkDPtZ0ytlAUFv7RE3CvAhAilz46eey9/3EPJL1Mbg==}
 
-  '@web3modal/solana@5.0.9':
-    resolution: {integrity: sha512-1artNrRMy8y+SL4TxzIHnTyLORUgrGfQ+oAa67qKp+/5YljEVJbZQRtkSW6ZXeBffPs4iA4RrZV2r4dNo9RW7g==}
+  '@web3modal/solana@5.0.10':
+    resolution: {integrity: sha512-cNEC2uKT5yKnKdJXJ1WrN2tktO4xyVAT4lk5rJRYpK6NSYRLOA6C7lCFl759q6sxuigaKYL+XxYmMb1/ivlkYA==}
     peerDependencies:
       react: '>=17'
       react-dom: '>=17'
@@ -1618,11 +1618,11 @@ packages:
       vue:
         optional: true
 
-  '@web3modal/ui@5.0.9':
-    resolution: {integrity: sha512-L4ebwVv49kSORYf7lIaWrWXPiTyMrHPRErNKiVTUcFCPeRtgIQYetnWq8iF3t69JLvE21Ymr9bL5Wg1wm9GSCA==}
+  '@web3modal/ui@5.0.10':
+    resolution: {integrity: sha512-oE5XozWFK0nNElwBas++Wg9CCmysp48Q1zDINkgzEWhOE/sAEx56MuVo4fqsfArMrlT84gFd0fBDl2l1YaGNEA==}
 
-  '@web3modal/wallet@5.0.9':
-    resolution: {integrity: sha512-w8I7DrFfsyudXX5nmecVZoHFA0JcupniWRRT6tarAE3vpAWpk7zjFScUmfPTvlZq9zlrEMQeJTcOi3BiJT42pw==}
+  '@web3modal/wallet@5.0.10':
+    resolution: {integrity: sha512-x103sBN3bXhKdeym+js7ywZNwViOZs6kkoSU16Eu28JnsZvTHn4Z9KWaIvHyyQrl1aVje6vh77Z6ufRrJDVRKw==}
 
   JSONStream@1.3.5:
     resolution: {integrity: sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==}
@@ -6091,27 +6091,27 @@ snapshots:
       '@walletconnect/window-getters': 1.0.1
       tslib: 1.14.1
 
-  '@web3modal/common@5.0.9':
+  '@web3modal/common@5.0.10':
     dependencies:
       bignumber.js: 9.1.2
       dayjs: 1.11.10
 
-  '@web3modal/core@5.0.9(@types/react@18.2.14)(react@18.3.1)':
+  '@web3modal/core@5.0.10(@types/react@18.2.14)(react@18.3.1)':
     dependencies:
-      '@web3modal/common': 5.0.9
-      '@web3modal/wallet': 5.0.9
+      '@web3modal/common': 5.0.10
+      '@web3modal/wallet': 5.0.10
       valtio: 1.11.2(@types/react@18.2.14)(react@18.3.1)
     transitivePeerDependencies:
       - '@types/react'
       - react
 
-  '@web3modal/polyfills@5.0.9':
+  '@web3modal/polyfills@5.0.10':
     dependencies:
       buffer: 6.0.3
 
-  '@web3modal/scaffold-react@5.0.9(@types/react@18.2.14)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@web3modal/scaffold-react@5.0.10(@types/react@18.2.14)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@web3modal/scaffold': 5.0.9(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/scaffold': 5.0.10(@types/react@18.2.14)(react@18.3.1)
     optionalDependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -6132,14 +6132,14 @@ snapshots:
       - ioredis
       - uWebSockets.js
 
-  '@web3modal/scaffold-ui@5.0.9(@types/react@18.2.14)(react@18.3.1)':
+  '@web3modal/scaffold-ui@5.0.10(@types/react@18.2.14)(react@18.3.1)':
     dependencies:
-      '@web3modal/common': 5.0.9
-      '@web3modal/core': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/scaffold-utils': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/siwe': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/ui': 5.0.9
-      '@web3modal/wallet': 5.0.9
+      '@web3modal/common': 5.0.10
+      '@web3modal/core': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/scaffold-utils': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/siwe': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/ui': 5.0.10
+      '@web3modal/wallet': 5.0.10
       lit: 3.1.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -6159,21 +6159,21 @@ snapshots:
       - react
       - uWebSockets.js
 
-  '@web3modal/scaffold-utils@5.0.9(@types/react@18.2.14)(react@18.3.1)':
+  '@web3modal/scaffold-utils@5.0.10(@types/react@18.2.14)(react@18.3.1)':
     dependencies:
       '@coinbase/wallet-sdk': 4.0.3
-      '@web3modal/core': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/polyfills': 5.0.9
-      '@web3modal/wallet': 5.0.9
+      '@web3modal/core': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/polyfills': 5.0.10
+      '@web3modal/wallet': 5.0.10
       valtio: 1.11.2(@types/react@18.2.14)(react@18.3.1)
     transitivePeerDependencies:
       - '@types/react'
       - react
 
-  '@web3modal/scaffold-vue@5.0.9(@types/react@18.2.14)(react@18.3.1)':
+  '@web3modal/scaffold-vue@5.0.10(@types/react@18.2.14)(react@18.3.1)':
     dependencies:
-      '@web3modal/core': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/scaffold': 5.0.9(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/core': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/scaffold': 5.0.10(@types/react@18.2.14)(react@18.3.1)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -6192,15 +6192,15 @@ snapshots:
       - react
       - uWebSockets.js
 
-  '@web3modal/scaffold@5.0.9(@types/react@18.2.14)(react@18.3.1)':
+  '@web3modal/scaffold@5.0.10(@types/react@18.2.14)(react@18.3.1)':
     dependencies:
-      '@web3modal/common': 5.0.9
-      '@web3modal/core': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/scaffold-ui': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/scaffold-utils': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/siwe': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/ui': 5.0.9
-      '@web3modal/wallet': 5.0.9
+      '@web3modal/common': 5.0.10
+      '@web3modal/core': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/scaffold-ui': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/scaffold-utils': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/siwe': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/ui': 5.0.10
+      '@web3modal/wallet': 5.0.10
       lit: 3.1.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -6220,14 +6220,14 @@ snapshots:
       - react
       - uWebSockets.js
 
-  '@web3modal/siwe@5.0.9(@types/react@18.2.14)(react@18.3.1)':
+  '@web3modal/siwe@5.0.10(@types/react@18.2.14)(react@18.3.1)':
     dependencies:
       '@walletconnect/utils': 2.12.0
-      '@web3modal/common': 5.0.9
-      '@web3modal/core': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/scaffold-utils': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/ui': 5.0.9
-      '@web3modal/wallet': 5.0.9
+      '@web3modal/common': 5.0.10
+      '@web3modal/core': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/scaffold-utils': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/ui': 5.0.10
+      '@web3modal/wallet': 5.0.10
       lit: 3.1.0
       valtio: 1.11.2(@types/react@18.2.14)(react@18.3.1)
     transitivePeerDependencies:
@@ -6248,7 +6248,7 @@ snapshots:
       - react
       - uWebSockets.js
 
-  '@web3modal/solana@5.0.9(@types/react@18.2.14)(bufferutil@4.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(utf-8-validate@5.0.10)':
+  '@web3modal/solana@5.0.10(@types/react@18.2.14)(bufferutil@4.0.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/sha2': 5.7.0
       '@solana/wallet-adapter-base': 0.9.23(@solana/web3.js@1.91.7(bufferutil@4.0.8)(utf-8-validate@5.0.10))
@@ -6260,14 +6260,14 @@ snapshots:
       '@wallet-standard/features': 1.0.3
       '@wallet-standard/wallet': 1.0.1
       '@walletconnect/universal-provider': 2.14.0(bufferutil@4.0.8)(utf-8-validate@5.0.10)
-      '@web3modal/common': 5.0.9
-      '@web3modal/core': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/polyfills': 5.0.9
-      '@web3modal/scaffold': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/scaffold-react': 5.0.9(@types/react@18.2.14)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@web3modal/scaffold-utils': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/scaffold-vue': 5.0.9(@types/react@18.2.14)(react@18.3.1)
-      '@web3modal/wallet': 5.0.9
+      '@web3modal/common': 5.0.10
+      '@web3modal/core': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/polyfills': 5.0.10
+      '@web3modal/scaffold': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/scaffold-react': 5.0.10(@types/react@18.2.14)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@web3modal/scaffold-utils': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/scaffold-vue': 5.0.10(@types/react@18.2.14)(react@18.3.1)
+      '@web3modal/wallet': 5.0.10
       bn.js: 5.2.1
       borsh: 0.7.0
       bs58: 5.0.0
@@ -6296,16 +6296,16 @@ snapshots:
       - uWebSockets.js
       - utf-8-validate
 
-  '@web3modal/ui@5.0.9':
+  '@web3modal/ui@5.0.10':
     dependencies:
       lit: 3.1.0
       qrcode: 1.5.3
 
-  '@web3modal/wallet@5.0.9':
+  '@web3modal/wallet@5.0.10':
     dependencies:
       '@walletconnect/logger': 2.1.2
-      '@web3modal/common': 5.0.9
-      '@web3modal/polyfills': 5.0.9
+      '@web3modal/common': 5.0.10
+      '@web3modal/polyfills': 5.0.10
       zod: 3.22.4
 
   JSONStream@1.3.5:

@@ -12,7 +12,7 @@
   "dependencies": {
     "@solana/wallet-adapter-wallets": "0.19.32",
     "@solana/web3.js": "^1.95.2",
-    "@web3modal/solana": "^5.0.9",
+    "@web3modal/solana": "^5.0.10",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },

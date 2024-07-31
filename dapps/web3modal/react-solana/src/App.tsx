@@ -2,18 +2,13 @@ import { createWeb3Modal, defaultSolanaConfig, useWeb3ModalAccount, useWeb3Modal
 import { solana, solanaTestnet, solanaDevnet } from '@web3modal/solana/chains'
 import { useEffect, useState, useRef } from "react";
 import {
-    PhantomWalletAdapter,
-    HuobiWalletAdapter,
-    SolflareWalletAdapter,
-    TrustWalletAdapter
-  } from '@solana/wallet-adapter-wallets'
-
-import {
   PublicKey,
   Transaction,
   TransactionMessage,
   VersionedTransaction,
   SystemProgram,
+  Connection,
+  TransactionInstruction
 } from '@solana/web3.js'
 
 const events: string[] = [];
@@ -31,7 +26,7 @@ const metadata = {
     name: 'Appkit Solana Example v1',
     description: 'Appkit Solana Example v1',
     url: 'https://web3modal.com', // origin must match your domain & subdomain
-    icons: ['https://avatars.githubusercontent.com/u/37784886']
+    icons: ['https://avatars.githubusercontent.com/u/37784886'],
 }
 
 const solanaConfig = defaultSolanaConfig({
@@ -46,17 +41,12 @@ createWeb3Modal({
     solanaConfig,
     chains,
     projectId,
-    wallets: [  
-      new PhantomWalletAdapter(),
-      new HuobiWalletAdapter(),
-      new SolflareWalletAdapter(),
-      new TrustWalletAdapter()
-    ],
   })
   
 const App = () => {
 
     const [isConnected, setIsConnected] = useState(false);
+    const [balance, setBalance] = useState("");
     const txtConsoleRef = useRef(null);
 
     const { address, chainId } = useWeb3ModalAccount()
@@ -64,6 +54,7 @@ const App = () => {
 
     useEffect(() => {
         if (walletProvider) {
+          handleGetBalance();
           setIsConnected(true)
         } else {
           setIsConnected(false)
@@ -79,6 +70,18 @@ const App = () => {
       const txtConsole = txtConsoleRef.current as HTMLTextAreaElement | null;
       txtConsole!.value = msg;
       console.log(msg);
+    }
+
+    const handleGetBalance = async () => {
+      if (!walletProvider || !address || !connection) {
+        printConsole('walletProvider or address is undefined');
+        return;
+      }
+      const balance = await connection.getBalance( walletProvider.publicKey);
+      //convert balance to SOL
+      const sol = balance / 1000000000;
+      setBalance(sol.toString() + " SOL");
+      console.log('Balance: ', sol.toString() + " SOL");
     }
 
     const handleSign = async () => {
@@ -118,13 +121,11 @@ const App = () => {
 
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
-      
-      const signedTransaction =  await walletProvider.signTransaction(transaction);
-      transaction.addSignature(walletProvider.publicKey, Buffer.from(signedTransaction.signatures[0].signature));
-      console.log("Verify sign: ", transaction.verifySignatures()); // <---- here is the issue
-      console.log('transaction',  signedTransaction);
-      const res = await connection.sendRawTransaction(transaction.serialize());
-      printConsole('res: '+ res);
+      const tx = await walletProvider.sendTransaction(transaction, connection as Connection)
+      // Update Balance after 8s
+      setTimeout(handleGetBalance, 8000);
+
+      printConsole(tx);      
     }
 
     const handleSendTransactionv0 = async () => {
@@ -159,44 +160,48 @@ const App = () => {
       // Make a versioned transaction
       const transactionV0 = new VersionedTransaction(messageV0)
 
-      const signature = await walletProvider.signTransaction(
-        transactionV0
+      const signature = await walletProvider.sendTransaction(
+        transactionV0,
+        connection as Connection
       )
-      transactionV0.addSignature(walletProvider.publicKey, Buffer.from(signature.signatures[0].signature));
-      printConsole(`Signature: ${signature}`);
 
-      const res = await connection.sendRawTransaction(transactionV0.serialize());
-      printConsole('send : '+ res);
-      /*
-      const confirmationResult = await connection.confirmTransaction(
-        txSignature,
-        "confirmed",
-      );
-  
-      if (confirmationResult.value.err) {
-        throw new Error(JSON.stringify(confirmationResult.value.err));
-      } else {
-        console.log("Transaction successfully submitted!");
-      }
-      */
+      // Update Balance after 8s
+      setTimeout(handleGetBalance, 8000);
+
+      printConsole(signature);
     }
     
+    const handleReadSC = async () => {
+      if (!connection) {
+        printConsole('connection not set');
+        return;
+      }
+      if (!walletProvider || !address) {
+        printConsole('walletProvider or address is undefined');
+        return;
+      }
+    }
+
 
 return (
     <div className="App center-content">
       <h2>WalletConnect AppKit + Solana v1</h2>
-      <w3m-button  />
+      <p>
+      <w3m-button balance="hide" />
+      Balance: {balance}
+      </p>
       {isConnected && (
         <>
           <div className="btn-container">
           <button onClick={handleFaucet}>Solana faucet</button>
+          <button onClick={handleGetBalance}>Update Balance</button>
             <button onClick={handleSign}>Sign MSG</button>
-            <button onClick={handleSendTransaction}>Send Transaction</button>
-            <button onClick={handleSendTransactionv0}>Send Transaction v0</button>
+            <button onClick={handleSendTransaction}>Send tx</button>
+            <button onClick={handleSendTransactionv0}>Send tx v0</button>
           </div>
           <br />
           <div>
-            <textarea className="console" ref={txtConsoleRef} readOnly  wrap='hard'>
+            <textarea className="console" ref={txtConsoleRef} readOnly>
                 
             </textarea>
           </div>
@@ -205,7 +210,7 @@ return (
     }
       
       <div className="circle">
-        <a href="https://github.com/WalletConnect/web-examples/" target="_blank"><img src="/github.png" alt="GitHub" width="50" /></a>
+        <a href="https://github.com/WalletConnect/web-examples/tree/main/dapps/web3modal" target="_blank"><img src="/github.png" alt="GitHub" width="50" /></a>
       </div>
     </div>
   );
