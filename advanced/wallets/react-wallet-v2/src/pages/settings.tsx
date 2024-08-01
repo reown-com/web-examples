@@ -39,7 +39,7 @@ export default function SettingsPage() {
         Packages
       </Text>
       <Row justify="space-between" align="center">
-        <Text color="$gray400">@walletconnect/sign-client</Text>
+        <Text color="$gray400">@walletconnect/web3wallet</Text>
         <Text color="$gray400">{packageJSON.dependencies['@walletconnect/web3wallet']}</Text>
       </Row>
 
