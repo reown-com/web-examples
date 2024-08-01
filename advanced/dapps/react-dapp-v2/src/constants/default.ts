@@ -1,10 +1,11 @@
 import { getAppMetadata } from "@walletconnect/utils";
 import {
   PartialTezosDelegationOperation,
-  PartialTezosOriginationOperation,
+  PartialTezosOriginationOperation as PartialTezosOriginationOperationOriginal,
   PartialTezosTransactionOperation,
   TezosOperationType }
-  from "@trilitech/tezos-connect";
+  from "@airgap/beacon-types";
+import { ScriptedContracts } from "@taquito/rpc";
 
 if (!process.env.NEXT_PUBLIC_PROJECT_ID)
   throw new Error("`NEXT_PUBLIC_PROJECT_ID` env variable is missing.");
@@ -250,6 +251,11 @@ export enum DEFAULT_TRON_EVENTS {}
 /**
  * TEZOS
  */
+interface PartialTezosOriginationOperation
+  extends Omit<PartialTezosOriginationOperationOriginal, "script"> {
+  script: ScriptedContracts;
+}
+
 export enum DEFAULT_TEZOS_METHODS {
   TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
   TEZOS_SEND = "tezos_send",
@@ -264,28 +270,28 @@ export enum DEFAULT_TEZOS_METHODS {
 const tezosTransactionOperation: PartialTezosTransactionOperation = {
   kind: TezosOperationType.TRANSACTION,
   destination: "$(peerAddress)",
-  amount: "1000"
+  amount: "10"
 };
 
 const tezosOriginationOperation: PartialTezosOriginationOperation = {
   kind: TezosOperationType.ORIGINATION,
   balance: '1',
-  script: {
+  script: { // This contract adds the parameter to the storage value
     code: [
-      { "prim": "parameter", "args": [{ "prim": "unit" }] },
-      { "prim": "storage", "args": [{ "prim": "int" }] },
-      {
-        "prim": "code",
-        "args": [[
-          { "prim": "CDR" },
-          { "prim": "PUSH", "args": [{ "prim": "int" }, { "int": "10" }] },
-          { "prim": "ADD" },
-          { "prim": "NIL", "args": [{ "prim": "operation" }] },
-          { "prim": "PAIR" }
+      { prim: "parameter", args: [{ prim: "int" }] },
+      { prim: "storage", args: [{ prim: "int" }] },
+      { prim: "code",
+        args: [[
+            { prim: "DUP" },                                // Duplicate the parameter (parameter is pushed onto the stack)
+            { prim: "CAR" },                                // Access the parameter from the stack (parameter is on top)
+            { prim: "DIP", args: [[{ prim: "CDR" }]] },     // Access the storage value (storage is on the stack)
+            { prim: "ADD" },                                // Add the parameter to the storage value
+            { prim: "NIL", args: [{ prim: "operation" }] }, // Create an empty list of operations
+            { prim: "PAIR" }                                // Pair the updated storage with the empty list of operations
         ]]
       }
     ],
-    storage: { "int": "0" }
+    storage: { int: "10" }
   }
 };
 
@@ -293,7 +299,7 @@ const tezosContractCallOperation: PartialTezosTransactionOperation = {
   kind: TezosOperationType.TRANSACTION,
   destination: "$(contractAddress)",
   amount: "0",
-  parameters: { entrypoint: "default", value: { prim: "Unit" } }
+  parameters: { entrypoint: "default", value: { int: "20" } } // Add 20 to the current storage value
 };
 
 const tezosDelegationOperation: PartialTezosDelegationOperation = {

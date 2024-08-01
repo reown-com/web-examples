@@ -189,10 +189,6 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                         setShowDescription(true);
                         setHoveredDescription(JSON.stringify(action.description, null, 2));
                       }}
-                      onMouseLeave={() => {
-                        setShowDescription(false);
-                        setHoveredDescription(null);
-                      }}
                     >
                       {action.method}
                     </SAction>
