@@ -68,7 +68,6 @@ export default class SolanaLib {
 
   public async signAndSendTransaction(
     feePayer: SolanaSignTransaction['feePayer'],
-    recentBlockhash: SolanaSignTransaction['recentBlockhash'],
     instructions: SolanaSignTransaction['instructions'],
     chainId: string
   ) {
@@ -108,7 +107,7 @@ export default class SolanaLib {
 
     const transaction = new Transaction().add(...parsedInstructions)
     transaction.feePayer = new PublicKey(feePayer)
-    transaction.recentBlockhash = recentBlockhash
+    transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
     transaction.sign(this.keypair)
 
     const signature = await connection.sendRawTransaction(transaction.serialize())

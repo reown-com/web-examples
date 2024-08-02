@@ -29,7 +29,6 @@ export async function approveSolanaRequest(
     case SOLANA_SIGNING_METHODS.SOLANA_SIGN_AND_SEND_TRANSACTION:
       const signedAndSentTransaction = await wallet.signAndSendTransaction(
         request.params.feePayer,
-        request.params.recentBlockhash,
         request.params.instructions,
         chainId
       )
