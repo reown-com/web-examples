@@ -1,7 +1,12 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { Col, Divider, Row, Text, Code, Checkbox, Grid } from '@nextui-org/react'
-import { buildAuthObject, getSdkError, populateAuthPayload } from '@walletconnect/utils'
+import {
+  buildAuthObject,
+  getAddressFromAccount,
+  getSdkError,
+  populateAuthPayload
+} from '@walletconnect/utils'
 
 import ModalFooter from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
@@ -18,8 +23,6 @@ import { styledToast } from '@/utils/HelperUtil'
 export default function SessionAuthenticateModal() {
   // Get request and wallet data from store
   const authRequest = ModalStore.state.data?.authRequest
-
-  const { account } = useSnapshot(SettingsStore.state)
   const [messages, setMessages] = useState<
     { authPayload: any; message: string; id: number; iss: string }[]
   >([])
@@ -27,21 +30,17 @@ export default function SessionAuthenticateModal() {
   const [supportedMethods] = useState<string[]>(Object.values(EIP155_SIGNING_METHODS))
   const [signStrategy, setSignStrategy] = useState(1)
   // Ensure request and wallet are defined
-
-  const address = eip155Addresses[account]
+  const addresses = useMemo(() => eip155Addresses, [])
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const getMessageToSign = useCallback(
-    (authPayload, iss) => {
-      const message = web3wallet.engine.signClient.formatAuthMessage({
-        request: authPayload,
-        iss
-      })
-      console.log('message', message)
-      return message
-    },
-    [address]
-  )
+  const getMessageToSign = useCallback((authPayload, iss) => {
+    const message = web3wallet.engine.signClient.formatAuthMessage({
+      request: authPayload,
+      iss
+    })
+    console.log('message', message)
+    return message
+  }, [])
 
   useEffect(() => {
     if (!authRequest?.params?.authPayload) return
@@ -55,17 +54,19 @@ export default function SessionAuthenticateModal() {
 
     if (signStrategy === 1) {
       try {
+        const messagesToSign = []
         console.log('newAuthPayload', newAuthPayload)
-        const iss = `${newAuthPayload.chains[0]}:${address}`
-        const message = getMessageToSign(newAuthPayload, iss)
-        setMessages([
-          {
+        for (const address of addresses) {
+          const iss = `${newAuthPayload.chains[0]}:${address}`
+          const message = getMessageToSign(newAuthPayload, iss)
+          messagesToSign.push({
             authPayload: newAuthPayload,
             message,
             id: authRequest.id,
             iss
-          }
-        ])
+          })
+        }
+        setMessages(messagesToSign)
       } catch (e) {
         console.log('error', e)
         styledToast((e as Error).message, 'error')
@@ -74,28 +75,32 @@ export default function SessionAuthenticateModal() {
     } else if (signStrategy === 2) {
       const messagesToSign: any[] = []
       newAuthPayload.chains.forEach((chain: string) => {
-        const iss = `${chain}:${address}`
-        const message = web3wallet.engine.signClient.formatAuthMessage({
-          request: newAuthPayload,
-          iss
-        })
-        messagesToSign.push({
-          authPayload: newAuthPayload,
-          message,
-          iss,
-          id: authRequest.id
-        })
+        for (const address of addresses) {
+          const iss = `${chain}:${address}`
+          const message = web3wallet.engine.signClient.formatAuthMessage({
+            request: newAuthPayload,
+            iss
+          })
+          messagesToSign.push({
+            authPayload: newAuthPayload,
+            message,
+            iss,
+            id: authRequest.id
+          })
+        }
       })
       setMessages(messagesToSign)
     }
-  }, [address, authRequest, getMessageToSign, signStrategy, supportedChains, supportedMethods])
+  }, [addresses, authRequest, getMessageToSign, signStrategy, supportedChains, supportedMethods])
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
     if (messages.length) {
       const signedAuths = []
       for (const message of messages) {
-        const signature = await eip155Wallets[address].signMessage(message.message)
+        const signature = await eip155Wallets[getAddressFromAccount(message.iss)].signMessage(
+          message.message
+        )
         const signedCacao = buildAuthObject(
           message.authPayload,
           {
@@ -114,7 +119,7 @@ export default function SessionAuthenticateModal() {
       SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
       ModalStore.close()
     }
-  }, [address, messages])
+  }, [messages])
 
   // Handle reject action
   const onReject = useCallback(async () => {
