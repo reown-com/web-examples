@@ -21,7 +21,7 @@ export const SOLANA_MAINNET_CHAINS = {
     name: 'Solana',
     logo: '/chain-logos/solana-5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp.png',
     rgb: '30, 240, 166',
-    rpc: '',
+    rpc: 'https://api.mainnet-beta.solana.com',
     namespace: 'solana'
   }
 }
@@ -41,7 +41,7 @@ export const SOLANA_TEST_CHAINS = {
     name: 'Solana Devnet',
     logo: '/chain-logos/solana-5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp.png',
     rgb: '30, 240, 166',
-    rpc: '',
+    rpc: 'https://api.devnet.solana.com',
     namespace: 'solana'
   },
   'solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z': {
@@ -49,7 +49,7 @@ export const SOLANA_TEST_CHAINS = {
     name: 'Solana Testnet',
     logo: '/chain-logos/solana-5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp.png',
     rgb: '30, 240, 166',
-    rpc: '',
+    rpc: 'https://api.testnet.solana.com',
     namespace: 'solana'
   }
 }
@@ -61,5 +61,6 @@ export const SOLANA_CHAINS = { ...SOLANA_MAINNET_CHAINS, ...SOLANA_TEST_CHAINS }
  */
 export const SOLANA_SIGNING_METHODS = {
   SOLANA_SIGN_TRANSACTION: 'solana_signTransaction',
-  SOLANA_SIGN_MESSAGE: 'solana_signMessage'
+  SOLANA_SIGN_MESSAGE: 'solana_signMessage',
+  SOLANA_SIGN_AND_SEND_TRANSACTION: 'solana_signAndSendTransaction'
 }
