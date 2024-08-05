@@ -3,7 +3,8 @@ import {
   Connection,
   Transaction,
   TransactionInstruction,
-  PublicKey
+  PublicKey,
+  SendOptions
 } from '@solana/web3.js'
 import bs58 from 'bs58'
 import nacl from 'tweetnacl'
@@ -69,7 +70,8 @@ export default class SolanaLib {
   public async signAndSendTransaction(
     feePayer: SolanaSignTransaction['feePayer'],
     instructions: SolanaSignTransaction['instructions'],
-    chainId: string
+    chainId: string,
+    options: SendOptions = {}
   ) {
     const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
 
@@ -111,6 +113,11 @@ export default class SolanaLib {
     transaction.sign(this.keypair)
 
     const signature = await connection.sendRawTransaction(transaction.serialize())
+    const confirmation = await connection.confirmTransaction(signature, options.preflightCommitment)
+
+    if (confirmation.value.err) {
+      throw new Error(confirmation.value.err.toString())
+    }
 
     return { signature }
   }

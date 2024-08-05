@@ -30,7 +30,8 @@ export async function approveSolanaRequest(
       const signedAndSentTransaction = await wallet.signAndSendTransaction(
         request.params.feePayer,
         request.params.instructions,
-        chainId
+        chainId,
+        request.params.options
       )
 
       return formatJsonRpcResult(id, signedAndSentTransaction)
