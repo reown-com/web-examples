@@ -2,12 +2,13 @@ import PageHeader from '@/components/PageHeader'
 import SessionCard from '@/components/SessionCard'
 import SettingsStore from '@/store/SettingsStore'
 import { Text } from '@nextui-org/react'
-import { Fragment } from 'react'
+import { Fragment, useEffect } from 'react'
 import { useSnapshot } from 'valtio'
+import { refreshSessionsList } from './wc'
 
 export default function SessionsPage() {
   const { sessions } = useSnapshot(SettingsStore.state)
-
+  useEffect(() => refreshSessionsList(), [])
   if (!sessions.length) {
     return (
       <Fragment>
