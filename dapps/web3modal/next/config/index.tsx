@@ -9,7 +9,7 @@ export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
 if (!projectId) throw new Error("Project ID is not defined");
 
-const metadata = {
+export const metadata = {
   name: "appkit-example-app",
   description: "AppKit Example",
   url: "https://web3modal.com", // origin must match your domain & subdomain
