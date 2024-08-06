@@ -8,29 +8,17 @@ import {
 import { SmartAccountLib } from './SmartAccountLib'
 import { SmartAccount, signerToSafeSmartAccount } from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
-import {
-  Address,
-  Hex,
-  WalletGrantPermissionsParameters,
-  WalletGrantPermissionsReturnType,
-  serializeSignature
-} from 'viem'
-import { publicKeyToAddress, sign } from 'viem/accounts'
-import {
-  MOCK_VALIDATOR_ADDRESS,
-  PERMISSION_VALIDATOR_ADDRESS,
-  SAFE7579_USER_OPERATION_BUILDER_ADDRESS
-} from '@/utils/permissionValidatorUtils/constants'
+import { Address, Hex, WalletGrantPermissionsParameters, createWalletClient, http,type WalletGrantPermissionsReturnType  } from 'viem'
 import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
-import { KEY_TYPES, bigIntReplacer, decodeDIDToPublicKey } from '@/utils/HelperUtil'
-import { parsePublicKey as parsePasskeyPublicKey } from 'webauthn-p256'
+import { bigIntReplacer } from '@/utils/HelperUtil'
 import {
-  generateSignerId,
-  getDigest,
-  getEOAAndPasskeySignerInitData,
-  getPermissionContext,
-  prepareMockWCCosignerEnableSession
-} from '@/utils/permissionValidatorUtils'
+  getContext,
+  mockValidator,
+  Permission,
+  smartSessionAddress,
+  userOperationBuilderAddress
+} from '@biconomy/permission-context-builder'
+import { ModuleType } from 'permissionless/actions/erc7579'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   protected ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
@@ -105,64 +93,44 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
   }
 
-  async grantPermissions(
-    grantPermissionsRequestParams: WalletGrantPermissionsParameters
-  ): Promise<WalletGrantPermissionsReturnType> {
+  /* 7715 method */
+  async grantPermissions(grantPermissionsRequestParameters: WalletGrantPermissionsParameters):Promise<WalletGrantPermissionsReturnType> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-
     await this.ensureAccountReadyForGrantPermissions()
-    const requestedSigner = grantPermissionsRequestParams.signer
-    const requestedPermissions = grantPermissionsRequestParams.permissions
-    if (!requestedSigner || requestedSigner.type !== 'keys') {
-      throw new Error('Currently only supporting KeySigner and MultiKey Type for permissions')
-    }
-    const typeSigner = requestedSigner as MultiKeySigner
-    const publicKeys = typeSigner.data.ids.map(id => decodeDIDToPublicKey(id))
-    let eoaPublicKey, passkeyPublicKey
-    publicKeys.forEach(key => {
-      if (key.keyType === KEY_TYPES.secp256k1) {
-        eoaPublicKey = key.key
-      }
-      if (key.keyType === KEY_TYPES.secp256r1) {
-        passkeyPublicKey = key.key
-      }
-    })
-    if (!eoaPublicKey || !passkeyPublicKey) throw Error('Invalid EOA and passkey signers')
-    const targetEOAAddress = publicKeyToAddress(eoaPublicKey as `0x${string}`)
-    const parsedPasskeyPublicKey = parsePasskeyPublicKey(passkeyPublicKey as `0x${string}`)
-    const encodedSignersInitData = getEOAAndPasskeySignerInitData(targetEOAAddress, {
-      pubKeyX: parsedPasskeyPublicKey.x,
-      pubKeyY: parsedPasskeyPublicKey.y
-    })
-    const enableSession = prepareMockWCCosignerEnableSession(encodedSignersInitData)
-    const signerId = generateSignerId(grantPermissionsRequestParams)
-    const enableSessionHash = await getDigest(this.publicClient, {
-      signerId,
-      accountAddress: this.client.account.address,
-      enableSession: enableSession
-    })
-    const signature = await sign({
-      privateKey: this.getPrivateKey() as `0x${string}`,
-      hash: enableSessionHash
-    })
-    const enableSessionSignature: Hex = serializeSignature(signature)
-    const permissionContext = getPermissionContext(signerId, enableSession, enableSessionSignature)
-    console.log({ permissionContext })
-    console.log('Granting permissions...')
 
+    const walletClient = createWalletClient({
+      chain: this.chain,
+      account: this.client.account,
+      transport: http()
+    })
+
+    const permissionContext = await getContext(walletClient, {
+      permissions: [...grantPermissionsRequestParameters.permissions] as unknown as Permission[],
+      expiry: grantPermissionsRequestParameters.expiry,
+      signer: grantPermissionsRequestParameters.signer as MultiKeySigner,
+      smartAccountAddress: this.client.account.address
+    })
+    console.log(`Returning the permissions request`)
     return {
       permissionsContext: permissionContext,
-      grantedPermissions: grantPermissionsRequestParams.permissions,
-      expiry: grantPermissionsRequestParams.expiry,
+      grantedPermissions: grantPermissionsRequestParameters.permissions,
+      expiry: grantPermissionsRequestParameters.expiry,
       signerData: {
-        userOpBuilder: SAFE7579_USER_OPERATION_BUILDER_ADDRESS,
+        userOpBuilder: userOperationBuilderAddress,
         submitToAddress: this.client.account.address
       }
-    }
+    } as WalletGrantPermissionsReturnType
   }
 
+  /**
+   * Check Safe7579 Account is ready for processing this RPC request
+   * - Check Account is deployed
+   * - Check Permission Validator & Mock Validator modules are installed
+   * If not, Deploy and installed all necessary module for processing this RPC request
+   * @returns
+   */
   private async ensureAccountReadyForGrantPermissions(): Promise<void> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
@@ -172,37 +140,48 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         this.publicClient,
         this.client.account.address
       )
-      console.log({ isAccountDeployed })
 
-      let permissionValidatorInstalled = false
+      let smartSessionValidatorInstalled = false
       let mockValidatorInstalled = false
 
       if (isAccountDeployed) {
-        ;[permissionValidatorInstalled, mockValidatorInstalled] = await Promise.all([
-          this.isModuleInstalled(PERMISSION_VALIDATOR_ADDRESS),
-          this.isModuleInstalled(MOCK_VALIDATOR_ADDRESS)
+        ;[smartSessionValidatorInstalled, mockValidatorInstalled] = await Promise.all([
+          this.isValidatorModuleInstalled(smartSessionAddress),
+          this.isValidatorModuleInstalled(mockValidator)
         ])
       }
-      console.log({ permissionValidatorInstalled, mockValidatorInstalled })
+      console.log({ smartSessionValidatorInstalled, mockValidatorInstalled })
 
-      if (isAccountDeployed && permissionValidatorInstalled && mockValidatorInstalled) {
+      if (isAccountDeployed && smartSessionValidatorInstalled && mockValidatorInstalled) {
         console.log('Account is already set up with required modules')
         return
       }
 
       console.log('Setting up the Account with required modules')
 
-      const installationPromises = []
+      const installModules: {
+        address: Address
+        type: ModuleType
+        context: Hex
+      }[] = []
 
-      if (!isAccountDeployed || !permissionValidatorInstalled) {
-        installationPromises.push(this.installModule(PERMISSION_VALIDATOR_ADDRESS))
+      if (!isAccountDeployed || !smartSessionValidatorInstalled) {
+        installModules.push({
+          address: smartSessionAddress,
+          type: 'validator',
+          context: '0x'
+        })
       }
 
       if (isAccountDeployed && !mockValidatorInstalled) {
-        installationPromises.push(this.installModule(MOCK_VALIDATOR_ADDRESS))
+        installModules.push({
+          address: mockValidator,
+          type: 'validator',
+          context: '0x'
+        })
       }
 
-      await Promise.all(installationPromises)
+      await this.installModules(installModules)
       console.log('Account setup completed')
     } catch (error) {
       console.error(`Error ensuring account is ready for grant permissions: ${error}`)
@@ -210,7 +189,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
   }
 
-  private async isModuleInstalled(address: Address): Promise<boolean> {
+  private async isValidatorModuleInstalled(address: Address): Promise<boolean> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
@@ -222,15 +201,19 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
   }
 
-  private async installModule(address: Address): Promise<void> {
+  private async installModules(
+    modules: {
+      address: Address
+      type: ModuleType
+      context: Hex
+    }[]
+  ): Promise<void> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    const userOpHash = await this.client.installModule({
+    const userOpHash = await this.client.installModules({
       account: this.client.account,
-      address,
-      context: '0x',
-      type: 'validator'
+      modules: modules
     })
     const receipt = await this.bundlerClient.waitForUserOperationReceipt({ hash: userOpHash })
     console.log(`Module installation receipt:`, receipt)
