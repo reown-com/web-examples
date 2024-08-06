@@ -106,6 +106,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
+        case SOLANA_SIGNING_METHODS.SOLANA_SIGN_AND_SEND_TRANSACTION:
           return ModalStore.open('SessionSignSolanaModal', { requestEvent, requestSession })
 
         case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_MESSAGE:
