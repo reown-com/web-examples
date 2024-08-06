@@ -88,17 +88,10 @@ export default class SolanaLib {
         isWritable: key.isWritable
       }))
       const programId = new PublicKey(instruction.programId)
-      const data = (() => {
-        if (typeof instruction.data === 'undefined') {
-          return undefined
-        }
-
-        if (typeof instruction.data === 'string') {
-          return Buffer.from(bs58.decode(instruction.data).buffer)
-        }
-
-        return instruction.data
-      })()
+      const data =
+        typeof instruction.data === 'string'
+          ? Buffer.from(bs58.decode(instruction.data).buffer)
+          : instruction.data
 
       return new TransactionInstruction({
         keys,
