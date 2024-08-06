@@ -9,7 +9,7 @@ export async function approveSolanaRequest(
   requestEvent: SignClientTypes.EventArguments['session_request']
 ) {
   const { params, id } = requestEvent
-  const { request } = params
+  const { request, chainId } = params
   const wallet = solanaWallets[getWalletAddressFromParams(solanaAddresses, params)]
 
   switch (request.method) {
@@ -25,6 +25,16 @@ export async function approveSolanaRequest(
       )
 
       return formatJsonRpcResult(id, signedTransaction)
+
+    case SOLANA_SIGNING_METHODS.SOLANA_SIGN_AND_SEND_TRANSACTION:
+      const signedAndSentTransaction = await wallet.signAndSendTransaction(
+        request.params.feePayer,
+        request.params.instructions,
+        chainId,
+        request.params.options
+      )
+
+      return formatJsonRpcResult(id, signedAndSentTransaction)
 
     default:
       throw new Error(getSdkError('INVALID_METHOD').message)

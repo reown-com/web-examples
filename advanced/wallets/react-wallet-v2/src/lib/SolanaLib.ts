@@ -1,7 +1,15 @@
-import { Keypair } from '@solana/web3.js'
+import {
+  Keypair,
+  Connection,
+  Transaction,
+  TransactionInstruction,
+  PublicKey,
+  SendOptions
+} from '@solana/web3.js'
 import bs58 from 'bs58'
 import nacl from 'tweetnacl'
 import SolanaWallet, { SolanaSignTransaction } from 'solana-wallet'
+import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 
 /**
  * Types
@@ -55,6 +63,54 @@ export default class SolanaLib {
       recentBlockhash,
       partialSignatures: partialSignatures ?? []
     })
+
+    return { signature }
+  }
+
+  public async signAndSendTransaction(
+    feePayer: SolanaSignTransaction['feePayer'],
+    instructions: SolanaSignTransaction['instructions'],
+    chainId: string,
+    options: SendOptions = {}
+  ) {
+    const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+
+    if (!rpc) {
+      throw new Error('There is no RPC URL for the provided chain')
+    }
+
+    const connection = new Connection(rpc)
+
+    const parsedInstructions = instructions.map(instruction => {
+      const keys = instruction.keys.map(key => ({
+        pubkey: new PublicKey(key.pubkey),
+        isSigner: key.isSigner,
+        isWritable: key.isWritable
+      }))
+      const programId = new PublicKey(instruction.programId)
+      const data =
+        typeof instruction.data === 'string'
+          ? Buffer.from(bs58.decode(instruction.data).buffer)
+          : instruction.data
+
+      return new TransactionInstruction({
+        keys,
+        programId,
+        data
+      })
+    })
+
+    const transaction = new Transaction().add(...parsedInstructions)
+    transaction.feePayer = new PublicKey(feePayer)
+    transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+    transaction.sign(this.keypair)
+
+    const signature = await connection.sendRawTransaction(transaction.serialize())
+    const confirmation = await connection.confirmTransaction(signature, options.preflightCommitment)
+
+    if (confirmation.value.err) {
+      throw new Error(confirmation.value.err.toString())
+    }
 
     return { signature }
   }

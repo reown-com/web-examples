@@ -20,6 +20,7 @@ import { approveEIP5792Request } from '@/utils/EIP5792RequestHandlerUtils'
 import EIP155Lib from '@/lib/EIP155Lib'
 import { getWallet } from '@/utils/EIP155WalletUtil'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
+import { refreshSessionsList } from '@/pages/wc'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -105,6 +106,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
+        case SOLANA_SIGNING_METHODS.SOLANA_SIGN_AND_SEND_TRANSACTION:
           return ModalStore.open('SessionSignSolanaModal', { requestEvent, requestSession })
 
         case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_MESSAGE:
@@ -173,11 +175,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       web3wallet.engine.signClient.events.on('session_ping', data => console.log('ping', data))
       web3wallet.on('session_delete', data => {
         console.log('session_delete event received', data)
-        SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+        refreshSessionsList()
       })
       web3wallet.on('session_authenticate', onSessionAuthenticate)
       // load sessions on init
-      SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+      refreshSessionsList()
     }
-  }, [initialized, onAuthRequest, onSessionProposal, onSessionRequest])
+  }, [initialized, onAuthRequest, onSessionAuthenticate, onSessionProposal, onSessionRequest])
 }
