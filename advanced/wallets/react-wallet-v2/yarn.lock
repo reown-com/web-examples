@@ -118,10 +118,10 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@biconomy/permission-context-builder@^1.0.7":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@biconomy/permission-context-builder/-/permission-context-builder-1.0.7.tgz#d609414c4b0343803946cdb5f41e2b6453047765"
-  integrity sha512-7fcmtcAt1yT17vri+T1sT0tkX53bqaGgZatWggn6PsqgA2jhAuBY5jJZRK5eQKJRdCw+AUZoIg+9cozobMvDuw==
+"@biconomy/permission-context-builder@^1.0.9":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@biconomy/permission-context-builder/-/permission-context-builder-1.0.9.tgz#6d1c9717b80b94576c99dad10e928baa0a850f0d"
+  integrity sha512-gEKRixmJDJH1eQciYYuJWjfMLaUqpXXJ2eWoTZ5oqufENAgv2srHJVeXCTZjiLoEhI2rPYOv4uWGtZsGEwScMA==
   dependencies:
     typescript "^5.5.3"
     webauthn-p256 "^0.0.8"
