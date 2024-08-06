@@ -126,6 +126,9 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
     balances,
     actions,
   } = props;
+  const [showDescription, setShowDescription] = React.useState(false);
+  const [hoveredDescription, setHoveredDescription] = React.useState<string | null>(null);
+
   if (!Object.keys(chainData).length) return null;
 
   const chain = getBlockchainDisplayData(chainId, chainData);
@@ -139,9 +142,6 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
     typeof account !== "undefined" && typeof balances !== "undefined"
       ? balances[account]
       : [];
-
-  const [showDescription, setShowDescription] = React.useState(false);
-  const [hoveredDescription, setHoveredDescription] = React.useState<string | null>(null);
 
   return (
     <React.Fragment>

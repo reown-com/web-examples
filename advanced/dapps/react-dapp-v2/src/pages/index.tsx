@@ -450,6 +450,7 @@ const Home: NextPage = () => {
       {
         method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
         callback: onGetAccounts,
+        description: "Use before sending a transaction to get peer address.",
       },
       {
         method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION,

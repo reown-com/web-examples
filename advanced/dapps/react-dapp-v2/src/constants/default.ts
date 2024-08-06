@@ -1,4 +1,10 @@
 import { getAppMetadata } from "@walletconnect/utils";
+import {
+  PartialTezosDelegationOperation,
+  PartialTezosOriginationOperation,
+  PartialTezosTransactionOperation,
+  TezosOperationType }
+  from "@trilitech/tezos-connect";
 
 if (!process.env.NEXT_PUBLIC_PROJECT_ID)
   throw new Error("`NEXT_PUBLIC_PROJECT_ID` env variable is missing.");
@@ -255,17 +261,16 @@ export enum DEFAULT_TEZOS_METHODS {
   TEZOS_SIGN = "tezos_sign",
 }
 
-export const DEFAULT_TEZOS_KINDS = {
-  "tezos_send:transaction": {
-      kind: "transaction",
-      destination: "$(peerAddress)",
-      amount: "1000",
-      mutez: true,
-  },
-  "tezos_send:origination": {
-    kind: 'origination',
-    source: "$(address)",
-    balance: '1',
+const tezosTransactionOperation: PartialTezosTransactionOperation = {
+  kind: TezosOperationType.TRANSACTION,
+  destination: "$(peerAddress)",
+  amount: "1000"
+};
+
+const tezosOriginationOperation: PartialTezosOriginationOperation = {
+  kind: TezosOperationType.ORIGINATION,
+  balance: '1',
+  script: {
     code: [
       { "prim": "parameter", "args": [{ "prim": "unit" }] },
       { "prim": "storage", "args": [{ "prim": "int" }] },
@@ -280,24 +285,33 @@ export const DEFAULT_TEZOS_KINDS = {
         ]]
       }
     ],
-    init: { "int": "0" }
-  },
-  "tezos_send:contract_call": {
-    kind: "transaction",
-    destination: "$(contractAddress)",
-    amount: "0",
-    mutez: true,
-    parameters: { "entrypoint": "default" }
-  },
-  "tezos_send:delegation": {
-    kind: "delegation",
-    source: "$(address)", // the address that is delegating
-    delegate: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve", // Tezos Foundation Ghost Baker. Cannot delegate to ourself as that would block undelegation
-  },
-  "tezos_send:undelegation": {
-    kind: "delegation",
-    source: "$(address)", // the address that is delegating
-  },
+    storage: { "int": "0" }
+  }
+};
+
+const tezosContractCallOperation: PartialTezosTransactionOperation = {
+  kind: TezosOperationType.TRANSACTION,
+  destination: "$(contractAddress)",
+  amount: "0",
+  parameters: { entrypoint: "default", value: { prim: "Unit" } }
+};
+
+const tezosDelegationOperation: PartialTezosDelegationOperation = {
+  kind: TezosOperationType.DELEGATION,
+  delegate: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve" // Tezos Foundation Ghost Baker. Cannot delegate to ourself as that would block undelegation
+};
+
+const tezosUndelegationOperation: PartialTezosDelegationOperation = {
+  kind: TezosOperationType.DELEGATION
+};
+
+// Assign the specific types to the DEFAULT_TEZOS_KINDS object
+export const DEFAULT_TEZOS_KINDS = {
+  "tezos_send:transaction": tezosTransactionOperation,
+  "tezos_send:origination": tezosOriginationOperation,
+  "tezos_send:contract_call": tezosContractCallOperation,
+  "tezos_send:delegation": tezosDelegationOperation,
+  "tezos_send:undelegation": tezosUndelegationOperation,
 };
 
 export enum DEFAULT_TEZOS_EVENTS {}

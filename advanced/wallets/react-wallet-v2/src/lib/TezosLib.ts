@@ -109,28 +109,28 @@ export default class TezosLib {
             parameters: tx.parameters,
           };
         case 'origination':
-          if (!tx.source || validateAddress(tx.source) !== 3) {
+          if (tx.source && validateAddress(tx.source) !== 3) {
             throw new Error(`tx.source contains invalid address ${tx.source}`);
           }
           if (!tx.balance || isNaN(tx.balance)) {
             throw new Error(`tx.balance is not a number: ${tx.balance}`);
           }
-          if (!tx.code) {
-            throw new Error(`tx.code is not defined: ${tx.code}`);
+          if (!tx.script || !tx.script.code) {
+            throw new Error(`tx.script.code is not defined: ${tx.script}`);
           }
-          if (!tx.init) {
-            throw new Error(`tx.init is not defined: ${tx.init}`);
+          if (!tx.script.storage) {
+            throw new Error(`tx.script.storage is not defined: ${tx.script}`);
           }
           return {
             kind: 'origination',
             source: tx.source,
             balance: tx.balance,
-            code: tx.code,
-            init: tx.init,
+            code: tx.script.code,
+            init: tx.script.storage,
             parameters: tx.parameters,
           };
         case 'delegation':
-          if (!tx.source || validateAddress(tx.source) !== 3) {
+          if (tx.source && validateAddress(tx.source) !== 3) {
             throw new Error(`tx.source contains invalid address ${tx.source}`);
           }
           if (!tx.delegate) {
