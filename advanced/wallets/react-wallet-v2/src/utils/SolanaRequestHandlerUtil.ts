@@ -14,26 +14,15 @@ export async function approveSolanaRequest(
 
   switch (request.method) {
     case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
-      const signedMessage = await wallet.signMessage(request.params.message)
+      const signedMessage = await wallet.signMessage(request.params)
       return formatJsonRpcResult(id, signedMessage)
 
     case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
-      const signedTransaction = await wallet.signTransaction(
-        request.params.feePayer,
-        request.params.recentBlockhash,
-        request.params.instructions
-      )
-
+      const signedTransaction = await wallet.signTransaction(request.params)
       return formatJsonRpcResult(id, signedTransaction)
 
     case SOLANA_SIGNING_METHODS.SOLANA_SIGN_AND_SEND_TRANSACTION:
-      const signedAndSentTransaction = await wallet.signAndSendTransaction(
-        request.params.feePayer,
-        request.params.instructions,
-        chainId,
-        request.params.options
-      )
-
+      const signedAndSentTransaction = await wallet.signAndSendTransaction(request.params, chainId)
       return formatJsonRpcResult(id, signedAndSentTransaction)
 
     default:
