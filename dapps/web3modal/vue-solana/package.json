@@ -8,7 +8,6 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@solana/wallet-adapter-wallets": "0.19.32",
     "@wagmi/connectors": "5.0.21",
     "@wagmi/core": "2.11.6",
     "@web3modal/solana": "^5.0.11",
