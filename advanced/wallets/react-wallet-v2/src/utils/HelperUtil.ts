@@ -205,6 +205,61 @@ export const decodeDIDToSecp256k1PublicKey = (did: string): string => {
   return '0x' + publicKey
 }
 
+export enum KEY_TYPES {
+  secp256k1 = 'secp256k1',
+  secp256r1 = 'secp256r1',
+  ed25519 = 'ed25519',
+  x25519 = 'x25519',
+  rsa = 'rsa',
+  'p-384' = 'p-384',
+  'p-521' = 'p-521'
+}
+
+export const decodeDIDToPublicKey = (
+  did: string
+): {
+  key: `0x${string}`
+  keyType: KEY_TYPES
+} => {
+  // Define the DID prefix to key type mapping
+  const didPrefixToKeyType: Record<string, KEY_TYPES> = {
+    'did:key:zQ3s': KEY_TYPES.secp256k1,
+    'did:key:zDn': KEY_TYPES.secp256r1,
+    'did:key:z6Mk': KEY_TYPES.ed25519,
+    'did:key:z6LS': KEY_TYPES.x25519,
+    'did:key:z4MX': KEY_TYPES.rsa,
+    'did:key:z82L': KEY_TYPES['p-384'],
+    'did:key:z2J9': KEY_TYPES['p-521']
+  }
+
+  // Find the matching key type prefix
+  const matchingPrefix = Object.keys(didPrefixToKeyType).find(prefix => did.startsWith(prefix))
+
+  if (!matchingPrefix) {
+    throw new Error('Invalid DID format. Unsupported key type.')
+  }
+
+  // Extract the Base58 encoded part
+  const encodedPart = did.slice(matchingPrefix.length)
+
+  // Decode the Base58 string
+  const decodedBuffer = bs58.decode(encodedPart)
+
+  // Convert the Buffer to a hex string
+  const publicKey = Buffer.from(decodedBuffer).toString('hex')
+
+  // Add the '0x' prefix
+  const formattedPublicKey = `0x${publicKey}` as `0x${string}`
+
+  // Get the key type
+  const keyType = didPrefixToKeyType[matchingPrefix]
+
+  return {
+    key: formattedPublicKey,
+    keyType
+  }
+}
+
 export function bigIntReplacer(_key: string, value: any) {
   if (typeof value === 'bigint') {
     return value.toString()

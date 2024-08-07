@@ -1,22 +1,13 @@
 import {
   Address,
-  concat,
-  concatHex,
   createPublicClient,
-  getTypesForEIP712Domain,
-  hashTypedData,
   Hex,
   http,
-  keccak256,
   PrivateKeyAccount,
   PublicClient,
-  toFunctionSelector,
   Transport,
-  TypedDataDefinition,
-  validateTypedData,
   WalletGrantPermissionsParameters,
-  WalletGrantPermissionsReturnType,
-  zeroAddress
+  WalletGrantPermissionsReturnType
 } from 'viem'
 import { privateKeyToAccount, publicKeyToAddress, signMessage } from 'viem/accounts'
 import { EIP155Wallet } from '../EIP155Lib'
@@ -40,20 +31,10 @@ import {
 } from 'permissionless'
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
-import {
-  PERMISSION_VALIDATOR_ADDRESS,
-  SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
-} from '@/utils/permissionValidatorUtils/constants'
-import {
-  getPermissionScopeData,
-  PermissionContext,
-  SingleSignerPermission
-} from '@/utils/permissionValidatorUtils'
 import { KERNEL_V2_4, KERNEL_V3_1 } from '@zerodev/sdk/constants'
 import { KERNEL_V2_VERSION_TYPE, KERNEL_V3_VERSION_TYPE } from '@zerodev/sdk/types'
 import { decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
 import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
-import { AccountExecuteAbi } from '@/utils/ERC7579AccountUtils'
 
 type DonutPurchasePermissionData = {
   target: string
@@ -396,104 +377,6 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     })
     console.log(`currentNonce : ${currentNonce}`)
     return currentNonce
-  }
-
-  async issuePermissionContext(
-    targetAddress: Address,
-    approvedPermissions: any
-  ): Promise<PermissionContext> {
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-    // this permission have dummy policy set to zeroAddress for now,
-    // bc current version of PermissionValidator_v1 module don't consider checking policy
-    const permissions: SingleSignerPermission[] = [
-      {
-        validUntil: 0,
-        validAfter: 0,
-        signatureValidationAlgorithm: SECP256K1_SIGNATURE_VALIDATOR_ADDRESS,
-        signer: targetAddress,
-        policy: zeroAddress,
-        policyData: '0x'
-      }
-    ]
-
-    const permittedScopeData = getPermissionScopeData(permissions, this.chain)
-    // the smart account sign over the permittedScope and targetAddress
-    const permittedScopeSignature: Hex = await signMessage({
-      privateKey: this.getPrivateKey() as `0x${string}`,
-      message: { raw: concatHex([keccak256(permittedScopeData), targetAddress]) }
-    })
-
-    const nonce = await this.getCurrentNonce()
-    const validatorAddress = PERMISSION_VALIDATOR_ADDRESS
-    const validatorInitData = '0x'
-    const hookAddress = zeroAddress
-    const hookData = '0x'
-    const selectorData = toFunctionSelector(AccountExecuteAbi[0])
-
-    const validatorPluginEnableTypeData = {
-      domain: {
-        name: 'Kernel',
-        version: '0.3.0-beta',
-        chainId: this.chain.id,
-        verifyingContract: this.client.account.address
-      },
-      types: {
-        Enable: [
-          { name: 'validationId', type: 'bytes21' },
-          { name: 'nonce', type: 'uint32' },
-          { name: 'hook', type: 'address' },
-          { name: 'validatorData', type: 'bytes' },
-          { name: 'hookData', type: 'bytes' },
-          { name: 'selectorData', type: 'bytes' }
-        ]
-      },
-      message: {
-        validationId: concat([
-          '0x01', // indicate secondary type
-          validatorAddress
-        ]),
-        nonce: nonce,
-        hook: hookAddress,
-        validatorData: validatorInitData as `0x${string}`,
-        hookData: hookData as `0x${string}`,
-        selectorData: selectorData
-      },
-      primaryType: 'Enable' as 'Enable'
-    }
-
-    const types = {
-      EIP712Domain: getTypesForEIP712Domain({
-        domain: validatorPluginEnableTypeData.domain
-      }),
-      ...validatorPluginEnableTypeData.types
-    }
-
-    // Need to do a runtime validation check on addresses, byte ranges, integer ranges, etc
-    // as we can't statically check this with TypeScript.
-    validateTypedData({
-      domain: validatorPluginEnableTypeData.domain,
-      message: validatorPluginEnableTypeData.message,
-      primaryType: validatorPluginEnableTypeData.primaryType,
-      types: types
-    } as TypedDataDefinition)
-
-    const typedHash = hashTypedData(validatorPluginEnableTypeData)
-
-    let enableSig = await this.validator!.signMessage({
-      message: { raw: typedHash }
-    })
-
-    return {
-      accountType: 'KernelV3',
-      accountAddress: this.client.account.address,
-      permissionValidatorAddress: validatorAddress,
-      permissions: permissions,
-      permittedScopeData: permittedScopeData,
-      permittedScopeSignature: permittedScopeSignature,
-      enableSig: enableSig
-    }
   }
 
   getAccount() {

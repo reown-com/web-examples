@@ -10,6 +10,7 @@
     "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
   },
   "dependencies": {
+    "@biconomy/permission-context-builder": "^1.0.9",
     "@cosmjs/amino": "0.32.3",
     "@cosmjs/encoding": "0.32.3",
     "@cosmjs/proto-signing": "0.32.3",
@@ -40,14 +41,14 @@
     "@zerodev/session-key": "5.4.0",
     "@zerodev/weighted-ecdsa-validator": "5.3.0",
     "borsh": "^1.0.0",
-    "bs58": "5.0.0",
+    "bs58": "6.0.0",
     "cosmos-wallet": "1.2.0",
     "ethers": "5.7.2",
     "framer-motion": "6.5.1",
     "graphql": "^16.8.2",
     "near-api-js": "^0.45.0",
     "next": "12.1.5",
-    "permissionless": "0.1.39",
+    "permissionless": "0.1.43",
     "react": "17.0.2",
     "react-code-blocks": "0.1.5",
     "react-dom": "17.0.2",
@@ -56,7 +57,8 @@
     "solana-wallet": "^1.0.2",
     "tronweb": "^4.4.0",
     "valtio": "1.13.2",
-    "viem": "2.16.2"
+    "viem": "2.17.8",
+    "webauthn-p256": "0.0.2"
   },
   "devDependencies": {
     "@types/node": "17.0.35",
