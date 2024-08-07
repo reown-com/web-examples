@@ -8,7 +8,14 @@ import {
 import { SmartAccountLib } from './SmartAccountLib'
 import { SmartAccount, signerToSafeSmartAccount } from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
-import { Address, Hex, WalletGrantPermissionsParameters, createWalletClient, http,type WalletGrantPermissionsReturnType  } from 'viem'
+import {
+  Address,
+  Hex,
+  WalletGrantPermissionsParameters,
+  createWalletClient,
+  http,
+  type WalletGrantPermissionsReturnType
+} from 'viem'
 import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 import { bigIntReplacer } from '@/utils/HelperUtil'
 import {
@@ -94,7 +101,9 @@ export class SafeSmartAccountLib extends SmartAccountLib {
   }
 
   /* 7715 method */
-  async grantPermissions(grantPermissionsRequestParameters: WalletGrantPermissionsParameters):Promise<WalletGrantPermissionsReturnType> {
+  async grantPermissions(
+    grantPermissionsRequestParameters: WalletGrantPermissionsParameters
+  ): Promise<WalletGrantPermissionsReturnType> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
@@ -173,7 +182,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         })
       }
 
-      if (isAccountDeployed && !mockValidatorInstalled) {
+      if (!isAccountDeployed || !mockValidatorInstalled) {
         installModules.push({
           address: mockValidator,
           type: 'validator',
