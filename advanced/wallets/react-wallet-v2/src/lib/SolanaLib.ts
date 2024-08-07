@@ -66,7 +66,11 @@ export default class SolanaLib {
     const transaction = this.deserialize(params.transaction)
     this.sign(transaction)
 
-    const signature = await connection.sendTransaction(transaction, params.options)
+    const signature = await connection.sendTransaction(transaction, {
+      maxRetries: 3,
+      preflightCommitment: 'recent',
+      ...params.options
+    })
 
     return { signature }
   }
