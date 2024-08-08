@@ -12,32 +12,28 @@ export async function approveSolanaRequest(
   const { request, chainId } = params
   const wallet = solanaWallets[getWalletAddressFromParams(solanaAddresses, params)]
 
-  switch (request.method) {
-    case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
-      const signedMessage = await wallet.signMessage(request.params.message)
-      return formatJsonRpcResult(id, signedMessage)
+  try {
+    switch (request.method) {
+      case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
+        const signedMessage = await wallet.signMessage(request.params)
+        return formatJsonRpcResult(id, signedMessage)
 
-    case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
-      const signedTransaction = await wallet.signTransaction(
-        request.params.feePayer,
-        request.params.recentBlockhash,
-        request.params.instructions
-      )
+      case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
+        const signedTransaction = await wallet.signTransaction(request.params)
+        return formatJsonRpcResult(id, signedTransaction)
 
-      return formatJsonRpcResult(id, signedTransaction)
+      case SOLANA_SIGNING_METHODS.SOLANA_SIGN_AND_SEND_TRANSACTION:
+        const signedAndSentTransaction = await wallet.signAndSendTransaction(
+          request.params,
+          chainId
+        )
+        return formatJsonRpcResult(id, signedAndSentTransaction)
 
-    case SOLANA_SIGNING_METHODS.SOLANA_SIGN_AND_SEND_TRANSACTION:
-      const signedAndSentTransaction = await wallet.signAndSendTransaction(
-        request.params.feePayer,
-        request.params.instructions,
-        chainId,
-        request.params.options
-      )
-
-      return formatJsonRpcResult(id, signedAndSentTransaction)
-
-    default:
-      throw new Error(getSdkError('INVALID_METHOD').message)
+      default:
+        throw new Error(getSdkError('INVALID_METHOD').message)
+    }
+  } catch (error) {
+    return formatJsonRpcError(id, (error as Error)?.message)
   }
 }
 
