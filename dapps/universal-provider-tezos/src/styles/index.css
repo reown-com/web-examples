@@ -27,7 +27,7 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
+  place-items: top;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -35,7 +35,7 @@ body {
 #root {
   flex: 1;
   display: grid;
-  place-items: center;
+  place-items: top;
 }
 
 h1 {
@@ -64,8 +64,8 @@ button:focus-visible {
 
 .btn-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: left;
+  justify-content: left;
   gap: 1rem;
 }
 
