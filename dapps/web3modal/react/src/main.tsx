@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { createWeb3Modal } from "@web3modal/wagmi/react";
 
 import { http, createConfig, WagmiProvider } from "wagmi";
-import { mainnet, arbitrum } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import { walletConnect, coinbaseWallet, injected } from "wagmi/connectors";
 import type { CreateConnectorFn } from '@wagmi/core'
 
@@ -28,7 +28,7 @@ const metadata = {
 };
 
 // Define chains
-const chains = [mainnet, arbitrum] as const
+const chains = [baseSepolia] as const
 
 // create the connectors
 const connectors: CreateConnectorFn[] = []
@@ -50,8 +50,7 @@ connectors.push(authConnector({
 const wagmiConfig = createConfig({
   chains, // Use the defined chains here
   transports: {
-    [mainnet.id]: http(),
-    [arbitrum.id]: http(),
+    [baseSepolia.id]: http(),
   },
   connectors: connectors,
 });
