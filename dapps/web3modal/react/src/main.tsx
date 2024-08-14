@@ -3,12 +3,11 @@ import ReactDOM from "react-dom/client";
 import { createWeb3Modal } from "@web3modal/wagmi/react";
 
 import { http, createConfig, WagmiProvider } from "wagmi";
-import { mainnet, arbitrum } from "viem/chains";
 import { walletConnect, coinbaseWallet, injected } from "wagmi/connectors";
 import type { CreateConnectorFn } from '@wagmi/core'
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { authConnector,  } from "@web3modal/wagmi";
+import { authConnector } from "@web3modal/wagmi";
 
 import "./styles.css"
 
@@ -21,14 +20,30 @@ if (!projectId) throw new Error("Project ID is undefined");
 
 // 2. Create wagmiConfig
 const metadata = {
-  name: "Web3Modal",
-  description: "Web3Modal Example",
-  url: "https://web3modal.com",
+  name: "AppKit",
+  description: "AppKit Example",
+  url: "https://example.com",
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
 
-// Define chains
-const chains = [mainnet, arbitrum] as const
+const botanixTestnet = {
+  id: 3636,
+  name: "Botanix Testnet",
+  chainId: 3636,
+  nativeCurrency: {
+    name: "Botanix",
+    symbol: "BTC",
+    decimals: 18,
+  },
+  blockExplorer: "https://blockscout.botanixlabs.dev/",
+  rpcUrls: {
+    default: {
+      http: ["https://poa-node.botanixlabs.dev"],
+    }
+  },
+  testnet: true,
+};
+const chains = [botanixTestnet] as const;
 
 // create the connectors
 const connectors: CreateConnectorFn[] = []
@@ -50,8 +65,7 @@ connectors.push(authConnector({
 const wagmiConfig = createConfig({
   chains, // Use the defined chains here
   transports: {
-    [mainnet.id]: http(),
-    [arbitrum.id]: http(),
+    [botanixTestnet.id]: http(),
   },
   connectors: connectors,
 });

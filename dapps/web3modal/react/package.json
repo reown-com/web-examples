@@ -11,12 +11,12 @@
   },
   "dependencies": {
     "@tanstack/react-query": "5.49.2",
-    "@web3modal/wagmi": "5.0.4",
+    "@web3modal/wagmi": "5.0.11",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "viem": "2.16.5",
-    "wagmi": "2.10.9",
-    "@wagmi/core": "2.11.6"
+    "viem": "2.19.4",
+    "wagmi": "2.12.5",
+    "@wagmi/core": "2.13.4"
   },
   "devDependencies": {
     "@types/react": "18.2.14",
