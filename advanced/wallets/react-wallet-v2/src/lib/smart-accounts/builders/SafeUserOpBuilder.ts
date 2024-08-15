@@ -12,7 +12,6 @@ import {
   createPublicClient,
   GetStorageAtReturnType,
   Hex,
-  hexToString,
   http,
   parseAbi,
   PublicClient,
@@ -31,10 +30,9 @@ import {
 import { bundlerUrl, paymasterUrl, publicClientUrl } from '@/utils/SmartAccountUtil'
 
 import { getChainById } from '@/utils/ChainUtil'
+import { SAFE_FALLBACK_HANDLER_STORAGE_SLOT } from '@/consts/smartAccounts'
 
 const ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
-const FALLBACK_HANDLER_STORAGE_SLOT =
-  '0x6c9a6c4a39284e37ed1cf53d337577d14212a4870fb976a4366c693b939918d5'
 
 export class SafeUserOpBuilder implements UserOpBuilder {
   protected chain: Chain
@@ -147,15 +145,12 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     }
     return false
   }
-  private async getStorageAt(slot: Hex): Promise<GetStorageAtReturnType> {
-    const result = await this.publicClient.getStorageAt({
-      address: this.accountAddress,
-      slot: slot
-    })
-    return result
-  }
+
   private async getFallbackHandlerAddress(): Promise<Address> {
-    const storage = await this.getStorageAt(FALLBACK_HANDLER_STORAGE_SLOT)
-    return trim(storage as Hex)
+    const value = await this.publicClient.getStorageAt({
+      address: this.accountAddress,
+      slot: SAFE_FALLBACK_HANDLER_STORAGE_SLOT
+    })
+    return trim(value as Hex)
   }
 }

@@ -1,12 +1,6 @@
-import { SafeUserOpBuilder } from '@/lib/smart-accounts/builders/SafeUserOpBuilder'
-import {
-  ErrorResponse,
-  FillUserOpResponse,
-  getAccountImplementation,
-  ImplementationType,
-  UserOpBuilder
-} from '@/lib/smart-accounts/builders/UserOpBuilder'
+import { ErrorResponse, FillUserOpResponse } from '@/lib/smart-accounts/builders/UserOpBuilder'
 import { getChainById } from '@/utils/ChainUtil'
+import { getUserOpBuilder } from '@/utils/UserOpBuilderUtil'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(
@@ -17,18 +11,10 @@ export default async function handler(
   const account = req.body.account
   const chain = getChainById(chainId)
   try {
-    const accountImplementation = await getAccountImplementation({
+    const builder = await getUserOpBuilder({
       account,
       chain
     })
-
-    let builder: UserOpBuilder
-
-    switch (accountImplementation.type) {
-      case ImplementationType.Safe:
-        builder = new SafeUserOpBuilder(account, chainId)
-        break
-    }
 
     const response = await builder.fillUserOp(req.body)
 
