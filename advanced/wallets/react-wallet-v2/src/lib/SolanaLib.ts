@@ -49,7 +49,12 @@ export default class SolanaLib {
     const transaction = this.deserialize(params.transaction)
     this.sign(transaction)
 
-    return { transaction: this.serialize(transaction) }
+    const signature = bs58.encode(transaction.signatures[0])
+
+    return {
+      transaction: this.serialize(transaction),
+      signature
+    }
   }
 
   public async signAndSendTransaction(
@@ -69,7 +74,7 @@ export default class SolanaLib {
     const signature = await connection.sendTransaction(transaction, {
       maxRetries: 3,
       preflightCommitment: 'recent',
-      ...params.options
+      ...params.sendOptions
     })
 
     return { signature }
@@ -80,7 +85,13 @@ export default class SolanaLib {
   }
 
   private deserialize(transaction: string): VersionedTransaction {
-    return VersionedTransaction.deserialize(bs58.decode(transaction))
+    /*
+     * We should consider serializing the transaction to base58 as it is the solana standard.
+     * But our specs requires base64 right now:
+     * https://docs.walletconnect.com/advanced/multichain/rpc-reference/solana-rpc#solana_signtransaction
+     */
+    const decodedBase64 = Uint8Array.from(Buffer.from(transaction, 'base64'))
+    return VersionedTransaction.deserialize(decodedBase64)
   }
 
   private sign(transaction: VersionedTransaction) {
@@ -96,10 +107,13 @@ export namespace SolanaLib {
 
   export type SignMessage = RPCRequest<{ message: string }, { signature: string }>
 
-  export type SignTransaction = RPCRequest<{ transaction: string }, { transaction: string }>
+  export type SignTransaction = RPCRequest<
+    { transaction: string },
+    { transaction: string; signature: string }
+  >
 
   export type SignAndSendTransaction = RPCRequest<
-    { transaction: string; options?: SendOptions },
+    { transaction: string; sendOptions?: SendOptions },
     { signature: string }
   >
 }
