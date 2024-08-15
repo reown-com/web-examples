@@ -4,6 +4,8 @@ import { useRouter } from 'next/router'
 import WalletConnectPage from './walletconnect'
 import ModalStore from '@/store/ModalStore'
 import { useSnapshot } from 'valtio'
+import SettingsStore from '@/store/SettingsStore'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 
 export default function DeepLinkPairingPage() {
   const state = useSnapshot(ModalStore.state)
@@ -53,4 +55,9 @@ export default function DeepLinkPairingPage() {
   }
 
   return <WalletConnectPage deepLink={uri} />
+}
+
+export function refreshSessionsList() {
+  if (!web3wallet) return
+  SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
 }

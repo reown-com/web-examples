@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 69, 84, 176;
+  --background-end-rgb: 27, 33, 69;
+}
+
+body {
+  background-color: #f4f5fd;
+}
+
+@layer utilities {
+  @media (max-width: 600px) {
+    .grid {
+      width: 100%;
+      flex-direction: column;
+    }
+  }
+  ,
+  .text-balance {
+    text-wrap: balance;
+  }
+}
