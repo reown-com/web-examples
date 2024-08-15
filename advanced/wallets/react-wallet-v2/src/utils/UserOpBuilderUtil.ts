@@ -32,17 +32,23 @@ export async function getUserOpBuilder(params: GetUserOpBuilderParams): Promise<
   if (await isSafeAccount(publicClient, params.account)) {
     return new SafeUserOpBuilder(params.account, params.chain.id)
   }
+
   throw new Error('Unsupported implementation type')
 }
 
 async function isSafeAccount(publicClient: PublicClient, address: Address): Promise<Boolean> {
-  const storageValue = await publicClient.getStorageAt({
-    address,
-    slot: SAFE_FALLBACK_HANDLER_STORAGE_SLOT
-  })
-  if (!storageValue) {
+  try {
+    const storageValue = await publicClient.getStorageAt({
+      address,
+      slot: SAFE_FALLBACK_HANDLER_STORAGE_SLOT
+    })
+    if (!storageValue) {
+      return false
+    }
+    const safe4337ModuleAddress = getAddress(slice(storageValue, size(storageValue) - 20))
+    return SAFE_4337_MODULE_ADDRESSES.includes(safe4337ModuleAddress)
+  } catch (error) {
+    console.log('Unable to check if account is Safe', error)
     return false
   }
-  const safe4337ModuleAddress = getAddress(slice(storageValue, size(storageValue) - 20))
-  return SAFE_4337_MODULE_ADDRESSES.includes(safe4337ModuleAddress)
 }
