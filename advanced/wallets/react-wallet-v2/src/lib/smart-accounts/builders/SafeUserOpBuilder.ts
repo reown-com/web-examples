@@ -6,7 +6,18 @@ import {
   SendUserOpWithSigantureResponse,
   UserOpBuilder
 } from './UserOpBuilder'
-import { Address, Chain, createPublicClient, GetStorageAtReturnType, Hex, hexToString, http, parseAbi, PublicClient, trim } from 'viem'
+import {
+  Address,
+  Chain,
+  createPublicClient,
+  GetStorageAtReturnType,
+  Hex,
+  hexToString,
+  http,
+  parseAbi,
+  PublicClient,
+  trim
+} from 'viem'
 import { signerToSafeSmartAccount } from 'permissionless/accounts'
 import {
   createSmartAccountClient,
@@ -22,14 +33,15 @@ import { bundlerUrl, paymasterUrl, publicClientUrl } from '@/utils/SmartAccountU
 import { getChainById } from '@/utils/ChainUtil'
 
 const ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
-const FALLBACK_HANDLER_STORAGE_SLOT = '0x6c9a6c4a39284e37ed1cf53d337577d14212a4870fb976a4366c693b939918d5'
+const FALLBACK_HANDLER_STORAGE_SLOT =
+  '0x6c9a6c4a39284e37ed1cf53d337577d14212a4870fb976a4366c693b939918d5'
 
 export class SafeUserOpBuilder implements UserOpBuilder {
   protected chain: Chain
   protected publicClient: PublicClient
   protected accountAddress: Address
 
-  constructor(accountAddress: Address, chainId: number){
+  constructor(accountAddress: Address, chainId: number) {
     this.chain = getChainById(chainId)
     this.publicClient = createPublicClient({
       transport: http(publicClientUrl({ chain: this.chain }))
@@ -44,13 +56,13 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     let erc7579LaunchpadAddress: Address
     const safe4337ModuleAddress = await this.getFallbackHandlerAddress()
     const is7579Safe = await this.is7579Safe()
-    
+
     if (is7579Safe) {
       erc7579LaunchpadAddress = ERC_7579_LAUNCHPAD_ADDRESS
     }
 
     const version = await this.getVersion()
-    
+
     const paymasterClient = createPimlicoPaymasterClient({
       transport: http(paymasterUrl({ chain: this.chain }), {
         timeout: 30000
@@ -74,7 +86,7 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       address: this.accountAddress,
       safe4337ModuleAddress,
       //@ts-ignore
-      erc7579LaunchpadAddress,
+      erc7579LaunchpadAddress
     })
 
     const smartAccountClient = createSmartAccountClient({
@@ -111,7 +123,6 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     throw new Error('Method not implemented.')
   }
 
-
   private async getVersion(): Promise<string> {
     const version = await this.publicClient.readContract({
       address: this.accountAddress,
@@ -125,7 +136,9 @@ export class SafeUserOpBuilder implements UserOpBuilder {
   private async is7579Safe(): Promise<boolean> {
     const accountImplementation = await this.publicClient.readContract({
       address: this.accountAddress,
-      abi: parseAbi(['function accountId() external view returns (string memory accountImplementationId)']),
+      abi: parseAbi([
+        'function accountId() external view returns (string memory accountImplementationId)'
+      ]),
       functionName: 'accountId',
       args: []
     })
@@ -146,5 +159,4 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     const storage = await this.getStorageAt(FALLBACK_HANDLER_STORAGE_SLOT)
     return trim(storage as Hex)
   }
- 
 }

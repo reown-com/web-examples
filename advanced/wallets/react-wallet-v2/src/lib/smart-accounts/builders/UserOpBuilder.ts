@@ -1,4 +1,4 @@
-import { publicClientUrl } from '@/utils/SmartAccountUtil';
+import { publicClientUrl } from '@/utils/SmartAccountUtil'
 import { UserOperation } from 'permissionless'
 import { Address, Chain, createPublicClient, Hex, http, parseAbi, PublicClient } from 'viem'
 
@@ -21,7 +21,7 @@ export type FillUserOpResponse = {
 }
 
 export type ErrorResponse = {
-  message: string,
+  message: string
   error: string
 }
 
@@ -42,20 +42,21 @@ export interface UserOpBuilder {
   ): Promise<SendUserOpWithSigantureResponse>
 }
 
-export enum ImplementationType{
-  Safe = 'safe',
+export enum ImplementationType {
+  Safe = 'safe'
 }
 
 export type AccountImplementation = {
-  type: ImplementationType,
-
+  type: ImplementationType
 }
 type GetAccountImplementationParams = {
   account: Address
-  chain?: Chain,
+  chain?: Chain
   publicClient?: PublicClient
 }
-export async function getAccountImplementation(params: GetAccountImplementationParams): Promise<AccountImplementation>{
+export async function getAccountImplementation(
+  params: GetAccountImplementationParams
+): Promise<AccountImplementation> {
   let publicClient = params.publicClient
   if (!publicClient) {
     if (!params.chain) {
@@ -67,7 +68,9 @@ export async function getAccountImplementation(params: GetAccountImplementationP
   }
   const accountImplementation = await publicClient.readContract({
     address: params.account,
-    abi: parseAbi(['function accountId() external view returns (string memory accountImplementationId)']),
+    abi: parseAbi([
+      'function accountId() external view returns (string memory accountImplementationId)'
+    ]),
     functionName: 'accountId',
     args: []
   })
@@ -76,6 +79,5 @@ export async function getAccountImplementation(params: GetAccountImplementationP
       type: ImplementationType.Safe
     }
   }
-  throw new Error('Unsupported implementation type') 
-
-} 
+  throw new Error('Unsupported implementation type')
+}

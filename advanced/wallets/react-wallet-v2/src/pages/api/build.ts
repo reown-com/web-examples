@@ -1,8 +1,13 @@
 import { SafeUserOpBuilder } from '@/lib/smart-accounts/builders/SafeUserOpBuilder'
-import { ErrorResponse, FillUserOpResponse, getAccountImplementation, ImplementationType, UserOpBuilder } from '@/lib/smart-accounts/builders/UserOpBuilder'
+import {
+  ErrorResponse,
+  FillUserOpResponse,
+  getAccountImplementation,
+  ImplementationType,
+  UserOpBuilder
+} from '@/lib/smart-accounts/builders/UserOpBuilder'
 import { getChainById } from '@/utils/ChainUtil'
 import { NextApiRequest, NextApiResponse } from 'next'
-
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,7 +19,7 @@ export default async function handler(
   try {
     const accountImplementation = await getAccountImplementation({
       account,
-      chain,
+      chain
     })
 
     let builder: UserOpBuilder
@@ -22,7 +27,7 @@ export default async function handler(
     switch (accountImplementation.type) {
       case ImplementationType.Safe:
         builder = new SafeUserOpBuilder(account, chainId)
-        break;
+        break
     }
 
     const response = await builder.fillUserOp(req.body)
@@ -34,6 +39,4 @@ export default async function handler(
       error: error.message
     })
   }
-
-  
 }
