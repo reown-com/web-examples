@@ -134,7 +134,7 @@ export class SafeUserOpBuilder implements UserOpBuilder {
   }
 
   private async is7579Safe(): Promise<boolean> {
-    const accountImplementation = await this.publicClient.readContract({
+    const accountId = await this.publicClient.readContract({
       address: this.accountAddress,
       abi: parseAbi([
         'function accountId() external view returns (string memory accountImplementationId)'
@@ -142,8 +142,7 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       functionName: 'accountId',
       args: []
     })
-    // This maybe isn't needed, if it supports accountId(), it should always be 7579
-    if (accountImplementation.includes('7579')) {
+    if (accountId.includes('7579') && accountId.includes('safe')) {
       return true
     }
     return false
