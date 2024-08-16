@@ -27,7 +27,7 @@ export enum DEFAULT_TEZOS_METHODS {
 const tezosTransactionOperation: PartialTezosTransactionOperation = {
   kind: TezosOperationType.TRANSACTION,
   destination: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve", // Tezos Foundation Ghost Baker
-  amount: "10"
+  amount: "100000"
 };
 
 const tezosOriginationOperation: PartialTezosOriginationOperation = {

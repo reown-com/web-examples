@@ -1,7 +1,7 @@
 import UniversalProvider from "@walletconnect/universal-provider";
 import { WalletConnectModal } from "@walletconnect/modal";
 import { useState } from "react";
-import { signMessage, sendTransaction, TezosChainData, apiGetContractAddress, getAccounts, getChainId } from "./utils/helpers";
+import { signMessage, sendTransaction, TezosChainData, apiGetContractAddress, getAccounts, getChainId, apiGetTezosAccountBalance, formatTezosBalance } from "./utils/helpers";
 import { DEFAULT_TEZOS_KINDS, DEFAULT_TEZOS_METHODS } from "./utils/samples";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
@@ -41,11 +41,10 @@ const provider = await UniversalProvider.init({
 
 const App = () => {
   const [isConnected, setIsConnected] = useState(false);
-  const [result, setResult] = useState<any>(null); // Use state for result
-  const [description, setDescription] = useState<any>(null); // Use state for result
+  const [result, setResult] = useState<any>(null);
+  const [description, setDescription] = useState<any>(null);
   const [contractAddress, setContractAddress] = useState("");
-  // const { client, session, accounts } =
-  //   useWalletConnectClient();
+  const [balance, setBalance] = useState("");
 
   // 5. get address once loaded
   const address =
@@ -96,6 +95,7 @@ const App = () => {
       const chainId = await getChainId("tezos:testnet");
       provider.setDefaultChain(chainId, rpcMap["tezos:testnet"]);
       console.log("Connected to chain:", chainId);
+      await getBalance();
     } catch (error) {
       console.error("Connection error:", error);
     }
@@ -211,11 +211,17 @@ const App = () => {
       }
       setResult(res);
       console.log(res);
+      await getBalance();
     } catch (error) {
       console.error("Error sending ${method}:", error);
       setResult(error);
     }
   };
+
+  const getBalance = async () => {
+    const balance = await apiGetTezosAccountBalance(address!, "testnet");
+    setBalance(formatTezosBalance(balance));
+  }
 
   const describe = (method: string) => {
     switch (method) {
@@ -259,6 +265,10 @@ const App = () => {
           <p>
             <b>Public Key: </b>
             {address}
+          </p>
+          <p>
+            <b>Balance: </b>
+            {balance}
           </p>
           <div className="btn-container">
           <button onClick={() => handleOp("tezos_getAccounts")}  onMouseEnter={describeClear}>Get Accounts</button>

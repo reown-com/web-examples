@@ -7,6 +7,12 @@ export enum tezosChains {
   Devnet = "EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
 }
 
+export interface AssetData {
+  symbol: string;
+  name: string;
+  balance: number;
+}
+
 export interface ChainData {
   name: string;
   id: string;
@@ -70,10 +76,15 @@ export async function apiGetTezosAccountBalance(
   console.log(`Got balance: ${balanceInTez} ꜩ`);
 
   return {
-    balance: (balanceInTez).toString(),
-    symbol: "XTZ",
+    balance: balanceInTez,
+    symbol: "ꜩ",
     name: "XTZ",
   };
+}
+
+export function formatTezosBalance(asset: AssetData): string {
+  const formattedBalance = (asset.balance / 1_000_000).toFixed(6);
+  return `${asset.name}: ${formattedBalance} ${asset.symbol}`;
 }
 
 export async function apiGetContractAddress(
