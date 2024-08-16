@@ -11,7 +11,7 @@ import {
   WalletGrantPermissionsParameters,
   WalletGrantPermissionsReturnType
 } from 'viem'
-import { privateKeyToAccount, publicKeyToAddress,} from 'viem/accounts'
+import { privateKeyToAccount, publicKeyToAddress } from 'viem/accounts'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { KernelValidator, signerToEcdsaValidator } from '@zerodev/ecdsa-validator'
@@ -44,7 +44,7 @@ type DonutPurchasePermissionData = {
   valueLimit: bigint
   functionName: string
 }
-import {  UserOperation } from 'permissionless/_types/types'
+import { UserOperation } from 'permissionless/_types/types'
 import { SendCallsParams, SendCallsPaymasterServiceCapabilityParam } from '@/data/EIP5792Data'
 import { getSendCallData } from '@/utils/EIP5792WalletUtil'
 import { paymasterActionsEip7677 } from 'permissionless/experimental'
@@ -499,6 +499,4 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     console.log('executing sendCalls')
     return this.sendBatchTransaction(calls)
   }
-
-  
 }

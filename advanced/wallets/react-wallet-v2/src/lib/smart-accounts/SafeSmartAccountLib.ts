@@ -104,38 +104,38 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
   }
 
- /* 7715 method */
- async grantPermissions(
-  grantPermissionsRequestParameters: WalletGrantPermissionsParameters
-): Promise<WalletGrantPermissionsReturnType> {
-  if (!this.client?.account) {
-    throw new Error('Client not initialized')
-  }
-  await this.ensureAccountReadyForGrantPermissions()
-
-  const walletClient = createWalletClient({
-    chain: this.chain,
-    account: this.client.account,
-    transport: http()
-  })
-
-  const permissionContext = await getContext(walletClient, {
-    permissions: [...grantPermissionsRequestParameters.permissions] as unknown as Permission[],
-    expiry: grantPermissionsRequestParameters.expiry,
-    signer: grantPermissionsRequestParameters.signer as MultiKeySigner,
-    smartAccountAddress: this.client.account.address
-  })
-  console.log(`Returning the permissions request`)
-  return {
-    permissionsContext: permissionContext,
-    grantedPermissions: grantPermissionsRequestParameters.permissions,
-    expiry: grantPermissionsRequestParameters.expiry,
-    signerData: {
-      userOpBuilder: userOperationBuilderAddress,
-      submitToAddress: this.client.account.address
+  /* 7715 method */
+  async grantPermissions(
+    grantPermissionsRequestParameters: WalletGrantPermissionsParameters
+  ): Promise<WalletGrantPermissionsReturnType> {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
     }
-  } as WalletGrantPermissionsReturnType
-}
+    await this.ensureAccountReadyForGrantPermissions()
+
+    const walletClient = createWalletClient({
+      chain: this.chain,
+      account: this.client.account,
+      transport: http()
+    })
+
+    const permissionContext = await getContext(walletClient, {
+      permissions: [...grantPermissionsRequestParameters.permissions] as unknown as Permission[],
+      expiry: grantPermissionsRequestParameters.expiry,
+      signer: grantPermissionsRequestParameters.signer as MultiKeySigner,
+      smartAccountAddress: this.client.account.address
+    })
+    console.log(`Returning the permissions request`)
+    return {
+      permissionsContext: permissionContext,
+      grantedPermissions: grantPermissionsRequestParameters.permissions,
+      expiry: grantPermissionsRequestParameters.expiry,
+      signerData: {
+        userOpBuilder: userOperationBuilderAddress,
+        submitToAddress: this.client.account.address
+      }
+    } as WalletGrantPermissionsReturnType
+  }
 
   /**
    * Check Safe7579 Account is ready for processing this RPC request
