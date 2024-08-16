@@ -238,8 +238,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
     const gasPrice = (await this.bundlerClient.getUserOperationGasPrice()).fast
     const calls = getSendCallData(sendCallsParam)
-    let callData = await this.client.account.encodeCallData(calls)
-
     const capabilities = sendCallsParam.capabilities
 
     if (capabilities && capabilities['paymasterService']) {
@@ -258,7 +256,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         nonce: await this.client.account.getNonce(),
         factory: await this.client.account.getFactory(),
         factoryData: await this.client.account.getFactoryData(),
-        callData: callData,
+        callData: await this.client.account.encodeCallData(calls),
         callGasLimit: 0n,
         verificationGasLimit: 0n,
         preVerificationGas: 0n,
