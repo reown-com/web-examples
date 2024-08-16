@@ -36,6 +36,7 @@ import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
+import { EIP7715_METHOD } from '@/data/EIP7715Data'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -62,6 +63,10 @@ export default function SessionProposalModal() {
     //eip5792
     const eip5792Chains = Object.keys(EIP155_CHAINS)
     const eip5792Methods = Object.values(EIP5792_METHODS)
+
+    //eip7715
+    const eip7715Chains = Object.keys(EIP155_CHAINS)
+    const eip7715Methods = Object.values(EIP7715_METHOD)
 
     // cosmos
     const cosmosChains = Object.keys(COSMOS_MAINNET_CHAINS)
@@ -98,33 +103,43 @@ export default function SessionProposalModal() {
     return {
       eip155: {
         chains: eip155Chains,
-        methods: eip155Methods.concat(eip5792Methods),
+        methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
-        accounts: eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
+        accounts: eip155Chains
+          .map(chain => eip155Addresses.map(account => `${chain}:${account}`))
+          .flat()
       },
       cosmos: {
         chains: cosmosChains,
         methods: cosmosMethods,
         events: [],
-        accounts: cosmosChains.map(chain => `${chain}:${cosmosAddresses[0]}`).flat()
+        accounts: cosmosChains
+          .map(chain => cosmosAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       kadena: {
         chains: kadenaChains,
         methods: kadenaMethods,
         events: [],
-        accounts: kadenaChains.map(chain => `${chain}:${kadenaAddresses[0]}`).flat()
+        accounts: kadenaChains
+          .map(chain => kadenaAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       mvx: {
         chains: multiversxChains,
         methods: multiversxMethods,
         events: [],
-        accounts: multiversxChains.map(chain => `${chain}:${multiversxAddresses[0]}`).flat()
+        accounts: multiversxChains
+          .map(chain => multiversxAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       near: {
         chains: nearChains,
         methods: nearMethods,
         events: ['accountsChanged', 'chainChanged'],
-        accounts: nearChains.map(chain => `${chain}:${nearAddresses[0]}`).flat()
+        accounts: nearChains
+          .map(chain => nearAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       polkadot: {
         chains: polkadotChains,
@@ -154,7 +169,9 @@ export default function SessionProposalModal() {
         chains: tronChains,
         methods: tronMethods,
         events: [],
-        accounts: tronChains.map(chain => `${chain}:${tronAddresses[0]}`)
+        accounts: tronChains
+          .map(chain => tronAddresses.map(address => `${chain}:${address}`))
+          .flat()
       }
     }
   }, [])
@@ -254,8 +271,8 @@ export default function SessionProposalModal() {
       setIsLoadingApprove(true)
       try {
         if (reorderedEip155Accounts.length > 0) {
-          // reorderedEip155Accounts includes Smart Accounts(if enabled) and EOA's
-          namespaces.eip155.accounts = reorderedEip155Accounts
+          // we should append the smart accounts to the available eip155 accounts
+          namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
@@ -335,7 +352,7 @@ export default function SessionProposalModal() {
       <Grid.Container style={{ marginBottom: '10px', marginTop: '10px' }} justify={'space-between'}>
         <Grid>
           <Row style={{ color: 'GrayText' }}>Accounts</Row>
-          {(supportedChains.length > 1 &&
+          {(supportedChains.length > 0 &&
             supportedChains.map((chain, i) => {
               return (
                 <Row key={i}>
@@ -361,7 +378,7 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>
-          {(supportedChains.length > 1 &&
+          {(supportedChains.length > 0 &&
             supportedChains.map((chain, i) => {
               if (!chain) {
                 return <></>

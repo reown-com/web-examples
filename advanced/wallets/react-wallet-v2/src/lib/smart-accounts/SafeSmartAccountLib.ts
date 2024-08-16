@@ -2,47 +2,46 @@ import {
   ENTRYPOINT_ADDRESS_V07,
   SmartAccountClientConfig,
   UserOperation,
+  getPackedUserOperation,
   isSmartAccountDeployed
 } from 'permissionless'
 import { SmartAccountLib } from './SmartAccountLib'
-import { SmartAccount } from 'permissionless/accounts'
+import { SmartAccount, signerToSafeSmartAccount } from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
-import {
-  getSafe7579InitData,
-  getSafe7579InitialValidators,
-  signerToSafe7579SmartAccount
-} from '@/utils/safe7579AccountUtils/signerToSafe7579SmartAccount'
 import {
   Address,
   Hex,
-  concatHex,
+  WalletGrantPermissionsParameters,
   createClient,
-  encodeFunctionData,
+  createWalletClient,
   http,
-  keccak256,
-  zeroAddress
+  type WalletGrantPermissionsReturnType
 } from 'viem'
-import { signMessage } from 'viem/accounts'
+import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
+import { bigIntReplacer } from '@/utils/HelperUtil'
 import {
-  PERMISSION_VALIDATOR_ADDRESS,
-  SECP256K1_SIGNATURE_VALIDATOR_ADDRESS
-} from '@/utils/permissionValidatorUtils/constants'
-import {
-  PermissionContext,
-  SingleSignerPermission,
-  getPermissionScopeData
-} from '@/utils/permissionValidatorUtils'
-import { setupSafeAbi } from '@/utils/safe7579AccountUtils/abis/Launchpad'
-import { Execution } from '@/utils/safe7579AccountUtils/userop'
+  getContext,
+  mockValidator,
+  Permission,
+  smartSessionAddress,
+  userOperationBuilderAddress
+} from '@biconomy/permission-context-builder'
+import { ModuleType } from 'permissionless/actions/erc7579'
 import { paymasterActionsEip7677 } from 'permissionless/experimental'
 import { getSendCallData } from '@/utils/EIP5792WalletUtil'
 import { SendCallsParams, SendCallsPaymasterServiceCapabilityParam } from '@/data/EIP5792Data'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
+  protected ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
+  protected SAFE_4337_MODULE_ADDRESS: Address = '0x3Fdb5BC686e861480ef99A6E3FaAe03c0b9F32e2'
+
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
     this.type = 'Safe'
-    const safeAccount = await signerToSafe7579SmartAccount(this.publicClient, {
+    const safeAccount = await signerToSafeSmartAccount(this.publicClient, {
+      safeVersion: '1.4.1',
       entryPoint: ENTRYPOINT_ADDRESS_V07,
+      safe4337ModuleAddress: this.SAFE_4337_MODULE_ADDRESS,
+      erc7579LaunchpadAddress: this.ERC_7579_LAUNCHPAD_ADDRESS,
       signer: this.signer
     })
     return {
@@ -58,125 +57,179 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
   }
 
-  async sendTransaction({ to, value, data }: Execution) {
-    if (!this.client || !this.client.account) {
+  async sendTransaction({ to, value, data }: { to: Address; value: bigint | Hex; data: Hex }) {
+    if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    const accountDeployed = await isSmartAccountDeployed(
-      this.publicClient,
-      this.client.account.address
-    )
-    if (!accountDeployed) {
-      const setUpAndExecuteUserOpHash = await this.setupSafe7579AndExecute({ to, value, data })
-      const userOpReceipt = await this.bundlerClient.waitForUserOperationReceipt({
-        hash: setUpAndExecuteUserOpHash
-      })
-      return userOpReceipt.receipt.transactionHash
-    }
-
     const txResult = await this.client.sendTransaction({
       to,
-      value,
+      value: BigInt(value),
       data,
       account: this.client.account,
       chain: this.chain
     })
-
     return txResult
   }
 
-  async sendBatchTransaction(calls: Execution[]) {
-    if (!this.client || !this.client.account) {
+  async sendBatchTransaction(calls: { to: Address; value: bigint; data: Hex }[]) {
+    if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    const accountDeployed = await isSmartAccountDeployed(
-      this.publicClient,
-      this.client.account.address
-    )
-    if (!accountDeployed) {
-      return await this.setupSafe7579AndExecute(calls)
-    }
 
-    const userOp = await this.client.prepareUserOperationRequest({
+    const userOp = (await this.client.prepareUserOperationRequest({
       userOperation: {
         callData: await this.client.account.encodeCallData(calls)
       },
       account: this.client.account
-    })
+    })) as UserOperation<'v0.7'>
 
     const newSignature = await this.client.account.signUserOperation(userOp)
     userOp.signature = newSignature
 
+    const packedUserOp = getPackedUserOperation(userOp)
+
+    console.log('Final Packed UserOp to send', JSON.stringify(packedUserOp, bigIntReplacer))
+
     const userOpHash = await this.bundlerClient.sendUserOperation({
       userOperation: userOp
     })
+
     return userOpHash
   }
 
-  async setupSafe7579AndExecute(calls: Execution | Execution[]) {
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-
-    const initialValidators = getSafe7579InitialValidators()
-    const initData = getSafe7579InitData(this.signer.address, initialValidators, calls)
-    const setUpSafe7579Calldata = encodeFunctionData({
-      abi: setupSafeAbi,
-      functionName: 'setupSafe',
-      args: [initData]
+  async manageModule(calls: { to: Address; value: bigint; data: Hex }[]) {
+    const userOpHash = await this.sendBatchTransaction(calls)
+    return await this.bundlerClient.waitForUserOperationReceipt({
+      hash: userOpHash
     })
-    const setUpUserOp = await this.client.prepareUserOperationRequest({
-      userOperation: {
-        callData: setUpSafe7579Calldata
-      },
-      account: this.client.account
-    })
-    const newSignature = await this.client.account.signUserOperation(setUpUserOp)
-
-    setUpUserOp.signature = newSignature
-
-    const setUpAndExecuteUserOpHash = await this.bundlerClient.sendUserOperation({
-      userOperation: setUpUserOp
-    })
-
-    return setUpAndExecuteUserOpHash
   }
 
-  async issuePermissionContext(
-    targetAddress: Address,
-    approvedPermissions: any
-  ): Promise<PermissionContext> {
-    if (!this.client || !this.client.account) {
+ /* 7715 method */
+ async grantPermissions(
+  grantPermissionsRequestParameters: WalletGrantPermissionsParameters
+): Promise<WalletGrantPermissionsReturnType> {
+  if (!this.client?.account) {
+    throw new Error('Client not initialized')
+  }
+  await this.ensureAccountReadyForGrantPermissions()
+
+  const walletClient = createWalletClient({
+    chain: this.chain,
+    account: this.client.account,
+    transport: http()
+  })
+
+  const permissionContext = await getContext(walletClient, {
+    permissions: [...grantPermissionsRequestParameters.permissions] as unknown as Permission[],
+    expiry: grantPermissionsRequestParameters.expiry,
+    signer: grantPermissionsRequestParameters.signer as MultiKeySigner,
+    smartAccountAddress: this.client.account.address
+  })
+  console.log(`Returning the permissions request`)
+  return {
+    permissionsContext: permissionContext,
+    grantedPermissions: grantPermissionsRequestParameters.permissions,
+    expiry: grantPermissionsRequestParameters.expiry,
+    signerData: {
+      userOpBuilder: userOperationBuilderAddress,
+      submitToAddress: this.client.account.address
+    }
+  } as WalletGrantPermissionsReturnType
+}
+
+  /**
+   * Check Safe7579 Account is ready for processing this RPC request
+   * - Check Account is deployed
+   * - Check Permission Validator & Mock Validator modules are installed
+   * If not, Deploy and installed all necessary module for processing this RPC request
+   * @returns
+   */
+  private async ensureAccountReadyForGrantPermissions(): Promise<void> {
+    if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    // this permission have dummy policy set to zeroAddress for now,
-    // bc current version of PermissionValidator_v1 module don't consider checking policy
-    const permissions: SingleSignerPermission[] = [
-      {
-        validUntil: 0,
-        validAfter: 0,
-        signatureValidationAlgorithm: SECP256K1_SIGNATURE_VALIDATOR_ADDRESS,
-        signer: targetAddress,
-        policy: zeroAddress,
-        policyData: '0x'
+    try {
+      const isAccountDeployed = await isSmartAccountDeployed(
+        this.publicClient,
+        this.client.account.address
+      )
+
+      let smartSessionValidatorInstalled = false
+      let mockValidatorInstalled = false
+
+      if (isAccountDeployed) {
+        ;[smartSessionValidatorInstalled, mockValidatorInstalled] = await Promise.all([
+          this.isValidatorModuleInstalled(smartSessionAddress),
+          this.isValidatorModuleInstalled(mockValidator)
+        ])
       }
-    ]
+      console.log({ smartSessionValidatorInstalled, mockValidatorInstalled })
 
-    const permittedScopeData = getPermissionScopeData(permissions, this.chain)
-    // the smart account sign over the permittedScope and targetAddress
-    const permittedScopeSignature: Hex = await signMessage({
-      privateKey: this.getPrivateKey() as `0x${string}`,
-      message: { raw: concatHex([keccak256(permittedScopeData), targetAddress]) }
-    })
+      if (isAccountDeployed && smartSessionValidatorInstalled && mockValidatorInstalled) {
+        console.log('Account is already set up with required modules')
+        return
+      }
 
-    return {
-      accountType: 'Safe7579',
-      accountAddress: this.client.account.address,
-      permissionValidatorAddress: PERMISSION_VALIDATOR_ADDRESS,
-      permissions: permissions,
-      permittedScopeData: permittedScopeData,
-      permittedScopeSignature: permittedScopeSignature
+      console.log('Setting up the Account with required modules')
+
+      const installModules: {
+        address: Address
+        type: ModuleType
+        context: Hex
+      }[] = []
+
+      if (!isAccountDeployed || !smartSessionValidatorInstalled) {
+        installModules.push({
+          address: smartSessionAddress,
+          type: 'validator',
+          context: '0x'
+        })
+      }
+
+      if (!isAccountDeployed || !mockValidatorInstalled) {
+        installModules.push({
+          address: mockValidator,
+          type: 'validator',
+          context: '0x'
+        })
+      }
+
+      await this.installModules(installModules)
+      console.log('Account setup completed')
+    } catch (error) {
+      console.error(`Error ensuring account is ready for grant permissions: ${error}`)
+      throw error
     }
+  }
+
+  private async isValidatorModuleInstalled(address: Address): Promise<boolean> {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    return this.client.isModuleInstalled({
+      address,
+      type: 'validator',
+      account: this.client.account,
+      context: '0x'
+    })
+  }
+
+  private async installModules(
+    modules: {
+      address: Address
+      type: ModuleType
+      context: Hex
+    }[]
+  ): Promise<void> {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    const userOpHash = await this.client.installModules({
+      account: this.client.account,
+      modules: modules
+    })
+    const receipt = await this.bundlerClient.waitForUserOperationReceipt({ hash: userOpHash })
+    console.log(`Module installation receipt:`, receipt)
   }
 
   async sendERC5792Calls(sendCallsParam: SendCallsParams) {
@@ -185,21 +238,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     }
     const gasPrice = (await this.bundlerClient.getUserOperationGasPrice()).fast
     const calls = getSendCallData(sendCallsParam)
-    const accountDeployed = await isSmartAccountDeployed(
-      this.publicClient,
-      this.client.account.address
-    )
     let callData = await this.client.account.encodeCallData(calls)
-    if (!accountDeployed) {
-      const initialValidators = getSafe7579InitialValidators()
-      const initData = getSafe7579InitData(this.signer.address, initialValidators, calls)
-      const setUpSafe7579Calldata = encodeFunctionData({
-        abi: setupSafeAbi,
-        functionName: 'setupSafe',
-        args: [initData]
-      })
-      callData = setUpSafe7579Calldata
-    }
 
     const capabilities = sendCallsParam.capabilities
 

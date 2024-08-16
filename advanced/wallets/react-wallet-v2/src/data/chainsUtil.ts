@@ -1,3 +1,4 @@
+import * as viemChains from 'viem/chains'
 import { COSMOS_MAINNET_CHAINS } from './COSMOSData'
 import { EIP155_CHAINS } from './EIP155Data'
 import { KADENA_CHAINS } from './KadenaData'
@@ -26,4 +27,10 @@ export function getChainData(chainId?: string) {
   return Object.values(ALL_CHAINS).find(
     chain => chain.chainId == reference && chain.namespace === namespace
   )
+}
+
+export function getViemChain(id: number) {
+  const chains = Object.values(viemChains) as viemChains.Chain[]
+
+  return chains.find(x => x.id === id)
 }

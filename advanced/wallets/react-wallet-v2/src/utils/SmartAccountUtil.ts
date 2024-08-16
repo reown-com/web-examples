@@ -71,12 +71,7 @@ export function supportedAddressPriority(
   const chainIdParsed = allowedChainIds[0].replace(`${nameSpaceKey}:`, '')
   const chain = providedAllowedChains.find(chain => chain?.id.toString() === chainIdParsed)!
   if (allowedChainIds.length > 0 && smartAccountAddress) {
-    const allowedAccounts = allowedChainIds.map(id => {
-      // check if id is a part of any of these array elements namespaces.eip155.accounts
-      const accountIsAllowed = namespaces.eip155.accounts.findIndex(account => account.includes(id))
-      return namespaces.eip155.accounts[accountIsAllowed]
-    })
-    return [`${nameSpaceKey}:${chain.id}:${smartAccountAddress}`, ...allowedAccounts]
+    return [`${nameSpaceKey}:${chain.id}:${smartAccountAddress}`]
   }
   return []
 }
@@ -92,7 +87,12 @@ export function isAllowedKernelChain(chainId: number): boolean {
 }
 
 export async function createOrRestoreKernelSmartAccount(privateKey: string) {
-  const lib = new KernelSmartAccountLib({ privateKey, chain: sepolia, sponsored: true })
+  const lib = new KernelSmartAccountLib({
+    privateKey,
+    chain: sepolia,
+    sponsored: true,
+    entryPointVersion: 6
+  })
   await lib.init()
   const address = lib.getAddress()
   const key = `${sepolia.id}:${address}`
@@ -123,6 +123,12 @@ export async function createOrRestoreSafeSmartAccount(privateKey: string) {
   }
   return {
     safeSmartAccountAddress: address
+  }
+}
+export function removeSmartAccount(address: string) {
+  const key = `${sepolia.id}:${address}`
+  if (smartAccountWallets[key]) {
+    delete smartAccountWallets[key]
   }
 }
 
