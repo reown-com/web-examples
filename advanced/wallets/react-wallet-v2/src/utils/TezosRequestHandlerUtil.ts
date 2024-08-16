@@ -34,8 +34,13 @@ export async function approveTezosRequest(
         const sendResponse = await wallet.signTransaction(request.params.operations)
         return formatJsonRpcResult(id, { hash: sendResponse })
       } catch (error) {
-        console.error("Tezos_send operation failed with error: ", error.message);
-        return formatJsonRpcError(id, error.message);
+        if (error instanceof Error) {
+          console.error("Tezos_send operation failed with error: ", error.message);
+          return formatJsonRpcError(id, error.message);
+        } else {
+          console.error("Tezos_send operation failed with unknown error: ", error);
+          return formatJsonRpcError(id, 'TEZOS_SEND failed with unknown error.');
+        }
       }
 
     case TEZOS_SIGNING_METHODS.TEZOS_SIGN:
