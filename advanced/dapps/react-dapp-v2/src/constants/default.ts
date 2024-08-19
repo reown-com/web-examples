@@ -259,6 +259,12 @@ interface PartialTezosOriginationOperation
 export enum DEFAULT_TEZOS_METHODS {
   TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
   TEZOS_SEND = "tezos_send",
+  TEZOS_SIGN = "tezos_sign",
+}
+
+export enum TEZOS_ACTIONS {
+  TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
+  TEZOS_SEND = "tezos_send",
   TEZOS_SEND_TRANSACTION = "tezos_send:transaction",
   TEZOS_SEND_ORGINATION = "tezos_send:origination",
   TEZOS_SEND_CONTRACT_CALL = "tezos_send:contract_call",

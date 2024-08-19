@@ -48,6 +48,7 @@ import {
   DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TEZOS_METHODS,
+  TEZOS_ACTIONS,
   DEFAULT_KADENA_METHODS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
   DEFAULT_EIP5792_METHODS,
@@ -1407,7 +1408,7 @@ export function JsonRpcContextProvider({
   // -------- TEZOS RPC METHODS --------
 
   const signTransaction = (
-    method: DEFAULT_TEZOS_METHODS
+    method: TEZOS_ACTIONS
   ) => {
     return _createJsonRpcRequestHandler(
       async (
@@ -1416,29 +1417,29 @@ export function JsonRpcContextProvider({
       ): Promise<IFormattedRpcResponse> => {
         let operation;
         switch (method) {
-          case DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION:
+          case TEZOS_ACTIONS.TEZOS_SEND_TRANSACTION:
             // make deep copy of the operation
-            operation = JSON.parse(JSON.stringify(DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION]));
+            operation = JSON.parse(JSON.stringify(DEFAULT_TEZOS_KINDS[TEZOS_ACTIONS.TEZOS_SEND_TRANSACTION]));
             operation.destination = addresses?.length > 1
               ? (addresses[0] === address ? addresses[1] : addresses[0])
               : "[ERROR: example dApp was unable to set the peerAddress. Run tezos_getAccounts on dApp first]";
             break;
 
-          case DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION:
-            operation = DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION]
+          case TEZOS_ACTIONS.TEZOS_SEND_DELEGATION:
+            operation = DEFAULT_TEZOS_KINDS[TEZOS_ACTIONS.TEZOS_SEND_DELEGATION]
             break;
 
-          case DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION:
-            operation = DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION]
+          case TEZOS_ACTIONS.TEZOS_SEND_UNDELEGATION:
+            operation = DEFAULT_TEZOS_KINDS[TEZOS_ACTIONS.TEZOS_SEND_UNDELEGATION]
             break;
 
-          case DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION:
-            operation = DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION]
+          case TEZOS_ACTIONS.TEZOS_SEND_ORGINATION:
+            operation = DEFAULT_TEZOS_KINDS[TEZOS_ACTIONS.TEZOS_SEND_ORGINATION]
             break;
 
-          case DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL:
+          case TEZOS_ACTIONS.TEZOS_SEND_CONTRACT_CALL:
             // make deep copy of the operation
-            operation = JSON.parse(JSON.stringify(DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL]));
+            operation = JSON.parse(JSON.stringify(DEFAULT_TEZOS_KINDS[TEZOS_ACTIONS.TEZOS_SEND_CONTRACT_CALL]));
             operation.destination = contractAddress
               ? contractAddress
               : "[ERROR: example dApp was unable to set the contractAddress. Run tezos_sendOrigination on dApp first]";
@@ -1461,7 +1462,7 @@ export function JsonRpcContextProvider({
         });
 
         // Get the contract ID if it's an origination
-        if (method === DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION) {
+        if (method === TEZOS_ACTIONS.TEZOS_SEND_ORGINATION) {
           const contractAddressList = await apiGetContractAddress(chainId, result.hash);
           if (contractAddressList.length > 0) {
             setContractAddress(contractAddressList[0]);
@@ -1508,11 +1509,11 @@ export function JsonRpcContextProvider({
         };
       }
     ),
-    testSignTransaction: signTransaction(DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION),
-    testSignOrigination: signTransaction(DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION),
-    testSignContractCall: signTransaction(DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL),
-    testSignDelegation: signTransaction(DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION),
-    testSignUndelegation: signTransaction(DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION),
+    testSignTransaction: signTransaction(TEZOS_ACTIONS.TEZOS_SEND_TRANSACTION),
+    testSignOrigination: signTransaction(TEZOS_ACTIONS.TEZOS_SEND_ORGINATION),
+    testSignContractCall: signTransaction(TEZOS_ACTIONS.TEZOS_SEND_CONTRACT_CALL),
+    testSignDelegation: signTransaction(TEZOS_ACTIONS.TEZOS_SEND_DELEGATION),
+    testSignUndelegation: signTransaction(TEZOS_ACTIONS.TEZOS_SEND_UNDELEGATION),
     testSignMessage: _createJsonRpcRequestHandler(
       async (
         chainId: string,

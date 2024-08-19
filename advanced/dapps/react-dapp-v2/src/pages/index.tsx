@@ -19,7 +19,7 @@ import {
   DEFAULT_NEAR_METHODS,
   DEFAULT_KADENA_METHODS,
   DEFAULT_TRON_METHODS,
-  DEFAULT_TEZOS_METHODS,
+  TEZOS_ACTIONS,
   DEFAULT_TEZOS_KINDS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
   DEFAULT_EIP5792_METHODS,
@@ -448,37 +448,37 @@ const Home: NextPage = () => {
     };
     return [
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+        method: TEZOS_ACTIONS.TEZOS_GET_ACCOUNTS,
         callback: onGetAccounts,
         description: "Use before sending a transaction to get peer address.",
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION,
+        method: TEZOS_ACTIONS.TEZOS_SEND_TRANSACTION,
         callback: onSignTransaction,
-        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION],
+        description: DEFAULT_TEZOS_KINDS[TEZOS_ACTIONS.TEZOS_SEND_TRANSACTION],
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION,
+        method: TEZOS_ACTIONS.TEZOS_SEND_ORGINATION,
         callback: onSignOrigination,
-        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION],
+        description: DEFAULT_TEZOS_KINDS[TEZOS_ACTIONS.TEZOS_SEND_ORGINATION],
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL,
+        method: TEZOS_ACTIONS.TEZOS_SEND_CONTRACT_CALL,
         callback: onSignContractCall,
-        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL],
+        description: DEFAULT_TEZOS_KINDS[TEZOS_ACTIONS.TEZOS_SEND_CONTRACT_CALL],
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION,
+        method: TEZOS_ACTIONS.TEZOS_SEND_DELEGATION,
         callback: onSignDelegation,
-        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION],
+        description: DEFAULT_TEZOS_KINDS[TEZOS_ACTIONS.TEZOS_SEND_DELEGATION],
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION,
+        method: TEZOS_ACTIONS.TEZOS_SEND_UNDELEGATION,
         callback: onSignUndelegation,
-        description: DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION],
+        description: DEFAULT_TEZOS_KINDS[TEZOS_ACTIONS.TEZOS_SEND_UNDELEGATION],
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+        method: TEZOS_ACTIONS.TEZOS_SIGN,
         callback: onSignMessage,
       },
     ];
