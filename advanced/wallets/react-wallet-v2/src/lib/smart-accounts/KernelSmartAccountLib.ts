@@ -1,42 +1,16 @@
-import {
-  Address,
-  createClient,
-  createPublicClient,
-  Hex,
-  http,
-  HttpTransport,
-  PrivateKeyAccount,
-  PublicClient,
-  Transport,
-  WalletGrantPermissionsParameters,
-  WalletGrantPermissionsReturnType
-} from 'viem'
-import { privateKeyToAccount, publicKeyToAddress } from 'viem/accounts'
-import { EIP155Wallet } from '../EIP155Lib'
-import { JsonRpcProvider } from '@ethersproject/providers'
+import { WalletGrantPermissionsParameters, WalletGrantPermissionsReturnType } from 'viem'
+import { publicKeyToAddress } from 'viem/accounts'
 import { KernelValidator, signerToEcdsaValidator } from '@zerodev/ecdsa-validator'
-import {
-  addressToEmptyAccount,
-  createKernelAccount,
-  createKernelAccountClient,
-  createZeroDevPaymasterClient,
-  KernelAccountClient
-} from '@zerodev/sdk'
+import { addressToEmptyAccount, createKernelAccount } from '@zerodev/sdk'
 import { serializeSessionKeyAccount, signerToSessionKeyValidator } from '@zerodev/session-key'
 import { getUpdateConfigCall } from '@zerodev/weighted-ecdsa-validator'
-import {
-  BundlerActions,
-  bundlerActions,
-  BundlerClient,
-  ENTRYPOINT_ADDRESS_V06,
-  ENTRYPOINT_ADDRESS_V07
-} from 'permissionless'
-import { Chain } from '@/consts/smartAccounts'
+import { ENTRYPOINT_ADDRESS_V06, SmartAccountClientConfig } from 'permissionless'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 import { KERNEL_V2_4, KERNEL_V3_1 } from '@zerodev/sdk/constants'
 import { KERNEL_V2_VERSION_TYPE, KERNEL_V3_VERSION_TYPE } from '@zerodev/sdk/types'
 import { decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
 import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
+import { SmartAccountLib } from './SmartAccountLib'
 
 type DonutPurchasePermissionData = {
   target: string
@@ -44,209 +18,44 @@ type DonutPurchasePermissionData = {
   valueLimit: bigint
   functionName: string
 }
-import { UserOperation } from 'permissionless/_types/types'
-import { SendCallsParams, SendCallsPaymasterServiceCapabilityParam } from '@/data/EIP5792Data'
-import { getSendCallData } from '@/utils/EIP5792WalletUtil'
-import { paymasterActionsEip7677 } from 'permissionless/experimental'
-import { createPimlicoBundlerClient } from 'permissionless/clients/pimlico'
-import { PIMLICO_NETWORK_NAMES, UrlConfig } from '@/utils/SmartAccountUtil'
 
-type SmartAccountLibOptions = {
-  privateKey: string
-  chain: Chain
-  sponsored?: boolean
-  entryPointVersion?: number
-}
-
-export class KernelSmartAccountLib implements EIP155Wallet {
-  public chain: Chain
+export class KernelSmartAccountLib extends SmartAccountLib {
   public isDeployed: boolean = false
   public address?: `0x${string}`
-  public sponsored: boolean = true
-  public entryPoint: EntryPoint
-  public kernelVersion: KERNEL_V3_VERSION_TYPE | KERNEL_V2_VERSION_TYPE
-  private signer: PrivateKeyAccount
-  private client: KernelAccountClient<EntryPoint, Transport, Chain | undefined> | undefined
-  private publicClient:
-    | (PublicClient & BundlerClient<EntryPoint> & BundlerActions<EntryPoint>)
-    | undefined
+
+  public kernelVersion: KERNEL_V3_VERSION_TYPE | KERNEL_V2_VERSION_TYPE = KERNEL_V3_1
   private validator: KernelValidator<EntryPoint> | undefined
-  public initialized = false
 
-  #signerPrivateKey: string
   public type: string = 'Kernel'
-  pimlicoBundlerUrl: HttpTransport
 
-  public constructor({
-    privateKey,
-    chain,
-    sponsored = false,
-    entryPointVersion = 7
-  }: SmartAccountLibOptions) {
-    this.chain = chain
-    this.sponsored = sponsored
-    this.#signerPrivateKey = privateKey
-    this.signer = privateKeyToAccount(privateKey as Hex)
-    this.entryPoint = ENTRYPOINT_ADDRESS_V07
-    this.kernelVersion = KERNEL_V3_1
-    if (entryPointVersion === 6) {
-      this.entryPoint = ENTRYPOINT_ADDRESS_V06
+  async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
+    if (this.entryPoint === ENTRYPOINT_ADDRESS_V06) {
       this.kernelVersion = KERNEL_V2_4
     }
-    const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
-    const pimlicoBundlerUrl = ({ chain }: UrlConfig) =>
-      `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
-    this.pimlicoBundlerUrl = http(pimlicoBundlerUrl({ chain: this.chain }))
-  }
-  async init() {
-    const projectId = process.env.NEXT_PUBLIC_ZERODEV_PROJECT_ID
-    if (!projectId) {
-      throw new Error('ZeroDev project id expected')
-    }
-    const bundlerRpc = http(`https://rpc.zerodev.app/api/v2/bundler/${projectId}`)
-    this.publicClient = createPublicClient({
-      transport: bundlerRpc // use your RPC provider or bundler
-    }).extend(bundlerActions(this.entryPoint))
-
     this.validator = await signerToEcdsaValidator(this.publicClient, {
       signer: this.signer,
       entryPoint: this.entryPoint,
       kernelVersion: this.kernelVersion
     })
 
-    const account = await createKernelAccount(this.publicClient, {
+    const kernelAccount = await createKernelAccount(this.publicClient, {
       plugins: {
         sudo: this.validator
       },
       entryPoint: this.entryPoint,
       kernelVersion: this.kernelVersion
     })
-    const client = createKernelAccountClient({
-      account,
+    return {
+      name: 'KernelSmartAccount',
+      account: kernelAccount,
       chain: this.chain,
       entryPoint: this.entryPoint,
-      bundlerTransport: bundlerRpc,
+      bundlerTransport: this.bundlerUrl,
       middleware: {
-        sponsorUserOperation: async ({ userOperation }) => {
-          const zerodevPaymaster = createZeroDevPaymasterClient({
-            chain: this.chain,
-            entryPoint: this.entryPoint,
-            // Get this RPC from ZeroDev dashboard
-            transport: http(`https://rpc.zerodev.app/api/v2/paymaster/${projectId}`)
-          })
-          return zerodevPaymaster.sponsorUserOperation({
-            userOperation,
-            entryPoint: this.entryPoint
-          })
-        }
+        gasPrice: async () => (await this.bundlerClient.getUserOperationGasPrice()).fast, // use pimlico bundler to get gas prices
+        sponsorUserOperation: this.sponsored ? this.paymasterClient.sponsorUserOperation : undefined
       }
-    }).extend(bundlerActions(this.entryPoint))
-    this.client = client
-    console.log('Smart account initialized', {
-      address: account.address,
-      //@ts-ignore
-      chain: client.chain.name,
-      type: this.type
-    })
-    this.initialized = true
-  }
-
-  getMnemonic(): string {
-    throw new Error('Method not implemented.')
-  }
-  getPrivateKey(): string {
-    return this.#signerPrivateKey
-  }
-  getAddress(): string {
-    if (!this.client) {
-      throw new Error('Client not initialized')
     }
-    return this.client.account?.address || ''
-  }
-  async signMessage(message: string): Promise<string> {
-    if (!this.client) {
-      throw new Error('Client not initialized')
-    }
-    const signature = await this.client.account?.signMessage({ message })
-    return signature || ''
-  }
-  async _signTypedData(
-    domain: any,
-    types: any,
-    data: any,
-    _primaryType?: string | undefined
-  ): Promise<string> {
-    if (!this.client) {
-      throw new Error('Client not initialized')
-    }
-    console.log('Signing typed data with Kernel Smart Account')
-    const primaryType = _primaryType || ''
-    const signature = await this.client.account?.signTypedData({
-      domain,
-      types,
-      primaryType,
-      message: data
-    })
-    return signature || ''
-  }
-  connect(provider: JsonRpcProvider): any {
-    if (!this.client) {
-      throw new Error('Client not initialized')
-    }
-    return this
-  }
-  async signTransaction(transaction: any): Promise<string> {
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-    const signature = await this.client.account.signTransaction(transaction)
-    return signature || ''
-  }
-  async sendTransaction({ to, value, data }: { to: Address; value: bigint | Hex; data: Hex }) {
-    console.log('Sending transaction from smart account', { to, value, data })
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-
-    const txResult = await this.client.sendTransaction({
-      to,
-      value: BigInt(value),
-      data: data || '0x',
-      account: this.client.account,
-      chain: this.chain
-    })
-    console.log('Transaction completed', { txResult })
-
-    return txResult
-  }
-  async sendBatchTransaction(
-    args: {
-      to: Address
-      value: bigint
-      data: Hex
-    }[]
-  ) {
-    console.log('Sending transaction from smart account', { type: this.type, args })
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-    const userOp = await this.client.prepareUserOperationRequest({
-      userOperation: {
-        callData: await this.client.account.encodeCallData(args)
-      },
-      account: this.client.account
-    })
-
-    const newSignature = await this.client.account.signUserOperation(userOp)
-    console.log('Signatures', { old: userOp.signature, new: newSignature })
-
-    userOp.signature = newSignature
-
-    const userOpHash = await this.client.sendUserOperation({
-      userOperation: userOp,
-      account: this.client.account
-    })
-    return userOpHash
   }
 
   async issueSessionKey(address: `0x${string}`, permissions: string): Promise<string> {
@@ -368,135 +177,10 @@ export class KernelSmartAccountLib implements EIP155Wallet {
     await this.sendTransaction(updateCall)
   }
 
-  async getCurrentNonce() {
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-    const currentNonce = await this.publicClient!.readContract({
-      address: this.client.account.address,
-      abi: [
-        {
-          type: 'function',
-          name: 'currentNonce',
-          inputs: [],
-          outputs: [{ name: '', type: 'uint32', internalType: 'uint32' }],
-          stateMutability: 'view'
-        }
-      ],
-      functionName: 'currentNonce',
-      args: [],
-      factory: undefined,
-      factoryData: undefined
-    })
-    console.log(`currentNonce : ${currentNonce}`)
-    return currentNonce
-  }
-
   getAccount() {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
     return this.client.account
-  }
-
-  async sendERC5792Calls(sendCallsParam: SendCallsParams) {
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-    const pimlicoBundlerClient = createPimlicoBundlerClient({
-      entryPoint: this.entryPoint,
-      transport: this.pimlicoBundlerUrl
-    })
-    const gasPrice = (await pimlicoBundlerClient.getUserOperationGasPrice()).fast
-    const calls = getSendCallData(sendCallsParam)
-    const capabilities = sendCallsParam.capabilities
-    if (capabilities && capabilities['paymasterService']) {
-      console.log('executing sendCalls with paymasterService')
-      const paymasterService = capabilities[
-        'paymasterService'
-      ] as SendCallsPaymasterServiceCapabilityParam
-
-      const paymasterUrl = paymasterService.url
-
-      const userOpPreStubData: Omit<
-        UserOperation<'v0.7'>,
-        'signature' | 'paymaster' | 'paymasterData'
-      > = {
-        sender: this.client.account.address,
-        nonce: await this.client.account.getNonce(),
-        factory: await this.client.account.getFactory(),
-        factoryData: await this.client.account.getFactoryData(),
-        callData: await this.client.account.encodeCallData(calls),
-        callGasLimit: 0n,
-        verificationGasLimit: 0n,
-        preVerificationGas: 0n,
-        maxFeePerGas: gasPrice.maxFeePerGas,
-        maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas,
-        // paymaster: '0x',
-        paymasterVerificationGasLimit: 0n,
-        paymasterPostOpGasLimit: 0n
-        // paymasterData: '0x',
-        // signature: '0x'
-      }
-
-      const paymasterClient = createClient({
-        chain: this.chain,
-        transport: http(paymasterUrl)
-      }).extend(paymasterActionsEip7677(ENTRYPOINT_ADDRESS_V07))
-
-      const paymasterStubData = await paymasterClient.getPaymasterStubData({
-        userOperation: userOpPreStubData,
-        chain: this.chain,
-        context: paymasterService.context
-      })
-      console.log({ paymasterStubData })
-      const userOpWithStubData: UserOperation<'v0.7'> = {
-        ...userOpPreStubData,
-        ...paymasterStubData,
-        signature: '0x'
-      }
-
-      const dummySignature = await this.client.account.getDummySignature(userOpWithStubData)
-      userOpWithStubData.signature = dummySignature
-
-      const gasEstimation = await pimlicoBundlerClient.estimateUserOperationGas({
-        userOperation: userOpWithStubData
-      })
-      console.log({ gasEstimation })
-      const userOpWithGasEstimates: UserOperation<'v0.7'> = {
-        ...userOpWithStubData,
-        ...gasEstimation
-      }
-
-      const paymasterData = await paymasterClient.getPaymasterData({
-        userOperation: {
-          ...userOpWithGasEstimates,
-          paymasterPostOpGasLimit: gasEstimation.paymasterPostOpGasLimit || 0n,
-          paymasterVerificationGasLimit: gasEstimation.paymasterVerificationGasLimit || 0n
-        },
-        chain: this.chain,
-        context: paymasterService.context
-      })
-      console.log({ paymasterData })
-      const userOpWithPaymasterData: UserOperation<'v0.7'> = {
-        ...userOpWithGasEstimates,
-        ...paymasterData
-      }
-
-      const userOp = userOpWithPaymasterData
-
-      const newSignature = await this.client.account.signUserOperation(userOp)
-      console.log('Signatures', { old: userOp.signature, new: newSignature })
-
-      userOp.signature = newSignature
-
-      const userOpHash = await pimlicoBundlerClient.sendUserOperation({
-        userOperation: userOp
-      })
-      console.log({ userOpHash })
-      return userOpHash
-    }
-    console.log('executing sendCalls')
-    return this.sendBatchTransaction(calls)
   }
 }

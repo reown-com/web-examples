@@ -1,8 +1,6 @@
 import {
   ENTRYPOINT_ADDRESS_V07,
   SmartAccountClientConfig,
-  UserOperation,
-  getPackedUserOperation,
   isSmartAccountDeployed
 } from 'permissionless'
 import { SmartAccountLib } from './SmartAccountLib'
@@ -12,13 +10,11 @@ import {
   Address,
   Hex,
   WalletGrantPermissionsParameters,
-  createClient,
   createWalletClient,
   http,
   type WalletGrantPermissionsReturnType
 } from 'viem'
 import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
-import { bigIntReplacer } from '@/utils/HelperUtil'
 import {
   getContext,
   mockValidator,
@@ -27,9 +23,6 @@ import {
   userOperationBuilderAddress
 } from '@biconomy/permission-context-builder'
 import { ModuleType } from 'permissionless/actions/erc7579'
-import { paymasterActionsEip7677 } from 'permissionless/experimental'
-import { getSendCallData } from '@/utils/EIP5792WalletUtil'
-import { SendCallsParams, SendCallsPaymasterServiceCapabilityParam } from '@/data/EIP5792Data'
 
 export class SafeSmartAccountLib extends SmartAccountLib {
   protected ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
@@ -55,46 +48,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         sponsorUserOperation: this.sponsored ? this.paymasterClient.sponsorUserOperation : undefined
       }
     }
-  }
-
-  async sendTransaction({ to, value, data }: { to: Address; value: bigint | Hex; data: Hex }) {
-    if (!this.client?.account) {
-      throw new Error('Client not initialized')
-    }
-    const txResult = await this.client.sendTransaction({
-      to,
-      value: BigInt(value),
-      data,
-      account: this.client.account,
-      chain: this.chain
-    })
-    return txResult
-  }
-
-  async sendBatchTransaction(calls: { to: Address; value: bigint; data: Hex }[]) {
-    if (!this.client?.account) {
-      throw new Error('Client not initialized')
-    }
-
-    const userOp = (await this.client.prepareUserOperationRequest({
-      userOperation: {
-        callData: await this.client.account.encodeCallData(calls)
-      },
-      account: this.client.account
-    })) as UserOperation<'v0.7'>
-
-    const newSignature = await this.client.account.signUserOperation(userOp)
-    userOp.signature = newSignature
-
-    const packedUserOp = getPackedUserOperation(userOp)
-
-    console.log('Final Packed UserOp to send', JSON.stringify(packedUserOp, bigIntReplacer))
-
-    const userOpHash = await this.bundlerClient.sendUserOperation({
-      userOperation: userOp
-    })
-
-    return userOpHash
   }
 
   async manageModule(calls: { to: Address; value: bigint; data: Hex }[]) {
@@ -230,103 +183,5 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
     const receipt = await this.bundlerClient.waitForUserOperationReceipt({ hash: userOpHash })
     console.log(`Module installation receipt:`, receipt)
-  }
-
-  async sendERC5792Calls(sendCallsParam: SendCallsParams) {
-    if (!this.client || !this.client.account) {
-      throw new Error('Client not initialized')
-    }
-    const gasPrice = (await this.bundlerClient.getUserOperationGasPrice()).fast
-    const calls = getSendCallData(sendCallsParam)
-    const capabilities = sendCallsParam.capabilities
-
-    if (capabilities && capabilities['paymasterService']) {
-      console.log('executing sendCalls with paymasterService')
-      const paymasterService = capabilities[
-        'paymasterService'
-      ] as SendCallsPaymasterServiceCapabilityParam
-
-      const paymasterUrl = paymasterService.url
-
-      const userOpPreStubData: Omit<
-        UserOperation<'v0.7'>,
-        'signature' | 'paymaster' | 'paymasterData'
-      > = {
-        sender: this.client.account.address,
-        nonce: await this.client.account.getNonce(),
-        factory: await this.client.account.getFactory(),
-        factoryData: await this.client.account.getFactoryData(),
-        callData: await this.client.account.encodeCallData(calls),
-        callGasLimit: 0n,
-        verificationGasLimit: 0n,
-        preVerificationGas: 0n,
-        maxFeePerGas: gasPrice.maxFeePerGas,
-        maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas,
-        // paymaster: '0x',
-        paymasterVerificationGasLimit: 0n,
-        paymasterPostOpGasLimit: 0n
-        // paymasterData: '0x',
-        // signature: '0x'
-      }
-
-      const paymasterClient = createClient({
-        chain: this.chain,
-        transport: http(paymasterUrl)
-      }).extend(paymasterActionsEip7677(ENTRYPOINT_ADDRESS_V07))
-
-      const paymasterStubData = await paymasterClient.getPaymasterStubData({
-        userOperation: userOpPreStubData,
-        chain: this.chain,
-        context: paymasterService.context
-      })
-      console.log({ paymasterStubData })
-      const userOpWithStubData: UserOperation<'v0.7'> = {
-        ...userOpPreStubData,
-        ...paymasterStubData,
-        signature: '0x'
-      }
-
-      const dummySignature = await this.client.account.getDummySignature(userOpWithStubData)
-      userOpWithStubData.signature = dummySignature
-
-      const gasEstimation = await this.bundlerClient.estimateUserOperationGas({
-        userOperation: userOpWithStubData
-      })
-      console.log({ gasEstimation })
-      const userOpWithGasEstimates: UserOperation<'v0.7'> = {
-        ...userOpWithStubData,
-        ...gasEstimation
-      }
-
-      const paymasterData = await paymasterClient.getPaymasterData({
-        userOperation: {
-          ...userOpWithGasEstimates,
-          paymasterPostOpGasLimit: gasEstimation.paymasterPostOpGasLimit || 0n,
-          paymasterVerificationGasLimit: gasEstimation.paymasterVerificationGasLimit || 0n
-        },
-        chain: this.chain,
-        context: paymasterService.context
-      })
-      console.log({ paymasterData })
-      const userOpWithPaymasterData: UserOperation<'v0.7'> = {
-        ...userOpWithGasEstimates,
-        ...paymasterData
-      }
-
-      const userOp = userOpWithPaymasterData
-
-      const newSignature = await this.client.account.signUserOperation(userOp)
-      console.log('Signatures', { old: userOp.signature, new: newSignature })
-
-      userOp.signature = newSignature
-
-      const userOpHash = await this.bundlerClient.sendUserOperation({
-        userOperation: userOp
-      })
-      console.log({ userOpHash })
-      return userOpHash
-    }
-    console.log('executing sendCalls')
-    return this.sendBatchTransaction(calls)
   }
 }
