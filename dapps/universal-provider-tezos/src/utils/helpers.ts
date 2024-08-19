@@ -215,7 +215,8 @@ export const sendTransaction = async (
       account: address,
       operations: [operation],
     },
-  });
+  },
+  chainId);
 
   return {
     method,
