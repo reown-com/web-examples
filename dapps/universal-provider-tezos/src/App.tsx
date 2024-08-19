@@ -83,8 +83,6 @@ const App = () => {
             methods,
             chains,
             events:[],
-            // events: ["chainChanged", "accountsChanged"], - kills "connect"
-            // rpcMap
           },
         },
         skipPairing: false,
@@ -255,7 +253,8 @@ const App = () => {
 
   return (
     <div className="App">
-      <h1>WalletConnect for Tezos</h1>
+      <h1>UniversalProvider</h1>
+      <h2>WalletConnect for Tezos</h2>
       <p>
         dApp prototype integrating WalletConnect's Tezos Universal Provider.
       </p>

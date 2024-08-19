@@ -11,9 +11,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    exclude: [
-      "@walletconnect/universal-provider"
-    ],
     esbuildOptions: {
       // Node.js global to browser globalThis
       define: {
