@@ -1,8 +1,9 @@
-import { TezosToolkit } from '@taquito/taquito';
+import { OpKind, ParamsWithKind, TezosToolkit } from '@taquito/taquito';
 import { InMemorySigner } from '@taquito/signer'
-import { validateAddress } from '@taquito/utils';
 
 import { Wallet } from 'ethers/'
+import { PvmKind, ScriptedContracts } from '@taquito/rpc';
+import { PartialTezosOperation, TezosOperationType } from '@airgap/beacon-types'
 
 /**
  * Constants
@@ -88,68 +89,144 @@ export default class TezosLib {
     return this.address
   }
 
+  public convertToPartialParamsWithKind(op: PartialTezosOperation): ParamsWithKind {
+    switch (op.kind) {
+      case TezosOperationType.ACTIVATE_ACCOUNT:
+        return {
+          kind: OpKind.ACTIVATION,
+          pkh: op.pkh,
+          secret: op.secret,
+        };
+      case TezosOperationType.DELEGATION:
+        return {
+          kind: OpKind.DELEGATION,
+          source: op.source ?? "source not provided",
+          delegate: op.delegate,
+          fee: op.fee ? Number(op.fee) : undefined,
+          gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
+        };
+      case TezosOperationType.FAILING_NOOP:
+        return {
+          kind: OpKind.FAILING_NOOP,
+          arbitrary: op.arbitrary,
+          basedOnBlock: 'head',
+        };
+      case TezosOperationType.INCREASE_PAID_STORAGE:
+        return {
+          kind: OpKind.INCREASE_PAID_STORAGE,
+          source: op.source,
+          fee: op.fee ? Number(op.fee) : undefined,
+          gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
+          amount: Number(op.amount),
+          destination: op.destination,
+        };
+      case TezosOperationType.ORIGINATION:
+        let script : ScriptedContracts = op.script as unknown as ScriptedContracts;
+        return {
+          kind: OpKind.ORIGINATION,
+          balance: Number(op.balance),
+          code: script.code,
+          init: script.storage,
+          delegate: op.delegate,
+          fee: op.fee ? Number(op.fee) : undefined,
+          gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
+        };
+      case TezosOperationType.REGISTER_GLOBAL_CONSTANT:
+        return {
+          kind: OpKind.REGISTER_GLOBAL_CONSTANT,
+          source: op.source,
+          fee: op.fee ? Number(op.fee) : undefined,
+          gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
+          value: op.value,
+        };
+      case TezosOperationType.SMART_ROLLUP_ADD_MESSAGES:
+        return {
+          kind: OpKind.SMART_ROLLUP_ADD_MESSAGES,
+          source: op.source,
+          fee: op.fee ? Number(op.fee) : undefined,
+          gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
+          message: op.message,
+        };
+      case TezosOperationType.SMART_ROLLUP_ORIGINATE:
+        if (!(op.pvm_kind in PvmKind)) {
+          throw new Error(`Invalid PvmKind: ${op.pvm_kind}`);
+        }
+        return {
+          kind: OpKind.SMART_ROLLUP_ORIGINATE,
+          source: op.source,
+          fee: op.fee ? Number(op.fee) : undefined,
+          gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
+          pvmKind: op.pvm_kind,
+          kernel: op.kernel,
+          parametersType: op.parameters_ty,
+        };
+      case TezosOperationType.SMART_ROLLUP_EXECUTE_OUTBOX_MESSAGE:
+        return {
+          kind: OpKind.SMART_ROLLUP_EXECUTE_OUTBOX_MESSAGE,
+          source: op.source,
+          fee: op.fee ? Number(op.fee) : undefined,
+          gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
+          rollup: op.rollup,
+          cementedCommitment: op.cemented_commitment,
+          outputProof: op.output_proof,
+        };
+      case TezosOperationType.TRANSACTION:
+        return {
+          kind: OpKind.TRANSACTION,
+          to: op.destination,
+          amount: Number(op.amount),
+          mutez: true,
+          source: op.source,
+          fee: op.fee ? Number(op.fee) : undefined,
+          gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
+          parameter: op.parameters,
+        };
+      case TezosOperationType.TRANSFER_TICKET:
+        return {
+          kind: OpKind.TRANSFER_TICKET,
+          source: op.source,
+          fee: op.fee ? Number(op.fee) : undefined,
+          gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
+          ticketContents: op.ticket_contents,
+          ticketTy: op.ticket_ty,
+          ticketTicketer: op.ticket_ticketer,
+          ticketAmount: Number(op.ticket_amount),
+          destination: op.destination,
+          entrypoint: op.entrypoint,
+        };
+      case TezosOperationType.UPDATE_CONSENSUS_KEY:
+        return {
+          kind: OpKind.UPDATE_CONSENSUS_KEY,
+          source: op.source,
+          fee: op.fee ? Number(op.fee) : undefined,
+          gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
+          pk: op.pk,
+        };
+      default:
+        throw new Error(`Operation kind cannot be converted to ParamsWithKind: ${op.kind}`);
+    }
+  }
+  
+
   public async signTransaction(transaction: any) {
     // Map the transactions and prepare the batch
     console.log(`Wallet: handling transaction: `, transaction);
-
-    const batchTransactions = transaction.map((tx: any) => {
-      switch (tx.kind) {
-        case 'transaction':
-          if (!tx.amount || isNaN(tx.amount)) {
-            throw new Error(`tx.amount is not a number: ${tx.amount}`);
-          }
-          if (!tx.destination || validateAddress(tx.destination) !== 3) {
-            throw new Error(`tx.destination contains invalid address ${tx.destination}`);
-          }
-          return {
-            kind: 'transaction',
-            amount: tx.amount,
-            to: tx.destination,
-            mutez: tx.mutez ?? false,
-            parameters: tx.parameters,
-          };
-        case 'origination':
-          if (tx.source && validateAddress(tx.source) !== 3) {
-            throw new Error(`tx.source contains invalid address ${tx.source}`);
-          }
-          if (!tx.balance || isNaN(tx.balance)) {
-            throw new Error(`tx.balance is not a number: ${tx.balance}`);
-          }
-          if (!tx.script || !tx.script.code) {
-            throw new Error(`tx.script.code is not defined: ${tx.script}`);
-          }
-          if (!tx.script.storage) {
-            throw new Error(`tx.script.storage is not defined: ${tx.script}`);
-          }
-          return {
-            kind: 'origination',
-            source: tx.source,
-            balance: tx.balance,
-            code: tx.script.code,
-            init: tx.script.storage,
-            parameters: tx.parameters,
-          };
-        case 'delegation':
-          if (tx.source && validateAddress(tx.source) !== 3) {
-            throw new Error(`tx.source contains invalid address ${tx.source}`);
-          }
-          if (!tx.delegate) {
-            console.log(`Wallet: undelegating for ${tx.source}`);
-            return {
-              kind: 'delegation',
-              source: tx.source,
-            };
-          } else if (validateAddress(tx.delegate) !== 3) {
-            throw new Error(`tx.delegate contains invalid address ${tx.delegate}`);
-          }
-          return {
-            kind: 'delegation',
-            source: tx.source,
-            delegate: tx.delegate,
-          };
-        default:
-          throw new Error(`Unsupported transaction kind: ${tx.kind}`);
+    const batchTransactions: ParamsWithKind[] = transaction.map((tx: PartialTezosOperation) => {
+      if (tx.kind === TezosOperationType.DELEGATION && !tx.source) {
+        tx.source = this.address;
       }
+      const op: ParamsWithKind = this.convertToPartialParamsWithKind(tx);
+      return op;
     });
 
     // Prepare the batch

@@ -10,6 +10,7 @@
     "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
   },
   "dependencies": {
+    "@airgap/beacon-types": "^4.2.2",
     "@cosmjs/amino": "0.32.3",
     "@cosmjs/encoding": "0.32.3",
     "@cosmjs/proto-signing": "0.32.3",
@@ -30,8 +31,9 @@
     "@polkadot/types": "^9.3.3",
     "@rhinestone/module-sdk": "0.1.2",
     "@solana/web3.js": "1.89.2",
-    "@taquito/signer": "^15.1.0",
-    "@taquito/taquito": "^15.1.0",
+    "@taquito/rpc": "^20.0.1",
+    "@taquito/signer": "^20.0.1",
+    "@taquito/taquito": "^20.0.1",
     "@types/semver": "^7.5.8",
     "@walletconnect/web3wallet": "1.13.0",
     "@zerodev/ecdsa-validator": "5.3.0",
