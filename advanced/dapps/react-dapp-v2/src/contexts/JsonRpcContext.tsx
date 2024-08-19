@@ -70,7 +70,6 @@ import {
   SignableMessage,
 } from "@multiversx/sdk-core";
 import { UserVerifier } from "@multiversx/sdk-wallet/out/userVerifier";
-import { SignClient } from "@walletconnect/sign-client/dist/types/client";
 import { parseEther } from "ethers/lib/utils";
 import { apiGetContractAddress } from "../helpers/tezos";
 
@@ -1406,33 +1405,6 @@ export function JsonRpcContextProvider({
   };
 
   // -------- TEZOS RPC METHODS --------
-
-  function replacePlaceholders(obj: any, address: string): any {
-    if (typeof obj === 'string') {
-      if (addresses?.length > 1) {
-        obj = obj.replace('$(peerAddress)', addresses[0] == address ? addresses[1] : addresses[0]);
-      } else {
-        obj = obj.replace('$(peerAddress)', "[ERROR: example dApp was unable to set the peerAddress. Run tezos_getAccounts on dApp first]");
-        console.error("TezosRpc found no peer addresses. Run tezos_getAccounts first.");
-      }
-      if (!contractAddress) {
-        obj = obj.replace('$(contractAddress)', "[ERROR: example dApp was unable to set the contractAddress. Run tezos_sendOrigination on dApp first]");
-        console.error("TezosRpc found no contract address. Run tezos_sendOrigination first.");
-      } else {
-        obj = obj.replace('$(contractAddress)', contractAddress);
-      }
-      return obj.replace('$(address)', address);
-    } else if (Array.isArray(obj)) {
-      return obj.map(item => replacePlaceholders(item, address));
-    } else if (typeof obj === 'object' && obj !== null) {
-      const newObj: any = {};
-      for (const key in obj) {
-        newObj[key] = replacePlaceholders(obj[key], address);
-      }
-      return newObj;
-    }
-    return obj;
-  }
 
   const signTransaction = (
     method: DEFAULT_TEZOS_METHODS
