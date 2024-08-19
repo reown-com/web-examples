@@ -1,8 +1,6 @@
 import {
   ENTRYPOINT_ADDRESS_V07,
   SmartAccountClientConfig,
-  UserOperation,
-  getPackedUserOperation,
   isSmartAccountDeployed
 } from 'permissionless'
 import { SmartAccountLib } from './SmartAccountLib'
@@ -17,7 +15,6 @@ import {
   type WalletGrantPermissionsReturnType
 } from 'viem'
 import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
-import { bigIntReplacer } from '@/utils/HelperUtil'
 import {
   getContext,
   mockValidator,
@@ -51,46 +48,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         sponsorUserOperation: this.sponsored ? this.paymasterClient.sponsorUserOperation : undefined
       }
     }
-  }
-
-  async sendTransaction({ to, value, data }: { to: Address; value: bigint | Hex; data: Hex }) {
-    if (!this.client?.account) {
-      throw new Error('Client not initialized')
-    }
-    const txResult = await this.client.sendTransaction({
-      to,
-      value: BigInt(value),
-      data,
-      account: this.client.account,
-      chain: this.chain
-    })
-    return txResult
-  }
-
-  async sendBatchTransaction(calls: { to: Address; value: bigint; data: Hex }[]) {
-    if (!this.client?.account) {
-      throw new Error('Client not initialized')
-    }
-
-    const userOp = (await this.client.prepareUserOperationRequest({
-      userOperation: {
-        callData: await this.client.account.encodeCallData(calls)
-      },
-      account: this.client.account
-    })) as UserOperation<'v0.7'>
-
-    const newSignature = await this.client.account.signUserOperation(userOp)
-    userOp.signature = newSignature
-
-    const packedUserOp = getPackedUserOperation(userOp)
-
-    console.log('Final Packed UserOp to send', JSON.stringify(packedUserOp, bigIntReplacer))
-
-    const userOpHash = await this.bundlerClient.sendUserOperation({
-      userOperation: userOp
-    })
-
-    return userOpHash
   }
 
   async manageModule(calls: { to: Address; value: bigint; data: Hex }[]) {
