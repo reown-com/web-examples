@@ -2,11 +2,6 @@ import UniversalProvider from "@walletconnect/universal-provider";
 import { DEFAULT_TEZOS_KINDS, DEFAULT_TEZOS_METHODS } from "./samples";
 import { TezosToolkit } from '@taquito/taquito';
 
-export enum tezosChains {
-  MainnetBeta = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-  Devnet = "EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
-}
-
 export interface AssetData {
   symbol: string;
   name: string;
@@ -215,7 +210,8 @@ export const sendTransaction = async (
       account: address,
       operations: [operation],
     },
-  });
+  },
+  chainId);
 
   return {
     method,
