@@ -1,5 +1,4 @@
 import {
-    PartialTezosOperation,
     PartialTezosDelegationOperation,
     PartialTezosOriginationOperation as PartialTezosOriginationOperationOriginal,
     PartialTezosTransactionOperation,

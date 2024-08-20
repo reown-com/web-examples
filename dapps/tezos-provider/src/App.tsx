@@ -1,42 +1,26 @@
-import UniversalProvider from "@walletconnect/universal-provider";
 import { WalletConnectModal } from "@walletconnect/modal";
 import { useState } from "react";
-import { signMessage, sendTransaction, TezosChainData, apiGetContractAddress, getAccounts, getChainId, apiGetTezosAccountBalance, formatTezosBalance } from "./utils/helpers";
 import { DEFAULT_TEZOS_KINDS, DEFAULT_TEZOS_METHODS } from "./utils/samples";
+import TezosProvider, { formatTezosBalance, getChainId, TezosChainDataMainnet, TezosChainDataTestnet } from "./utils/tezos-provider";
+import { PartialTezosTransactionOperation } from "@airgap/beacon-types";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
-const events: string[] = [];
-// const events = ["display_uri", "chainChanged", "accountsChanged", "disconnect"];
-const rpcMap = {
-  "tezos:mainnet": "https://rpc.tzbeta.net",
-  "tezos:testnet": "https://rpc.ghostnet.teztnets.com"
-}
-
-// 1. select chains (tezos)
-const chains = ["tezos:mainnet", "tezos:testnet"];
-
-// 2. select methods (tezos)
-const methods = ["tezos_getAccounts", "tezos_sign", "tezos_send"];
-
-// 3. create modal instance
+// 1. create modal instance
 const modal = new WalletConnectModal({
-  projectId,
-  chains,
+  projectId
 });
 
-// 4. create provider instance
-const provider = await UniversalProvider.init({
+// 2. create provider instance
+const provider: TezosProvider = await TezosProvider.init({
   logger: "debug",
-  // relayUrl: "wss://relay.walletconnect.com",
   projectId: projectId,
   metadata: {
     name: "WalletConnect @ Tezos",
-    description: "Tezos integration with WalletConnect's Universal Provider",
+    description: "Tezos integration with WalletConnect's Tezos Provider",
     url: "https://walletconnect.com/",
     icons: ["https://avatars.githubusercontent.com/u/37784886"],
   },
-  // client: undefined, // optional instance of @walletconnect/sign-client
 });
 
 const App = () => {
@@ -46,54 +30,50 @@ const App = () => {
   const [contractAddress, setContractAddress] = useState("");
   const [balance, setBalance] = useState("");
 
-  // 5. get address once loaded
-  const address =
-    provider.session?.namespaces.tezos?.accounts[0].split(":")[2];
+  console.log("Provider", provider);
+  console.log("Provider type", typeof provider);
+  console.log("Provider chainId", provider.getChainId());
 
-  // 6. handle display_uri event and open modal
-  provider.on("display_uri", async (uri: string) => {
-    console.log("event display_uri", uri);
-    await modal.openModal({
-      uri,
+  // 3. handle display_uri event and open modal
+  if (provider.signer) {
+    provider.signer.on("display_uri", async (uri: string) => {
+      console.log("event display_uri", uri);
+      await modal.openModal({
+        uri,
+      });
     });
-  });
 
-  provider.on("session_ping", ({ id, topic }: { id: string; topic: string }) => {
-    console.log("Session Ping:", id, topic);
-  });
+    provider.signer.on("session_ping", ({ id, topic }: { id: string; topic: string }) => {
+      console.log("Session Ping:", id, topic);
+    });
 
-  provider.on("session_event", ({ event, chainId }: { event: any; chainId: string }) => {
-    console.log("Session Event:", event, chainId);
-  });
+    provider.signer.on("session_event", ({ event, chainId }: { event: any; chainId: string }) => {
+      console.log("Session Event:", event, chainId);
+    });
 
-  provider.on("session_update", ({ topic, params }: { topic: string; params: any }) => {
-    console.log("Session Update:", topic, params);
-  });
+    provider.signer.on("session_update", ({ topic, params }: { topic: string; params: any }) => {
+      console.log("Session Update:", topic, params);
+    });
 
-  provider.on("session_delete", ({ id, topic }: { id: string; topic: string }) => {
-    console.log("Session Delete:", id, topic);
-  });
+    provider.signer.on("session_delete", ({ id, topic }: { id: string; topic: string }) => {
+      console.log("Session Delete:", id, topic);
+    });
+  }
 
-  // 7. handle connect event
+  const getBalance = async () => {
+    if (provider) {
+      const balance = await provider.getBalance();
+      setBalance(formatTezosBalance(balance));
+    }
+  };
+
+  // 4. handle connect event
   const connect = async () => {
     try {
-      await provider.connect({
-        namespaces: {
-          tezos: {
-            methods,
-            chains,
-            events:[],
-            // events: ["chainChanged", "accountsChanged"], - kills "connect"
-            // rpcMap
-          },
-        },
-        skipPairing: false,
-      });
+      await provider.connect({chains: [TezosChainDataTestnet, TezosChainDataMainnet]});
       setIsConnected(true);
       console.log("Connected successfully. Provider", provider);
-      console.log("Connected successfully. Session", provider.session);
       const chainId = await getChainId("tezos:testnet");
-      provider.setDefaultChain(chainId, rpcMap["tezos:testnet"]);
       console.log("Connected to chain:", chainId);
       await getBalance();
     } catch (error) {
@@ -102,126 +82,64 @@ const App = () => {
     modal.closeModal();
   };
 
-  // 8. handle disconnect event
+  // 5. handle disconnect event
   const disconnect = async () => {
-    await provider.disconnect();
+    if (provider.signer) {
+      await provider.signer.disconnect();
+    }
     setIsConnected(false);
     setResult(null); // Clear result on disconnect
   };
 
-  // 9. handle operations
-  const handleGetAccounts = async () => {
-    return await getAccounts(
-      TezosChainData["testnet"].id,
-      provider,
-      address!
-    );
-  };
-
-  const handleSign = async () => {
-    return await signMessage(
-      TezosChainData["testnet"].id,
-      provider,
-      address!
-    );
-  };
-
-  const handleSendTransaction = async () => {
-    return await sendTransaction(
-      TezosChainData["testnet"].id,
-      provider,
-      address!,
-      DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION,
-    );
-  };
-
-  const handleSendDelegation = async () => {
-    return await sendTransaction(
-      TezosChainData["testnet"].id,
-      provider,
-      address!,
-      DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION,
-    );
-  };
-
-  const handleSendUndelegation = async () => {
-    return await sendTransaction(
-      TezosChainData["testnet"].id,
-      provider,
-      address!,
-      DEFAULT_TEZOS_METHODS.TEZOS_SEND_UNDELEGATION,
-    );
-  };
-
-  const handleSendOriginate = async () => {
-    const res = await sendTransaction(
-      TezosChainData["testnet"].id,
-      provider,
-      address!,
-      DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION,
-    );
-    console.log("TezosRpc origination result: ", res);
-    const contractAddressList = await apiGetContractAddress(TezosChainData["testnet"].id, res.result);
-    if (contractAddressList.length > 0) {
-      setContractAddress(contractAddressList[0]);
-      console.log("TezosRpc stored contract: ", contractAddressList[0]);
-    } else {
-      console.error("TezosRpc could not find contract address in origination operation.");
-    }
-    return res;
-  };
-
-  const handleSendContractCall = async () => {
-    return await sendTransaction(
-      TezosChainData["testnet"].id,
-      provider,
-      address!,
-      DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL,
-      contractAddress,
-    );
-  };
-
+  // 6. handle operations
   const handleOp = async (method: string) => {
+    if (!provider) return;
+
     try {
       let res = null;
       switch (method) {
         case "tezos_getAccounts":
-          res = await handleGetAccounts();
+          res = await provider.tezosGetAccounts();
           break;
         case "tezos_sign":
-          res = await handleSign();
+          res = await provider.tezosSign("05010000004254");
           break;
         case "tezos_send_transaction":
-          res = await handleSendTransaction();
-          break;
-        case "tezos_send_origination":
-          res = await handleSendOriginate();
-          break;
-        case "tezos_send_contract_call":
-          res = await handleSendContractCall();
+          res = await provider.tezosSendTransaction(DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_TRANSACTION]);
           break;
         case "tezos_send_delegation":
-          res = await handleSendDelegation();
+          res = await provider.tezosSendDelegation(DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_DELEGATION]);
           break;
         case "tezos_send_undelegation":
-          res = await handleSendUndelegation();
+          res = await provider.tezosSendUndelegation();
+          break;
+        case "tezos_send_origination":
+          res = await provider.tezosSendOrigination(DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION]);
+          const contractAddressList = await provider.getContractAddress(res.hash);
+          if (contractAddressList.length > 0) {
+            setContractAddress(contractAddressList[0]);
+            console.log("TezosRpc stored contract:", contractAddressList[0]);
+          } else {
+            console.error("TezosRpc could not find contract address in origination operation.");
+          }
+          break;
+        case "tezos_send_contract_call":
+          const op: PartialTezosTransactionOperation = {
+            ...DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL],
+            destination: contractAddress,
+          };
+          res = await provider.tezosSendContractCall(op);
           break;
         default:
           throw new Error(`Unsupported method ${method}`);
       }
       setResult(res);
-      console.log(res);
       await getBalance();
     } catch (error) {
-      console.error("Error sending ${method}:", error);
+      console.error(`Error sending ${method}:`, error);
       setResult(error);
     }
   };
-
-  const getBalance = async () => {
-    const balance = await apiGetTezosAccountBalance(address!, "testnet");
-    setBalance(formatTezosBalance(balance));
-  }
 
   const describe = (method: string) => {
     switch (method) {
@@ -238,33 +156,36 @@ const App = () => {
         setDescription(DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_ORGINATION]);
         break;
       case "tezos_send_contract_call":
-        const operation = JSON.parse(JSON.stringify(DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL]));
-        operation.destination = contractAddress
-          ? contractAddress
-          : "[click Origination to get contract address]";
+        const operation = {
+          ...DEFAULT_TEZOS_KINDS[DEFAULT_TEZOS_METHODS.TEZOS_SEND_CONTRACT_CALL],
+          destination: contractAddress
+            ? contractAddress
+            : "[click Origination to get contract address]",
+        };
         setDescription(operation);
         break;
       default:
         setDescription("No description available");
     }
-  }
+  };
 
   const describeClear = () => {
     setDescription(undefined);
-  }
-
+  };
+  
   return (
     <div className="App">
-      <h1>WalletConnect for Tezos</h1>
+      <h1>TezosProvider</h1>
+      <h2>WalletConnect for Tezos</h2>
       <p>
-        dApp prototype integrating WalletConnect's Tezos Universal Provider.
+        dApp prototype integrating WalletConnect's TezosProvider.
       </p>
 
       {isConnected ? (
         <>
           <p>
             <b>Public Key: </b>
-            {address}
+            {provider?.address ?? "No account connected"}
           </p>
           <p>
             <b>Balance: </b>
