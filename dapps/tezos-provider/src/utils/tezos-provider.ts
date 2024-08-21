@@ -8,6 +8,7 @@ import {
   PartialTezosOperation as PartialTezosOperationOriginal, 
   PartialTezosOriginationOperation as PartialTezosOriginationOperationOriginal,
   PartialTezosTransactionOperation, 
+  TezosBallotOperation, 
   TezosOperationType 
 } from "@airgap/beacon-types";
 
@@ -290,6 +291,15 @@ class TezosProvider {
       });
   }
 
+  public async getCurrentProposal(): Promise<string | null> {
+    if (!this.tezosToolkit) {
+      throw new TezosProviderError("tezosToolkit is not initialized");
+    }
+    const currentProposal = await this.tezosToolkit.rpc.getCurrentProposal();
+    console.log(`Current proposal: ${currentProposal}`);
+    return currentProposal;
+  }
+
   public async checkConnection(): Promise<boolean> {
     if (!this.isConnected) {
       throw new TezosConnectionError();
@@ -371,10 +381,73 @@ class TezosProvider {
     return this.tezosSend(op);
   }
 
-  // Method to call a smart contract
+  // Method to call a smart contract: destination is the contract address, entrypoint as defined in the contract
   public async tezosSendContractCall(op: PartialTezosTransactionOperation): Promise<TezosSendResponse> {
     return this.tezosSend(op);
   }
+
+  // Prepare a staking operation: Transaction with destination set to own address, unit as a parameter and specific entrypoint
+  private createStakingOperation(
+    entrypoint: string, 
+    op: PartialTezosTransactionOperation
+  ): PartialTezosTransactionOperation {
+    if (!this.address) {
+      throw new TezosConnectionError();
+    }
+    return {
+      ...op,
+      kind: TezosOperationType.TRANSACTION,
+      destination: this.address,
+      parameters: {
+        entrypoint,
+        value: { prim: "Unit" },
+      },
+    };
+  }
+
+  public async tezosSendStake(op: PartialTezosTransactionOperation = {
+    kind: TezosOperationType.TRANSACTION,
+    destination: this.address ?? "[initiate provider first]",
+    amount: "1",
+    parameters: {
+      entrypoint: "stake",
+      value: { prim: "Unit" },
+    },
+  }): Promise<TezosSendResponse> {
+    return this.tezosSend(this.createStakingOperation("stake", op));
+  }
+
+  public async tezosSendUnstake(op: PartialTezosTransactionOperation = {
+    kind: TezosOperationType.TRANSACTION,
+    destination: this.address ?? "[initiate provider first]",
+    amount: "1",
+    parameters: {
+      entrypoint: "unstake",
+      value: { prim: "Unit" },
+    },
+  }): Promise<TezosSendResponse> {
+    return this.tezosSend(this.createStakingOperation("unstake", op));
+  }
+
+  public async tezosSendFinalizeUnstake(op: PartialTezosTransactionOperation = {
+    kind: TezosOperationType.TRANSACTION,
+    destination: this.address ?? "[initiate provider first]",
+    amount: "0",
+    parameters: {
+      entrypoint: "finalize_unstake",
+      value: { prim: "Unit" },
+    },
+  }): Promise<TezosSendResponse> {
+    return this.tezosSend(this.createStakingOperation("finalize_unstake", op));
+  }
+
+  public async tezosSendBallot(op: TezosBallotOperation): Promise<TezosSendResponse> {
+    if (!this.address) {
+      throw new TezosConnectionError();
+    }
+    return this.tezosSend({...op, source: this.address});
+  }
+
 }
 
 export default TezosProvider;

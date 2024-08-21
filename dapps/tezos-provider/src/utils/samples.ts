@@ -2,7 +2,9 @@ import {
     PartialTezosDelegationOperation,
     PartialTezosOriginationOperation as PartialTezosOriginationOperationOriginal,
     PartialTezosTransactionOperation,
-    TezosOperationType }
+    TezosBallotOperation,
+    TezosOperationType, 
+    TezosTransactionOperation}
     from "@airgap/beacon-types";
 
 import { ScriptedContracts } from "@taquito/rpc";
@@ -20,6 +22,10 @@ export enum DEFAULT_TEZOS_METHODS {
   TEZOS_SEND_CONTRACT_CALL = "tezos_send:contract_call",
   TEZOS_SEND_DELEGATION = "tezos_send:delegation",
   TEZOS_SEND_UNDELEGATION = "tezos_send:undelegation",
+  TEZOS_SEND_STAKE = "tezos_send:stake",
+  TEZOS_SEND_UNSTAKE = "tezos_send:unstake",
+  TEZOS_SEND_FINALIZE = "tezos_send:finalize",
+  TEZOS_SEND_BALLOT = "tezos_send:ballot",
   TEZOS_SIGN = "tezos_sign",
 }
 
@@ -53,7 +59,7 @@ const tezosOriginationOperation: PartialTezosOriginationOperation = {
 
 const tezosContractCallOperation: PartialTezosTransactionOperation = {
   kind: TezosOperationType.TRANSACTION,
-  destination: "$(contractAddress)",
+  destination: "[contract address]",
   amount: "0",
   parameters: { entrypoint: "default", value: { int: "20" } } // Add 20 to the current storage value
 };
@@ -67,13 +73,55 @@ const tezosUndelegationOperation: PartialTezosDelegationOperation = {
   kind: TezosOperationType.DELEGATION
 };
 
-// Assign the specific types to the DEFAULT_TEZOS_KINDS object
-export const DEFAULT_TEZOS_KINDS = {
+const tezosStakeOperation: PartialTezosTransactionOperation = {
+  kind: TezosOperationType.TRANSACTION,
+  destination:"[own adress]",
+  amount: "1000000",
+  parameters: {
+    entrypoint: "stake",
+    value: { prim: "Unit" },
+  },
+};
+
+const tezosUnstakeOperation: PartialTezosTransactionOperation = {
+  kind: TezosOperationType.TRANSACTION,
+  destination:"[own adress]",
+  amount: "1000000",
+  parameters: {
+    entrypoint: "unstake",
+    value: { prim: "Unit" },
+  },
+};
+
+const tezosFinalizeOperation: PartialTezosTransactionOperation = {
+  kind: TezosOperationType.TRANSACTION,
+  destination:"[own adress]",
+  amount: "0",
+  parameters: {
+    entrypoint: "finalize_unstake",
+    value: { prim: "Unit" },
+  },
+};
+
+const tezosBallotOperation: TezosBallotOperation = {
+  kind: TezosOperationType.BALLOT,
+  source: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve", // Tezos Foundation Ghost Baker
+  period: "0",
+  proposal: "[current proposal]",
+  ballot: "yay"
+};
+
+// Assign the specific types to the TEZOS_ACTIONS object
+export const TEZOS_ACTIONS = {
   "tezos_send:transaction": tezosTransactionOperation,
   "tezos_send:origination": tezosOriginationOperation,
   "tezos_send:contract_call": tezosContractCallOperation,
   "tezos_send:delegation": tezosDelegationOperation,
   "tezos_send:undelegation": tezosUndelegationOperation,
+  "tezos_send:stake": tezosStakeOperation,
+  "tezos_send:unstake": tezosUnstakeOperation,
+  "tezos_send:finalize": tezosFinalizeOperation,
+  "tezos_send:ballot": tezosBallotOperation,
 };
 
 export enum DEFAULT_TEZOS_EVENTS {}
