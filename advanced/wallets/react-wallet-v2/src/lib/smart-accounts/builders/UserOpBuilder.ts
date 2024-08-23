@@ -27,7 +27,6 @@ export type ErrorResponse = {
 export type SendUserOpWithSignatureParams = {
   chainId: Hex
   userOp: UserOp
-  signature: Hex
   permissionsContext?: Hex
 }
 export type SendUserOpWithSignatureResponse = {

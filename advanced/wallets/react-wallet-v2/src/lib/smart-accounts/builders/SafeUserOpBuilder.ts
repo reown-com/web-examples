@@ -140,10 +140,10 @@ export class SafeUserOpBuilder implements UserOpBuilder {
   async sendUserOpWithSignature(
     params: SendUserOpWithSignatureParams
   ): Promise<SendUserOpWithSignatureResponse> {
-    const { userOp, signature, permissionsContext } = params
+    const { userOp, permissionsContext } = params
     if (permissionsContext) {
       const formattedSignature = await formatSignature(this.publicClient, {
-        signature,
+        signature: userOp.signature,
         permissionsContext,
         accountAddress: userOp.sender
       })
