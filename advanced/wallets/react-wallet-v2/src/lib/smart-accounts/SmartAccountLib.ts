@@ -26,7 +26,12 @@ import {
   createSmartAccountClient
 } from 'permissionless'
 import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/actions/pimlico'
-import { PIMLICO_NETWORK_NAMES, publicClientUrl, publicRPCUrl, UrlConfig } from '@/utils/SmartAccountUtil'
+import {
+  PIMLICO_NETWORK_NAMES,
+  publicClientUrl,
+  publicRPCUrl,
+  UrlConfig
+} from '@/utils/SmartAccountUtil'
 import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 import { Erc7579Actions, erc7579Actions } from 'permissionless/actions/erc7579'

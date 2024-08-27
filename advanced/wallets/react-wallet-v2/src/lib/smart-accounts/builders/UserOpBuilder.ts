@@ -24,19 +24,18 @@ export type ErrorResponse = {
   error: string
 }
 
-export type SendUserOpWithSigantureParams = {
+export type SendUserOpWithSignatureParams = {
   chainId: Hex
   userOp: UserOp
-  signature: Hex
   permissionsContext?: Hex
 }
-export type SendUserOpWithSigantureResponse = {
+export type SendUserOpWithSignatureResponse = {
   receipt: Hex
 }
 
 export interface UserOpBuilder {
   fillUserOp(params: FillUserOpParams): Promise<FillUserOpResponse>
   sendUserOpWithSignature(
-    params: SendUserOpWithSigantureParams
-  ): Promise<SendUserOpWithSigantureResponse>
+    params: SendUserOpWithSignatureParams
+  ): Promise<SendUserOpWithSignatureResponse>
 }

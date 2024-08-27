@@ -2,25 +2,28 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import {
   FillUserOpParams,
   FillUserOpResponse,
-  SendUserOpWithSigantureParams,
-  SendUserOpWithSigantureResponse,
+  SendUserOpWithSignatureParams,
+  SendUserOpWithSignatureResponse,
   UserOpBuilder
 } from './UserOpBuilder'
 import {
   Address,
   Chain,
   createPublicClient,
-  GetStorageAtReturnType,
   Hex,
   http,
+  pad,
   parseAbi,
   PublicClient,
-  trim
+  trim,
+  zeroAddress
 } from 'viem'
 import { signerToSafeSmartAccount } from 'permissionless/accounts'
 import {
   createSmartAccountClient,
   ENTRYPOINT_ADDRESS_V07,
+  getAccountNonce,
+  getPackedUserOperation,
   getUserOperationHash
 } from 'permissionless'
 import {
@@ -31,6 +34,7 @@ import { bundlerUrl, paymasterUrl, publicClientUrl } from '@/utils/SmartAccountU
 
 import { getChainById } from '@/utils/ChainUtil'
 import { SAFE_FALLBACK_HANDLER_STORAGE_SLOT } from '@/consts/smartAccounts'
+import { formatSignature } from './SmartSessionUserOpBuilder'
 
 const ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
 
@@ -93,15 +97,33 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       chain: this.chain,
       bundlerTransport,
       middleware: {
-        sponsorUserOperation: paymasterClient.sponsorUserOperation, // optional
+        sponsorUserOperation:
+          params.capabilities.paymasterService && paymasterClient.sponsorUserOperation, // optional
         gasPrice: async () => (await pimlicoBundlerClient.getUserOperationGasPrice()).fast // if using pimlico bundler
       }
     })
     const account = smartAccountClient.account
 
+    const validatorAddress = (params.capabilities.permissions?.context.slice(0, 42) ||
+      zeroAddress) as Address
+    let nonce: bigint = await getAccountNonce(this.publicClient, {
+      sender: this.accountAddress,
+      entryPoint: ENTRYPOINT_ADDRESS_V07,
+      key: BigInt(
+        pad(validatorAddress, {
+          dir: 'right',
+          size: 24
+        }) || 0
+      )
+    })
+
     const userOp = await smartAccountClient.prepareUserOperationRequest({
       userOperation: {
-        callData: await account.encodeCallData(params.calls)
+        nonce: nonce,
+        callData: await account.encodeCallData(params.calls),
+        callGasLimit: BigInt('0x1E8480'),
+        verificationGasLimit: BigInt('0x1E8480'),
+        preVerificationGas: BigInt('0x1E8480')
       },
       account: account
     })
@@ -115,10 +137,48 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       hash
     }
   }
-  sendUserOpWithSignature(
-    params: SendUserOpWithSigantureParams
-  ): Promise<SendUserOpWithSigantureResponse> {
-    throw new Error('Method not implemented.')
+  async sendUserOpWithSignature(
+    params: SendUserOpWithSignatureParams
+  ): Promise<SendUserOpWithSignatureResponse> {
+    const { userOp, permissionsContext } = params
+    if (permissionsContext) {
+      const formattedSignature = await formatSignature(this.publicClient, {
+        signature: userOp.signature,
+        permissionsContext,
+        accountAddress: userOp.sender
+      })
+      userOp.signature = formattedSignature
+    }
+    const bundlerTransport = http(bundlerUrl({ chain: this.chain }), {
+      timeout: 30000
+    })
+    const pimlicoBundlerClient = createPimlicoBundlerClient({
+      chain: this.chain,
+      transport: bundlerTransport,
+      entryPoint: ENTRYPOINT_ADDRESS_V07
+    })
+
+    const userOpHash = await pimlicoBundlerClient.sendUserOperation({
+      userOperation: {
+        ...userOp,
+        callData: userOp.callData,
+        callGasLimit: BigInt(userOp.callGasLimit),
+        nonce: BigInt(userOp.nonce),
+        preVerificationGas: BigInt(userOp.preVerificationGas),
+        verificationGasLimit: BigInt(userOp.verificationGasLimit),
+        sender: userOp.sender,
+        signature: userOp.signature,
+        maxFeePerGas: BigInt(userOp.maxFeePerGas),
+        maxPriorityFeePerGas: BigInt(userOp.maxPriorityFeePerGas)
+      }
+    })
+    const receipt = await pimlicoBundlerClient.waitForUserOperationReceipt({
+      hash: userOpHash
+    })
+
+    return {
+      receipt: receipt.receipt.transactionHash
+    }
   }
 
   private async getVersion(): Promise<string> {
