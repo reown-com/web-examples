@@ -1,84 +1,78 @@
 import { Address, decodeAbiParameters, getAddress, Hex, PublicClient } from 'viem'
 import { encodeEnable, encodeUse } from './EncodeLib'
-import { ethers } from 'ethers'
 import { smartSessionAddress } from '@biconomy/permission-context-builder'
 import { readContract } from 'viem/actions'
 
 export const enableSessionsStructAbi = [
   {
-    name: 'EnableSessions',
-    outputs: [
+    components: [
       {
+        name: 'isigner',
+        type: 'address'
+      },
+      {
+        name: 'isignerInitData',
+        type: 'bytes'
+      },
+      {
+        name: 'userOpPolicies',
+        type: 'tuple[]',
         components: [
           {
-            name: 'isigner',
+            name: 'policy',
             type: 'address'
           },
           {
-            name: 'isignerInitData',
-            type: 'bytes'
-          },
-          {
-            name: 'userOpPolicies',
-            type: 'tuple[]',
-            components: [
-              {
-                name: 'policy',
-                type: 'address'
-              },
-              {
-                name: 'initData',
-                type: 'bytes'
-              }
-            ]
-          },
-          {
-            name: 'erc1271Policies',
-            type: 'tuple[]',
-            components: [
-              {
-                name: 'policy',
-                type: 'address'
-              },
-              {
-                name: 'initData',
-                type: 'bytes'
-              }
-            ]
-          },
-          {
-            name: 'actions',
-            type: 'tuple[]',
-            components: [
-              {
-                name: 'actionId',
-                type: 'bytes32'
-              },
-              {
-                name: 'actionPolicies',
-                type: 'tuple[]',
-                components: [
-                  {
-                    name: 'policy',
-                    type: 'address'
-                  },
-                  {
-                    name: 'initData',
-                    type: 'bytes'
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            name: 'permissionEnableSig',
+            name: 'initData',
             type: 'bytes'
           }
-        ],
-        name: 'EnableSessions',
-        type: 'tuple'
+        ]
+      },
+      {
+        name: 'erc1271Policies',
+        type: 'tuple[]',
+        components: [
+          {
+            name: 'policy',
+            type: 'address'
+          },
+          {
+            name: 'initData',
+            type: 'bytes'
+          }
+        ]
+      },
+      {
+        name: 'actions',
+        type: 'tuple[]',
+        components: [
+          {
+            name: 'actionId',
+            type: 'bytes32'
+          },
+          {
+            name: 'actionPolicies',
+            type: 'tuple[]',
+            components: [
+              {
+                name: 'policy',
+                type: 'address'
+              },
+              {
+                name: 'initData',
+                type: 'bytes'
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name: 'permissionEnableSig',
+        type: 'bytes'
       }
-    ]
+    ],
+    name: 'EnableSessions',
+    type: 'tuple'
   }
 ] as const
 
@@ -221,39 +215,18 @@ export async function formatSignature(
   }
 
   const enableData = `0x${permissionsContext.slice(178)}` as Hex
-  const enableSession = decodeAbiParameters(enableSessionsStructAbi[0].outputs, enableData)
+  const enableSession = Array.from(decodeAbiParameters(enableSessionsStructAbi, enableData))
 
   const isPermissionsEnabled = await readContract(publicClient, {
     address: smartSessionAddress,
     abi: isPermissionsEnabledAbi,
     functionName: 'isPermissionEnabled',
-    args: [
-      signerId,
-      accountAddress,
-      {
-        isigner: enableSession[0].isigner,
-        isignerInitData: enableSession[0].isignerInitData,
-        userOpPolicies: enableSession[0].userOpPolicies,
-        erc1271Policies: enableSession[0].erc1271Policies,
-        actions: enableSession[0].actions,
-        permissionEnableSig: enableSession[0].permissionEnableSig
-      }
-    ]
+    args: [signerId, accountAddress, enableSession[0]]
   })
 
   if (isPermissionsEnabled) {
     return encodeUse(signerId, signature)
   } else {
-    return encodeEnable(signerId, signature, {
-      isigner: enableSession[0].isigner,
-      isignerInitData: ethers.utils.arrayify(enableSession[0].isignerInitData),
-      userOpPolicies: Array.from(enableSession[0].userOpPolicies),
-      erc1271Policies: Array.from(enableSession[0].erc1271Policies),
-      actions: enableSession[0].actions.map(action => ({
-        actionId: action.actionId,
-        actionPolicies: Array.from(action.actionPolicies)
-      })),
-      permissionEnableSig: ethers.utils.arrayify(enableSession[0].permissionEnableSig)
-    })
+    return encodeEnable(signerId, signature, enableSession[0])
   }
 }
