@@ -23,7 +23,6 @@ import {
   createSmartAccountClient,
   ENTRYPOINT_ADDRESS_V07,
   getAccountNonce,
-  getPackedUserOperation,
   getUserOperationHash
 } from 'permissionless'
 import {
@@ -172,12 +171,9 @@ export class SafeUserOpBuilder implements UserOpBuilder {
         maxPriorityFeePerGas: BigInt(userOp.maxPriorityFeePerGas)
       }
     })
-    const receipt = await pimlicoBundlerClient.waitForUserOperationReceipt({
-      hash: userOpHash
-    })
 
     return {
-      receipt: receipt.receipt.transactionHash
+      receipt: userOpHash
     }
   }
 
