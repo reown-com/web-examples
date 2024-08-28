@@ -27,8 +27,8 @@ if (!projectId) throw new Error("Project ID is undefined");
 
 // 2. Create solanaConfig
 const metadata = {
-    name: 'Appkit Solana Example v1',
-    description: 'Appkit Solana Example v1',
+    name: 'Appkit Solana Example',
+    description: 'Appkit Solana Example',
     url: 'https://web3modal.com', // origin must match your domain & subdomain
     icons: ['https://avatars.githubusercontent.com/u/37784886'],
 }
