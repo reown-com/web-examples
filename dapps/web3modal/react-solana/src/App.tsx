@@ -34,7 +34,11 @@ const metadata = {
 const solanaConfig = defaultSolanaConfig({
   metadata,
   chains,
-  projectId
+  projectId,
+  auth: {
+    email: true,
+    socials: ['google', 'x', 'farcaster', 'github']
+  }
 })
 
 // 3. Create modal
@@ -93,7 +97,7 @@ const App = () => {
       }
 
       const encodedMessage = new TextEncoder().encode('Appkit Solana')
-      const signature = await walletProvider.signMessage(encodedMessage) as Uint8Array
+      const signature = await walletProvider.signMessage(encodedMessage)
       const joinSignatureValue = signature.join('');
 
       printConsole(`Signature: ${joinSignatureValue}`);
