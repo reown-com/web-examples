@@ -32,10 +32,10 @@ const metadata = {
 }
 
 const solanaConfig = defaultSolanaConfig({
-        metadata,
-        chains,
-        projectId,
-    })
+  metadata,
+  chains,
+  projectId
+})
 
 // 3. Create modal
 createWeb3Modal({
@@ -187,7 +187,7 @@ const App = () => {
 
 return (
     <div className="App center-content">
-      <h2>WalletConnect AppKit + Solana v1</h2>
+      <h2>WalletConnect AppKit + Solana</h2>
       <p>
         <w3m-button balance="hide" />
       </p>
