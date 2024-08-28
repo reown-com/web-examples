@@ -11,6 +11,8 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 
+import base58 from 'bs58';
+
 const Program_Id = "9sutTcUUjWVMabvUnBFu5WcBLNkuHHv9tLWhUUeCM6Cy";
 
 const events: string[] = [];
@@ -98,9 +100,9 @@ const App = () => {
 
       const encodedMessage = new TextEncoder().encode('Appkit Solana')
       const signature = await walletProvider.signMessage(encodedMessage)
-      const joinSignatureValue = signature.join('');
+      const base58SignatureValue = base58.encode(signature)
 
-      printConsole(`Signature: ${joinSignatureValue}`);
+      printConsole(`Signature: ${base58SignatureValue}`);
     }
 
     const handleSendTransaction = async () => {
