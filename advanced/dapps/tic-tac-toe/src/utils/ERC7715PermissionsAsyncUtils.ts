@@ -7,7 +7,7 @@ import { bigIntReplacer } from './CommonUtils'
 import { createClients } from '../utils/SingletonUtils'
 import { signMessage } from 'viem/accounts'
 import { Execution, getCallDataWithContext, getNonceWithContext } from './UserOpBuilderUtils'
-import { WalletConnectCosigner } from './WalletConnectCosigner'
+import { WalletConnectCosigner } from './WalletConnectCosignerUtils'
 
 async function prepareUserOperationWithPermissions(
   publicClient: PublicClient,

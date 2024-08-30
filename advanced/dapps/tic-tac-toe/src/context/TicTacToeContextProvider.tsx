@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 import {
   GRANTED_PERMISSIONS_KEY,
@@ -9,7 +8,7 @@ import {
 } from '../utils/LocalStorage'
 import { useLocalStorageState } from '../hooks/useLocalStorageState'
 import { GrantPermissionsReturnType } from 'viem/experimental'
-import type { AddPermissionResponse } from '@/utils/WalletConnectCosigner'
+import type { AddPermissionResponse } from '@/utils/WalletConnectCosignerUtils'
 import { Chain } from 'viem'
 import { type Provider, useWagmiAvailableCapabilities } from '@/hooks/useWagmiActiveCapabilities'
 import { EIP_7715_RPC_METHODS } from '@/utils/EIP5792Utils'

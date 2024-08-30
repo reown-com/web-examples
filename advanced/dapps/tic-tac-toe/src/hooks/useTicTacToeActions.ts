@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { useCustomToast } from '@/hooks/useCustomToast'
 import { GameState, useTicTacToeContext } from '@/context/TicTacToeContextProvider'
 import {
@@ -10,7 +8,7 @@ import {
 import { walletActionsErc7715 } from 'viem/experimental'
 import { createPublicClient, custom } from 'viem'
 import { getTicTacToeAsyncPermissions } from '@/utils/TicTacToeUtils'
-import { WalletConnectCosigner } from '@/utils/WalletConnectCosigner'
+import { WalletConnectCosigner } from '@/utils/WalletConnectCosignerUtils'
 
 export function useTicTacToeActions() {
   const {

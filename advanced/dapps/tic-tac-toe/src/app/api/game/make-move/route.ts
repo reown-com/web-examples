@@ -1,9 +1,8 @@
-/* eslint-disable no-console */
 import { ticTacToeAbi } from '@/utils/abi'
 import { executeActionsWithECDSAAndCosignerPermissions } from '@/utils/ERC7715PermissionsAsyncUtils'
 import { TIC_TAC_TOE_PRIVATE_KEY } from '@/utils/SingletonUtils'
 import { ticTacToeAddress } from '@/utils/TicTacToeUtils'
-import { CoSignerApiError } from '@/utils/WalletConnectCosigner'
+import { CoSignerApiError } from '@/utils/WalletConnectCosignerUtils'
 import { NextResponse } from 'next/server'
 import { createPublicClient, createWalletClient, encodeFunctionData, http, parseEther } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
