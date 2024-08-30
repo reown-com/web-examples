@@ -1,185 +1,176 @@
-/* eslint-disable max-classes-per-file */
-import axios, { AxiosError } from "axios";
-import { bigIntReplacer } from "./CommonUtils";
-import type { UserOperation } from "permissionless";
+import axios, { AxiosError } from 'axios'
+import { bigIntReplacer } from './CommonUtils'
+import type { UserOperation } from './UserOpBuilderServiceUtils'
 
 // Define types for the request and response
 type AddPermission = {
-  permissionType: string;
-  data: string;
-  required: boolean;
-  onChainValidated: boolean;
-};
+  permissionType: string
+  data: string
+  required: boolean
+  onChainValidated: boolean
+}
 
 type AddPermissionRequest = {
-  permission: AddPermission;
-};
+  permission: AddPermission
+}
 
 export type AddPermissionResponse = {
-  pci: string;
-  key: string;
-};
+  pci: string
+  key: string
+}
 
 type Signer = {
-  type: string;
+  type: string
   data: {
-    ids: string[];
-  };
-};
+    ids: string[]
+  }
+}
 
 type SignerData = {
-  userOpBuilder: string;
-};
+  userOpBuilder: string
+}
 
 type PermissionsContext = {
-  signer: Signer;
-  expiry: number;
-  signerData: SignerData;
-  factory?: string;
-  factoryData?: string;
-  permissionsContext: string;
-};
+  signer: Signer
+  expiry: number
+  signerData: SignerData
+  factory?: string
+  factoryData?: string
+  permissionsContext: string
+}
 
 type UpdatePermissionsContextRequest = {
-  pci: string;
-  signature?: string;
-  context: PermissionsContext;
-};
+  pci: string
+  signature?: string
+  context: PermissionsContext
+}
 
 type RevokePermissionRequest = {
-  pci: string;
-  signature: string;
-};
+  pci: string
+  signature: string
+}
 
 type CoSignRequest = {
-  pci: string;
-  userOp: UserOperation<"v0.7">;
-};
+  pci: string
+  userOp: UserOperation
+}
 
 type CoSignResponse = {
-  userOperationTxHash: string;
-};
+  userOperationTxHash: string
+}
 
 // Define a custom error type
 export class CoSignerApiError extends Error {
   constructor(
     public status: number,
-    message: string,
+    message: string
   ) {
-    super(message);
-    this.name = "CoSignerApiError";
+    super(message)
+    this.name = 'CoSignerApiError'
   }
 }
 
 // Function to send requests to the CoSigner API
-async function sendCoSignerRequest<TRequest, TResponse>(args: {
-  url: string;
-  data: TRequest;
-  projectId: string;
-  headers: Record<string, string>;
-  transformRequest?: (data: TRequest) => unknown;
-}) {
-  const { url, data, projectId, headers, transformRequest } = args;
-  const transformedData = transformRequest ? transformRequest(data) : data;
+async function sendCoSignerRequest<
+  TRequest,
+  TResponse,
+  TQueryParams extends Record<string, string> = Record<string, never>
+>(args: {
+  url: string
+  data: TRequest
+  queryParams?: TQueryParams
+  headers: Record<string, string>
+  transformRequest?: (data: TRequest) => unknown
+}): Promise<TResponse> {
+  const { url, data, queryParams = {}, headers, transformRequest } = args
+  const transformedData = transformRequest ? transformRequest(data) : data
 
   try {
-    return await axios.post<TResponse>(url, transformedData, {
-      params: { projectId },
-      headers,
-    });
+    const response = await axios.post<TResponse>(url, transformedData, {
+      params: queryParams,
+      headers
+    })
+
+    return response.data
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError;
+      const axiosError = error as AxiosError
       if (axiosError.response) {
         throw new CoSignerApiError(
           axiosError.response.status,
-          JSON.stringify(axiosError.response.data),
-        );
+          JSON.stringify(axiosError.response.data)
+        )
       } else {
-        throw new CoSignerApiError(500, "Network error");
+        throw new CoSignerApiError(500, 'Network error')
       }
     }
     // Re-throw if it's not an Axios error
-    throw error;
+    throw error
   }
 }
 
+const WC_COSIGNER_BASE_URL = 'https://rpc.walletconnect.com/v1/sessions'
 // Class to interact with the WalletConnect CoSigner API
 export class WalletConnectCosigner {
-  private baseUrl: string;
-  private projectId: string;
+  private baseUrl: string
+  private projectId: string
 
   constructor() {
-    this.baseUrl = "https://rpc.walletconnect.com/v1/sessions";
-    const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
+    this.baseUrl = WC_COSIGNER_BASE_URL
+    const projectId = process.env['NEXT_PUBLIC_PROJECT_ID']
     if (!projectId) {
-      throw new Error("NEXT_PUBLIC_PROJECT_ID is not set");
+      throw new Error('NEXT_PUBLIC_PROJECT_ID is not set')
     }
-    this.projectId = projectId;
+    this.projectId = projectId
   }
 
-  async addPermission(
-    address: string,
-    permission: AddPermission,
-  ): Promise<AddPermissionResponse> {
-    const url = `${this.baseUrl}/${encodeURIComponent(address)}`;
+  async addPermission(address: string, permission: AddPermission): Promise<AddPermissionResponse> {
+    const url = `${this.baseUrl}/${encodeURIComponent(address)}`
 
-    const response = await sendCoSignerRequest<
+    return await sendCoSignerRequest<
       AddPermissionRequest,
-      AddPermissionResponse
+      AddPermissionResponse,
+      { projectId: string }
     >({
       url,
       data: { permission },
-      projectId: this.projectId,
-      headers: { "Content-Type": "application/json" },
-    });
-
-    return response.data;
+      queryParams: { projectId: this.projectId },
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 
   async updatePermissionsContext(
     address: string,
-    updateData: UpdatePermissionsContextRequest,
+    updateData: UpdatePermissionsContextRequest
   ): Promise<void> {
-    const url = `${this.baseUrl}/${encodeURIComponent(address)}/context`;
-    await sendCoSignerRequest<UpdatePermissionsContextRequest, never>({
+    const url = `${this.baseUrl}/${encodeURIComponent(address)}/context`
+    await sendCoSignerRequest<UpdatePermissionsContextRequest, never, { projectId: string }>({
       url,
       data: updateData,
-      projectId: this.projectId,
-      headers: { "Content-Type": "application/json" },
-    });
+      queryParams: { projectId: this.projectId },
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 
-  async revokePermission(
-    address: string,
-    revokeData: RevokePermissionRequest,
-  ): Promise<void> {
-    const url = `${this.baseUrl}/${encodeURIComponent(address)}/revoke`;
-    await sendCoSignerRequest<RevokePermissionRequest, never>({
+  async revokePermission(address: string, revokeData: RevokePermissionRequest): Promise<void> {
+    const url = `${this.baseUrl}/${encodeURIComponent(address)}/revoke`
+    await sendCoSignerRequest<RevokePermissionRequest, never, { projectId: string }>({
       url,
       data: revokeData,
-      projectId: this.projectId,
-      headers: { "Content-Type": "application/json" },
-    });
+      queryParams: { projectId: this.projectId },
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 
-  async coSignUserOperation(
-    address: string,
-    coSignData: CoSignRequest,
-  ): Promise<CoSignResponse> {
-    const url = `${this.baseUrl}/${encodeURIComponent(address)}/sign`;
-    if (!this.projectId) {
-      throw new Error("Project ID is not defined");
-    }
-    const response = await sendCoSignerRequest<CoSignRequest, CoSignResponse>({
+  async coSignUserOperation(address: string, coSignData: CoSignRequest): Promise<CoSignResponse> {
+    const url = `${this.baseUrl}/${encodeURIComponent(address)}/sign`
+
+    return await sendCoSignerRequest<CoSignRequest, CoSignResponse, { projectId: string }>({
       url,
       data: coSignData,
-      projectId: this.projectId,
-      headers: { "Content-Type": "application/json" },
-      transformRequest: (value: CoSignRequest) =>
-        JSON.stringify(value, bigIntReplacer),
-    });
-
-    return response.data;
+      queryParams: { projectId: this.projectId },
+      headers: { 'Content-Type': 'application/json' },
+      transformRequest: (value: CoSignRequest) => JSON.stringify(value, bigIntReplacer)
+    })
   }
 }
