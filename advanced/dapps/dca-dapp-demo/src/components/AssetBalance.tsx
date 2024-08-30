@@ -6,7 +6,11 @@ interface AssetBalanceProps {
   isLoading: boolean;
 }
 
-export default function AssetBalance({ assetName, balance, isLoading }: AssetBalanceProps) {
+export default function AssetBalance({
+  assetName,
+  balance,
+  isLoading,
+}: AssetBalanceProps) {
   return (
     <>
       <div className="flex justify-between border-b pb-2">

@@ -35,7 +35,11 @@ export default function AddressDisplay({ address }: AddressDisplayProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="icon" onClick={copyToClipboard}>
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </Button>
             </TooltipTrigger>
             <TooltipContent>
