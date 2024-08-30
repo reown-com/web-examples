@@ -1,11 +1,11 @@
-'use client'
-import { bigIntReplacer } from './CommonUtils'
+"use client";
+import { bigIntReplacer } from "./CommonUtils";
 
-export const LAST_USED_ADDRESS_KEY = 'lastUsedAddress'
-export const GRANTED_PERMISSIONS_KEY = 'grantedPermissions'
-export const WC_COSIGNER_DATA = 'wc_cosignerData'
-export const TICTACTOE_STATE = 'ticTacToeState'
-export const TICTACTOE_STARTED = 'ticTacToeStarted'
+export const LAST_USED_ADDRESS_KEY = "lastUsedAddress";
+export const GRANTED_PERMISSIONS_KEY = "grantedPermissions";
+export const WC_COSIGNER_DATA = "wc_cosignerData";
+export const TICTACTOE_STATE = "ticTacToeState";
+export const TICTACTOE_STARTED = "ticTacToeStarted";
 /**
  * Sets an item in the local storage.
  * @param key - The key to set the item with.
@@ -14,10 +14,10 @@ export const TICTACTOE_STARTED = 'ticTacToeStarted'
  */
 function setItem<T>(key: string, value: T) {
   // To prevent silly mistakes with double stringifying
-  if (typeof value === 'string') {
-    localStorage.setItem(key, value)
+  if (typeof value === "string") {
+    localStorage.setItem(key, value);
   } else {
-    localStorage?.setItem(key, JSON.stringify(value, bigIntReplacer))
+    localStorage?.setItem(key, JSON.stringify(value, bigIntReplacer));
   }
 }
 
@@ -28,18 +28,18 @@ function setItem<T>(key: string, value: T) {
  * @returns The value associated with the key, or null if the key does not exist.
  */
 function getItem(key: string): string | null {
-  return localStorage.getItem(key)
+  return localStorage.getItem(key);
 }
 
 function removeItem(key: string) {
-  localStorage.removeItem(key)
+  localStorage.removeItem(key);
 }
 
 export type PasskeyLocalStorageFormat = {
-  rawId: string
+  rawId: string;
   pubkeyCoordinates: {
-    x: string
-    y: string
-  }
-}
-export { setItem, getItem, removeItem }
+    x: string;
+    y: string;
+  };
+};
+export { setItem, getItem, removeItem };

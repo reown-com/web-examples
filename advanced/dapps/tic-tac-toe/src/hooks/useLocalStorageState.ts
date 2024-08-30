@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { getItem, removeItem, setItem } from '../utils/LocalStorage'
+import { useEffect, useState } from "react";
+import { getItem, removeItem, setItem } from "../utils/LocalStorage";
 
 /**
  * Custom hook that manages state in local storage.
@@ -11,30 +11,30 @@ import { getItem, removeItem, setItem } from '../utils/LocalStorage'
  */
 function useLocalStorageState<T>(
   key: string,
-  initialValue: T
+  initialValue: T,
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const [state, setState] = useState<T>(initialValue)
+  const [state, setState] = useState<T>(initialValue);
 
   useEffect(() => {
-    const storedValue = getItem(key)
-    if (storedValue && storedValue !== 'undefined' && storedValue !== 'null') {
+    const storedValue = getItem(key);
+    if (storedValue && storedValue !== "undefined" && storedValue !== "null") {
       try {
-        setState(JSON.parse(storedValue) as T)
+        setState(JSON.parse(storedValue) as T);
       } catch {
-        setState(storedValue as T)
+        setState(storedValue as T);
       }
     }
-  }, [key])
+  }, [key]);
 
   useEffect(() => {
     if (state === undefined || state === null) {
-      removeItem(key)
+      removeItem(key);
     } else {
-      setItem(key, JSON.stringify(state))
+      setItem(key, JSON.stringify(state));
     }
-  }, [key, state])
+  }, [key, state]);
 
-  return [state, setState]
+  return [state, setState];
 }
 
-export { useLocalStorageState }
+export { useLocalStorageState };
