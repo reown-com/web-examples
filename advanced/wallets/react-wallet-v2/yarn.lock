@@ -6610,6 +6610,11 @@ slash@^3.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
+solady@^0.0.234:
+  version "0.0.234"
+  resolved "https://registry.yarnpkg.com/solady/-/solady-0.0.234.tgz#99ddd59e38f1987683b465e5f97d6808c2c50a32"
+  integrity sha512-twY/0NtBbOZ7fGFIqp7Ebuvfgw2yD6A44HKbEpS05RK03VH+bv81/Mg6kYI/7EK/NuATlvrACDdLYfp/c1+d4A==
+
 sonic-boom@^2.2.1:
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/sonic-boom/-/sonic-boom-2.8.0.tgz#c1def62a77425090e6ad7516aad8eb402e047611"
