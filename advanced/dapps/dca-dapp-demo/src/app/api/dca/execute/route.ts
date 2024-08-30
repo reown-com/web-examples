@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         data: purchaseDonutCallData,
       },
     ];
-    executeActionsWithECDSAAndCosignerPermissions({
+    await executeActionsWithECDSAAndCosignerPermissions({
       ecdsaPrivateKey: APPLICATION_PRIVATE_KEY,
       pci,
       permissions,
