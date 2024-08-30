@@ -8,7 +8,6 @@ import { OPTIONAL_METHODS } from '@walletconnect/ethereum-provider'
 import { Theme } from '@radix-ui/themes'
 import { getWagmiConfig } from '../utils/WagmiConstants'
 import { ConstantsUtil } from '../utils/ConstantsUtil'
-import { TicTacToeContextProvider } from './TicTacToeContextProvider'
 
 // Get projectId from https://cloud.walletconnect.com
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID
@@ -50,7 +49,7 @@ export function AppKitProvider({
     <Theme appearance="dark">
       <WagmiProvider config={wagmiEmailConfig} initialState={initialState}>
         <QueryClientProvider client={queryClient}>
-          <TicTacToeContextProvider>{children}</TicTacToeContextProvider>
+          {children}
         </QueryClientProvider>
       </WagmiProvider>
     </Theme>
