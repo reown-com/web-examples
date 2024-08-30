@@ -100,5 +100,5 @@ export async function executeActionsWithECDSAAndCosignerPermissions(args: {
     }
   })
   console.log('Cosign response:', cosignResponse)
-  return cosignResponse.userOperationTxHash as `0x${string}`
+  return cosignResponse.receipt as `0x${string}`
 }

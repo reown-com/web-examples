@@ -1,19 +1,70 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 'use client'
 
-import { GameState, useTicTacToeContext } from '@/context/TicTacToeContextProvider'
+import { useTicTacToeContext } from '@/context/TicTacToeContextProvider'
 import { useTicTacToeActions } from '@/hooks/useTicTacToeActions'
 import React from 'react'
 import { CircleIcon, Cross1Icon } from '@radix-ui/react-icons'
+import { toast } from "sonner";
+import DisplayPlayerScore from './DisplayPlayerScore'
+import PositionSquare from './PositionSquare'
+import { createPimlicoBundlerClient } from 'permissionless/clients/pimlico'
+import { sepolia } from 'viem/chains'
+import { ENTRYPOINT_ADDRESS_V07 } from 'permissionless'
+import { http } from 'viem'
+import { getBundlerUrl } from '@/utils/SingletonUtils'
+import { checkWinner, getBoardState, transformBoard } from '@/utils/TicTacToeUtils'
 
 function TicTacToeBoard() {
-  const { gameState, gameStarted, loading } = useTicTacToeContext()
-  const { handleMove } = useTicTacToeActions()
-
+  const { gameState, setGameState } = useTicTacToeContext()
+  const { handleSystemMove, handleUserMove } = useTicTacToeActions()
+  const [isLoading, setIsLoading] = React.useState(false)
+  
   if (!gameState?.gameId) {
     console.warn('Game ID not found')
+    return <p className="text-center text-red-500">Error: Game ID not found. Please try again.</p>
+  }
 
-    return <p>Game not started. Please start a new game.</p>
+  async function onMove( gameId: string, position: number) {
+    setIsLoading(true)
+    try{
+       const data = await handleUserMove(gameId, position)
+       const { userOpIdentifier } = data
+       const bundlerClient = createPimlicoBundlerClient({
+         chain:sepolia,
+         entryPoint: ENTRYPOINT_ADDRESS_V07,
+         transport: http(getBundlerUrl(), {
+           timeout: 30000
+         }),
+       })
+       await bundlerClient.waitForUserOperationReceipt({
+         hash: userOpIdentifier,
+       })
+       console.log('User move made successfully')
+       // After the user's move, read the updated board state
+       const updatedBoard = await getBoardState(gameId)
+       console.log('Updated board:', updatedBoard)
+       // Check for a winner after the user's move
+       const winnerInfo = checkWinner([...updatedBoard])
+       const gameState =  {
+         board: transformBoard([...updatedBoard]),
+         isXNext: false,
+         winner: winnerInfo.winner,
+         winningLine: winnerInfo.winningLine,
+         gameId
+       }
+       setGameState(gameState)
+       if(!winnerInfo.winner){
+        await handleSystemMove(gameId)
+       }
+    }catch(e){
+      console.warn('Error:', e)
+      const errorMessage = (e as Error)?.message || "Error making move";
+      toast.error("Error", {
+        description: errorMessage,
+      })
+    }finally{
+      setIsLoading(false)
+    }
   }
 
   const xCount = gameState.board.filter(cell => cell === 'X').length
@@ -21,110 +72,43 @@ function TicTacToeBoard() {
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">
-      <div className="flex items-center">
-        {gameState.winner ? (
-          <h2 className="text-xl sm:text-2xl text-center bg-green-100 text-green-700 p-4">
-            Winner: {gameState.winner}
-          </h2>
-        ) : (
-          <div className="flex flex-col gap-2">
-            <h2 className="text-md sm:text-xl text-center">Game ID: {gameState.gameId}</h2>
-            <h2 className="text-md sm:text-xl text-center">
-              {gameState.isXNext ? 'Your Turn' : 'System Turn'}
-            </h2>
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
-        {/* Player (You) */}
-        <div className="flex items-center flex-col justify-center">
+      <div className="flex flex-col gap-4 items-center justify-center">
+        <div className="flex w-full items-center justify-between gap-4">
+          {/* Player (You) */}
+          <DisplayPlayerScore icon={<Cross1Icon width={40} height={40} color="white" />} label="You" score={xCount} color="bg-green-500" />
           <div className="flex items-center">
-            <div
-              className="w-20 h-20 bg-green-500 flex items-center justify-center transform rotate-30"
-              style={{
-                clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-              }}
-            >
-              <Cross1Icon width={40} height={40} color="white" />
-            </div>
+            {gameState.winner ? (
+              <h2 className="text-xl sm:text-2xl text-center bg-green-100 text-green-700 p-4 rounded-lg">
+                Winner: {gameState.winner}
+              </h2>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <h2 className="text-md sm:text-xl text-center">Game ID: {gameState.gameId}</h2>
+                <h2 className="text-md sm:text-xl text-center font-semibold">
+                  {gameState.isXNext ? 'Your Turn' : 'System Turn'}
+                </h2>
+              </div>
+            )}
           </div>
-          <div className="flex items-center  mt-2 ">
-            <p className="text-white font-semiboldtext-center">You :</p>
-            <span className="text-white font-bold text-lg sm:text-xl ml-2 text-center">
-              {xCount}
-            </span>
-          </div>
+          {/* System (Opponent) */}
+          <DisplayPlayerScore icon={<CircleIcon width={40} height={40} color="white" />} label="System" score={oCount} color="bg-red-500" />
         </div>
-
         {/* Game Board */}
-        <div
-          className={`grid grid-cols-3 gap-2 sm:gap-4 ${
-            !gameStarted && 'hover:cursor-not-allowed'
-          }`}
-        >
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {Array(9)
             .fill(null)
             .map((_, index) => (
-              <Square
+              <PositionSquare
                 key={index}
                 gameState={gameState}
                 index={index}
-                handleMove={handleMove}
-                loading={loading}
+                handleMove={onMove}
+                loading={isLoading}
               />
             ))}
         </div>
-
-        {/* System (Opponent) */}
-        <div className="flex items-center flex-col justify-center">
-          <div className="flex items-center">
-            <div
-              className="w-20 h-20 bg-red-500 flex items-center justify-center transform rotate-30"
-              style={{
-                clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-              }}
-            >
-              <CircleIcon width={40} height={40} color="white" />
-            </div>
-          </div>
-          <div className="flex items-center mt-2">
-            <p className="text-white font-semibold text-center">System :</p>
-
-            <span className="text-white font-bold text-lg sm:text-xl ml-2 text-center">
-              {oCount}
-            </span>
-          </div>
-        </div>
       </div>
     </div>
-  )
-}
-
-function Square({
-  gameState,
-  index,
-  handleMove,
-  loading
-}: {
-  gameState: GameState
-  index: number
-  handleMove: (gameId: string, position: number) => void
-  loading: boolean
-}) {
-  const isWinningSquare = gameState.winningLine?.includes(index)
-
-  return (
-    <button
-      className={`w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 text-xl sm:text-2xl md:text-3xl font-bold border-2 flex items-center justify-center ${
-        isWinningSquare ? 'bg-yellow-50' : 'border-gray-300'
-      } hover:cursor-pointer`}
-      onClick={() => handleMove(gameState.gameId!, index)}
-      disabled={loading}
-    >
-      {!gameState.board[index] && index}
-      {gameState.board[index] === 'X' && <Cross1Icon width={40} height={40} color="green" />}
-      {gameState.board[index] === 'O' && <CircleIcon width={40} height={40} color="red" />}
-    </button>
   )
 }
 
