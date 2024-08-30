@@ -3,7 +3,7 @@ import {
   address as donutContractAddress,
 } from "@/utils/DonutContract";
 import { executeActionsWithECDSAAndCosignerPermissions } from "@/utils/ERC7715PermissionsAsyncUtils";
-import { CoSignerApiError } from "@/utils/WalletConnectCosigner";
+import { CoSignerApiError } from "@/utils/WalletConnectCosignerUtils";
 import { NextResponse } from "next/server";
 import { encodeFunctionData, parseEther } from "viem";
 import { GrantPermissionsReturnType } from "viem/experimental";
@@ -32,18 +32,18 @@ export async function POST(request: Request) {
     }
     if (!strategy) {
       return NextResponse.json(
-        { message: "No strategy provider" },
+        { message: "No strategy provided" },
         { status: 400 },
       );
     }
     if (!permissions) {
       return NextResponse.json(
-        { message: "No permissions provider" },
+        { message: "No permissions provided" },
         { status: 400 },
       );
     }
     if (!pci) {
-      return NextResponse.json({ message: "No pci provider" }, { status: 400 });
+      return NextResponse.json({ message: "No pci provided" }, { status: 400 });
     }
 
     const purchaseDonutCallData = encodeFunctionData({
@@ -53,9 +53,9 @@ export async function POST(request: Request) {
     });
     const purchaseDonutCallDataExecution = [
       {
-        target: donutContractAddress as `0x${string}`,
+        to: donutContractAddress as `0x${string}`,
         value: parseEther("0.0001"),
-        callData: purchaseDonutCallData,
+        data: purchaseDonutCallData,
       },
     ];
     executeActionsWithECDSAAndCosignerPermissions({

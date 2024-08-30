@@ -8,7 +8,7 @@ import {
 } from "../utils/LocalStorage";
 import { useLocalStorageState } from "../hooks/useLocalStorageState";
 import { GrantPermissionsReturnType } from "viem/experimental";
-import type { AddPermissionResponse } from "../utils/WalletConnectCosigner";
+import type { AddPermissionResponse } from "../utils/WalletConnectCosignerUtils";
 import { Chain } from "viem";
 import {
   type Provider,
