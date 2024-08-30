@@ -3,8 +3,7 @@ import { privateKeyToAccount } from "viem/accounts";
 
 export function GET() {
   try {
-    const APPLICATION_PRIVATE_KEY = process.env
-      .NEXT_PUBLIC_APPLICATION_PRIVATE_KEY as `0x${string}`;
+    const APPLICATION_PRIVATE_KEY = process.env.APPLICATION_PRIVATE_KEY as `0x${string}`;
     const account = privateKeyToAccount(APPLICATION_PRIVATE_KEY);
 
     return NextResponse.json({ key: account.publicKey });
