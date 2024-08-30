@@ -44,9 +44,9 @@ export async function POST(request: Request) {
     })
     const makeMoveCallDataExecution = [
       {
-        target: ticTacToeAddress,
+        to: ticTacToeAddress,
         value: parseEther('0'),
-        callData: makeMoveCallData
+        data: makeMoveCallData
       }
     ]
     const userTxHash = await executeActionsWithECDSAAndCosignerPermissions({

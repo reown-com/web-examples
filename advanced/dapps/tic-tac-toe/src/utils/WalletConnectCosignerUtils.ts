@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios'
 import { bigIntReplacer } from './CommonUtils'
-import { type UserOperation } from 'permissionless'
+import { UserOperation } from './UserOpBuilderServiceUtils'
 
 // Define types for the request and response
 type AddPermission = {
@@ -52,7 +52,7 @@ type RevokePermissionRequest = {
 
 type CoSignRequest = {
   pci: string
-  userOp: UserOperation<'v0.7'>
+  userOp: UserOperation
 }
 
 type CoSignResponse = {
