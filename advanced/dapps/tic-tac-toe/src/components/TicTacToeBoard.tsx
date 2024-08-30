@@ -11,8 +11,8 @@ import { createPimlicoBundlerClient } from 'permissionless/clients/pimlico'
 import { sepolia } from 'viem/chains'
 import { ENTRYPOINT_ADDRESS_V07 } from 'permissionless'
 import { http } from 'viem'
-import { getBundlerUrl } from '@/utils/SingletonUtils'
 import { checkWinner, getBoardState, transformBoard } from '@/utils/TicTacToeUtils'
+import { getBundlerUrl } from '@/utils/ConstantsUtil'
 
 function TicTacToeBoard() {
   const { gameState, setGameState } = useTicTacToeContext()

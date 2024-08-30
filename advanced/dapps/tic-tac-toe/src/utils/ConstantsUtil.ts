@@ -3,6 +3,8 @@ if (!projectId) {
   throw new Error('NEXT_PUBLIC_PROJECT_ID is not set')
 }
 export const WALLET_URL = process.env['WALLET_URL'] || 'https://react-wallet.walletconnect.com/'
+export const WC_COSIGNER_BASE_URL = 'https://rpc.walletconnect.com/v1/sessions'
+export const USEROP_BUILDER_SERVICE_BASE_URL = 'https://react-wallet.walletconnect.com/api'
 export function getPublicUrl() {
   const vercelUrl = process.env['NEXT_PUBLIC_VERCEL_URL']
   if (vercelUrl) {
@@ -74,4 +76,17 @@ export const ConstantsUtil = {
     }
   ],
   ProjectId: projectId
+}
+
+export function getBundlerUrl(): string {
+  const localBundlerUrl = process.env['NEXT_PUBLIC_LOCAL_BUNDLER_URL']
+  if (localBundlerUrl) {
+    return localBundlerUrl
+  }
+  const apiKey = process.env['NEXT_PUBLIC_PIMLICO_KEY']
+  if (!apiKey) {
+    throw new Error('env NEXT_PUBLIC_PIMLICO_KEY missing.')
+  }
+
+  return `https://api.pimlico.io/v2/sepolia/rpc?apikey=${apiKey}`
 }
