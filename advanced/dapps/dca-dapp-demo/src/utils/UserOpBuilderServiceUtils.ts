@@ -110,8 +110,7 @@ async function sendUserOpBuilderRequest<
   }
 }
 
-// const USEROP_BUILDER_SERVICE_BASE_URL = 'https://react-wallet.walletconnect.com/api'
-const USEROP_BUILDER_SERVICE_BASE_URL = 'http://localhost:3001/api'
+const USEROP_BUILDER_SERVICE_BASE_URL = 'https://react-wallet.walletconnect.com/api'
 
 export async function buildUserOp(args: BuildUserOpRequestArguments): Promise<FillUserOpResponse> {
   const response = await sendUserOpBuilderRequest<BuildUserOpRequestArguments, FillUserOpResponse>({
