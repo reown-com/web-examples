@@ -21,7 +21,7 @@ export default function Home() {
           </div>
         ) : (
           <p className="text-lg text-gray-600 dark:text-gray-400 font-bold">
-            Connect Wallet to get started.
+            Connect wallet to create startegy.
           </p>
         )}
 
