@@ -4,7 +4,7 @@ import { useTicTacToeContext } from "@/context/TicTacToeContextProvider";
 import { useTicTacToeActions } from "@/hooks/useTicTacToeActions";
 import React from "react";
 import { CircleIcon, Cross1Icon } from "@radix-ui/react-icons";
-import { Loader2} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import DisplayPlayerScore from "./DisplayPlayerScore";
 import PositionSquare from "./PositionSquare";
@@ -115,24 +115,24 @@ function TicTacToeBoard() {
           />
         </div>
         {/* Game Board */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4">
-            {Array(9)
-              .fill(null)
-              .map((_, index) => (
-                <PositionSquare
-                  key={index}
-                  gameState={gameState}
-                  index={index}
-                  handleMove={onMove}
-                  loading={isLoading}
-                />
-              ))}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          {Array(9)
+            .fill(null)
+            .map((_, index) => (
+              <PositionSquare
+                key={index}
+                gameState={gameState}
+                index={index}
+                handleMove={onMove}
+                loading={isLoading}
+              />
+            ))}
+        </div>
+        {isLoading && (
+          <div className="absolute inset-0 bg-black bg-opacity-10 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin" />
           </div>
-          {isLoading && (
-            <div className="absolute inset-0 bg-black bg-opacity-10 flex items-center justify-center">
-              <Loader2 className="w-8 h-8 animate-spin" />
-            </div>
-          )}
+        )}
       </div>
     </div>
   );
