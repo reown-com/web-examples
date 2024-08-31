@@ -20,8 +20,7 @@ export async function POST(request: Request) {
     permissions: GrantPermissionsReturnType;
     pci: string;
   } = await request.json();
-  const APPLICATION_PRIVATE_KEY = process.env
-    .NEXT_PUBLIC_APPLICATION_PRIVATE_KEY as `0x${string}`;
+  const APPLICATION_PRIVATE_KEY = process.env.APPLICATION_PRIVATE_KEY as `0x${string}`;
 
   try {
     if (!APPLICATION_PRIVATE_KEY) {
