@@ -4,6 +4,7 @@ import { useTicTacToeContext } from "@/context/TicTacToeContextProvider";
 import { useTicTacToeActions } from "@/hooks/useTicTacToeActions";
 import React from "react";
 import { CircleIcon, Cross1Icon } from "@radix-ui/react-icons";
+import { Loader2} from "lucide-react";
 import { toast } from "sonner";
 import DisplayPlayerScore from "./DisplayPlayerScore";
 import PositionSquare from "./PositionSquare";
@@ -41,7 +42,7 @@ function TicTacToeBoard() {
         chain: sepolia,
         entryPoint: ENTRYPOINT_ADDRESS_V07,
         transport: http(getBundlerUrl(), {
-          timeout: 30000,
+          timeout: 300000,
         }),
       });
       await bundlerClient.waitForUserOperationReceipt({
@@ -79,7 +80,7 @@ function TicTacToeBoard() {
   const oCount = gameState.board.filter((cell) => cell === "O").length;
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
+    <div className="flex flex-col items-center gap-4 p-4 relative">
       <div className="flex flex-col gap-4 items-center justify-center">
         <div className="flex w-full items-center justify-between gap-4">
           {/* Player (You) */}
@@ -114,19 +115,24 @@ function TicTacToeBoard() {
           />
         </div>
         {/* Game Board */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-4">
-          {Array(9)
-            .fill(null)
-            .map((_, index) => (
-              <PositionSquare
-                key={index}
-                gameState={gameState}
-                index={index}
-                handleMove={onMove}
-                loading={isLoading}
-              />
-            ))}
-        </div>
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            {Array(9)
+              .fill(null)
+              .map((_, index) => (
+                <PositionSquare
+                  key={index}
+                  gameState={gameState}
+                  index={index}
+                  handleMove={onMove}
+                  loading={isLoading}
+                />
+              ))}
+          </div>
+          {isLoading && (
+            <div className="absolute inset-0 bg-black bg-opacity-10 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+          )}
       </div>
     </div>
   );

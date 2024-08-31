@@ -25,7 +25,7 @@ if (!PROJECT_ID) {
 
 const publicClient = createPublicClient({
   chain: sepolia,
-  transport: http(getBlockchainApiRpcUrl(sepolia.id), { timeout: 10000 }),
+  transport: http(getBlockchainApiRpcUrl(sepolia.id), { timeout: 300000 }),
 });
 
 type Board = number[];

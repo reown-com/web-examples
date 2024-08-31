@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useTicTacToeActions } from "@/hooks/useTicTacToeActions";
-import { ReloadIcon } from "@radix-ui/react-icons";
 import { Loader2 } from "lucide-react";
 import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 
@@ -124,7 +123,7 @@ export default function Home() {
                   >
                     {isLoading ? (
                       <>
-                        <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Starting...
                       </>
                     ) : (
