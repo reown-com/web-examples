@@ -29,7 +29,7 @@ if (!projectId) throw new Error("Project ID is undefined");
 const metadata = {
     name: 'Appkit Solana Example',
     description: 'Appkit Solana Example',
-    url: 'https://web3modal.com', // origin must match your domain & subdomain
+    url: 'https://appkit-solana.vercel.app', // origin must match your domain & subdomain
     icons: ['https://avatars.githubusercontent.com/u/37784886'],
 }
 

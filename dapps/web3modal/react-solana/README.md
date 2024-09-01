@@ -1,4 +1,6 @@
-# Vite + React
+# Solana Apkkit React Example 
+
+Check the online example in https://appkit-solana.vercel.app/
 
 This is a [Vite](https://vitejs.dev) project together with React.
 
@@ -16,7 +18,6 @@ This is a [Vite](https://vitejs.dev) project together with React.
 
 ## Resources
 
-- [CodeSandbox — Docs](https://codesandbox.io/docs/projects)
-- [CodeSandbox — Discord](https://discord.gg/Ggarp3pX5H)
+- [Solana AppKit Web Docs](https://docs.walletconnect.com/appkit/features/solana)
 - [Vite — GitHub](https://github.com/vitejs/vite)
 - [Vite — Docs](https://vitejs.dev/guide/)
