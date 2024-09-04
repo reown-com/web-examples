@@ -1,4 +1,4 @@
-import { Address, decodeAbiParameters, getAddress, Hex, PublicClient } from 'viem'
+import { Address, decodeAbiParameters, encodeAbiParameters, getAddress, Hex, PublicClient } from 'viem'
 import { encodeEnable, encodeUse } from './EncodeLib'
 import { smartSessionAddress } from '@biconomy/permission-context-builder'
 import { readContract } from 'viem/actions'
@@ -229,4 +229,87 @@ export async function formatSignature(
   } else {
     return encodeEnable(signerId, signature, enableSession[0])
   }
+}
+
+export async function getDummySignature(
+  publicClient: PublicClient,
+  params: {
+    permissionsContext: Hex
+    accountAddress: Address
+  }
+) {
+  const { permissionsContext, accountAddress } = params
+  if (!permissionsContext || permissionsContext.length < 178) {
+    throw new Error('Permissions context too short')
+  }
+
+  const validatorAddress = permissionsContext.slice(0, 42) as Address
+
+  if (getAddress(validatorAddress) !== getAddress(smartSessionAddress)) {
+    throw new Error(
+      `Validator ${validatorAddress} is not the smart session validator ${smartSessionAddress}`
+    )
+  }
+
+  const enableData = `0x${permissionsContext.slice(178)}` as Hex
+  const enableSession = decodeAbiParameters(enableSessionsStructAbi, enableData)
+  const signerInitData = enableSession[0].isignerInitData
+  console.log('signerInitData', signerInitData)
+  const signers = decodeSigners(signerInitData)
+  console.log('signers', signers)
+  const dummySignatures: `0x${string}`[] = []
+  const dummyECDSASignature: `0x${string}` =
+    '0xe8b94748580ca0b4993c9a1b86b5be851bfc076ff5ce3a1ff65bf16392acfcb800f9b4f1aef1555c7fce5599fffb17e7c635502154a0333ba21f3ae491839af51c'
+  const dummyPasskeySignature: `0x${string}` = '0x'
+  for (let i = 0; i < signers.length; i++) {
+    const signer = signers[i]
+    if (signer.type === 0) {
+      dummySignatures.push(dummyECDSASignature)
+    } else if (signer.type === 1) {
+      dummySignatures.push(dummyPasskeySignature)
+    }
+  }
+  const concatenatedDummySignature = encodeAbiParameters([{ type: 'bytes[]' }], [dummySignatures])
+
+  return formatSignature(publicClient, {
+    signature: concatenatedDummySignature,
+    permissionsContext,
+    accountAddress
+  })
+}
+
+
+export function decodeSigners(
+  encodedData: `0x${string}`
+): Array<{ type: number; data: `0x${string}` }> {
+  let offset = 2 // Start after '0x'
+  const signers: Array<{ type: number; data: `0x${string}` }> = []
+
+  // Decode the number of signers
+  const signersCount = parseInt(encodedData.slice(offset, offset + 2), 16)
+  offset += 2
+
+  for (let i = 0; i < signersCount; i++) {
+    // Decode signer type
+    const signerType = parseInt(encodedData.slice(offset, offset + 2), 16)
+    offset += 2
+
+    // Determine data length based on signer type
+    let dataLength: number
+    if (signerType === 0) {
+      dataLength = 40 // 20 bytes
+    } else if (signerType === 1) {
+      dataLength = 128 // 64 bytes
+    } else {
+      throw new Error(`Unknown signer type: ${signerType}`)
+    }
+
+    // Decode signer data
+    const signerData = `0x${encodedData.slice(offset, offset + dataLength)}` as `0x${string}`
+    offset += dataLength
+
+    signers.push({ type: signerType, data: signerData })
+  }
+
+  return signers
 }
