@@ -4,7 +4,7 @@ import {
   getErc20TokenBalance,
   supportedAssets as multibridgeSupportedAssets
 } from '@/utils/MultibridgeUtil'
-import { Collapse, Text } from '@nextui-org/react'
+import { Collapse, Loading, Text } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { Hex } from 'viem'
@@ -13,9 +13,11 @@ export default function ChainAbstractionBalanceCard() {
   const { eip155Address } = useSnapshot(SettingsStore.state)
   const [balances, setBalances] = useState<Record<string, Record<string, number>>>({})
   const [totalBalance, setTotalBalance] = useState<Record<string, number>>({})
-
+  const [loading, setLoading] = useState(true)
   useEffect(() => {
     const fetchAllBalances = async () => {
+      setLoading(true)
+
       const fetchedBalances: Record<string, any> = {}
       for (const asset of Object.keys(multibridgeSupportedAssets)) {
         const assetBalances: Record<string, number> = {}
@@ -31,6 +33,7 @@ export default function ChainAbstractionBalanceCard() {
         fetchedBalances[asset] = assetBalances
       }
       setBalances(fetchedBalances)
+      setLoading(false)
     }
     fetchAllBalances()
   }, [eip155Address])
@@ -52,29 +55,33 @@ export default function ChainAbstractionBalanceCard() {
       <Text h4 css={{ marginBottom: '$5' }}>
         Token Assets (CA)
       </Text>
-      <Collapse.Group accordion={false}>
-        {Object.keys(balances).map(asset => {
-          return (
-            <Collapse
-              title={
-                <Text weight="semibold">
-                  {asset} - {totalBalance[asset]}
-                </Text>
-              }
-              key={asset}
-            >
-              {Object.keys(balances[asset]).map(chainId => {
-                const chain = getChainById(Number(chainId))
-                return (
-                  <Text key={asset + '-' + chainId}>
-                    {chain.name} - {balances[asset][chainId]}
+      {loading ? (
+        <Loading />
+      ) : (
+        <Collapse.Group accordion={false}>
+          {Object.keys(balances).map(asset => {
+            return (
+              <Collapse
+                title={
+                  <Text weight="semibold">
+                    {asset} - {totalBalance[asset]}
                   </Text>
-                )
-              })}
-            </Collapse>
-          )
-        })}
-      </Collapse.Group>
+                }
+                key={asset}
+              >
+                {Object.keys(balances[asset]).map(chainId => {
+                  const chain = getChainById(Number(chainId))
+                  return (
+                    <Text key={asset + '-' + chainId}>
+                      {chain.name} - {balances[asset][chainId]}
+                    </Text>
+                  )
+                })}
+              </Collapse>
+            )
+          })}
+        </Collapse.Group>
+      )}
     </>
   )
 }
