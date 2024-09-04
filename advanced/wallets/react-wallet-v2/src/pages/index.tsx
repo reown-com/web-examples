@@ -16,6 +16,7 @@ import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { useRouter } from 'next/router'
+import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCard'
 
 export default function HomePage() {
   const {
@@ -29,7 +30,8 @@ export default function HomePage() {
     tronAddress,
     tezosAddress,
     kadenaAddress,
-    smartAccountEnabled
+    smartAccountEnabled,
+    chainAbstractionEnabled
   } = useSnapshot(SettingsStore.state)
   const { getAvailableSmartAccounts } = useSmartAccounts()
   const { push } = useRouter()
@@ -38,6 +40,7 @@ export default function HomePage() {
       <PageHeader title="Accounts">
         <AccountPicker data-testid="account-picker" />
       </PageHeader>
+      {chainAbstractionEnabled ? <ChainAbstractionBalanceCard /> : null}
       <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets
       </Text>
