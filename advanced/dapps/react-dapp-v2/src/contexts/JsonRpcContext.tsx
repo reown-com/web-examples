@@ -857,16 +857,22 @@ export function JsonRpcContextProvider({
             method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
             params: {
               feePayer: transaction.feePayer!.toBase58(),
-              recentBlockhash: transaction.recentBlockhash,
-              instructions: transaction.instructions.map((i) => ({
-                programId: i.programId.toBase58(),
-                data: Array.from(i.data),
-                keys: i.keys.map((k) => ({
-                  isSigner: k.isSigner,
-                  isWritable: k.isWritable,
-                  pubkey: k.pubkey.toBase58(),
+              recentBlockhash: transaction.recentBlockhash!,
+              instructions: transaction.instructions.map((instruction) => ({
+                programId: instruction.programId.toBase58(),
+                keys: instruction.keys.map((key) => ({
+                  ...key,
+                  pubkey: key.pubkey.toBase58(),
                 })),
+                data: bs58.encode(instruction.data),
               })),
+              partialSignatures: transaction.signatures.map((sign) => ({
+                pubkey: sign.publicKey.toBase58(),
+                signature: bs58.encode(sign.signature!),
+              })),
+              transaction: transaction
+                .serialize({ verifySignatures: false })
+                .toString('base64'),
             },
           },
         });
