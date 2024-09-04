@@ -108,12 +108,28 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rpc: 'https://goerli.optimism.io',
     namespace: 'eip155'
   },
+  'eip155:11155420': {
+    chainId: 11155420,
+    name: 'Optimism Sepolia',
+    logo: '/chain-logos/eip155-10.png',
+    rgb: '235, 0, 25',
+    rpc: 'https://sepolia.optimism.io	',
+    namespace: 'eip155'
+  },
   'eip155:280': {
     chainId: 280,
     name: 'zkSync Era Testnet',
     logo: '/chain-logos/eip155-324.svg',
     rgb: '242, 242, 242',
     rpc: 'https://testnet.era.zksync.dev/',
+    namespace: 'eip155'
+  },
+  'eip155:84532': {
+    chainId: 84532,
+    name: 'Base Sepolia',
+    logo: '/chain-logos/base.webp',
+    rgb: '22, 83, 241',
+    rpc: 'https://sepolia.base.org',
     namespace: 'eip155'
   }
 }
