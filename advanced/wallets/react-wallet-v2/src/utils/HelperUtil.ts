@@ -2,7 +2,7 @@ import toast from 'react-hot-toast'
 import { COSMOS_MAINNET_CHAINS, TCosmosChain } from '@/data/COSMOSData'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
-import { NEAR_CHAINS, NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
+import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { POLKADOT_CHAINS, TPolkadotChain } from '@/data/PolkadotData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { TEZOS_CHAINS, TTezosChain } from '@/data/TezosData'
@@ -10,7 +10,6 @@ import { TRON_CHAINS, TTronChain } from '@/data/TronData'
 import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
 
 import { utils } from 'ethers'
-import { Verify } from '@walletconnect/types'
 import bs58 from 'bs58'
 
 /**
