@@ -1,4 +1,11 @@
-import { Address, decodeAbiParameters, encodeAbiParameters, getAddress, Hex, PublicClient } from 'viem'
+import {
+  Address,
+  decodeAbiParameters,
+  encodeAbiParameters,
+  getAddress,
+  Hex,
+  PublicClient
+} from 'viem'
 import { encodeEnable, encodeUse } from './EncodeLib'
 import { smartSessionAddress } from '@biconomy/permission-context-builder'
 import { readContract } from 'viem/actions'
@@ -277,7 +284,6 @@ export async function getDummySignature(
     accountAddress
   })
 }
-
 
 export function decodeSigners(
   encodedData: `0x${string}`
