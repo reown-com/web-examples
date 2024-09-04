@@ -1,4 +1,4 @@
-import { arbitrumSepolia, baseSepolia, optimismSepolia, polygonMumbai, sepolia } from "viem/chains";
+import { baseSepolia, optimismSepolia, polygonMumbai, sepolia } from "viem/chains";
 
 export const supportedChains = [
     sepolia,
