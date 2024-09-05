@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react'
-import { Divider, Text } from '@nextui-org/react'
+import { useCallback, useEffect, useState } from 'react'
+import { Divider, Loading, Text } from '@nextui-org/react'
 
 import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
@@ -9,10 +9,17 @@ import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155Request
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
+import {
+  decodeErc20Transaction,
+  getCrossChainTokens,
+  getErc20TokenBalance
+} from '@/utils/MultibridgeUtil'
 
 export default function SessionSendTransactionModal() {
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
+  const [isTypeResolved, setIsTypeResolved] = useState(false)
+  const [shouldUseMultibridge, setShouldUseMultibridge] = useState(false)
 
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
@@ -23,6 +30,50 @@ export default function SessionSendTransactionModal() {
   const chainId = params?.chainId
   const request = params?.request
   const transaction = request?.params[0]
+
+  useEffect(() => {
+    const multibridgeCheck = async () => {
+      setIsTypeResolved(false)
+      if (!request) {
+        setIsTypeResolved(true)
+        return
+      }
+      const transfer = decodeErc20Transaction(request.params[0])
+      if (!transfer) {
+        setIsTypeResolved(true)
+        return
+      }
+      const parsedChainId = chainId?.split(':')[1]
+      const tokenBalance = await getErc20TokenBalance(
+        transfer.contract,
+        Number(parsedChainId),
+        transfer.from,
+        false
+      )
+      if (transfer.amount <= tokenBalance) {
+        setIsTypeResolved(true)
+        return
+      }
+      const otherTokens = getCrossChainTokens(transfer.contract)
+      let otherBalance = 0
+      for (const chain in otherTokens) {
+        const balance = await getErc20TokenBalance(
+          otherTokens[Number(chain)],
+          Number(chain),
+          transfer.from,
+          false
+        )
+        otherBalance += balance
+      }
+      if (transfer.amount > otherBalance) {
+        setIsTypeResolved(true)
+        return
+      }
+      setShouldUseMultibridge(true)
+      setIsTypeResolved(true)
+    }
+    multibridgeCheck()
+  }, [request, chainId])
 
   // Handle approve action
   const onApprove = useCallback(async () => {
@@ -64,7 +115,15 @@ export default function SessionSendTransactionModal() {
     }
   }, [requestEvent, topic])
 
-  return request && requestSession ? (
+  if (!request || !requestSession) {
+    return <Text>Request not found</Text>
+  }
+
+  if (!isTypeResolved) {
+    return <Loading></Loading>
+  }
+
+  return !shouldUseMultibridge ? (
     <RequestModal
       intention="sign a transaction"
       metadata={requestSession?.peer.metadata}
@@ -80,6 +139,19 @@ export default function SessionSendTransactionModal() {
       <RequestMethodCard methods={[request.method]} />
     </RequestModal>
   ) : (
-    <Text>Request not found</Text>
+    <RequestModal
+      intention="Multibridge"
+      metadata={requestSession?.peer.metadata}
+      onApprove={onApprove}
+      onReject={onReject}
+      approveLoader={{ active: isLoadingApprove }}
+      rejectLoader={{ active: isLoadingReject }}
+    >
+      <RequestDataCard data={transaction} />
+      <Divider y={1} />
+      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession?.relay.protocol} />
+      <Divider y={1} />
+      <RequestMethodCard methods={[request.method]} />
+    </RequestModal>
   )
 }

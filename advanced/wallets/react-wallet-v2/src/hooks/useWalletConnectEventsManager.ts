@@ -10,7 +10,7 @@ import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
 import { TEZOS_SIGNING_METHODS } from '@/data/TezosData'
@@ -22,7 +22,10 @@ import { getWallet } from '@/utils/EIP155WalletUtil'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { refreshSessionsList } from '@/pages/wc'
 
+
 export default function useWalletConnectEventsManager(initialized: boolean) {
+
+
   /******************************************************************************
    * 1. Open session proposal modal for confirmation / rejection
    *****************************************************************************/
@@ -41,6 +44,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   const onAuthRequest = useCallback((request: Web3WalletTypes.AuthRequest) => {
     ModalStore.open('AuthRequestModal', { request })
   }, [])
+  
 
   /******************************************************************************
    * 3. Open request handling modal based on method that was used
@@ -67,7 +71,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           return ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
 
         case EIP7715_METHOD.WALLET_GRANT_PERMISSIONS: {
-          console.log({ request })
           return ModalStore.open('SessionGrantPermissionsModal', { requestEvent, requestSession })
         }
 
@@ -151,6 +154,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
