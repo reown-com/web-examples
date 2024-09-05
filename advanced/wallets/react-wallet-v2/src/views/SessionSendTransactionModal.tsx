@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Divider, Loading, Text } from '@nextui-org/react'
+import { Card, Divider, Loading, Text } from '@nextui-org/react'
 
 import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
@@ -120,7 +120,13 @@ export default function SessionSendTransactionModal() {
   }
 
   if (!isTypeResolved) {
-    return <Loading></Loading>
+    return (
+      <Card>
+        <Card.Body css={{ paddingTop: '$30', paddingBottom: '$30' }}>
+          <Loading type="points"></Loading>
+        </Card.Body>
+      </Card>
+    )
   }
 
   return !shouldUseMultibridge ? (
