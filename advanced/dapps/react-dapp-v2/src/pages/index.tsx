@@ -19,7 +19,8 @@ import {
   DEFAULT_NEAR_METHODS,
   DEFAULT_KADENA_METHODS,
   DEFAULT_TRON_METHODS,
-  DEFAULT_TEZOS_METHODS,
+  TEZOS_SAMPLE_KINDS,
+  TEZOS_SAMPLES,
   DEFAULT_EIP155_OPTIONAL_METHODS,
   DEFAULT_EIP5792_METHODS,
   GetCapabilitiesResult,
@@ -425,21 +426,95 @@ const Home: NextPage = () => {
       openRequestModal();
       await tezosRpc.testSignTransaction(chainId, address);
     };
+    const onSignOrigination = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignOrigination(chainId, address);
+    };
+    const onSignContractCall = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignContractCall(chainId, address);
+    };
+    const onSignDelegation = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignDelegation(chainId, address);
+    };
+    const onSignUndelegation = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignUndelegation(chainId, address);
+    };
+    const onSignStake = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignStake(chainId, address);
+    };
+    const onSignUnstake = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignUnstake(chainId, address);
+    };
+    const onSignFinalize = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignFinalize(chainId, address);
+    };
+    const onSignIncreasePaidStorage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignIncreasePaidStorage(chainId, address);
+    }
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
       await tezosRpc.testSignMessage(chainId, address);
     };
     return [
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+        method: TEZOS_SAMPLE_KINDS.GET_ACCOUNTS,
         callback: onGetAccounts,
+        description: "Use before sending a transaction to get peer address.",
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+        method: TEZOS_SAMPLE_KINDS.SEND_TRANSACTION,
         callback: onSignTransaction,
+        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_TRANSACTION],
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+        method: TEZOS_SAMPLE_KINDS.SEND_ORGINATION,
+        callback: onSignOrigination,
+        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_ORGINATION],
+      },
+      {
+        method: TEZOS_SAMPLE_KINDS.SEND_CONTRACT_CALL,
+        callback: onSignContractCall,
+        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_CONTRACT_CALL],
+      },
+      {
+        method: TEZOS_SAMPLE_KINDS.SEND_DELEGATION,
+        callback: onSignDelegation,
+        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_DELEGATION],
+      },
+      {
+        method: TEZOS_SAMPLE_KINDS.SEND_UNDELEGATION,
+        callback: onSignUndelegation,
+        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_UNDELEGATION],
+      },
+      {
+        method: TEZOS_SAMPLE_KINDS.SEND_STAKE,
+        callback: onSignStake,
+        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_STAKE],
+      },
+      {
+        method: TEZOS_SAMPLE_KINDS.SEND_UNSTAKE,
+        callback: onSignUnstake,
+        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_UNSTAKE],
+      },
+      {
+        method: TEZOS_SAMPLE_KINDS.SEND_FINALIZE,
+        callback: onSignFinalize,
+        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_FINALIZE],
+      },
+      {
+        method: TEZOS_SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE,
+        callback: onSignIncreasePaidStorage,
+        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE],
+      },
+      {
+        method: TEZOS_SAMPLE_KINDS.SIGN,
         callback: onSignMessage,
       },
     ];
