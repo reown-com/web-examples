@@ -14,7 +14,9 @@ export function getPublicUrl() {
 }
 
 export const CUSTOM_WALLET = "wc:custom_wallet";
-
+export const WC_COSIGNER_BASE_URL = "https://rpc.walletconnect.com/v1/sessions";
+export const USEROP_BUILDER_SERVICE_BASE_URL =
+  "https://react-wallet.walletconnect.com/api";
 // eslint-disable-next-line init-declarations
 let storedCustomWallet;
 if (typeof window !== "undefined") {

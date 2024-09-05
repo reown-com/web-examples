@@ -5,7 +5,7 @@ import {
 } from "../utils/EncodingUtils";
 import { walletActionsErc7715 } from "viem/experimental";
 import { createPublicClient, custom } from "viem";
-import { WalletConnectCosigner } from "../utils/WalletConnectCosigner";
+import { WalletConnectCosigner } from "../utils/WalletConnectCosignerUtils";
 import { useDcaApplicationContext } from "../context/DcaApplicationContextProvider";
 import { DCAFormSchemaType } from "@/schema/DCAFormSchema";
 import { getSampleAsyncDCAPermissions } from "@/utils/DCAUtils";
