@@ -89,6 +89,7 @@ export function decodeErc20Transaction({
   if (functionName !== 'transfer') {
     return null
   }
+  
   return {
     to: args[0],
     contract: to as Hex,

@@ -35,43 +35,51 @@ export default function SessionSendTransactionModal() {
   useEffect(() => {
     const multibridgeCheck = async () => {
       setIsTypeResolved(false)
-      if (!request) {
-        setIsTypeResolved(true)
-        return
-      }
-      const transfer = decodeErc20Transaction(request.params[0])
-      if (!transfer) {
-        setIsTypeResolved(true)
-        return
-      }
-      const parsedChainId = chainId?.split(':')[1]
-      const tokenBalance = await getErc20TokenBalance(
-        transfer.contract,
-        Number(parsedChainId),
-        transfer.from,
-        false
-      )
-      if (transfer.amount <= tokenBalance) {
-        setIsTypeResolved(true)
-        return
-      }
-      const otherTokens = getCrossChainTokens(transfer.contract)
-      let otherBalance = 0
-      for (const chain in otherTokens) {
-        const balance = await getErc20TokenBalance(
-          otherTokens[Number(chain)],
-          Number(chain),
+      try {
+        if (!request) {
+          setIsTypeResolved(true)
+          return
+        }
+        const transfer = decodeErc20Transaction(request.params[0])
+        if (!transfer) {
+          setIsTypeResolved(true)
+          return
+        }
+        const parsedChainId = chainId?.split(':')[1]
+        const tokenBalance = await getErc20TokenBalance(
+          transfer.contract,
+          Number(parsedChainId),
           transfer.from,
           false
         )
-        otherBalance += balance
-      }
-      if (transfer.amount > otherBalance) {
+        if (transfer.amount <= tokenBalance) {
+          setIsTypeResolved(true)
+          return
+        }
+        const otherTokens = getCrossChainTokens(transfer.contract)
+        let otherBalance = 0
+
+        for (const chain in otherTokens) {
+          const balance = await getErc20TokenBalance(
+            otherTokens[Number(chain)],
+            Number(chain),
+            transfer.from,
+            false
+          )
+          otherBalance += balance
+        }
+        if (transfer.amount > otherBalance) {
+          setIsTypeResolved(true)
+          return
+        }
+        console.log('Balance on other chains', { otherBalance, requiredBalance: transfer.amount })
+
+        setShouldUseMultibridge(true)
+      } catch (error) {
+        console.log('Unable to check multibridge availability', error)
+      } finally {
         setIsTypeResolved(true)
-        return
       }
-      setShouldUseMultibridge(true)
-      setIsTypeResolved(true)
     }
     multibridgeCheck()
   }, [request, chainId])
