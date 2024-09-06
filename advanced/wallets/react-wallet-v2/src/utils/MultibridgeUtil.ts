@@ -66,6 +66,12 @@ export async function getErc20TokenBalance(
   return Number(balance)
 }
 
+export type BridgingRequest = {
+    transfer: Erc20Transfer,
+    sourceChain: number,
+    targetChain: number,
+}
+
 type Erc20Transfer = {
   from: Hex
   to: Hex
@@ -221,7 +227,7 @@ async function getBridgeStatus(params: BridgeStatusParams): Promise<any> {
 
 
 export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155Lib | SmartAccountLib, provider: providers.JsonRpcProvider): Promise<any> {
-    console.log('Bridging funds');
+    console.log('Bridging funds', bridgingParams);
     const quote = await getQuote(bridgingParams)
     console.log('Fetched quote', quote);
 

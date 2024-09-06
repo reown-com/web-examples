@@ -10,6 +10,7 @@ import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from '@/components/RequestModal'
 import {
+  BridgingRequest,
   decodeErc20Transaction,
   getCrossChainTokens,
   getErc20TokenBalance
@@ -21,6 +22,7 @@ export default function SessionSendTransactionModal() {
   const [isLoadingReject, setIsLoadingReject] = useState(false)
   const [isTypeResolved, setIsTypeResolved] = useState(false)
   const [shouldUseMultibridge, setShouldUseMultibridge] = useState(false)
+  const [bridgingRequest, setBridingRequest] = useState<BridgingRequest>()
 
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
@@ -58,6 +60,7 @@ export default function SessionSendTransactionModal() {
         }
         const otherTokens = getCrossChainTokens(transfer.contract)
         let otherBalance = 0
+        let otherChain = 0
 
         for (const chain in otherTokens) {
           const balance = await getErc20TokenBalance(
@@ -66,15 +69,24 @@ export default function SessionSendTransactionModal() {
             transfer.from,
             false
           )
-          otherBalance += balance
+          if (balance >= transfer.amount) {
+            otherBalance = balance
+            otherChain = Number(chain)
+            setShouldUseMultibridge(true)
+            setIsTypeResolved(true)
+            console.log('Found chain to bridge from', {
+              otherBalance,
+              requiredBalance: transfer.amount,
+              otherChain
+            })
+            setBridingRequest({
+              transfer,
+              sourceChain: otherChain,
+              targetChain: Number(parsedChainId)
+            })
+            return
+          }
         }
-        if (transfer.amount > otherBalance) {
-          setIsTypeResolved(true)
-          return
-        }
-        console.log('Balance on other chains', { otherBalance, requiredBalance: transfer.amount })
-
-        setShouldUseMultibridge(true)
       } catch (error) {
         console.log('Unable to check multibridge availability', error)
       } finally {
@@ -155,9 +167,8 @@ export default function SessionSendTransactionModal() {
     </RequestModal>
   ) : (
     <MultibridgeRequestModal
-      onApprove={onApprove}
+      bridgingRequest={bridgingRequest}
       onReject={onReject}
-      approveLoader={{ active: isLoadingApprove }}
       rejectLoader={{ active: isLoadingReject }}
     />
   )
