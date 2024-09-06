@@ -122,7 +122,7 @@ export default function SessionSendTransactionModal() {
   if (!isTypeResolved) {
     return (
       <Card>
-        <Card.Body css={{ paddingTop: '$30', paddingBottom: '$30' }}>
+        <Card.Body css={{ paddingTop: '$20', paddingBottom: '$20' }}>
           <Loading type="points"></Loading>
         </Card.Body>
       </Card>
