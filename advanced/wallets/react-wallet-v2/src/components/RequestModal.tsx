@@ -1,14 +1,13 @@
 import { Fragment, ReactNode, useMemo, useState } from 'react'
 import { Divider } from '@nextui-org/react'
 import { CoreTypes } from '@walletconnect/types'
-
 import ModalFooter, { LoaderProps } from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import VerifyInfobox from '@/components/VerifyInfobox'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
-import ThreatPrompt from './TheatPrompt'
+import ThreatPrompt from '../views/TheatPrompt'
 
 interface IProps {
   children: ReactNode

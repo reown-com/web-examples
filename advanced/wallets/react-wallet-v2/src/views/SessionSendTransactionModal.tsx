@@ -8,12 +8,13 @@ import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '@/components/RequestModal'
 import {
   decodeErc20Transaction,
   getCrossChainTokens,
   getErc20TokenBalance
 } from '@/utils/MultibridgeUtil'
+import MultibridgeRequestModal from '@/components/MultibridgeRequestModal'
 
 export default function SessionSendTransactionModal() {
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
@@ -145,19 +146,11 @@ export default function SessionSendTransactionModal() {
       <RequestMethodCard methods={[request.method]} />
     </RequestModal>
   ) : (
-    <RequestModal
-      intention="Multibridge"
-      metadata={requestSession?.peer.metadata}
+    <MultibridgeRequestModal
       onApprove={onApprove}
       onReject={onReject}
       approveLoader={{ active: isLoadingApprove }}
       rejectLoader={{ active: isLoadingReject }}
-    >
-      <RequestDataCard data={transaction} />
-      <Divider y={1} />
-      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession?.relay.protocol} />
-      <Divider y={1} />
-      <RequestMethodCard methods={[request.method]} />
-    </RequestModal>
+    />
   )
 }

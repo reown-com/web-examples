@@ -61,6 +61,22 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     rgb: '242, 242, 242',
     rpc: 'https://mainnet.era.zksync.io/',
     namespace: 'eip155'
+  },
+  'eip155:8453': {
+    chainId: 8453,
+    name: 'Base',
+    logo: '/chain-logos/base.webp',
+    rgb: '22, 83, 241',
+    rpc: 'https://mainnet.base.org',
+    namespace: 'eip155'
+  },
+  'eip155:42161': {
+    chainId: 42161,
+    name: 'Arbitrum',
+    logo: '/chain-logos/arbitrum.webp',
+    rgb: '27, 74, 220',
+    rpc: 'https://arb1.arbitrum.io/rpc	',
+    namespace: 'eip155'
   }
 }
 

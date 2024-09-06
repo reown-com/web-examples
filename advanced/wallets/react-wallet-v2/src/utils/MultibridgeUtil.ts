@@ -1,20 +1,21 @@
 import { createPublicClient, decodeFunctionData, erc20Abi, getContract, Hex, http } from 'viem'
-import { baseSepolia, optimismSepolia, sepolia } from 'viem/chains'
+import { arbitrum, base, optimism} from 'viem/chains'
 import { getChainById } from './ChainUtil'
-import { useMemo, useState } from 'react'
-import { SignClientTypes } from '@walletconnect/types'
+import EIP155Lib from '@/lib/EIP155Lib'
+import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
+import { providers } from 'ethers'
 
-// FAKE USDC 0x94a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8
-// REAL USDC 0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238
+const BASE_URL = 'https://api.socket.tech/v2'
+
 export const supportedAssets: Record<string, Record<number, Hex>> = {
   USDC: {
-    [sepolia.id]: '0x94a9d9ac8a22534e3faca9f4e7f2e2cf85d5e4c8',
-    [optimismSepolia.id]: '0x5fd84259d66Cd46123540766Be93DFE6D43130D7',
-    [baseSepolia.id]: '0x036CbD53842c5426634e7929541eC2318f3dCF7e'
+    [base.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+    [optimism.id]: '0x0b2c639c533813f4aa9d7837caf62653d097ff85',
+    [arbitrum.id]: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
   }
 } as const
 
-export const supportedChains = [sepolia, baseSepolia, optimismSepolia] as const
+export const supportedChains = [base, optimism, arbitrum] as const
 
 export function getCrossChainTokens(address: Hex): Record<number, Hex> | undefined {
   const otherTokens: Record<number, Hex> = {}
@@ -96,62 +97,168 @@ export function decodeErc20Transaction({
   }
 }
 
-export function useMultibridge() {
-  const [request, setRequest] = useState<SignClientTypes.EventArguments['session_request']>()
-  const shouldUseMultibridge = useMemo(async () => {
-    if (!request) {
-      return false
-    }
-    const transfer = decodeErc20Transaction(request.params.request.params[0])
-    if (!transfer) {
-      // request is not erc20 transfer, open regular view
-      return false
-    }
-    const chainId = request.params.chainId.split(':')[1]
-    const tokenBalance = await getErc20TokenBalance(
-      transfer.contract,
-      Number(chainId),
-      transfer.from,
-      false
-    )
-    if (transfer.amount <= tokenBalance) {
-      return false
-    }
-    const otherTokens = getCrossChainTokens(transfer.contract)
-    let otherBalance = 0
-    for (const chain in otherTokens) {
-      const balance = await getErc20TokenBalance(
-        otherTokens[Number(chain)],
-        Number(chain),
-        transfer.from,
-        false
-      )
-      otherBalance += balance
-    }
-    console.log({ otherBalance })
-    if (transfer.amount <= otherBalance) {
-      return false
-    }
-    return true
-  }, [request])
+async function sendSocketRequest(method: "GET" | "POST", endpoint: string, body?: any): Promise<any> {
+    const url = new URL(`${BASE_URL}/${endpoint}`);
 
-  return {
-    shouldUseMultibridge,
-    setRequest
+    const API_KEY = process.env['NEXT_PUBLIC_SOCKET_KEY']
+    if (!API_KEY) {
+        throw new Error('Socket API key is not set up')
+    }
+    const headers: any = {
+        'API-KEY': API_KEY,
+        Accept: 'application/json'
+      }
+      if (method === 'POST') {
+        headers['Content-Type'] = 'application/json'
+      }
+    const response = await fetch(url, {
+      method,
+      headers,
+      body: method === "POST" ? JSON.stringify(body) : undefined,
+    });
+    if (response.status >= 300) {
+        throw new Error('Unable to send request to Socket')
+    }
+  
+    const json = await response.json();
+    return json;
   }
+  
+
+interface BridgingParams {
+  fromChainId: number
+  toChainId: number
+  fromAssetAddress: string
+  toAssetAddress: string
+  amount: number
+  userAddress: string
+  uniqueRoutesPerBridge?: boolean
+  sort?: 'output' | 'gas' | 'time'
+  singleTxOnly?: boolean
 }
 
-export function useTokenBalance(
-  tokenAddress: Hex,
-  chainId: number,
-  account: Hex,
-  convert: boolean = true
-) {
-  const getBalance = useMemo(async () => {
-    const tokenBalance = await getErc20TokenBalance(tokenAddress, Number(chainId), account, convert)
-  }, [tokenAddress, chainId, account, convert])
-
-  return {
-    getBalance
+async function getQuote(params: BridgingParams): Promise<any> {
+  const urlParams = new URLSearchParams()
+  urlParams.set('fromChainId', params.fromChainId.toString())
+  urlParams.set('fromTokenAddress', params.fromAssetAddress)
+  urlParams.set('toChainId', params.toChainId.toString())
+  urlParams.set('toTokenAddress', params.toAssetAddress)
+  urlParams.set('fromAmount', params.amount.toString())
+  urlParams.set('userAddress', params.userAddress)
+  if (params.uniqueRoutesPerBridge !== undefined) {
+    urlParams.set('uniqueRoutesPerBridge', params.uniqueRoutesPerBridge.toString())
   }
+  if (params.sort !== undefined) {
+    urlParams.set('sort', params.sort)
+  }
+  if (params.singleTxOnly !== undefined) {
+    urlParams.set('singleTxOnly', params.singleTxOnly.toString())
+  }
+
+  const json = await sendSocketRequest('GET', `quote?${urlParams.toString()}`)
+  return json
+}
+
+async function getRouteTransactionData(route: any): Promise<any> {
+  const json = await sendSocketRequest('POST', 'build-tx', {route})
+  return json
+}
+
+interface AllowanceCheckParams {
+  chainId: number
+  owner: string
+  allowanceTarget: number 
+  tokenAddress: string
+}
+
+async function checkAllowance(params: AllowanceCheckParams): Promise<any> {
+  const urlParams = new URLSearchParams()
+  urlParams.set('chainID', params.chainId.toString())
+  urlParams.set('owner', params.owner)
+  urlParams.set('allowanceTarget', params.allowanceTarget.toString()) 
+  urlParams.set('tokenAddress', params.tokenAddress)
+
+  const json = await sendSocketRequest('GET', `approval/check-allowance?${urlParams.toString()}`)
+  return json
+}
+
+interface ApprovalTransactionParams {
+  chainId: number
+  owner: string
+  allowanceTarget: number 
+  tokenAddress: string
+  amount: number 
+}
+
+async function getApprovalTransactionData(params: ApprovalTransactionParams): Promise<any> {
+  const urlParams = new URLSearchParams()
+  urlParams.set('chainID', params.chainId.toString())
+  urlParams.set('owner', params.owner)
+  urlParams.set('allowanceTarget', params.allowanceTarget.toString())
+  urlParams.set('tokenAddress', params.tokenAddress)
+  urlParams.set('amount', params.amount.toString())
+
+  const json = await sendSocketRequest('GET', `approval/build-tx?${urlParams.toString()}`)
+  return json
+}
+
+interface BridgeStatusParams {
+  transactionHash: string
+  fromChainId: number
+  toChainId: number
+}
+
+async function getBridgeStatus(params: BridgeStatusParams): Promise<any> {
+  const urlParams = new URLSearchParams()
+  urlParams.set('transactionHash', params.transactionHash)
+  urlParams.set('fromChainId', params.fromChainId.toString())
+  urlParams.set('toChainId', params.toChainId.toString())
+
+  const json = await sendSocketRequest('GET', `bridge-status?${urlParams.toString()}`)
+  return json
+}
+
+
+export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155Lib | SmartAccountLib, provider: providers.JsonRpcProvider): Promise<any> {
+    console.log('Bridging funds');
+    const quote = await getQuote(bridgingParams)
+    console.log('Fetched quote', quote);
+
+    const route = quote.result.routes[0];
+    if (!route) {
+        throw new Error("No routes found");
+    }
+    const apiReturnData = await getRouteTransactionData(route);
+    const approvalData = apiReturnData.result.approvalData;
+    const { allowanceTarget, minimumApprovalAmount } = approvalData;
+
+    console.log({approvalData});
+    // approvalData from apiReturnData is null for native tokens
+    // Values are returned for ERC20 tokens but token allowance needs to be checked
+    if (approvalData !== null) {
+        // Fetches token allowance given to Bungee contracts
+        const allowanceCheckStatus = await checkAllowance({
+            chainId: bridgingParams.fromChainId,
+            owner: bridgingParams.userAddress,
+            allowanceTarget,
+            tokenAddress: bridgingParams.fromAssetAddress 
+        });
+        const allowanceValue = allowanceCheckStatus.result?.value;
+        console.log('Allowance value', allowanceValue);
+        if (minimumApprovalAmount > allowanceValue) {
+            console.log('Bungee contracts don\'t have sufficient allowance');
+            const approvalTransactionData = await getApprovalTransactionData({
+                chainId: bridgingParams.fromChainId,
+                owner: bridgingParams.userAddress,
+                allowanceTarget,
+                tokenAddress: bridgingParams.fromAssetAddress,
+                amount: bridgingParams.amount
+            });
+            console.log('Approval transaction fetched',approvalTransactionData);
+        }
+        
+
+    }
+    
+    
 }
