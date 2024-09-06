@@ -16,6 +16,7 @@ import {
   getErc20TokenBalance
 } from '@/utils/MultibridgeUtil'
 import MultibridgeRequestModal from '@/components/MultibridgeRequestModal'
+import SettingsStore from '@/store/SettingsStore'
 
 export default function SessionSendTransactionModal() {
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
@@ -39,6 +40,10 @@ export default function SessionSendTransactionModal() {
       setIsTypeResolved(false)
       try {
         if (!request) {
+          setIsTypeResolved(true)
+          return
+        }
+        if (!SettingsStore.state.chainAbstractionEnabled) {
           setIsTypeResolved(true)
           return
         }

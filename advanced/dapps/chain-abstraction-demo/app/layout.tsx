@@ -7,6 +7,7 @@ import AppKitProvider from "@/context";
 import { Toaster } from "@/components/ui/toaster";
 import { headers } from "next/headers";
 import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -35,9 +36,15 @@ export default function RootLayout({
         )}
       >
         <AppKitProvider initialState={initialState}>
-          <div className="flex items-center justify-center min-h-screen">
-            {children}
-          </div>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            disableTransitionOnChange
+          >
+            <div className="flex items-center justify-center min-h-screen">
+              {children}
+            </div>
+          </ThemeProvider>
         </AppKitProvider>
         <Toaster />
       </body>

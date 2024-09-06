@@ -2,7 +2,7 @@ import { LoaderProps } from '@/components/ModalFooter'
 import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
-import { Divider, Text } from '@nextui-org/react'
+import { Avatar, Col, Container, Divider, Row, Text } from '@nextui-org/react'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 import ModalStore from '@/store/ModalStore'
@@ -10,6 +10,7 @@ import { useCallback, useState } from 'react'
 import {
   bridgeFunds,
   BridgingRequest,
+  convertTokenBalance,
   getAssetByContractAddress,
   supportedAssets
 } from '@/utils/MultibridgeUtil'
@@ -17,6 +18,7 @@ import { getWallet } from '@/utils/EIP155WalletUtil'
 
 import { styledToast } from '@/utils/HelperUtil'
 import { approveEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
+import { EIP155_CHAINS, EIP155_MAINNET_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 
 interface IProps {
   onReject: () => void
@@ -101,6 +103,12 @@ export default function MultibridgeRequestModal({
     return <Text>Request not found</Text>
   }
 
+  const asset = getAssetByContractAddress(bridgingRequest.transfer.contract)
+  const amount = convertTokenBalance(asset, bridgingRequest.transfer.amount)
+  const destination = bridgingRequest.transfer.to
+  const sourceChain = EIP155_CHAINS[`eip155:${bridgingRequest.sourceChain}` as TEIP155Chain]
+  const targetChain = EIP155_CHAINS[`eip155:${bridgingRequest.targetChain}` as TEIP155Chain]
+
   return (
     <RequestModal
       intention="Multibridge"
@@ -109,10 +117,44 @@ export default function MultibridgeRequestModal({
       onReject={onReject}
       approveLoader={{ active: isLoadingApprove }}
       rejectLoader={rejectLoader}
+      disableThreatDetection={true}
     >
-      <RequestDataCard data={transaction} />
+      <Row>
+        <Col>
+          <Text h5>Transaction details</Text>
+          <Text
+            color=""
+            data-testid="request-details-chain"
+            css={{ paddingTop: '$6', paddingBottom: '$6' }}
+          >
+            Sending {amount} {asset} to:
+          </Text>
+          <Text color="$gray400" data-testid="request-details-chain" size="sm">
+            {destination}
+          </Text>
+        </Col>
+      </Row>
       <Divider y={1} />
-      <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession?.relay.protocol} />
+      <Row>
+        <Col>
+          <Text h5>Chain details</Text>
+          <Text color="">Target chain:</Text>
+          <Row align="center" css={{ marginTop: '$6' }}>
+            <Col>
+              <Avatar src={targetChain.logo} />
+            </Col>
+            <Col>{targetChain.name}</Col>
+          </Row>
+
+          <Text color="">Sourcing funds from:</Text>
+          <Row align="center" css={{ marginTop: '$6' }}>
+            <Col>
+              <Avatar src={sourceChain.logo} />
+            </Col>
+            <Col>{sourceChain.name}</Col>
+          </Row>
+        </Col>
+      </Row>
       <Divider y={1} />
       <RequestMethodCard methods={[request.method]} />
     </RequestModal>

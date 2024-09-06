@@ -18,6 +18,10 @@ export const supportedAssets: Record<string, Record<number, Hex>> = {
   }
 } as const
 
+const assetDecimals: Record<string, number> = {
+    'USDC': 6
+}
+
 export const supportedChains = [base, optimism, arbitrum] as const
 
 export function getCrossChainTokens(address: Hex): Record<number, Hex> | undefined {
@@ -43,6 +47,15 @@ export function getAssetByContractAddress(address: Hex): string {
     }
   }
   throw new Error('Asset not found for the given contract address')
+}
+
+export function convertTokenBalance(asset: string, amount: number): number {
+    const decimals = assetDecimals[asset]
+    if (!decimals) {
+        throw new Error('Asset not supported')
+    }
+    const balance = amount / (10**decimals)
+    return balance
 }
 
 export async function getErc20TokenBalance(
