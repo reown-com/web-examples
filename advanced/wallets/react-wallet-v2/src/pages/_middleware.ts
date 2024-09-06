@@ -25,7 +25,7 @@ export function middleware(req: NextRequest) {
     return new Response(null, {
       status: 204,
       headers: {
-        'Access-Control-Allow-Origin': process.env.NODE_ENV === 'production' ? '*' : (origin || ''),
+        'Access-Control-Allow-Origin': process.env.NODE_ENV === 'production' ? '*' : origin || '',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
       }

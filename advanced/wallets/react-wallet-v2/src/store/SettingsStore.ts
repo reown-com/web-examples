@@ -92,10 +92,8 @@ const state = proxy<State>({
     typeof localStorage !== 'undefined'
       ? Boolean(localStorage.getItem(MODULE_MANAGEMENT_ENABLED_KEY))
       : false,
-  chainAbstractionEnabled:  
-      typeof localStorage !== 'undefined'
-      ? Boolean(localStorage.getItem(CA_ENABLED_KEY))
-      : false,
+  chainAbstractionEnabled:
+    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false
 })
 
 /**

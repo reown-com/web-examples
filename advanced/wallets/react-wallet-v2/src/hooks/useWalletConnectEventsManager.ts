@@ -22,10 +22,7 @@ import { getWallet } from '@/utils/EIP155WalletUtil'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { refreshSessionsList } from '@/pages/wc'
 
-
 export default function useWalletConnectEventsManager(initialized: boolean) {
-
-
   /******************************************************************************
    * 1. Open session proposal modal for confirmation / rejection
    *****************************************************************************/
@@ -44,7 +41,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   const onAuthRequest = useCallback((request: Web3WalletTypes.AuthRequest) => {
     ModalStore.open('AuthRequestModal', { request })
   }, [])
-  
 
   /******************************************************************************
    * 3. Open request handling modal based on method that was used
