@@ -22,7 +22,7 @@ export default function SessionSendTransactionModal() {
   const [isLoadingReject, setIsLoadingReject] = useState(false)
   const [isTypeResolved, setIsTypeResolved] = useState(false)
   const [shouldUseMultibridge, setShouldUseMultibridge] = useState(false)
-  const [bridgingRequest, setBridingRequest] = useState<BridgingRequest>()
+  const [bridgingRequest, setBirdgingRequest] = useState<BridgingRequest>()
 
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
@@ -79,7 +79,7 @@ export default function SessionSendTransactionModal() {
               requiredBalance: transfer.amount,
               otherChain
             })
-            setBridingRequest({
+            setBirdgingRequest({
               transfer,
               sourceChain: otherChain,
               targetChain: Number(parsedChainId)
