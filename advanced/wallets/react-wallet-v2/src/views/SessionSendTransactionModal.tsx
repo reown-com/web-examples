@@ -72,18 +72,21 @@ export default function SessionSendTransactionModal() {
           if (balance >= transfer.amount) {
             otherBalance = balance
             otherChain = Number(chain)
-            setShouldUseMultibridge(true)
-            setIsTypeResolved(true)
+
             console.log('Found chain to bridge from', {
               otherBalance,
               requiredBalance: transfer.amount,
               otherChain
             })
-            setBirdgingRequest({
+            const bridgingRequest = {
               transfer,
               sourceChain: otherChain,
               targetChain: Number(parsedChainId)
-            })
+            }
+            console.log({ bridgingRequest })
+            setBirdgingRequest(bridgingRequest)
+            setShouldUseMultibridge(true)
+            setIsTypeResolved(true)
             return
           }
         }
@@ -150,7 +153,7 @@ export default function SessionSendTransactionModal() {
     )
   }
 
-  return !shouldUseMultibridge ? (
+  return !shouldUseMultibridge && isTypeResolved ? (
     <RequestModal
       intention="sign a transaction"
       metadata={requestSession?.peer.metadata}

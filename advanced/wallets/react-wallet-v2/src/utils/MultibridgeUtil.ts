@@ -4,8 +4,11 @@ import { getChainById } from './ChainUtil'
 import EIP155Lib from '@/lib/EIP155Lib'
 import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
 import { providers } from 'ethers'
+import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 
 const BASE_URL = 'https://api.socket.tech/v2'
+const WHITELIST_BRIDGES = 'across'
+const AMOUNT_MULTIPLIER = 1.1
 
 export const supportedAssets: Record<string, Record<number, Hex>> = {
   USDC: {
@@ -152,6 +155,7 @@ async function getQuote(params: BridgingParams): Promise<any> {
   urlParams.set('toTokenAddress', params.toAssetAddress)
   urlParams.set('fromAmount', params.amount.toString())
   urlParams.set('userAddress', params.userAddress)
+  urlParams.set('includeBridges',WHITELIST_BRIDGES)
   if (params.uniqueRoutesPerBridge !== undefined) {
     urlParams.set('uniqueRoutesPerBridge', params.uniqueRoutesPerBridge.toString())
   }
@@ -226,8 +230,9 @@ async function getBridgeStatus(params: BridgeStatusParams): Promise<any> {
 }
 
 
-export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155Lib | SmartAccountLib, provider: providers.JsonRpcProvider): Promise<any> {
+export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155Lib | SmartAccountLib): Promise<void> {
     console.log('Bridging funds', bridgingParams);
+    bridgingParams.amount = Math.round(bridgingParams.amount*1.1)
     const quote = await getQuote(bridgingParams)
     console.log('Fetched quote', quote);
 
@@ -238,7 +243,9 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
     const apiReturnData = await getRouteTransactionData(route);
     const approvalData = apiReturnData.result.approvalData;
     const { allowanceTarget, minimumApprovalAmount } = approvalData;
-
+    const sourceChainProvider = new providers.JsonRpcProvider(EIP155_CHAINS[`eip155:${bridgingParams.fromChainId}` as TEIP155Chain].rpc)
+    const sourceChainConnectedWallet = await wallet.connect(sourceChainProvider)
+    const walletAddress = wallet.getAddress()
     console.log({approvalData});
     // approvalData from apiReturnData is null for native tokens
     // Values are returned for ERC20 tokens but token allowance needs to be checked
@@ -262,10 +269,70 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
                 amount: bridgingParams.amount
             });
             console.log('Approval transaction fetched',approvalTransactionData);
+            const gasPrice = sourceChainProvider.getGasPrice()
+            const gasEstimate = await sourceChainProvider.estimateGas({
+                from: walletAddress,
+                to: approvalTransactionData.result?.to,
+                value: "0x00",
+                data: approvalTransactionData.result?.data,
+                gasPrice: gasPrice,
+            });
+            
+            const hash = await sourceChainConnectedWallet.sendTransaction({
+                from: approvalTransactionData.result?.from,
+                to: approvalTransactionData.result?.to,
+                value: "0x00",
+                data: approvalTransactionData.result?.data,
+                gasPrice: gasPrice,
+                gasLimit: gasEstimate,
+            })
+            const receipt = typeof hash === 'string' ? hash : hash?.hash
+            console.log("Approval Transaction", {receipt});
         }
-        
-
     }
-    
+
+    const gasPrice = await sourceChainProvider.getGasPrice();
+    let gasEstimate = BigInt('0x029a6b')*BigInt(4)
+    try {
+        const res = await sourceChainProvider.estimateGas({
+            from: walletAddress,
+            to: apiReturnData.result.txTarget,
+            value: apiReturnData.result.value,
+            data: apiReturnData.result.txData,
+            gasPrice: gasPrice,
+        });
+        gasEstimate = BigInt(res.toNumber())
+        console.log('Gas Estimate', gasEstimate);
+    } catch{
+        console.log('Failed gas estimate. Using default with 4x increase');
+    }
+
+    const hash = await sourceChainConnectedWallet.sendTransaction({
+        from: walletAddress,
+        to: apiReturnData.result.txTarget,
+        data: apiReturnData.result.txData,
+        value: apiReturnData.result.value,
+        gasPrice: gasPrice,
+        gasLimit: gasEstimate,
+    });
+    const receipt = typeof hash === 'string' ? hash : hash?.hash
+    console.log("Bridging Transaction : ", {receipt});
+    let interations = 0
+    while (interations < 20) {
+        const status = await getBridgeStatus({
+            transactionHash: receipt, 
+            fromChainId: bridgingParams.fromChainId, 
+            toChainId: bridgingParams.toChainId
+        });
+        console.log(
+            `SOURCE TX : ${status.result.sourceTxStatus}\nDEST TX : ${status.result.destinationTxStatus}`
+          );
+          if (status.result.destinationTxStatus == "COMPLETED") {
+            console.log("BRIDGE COMPLETED. DEST TX HASH :", status.result.destinationTransactionHash);
+            return
+          }
+        await new Promise(resolve => setTimeout(resolve, 3500));
+        interations++
+    }
     
 }

@@ -3,9 +3,10 @@ import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import { Divider, Text } from '@nextui-org/react'
+import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 import ModalStore from '@/store/ModalStore'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   bridgeFunds,
   BridgingRequest,
@@ -13,9 +14,9 @@ import {
   supportedAssets
 } from '@/utils/MultibridgeUtil'
 import { getWallet } from '@/utils/EIP155WalletUtil'
-import { providers } from 'ethers'
-import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+
 import { styledToast } from '@/utils/HelperUtil'
+import { approveEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 
 interface IProps {
   onReject: () => void
@@ -47,7 +48,6 @@ export default function MultibridgeRequestModal({
     }
 
     const wallet = await getWallet(params)
-    const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
 
     const asset = getAssetByContractAddress(bridgingRequest.transfer.contract)
     if (!asset) {
@@ -70,8 +70,7 @@ export default function MultibridgeRequestModal({
         sort: 'time',
         singleTxOnly: true
       },
-      wallet,
-      provider
+      wallet
     )
   }, [params, chainId, bridgingRequest])
 
@@ -80,7 +79,15 @@ export default function MultibridgeRequestModal({
       setIsLoadingApprove(true)
       try {
         await bridge()
+        const response = await approveEIP155Request(requestEvent)
+        await web3wallet.respondSessionRequest({
+          topic,
+          response
+        })
       } catch (e) {
+        console.log('Error')
+        console.error(e)
+
         setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
         return

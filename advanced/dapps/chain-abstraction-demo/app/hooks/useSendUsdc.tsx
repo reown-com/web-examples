@@ -11,7 +11,7 @@ export default function useSendUsdc() {
       abi: erc20Abi,
       address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831", // arbitrum usdc
       functionName: "transfer",
-      args: ["0x81D8C68Be5EcDC5f927eF020Da834AA57cc3Bd24", BigInt(500000)],
+      args: ["0x81D8C68Be5EcDC5f927eF020Da834AA57cc3Bd24", BigInt(6000000)],
     });
     return tx;
   };
