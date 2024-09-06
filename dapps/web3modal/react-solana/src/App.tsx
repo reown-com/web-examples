@@ -39,7 +39,9 @@ const solanaConfig = defaultSolanaConfig({
   projectId,
   auth: {
     email: true,
-    socials: ['google', 'x', 'farcaster', 'github']
+    socials: ['google', 'x', 'discord', 'farcaster', 'github', 'apple', 'facebook'],
+    walletFeatures: true, //set to true by default
+    showWallets: true //set to true by default
   }
 })
 
@@ -49,6 +51,7 @@ createWeb3Modal({
     solanaConfig,
     chains,
     projectId,
+    enableOnramp: true //set to true by default
   })
   
 const App = () => {
