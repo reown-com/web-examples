@@ -1,6 +1,5 @@
 import { LoaderProps } from '@/components/ModalFooter'
-import RequestDataCard from '@/components/RequestDataCard'
-import RequesDetailsCard from '@/components/RequestDetalilsCard'
+
 import RequestMethodCard from '@/components/RequestMethodCard'
 import { Avatar, Col, Container, Divider, Row, Text } from '@nextui-org/react'
 import { web3wallet } from '@/utils/WalletConnectUtil'
@@ -18,7 +17,7 @@ import { getWallet } from '@/utils/EIP155WalletUtil'
 
 import { styledToast } from '@/utils/HelperUtil'
 import { approveEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
-import { EIP155_CHAINS, EIP155_MAINNET_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 
 interface IProps {
   onReject: () => void
@@ -42,7 +41,6 @@ export default function MultibridgeRequestModal({
 
   const chainId = params?.chainId
   const request = params?.request
-  const transaction = request?.params[0]
 
   const bridge = useCallback(async () => {
     if (!bridgingRequest) {
@@ -74,14 +72,26 @@ export default function MultibridgeRequestModal({
       },
       wallet
     )
-  }, [params, chainId, bridgingRequest])
+  }, [params, bridgingRequest])
 
   const onApprove = useCallback(async () => {
     if (requestEvent && topic) {
       setIsLoadingApprove(true)
       try {
         await bridge()
+        performance.mark('startInititalTransactionSend')
         const response = await approveEIP155Request(requestEvent)
+        performance.mark('endInititalTransactionSend')
+        console.log(
+          `Initial transaction send: ${
+            performance.measure(
+              'initial-tx-send',
+              'startInititalTransactionSend',
+              'endInititalTransactionSend'
+            ).duration
+          } ms`
+        )
+
         await web3wallet.respondSessionRequest({
           topic,
           response

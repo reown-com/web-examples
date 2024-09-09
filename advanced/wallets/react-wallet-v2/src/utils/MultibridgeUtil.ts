@@ -244,36 +244,46 @@ async function getBridgeStatus(params: BridgeStatusParams): Promise<any> {
 
 
 export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155Lib | SmartAccountLib): Promise<void> {
+    performance.mark('startGetQuote')
     console.log('Bridging funds', bridgingParams);
     bridgingParams.amount = Math.round(bridgingParams.amount*1.1)
     const quote = await getQuote(bridgingParams)
+    performance.mark('endGetQuote')
     console.log('Fetched quote', quote);
 
     const route = quote.result.routes[0];
     if (!route) {
         throw new Error("No routes found");
     }
+
+    performance.mark('startGetRouteTransactionData')
     const apiReturnData = await getRouteTransactionData(route);
+    performance.mark('endGetRouteTransactionData')
     const approvalData = apiReturnData.result.approvalData;
     const { allowanceTarget, minimumApprovalAmount } = approvalData;
+    performance.mark('startGetWalletAddress')
     const sourceChainProvider = new providers.JsonRpcProvider(EIP155_CHAINS[`eip155:${bridgingParams.fromChainId}` as TEIP155Chain].rpc)
     const sourceChainConnectedWallet = await wallet.connect(sourceChainProvider)
     const walletAddress = wallet.getAddress()
+    performance.mark('endGetWalletAddress')
     console.log({approvalData});
     // approvalData from apiReturnData is null for native tokens
     // Values are returned for ERC20 tokens but token allowance needs to be checked
     if (approvalData !== null) {
         // Fetches token allowance given to Bungee contracts
+        performance.mark('startCheckAllowance')
         const allowanceCheckStatus = await checkAllowance({
             chainId: bridgingParams.fromChainId,
             owner: bridgingParams.userAddress,
             allowanceTarget,
             tokenAddress: bridgingParams.fromAssetAddress 
         });
+        performance.mark('endCheckAllowance')
         const allowanceValue = allowanceCheckStatus.result?.value;
         console.log('Allowance value', allowanceValue);
         if (minimumApprovalAmount > allowanceValue) {
             console.log('Bungee contracts don\'t have sufficient allowance');
+            performance.mark('startGetApprovalTransactionData')
             const approvalTransactionData = await getApprovalTransactionData({
                 chainId: bridgingParams.fromChainId,
                 owner: bridgingParams.userAddress,
@@ -281,7 +291,8 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
                 tokenAddress: bridgingParams.fromAssetAddress,
                 amount: bridgingParams.amount
             });
-            console.log('Approval transaction fetched',approvalTransactionData);
+            performance.mark('endGetApprovalTransactionData')
+            performance.mark('startApprovalTransactionGasEstimate')
             const gasPrice = sourceChainProvider.getGasPrice()
             const gasEstimate = await sourceChainProvider.estimateGas({
                 from: walletAddress,
@@ -290,7 +301,9 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
                 data: approvalTransactionData.result?.data,
                 gasPrice: gasPrice,
             });
-            
+            performance.mark('endApprovalTransactionGasEstimate')
+
+            performance.mark('startApprovalTransactionSend')
             const hash = await sourceChainConnectedWallet.sendTransaction({
                 from: approvalTransactionData.result?.from,
                 to: approvalTransactionData.result?.to,
@@ -300,10 +313,12 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
                 gasLimit: gasEstimate,
             })
             const receipt = typeof hash === 'string' ? hash : hash?.hash
+            performance.mark('endApprovalTransactionSend')
             console.log("Approval Transaction", {receipt});
         }
     }
 
+    performance.mark('startBridgingTransactionGasEstimate')
     const gasPrice = await sourceChainProvider.getGasPrice();
     let gasEstimate = BigInt('0x029a6b')*BigInt(4)
     try {
@@ -319,7 +334,9 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
     } catch{
         console.log('Failed gas estimate. Using default with 4x increase');
     }
+    performance.mark('endBridgingTransactionGasEstimate')
 
+    performance.mark('startBridgingTransactionSend')
     const hash = await sourceChainConnectedWallet.sendTransaction({
         from: walletAddress,
         to: apiReturnData.result.txTarget,
@@ -330,6 +347,9 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
     });
     const receipt = typeof hash === 'string' ? hash : hash?.hash
     console.log("Bridging Transaction : ", {receipt});
+    performance.mark('endBridgingTransactionSend')
+
+    performance.mark('startBridgingTransactionCheck')
     let interations = 0
     while (interations < 20) {
         const status = await getBridgeStatus({
@@ -342,10 +362,25 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
           );
           if (status.result.destinationTxStatus == "COMPLETED") {
             console.log("BRIDGE COMPLETED. DEST TX HASH :", status.result.destinationTransactionHash);
+            performance.mark('endBridgingTransactionCheck')
+            printMeasurements()
             return
           }
-        await new Promise(resolve => setTimeout(resolve, 3500));
+        await new Promise(resolve => setTimeout(resolve, 1500));
         interations++
     }
-    
+}
+
+function printMeasurements(){
+  console.log(`Total duration: ${performance.measure('total-duration','startGetQuote','endBridgingTransactionCheck').duration} ms`);
+  console.log(`Get quote: ${performance.measure('get-quote','startGetQuote','endGetQuote').duration} ms`);
+  console.log(`Get Route Transaction Data: ${performance.measure('get-route-transaction','startGetRouteTransactionData','endGetRouteTransactionData').duration} ms`);
+  console.log(`Get Wallet Address: ${performance.measure('get-wallet-address','startGetWalletAddress','endGetWalletAddress').duration} ms`);
+  console.log(`Check Allowance: ${performance.measure('check-allowance','startCheckAllowance','endCheckAllowance').duration} ms`);
+  console.log(`Get Approval Transaction Data: ${performance.measure('get-approval-tx-data','startGetApprovalTransactionData','endGetApprovalTransactionData').duration} ms`);
+  console.log(`Get Approval Transaction Gas Estimate: ${performance.measure('get-approval-tx-gas-estimate','startApprovalTransactionGasEstimate','endApprovalTransactionGasEstimate').duration} ms`);
+  console.log(`Approval transaction send: ${performance.measure('approval-transaction-send','startApprovalTransactionSend','endApprovalTransactionSend').duration} ms`);
+  console.log(`Bridging transaction gas estimate: ${performance.measure('bridging-tx-gas-estimate','startBridgingTransactionGasEstimate','endBridgingTransactionGasEstimate').duration} ms`);
+  console.log(`Bridging transaction send: ${performance.measure('bridging-tx-send','startBridgingTransactionSend','endBridgingTransactionSend').duration} ms`);
+  console.log(`Bridging transaction check: ${performance.measure('bridging-tx-check','startBridgingTransactionCheck','endBridgingTransactionCheck').duration} ms`);
 }
