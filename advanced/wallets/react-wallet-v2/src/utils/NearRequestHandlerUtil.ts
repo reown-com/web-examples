@@ -66,7 +66,11 @@ export async function approveNearRequest(
       const [signedTx] = await nearWallet.signTransactions({
         chainId,
         topic,
-        transactions: [transactions.Transaction.decode(Buffer.from(request.params.transaction))]
+        transactions: [
+          transactions.Transaction.decode(
+            Buffer.from(Object.values(request.params.transaction as object))
+          )
+        ]
       })
 
       return formatJsonRpcResult(id, signedTx.encode())
@@ -107,7 +111,7 @@ export async function approveNearRequest(
         chainId,
         topic,
         transactions: params.request.params.transactions.map((tx: Uint8Array) => {
-          return transactions.Transaction.decode(Buffer.from(tx))
+          return transactions.Transaction.decode(Buffer.from(Object.values(tx)))
         })
       })
 
