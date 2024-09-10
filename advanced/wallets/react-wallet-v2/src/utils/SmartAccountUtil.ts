@@ -3,7 +3,7 @@ import { Hex, Chain as ViemChain } from 'viem'
 import { SessionTypes } from '@walletconnect/types'
 import { Chain, allowedChains } from '@/consts/smartAccounts'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
-import { sepolia } from 'viem/chains'
+import { baseSepolia, sepolia } from 'viem/chains'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
 
@@ -11,7 +11,8 @@ import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
 export const ENTRYPOINT_ADDRESSES: Record<Chain['name'], Hex> = {
   Sepolia: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
   'Polygon Mumbai': '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-  Goerli: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
+  Goerli: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+  'Base Sepolia': '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
 }
 
 // Paymasters
@@ -19,28 +20,32 @@ export const ENTRYPOINT_ADDRESSES: Record<Chain['name'], Hex> = {
 export const PAYMASTER_ADDRESSES: Record<Chain['name'], Hex> = {
   Sepolia: '0x0000000000325602a77416A16136FDafd04b299f',
   'Polygon Mumbai': '0x000000000009B901DeC1aaB9389285965F49D387',
-  Goerli: '0xEc43912D8C772A0Eba5a27ea5804Ba14ab502009'
+  Goerli: '0xEc43912D8C772A0Eba5a27ea5804Ba14ab502009',
+  'Base Sepolia': '0xEc43912D8C772A0Eba5a27ea5804Ba14ab502009', //Dummy
 }
 
 // USDC
 export const USDC_ADDRESSES: Record<Chain['name'], Hex> = {
   Sepolia: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
   'Polygon Mumbai': '0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97',
-  Goerli: '0x07865c6e87b9f70255377e024ace6630c1eaa37f'
+  Goerli: '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
+  'Base Sepolia': '0x07865c6e87b9f70255377e024ace6630c1eaa37f' //Dummy
 }
 
 // RPC URLs
 export const RPC_URLS: Record<ViemChain['name'], string> = {
   Sepolia: 'https://rpc.ankr.com/eth_sepolia',
   'Polygon Mumbai': 'https://mumbai.rpc.thirdweb.com',
-  Goerli: 'https://ethereum-goerli.publicnode.com'
+  Goerli: 'https://ethereum-goerli.publicnode.com',
+  'Base Sepolia': 'https://sepolia.base.org',
 }
 
 // Pimlico RPC names
 export const PIMLICO_NETWORK_NAMES: Record<ViemChain['name'], string> = {
   Sepolia: 'sepolia',
   'Polygon Mumbai': 'mumbai',
-  Goerli: 'goerli'
+  Goerli: 'goerli',
+  'Base Sepolia': 'base-sepolia'
 }
 
 export const publicRPCUrl = ({ chain }: UrlConfig) => {
@@ -73,7 +78,7 @@ export function supportedAddressPriority(
 }
 
 export const kernelAllowedChains = [sepolia]
-export const safeAllowedChains = [sepolia]
+export const safeAllowedChains = [sepolia, baseSepolia]
 export const biconomyAllowedChains = [sepolia]
 
 export let smartAccountWallets: Record<string, SmartAccountLib | KernelSmartAccountLib> = {}
