@@ -12,7 +12,7 @@ export const ENTRYPOINT_ADDRESSES: Record<Chain['name'], Hex> = {
   Sepolia: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
   'Polygon Mumbai': '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
   Goerli: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
-  'Base Sepolia': '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
+  'Base Sepolia': '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789'
 }
 
 // Paymasters
@@ -21,7 +21,7 @@ export const PAYMASTER_ADDRESSES: Record<Chain['name'], Hex> = {
   Sepolia: '0x0000000000325602a77416A16136FDafd04b299f',
   'Polygon Mumbai': '0x000000000009B901DeC1aaB9389285965F49D387',
   Goerli: '0xEc43912D8C772A0Eba5a27ea5804Ba14ab502009',
-  'Base Sepolia': '0xEc43912D8C772A0Eba5a27ea5804Ba14ab502009', //Dummy
+  'Base Sepolia': '0xEc43912D8C772A0Eba5a27ea5804Ba14ab502009' //Dummy
 }
 
 // USDC
@@ -37,7 +37,7 @@ export const RPC_URLS: Record<ViemChain['name'], string> = {
   Sepolia: 'https://rpc.ankr.com/eth_sepolia',
   'Polygon Mumbai': 'https://mumbai.rpc.thirdweb.com',
   Goerli: 'https://ethereum-goerli.publicnode.com',
-  'Base Sepolia': 'https://sepolia.base.org',
+  'Base Sepolia': 'https://sepolia.base.org'
 }
 
 // Pimlico RPC names

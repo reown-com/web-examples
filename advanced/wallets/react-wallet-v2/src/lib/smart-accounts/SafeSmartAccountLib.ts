@@ -20,7 +20,7 @@ import {
   mockValidator,
   Permission,
   smartSessionAddress,
-  userOperationBuilderAddress,
+  userOperationBuilderAddress
 } from '@biconomy/permission-context-builder'
 import { ModuleType } from 'permissionless/actions/erc7579'
 
@@ -72,9 +72,9 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       account: this.client.account,
       transport: http()
     })
-    console.log("walletClient chainId:",walletClient.chain.id)
+    console.log('walletClient chainId:', walletClient.chain.id)
     let permissionContext = '0x'
-    try{
+    try {
       permissionContext = await getContext(walletClient, {
         permissions: [...grantPermissionsRequestParameters.permissions] as unknown as Permission[],
         expiry: grantPermissionsRequestParameters.expiry,
@@ -85,7 +85,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       console.error(`Error getting permission context: ${error}`)
       throw error
     }
-    
+
     console.log(`Returning the permissions request`)
     return {
       permissionsContext: permissionContext,
