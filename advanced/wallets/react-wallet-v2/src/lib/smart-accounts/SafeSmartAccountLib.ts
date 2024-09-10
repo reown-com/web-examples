@@ -20,7 +20,7 @@ import {
   mockValidator,
   Permission,
   smartSessionAddress,
-  userOperationBuilderAddress
+  userOperationBuilderAddress,
 } from '@biconomy/permission-context-builder'
 import { ModuleType } from 'permissionless/actions/erc7579'
 
@@ -72,20 +72,27 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       account: this.client.account,
       transport: http()
     })
-
-    const permissionContext = await getContext(walletClient, {
-      permissions: [...grantPermissionsRequestParameters.permissions] as unknown as Permission[],
-      expiry: grantPermissionsRequestParameters.expiry,
-      signer: grantPermissionsRequestParameters.signer as MultiKeySigner,
-      smartAccountAddress: this.client.account.address
-    })
+    console.log("walletClient chainId:",walletClient.chain.id)
+    let permissionContext = '0x'
+    try{
+      permissionContext = await getContext(walletClient, {
+        permissions: [...grantPermissionsRequestParameters.permissions] as unknown as Permission[],
+        expiry: grantPermissionsRequestParameters.expiry,
+        signer: grantPermissionsRequestParameters.signer as MultiKeySigner,
+        smartAccountAddress: this.client.account.address
+      })
+    } catch (error) {
+      console.error(`Error getting permission context: ${error}`)
+      throw error
+    }
+    
     console.log(`Returning the permissions request`)
     return {
       permissionsContext: permissionContext,
       grantedPermissions: grantPermissionsRequestParameters.permissions,
       expiry: grantPermissionsRequestParameters.expiry,
       signerData: {
-        userOpBuilder: userOperationBuilderAddress,
+        userOpBuilder: userOperationBuilderAddress[this.chain.id] as Address,
         submitToAddress: this.client.account.address
       }
     } as WalletGrantPermissionsReturnType
@@ -110,11 +117,12 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
       let smartSessionValidatorInstalled = false
       let mockValidatorInstalled = false
-
+      console.log(`SmartSession Address: ${smartSessionAddress[this.chain.id]}`)
+      console.log(`mockValidator Address: ${mockValidator[this.chain.id]}`)
       if (isAccountDeployed) {
         ;[smartSessionValidatorInstalled, mockValidatorInstalled] = await Promise.all([
-          this.isValidatorModuleInstalled(smartSessionAddress),
-          this.isValidatorModuleInstalled(mockValidator)
+          this.isValidatorModuleInstalled(smartSessionAddress[this.chain.id] as Address),
+          this.isValidatorModuleInstalled(mockValidator[this.chain.id] as Address)
         ])
       }
       console.log({ smartSessionValidatorInstalled, mockValidatorInstalled })
@@ -134,7 +142,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
       if (!isAccountDeployed || !smartSessionValidatorInstalled) {
         installModules.push({
-          address: smartSessionAddress,
+          address: smartSessionAddress[this.chain.id],
           type: 'validator',
           context: '0x'
         })
@@ -142,7 +150,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
       if (!isAccountDeployed || !mockValidatorInstalled) {
         installModules.push({
-          address: mockValidator,
+          address: mockValidator[this.chain.id],
           type: 'validator',
           context: '0x'
         })
