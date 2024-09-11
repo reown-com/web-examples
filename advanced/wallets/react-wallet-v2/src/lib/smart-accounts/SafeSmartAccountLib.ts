@@ -16,14 +16,14 @@ import {
 } from 'viem'
 import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 import {
-  getContext,
   mockValidator,
   Permission,
-  smartSessionAddress,
   userOperationBuilderAddress
 } from '@biconomy/permission-context-builder'
 import { ModuleType } from 'permissionless/actions/erc7579'
-
+import { getContext } from './builders/ContextBuilderUtil'
+const { SMART_SESSIONS_ADDRESS } =
+  require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 export class SafeSmartAccountLib extends SmartAccountLib {
   protected ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
   protected SAFE_4337_MODULE_ADDRESS: Address = '0x3Fdb5BC686e861480ef99A6E3FaAe03c0b9F32e2'
@@ -117,11 +117,11 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
       let smartSessionValidatorInstalled = false
       let mockValidatorInstalled = false
-      console.log(`SmartSession Address: ${smartSessionAddress[this.chain.id]}`)
+      console.log(`SmartSession Address: ${SMART_SESSIONS_ADDRESS}`)
       console.log(`mockValidator Address: ${mockValidator[this.chain.id]}`)
       if (isAccountDeployed) {
         ;[smartSessionValidatorInstalled, mockValidatorInstalled] = await Promise.all([
-          this.isValidatorModuleInstalled(smartSessionAddress[this.chain.id] as Address),
+          this.isValidatorModuleInstalled(SMART_SESSIONS_ADDRESS as Address),
           this.isValidatorModuleInstalled(mockValidator[this.chain.id] as Address)
         ])
       }
@@ -142,7 +142,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
       if (!isAccountDeployed || !smartSessionValidatorInstalled) {
         installModules.push({
-          address: smartSessionAddress[this.chain.id],
+          address: SMART_SESSIONS_ADDRESS,
           type: 'validator',
           context: '0x'
         })

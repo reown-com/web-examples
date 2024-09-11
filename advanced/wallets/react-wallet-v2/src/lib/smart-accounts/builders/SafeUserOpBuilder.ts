@@ -33,7 +33,10 @@ import { bundlerUrl, paymasterUrl, publicClientUrl } from '@/utils/SmartAccountU
 
 import { getChainById } from '@/utils/ChainUtil'
 import { SAFE_FALLBACK_HANDLER_STORAGE_SLOT } from '@/consts/smartAccounts'
-import { formatSignature } from './SmartSessionUserOpBuilder'
+import { formatSignature, getDummySignature } from './ContextBuilderUtil'
+const {
+  SMART_SESSIONS_ADDRESS,
+} = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 const ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
 
@@ -96,15 +99,16 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       chain: this.chain,
       bundlerTransport,
       middleware: {
-        sponsorUserOperation:
-          params.capabilities.paymasterService && paymasterClient.sponsorUserOperation, // optional
+        sponsorUserOperation:paymasterClient.sponsorUserOperation,
+          // params.capabilities.paymasterService && paymasterClient.sponsorUserOperation, // optional
         gasPrice: async () => (await pimlicoBundlerClient.getUserOperationGasPrice()).fast // if using pimlico bundler
       }
     })
     const account = smartAccountClient.account
-
-    const validatorAddress = (params.capabilities.permissions?.context.slice(0, 42) ||
-      zeroAddress) as Address
+    const nonceKey = SMART_SESSIONS_ADDRESS
+    // const validatorAddress = (params.capabilities.permissions?.context.slice(0, 42) ||
+    //   zeroAddress) as Address
+    const validatorAddress = SMART_SESSIONS_ADDRESS as Address
     let nonce: bigint = await getAccountNonce(this.publicClient, {
       sender: this.accountAddress,
       entryPoint: ENTRYPOINT_ADDRESS_V07,
@@ -116,13 +120,19 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       )
     })
 
+    const signature = await getDummySignature(this.publicClient, {
+      permissionsContext: params.capabilities.permissions?.context!,
+      accountAddress: this.accountAddress
+    })
+    console.log('dummySignature', signature)
     const userOp = await smartAccountClient.prepareUserOperationRequest({
       userOperation: {
         nonce: nonce,
         callData: await account.encodeCallData(params.calls),
-        callGasLimit: BigInt('0x1E8480'),
-        verificationGasLimit: BigInt('0x1E8480'),
-        preVerificationGas: BigInt('0x1E8480')
+        // callGasLimit: BigInt('0x1E8480'),
+        // verificationGasLimit: BigInt('0x1E8480'),
+        // preVerificationGas: BigInt('0x1E8480'),
+        signature: signature
       },
       account: account
     })
