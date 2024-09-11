@@ -109,21 +109,46 @@ export function isAllowedSafeChain(chainId: number): boolean {
   return safeAllowedChains.some(chain => chain.id == chainId)
 }
 
-export async function createOrRestoreSafeSmartAccount(privateKey: string) {
-  const lib = new SafeSmartAccountLib({
-    privateKey,
-    chain: sepolia,
-    sponsored: true,
-    entryPointVersion: 7
-  })
-  await lib.init()
-  const address = lib.getAddress()
-  const key = `${sepolia.id}:${address}`
-  if (!smartAccountWallets[key]) {
-    smartAccountWallets[key] = lib
+const initializeSafeSmartAccountLib = async (chain: Chain, privateKey: string) => {
+  try {
+    const lib = new SafeSmartAccountLib({
+      privateKey,
+      chain,
+      sponsored: true,
+      entryPointVersion: 7
+    })
+    await lib.init()
+    return lib
+  } catch (error) {
+    console.error(`Error initializing SafeSmartAccountLib for chain ${chain}:`, error)
+    return null // or throw error if you want to stop the entire process
   }
+}
+export async function createOrRestoreSafeSmartAccount(privateKey: string) {
+  if (safeAllowedChains.length === 0) {
+    throw new Error('No allowed chains for SafeSmartAccount')
+  }
+
+  const libs = await Promise.all(
+    safeAllowedChains.map(chain => initializeSafeSmartAccountLib(chain, privateKey))
+  ).then(results => results.filter((lib): lib is NonNullable<typeof lib> => lib !== null))
+
+  if (libs.length === 0) {
+    throw new Error('No safe smart account initialized')
+  }
+
+  libs.forEach(lib => {
+    const address = lib.getAddress()
+    const key = `${lib.chain.id}:${address}`
+    if (!smartAccountWallets[key]) {
+      smartAccountWallets[key] = lib
+    }
+  })
+
+  const safeSmartAccountAddress: string = libs[0].getAddress()
+
   return {
-    safeSmartAccountAddress: address
+    safeSmartAccountAddress
   }
 }
 export function removeSmartAccount(address: string) {
@@ -131,6 +156,13 @@ export function removeSmartAccount(address: string) {
   if (smartAccountWallets[key]) {
     delete smartAccountWallets[key]
   }
+}
+export function removeSmartAccounts(addresses: string[]) {
+  addresses.forEach(address => {
+    if (smartAccountWallets[address]) {
+      delete smartAccountWallets[address]
+    }
+  })
 }
 
 export async function createOrRestoreBiconomySmartAccount(privateKey: string) {
