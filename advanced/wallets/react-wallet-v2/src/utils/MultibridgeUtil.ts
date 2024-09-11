@@ -8,7 +8,7 @@ import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 
 const BASE_URL = 'https://api.socket.tech/v2'
 const WHITELIST_BRIDGES = 'across'
-const AMOUNT_MULTIPLIER = 1.1
+const AMOUNT_MULTIPLIER = 1.05
 
 export const supportedAssets: Record<string, Record<number, Hex>> = {
   USDC: {
@@ -246,7 +246,8 @@ async function getBridgeStatus(params: BridgeStatusParams): Promise<any> {
 export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155Lib | SmartAccountLib): Promise<void> {
     performance.mark('startGetQuote')
     console.log('Bridging funds', bridgingParams);
-    bridgingParams.amount = Math.round(bridgingParams.amount*1.1)
+    const originalAmount = bridgingParams.amount
+    bridgingParams.amount = Math.round(originalAmount*AMOUNT_MULTIPLIER)
     const quote = await getQuote(bridgingParams)
     performance.mark('endGetQuote')
     console.log('Fetched quote', quote);
@@ -255,7 +256,6 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
     if (!route) {
         throw new Error("No routes found");
     }
-
     performance.mark('startGetRouteTransactionData')
     const apiReturnData = await getRouteTransactionData(route);
     performance.mark('endGetRouteTransactionData')
@@ -267,6 +267,7 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
     const walletAddress = wallet.getAddress()
     performance.mark('endGetWalletAddress')
     console.log({approvalData});
+    let currentNonce = await sourceChainProvider.getTransactionCount(walletAddress)
     // approvalData from apiReturnData is null for native tokens
     // Values are returned for ERC20 tokens but token allowance needs to be checked
     if (approvalData !== null) {
@@ -311,13 +312,15 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
                 data: approvalTransactionData.result?.data,
                 gasPrice: gasPrice,
                 gasLimit: gasEstimate,
+                nonce: currentNonce,
             })
             const receipt = typeof hash === 'string' ? hash : hash?.hash
             performance.mark('endApprovalTransactionSend')
             console.log("Approval Transaction", {receipt});
+            currentNonce++
         }
     }
-
+   
     performance.mark('startBridgingTransactionGasEstimate')
     const gasPrice = await sourceChainProvider.getGasPrice();
     let gasEstimate = BigInt('0x029a6b')*BigInt(4)
@@ -344,6 +347,7 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
         value: apiReturnData.result.value,
         gasPrice: gasPrice,
         gasLimit: gasEstimate,
+        nonce: currentNonce
     });
     const receipt = typeof hash === 'string' ? hash : hash?.hash
     console.log("Bridging Transaction : ", {receipt});
@@ -352,20 +356,15 @@ export async function bridgeFunds(bridgingParams: BridgingParams, wallet: EIP155
     performance.mark('startBridgingTransactionCheck')
     let interations = 0
     while (interations < 20) {
-        const status = await getBridgeStatus({
-            transactionHash: receipt, 
-            fromChainId: bridgingParams.fromChainId, 
-            toChainId: bridgingParams.toChainId
-        });
-        console.log(
-            `SOURCE TX : ${status.result.sourceTxStatus}\nDEST TX : ${status.result.destinationTxStatus}`
-          );
-          if (status.result.destinationTxStatus == "COMPLETED") {
-            console.log("BRIDGE COMPLETED. DEST TX HASH :", status.result.destinationTransactionHash);
-            performance.mark('endBridgingTransactionCheck')
-            printMeasurements()
-            return
-          }
+        const balance = await getErc20TokenBalance(bridgingParams.toAssetAddress as Hex,bridgingParams.toChainId, walletAddress as Hex, false)
+        console.log('Checking destination address',{balance, originalAmount});
+        
+        if (balance >= originalAmount) {
+          console.log('Bridging completed');
+          performance.mark('endBridgingTransactionCheck')
+          printMeasurements()
+          return
+        }
         await new Promise(resolve => setTimeout(resolve, 1500));
         interations++
     }
