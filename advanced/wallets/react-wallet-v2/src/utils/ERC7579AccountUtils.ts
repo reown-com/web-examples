@@ -109,7 +109,7 @@ export async function getERC7579OwnableValidatorOwners({
   }
 }
 
-export async function getPublicClient(chain: Chain) {
+export function getPublicClient(chain: Chain) {
   return createPublicClient({
     transport: http(),
     chain: chain

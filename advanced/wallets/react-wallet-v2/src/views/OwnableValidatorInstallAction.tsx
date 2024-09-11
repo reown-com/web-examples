@@ -3,7 +3,7 @@ import { styledToast } from '@/utils/HelperUtil'
 import { Button, Col, Collapse, Input, Loading, Row, Text, Textarea } from '@nextui-org/react'
 import { useState } from 'react'
 import { getAddress, isAddress } from 'viem'
-const { getInstallOwnableValidator } =
+const { getOwnableValidator } =
   require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 export default function OwnableValidatorInstallAction({
@@ -48,7 +48,7 @@ export default function OwnableValidatorInstallAction({
         setInstalling(false)
         return
       }
-      const installOwnableValidator = getInstallOwnableValidator({
+      const installOwnableValidator = getOwnableValidator({
         threshold: threshold,
         owners: addresses.split(',').map(address => getAddress(address))
       })

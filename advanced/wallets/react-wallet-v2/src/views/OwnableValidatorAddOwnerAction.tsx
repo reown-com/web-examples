@@ -1,9 +1,10 @@
-import { manageERC7579Module } from '@/utils/ERC7579AccountUtils'
+import { getChainById } from '@/utils/ChainUtil'
+import { getPublicClient, manageERC7579Module } from '@/utils/ERC7579AccountUtils'
 import { styledToast } from '@/utils/HelperUtil'
 import { Button, Col, Collapse, Input, Loading, Row, Text } from '@nextui-org/react'
 import { useState } from 'react'
-import { isAddress } from 'viem'
-const { getAddOwnableValidatorOwnerAction } =
+import { Address, isAddress } from 'viem'
+const { getAccount, getAddOwnableValidatorOwnerAction } =
   require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 export default function OwnableValidatorAddOwnerAction({
@@ -29,9 +30,19 @@ export default function OwnableValidatorAddOwnerAction({
         return
       }
       setAddingOwner(true)
-      const addOwnableValidatorOwnerAction = getAddOwnableValidatorOwnerAction({
-        owner: newOwner as `0x${string}`
+      const account = getAccount({
+        address: accountAddress as Address,
+        type: 'erc7579-implementation'
       })
+      const addOwnableValidatorOwnerAction = await getAddOwnableValidatorOwnerAction({
+        owner: newOwner as `0x${string}`,
+        account,
+        client: getPublicClient(getChainById(parseInt(chainId)))
+      })
+
+      if (addOwnableValidatorOwnerAction instanceof Error) {
+        throw new Error(addOwnableValidatorOwnerAction.message)
+      }
       const txReceipt = await manageERC7579Module({
         accountAddress,
         chainId: chainId,
