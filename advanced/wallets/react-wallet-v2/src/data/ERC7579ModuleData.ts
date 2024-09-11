@@ -1,7 +1,7 @@
-import { smartSessionAddress } from '@biconomy/permission-context-builder'
 import { ModuleType } from '@rhinestone/module-sdk'
 //Note: ES6 syntax dont work for this package
 const {
+  SMART_SESSIONS_ADDRESS,
   MULTI_FACTOR_VALIDATOR_ADDRESS,
   OWNABLE_VALIDATOR_ADDRESS,
   WEBAUTHN_VALIDATOR_ADDRESS,
@@ -31,7 +31,7 @@ export const supportedModules: Module[] = [
     name: 'Permission Validator',
     type: 'validator',
     url: '/permission-validator',
-    moduleAddress: smartSessionAddress,
+    moduleAddress: SMART_SESSIONS_ADDRESS,
     description: `The Permission Validator module is a module that allows DApp to request permissions from a wallet in order to execute transactions on users's behalf that is scoped with permissions`,
     moduleData: '0x'
   },

@@ -7,7 +7,8 @@ import {
   PublicClient
 } from 'viem'
 import { encodeEnable, encodeUse } from './EncodeLib'
-import { smartSessionAddress } from '@biconomy/permission-context-builder'
+const { SMART_SESSIONS_ADDRESS } =
+  require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 import { readContract } from 'viem/actions'
 
 export const enableSessionsStructAbi = [
@@ -215,9 +216,9 @@ export async function formatSignature(
 
   const validatorAddress = permissionsContext.slice(0, 42) as Address
 
-  if (getAddress(validatorAddress) !== getAddress(smartSessionAddress)) {
+  if (getAddress(validatorAddress) !== getAddress(SMART_SESSIONS_ADDRESS)) {
     throw new Error(
-      `Validator ${validatorAddress} is not the smart session validator ${smartSessionAddress}`
+      `Validator ${validatorAddress} is not the smart session validator ${SMART_SESSIONS_ADDRESS}`
     )
   }
 
@@ -225,7 +226,7 @@ export async function formatSignature(
   const enableSession = Array.from(decodeAbiParameters(enableSessionsStructAbi, enableData))
 
   const isPermissionsEnabled = await readContract(publicClient, {
-    address: smartSessionAddress,
+    address: SMART_SESSIONS_ADDRESS,
     abi: isPermissionsEnabledAbi,
     functionName: 'isPermissionEnabled',
     args: [signerId, accountAddress, enableSession[0]]
@@ -252,9 +253,9 @@ export async function getDummySignature(
 
   const validatorAddress = permissionsContext.slice(0, 42) as Address
 
-  if (getAddress(validatorAddress) !== getAddress(smartSessionAddress)) {
+  if (getAddress(validatorAddress) !== getAddress(SMART_SESSIONS_ADDRESS)) {
     throw new Error(
-      `Validator ${validatorAddress} is not the smart session validator ${smartSessionAddress}`
+      `Validator ${validatorAddress} is not the smart session validator ${SMART_SESSIONS_ADDRESS}`
     )
   }
 
