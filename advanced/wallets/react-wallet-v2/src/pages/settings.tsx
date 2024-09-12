@@ -28,7 +28,8 @@ export default function SettingsPage() {
     kernelSmartAccountEnabled,
     safeSmartAccountEnabled,
     biconomySmartAccountEnabled,
-    moduleManagementEnabled
+    moduleManagementEnabled,
+    chainAbstractionEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -55,6 +56,30 @@ export default function SettingsPage() {
           data-testid="settings-toggle-testnets"
         />
         <Text>{testNets ? 'Enabled' : 'Disabled'}</Text>
+      </Row>
+
+      <Divider y={2} />
+
+      <Row>
+        <Col>
+          <Text h4 css={{ marginBottom: '$5' }}>
+            Chain Abstraction
+          </Text>
+          {testNets ? (
+            <>
+              <Row justify="space-between" align="center">
+                <Switch
+                  checked={chainAbstractionEnabled}
+                  onChange={SettingsStore.toggleChainAbstractionEnabled}
+                  data-testid="settings-toggle-chain-abstraction-enabled"
+                />
+                <Text>{chainAbstractionEnabled ? 'Enabled' : 'Disabled'}</Text>
+              </Row>
+            </>
+          ) : (
+            <Text color="$gray400">This feature requires testnets</Text>
+          )}
+        </Col>
       </Row>
 
       <Divider y={2} />
