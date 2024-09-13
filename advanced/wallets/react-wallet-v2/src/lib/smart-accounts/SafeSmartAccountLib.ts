@@ -11,18 +11,16 @@ import {
   Hex,
   WalletGrantPermissionsParameters,
   createWalletClient,
+  encodeFunctionData,
   http,
   type WalletGrantPermissionsReturnType
 } from 'viem'
 import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
-import {
-  mockValidator,
-  Permission,
-  userOperationBuilderAddress
-} from '@biconomy/permission-context-builder'
 import { ModuleType } from 'permissionless/actions/erc7579'
-import { getContext } from './builders/ContextBuilderUtil'
-const { SMART_SESSIONS_ADDRESS } =
+import { MOCK_VALIDATOR_ADDRESSES } from './builders/SmartSessionUtil'
+import { Permission } from '@/data/EIP7715Data'
+import { getSmartSessionContext } from './builders/ContextBuilderUtil'
+const { SMART_SESSIONS_ADDRESS, getAccount } =
   require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 export class SafeSmartAccountLib extends SmartAccountLib {
   protected ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
@@ -75,11 +73,15 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     console.log('walletClient chainId:', walletClient.chain.id)
     let permissionContext = '0x'
     try {
-      permissionContext = await getContext(walletClient, {
+      permissionContext = await getSmartSessionContext({
+        walletClient,
+        account: getAccount({
+          address: this.client.account.address,
+          type: 'safe'
+        }),
         permissions: [...grantPermissionsRequestParameters.permissions] as unknown as Permission[],
         expiry: grantPermissionsRequestParameters.expiry,
-        signer: grantPermissionsRequestParameters.signer as MultiKeySigner,
-        smartAccountAddress: this.client.account.address
+        signer: grantPermissionsRequestParameters.signer as MultiKeySigner
       })
     } catch (error) {
       console.error(`Error getting permission context: ${error}`)
@@ -92,7 +94,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       grantedPermissions: grantPermissionsRequestParameters.permissions,
       expiry: grantPermissionsRequestParameters.expiry,
       signerData: {
-        userOpBuilder: userOperationBuilderAddress[this.chain.id] as Address,
         submitToAddress: this.client.account.address
       }
     } as WalletGrantPermissionsReturnType
@@ -114,15 +115,17 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         this.publicClient,
         this.client.account.address
       )
+      // TODO: check if account trust the attesters of the module
+      await this.trustAttesters()
 
       let smartSessionValidatorInstalled = false
       let mockValidatorInstalled = false
       console.log(`SmartSession Address: ${SMART_SESSIONS_ADDRESS}`)
-      console.log(`mockValidator Address: ${mockValidator[this.chain.id]}`)
+      console.log(`mockValidator Address: ${MOCK_VALIDATOR_ADDRESSES[this.chain.id]}`)
       if (isAccountDeployed) {
         ;[smartSessionValidatorInstalled, mockValidatorInstalled] = await Promise.all([
           this.isValidatorModuleInstalled(SMART_SESSIONS_ADDRESS as Address),
-          this.isValidatorModuleInstalled(mockValidator[this.chain.id] as Address)
+          this.isValidatorModuleInstalled(MOCK_VALIDATOR_ADDRESSES[this.chain.id] as Address)
         ])
       }
       console.log({ smartSessionValidatorInstalled, mockValidatorInstalled })
@@ -150,7 +153,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
       if (!isAccountDeployed || !mockValidatorInstalled) {
         installModules.push({
-          address: mockValidator[this.chain.id],
+          address: MOCK_VALIDATOR_ADDRESSES[this.chain.id],
           type: 'validator',
           context: '0x'
         })
@@ -192,5 +195,36 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
     const receipt = await this.bundlerClient.waitForUserOperationReceipt({ hash: userOpHash })
     console.log(`Module installation receipt:`, receipt)
+  }
+
+  private async trustAttesters(): Promise<void> {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    const trustAttestersAction = {
+      to: '0x000000000069E2a187AEFFb852bF3cCdC95151B2' as Address, // mock-registry
+      value: BigInt(0),
+      data: encodeFunctionData({
+        abi: [
+          {
+            inputs: [
+              { type: 'uint8', name: 'threshold' },
+              { type: 'address[]', name: 'attesters' }
+            ],
+            name: 'trustAttesters',
+            type: 'function',
+            stateMutability: 'nonpayable',
+            outputs: []
+          }
+        ],
+        functionName: 'trustAttesters',
+        args: [1, ['0xA4C777199658a41688E9488c4EcbD7a2925Cc23A']]
+      })
+    }
+
+    const userOpHash = await this.sendTransaction(trustAttestersAction)
+    console.log(`Trust Attesters userOpHash:`, userOpHash)
+    // const receipt = await this.bundlerClient.waitForUserOperationReceipt({ hash: userOpHash })
+    // console.log(`Trust Attesters receipt:`, receipt)
   }
 }

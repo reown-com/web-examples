@@ -1,11 +1,14 @@
-import { ErrorResponse, FillUserOpResponse } from '@/lib/smart-accounts/builders/UserOpBuilder'
+import {
+  ErrorResponse,
+  BuildUserOpResponseReturn
+} from '@/lib/smart-accounts/builders/UserOpBuilder'
 import { getChainById } from '@/utils/ChainUtil'
 import { getUserOpBuilder } from '@/utils/UserOpBuilderUtil'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<FillUserOpResponse | ErrorResponse>
+  res: NextApiResponse<BuildUserOpResponseReturn | ErrorResponse>
 ) {
   const chainId = req.body.chainId
   const account = req.body.account
