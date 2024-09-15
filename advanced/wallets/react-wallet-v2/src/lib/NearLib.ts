@@ -138,7 +138,7 @@ export class NearWallet {
     const randomNumber = Math.floor(
       Math.random() * (99999999999999 - 10000000000000) + 10000000000000
     )
-    const accountId = `dev-${Date.now()}-${randomNumber}`
+    const accountId = `dev-${Date.now()}-${randomNumber}.testnet`
     const publicKey = keyPair.getPublicKey().toString()
 
     fetch(`https://helper.testnet.near.org/account`, {
