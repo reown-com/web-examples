@@ -63,17 +63,20 @@ export async function approveNearRequest(
         throw new Error('Invalid chain id')
       }
 
+      const isBuffer = request.params.transaction?.type === 'Buffer'
+      const txValue = isBuffer
+        ? request.params.transaction
+        : Object.values(request.params.transaction)
+
       const [signedTx] = await nearWallet.signTransactions({
         chainId,
         topic,
-        transactions: [
-          transactions.Transaction.decode(
-            Buffer.from(Object.values(request.params.transaction as object))
-          )
-        ]
+        transactions: [transactions.Transaction.decode(Buffer.from(txValue))]
       })
 
-      return formatJsonRpcResult(id, signedTx.encode())
+      const txResultValue = isBuffer ? Buffer.from(signedTx.encode()) : signedTx.encode()
+
+      return formatJsonRpcResult(id, txResultValue)
     }
     case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION: {
       console.log('approve', { id, params })
@@ -107,17 +110,23 @@ export async function approveNearRequest(
         throw new Error('Invalid chain id')
       }
 
+      const isBuffer = params.request.params.transactions[0]?.type === 'Buffer'
+
       const signedTxs = await nearWallet.signTransactions({
         chainId,
         topic,
         transactions: params.request.params.transactions.map((tx: Uint8Array) => {
-          return transactions.Transaction.decode(Buffer.from(Object.values(tx)))
+          // @ts-ignore
+          const txValue = isBuffer ? tx : Object.values(tx)
+          return transactions.Transaction.decode(Buffer.from(txValue))
         })
       })
 
       return formatJsonRpcResult(
         id,
-        signedTxs.map(x => x.encode())
+        signedTxs.map(x => {
+          return isBuffer ? Buffer.from(x.encode()) : x.encode()
+        })
       )
     }
     case NEAR_SIGNING_METHODS.NEAR_VERIFY_OWNER: {
