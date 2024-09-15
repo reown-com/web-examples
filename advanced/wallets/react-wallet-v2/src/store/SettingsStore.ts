@@ -9,6 +9,7 @@ import { Verify, SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
 
 const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
+const CA_ENABLED_KEY = 'CHAIN_ABSTRACTION'
 const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
 const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
@@ -43,6 +44,7 @@ interface State {
   safeSmartAccountEnabled: boolean
   biconomySmartAccountEnabled: boolean
   moduleManagementEnabled: boolean
+  chainAbstractionEnabled: boolean
 }
 
 /**
@@ -89,7 +91,9 @@ const state = proxy<State>({
   moduleManagementEnabled:
     typeof localStorage !== 'undefined'
       ? Boolean(localStorage.getItem(MODULE_MANAGEMENT_ENABLED_KEY))
-      : false
+      : false,
+  chainAbstractionEnabled:
+    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false
 })
 
 /**
@@ -190,6 +194,15 @@ const SettingsStore = {
       localStorage.setItem(MODULE_MANAGEMENT_ENABLED_KEY, 'YES')
     } else {
       localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
+    }
+  },
+
+  toggleChainAbstractionEnabled() {
+    state.chainAbstractionEnabled = !state.chainAbstractionEnabled
+    if (state.chainAbstractionEnabled) {
+      localStorage.setItem(CA_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(CA_ENABLED_KEY)
     }
   },
 

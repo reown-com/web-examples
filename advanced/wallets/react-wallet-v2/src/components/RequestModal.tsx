@@ -1,14 +1,13 @@
-import { Fragment, ReactNode, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { Divider } from '@nextui-org/react'
 import { CoreTypes } from '@walletconnect/types'
-
 import ModalFooter, { LoaderProps } from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import RequestModalContainer from '@/components/RequestModalContainer'
 import VerifyInfobox from '@/components/VerifyInfobox'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
-import ThreatPrompt from './TheatPrompt'
+import ThreatPrompt from '../views/TheatPrompt'
 
 interface IProps {
   children: ReactNode
@@ -22,6 +21,7 @@ interface IProps {
   rejectLoader?: LoaderProps
   disableApprove?: boolean
   disableReject?: boolean
+  disableThreatDetection?: boolean
 }
 export default function RequestModal({
   children,
@@ -34,7 +34,8 @@ export default function RequestModal({
   infoBoxCondition,
   infoBoxText,
   disableApprove,
-  disableReject
+  disableReject,
+  disableThreatDetection
 }: IProps) {
   const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
   const isScam = currentRequestVerifyContext?.verified.isScam
@@ -58,7 +59,7 @@ export default function RequestModal({
           <Divider y={1} />
           {children}
           <Divider y={1} />
-          <VerifyInfobox metadata={metadata} />
+          {disableThreatDetection === undefined ? <VerifyInfobox metadata={metadata} /> : null}
         </RequestModalContainer>
         <ModalFooter
           onApprove={onApprove}

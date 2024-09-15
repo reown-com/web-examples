@@ -10,7 +10,7 @@ import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { approveNearRequest } from '@/utils/NearRequestHandlerUtil'
 import { TEZOS_SIGNING_METHODS } from '@/data/TezosData'
@@ -67,7 +67,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           return ModalStore.open('SessionSendTransactionModal', { requestEvent, requestSession })
 
         case EIP7715_METHOD.WALLET_GRANT_PERMISSIONS: {
-          console.log({ request })
           return ModalStore.open('SessionGrantPermissionsModal', { requestEvent, requestSession })
         }
 
@@ -151,6 +150,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
