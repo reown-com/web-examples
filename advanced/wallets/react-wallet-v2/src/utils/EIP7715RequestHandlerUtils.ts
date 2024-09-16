@@ -6,17 +6,18 @@ import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 import { web3wallet } from './WalletConnectUtil'
 import { smartAccountWallets } from './SmartAccountUtil'
-import { GrantPermissionsParameters, GrantPermissionsReturnType } from 'viem/experimental'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import { WalletGrantPermissionsParameters, WalletGrantPermissionsReturnType } from 'viem'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
-function getSmartWalletAddressFromSession(requestSession: SessionTypes.Struct) {
-  const sessionAccounts = requestSession.namespaces['eip155'].accounts
-  const sessionAccountsAddress = sessionAccounts.map(value => value.split(':').slice(1).join(':'))
+function getSmartWalletAddressFromSession(requestSession: SessionTypes.Struct, chainId: string) {
+  const sessionAccounts = requestSession.namespaces['eip155'].accounts.filter(value =>
+    value.startsWith(chainId)
+  )
+  const sessionAccountsAddresses = sessionAccounts.map(value => value.split(':').slice(1).join(':'))
   const smartAccounts = Object.keys(smartAccountWallets)
   const smartWalletAddress = smartAccounts.find(smartAccount =>
-    sessionAccountsAddress.some(address => address.toLowerCase() === smartAccount.toLowerCase())
+    sessionAccountsAddresses.some(address => address.toLowerCase() === smartAccount.toLowerCase())
   )
 
   if (!smartWalletAddress) {
@@ -44,7 +45,7 @@ export async function approveEIP7715Request(requestEvent: RequestEventArgs) {
   SettingsStore.setActiveChainId(chainId)
   switch (request.method) {
     case EIP7715_METHOD.WALLET_GRANT_PERMISSIONS: {
-      const wallet = getSmartWalletAddressFromSession(requestSession)
+      const wallet = getSmartWalletAddressFromSession(requestSession, chainId)
       let grantPermissionsRequestParams: WalletGrantPermissionsParameters = request.params[0]
       if (wallet instanceof SafeSmartAccountLib || wallet instanceof KernelSmartAccountLib) {
         const grantPermissionsResponse: WalletGrantPermissionsReturnType =

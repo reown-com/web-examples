@@ -6,12 +6,13 @@ import {
 } from './SmartSessionUtil'
 import type { Session, ChainSession, Account } from '@rhinestone/module-sdk'
 const {
+  SMART_SESSIONS_ADDRESS,
+  SmartSessionMode,
   getPermissionId,
   getSessionDigest,
   getSessionNonce,
-  SMART_SESSIONS_ADDRESS,
+  encode1271Hash,
   encodeSmartSessionSignature,
-  SmartSessionMode,
   hashChainSessions,
   encodeUseOrEnableSmartSessionSignature,
   decodeSmartSessionSignature
@@ -115,7 +116,7 @@ export async function getSmartSessionContext({
     client: publicClient,
     session
   })) as Hex
-
+  console.log('permissionId', permissionId)
   const sessionNonce = await getSessionNonce({
     client: publicClient,
     account,
@@ -150,15 +151,24 @@ export async function getSmartSessionContext({
     }
   ]
   const permissionEnableHash = hashChainSessions(chainSessions)
+
+  // const formattedHash = encode1271Hash({
+  //   account,
+  //   chainId: chainId,
+  //   validator: account.address,
+  //   hash: permissionEnableHash
+  // })
+
   const permissionEnableSig = await walletClient.signMessage({
     account: walletClient.account,
+    // message: { raw: formattedHash }
     message: { raw: permissionEnableHash }
   })
-
+  
   const encodedSmartSessionSignature = encodeSmartSessionSignature({
     mode: SmartSessionMode.ENABLE,
     permissionId,
-    signature: '0xe8b94748580ca0b4993c9a1b86b5be851bfc076ff5ce3a1ff65bf16392acfcb800f9b4f1aef1555c7fce5599fffb17e7c635502154a0333ba21f3ae491839af51c',
+    signature: '0x',
     enableSessionData: {
       enableSession: {
         chainDigestIndex: 0,
@@ -166,7 +176,7 @@ export async function getSmartSessionContext({
         sessionToEnable: session,
         permissionEnableSig
       },
-      validator: MOCK_VALIDATOR_ADDRESSES[chainId], //smartAccountAddress,
+      validator: MOCK_VALIDATOR_ADDRESSES[chainId], //account.address,
       accountType: 'safe'
     }
   })
@@ -279,6 +289,7 @@ function getSamplePermissions(
   chainId: number,
   { permissions, expiry }: { permissions: Permission[]; expiry: number }
 ): Session {
+  console.log({expiry})
   return {
     sessionValidator: MULTIKEY_SIGNER_ADDRESSES[chainId],
     sessionValidatorInitData: encodeMultiKeySignerInitData(signers),
