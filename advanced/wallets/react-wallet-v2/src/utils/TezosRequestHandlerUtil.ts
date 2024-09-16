@@ -9,11 +9,11 @@ export async function approveTezosRequest(
 ) {
   const { params, id } = requestEvent
   const { request, chainId } = params
-  console.log("Approving Tezos request: ", request);
+  console.log('Approving Tezos request: ', request)
 
   if (!tezosWallets || Object.keys(tezosWallets).length === 0) {
-    console.error("No wallets found on Approve. Try reloading the wallet page.")
-    return formatJsonRpcError(id, "No Tezos wallets available. See the error log on wallet");
+    console.error('No wallets found on Approve. Try reloading the wallet page.')
+    return formatJsonRpcError(id, 'No Tezos wallets available. See the error log on wallet')
   }
 
   const wallet = tezosWallets[request.params.account ?? Object.keys(tezosWallets)[0]]
@@ -36,11 +36,11 @@ export async function approveTezosRequest(
         return formatJsonRpcResult(id, { hash: sendResponse })
       } catch (error) {
         if (error instanceof Error) {
-          console.error("Tezos_send operation failed with error: ", error.message);
-          return formatJsonRpcError(id, error.message);
+          console.error('Tezos_send operation failed with error: ', error.message)
+          return formatJsonRpcError(id, error.message)
         } else {
-          console.error("Tezos_send operation failed with unknown error: ", error);
-          return formatJsonRpcError(id, 'TEZOS_SEND failed with unknown error.');
+          console.error('Tezos_send operation failed with unknown error: ', error)
+          return formatJsonRpcError(id, 'TEZOS_SEND failed with unknown error.')
         }
       }
 
