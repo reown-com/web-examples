@@ -1,10 +1,10 @@
-import { OpKind, ParamsWithKind, TezosToolkit } from '@taquito/taquito';
+import { OpKind, ParamsWithKind, TezosToolkit } from '@taquito/taquito'
 import { InMemorySigner } from '@taquito/signer'
 
 import { Wallet } from 'ethers/'
-import { PvmKind, ScriptedContracts } from '@taquito/rpc';
+import { PvmKind, ScriptedContracts } from '@taquito/rpc'
 import { PartialTezosOperation, TezosOperationType } from '@airgap/beacon-types'
-import { TEZOS_CHAINS } from '@/data/TezosData';
+import { TEZOS_CHAINS } from '@/data/TezosData'
 
 /**
  * Constants
@@ -58,27 +58,35 @@ export default class TezosLib {
       curve: curve ?? DEFAULT_CURVE
     }
 
-    const signer = InMemorySigner.fromMnemonic(params);
+    const signer = InMemorySigner.fromMnemonic(params)
 
     // we have wallets for multiple networks
     // later we will determine the chain from the request
-    const toolkits: Record<string, TezosToolkit> = {};
+    const toolkits: Record<string, TezosToolkit> = {}
     for (const chainKey in TEZOS_CHAINS) {
-      const chain = TEZOS_CHAINS[chainKey];
-      const toolkit = new TezosToolkit(chain.rpc);
-      
-      toolkit.setSignerProvider(signer);
-      toolkits[chainKey] = toolkit;
+      const chain = TEZOS_CHAINS[chainKey]
+      const toolkit = new TezosToolkit(chain.rpc)
+
+      toolkit.setSignerProvider(signer)
+      toolkits[chainKey] = toolkit
     }
-    const toolkit = toolkits['tezos:mainnet'];
-    const secretKey = await toolkit.signer.secretKey();
-    const publicKey = await toolkit.signer.publicKey();
-    const address = await toolkit.signer.publicKeyHash();
+    const toolkit = toolkits['tezos:mainnet']
+    const secretKey = await toolkit.signer.secretKey()
+    const publicKey = await toolkit.signer.publicKey()
+    const address = await toolkit.signer.publicKeyHash()
 
     if (!secretKey) {
-      throw new Error("Failed to generate secret key");
+      throw new Error('Failed to generate secret key')
     }
-    return new TezosLib(toolkits, params.mnemonic, signer, secretKey, publicKey, address, params.curve)
+    return new TezosLib(
+      toolkits,
+      params.mnemonic,
+      signer,
+      secretKey,
+      publicKey,
+      address,
+      params.curve
+    )
   }
 
   public getMnemonic() {
@@ -103,23 +111,23 @@ export default class TezosLib {
         return {
           kind: OpKind.ACTIVATION,
           pkh: op.pkh,
-          secret: op.secret,
-        };
+          secret: op.secret
+        }
       case TezosOperationType.DELEGATION:
         return {
           kind: OpKind.DELEGATION,
-          source: op.source ?? "source not provided",
+          source: op.source ?? 'source not provided',
           delegate: op.delegate,
           fee: op.fee ? Number(op.fee) : undefined,
           gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
-          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
-        };
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined
+        }
       case TezosOperationType.FAILING_NOOP:
         return {
           kind: OpKind.FAILING_NOOP,
           arbitrary: op.arbitrary,
-          basedOnBlock: 'head',
-        };
+          basedOnBlock: 'head'
+        }
       case TezosOperationType.INCREASE_PAID_STORAGE:
         return {
           kind: OpKind.INCREASE_PAID_STORAGE,
@@ -128,10 +136,10 @@ export default class TezosLib {
           gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
           storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
           amount: Number(op.amount),
-          destination: op.destination,
-        };
+          destination: op.destination
+        }
       case TezosOperationType.ORIGINATION:
-        let script : ScriptedContracts = op.script as unknown as ScriptedContracts;
+        let script: ScriptedContracts = op.script as unknown as ScriptedContracts
         return {
           kind: OpKind.ORIGINATION,
           balance: Number(op.balance),
@@ -140,8 +148,8 @@ export default class TezosLib {
           delegate: op.delegate,
           fee: op.fee ? Number(op.fee) : undefined,
           gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
-          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
-        };
+          storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined
+        }
       case TezosOperationType.REGISTER_GLOBAL_CONSTANT:
         return {
           kind: OpKind.REGISTER_GLOBAL_CONSTANT,
@@ -149,8 +157,8 @@ export default class TezosLib {
           fee: op.fee ? Number(op.fee) : undefined,
           gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
           storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
-          value: op.value,
-        };
+          value: op.value
+        }
       case TezosOperationType.SMART_ROLLUP_ADD_MESSAGES:
         return {
           kind: OpKind.SMART_ROLLUP_ADD_MESSAGES,
@@ -158,11 +166,11 @@ export default class TezosLib {
           fee: op.fee ? Number(op.fee) : undefined,
           gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
           storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
-          message: op.message,
-        };
+          message: op.message
+        }
       case TezosOperationType.SMART_ROLLUP_ORIGINATE:
         if (!Object.values(PvmKind).includes(op.pvm_kind)) {
-          throw new Error(`Invalid PvmKind: ${op.pvm_kind}`);
+          throw new Error(`Invalid PvmKind: ${op.pvm_kind}`)
         }
         return {
           kind: OpKind.SMART_ROLLUP_ORIGINATE,
@@ -172,8 +180,8 @@ export default class TezosLib {
           storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
           pvmKind: op.pvm_kind,
           kernel: op.kernel,
-          parametersType: op.parameters_ty,
-        };
+          parametersType: op.parameters_ty
+        }
       case TezosOperationType.SMART_ROLLUP_EXECUTE_OUTBOX_MESSAGE:
         return {
           kind: OpKind.SMART_ROLLUP_EXECUTE_OUTBOX_MESSAGE,
@@ -183,8 +191,8 @@ export default class TezosLib {
           storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
           rollup: op.rollup,
           cementedCommitment: op.cemented_commitment,
-          outputProof: op.output_proof,
-        };
+          outputProof: op.output_proof
+        }
       case TezosOperationType.TRANSACTION:
         return {
           kind: OpKind.TRANSACTION,
@@ -195,8 +203,8 @@ export default class TezosLib {
           fee: op.fee ? Number(op.fee) : undefined,
           gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
           storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
-          parameter: op.parameters,
-        };
+          parameter: op.parameters
+        }
       case TezosOperationType.TRANSFER_TICKET:
         return {
           kind: OpKind.TRANSFER_TICKET,
@@ -209,8 +217,8 @@ export default class TezosLib {
           ticketTicketer: op.ticket_ticketer,
           ticketAmount: Number(op.ticket_amount),
           destination: op.destination,
-          entrypoint: op.entrypoint,
-        };
+          entrypoint: op.entrypoint
+        }
       case TezosOperationType.UPDATE_CONSENSUS_KEY:
         return {
           kind: OpKind.UPDATE_CONSENSUS_KEY,
@@ -218,42 +226,42 @@ export default class TezosLib {
           fee: op.fee ? Number(op.fee) : undefined,
           gasLimit: op.gas_limit ? Number(op.gas_limit) : undefined,
           storageLimit: op.storage_limit ? Number(op.storage_limit) : undefined,
-          pk: op.pk,
-        };
+          pk: op.pk
+        }
       default:
-        throw new Error(`Operation kind cannot be converted to ParamsWithKind: ${op.kind}`);
+        throw new Error(`Operation kind cannot be converted to ParamsWithKind: ${op.kind}`)
     }
   }
 
   public async signTransaction(transaction: any, chainId: string) {
     // Map the transactions and prepare the batch
-    console.log(`Wallet: handling transaction: `, transaction);
+    console.log(`Wallet: handling transaction: `, transaction)
     const batchTransactions: ParamsWithKind[] = transaction.map((tx: PartialTezosOperation) => {
       if (tx.kind === TezosOperationType.DELEGATION && !tx.source) {
-        tx.source = this.address;
+        tx.source = this.address
       }
-      const op: ParamsWithKind = this.convertToPartialParamsWithKind(tx);
-      return op;
-    });
+      const op: ParamsWithKind = this.convertToPartialParamsWithKind(tx)
+      return op
+    })
 
-    const toolkit = this.toolkits[chainId];
+    const toolkit = this.toolkits[chainId]
     if (!toolkit) {
-      throw new Error(`Toolkit not found for chainId: ${chainId}`);
-    }    
+      throw new Error(`Toolkit not found for chainId: ${chainId}`)
+    }
 
     // Prepare the batch
-    console.log(`Wallet: prepared batchTransactions `, batchTransactions);
-    const batch = toolkit.contract.batch(batchTransactions);
+    console.log(`Wallet: prepared batchTransactions `, batchTransactions)
+    const batch = toolkit.contract.batch(batchTransactions)
 
     // Send the batch and wait for the operation hash
-    console.log(`Wallet: sending batch `, batch);
-    const operation = await batch.send();
+    console.log(`Wallet: sending batch `, batch)
+    const operation = await batch.send()
 
     // Wait for confirmation
-    await operation.confirmation();
+    await operation.confirmation()
 
-    console.log('Wallet: operation confirmed:', operation);
-    return operation.hash;
+    console.log('Wallet: operation confirmed:', operation)
+    return operation.hash
   }
 
   public async signPayload(payload: any) {
