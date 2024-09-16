@@ -164,7 +164,7 @@ export async function getSmartSessionContext({
     // message: { raw: formattedHash }
     message: { raw: permissionEnableHash }
   })
-  
+
   const encodedSmartSessionSignature = encodeSmartSessionSignature({
     mode: SmartSessionMode.ENABLE,
     permissionId,
@@ -289,7 +289,7 @@ function getSamplePermissions(
   chainId: number,
   { permissions, expiry }: { permissions: Permission[]; expiry: number }
 ): Session {
-  console.log({expiry})
+  console.log({ expiry })
   return {
     sessionValidator: MULTIKEY_SIGNER_ADDRESSES[chainId],
     sessionValidatorInitData: encodeMultiKeySignerInitData(signers),
