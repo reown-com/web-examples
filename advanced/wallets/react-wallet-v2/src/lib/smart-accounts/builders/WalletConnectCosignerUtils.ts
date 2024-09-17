@@ -156,7 +156,7 @@ export class WalletConnectCosigner {
   }
 
   async coSignUserOperation(address: string, coSignData: CoSignRequest): Promise<CoSignResponse> {
-    const url = `${this.baseUrl}/${encodeURIComponent(address)}/sign`
+    const url = `${this.baseUrl}/${encodeURIComponent(address)}/sign?version=1`
 
     return await sendCoSignerRequest<CoSignRequest, CoSignResponse, { projectId: string }>({
       url,

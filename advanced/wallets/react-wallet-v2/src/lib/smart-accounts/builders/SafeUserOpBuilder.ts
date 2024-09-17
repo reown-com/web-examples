@@ -164,59 +164,67 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     projectId: string,
     params: SendUserOpRequestParams
   ): Promise<SendUserOpResponseReturn> {
-    const { chainId, userOp, permissionsContext, pci } = params
-    if (pci && projectId) {
-      const walletConnectCosigner = new WalletConnectCosigner(projectId)
-      const caip10AccountAddress = `eip155:${chainId}:${userOp.sender}`
-      const cosignResponse = await walletConnectCosigner.coSignUserOperation(caip10AccountAddress, {
-        pci,
-        userOp
-      })
-      console.log('cosignResponse:', cosignResponse)
-      userOp.signature = cosignResponse.signature
-    }
-    const account = getAccount({
-      address: userOp.sender,
-      type: 'safe'
-    })
-
-    if (permissionsContext) {
-      const formattedSignature = await formatSignature({
-        publicClient: this.publicClient,
-        account,
-        modifiedSignature: userOp.signature,
-        permissionsContext
-      })
-      userOp.signature = formattedSignature
-    }
-    const bundlerTransport = http(bundlerUrl({ chain: this.chain }), {
-      timeout: 30000
-    })
-    const pimlicoBundlerClient = createPimlicoBundlerClient({
-      chain: this.chain,
-      transport: bundlerTransport,
-      entryPoint: ENTRYPOINT_ADDRESS_V07
-    })
-
-    const userOpId = await pimlicoBundlerClient.sendUserOperation({
-      userOperation: {
-        ...userOp,
-        signature: userOp.signature,
-        callGasLimit: BigInt(userOp.callGasLimit),
-        nonce: BigInt(userOp.nonce),
-        preVerificationGas: BigInt(userOp.preVerificationGas),
-        verificationGasLimit: BigInt(userOp.verificationGasLimit),
-        maxFeePerGas: BigInt(userOp.maxFeePerGas),
-        maxPriorityFeePerGas: BigInt(userOp.maxPriorityFeePerGas),
-        paymasterVerificationGasLimit:
-          userOp.paymasterVerificationGasLimit && BigInt(userOp.paymasterVerificationGasLimit),
-        paymasterPostOpGasLimit:
-          userOp.paymasterPostOpGasLimit && BigInt(userOp.paymasterPostOpGasLimit)
+    try {
+      const { chainId, userOp, permissionsContext, pci } = params
+      if (pci && projectId) {
+        const walletConnectCosigner = new WalletConnectCosigner(projectId)
+        const caip10AccountAddress = `eip155:${chainId}:${userOp.sender}`
+        const cosignResponse = await walletConnectCosigner.coSignUserOperation(
+          caip10AccountAddress,
+          {
+            pci,
+            userOp
+          }
+        )
+        console.log('cosignResponse:', cosignResponse)
+        userOp.signature = cosignResponse.signature
       }
-    })
+      const account = getAccount({
+        address: userOp.sender,
+        type: 'safe'
+      })
 
-    return {
-      userOpId
+      if (permissionsContext) {
+        const formattedSignature = await formatSignature({
+          publicClient: this.publicClient,
+          account,
+          modifiedSignature: userOp.signature,
+          permissionsContext
+        })
+        userOp.signature = formattedSignature
+      }
+      const bundlerTransport = http(bundlerUrl({ chain: this.chain }), {
+        timeout: 30000
+      })
+      const pimlicoBundlerClient = createPimlicoBundlerClient({
+        chain: this.chain,
+        transport: bundlerTransport,
+        entryPoint: ENTRYPOINT_ADDRESS_V07
+      })
+
+      const userOpId = await pimlicoBundlerClient.sendUserOperation({
+        userOperation: {
+          ...userOp,
+          signature: userOp.signature,
+          callGasLimit: BigInt(userOp.callGasLimit),
+          nonce: BigInt(userOp.nonce),
+          preVerificationGas: BigInt(userOp.preVerificationGas),
+          verificationGasLimit: BigInt(userOp.verificationGasLimit),
+          maxFeePerGas: BigInt(userOp.maxFeePerGas),
+          maxPriorityFeePerGas: BigInt(userOp.maxPriorityFeePerGas),
+          paymasterVerificationGasLimit:
+            userOp.paymasterVerificationGasLimit && BigInt(userOp.paymasterVerificationGasLimit),
+          paymasterPostOpGasLimit:
+            userOp.paymasterPostOpGasLimit && BigInt(userOp.paymasterPostOpGasLimit)
+        }
+      })
+
+      return {
+        userOpId
+      }
+    } catch (e) {
+      console.log(e)
+      throw new Error('Failed to sign user operation with cosigner')
     }
   }
 
