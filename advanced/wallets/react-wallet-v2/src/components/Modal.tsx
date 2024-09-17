@@ -16,7 +16,6 @@ import SessionSendCallsModal from '@/views/SessionSendCallsModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
 import { useCallback, useMemo } from 'react'
-import AuthRequestModal from '@/views/AuthRequestModal'
 import LoadingModal from '@/views/LoadingModal'
 import SessionAuthenticateModal from '@/views/SessionAuthenticateModal'
 import SessionGrantPermissionsModal from '@/views/SessionGrantPermissionsModal'
@@ -62,8 +61,6 @@ export default function Modal() {
         return <SessionSignTezosModal />
       case 'SessionSignKadenaModal':
         return <SessionSignKadenaModal />
-      case 'AuthRequestModal':
-        return <AuthRequestModal />
       case 'LoadingModal':
         return <LoadingModal />
       case 'SessionAuthenticateModal':

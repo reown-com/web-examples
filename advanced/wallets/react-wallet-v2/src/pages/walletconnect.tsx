@@ -1,7 +1,7 @@
 import { parseUri } from '@walletconnect/utils'
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
 import { Fragment, useEffect, useState } from 'react'
 import { styledToast } from '@/utils/HelperUtil'
@@ -19,16 +19,16 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
       if (pairingTopic === topic) {
         styledToast('Pairing expired. Please try again with new Connection URI', 'error')
         ModalStore.close()
-        web3wallet.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
+        walletkit.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
       }
     }
-    web3wallet.once('session_proposal', () => {
-      web3wallet.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
+    walletkit.once('session_proposal', () => {
+      walletkit.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
     })
     try {
       setLoading(true)
-      web3wallet.core.pairing.events.on('pairing_expire', pairingExpiredListener)
-      await web3wallet.pair({ uri })
+      walletkit.core.pairing.events.on('pairing_expire', pairingExpiredListener)
+      await walletkit.pair({ uri })
     } catch (error) {
       styledToast((error as Error).message, 'error')
       ModalStore.close()

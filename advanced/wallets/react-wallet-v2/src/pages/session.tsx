@@ -3,7 +3,7 @@ import PageHeader from '@/components/PageHeader'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
 import SessionChainCard from '@/components/SessionChainCard'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import { Button, Col, Divider, Loading, Row, Text } from '@nextui-org/react'
 import { getSdkError } from '@walletconnect/utils'
 import { useRouter } from 'next/router'
@@ -29,7 +29,7 @@ export default function SessionPage() {
   }, [query])
 
   const session = useMemo(
-    () => web3wallet.engine.signClient.session.values.find(s => s.topic === topic),
+    () => walletkit.engine.signClient.session.values.find(s => s.topic === topic),
     [topic]
   )
   const namespaces = useMemo(() => session?.namespaces, [session])
@@ -38,7 +38,7 @@ export default function SessionPage() {
   const expiryDate = useMemo(() => new Date(session?.expiry! * 1000), [session])
   const getPendingRequests = useCallback(() => {
     if (!session) return
-    const allPending = web3wallet.getPendingSessionRequests()
+    const allPending = walletkit.getPendingSessionRequests()
     const requestsForSession = allPending?.filter(r => r.topic === session.topic)
     setPendingRequests(requestsForSession)
   }, [session])
@@ -55,7 +55,7 @@ export default function SessionPage() {
   const onDeleteSession = useCallback(async () => {
     setDeleteLoading(true)
     try {
-      await web3wallet.disconnectSession({ topic, reason: getSdkError('USER_DISCONNECTED') })
+      await walletkit.disconnectSession({ topic, reason: getSdkError('USER_DISCONNECTED') })
       replace('/sessions')
     } catch (e) {
       styledToast((e as Error).message, 'error')
@@ -65,7 +65,7 @@ export default function SessionPage() {
 
   const onSessionPing = useCallback(async () => {
     setPingLoading(true)
-    await web3wallet.engine.signClient.ping({ topic })
+    await walletkit.engine.signClient.ping({ topic })
     setPingLoading(false)
   }, [topic])
 
@@ -74,7 +74,7 @@ export default function SessionPage() {
     try {
       const namespace = Object.keys(session?.namespaces!)[0]
       const chainId = session?.namespaces[namespace].chains?.[0]
-      await web3wallet.emitSessionEvent({
+      await walletkit.emitSessionEvent({
         topic,
         event: { name: 'chainChanged', data: 'Hello World' },
         chainId: chainId! // chainId: 'eip155:1'
@@ -88,11 +88,11 @@ export default function SessionPage() {
   const onSessionUpdate = useCallback(async () => {
     setUpdateLoading(true)
     try {
-      const session = web3wallet.engine.signClient.session.get(topic)
+      const session = walletkit.engine.signClient.session.get(topic)
       const baseAddress = '0x70012948c348CBF00806A3C79E3c5DAdFaAa347'
       const namespaceKeyToUpdate = Object.keys(session?.namespaces)[0]
       const namespaceToUpdate = session?.namespaces[namespaceKeyToUpdate]
-      await web3wallet.updateSession({
+      await walletkit.updateSession({
         topic,
         namespaces: {
           ...session?.namespaces,

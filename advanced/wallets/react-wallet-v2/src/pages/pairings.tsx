@@ -1,15 +1,15 @@
 import PageHeader from '@/components/PageHeader'
 import PairingCard from '@/components/PairingCard'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import { Text } from '@nextui-org/react'
 import { getSdkError } from '@walletconnect/utils'
 import { Fragment, useState } from 'react'
 
 export default function PairingsPage() {
-  const [pairings, setPairings] = useState(web3wallet.core.pairing.getPairings())
+  const [pairings, setPairings] = useState(walletkit.core.pairing.getPairings())
 
   async function onDelete(topic: string) {
-    await web3wallet.disconnectSession({ topic, reason: getSdkError('USER_DISCONNECTED') })
+    await walletkit.disconnectSession({ topic, reason: getSdkError('USER_DISCONNECTED') })
     const newPairings = pairings.filter(pairing => pairing.topic !== topic)
     setPairings(newPairings)
   }
