@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     });
     const purchaseDonutCallDataExecution = [
       {
-        to: donutContractAddress[baseSepolia.id] as `0x${string}`,
+        to: donutContractAddress as `0x${string}`,
         value: parseEther("0.0001"),
         data: purchaseDonutCallData,
       },

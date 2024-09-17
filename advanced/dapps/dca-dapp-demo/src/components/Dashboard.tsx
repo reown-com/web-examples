@@ -8,7 +8,6 @@ import { useReadContract } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AddressDisplay from "./AddressDisplay";
 import AssetBalance from "./AssetBalance";
-import { baseSepolia } from "viem/chains";
 
 export default function Dashboard() {
   const { address: connectedAddress, grantedPermissions } =
@@ -40,7 +39,7 @@ function DashboardContent({ address }: { address: string }) {
     isRefetching: donutsQueryRefetching,
   } = useReadContract({
     abi: donutAbi,
-    address: donutAddress[baseSepolia.id],
+    address: donutAddress,
     functionName: "getBalance",
     args: [address],
     query: {

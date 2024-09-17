@@ -1,5 +1,3 @@
-import { Address } from "viem";
-
 export const abi = [
   {
     inputs: [
@@ -72,7 +70,4 @@ export const abi = [
   },
 ];
 
-export const address: Record<number, Address> = {
-  84532: "0x1862eF76bef78FA9E82905F865fbCAe09bCcBf50" as Address,
-  11155111: "0xfcfCFD8D9f4A23D8DD11b03b212B69262A3ba1b8" as Address,
-};
+export const address = '0x2E65BAfA07238666c3b239E94F32DaD3cDD6498D'
