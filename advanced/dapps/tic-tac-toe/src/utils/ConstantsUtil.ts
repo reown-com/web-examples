@@ -90,5 +90,5 @@ export function getBundlerUrl(): string {
     throw new Error("env NEXT_PUBLIC_PIMLICO_KEY missing.");
   }
 
-  return `https://api.pimlico.io/v2/sepolia/rpc?apikey=${apiKey}`;
+  return `https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${apiKey}`;
 }

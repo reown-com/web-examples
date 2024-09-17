@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { bigIntReplacer } from "./CommonUtils";
-import { UserOperation } from "./UserOpBuilderServiceUtils";
+import { UserOperationWithBigIntAsHex } from "./UserOpBuilderServiceUtils";
 import { WC_COSIGNER_BASE_URL } from "./ConstantsUtil";
 
 // Define types for the request and response
@@ -53,7 +53,7 @@ type RevokePermissionRequest = {
 
 type CoSignRequest = {
   pci: string;
-  userOp: UserOperation;
+  userOp: UserOperationWithBigIntAsHex;
 };
 
 type CoSignResponse = {
