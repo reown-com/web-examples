@@ -19,7 +19,10 @@ import {
 } from 'viem'
 import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 import { ModuleType } from 'permissionless/actions/erc7579'
-import { MOCK_VALIDATOR_ADDRESSES } from './builders/SmartSessionUtil'
+import {
+  MOCK_VALIDATOR_ADDRESSES,
+  TRUSTED_SMART_SESSIONS_ATTERSTER_ADDRESS
+} from './builders/SmartSessionUtil'
 import { Permission } from '@/data/EIP7715Data'
 import { getSmartSessionContext } from './builders/ContextBuilderUtil'
 import { readContract } from 'viem/actions'
@@ -181,7 +184,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
         console.log('Smart Account do not trusted the attesters of the smartsessions module')
         console.log('Enable trusting the attesters of the smartsessions module')
         const trustAttestersAction = getTrustAttestersAction({
-          attesters: ['0xA4C777199658a41688E9488c4EcbD7a2925Cc23A'],
+          attesters: [TRUSTED_SMART_SESSIONS_ATTERSTER_ADDRESS],
           threshold: 1
         })
         setUpSmartAccountForSmartSession.push(trustAttestersAction)
@@ -260,7 +263,6 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       throw new Error('Client not initialized')
     }
 
-    const TRUSTED_SMART_SESSIONS_ATTERSTER_ADDRESS = '0xA4C777199658a41688E9488c4EcbD7a2925Cc23A'
     const attesters = await readContract(this.publicClient, {
       address: REGISTRY_ADDRESS,
       abi: parseAbi([
