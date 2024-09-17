@@ -4,6 +4,7 @@ import {
   address as donutContractAddress,
 } from "./DonutContract";
 import { parseEther } from "viem";
+import { baseSepolia } from "viem/chains";
 
 export const assetsToAllocate = [
   { value: "eth", label: "ETH", supported: true },
@@ -34,7 +35,7 @@ export function getSampleAsyncDCAPermissions(
           custom: "donut-purchase",
         },
         data: {
-          target: donutContractAddress,
+          target: donutContractAddress[baseSepolia.id],
           abi: donutContractAbi,
           valueLimit: parseEther("10").toString(),
           functionName: "function purchase()",
