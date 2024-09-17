@@ -10,7 +10,7 @@ import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { styledToast } from '@/utils/HelperUtil'
@@ -33,7 +33,7 @@ export default function SessionAuthenticateModal() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const getMessageToSign = useCallback(
     (authPayload, iss) => {
-      const message = web3wallet.engine.signClient.formatAuthMessage({
+      const message = walletkit.engine.signClient.formatAuthMessage({
         request: authPayload,
         iss
       })
@@ -75,7 +75,7 @@ export default function SessionAuthenticateModal() {
       const messagesToSign: any[] = []
       newAuthPayload.chains.forEach((chain: string) => {
         const iss = `${chain}:${address}`
-        const message = web3wallet.engine.signClient.formatAuthMessage({
+        const message = walletkit.engine.signClient.formatAuthMessage({
           request: newAuthPayload,
           iss
         })
@@ -107,11 +107,11 @@ export default function SessionAuthenticateModal() {
         signedAuths.push(signedCacao)
       }
 
-      await web3wallet.engine.signClient.approveSessionAuthenticate({
+      await walletkit.engine.signClient.approveSessionAuthenticate({
         id: messages[0].id,
         auths: signedAuths
       })
-      SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+      SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       ModalStore.close()
     }
   }, [address, messages])
@@ -119,7 +119,7 @@ export default function SessionAuthenticateModal() {
   // Handle reject action
   const onReject = useCallback(async () => {
     if (authRequest?.params?.authPayload) {
-      await web3wallet.engine.signClient.rejectSessionAuthenticate({
+      await walletkit.engine.signClient.rejectSessionAuthenticate({
         id: authRequest.id,
         reason: getSdkError('USER_REJECTED')
       })
