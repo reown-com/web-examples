@@ -61,6 +61,22 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     rgb: '242, 242, 242',
     rpc: 'https://mainnet.era.zksync.io/',
     namespace: 'eip155'
+  },
+  'eip155:8453': {
+    chainId: 8453,
+    name: 'Base',
+    logo: '/chain-logos/base.webp',
+    rgb: '22, 83, 241',
+    rpc: 'https://mainnet.base.org',
+    namespace: 'eip155'
+  },
+  'eip155:42161': {
+    chainId: 42161,
+    name: 'Arbitrum',
+    logo: '/chain-logos/arbitrum.webp',
+    rgb: '27, 74, 220',
+    rpc: 'https://arb1.arbitrum.io/rpc	',
+    namespace: 'eip155'
   }
 }
 
@@ -79,7 +95,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     name: 'Ethereum Sepolia',
     logo: '/chain-logos/eip155-1.png',
     rgb: '99, 125, 234',
-    rpc: 'https://gateway.tenderly.co/public/sepolia',
+    rpc: 'https://rpc2.sepolia.org',
     namespace: 'eip155',
     smartAccountEnabled: true
   },
@@ -108,12 +124,28 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rpc: 'https://goerli.optimism.io',
     namespace: 'eip155'
   },
+  'eip155:11155420': {
+    chainId: 11155420,
+    name: 'Optimism Sepolia',
+    logo: '/chain-logos/eip155-10.png',
+    rgb: '235, 0, 25',
+    rpc: 'https://sepolia.optimism.io	',
+    namespace: 'eip155'
+  },
   'eip155:280': {
     chainId: 280,
     name: 'zkSync Era Testnet',
     logo: '/chain-logos/eip155-324.svg',
     rgb: '242, 242, 242',
     rpc: 'https://testnet.era.zksync.dev/',
+    namespace: 'eip155'
+  },
+  'eip155:84532': {
+    chainId: 84532,
+    name: 'Base Sepolia',
+    logo: '/chain-logos/base.webp',
+    rgb: '22, 83, 241',
+    rpc: 'https://sepolia.base.org',
     namespace: 'eip155'
   }
 }

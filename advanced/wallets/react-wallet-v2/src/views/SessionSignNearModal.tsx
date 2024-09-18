@@ -10,7 +10,7 @@ import { approveNearRequest, rejectNearRequest } from '@/utils/NearRequestHandle
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { styledToast } from '@/utils/HelperUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 
 export default function SessionSignNearModal() {

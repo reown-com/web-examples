@@ -7,7 +7,7 @@ import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 export default function SessionSignModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent

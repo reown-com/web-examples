@@ -9,7 +9,7 @@ import ModalStore from '@/store/ModalStore'
 import { approveCosmosRequest, rejectCosmosRequest } from '@/utils/CosmosRequestHandler'
 import { styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 
 export default function SessionSignCosmosModal() {
   // Get request and wallet data from store

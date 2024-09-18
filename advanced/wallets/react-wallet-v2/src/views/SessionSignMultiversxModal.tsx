@@ -12,7 +12,7 @@ import {
   rejectMultiversxRequest
 } from '@/utils/MultiversxRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 
 export default function SessionSignMultiversxModal() {
   // Get request and wallet data from store

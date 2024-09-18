@@ -7,7 +7,7 @@ import ModalStore from '@/store/ModalStore'
 import { convertHexToUtf8, styledToast } from '@/utils/HelperUtil'
 import { approveKadenaRequest, rejectKadenaRequest } from '@/utils/KadenaRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 
 export default function SessionSignKadenaModal() {

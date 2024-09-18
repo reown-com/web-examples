@@ -8,7 +8,7 @@ import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approveSolanaRequest, rejectSolanaRequest } from '@/utils/SolanaRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 
 export default function SessionSignSolanaModal() {
