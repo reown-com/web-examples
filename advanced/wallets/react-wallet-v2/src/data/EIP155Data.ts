@@ -99,6 +99,15 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     namespace: 'eip155',
     smartAccountEnabled: true
   },
+  'eip155:84532': {
+    chainId: 84532,
+    name: 'Base Sepolia',
+    logo: '/chain-logos/eip155-1.png',
+    rgb: '99, 125, 234',
+    rpc: 'https://sepolia.base.org',
+    namespace: 'eip155',
+    smartAccountEnabled: true
+  },
   'eip155:43113': {
     chainId: 43113,
     name: 'Avalanche Fuji',

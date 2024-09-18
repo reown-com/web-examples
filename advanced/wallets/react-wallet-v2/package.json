@@ -10,7 +10,6 @@
     "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
   },
   "dependencies": {
-    "@biconomy/permission-context-builder": "^1.0.9",
     "@cosmjs/amino": "0.32.3",
     "@cosmjs/encoding": "0.32.3",
     "@cosmjs/proto-signing": "0.32.3",
@@ -29,7 +28,7 @@
     "@nextui-org/react": "1.0.8-beta.5",
     "@polkadot/keyring": "^10.1.2",
     "@polkadot/types": "^9.3.3",
-    "@rhinestone/module-sdk": "0.1.2",
+    "@rhinestone/module-sdk": "0.1.16",
     "@solana/web3.js": "1.89.2",
     "@taquito/signer": "^15.1.0",
     "@taquito/taquito": "^15.1.0",

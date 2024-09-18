@@ -1,11 +1,27 @@
-import { UserOperation } from 'permissionless'
 import { Address, Hex } from 'viem'
 
 type Call = { to: Address; value: bigint; data: Hex }
 
-type UserOp = UserOperation<'v0.7'>
-
-export type FillUserOpParams = {
+export type UserOperationWithBigIntAsHex = {
+  sender: Address
+  nonce: Hex
+  factory: Address | undefined
+  factoryData: Hex | undefined
+  callData: Hex
+  callGasLimit: Hex
+  verificationGasLimit: Hex
+  preVerificationGas: Hex
+  maxFeePerGas: Hex
+  maxPriorityFeePerGas: Hex
+  paymaster: Address | undefined
+  paymasterVerificationGasLimit: Hex | undefined
+  paymasterPostOpGasLimit: Hex | undefined
+  paymasterData: Hex | undefined
+  signature: Hex
+  initCode?: never
+  paymasterAndData?: never
+}
+export type BuildUserOpRequestParams = {
   chainId: number
   account: Address
   calls: Call[]
@@ -14,28 +30,28 @@ export type FillUserOpParams = {
     permissions?: { context: Hex }
   }
 }
-export type FillUserOpResponse = {
-  userOp: UserOp
+export type BuildUserOpResponseReturn = {
+  userOp: UserOperationWithBigIntAsHex
   hash: Hex
 }
-
 export type ErrorResponse = {
   message: string
   error: string
 }
-
-export type SendUserOpWithSignatureParams = {
-  chainId: Hex
-  userOp: UserOp
+export type SendUserOpRequestParams = {
+  chainId: number
+  userOp: UserOperationWithBigIntAsHex
+  pci?: string
   permissionsContext?: Hex
 }
-export type SendUserOpWithSignatureResponse = {
-  receipt: Hex
+export type SendUserOpResponseReturn = {
+  userOpId: Hex
 }
 
 export interface UserOpBuilder {
-  fillUserOp(params: FillUserOpParams): Promise<FillUserOpResponse>
+  fillUserOp(params: BuildUserOpRequestParams): Promise<BuildUserOpResponseReturn>
   sendUserOpWithSignature(
-    params: SendUserOpWithSignatureParams
-  ): Promise<SendUserOpWithSignatureResponse>
+    projectId: string,
+    params: SendUserOpRequestParams
+  ): Promise<SendUserOpResponseReturn>
 }
