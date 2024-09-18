@@ -53,7 +53,7 @@ export default function SessionProposalModal() {
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  const { getAvailableSmartAccounts } = useSmartAccounts()
+  const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
 
   const supportedNamespaces = useMemo(() => {
     // eip155
@@ -362,8 +362,8 @@ export default function SessionProposalModal() {
             })) || <Row>Non available</Row>}
 
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
-          {smartAccountEnabled &&
-            getAvailableSmartAccounts().map((account, i) => {
+          {smartAccountEnabled && namespaces &&
+             getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map((account, i) => {
               if (!account) {
                 return <></>
               }
@@ -393,8 +393,8 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>
-          {smartAccountEnabled &&
-            getAvailableSmartAccounts().map(({ chain }, i) => {
+          {smartAccountEnabled && namespaces &&
+            getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(({ chain }, i) => {
               if (!chain) {
                 return <></>
               }
