@@ -9,6 +9,7 @@ import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
+import { styledToast } from '@/utils/HelperUtil'
 
 export default function AuthRequestModal() {
   const { account } = useSnapshot(SettingsStore.state)
@@ -32,19 +33,24 @@ export default function AuthRequestModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (request) {
-      setIsLoadingApprove(true)
-      const signature = await eip155Wallets[address].signMessage(message)
-      await web3wallet.respondAuthRequest(
-        {
-          id: request.id,
-          signature: {
-            s: signature,
-            t: 'eip191'
-          }
-        },
-        iss
-      )
+    try {
+      if (request) {
+        setIsLoadingApprove(true)
+        const signature = await eip155Wallets[address].signMessage(message)
+        await web3wallet.respondAuthRequest(
+          {
+            id: request.id,
+            signature: {
+              s: signature,
+              t: 'eip191'
+            }
+          },
+          iss
+        )
+      }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       setIsLoadingApprove(false)
       ModalStore.close()
     }

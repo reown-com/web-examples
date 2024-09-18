@@ -267,9 +267,9 @@ export default function SessionProposalModal() {
 
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
-    if (proposal && namespaces) {
-      setIsLoadingApprove(true)
-      try {
+    try {
+      if (proposal && namespaces) {
+        setIsLoadingApprove(true)
         if (reorderedEip155Accounts.length > 0) {
           // we should append the smart accounts to the available eip155 accounts
           namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
@@ -284,14 +284,13 @@ export default function SessionProposalModal() {
           sessionProperties
         })
         SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
+      setIsLoadingApprove(false)
+      ModalStore.close()
     }
-    setIsLoadingApprove(false)
-    ModalStore.close()
   }, [namespaces, proposal, reorderedEip155Accounts])
 
   // Hanlde reject action
