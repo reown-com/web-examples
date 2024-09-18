@@ -4,7 +4,7 @@ import {
   hexStringToBase64,
 } from "../utils/EncodingUtils";
 import { walletActionsErc7715 } from "viem/experimental";
-import { createPublicClient, custom } from "viem";
+import { createPublicClient, custom, zeroAddress } from "viem";
 import { WalletConnectCosigner } from "../utils/WalletConnectCosignerUtils";
 import { useDcaApplicationContext } from "../context/DcaApplicationContextProvider";
 import { DCAFormSchemaType } from "@/schema/DCAFormSchema";
@@ -83,8 +83,7 @@ export function useDCA() {
           },
         },
         signerData: {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-          userOpBuilder: approvedPermissions.signerData?.userOpBuilder!,
+          userOpBuilder: zeroAddress,
         },
         permissionsContext: approvedPermissions.permissionsContext,
         factory: approvedPermissions.factory || "",
