@@ -4,19 +4,22 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 5175",
+    "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prettier": "prettier --check '**/*.{js,ts,jsx,tsx}'",
+    "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
   },
   "dependencies": {
+    "@airgap/beacon-types": "^4.2.2",
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@solana/web3.js": "^1.78.4",
     "@taquito/taquito": "^20.0.1",
-    "@airgap/beacon-types": "^4.2.2",
     "@walletconnect/modal": "^2.6.2",
     "@walletconnect/universal-provider": "^2.14.0",
     "bs58": "^5.0.0",
+    "prettier": "^3.3.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tweetnacl": "^1.0.3"
