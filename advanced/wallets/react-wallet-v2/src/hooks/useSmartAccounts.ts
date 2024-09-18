@@ -52,7 +52,7 @@ export default function useSmartAccounts() {
     return accounts
   }
 
-  const getAvailableSmartAccountsOnNamespaceChains = (chains:string[]|undefined) => {
+  const getAvailableSmartAccountsOnNamespaceChains = (chains: string[] | undefined) => {
     if (!smartAccountEnabled || chains === undefined) {
       return []
     }
@@ -65,7 +65,9 @@ export default function useSmartAccounts() {
       })
     }
 
-    const filteredAccounts = accounts.filter(account => chains.some(chain => chain && parseInt(chain.split(':')[1]) === account.chain.id))
+    const filteredAccounts = accounts.filter(account =>
+      chains.some(chain => chain && parseInt(chain.split(':')[1]) === account.chain.id)
+    )
     return filteredAccounts
   }
 

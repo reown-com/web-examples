@@ -362,17 +362,20 @@ export default function SessionProposalModal() {
             })) || <Row>Non available</Row>}
 
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
-          {smartAccountEnabled && namespaces &&
-             getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map((account, i) => {
-              if (!account) {
-                return <></>
+          {smartAccountEnabled &&
+            namespaces &&
+            getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
+              (account, i) => {
+                if (!account) {
+                  return <></>
+                }
+                return (
+                  <Row key={i}>
+                    <ChainSmartAddressMini account={account} />
+                  </Row>
+                )
               }
-              return (
-                <Row key={i}>
-                  <ChainSmartAddressMini account={account} />
-                </Row>
-              )
-            })}
+            )}
         </Grid>
         <Grid>
           <Row style={{ color: 'GrayText' }} justify="flex-end">
@@ -393,17 +396,20 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }} justify="flex-end">
             Chains
           </Row>
-          {smartAccountEnabled && namespaces &&
-            getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(({ chain }, i) => {
-              if (!chain) {
-                return <></>
+          {smartAccountEnabled &&
+            namespaces &&
+            getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
+              ({ chain }, i) => {
+                if (!chain) {
+                  return <></>
+                }
+                return (
+                  <Row key={i} style={{ marginTop: '24px' }}>
+                    <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
+                  </Row>
+                )
               }
-              return (
-                <Row key={i} style={{ marginTop: '24px' }}>
-                  <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
-                </Row>
-              )
-            })}
+            )}
         </Grid>
       </Grid.Container>
     </RequestModal>
