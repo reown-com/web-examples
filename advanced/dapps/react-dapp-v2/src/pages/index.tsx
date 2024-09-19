@@ -454,10 +454,13 @@ const Home: NextPage = () => {
       openRequestModal();
       await tezosRpc.testSignFinalize(chainId, address);
     };
-    const onSignIncreasePaidStorage = async (chainId: string, address: string) => {
+    const onSignIncreasePaidStorage = async (
+      chainId: string,
+      address: string
+    ) => {
       openRequestModal();
       await tezosRpc.testSignIncreasePaidStorage(chainId, address);
-    }
+    };
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
       await tezosRpc.testSignMessage(chainId, address);
@@ -511,7 +514,8 @@ const Home: NextPage = () => {
       {
         method: TEZOS_SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE,
         callback: onSignIncreasePaidStorage,
-        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE],
+        description:
+          TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE],
       },
       {
         method: TEZOS_SAMPLE_KINDS.SIGN,

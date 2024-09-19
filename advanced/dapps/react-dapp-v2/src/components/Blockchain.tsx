@@ -85,7 +85,7 @@ const SPre = styled.div`
   background-color: #f4f4f4;
   width: 100%;
   min-width: 700px;
-  textAlign: 'left';
+  textalign: "left";
   padding: 10px;
   border-radius: 5px;
   overflow-x: auto;
@@ -136,7 +136,9 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
     balances,
     actions,
   } = props;
-  const [hoveredDescription, setHoveredDescription] = React.useState<string | null>(null);
+  const [hoveredDescription, setHoveredDescription] = React.useState<
+    string | null
+  >(null);
 
   if (!Object.keys(chainData).length) return null;
 
@@ -215,7 +217,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
       </SAccount>
       {hoveredDescription && (
         <SPre>
-          <pre style={{ textAlign: 'left' }}>{hoveredDescription}</pre>
+          <pre style={{ textAlign: "left" }}>{hoveredDescription}</pre>
         </SPre>
       )}
     </React.Fragment>

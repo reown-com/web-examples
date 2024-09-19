@@ -1,11 +1,11 @@
-import { TezosToolkit } from '@taquito/taquito';
+import { TezosToolkit } from "@taquito/taquito";
 import { TezosChainData } from "../chains/tezos";
 
 // Singleton class to manage TezosToolkit instances
 class TezosInstanceManager {
   private static instances: Map<string, TezosToolkit> = new Map();
 
-  private constructor() { }
+  private constructor() {}
 
   public static getTezosInstance(networkId: string): TezosToolkit {
     if (!TezosChainData[networkId]) {
@@ -22,7 +22,6 @@ class TezosInstanceManager {
 }
 export default TezosInstanceManager;
 
-
 export async function apiGetTezosAccountBalance(
   address: string,
   networkId: string
@@ -33,7 +32,7 @@ export async function apiGetTezosAccountBalance(
   console.log(`Got balance: ${balanceInTez} ꜩ`);
 
   return {
-    balance: (balanceInTez).toString(),
+    balance: balanceInTez.toString(),
     symbol: "XTZ",
     name: "XTZ",
   };
@@ -56,9 +55,13 @@ export async function apiGetContractAddress(
     .then((data) => {
       return data
         .map((op: any) => {
-          const address = op?.status === 'applied' && op?.originatedContract?.kind === "smart_contract" ? op.originatedContract.address : '';
+          const address =
+            op?.status === "applied" &&
+            op?.originatedContract?.kind === "smart_contract"
+              ? op.originatedContract.address
+              : "";
           if (address) {
-            console.log('Got contract address:', address);
+            console.log("Got contract address:", address);
           }
           return address;
         })

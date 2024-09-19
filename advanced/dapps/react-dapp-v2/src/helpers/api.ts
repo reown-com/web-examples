@@ -157,9 +157,7 @@ export async function apiGetAccountBalance(
   }
 
   if (namespace === "tezos") {
-    return apiGetTezosAccountBalance(
-      address, networkId
-    );
+    return apiGetTezosAccountBalance(address, networkId);
   }
 
   if (namespace !== "eip155") {

@@ -56,7 +56,7 @@ function getAssetIcon(asset: AssetData): JSX.Element {
   }
 }
 
-function getDecimals(asset: AssetData) : number {
+function getDecimals(asset: AssetData): number {
   switch (asset?.symbol?.toLowerCase()) {
     case "xtz":
       return 6;

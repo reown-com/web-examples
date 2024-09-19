@@ -173,7 +173,9 @@ export function JsonRpcContextProvider({
   const [kadenaAccount, setKadenaAccount] = useState<KadenaAccount | null>(
     null
   );
-  const [contractAddress, setContractAddress] = useState("[Run Origination to get contract address]");
+  const [contractAddress, setContractAddress] = useState(
+    "[Run Origination to get contract address]"
+  );
 
   const { client, session, accounts, balances, solanaPublicKeys } =
     useWalletConnectClient();
@@ -883,7 +885,7 @@ export function JsonRpcContextProvider({
               })),
               transaction: transaction
                 .serialize({ verifySignatures: false })
-                .toString('base64'),
+                .toString("base64"),
             },
           },
         });
@@ -1416,9 +1418,7 @@ export function JsonRpcContextProvider({
 
   // -------- TEZOS RPC METHODS --------
 
-  const signTransaction = (
-    method: TEZOS_SAMPLE_KINDS
-  ) => {
+  const signTransaction = (method: TEZOS_SAMPLE_KINDS) => {
     return _createJsonRpcRequestHandler(
       async (
         chainId: string,
@@ -1431,36 +1431,41 @@ export function JsonRpcContextProvider({
             break;
 
           case TEZOS_SAMPLE_KINDS.SEND_DELEGATION:
-            operation = TEZOS_SAMPLES[method]
+            operation = TEZOS_SAMPLES[method];
             break;
 
           case TEZOS_SAMPLE_KINDS.SEND_UNDELEGATION:
-            operation = TEZOS_SAMPLES[method]
+            operation = TEZOS_SAMPLES[method];
             break;
 
           case TEZOS_SAMPLE_KINDS.SEND_ORGINATION:
-            operation = TEZOS_SAMPLES[method]
+            operation = TEZOS_SAMPLES[method];
             break;
 
           case TEZOS_SAMPLE_KINDS.SEND_CONTRACT_CALL:
-            operation = {...TEZOS_SAMPLES[method], destination: contractAddress};
+            operation = {
+              ...TEZOS_SAMPLES[method],
+              destination: contractAddress,
+            };
             break;
 
           case TEZOS_SAMPLE_KINDS.SEND_STAKE:
-            operation = {...TEZOS_SAMPLES[method], destination: address};
+            operation = { ...TEZOS_SAMPLES[method], destination: address };
             break;
 
           case TEZOS_SAMPLE_KINDS.SEND_UNSTAKE:
-            operation = {...TEZOS_SAMPLES[method], destination: address};
+            operation = { ...TEZOS_SAMPLES[method], destination: address };
             break;
 
           case TEZOS_SAMPLE_KINDS.SEND_FINALIZE:
-            operation = {...TEZOS_SAMPLES[method], destination: address};
+            operation = { ...TEZOS_SAMPLES[method], destination: address };
             break;
 
           case TEZOS_SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE:
             operation = {
-              ...TEZOS_SAMPLES[method], destination: contractAddress};
+              ...TEZOS_SAMPLES[method],
+              destination: contractAddress,
+            };
             break;
 
           default:
@@ -1481,12 +1486,17 @@ export function JsonRpcContextProvider({
 
         // Get the contract ID if it's an origination
         if (method === TEZOS_SAMPLE_KINDS.SEND_ORGINATION) {
-          const contractAddressList = await apiGetContractAddress(chainId, result.hash);
+          const contractAddressList = await apiGetContractAddress(
+            chainId,
+            result.hash
+          );
           if (contractAddressList.length > 0) {
             setContractAddress(contractAddressList[0]);
             console.log("TezosRpc stored contract: ", contractAddressList[0]);
           } else {
-            console.error("TezosRpc could not find contract address in origination operation.");
+            console.error(
+              "TezosRpc could not find contract address in origination operation."
+            );
           }
         }
 
@@ -1506,7 +1516,7 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const result = await client!.request<Array<{ address: string}>>({
+        const result = await client!.request<Array<{ address: string }>>({
           chainId,
           topic: session!.topic,
           request: {
@@ -1525,13 +1535,17 @@ export function JsonRpcContextProvider({
     ),
     testSignTransaction: signTransaction(TEZOS_SAMPLE_KINDS.SEND_TRANSACTION),
     testSignOrigination: signTransaction(TEZOS_SAMPLE_KINDS.SEND_ORGINATION),
-    testSignContractCall: signTransaction(TEZOS_SAMPLE_KINDS.SEND_CONTRACT_CALL),
+    testSignContractCall: signTransaction(
+      TEZOS_SAMPLE_KINDS.SEND_CONTRACT_CALL
+    ),
     testSignDelegation: signTransaction(TEZOS_SAMPLE_KINDS.SEND_DELEGATION),
     testSignUndelegation: signTransaction(TEZOS_SAMPLE_KINDS.SEND_UNDELEGATION),
     testSignStake: signTransaction(TEZOS_SAMPLE_KINDS.SEND_STAKE),
     testSignUnstake: signTransaction(TEZOS_SAMPLE_KINDS.SEND_UNSTAKE),
     testSignFinalize: signTransaction(TEZOS_SAMPLE_KINDS.SEND_FINALIZE),
-    testSignIncreasePaidStorage: signTransaction(TEZOS_SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE),
+    testSignIncreasePaidStorage: signTransaction(
+      TEZOS_SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE
+    ),
     testSignMessage: _createJsonRpcRequestHandler(
       async (
         chainId: string,
