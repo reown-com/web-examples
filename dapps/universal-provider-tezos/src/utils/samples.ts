@@ -123,5 +123,3 @@ export const SAMPLES = {
   'tezos_send:finalize': tezosFinalizeOperation,
   'tezos_send:increase_paid_storage': TezosIncreasePaidStorageOperation
 }
-
-export enum DEFAULT_TEZOS_EVENTS {}

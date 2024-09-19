@@ -9,7 +9,10 @@ import {
   formatTezosBalance,
   getAccounts,
   getChainId,
-  apiGetContractAddress
+  apiGetContractAddress,
+  TezosSendResponse,
+  TezosSignResponse,
+  TezosGetAccountResponse
 } from './utils/helpers'
 import { SAMPLE_KINDS, SAMPLES } from './utils/samples'
 
@@ -26,9 +29,13 @@ const methods = ['tezos_getAccounts', 'tezos_sign', 'tezos_send']
 const App = () => {
   const [provider, setProvider] = useState<UniversalProvider | null>(null)
   const [isConnected, setIsConnected] = useState(false)
-  const [lastKind, setLastKind] = useState<any>(null)
-  const [result, setResult] = useState<any>(null)
-  const [description, setDescription] = useState<any>(null)
+  const [lastKind, setLastKind] = useState<SAMPLE_KINDS | undefined>(undefined)
+  const [result, setResult] = useState<
+    TezosSendResponse | TezosSignResponse | TezosGetAccountResponse | string | null
+  >(null)
+  const [description, setDescription] = useState<Record<string, unknown> | string | undefined>(
+    undefined
+  )
   const [balance, setBalance] = useState('')
   const [address, setAddress] = useState('')
   const [contractAddress, setContractAddress] = useState(
@@ -68,7 +75,7 @@ const App = () => {
         console.log('Session Ping:', id, topic)
       })
 
-      newProvider.on('session_event', ({ event, chainId }: { event: any; chainId: string }) => {
+      newProvider.on('session_event', ({ event, chainId }: { event: unknown; chainId: string }) => {
         console.log('Session Event:', event, chainId)
       })
 
@@ -205,7 +212,7 @@ const App = () => {
         await getBalance()
       } catch (error) {
         console.error(`Error sending ${kind}:`, error)
-        setResult(error)
+        setResult(JSON.stringify(error, null, 2))
       }
     },
     [provider, address]
@@ -223,8 +230,10 @@ const App = () => {
       case SAMPLE_KINDS.SEND_TRANSACTION:
       case SAMPLE_KINDS.SEND_DELEGATION:
       case SAMPLE_KINDS.SEND_UNDELEGATION:
-      case SAMPLE_KINDS.SEND_ORGINATION:
         setDescription(SAMPLES[kind])
+        break
+      case SAMPLE_KINDS.SEND_ORGINATION:
+        setDescription(SAMPLES[kind] as unknown as Record<string, unknown>)
         break
       case SAMPLE_KINDS.SEND_CONTRACT_CALL:
       case SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE:
@@ -248,7 +257,7 @@ const App = () => {
     <div className="App">
       <h1>UniversalProvider</h1>
       <h2>WalletConnect for Tezos</h2>
-      <p>dApp prototype integrating WalletConnect's Tezos Universal Provider.</p>
+      <p>dApp prototype integrating for Tezos Universal Provider.</p>
 
       {!projectId || projectId === 'YOUR_PROJECT_ID' ? (
         <div className="warning">

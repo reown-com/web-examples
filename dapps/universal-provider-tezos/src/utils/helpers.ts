@@ -20,6 +20,14 @@ export interface AssetData {
   balance: number
 }
 
+interface Operation {
+  status?: string
+  originatedContract?: {
+    kind: string
+    address: string
+  }
+}
+
 export interface ChainData {
   name: string
   id: string
@@ -49,6 +57,19 @@ export const TezosChainData: ChainsMap = {
     slip44: 1729,
     testnet: true
   }
+}
+
+export interface TezosGetAccountsData {
+  algo: string
+  address: string
+  pubkey: string
+}
+export type TezosGetAccountResponse = TezosGetAccountsData[]
+export interface TezosSignResponse {
+  signature: string
+}
+export interface TezosSendResponse {
+  hash: string
 }
 
 // Singleton class to manage TezosToolkit instances
@@ -94,7 +115,7 @@ export async function apiGetContractAddress(
   chainId: string, // Remove this line if the parameter is not used in the function body.
   hash: string
 ): Promise<string[]> {
-  const [_, networkId] = chainId.split(':')
+  const [, networkId] = chainId.split(':')
 
   if (!hash) {
     throw new Error(`No hash provided`)
@@ -110,9 +131,9 @@ export async function apiGetContractAddress(
 
   return fetch(path)
     .then(response => response.json())
-    .then(data => {
+    .then((data: Operation[]) => {
       return data
-        .map((op: any) => {
+        .map((op: Operation) => {
           const address =
             op?.status === 'applied' && op?.originatedContract?.kind === 'smart_contract'
               ? op.originatedContract.address
@@ -134,9 +155,9 @@ export const getAccounts = async (
   chainId: string,
   provider: UniversalProvider,
   address: string
-) => {
+): Promise<TezosGetAccountResponse> => {
   console.log('TezosRpc getAccounts helper: ', chainId, provider, address)
-  const result = await provider!.request<Array<{ address: string }>>(
+  const result = await provider!.request<TezosGetAccountsData[]>(
     {
       method: 'tezos_getAccounts',
       params: {}
@@ -144,7 +165,7 @@ export const getAccounts = async (
     chainId
   )
 
-  const addresses = result.map((account: { address: any }) => account.address)
+  const addresses = result.map((account: { address: string }) => account.address)
   // setAddresses(addresses);
   console.log('TezosRpc received addresses: ', addresses)
 
@@ -155,7 +176,7 @@ export const signMessage = async (
   chainId: string,
   provider: UniversalProvider,
   address: string
-) => {
+): Promise<TezosSignResponse> => {
   const payload = '05010000004254'
   const result = await provider!.request<{ signature: string }>(
     {
@@ -176,7 +197,7 @@ export const sendTransaction = async (
   provider: UniversalProvider,
   address: string,
   operation: PartialTezosOperation
-) => {
+): Promise<TezosSendResponse> => {
   console.log('TezosRpc operation: ', operation)
   const result = await provider!.request<{ hash: string }>(
     {
