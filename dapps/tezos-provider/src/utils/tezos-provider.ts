@@ -1,6 +1,7 @@
 import { UniversalProvider, Metadata } from "@walletconnect/universal-provider";
 import { KeyValueStorageOptions } from "@walletconnect/keyvaluestorage";
 import { Logger } from "@walletconnect/logger";
+import { SessionTypes } from "@walletconnect/types";
 import { TezosToolkit } from "@taquito/taquito";
 import {
   PartialTezosDalPublishCommitmentOperation,
@@ -152,6 +153,14 @@ export const DefaultTezosMethods: TezosMethod[] = [
   TezosMethod.SEND,
 ];
 
+interface Operation {
+  status?: string;
+  originatedContract?: {
+    kind: string;
+    address: string;
+  };
+}
+
 class TezosProviderError extends Error {
   constructor(message: string) {
     super(message);
@@ -225,7 +234,7 @@ class TezosProvider {
       methods: DefaultTezosMethods,
       events: [],
     },
-  ): Promise<any> {
+  ): Promise<SessionTypes.Struct | undefined> {
     if (!this.signer || !this.config) {
       throw new TezosInitializationError();
     }
@@ -241,7 +250,7 @@ class TezosProvider {
       return acc;
     }, {} as ChainsMap);
 
-    let res = await this.signer.connect({
+    const res = await this.signer.connect({
       namespaces: {
         tezos: {
           chains: opts.chains.map((chain) => chain.id),
@@ -258,7 +267,7 @@ class TezosProvider {
 
     // Set the address if the session exists
     if (this.signer.session) {
-      let accounts =
+      const accounts =
         this.signer.session.namespaces.tezos?.accounts.map(
           (account) => account.split(":")[2],
         ) ?? [];
@@ -306,9 +315,9 @@ class TezosProvider {
     };
   }
 
-  public async getFormattedBalance(): Promise<string> {
-    const balance = await this.getBalance();
-    return `${balance.balance.toFixed(6)} ꜩ`;
+  static formatTezosBalance(asset: AssetData): string {
+    const formattedBalance = (asset.balance / 1_000_000).toFixed(6);
+    return `${asset.name}: ${formattedBalance} ${asset.symbol}`;
   }
 
   public async getContractAddress(hash: string): Promise<string[]> {
@@ -322,9 +331,9 @@ class TezosProvider {
 
     return fetch(path)
       .then((response) => response.json())
-      .then((data) => {
+      .then((data: Operation[]) => {
         return data
-          .map((op: any) => {
+          .map((op: Operation) => {
             const address =
               op?.status === "applied" &&
               op?.originatedContract?.kind === "smart_contract"

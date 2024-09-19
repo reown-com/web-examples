@@ -4,7 +4,12 @@ import { SAMPLES, SAMPLE_KINDS } from "./utils/samples";
 import TezosProvider, {
   TezosChainDataMainnet,
   TezosChainDataTestnet,
-} from "@walletconnect/tezos-provider";
+} from "./utils/tezos-provider";
+import {
+  TezosGetAccountResponse,
+  TezosSendResponse,
+  TezosSignResponse,
+} from "./utils/tezos-provider";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
@@ -13,9 +18,18 @@ const modal = new WalletConnectModal({ projectId });
 const App = () => {
   const [provider, setProvider] = useState<TezosProvider | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [lastKind, setLastKind] = useState<SAMPLE_KINDS | null>(null);
-  const [result, setResult] = useState<any>(null);
-  const [description, setDescription] = useState<any>(null);
+  const [lastKind, setLastKind] = useState<SAMPLE_KINDS | undefined>(undefined);
+  const [result, setResult] = useState<
+    | TezosSendResponse
+    | TezosSignResponse
+    | TezosGetAccountResponse
+    | string
+    | string[]
+    | null
+  >(null);
+  const [description, setDescription] = useState<
+    Record<string, unknown> | string | undefined
+  >(undefined);
   const [contractAddress, setContractAddress] = useState(
     "[click Origination to get contract address]",
   );
@@ -48,12 +62,12 @@ const App = () => {
       );
       signer?.on(
         "session_event",
-        ({ event, chainId }: { event: any; chainId: string }) =>
+        ({ event, chainId }: { event: unknown; chainId: string }) =>
           console.log("Session Event:", event, chainId),
       );
       signer?.on(
         "session_update",
-        ({ event, chainId }: { event: any; chainId: string }) =>
+        ({ event, chainId }: { event: unknown; chainId: string }) =>
           console.log("Session Update:", event, chainId),
       );
 
@@ -206,7 +220,7 @@ const App = () => {
           setResult([error.name, error.message]);
         } else {
           console.error(`Error sending ${kind}:`, error);
-          setResult(error);
+          setResult(JSON.stringify(error, null, 2));
         }
       }
     },
@@ -220,8 +234,10 @@ const App = () => {
         case SAMPLE_KINDS.SEND_TRANSACTION:
         case SAMPLE_KINDS.SEND_DELEGATION:
         case SAMPLE_KINDS.SEND_UNDELEGATION:
-        case SAMPLE_KINDS.SEND_ORGINATION:
           setDescription(SAMPLES[kind]);
+          break;
+        case SAMPLE_KINDS.SEND_ORGINATION:
+          setDescription(SAMPLES[kind] as unknown as Record<string, unknown>);
           break;
         case SAMPLE_KINDS.SEND_CONTRACT_CALL:
         case SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE:

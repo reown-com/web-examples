@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@aashutoshrathi/word-wrap/-/word-wrap-1.2.6.tgz#bd9154aec9983f77b3a034ecaa015c2e4201f6cf"
   integrity sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==
 
-"@airgap/beacon-types@^4.2.2":
-  version "4.2.2"
-  resolved "https://registry.yarnpkg.com/@airgap/beacon-types/-/beacon-types-4.2.2.tgz#b239e17270ebc4ffff084ee7d7e50523e62743e6"
-  integrity sha512-4sX5QEZTanQ5E6FiY7lp6ilv6rlzu5eNrWa3KdygpHm0NFfkJCY7YRPWo4V5LkCCkILa9QF5TS9tVKMORNcocQ==
+"@airgap/beacon-types@^4.3.0":
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/@airgap/beacon-types/-/beacon-types-4.3.0.tgz#7838643405b89ffd26b4f82cb57ec4d474c05e5c"
+  integrity sha512-mHhjt9BM1I05zBiQ2+xv0gAn0eYI+by1YeVDGRoznE5YRpUGYNr307oYF08pQ7KfPlNbCSDPq295uOHHFuYPfA==
   dependencies:
     "@types/chrome" "0.0.246"
 
