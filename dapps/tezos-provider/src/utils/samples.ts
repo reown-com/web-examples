@@ -1,10 +1,10 @@
 import {
-    TezosOperationType, 
-    PartialTezosTransactionOperation,
-    PartialTezosDelegationOperation,
-    PartialTezosOriginationOperation as PartialTezosOriginationOperationOriginal,
-    PartialTezosIncreasePaidStorageOperation}
-    from "@airgap/beacon-types";
+  TezosOperationType,
+  PartialTezosTransactionOperation,
+  PartialTezosDelegationOperation,
+  PartialTezosOriginationOperation as PartialTezosOriginationOperationOriginal,
+  PartialTezosIncreasePaidStorageOperation,
+} from "@airgap/beacon-types";
 
 import { ScriptedContracts } from "@taquito/rpc";
 
@@ -12,7 +12,7 @@ interface PartialTezosOriginationOperation
   extends Omit<PartialTezosOriginationOperationOriginal, "script"> {
   script: ScriptedContracts;
 }
-  
+
 export enum SAMPLE_KINDS {
   GET_ACCOUNTS = "tezos_getAccounts",
   SEND = "tezos_send",
@@ -31,28 +31,32 @@ export enum SAMPLE_KINDS {
 const tezosTransactionOperation: PartialTezosTransactionOperation = {
   kind: TezosOperationType.TRANSACTION,
   destination: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve", // Tezos Foundation Ghost Baker
-  amount: "100000"
+  amount: "100000",
 };
 
 const tezosOriginationOperation: PartialTezosOriginationOperation = {
   kind: TezosOperationType.ORIGINATION,
-  balance: '1',
-  script: { // This contract adds the parameter to the storage value
+  balance: "1",
+  script: {
+    // This contract adds the parameter to the storage value
     code: [
       { prim: "parameter", args: [{ prim: "int" }] },
       { prim: "storage", args: [{ prim: "int" }] },
-      { prim: "code",
-        args: [[
-            { prim: "DUP" },                                // Duplicate the parameter (parameter is pushed onto the stack)
-            { prim: "CAR" },                                // Access the parameter from the stack (parameter is on top)
-            { prim: "DIP", args: [[{ prim: "CDR" }]] },     // Access the storage value (storage is on the stack)
-            { prim: "ADD" },                                // Add the parameter to the storage value
+      {
+        prim: "code",
+        args: [
+          [
+            { prim: "DUP" }, // Duplicate the parameter (parameter is pushed onto the stack)
+            { prim: "CAR" }, // Access the parameter from the stack (parameter is on top)
+            { prim: "DIP", args: [[{ prim: "CDR" }]] }, // Access the storage value (storage is on the stack)
+            { prim: "ADD" }, // Add the parameter to the storage value
             { prim: "NIL", args: [{ prim: "operation" }] }, // Create an empty list of operations
-            { prim: "PAIR" }                                // Pair the updated storage with the empty list of operations
-        ]]
-      }
+            { prim: "PAIR" }, // Pair the updated storage with the empty list of operations
+          ],
+        ],
+      },
     ],
-    storage: { int: "10" }
+    storage: { int: "10" },
   },
 };
 
@@ -60,21 +64,21 @@ const tezosContractCallOperation: PartialTezosTransactionOperation = {
   kind: TezosOperationType.TRANSACTION,
   destination: "[contract address]",
   amount: "0",
-  parameters: { entrypoint: "default", value: { int: "20" } } // Add 20 to the current storage value
+  parameters: { entrypoint: "default", value: { int: "20" } }, // Add 20 to the current storage value
 };
 
 const tezosDelegationOperation: PartialTezosDelegationOperation = {
   kind: TezosOperationType.DELEGATION,
-  delegate: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve" // Tezos Foundation Ghost Baker. Cannot delegate to ourself as that would block undelegation
+  delegate: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve", // Tezos Foundation Ghost Baker. Cannot delegate to ourself as that would block undelegation
 };
 
 const tezosUndelegationOperation: PartialTezosDelegationOperation = {
-  kind: TezosOperationType.DELEGATION
+  kind: TezosOperationType.DELEGATION,
 };
 
 const tezosStakeOperation: PartialTezosTransactionOperation = {
   kind: TezosOperationType.TRANSACTION,
-  destination:"[own adress]",
+  destination: "[own adress]",
   amount: "1000000",
   parameters: {
     entrypoint: "stake",
@@ -84,7 +88,7 @@ const tezosStakeOperation: PartialTezosTransactionOperation = {
 
 const tezosUnstakeOperation: PartialTezosTransactionOperation = {
   kind: TezosOperationType.TRANSACTION,
-  destination:"[own adress]",
+  destination: "[own adress]",
   amount: "1000000",
   parameters: {
     entrypoint: "unstake",
@@ -94,7 +98,7 @@ const tezosUnstakeOperation: PartialTezosTransactionOperation = {
 
 const tezosFinalizeOperation: PartialTezosTransactionOperation = {
   kind: TezosOperationType.TRANSACTION,
-  destination:"[own adress]",
+  destination: "[own adress]",
   amount: "0",
   parameters: {
     entrypoint: "finalize_unstake",
@@ -102,11 +106,12 @@ const tezosFinalizeOperation: PartialTezosTransactionOperation = {
   },
 };
 
-const TezosIncreasePaidStorageOperation: PartialTezosIncreasePaidStorageOperation = {
-  kind: TezosOperationType.INCREASE_PAID_STORAGE,
-  amount: "10",
-  destination: "[contract address]"
-};
+const TezosIncreasePaidStorageOperation: PartialTezosIncreasePaidStorageOperation =
+  {
+    kind: TezosOperationType.INCREASE_PAID_STORAGE,
+    amount: "10",
+    destination: "[contract address]",
+  };
 
 export const SAMPLES = {
   "tezos_send:transaction": tezosTransactionOperation,

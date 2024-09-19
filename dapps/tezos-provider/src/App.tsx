@@ -1,7 +1,10 @@
 import { WalletConnectModal } from "@walletconnect/modal";
 import { useEffect, useState, useCallback } from "react";
 import { SAMPLES, SAMPLE_KINDS } from "./utils/samples";
-import TezosProvider, { TezosChainDataMainnet, TezosChainDataTestnet } from "@walletconnect/tezos-provider";
+import TezosProvider, {
+  TezosChainDataMainnet,
+  TezosChainDataTestnet,
+} from "@walletconnect/tezos-provider";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
@@ -13,7 +16,9 @@ const App = () => {
   const [lastKind, setLastKind] = useState<SAMPLE_KINDS | null>(null);
   const [result, setResult] = useState<any>(null);
   const [description, setDescription] = useState<any>(null);
-  const [contractAddress, setContractAddress] = useState("[click Origination to get contract address]");
+  const [contractAddress, setContractAddress] = useState(
+    "[click Origination to get contract address]",
+  );
   const [balance, setBalance] = useState("");
 
   // Initialize WalletConnect Modal and TezosProvider
@@ -36,28 +41,43 @@ const App = () => {
         await modal.openModal({ uri });
       });
 
-      signer?.on("session_ping", ({ id, topic }: { id: string; topic: string }) =>
-        console.log("Session Ping:", id, topic));
-      signer?.on("session_event", ({ event, chainId }: { event: any; chainId: string }) =>
-        console.log("Session Event:", event, chainId));
-      signer?.on("session_update", ({ event, chainId }: { event: any; chainId: string }) =>
-        console.log("Session Update:", event, chainId));
+      signer?.on(
+        "session_ping",
+        ({ id, topic }: { id: string; topic: string }) =>
+          console.log("Session Ping:", id, topic),
+      );
+      signer?.on(
+        "session_event",
+        ({ event, chainId }: { event: any; chainId: string }) =>
+          console.log("Session Event:", event, chainId),
+      );
+      signer?.on(
+        "session_update",
+        ({ event, chainId }: { event: any; chainId: string }) =>
+          console.log("Session Update:", event, chainId),
+      );
 
-      signer?.on("session_delete", ({ id, topic }: { id: string; topic: string }) => {
-        console.log("Session Delete:", id, topic);
-        setIsConnected(false);
-        setProvider(null);
-      });
+      signer?.on(
+        "session_delete",
+        ({ id, topic }: { id: string; topic: string }) => {
+          console.log("Session Delete:", id, topic);
+          setIsConnected(false);
+          setProvider(null);
+        },
+      );
 
       signer?.on("connect", ({ id, topic }: { id: string; topic: string }) => {
         console.log("Connected:", id, topic);
         setIsConnected(true);
       });
 
-      signer?.on("disconnect", ({ id, topic }: { id: string; topic: string }) => {
-        console.log("Disconnected:", id, topic);
-        setIsConnected(false);
-      });
+      signer?.on(
+        "disconnect",
+        ({ id, topic }: { id: string; topic: string }) => {
+          console.log("Disconnected:", id, topic);
+          setIsConnected(false);
+        },
+      );
     };
     initProvider();
   }, []);
@@ -67,7 +87,9 @@ const App = () => {
     if (!provider) return;
 
     try {
-      await provider.connect({ chains: [TezosChainDataTestnet, TezosChainDataMainnet] });
+      await provider.connect({
+        chains: [TezosChainDataTestnet, TezosChainDataMainnet],
+      });
       setIsConnected(true);
       console.log("Connected to Tezos");
       const balance = await provider.getBalance();
@@ -109,21 +131,32 @@ const App = () => {
             res = await provider.tezosSign("05010000004254");
             break;
           case SAMPLE_KINDS.SEND_TRANSACTION:
-            res = await provider.tezosSendTransaction(SAMPLES[SAMPLE_KINDS.SEND_TRANSACTION]);
+            res = await provider.tezosSendTransaction(
+              SAMPLES[SAMPLE_KINDS.SEND_TRANSACTION],
+            );
             break;
           case SAMPLE_KINDS.SEND_DELEGATION:
-            res = await provider.tezosSendDelegation(SAMPLES[SAMPLE_KINDS.SEND_DELEGATION]);
+            res = await provider.tezosSendDelegation(
+              SAMPLES[SAMPLE_KINDS.SEND_DELEGATION],
+            );
             break;
           case SAMPLE_KINDS.SEND_UNDELEGATION:
             res = await provider.tezosSendUndelegation();
             break;
           case SAMPLE_KINDS.SEND_ORGINATION:
-            res = await provider.tezosSendOrigination(SAMPLES[SAMPLE_KINDS.SEND_ORGINATION]);
+            res = await provider.tezosSendOrigination(
+              SAMPLES[SAMPLE_KINDS.SEND_ORGINATION],
+            );
             for (let attempt = 0; attempt < 5; attempt++) {
-              const contractAddressList = await provider.getContractAddress(res.hash);
+              const contractAddressList = await provider.getContractAddress(
+                res.hash,
+              );
               if (contractAddressList.length > 0) {
                 setContractAddress(contractAddressList[0]);
-                console.log("TezosRpc stored contract:", contractAddressList[0]);
+                console.log(
+                  "TezosRpc stored contract:",
+                  contractAddressList[0],
+                );
                 break;
               }
               console.log("Waiting for contract address...");
@@ -141,13 +174,19 @@ const App = () => {
             });
             break;
           case SAMPLE_KINDS.SEND_STAKE:
-            res = await provider.tezosSendStake(SAMPLES[SAMPLE_KINDS.SEND_STAKE]);
+            res = await provider.tezosSendStake(
+              SAMPLES[SAMPLE_KINDS.SEND_STAKE],
+            );
             break;
           case SAMPLE_KINDS.SEND_UNSTAKE:
-            res = await provider.tezosSendUnstake(SAMPLES[SAMPLE_KINDS.SEND_UNSTAKE]);
+            res = await provider.tezosSendUnstake(
+              SAMPLES[SAMPLE_KINDS.SEND_UNSTAKE],
+            );
             break;
           case SAMPLE_KINDS.SEND_FINALIZE:
-            res = await provider.tezosSendFinalizeUnstake(SAMPLES[SAMPLE_KINDS.SEND_FINALIZE]);
+            res = await provider.tezosSendFinalizeUnstake(
+              SAMPLES[SAMPLE_KINDS.SEND_FINALIZE],
+            );
             break;
           case SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE:
             res = await provider.tezosSendIncreasePaidStorage({
@@ -171,7 +210,7 @@ const App = () => {
         }
       }
     },
-    [provider, contractAddress]
+    [provider, contractAddress],
   );
 
   // Provide operation descriptions
@@ -200,7 +239,7 @@ const App = () => {
           setDescription("No description available");
       }
     },
-    [contractAddress, provider?.address]
+    [contractAddress, provider?.address],
   );
 
   const describeClear = useCallback(() => {
@@ -211,29 +250,98 @@ const App = () => {
     <div className="App">
       <h1>TezosProvider</h1>
       <h2>WalletConnect for Tezos</h2>
-      {(!projectId || projectId === "YOUR_PROJECT_ID") ? (
+      {!projectId || projectId === "YOUR_PROJECT_ID" ? (
         <div className="warning">
-          <p><b>The project is not initialized</b></p>
+          <p>
+            <b>The project is not initialized</b>
+          </p>
           <p>Set your project ID in the .env file</p>
         </div>
       ) : isConnected ? (
         <>
-          <p><b>Public Key: </b>{provider?.address ?? "No account connected"}</p>
-          <p><b>Balance: </b>{balance}</p>
+          <p>
+            <b>Public Key: </b>
+            {provider?.address ?? "No account connected"}
+          </p>
+          <p>
+            <b>Balance: </b>
+            {balance}
+          </p>
           <div className="layout-container">
             <div className="btn-container">
-              <button onClick={disconnect} onMouseEnter={describeClear}>Disconnect</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.GET_ACCOUNTS)} onMouseEnter={describeClear}>Get Accounts</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.SIGN)} onMouseEnter={describeClear}>Sign</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.SEND_TRANSACTION)} onMouseEnter={() => describe(SAMPLE_KINDS.SEND_TRANSACTION)}>Send Transaction</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.SEND_DELEGATION)}  onMouseEnter={() => describe(SAMPLE_KINDS.SEND_DELEGATION)}>Delegate</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.SEND_UNDELEGATION)}  onMouseEnter={() => describe(SAMPLE_KINDS.SEND_UNDELEGATION)}>Undelegate</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.SEND_ORGINATION)}  onMouseEnter={() => describe(SAMPLE_KINDS.SEND_ORGINATION)}>Originate</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.SEND_CONTRACT_CALL)}  onMouseEnter={() => describe(SAMPLE_KINDS.SEND_CONTRACT_CALL)}>Contract call</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.SEND_STAKE)}  onMouseEnter={() => describe(SAMPLE_KINDS.SEND_STAKE)}>Stake</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.SEND_UNSTAKE)}  onMouseEnter={() => describe(SAMPLE_KINDS.SEND_UNSTAKE)}>Unstake</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.SEND_FINALIZE)}  onMouseEnter={() => describe(SAMPLE_KINDS.SEND_FINALIZE)}>Finalize</button>
-              <button onClick={() => handleOp(SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE)} onMouseEnter={() => describe(SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE)}>Increase paid storage</button>
+              <button onClick={disconnect} onMouseEnter={describeClear}>
+                Disconnect
+              </button>
+              <button
+                onClick={() => handleOp(SAMPLE_KINDS.GET_ACCOUNTS)}
+                onMouseEnter={describeClear}
+              >
+                Get Accounts
+              </button>
+              <button
+                onClick={() => handleOp(SAMPLE_KINDS.SIGN)}
+                onMouseEnter={describeClear}
+              >
+                Sign
+              </button>
+              <button
+                onClick={() => handleOp(SAMPLE_KINDS.SEND_TRANSACTION)}
+                onMouseEnter={() => describe(SAMPLE_KINDS.SEND_TRANSACTION)}
+              >
+                Send Transaction
+              </button>
+              <button
+                onClick={() => handleOp(SAMPLE_KINDS.SEND_DELEGATION)}
+                onMouseEnter={() => describe(SAMPLE_KINDS.SEND_DELEGATION)}
+              >
+                Delegate
+              </button>
+              <button
+                onClick={() => handleOp(SAMPLE_KINDS.SEND_UNDELEGATION)}
+                onMouseEnter={() => describe(SAMPLE_KINDS.SEND_UNDELEGATION)}
+              >
+                Undelegate
+              </button>
+              <button
+                onClick={() => handleOp(SAMPLE_KINDS.SEND_ORGINATION)}
+                onMouseEnter={() => describe(SAMPLE_KINDS.SEND_ORGINATION)}
+              >
+                Originate
+              </button>
+              <button
+                onClick={() => handleOp(SAMPLE_KINDS.SEND_CONTRACT_CALL)}
+                onMouseEnter={() => describe(SAMPLE_KINDS.SEND_CONTRACT_CALL)}
+              >
+                Contract call
+              </button>
+              <button
+                onClick={() => handleOp(SAMPLE_KINDS.SEND_STAKE)}
+                onMouseEnter={() => describe(SAMPLE_KINDS.SEND_STAKE)}
+              >
+                Stake
+              </button>
+              <button
+                onClick={() => handleOp(SAMPLE_KINDS.SEND_UNSTAKE)}
+                onMouseEnter={() => describe(SAMPLE_KINDS.SEND_UNSTAKE)}
+              >
+                Unstake
+              </button>
+              <button
+                onClick={() => handleOp(SAMPLE_KINDS.SEND_FINALIZE)}
+                onMouseEnter={() => describe(SAMPLE_KINDS.SEND_FINALIZE)}
+              >
+                Finalize
+              </button>
+              <button
+                onClick={() =>
+                  handleOp(SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE)
+                }
+                onMouseEnter={() =>
+                  describe(SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE)
+                }
+              >
+                Increase paid storage
+              </button>
             </div>
             <div className="result-column">
               {result && (
