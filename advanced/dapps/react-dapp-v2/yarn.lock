@@ -3876,30 +3876,30 @@
     pino "7.11.0"
     tslib "1.14.1"
 
-"@walletconnect/modal-core@2.6.2-canary-tma-0":
-  version "2.6.2-canary-tma-0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/modal-core/-/modal-core-2.6.2-canary-tma-0.tgz#c3dd16048569ab49a18af6f4e8532ac571773566"
-  integrity sha512-NtOFulcZX3j2PiyLxRtbvPzj/E28Ty3dSYSjGCtGZz9k0a4aDIZspKRdgZ3w0Zy4cf2SVGBQw1MLVijD3QGcog==
+"@walletconnect/modal-core@2.6.2-canary-tma-1":
+  version "2.6.2-canary-tma-1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/modal-core/-/modal-core-2.6.2-canary-tma-1.tgz#9f291225ae4afbd339a81493d7ae60845049350f"
+  integrity sha512-dfmGQsfwRfGsieeMmH8bXDG85oVTffFhBAYZpRYuWbotlpYjVvPVurTTCLSayJuw7C99qOgroX0mb7kQ4lltOw==
   dependencies:
     valtio "1.11.2"
 
-"@walletconnect/modal-ui@2.6.2-canary-tma-0":
-  version "2.6.2-canary-tma-0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/modal-ui/-/modal-ui-2.6.2-canary-tma-0.tgz#7e5b28f6457e2e6d7f307fb53069edf15bc2b0ad"
-  integrity sha512-gkcdMLVXJ6wnTR3R0yMNnLqyx97zNI5C1aAjnXmI2yma1GwT/oskQ73DJ7MbHH/31xrZNnutEiSz138oqGOp+Q==
+"@walletconnect/modal-ui@2.6.2-canary-tma-1":
+  version "2.6.2-canary-tma-1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/modal-ui/-/modal-ui-2.6.2-canary-tma-1.tgz#9d3e98095f4c5429c460a3381f4199de73983949"
+  integrity sha512-N89efQaGynG43GBYg2KrPxXQu3gxbqPNh65ndRFMPhSBvMDQ6mTkpV5RUS4IQOgResLcIAjMw4+YLfZnbHUdMw==
   dependencies:
-    "@walletconnect/modal-core" "2.6.2-canary-tma-0"
+    "@walletconnect/modal-core" "2.6.2-canary-tma-1"
     lit "2.8.0"
     motion "10.16.2"
     qrcode "1.5.3"
 
-"@walletconnect/modal@2.6.2-canary-tma-0":
-  version "2.6.2-canary-tma-0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/modal/-/modal-2.6.2-canary-tma-0.tgz#d54c2a90a93af72efbe86361d35b06bcbe4d3937"
-  integrity sha512-fnY+DJ2V73hX0HV1s8I0pWuLk7PdReiTy/c9li4hmuMNqQry8xrzIPSaGmB1KFHnPGxu66OYFc0CjQQ17b0bjQ==
+"@walletconnect/modal@2.6.2-canary-tma-1":
+  version "2.6.2-canary-tma-1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/modal/-/modal-2.6.2-canary-tma-1.tgz#b82113b56db673595bb6dc5c215c57af4bcb4fc8"
+  integrity sha512-SJF9IPEFIWyKob8yVZeyFWRf/9M4G8ejGUD8R5ZlFbYj6zkkjblFsCMhXZd1o89KtoZOsCqCEVZv+LP3Fbr9Hg==
   dependencies:
-    "@walletconnect/modal-core" "2.6.2-canary-tma-0"
-    "@walletconnect/modal-ui" "2.6.2-canary-tma-0"
+    "@walletconnect/modal-core" "2.6.2-canary-tma-1"
+    "@walletconnect/modal-ui" "2.6.2-canary-tma-1"
 
 "@walletconnect/relay-api@1.0.11":
   version "1.0.11"

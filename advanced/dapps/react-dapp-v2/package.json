@@ -24,7 +24,7 @@
     "@walletconnect/sign-client": "2.16.2-canary-tma-1",
     "@walletconnect/types": "2.16.2-canary-tma-1",
     "@walletconnect/utils": "2.16.2-canary-tma-1",
-    "@walletconnect/modal": "2.6.2-canary-tma-0",
+    "@walletconnect/modal": "2.6.2-canary-tma-1",
     "axios": "^1.0.0",
     "blockies-ts": "^1.0.0",
     "bs58": "^5.0.0",
