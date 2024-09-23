@@ -15,6 +15,7 @@ import {
   TezosGetAccountResponse
 } from './utils/helpers'
 import { SAMPLE_KINDS, SAMPLES } from './utils/samples'
+import { ErrorObject } from '@walletconnect/utils'
 
 const projectId = import.meta.env.VITE_PROJECT_ID
 
@@ -31,7 +32,7 @@ const App = () => {
   const [isConnected, setIsConnected] = useState(false)
   const [lastKind, setLastKind] = useState<SAMPLE_KINDS | undefined>(undefined)
   const [result, setResult] = useState<
-    TezosSendResponse | TezosSignResponse | TezosGetAccountResponse | string | null
+    TezosSendResponse | TezosSignResponse | TezosGetAccountResponse | ErrorObject | string | null
   >(null)
   const [description, setDescription] = useState<Record<string, unknown> | string | undefined>(
     undefined
@@ -132,7 +133,9 @@ const App = () => {
     if (provider) {
       await provider.disconnect()
       setIsConnected(false)
-      setResult(null) // Clear result on disconnect
+      setResult(null)
+      setContractAddress('[click Origination to get contract address]')
+      setBalance('')
     }
   }, [provider])
 
@@ -170,7 +173,7 @@ const App = () => {
               SAMPLES[kind]
             )
             console.log('TezosRpc origination result: ', res)
-            for (let attempt = 0; attempt < 5; attempt++) {
+            for (let attempt = 0; attempt < 10; attempt++) {
               const contractAddressList = await apiGetContractAddress(
                 TezosChainData['testnet'].id,
                 res.hash
@@ -212,7 +215,7 @@ const App = () => {
         await getBalance()
       } catch (error) {
         console.error(`Error sending ${kind}:`, error)
-        setResult(JSON.stringify(error, null, 2))
+        setResult(error as ErrorObject)
       }
     },
     [provider, address]
@@ -225,7 +228,7 @@ const App = () => {
     }
   }, [address])
 
-  const describe = useCallback((kind: SAMPLE_KINDS) => {
+  const describe = (kind: SAMPLE_KINDS) => {
     switch (kind) {
       case SAMPLE_KINDS.SEND_TRANSACTION:
       case SAMPLE_KINDS.SEND_DELEGATION:
@@ -247,11 +250,11 @@ const App = () => {
       default:
         setDescription('No description available')
     }
-  }, [])
+  }
 
-  const describeClear = useCallback(() => {
+  const describeClear = () => {
     setDescription(undefined)
-  }, [])
+  }
 
   return (
     <div className="App">
@@ -273,6 +276,9 @@ const App = () => {
           </p>
           <p>
             <b>Balance:</b> {balance}
+          </p>
+          <p>
+            <b>Contract Address:</b> {contractAddress}
           </p>
           <div className="layout-container">
             <div className="btn-container">
