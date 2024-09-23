@@ -14,7 +14,7 @@
       "command": "yarn dev",
       "runAtStart": true,
       "preview": {
-        "port": 5173
+        "port": 5175
       }
     },
     "build": {
