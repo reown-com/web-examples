@@ -10,6 +10,7 @@ import {
   TezosSendResponse,
   TezosSignResponse,
 } from "./utils/tezos-provider";
+import { ErrorObject } from '@walletconnect/utils';
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
@@ -23,6 +24,7 @@ const App = () => {
     | TezosSendResponse
     | TezosSignResponse
     | TezosGetAccountResponse
+    | ErrorObject
     | string
     | string[]
     | null
@@ -122,6 +124,8 @@ const App = () => {
       await provider.signer.disconnect();
       setIsConnected(false);
       setResult(null);
+      setBalance("");
+      setContractAddress("[click Origination to get contract address]");
     } catch (error) {
       console.error("Error disconnecting from Tezos:", error);
     }
@@ -161,7 +165,7 @@ const App = () => {
             res = await provider.tezosSendOrigination(
               SAMPLES[SAMPLE_KINDS.SEND_ORGINATION],
             );
-            for (let attempt = 0; attempt < 5; attempt++) {
+            for (let attempt = 0; attempt < 10; attempt++) {
               const contractAddressList = await provider.getContractAddress(
                 res.hash,
               );
@@ -220,7 +224,7 @@ const App = () => {
           setResult([error.name, error.message]);
         } else {
           console.error(`Error sending ${kind}:`, error);
-          setResult(JSON.stringify(error, null, 2));
+          setResult(error as ErrorObject);
         }
       }
     },
@@ -282,6 +286,10 @@ const App = () => {
           <p>
             <b>Balance: </b>
             {balance}
+          </p>
+          <p>
+            <b>Contract address: </b>
+            {contractAddress}
           </p>
           <div className="layout-container">
             <div className="btn-container">
