@@ -2,12 +2,15 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import SettingsStore from '@/store/SettingsStore'
-import { EIP7715_METHOD } from '@/data/EIP7715Data'
+import {
+  EIP7715_METHOD,
+  WalletGrantPermissionsRequest,
+  WalletGrantPermissionsResponse
+} from '@/data/EIP7715Data'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 import { web3wallet } from './WalletConnectUtil'
 import { smartAccountWallets } from './SmartAccountUtil'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
-import { WalletGrantPermissionsParameters, WalletGrantPermissionsReturnType } from 'viem'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
 function getSmartWalletAddressFromSession(requestSession: SessionTypes.Struct, chainId: string) {
@@ -46,11 +49,15 @@ export async function approveEIP7715Request(requestEvent: RequestEventArgs) {
   switch (request.method) {
     case EIP7715_METHOD.WALLET_GRANT_PERMISSIONS: {
       const wallet = getSmartWalletAddressFromSession(requestSession, chainId)
-      let grantPermissionsRequestParams: WalletGrantPermissionsParameters = request.params[0]
-      if (wallet instanceof SafeSmartAccountLib || wallet instanceof KernelSmartAccountLib) {
-        const grantPermissionsResponse: WalletGrantPermissionsReturnType =
+      let grantPermissionsRequestParams: WalletGrantPermissionsRequest = request.params[0]
+      if (
+        wallet instanceof SafeSmartAccountLib
+        //TODO:fix kernel grantPermissions
+        // || wallet instanceof KernelSmartAccountLib
+      ) {
+        const grantPermissionsResponse: WalletGrantPermissionsResponse =
           await wallet.grantPermissions(grantPermissionsRequestParams)
-        return formatJsonRpcResult<WalletGrantPermissionsReturnType>(id, grantPermissionsResponse)
+        return formatJsonRpcResult<WalletGrantPermissionsResponse>(id, grantPermissionsResponse)
       }
 
       // for any other wallet instance return un_supported
