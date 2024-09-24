@@ -1,16 +1,16 @@
-import { generatePrivateKey, privateKeyToAccount, signMessage } from 'viem/accounts'
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import {
-  BuildUserOpRequestParams,
-  BuildUserOpResponseReturn,
-  SendUserOpRequestParams,
-  SendUserOpResponseReturn,
-  UserOpBuilder
+  PrepareCallsParams,
+  PrepareCallsReturnValue,
+  SendPreparedCallsParams,
+  SendPreparedCallsReturnValue,
+  UserOpBuilder,
+  UserOperationWithBigIntAsHex
 } from './UserOpBuilder'
 import {
   Address,
   Chain,
   createPublicClient,
-  encodeAbiParameters,
   Hex,
   http,
   parseAbi,
@@ -49,8 +49,7 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     })
     this.accountAddress = accountAddress
   }
-
-  async fillUserOp(params: BuildUserOpRequestParams): Promise<BuildUserOpResponseReturn> {
+  async prepareCalls(params: PrepareCallsParams): Promise<PrepareCallsReturnValue> {
     const privateKey = generatePrivateKey()
     const signer = privateKeyToAccount(privateKey)
 
@@ -63,7 +62,16 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     }
 
     const version = await this.getVersion()
-
+    const safeAccount = await signerToSafeSmartAccount(this.publicClient, {
+      entryPoint: ENTRYPOINT_ADDRESS_V07,
+      signer: signer,
+      //@ts-ignore
+      safeVersion: version,
+      address: this.accountAddress,
+      safe4337ModuleAddress,
+      //@ts-ignore
+      erc7579LaunchpadAddress
+    })
     const paymasterClient = createPimlicoPaymasterClient({
       transport: http(paymasterUrl({ chain: this.chain }), {
         timeout: 30000
@@ -78,18 +86,6 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       transport: bundlerTransport,
       entryPoint: ENTRYPOINT_ADDRESS_V07
     })
-
-    const safeAccount = await signerToSafeSmartAccount(this.publicClient, {
-      entryPoint: ENTRYPOINT_ADDRESS_V07,
-      signer: signer,
-      //@ts-ignore
-      safeVersion: version,
-      address: this.accountAddress,
-      safe4337ModuleAddress,
-      //@ts-ignore
-      erc7579LaunchpadAddress
-    })
-
     const smartAccountClient = createSmartAccountClient({
       account: safeAccount,
       entryPoint: ENTRYPOINT_ADDRESS_V07,
@@ -112,8 +108,13 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       account,
       permissionsContext: params.capabilities.permissions?.context!
     })
-
-    const callData = await smartAccountClient.account.encodeCallData(params.calls)
+    const callData = await smartAccountClient.account.encodeCallData(
+      params.calls.map(call => ({
+        to: call.to,
+        value: BigInt(call.value),
+        data: call.data
+      }))
+    )
 
     const dummySignature = await getDummySignature({
       publicClient: this.publicClient,
@@ -129,7 +130,6 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       },
       account: smartAccountClient.account
     })
-
     const hash = getUserOperationHash({
       userOperation: userOp,
       chainId: this.chain.id,
@@ -137,50 +137,69 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     })
 
     return {
-      userOp: {
-        ...userOp,
-        nonce: toHex(userOp.nonce),
-        callGasLimit: toHex(userOp.callGasLimit),
-        verificationGasLimit: toHex(userOp.verificationGasLimit),
-        preVerificationGas: toHex(userOp.preVerificationGas),
-        maxFeePerGas: toHex(userOp.maxFeePerGas),
-        maxPriorityFeePerGas: toHex(userOp.maxPriorityFeePerGas),
-        paymasterPostOpGasLimit: userOp.paymasterPostOpGasLimit
-          ? toHex(userOp.paymasterPostOpGasLimit)
-          : undefined,
-        paymasterVerificationGasLimit: userOp.paymasterVerificationGasLimit
-          ? toHex(userOp.paymasterVerificationGasLimit)
-          : undefined,
-        factory: userOp.factory,
-        factoryData: userOp.factoryData,
-        paymaster: userOp.paymaster,
-        paymasterData: userOp.paymasterData
+      context: params.capabilities.permissions?.context!,
+      preparedCalls: {
+        chainId: toHex(this.chain.id),
+        type: 'user-operation-v07',
+        data: userOp
       },
-      hash
+      signatureRequest: {
+        hash: hash
+      }
     }
   }
 
-  async sendUserOpWithSignature(
+  async sendPreparedCalls(
     projectId: string,
-    params: SendUserOpRequestParams
-  ): Promise<SendUserOpResponseReturn> {
+    params: SendPreparedCallsParams
+  ): Promise<SendPreparedCallsReturnValue> {
     try {
-      const { chainId, userOp, permissionsContext, pci } = params
+      const { context, preparedCalls, signature } = params
+      const { chainId, data, type } = preparedCalls
+      const chainIdNumber = parseInt(chainId)
+      if (type !== 'user-operation-v07') {
+        throw new Error('Invalid preparedCalls type')
+      }
+      const userOpWithBigIntAsHex: UserOperationWithBigIntAsHex = {
+        ...data,
+        nonce: toHex(data.nonce),
+        callGasLimit: toHex(data.callGasLimit),
+        verificationGasLimit: toHex(data.verificationGasLimit),
+        preVerificationGas: toHex(data.preVerificationGas),
+        maxFeePerGas: toHex(data.maxFeePerGas),
+        maxPriorityFeePerGas: toHex(data.maxPriorityFeePerGas),
+        paymasterPostOpGasLimit: data.paymasterPostOpGasLimit
+          ? toHex(data.paymasterPostOpGasLimit)
+          : undefined,
+        paymasterVerificationGasLimit: data.paymasterVerificationGasLimit
+          ? toHex(data.paymasterVerificationGasLimit)
+          : undefined,
+        factory: data.factory,
+        factoryData: data.factoryData,
+        paymaster: data.paymaster,
+        paymasterData: data.paymasterData,
+        signature: signature
+      }
+
+      const pci = context
+      //TODO: get PermissionsContext from WalletConnectCosigner given pci
+      const permissionsContext = '0x'
       if (pci && projectId) {
         const walletConnectCosigner = new WalletConnectCosigner(projectId)
-        const caip10AccountAddress = `eip155:${chainId}:${userOp.sender}`
+        const caip10AccountAddress = `eip155:${chainIdNumber}:${userOpWithBigIntAsHex.sender}`
         const cosignResponse = await walletConnectCosigner.coSignUserOperation(
           caip10AccountAddress,
           {
             pci,
-            userOp
+            userOp: userOpWithBigIntAsHex
           }
         )
         console.log('cosignResponse:', cosignResponse)
-        userOp.signature = cosignResponse.signature
+        userOpWithBigIntAsHex.signature = cosignResponse.signature
       }
+
       const account = getAccount({
-        address: userOp.sender,
+        address: userOpWithBigIntAsHex.sender,
         type: 'safe'
       })
 
@@ -188,11 +207,12 @@ export class SafeUserOpBuilder implements UserOpBuilder {
         const formattedSignature = await formatSignature({
           publicClient: this.publicClient,
           account,
-          modifiedSignature: userOp.signature,
+          modifiedSignature: userOpWithBigIntAsHex.signature,
           permissionsContext
         })
-        userOp.signature = formattedSignature
+        userOpWithBigIntAsHex.signature = formattedSignature
       }
+
       const bundlerTransport = http(bundlerUrl({ chain: this.chain }), {
         timeout: 30000
       })
@@ -204,24 +224,24 @@ export class SafeUserOpBuilder implements UserOpBuilder {
 
       const userOpId = await pimlicoBundlerClient.sendUserOperation({
         userOperation: {
-          ...userOp,
-          signature: userOp.signature,
-          callGasLimit: BigInt(userOp.callGasLimit),
-          nonce: BigInt(userOp.nonce),
-          preVerificationGas: BigInt(userOp.preVerificationGas),
-          verificationGasLimit: BigInt(userOp.verificationGasLimit),
-          maxFeePerGas: BigInt(userOp.maxFeePerGas),
-          maxPriorityFeePerGas: BigInt(userOp.maxPriorityFeePerGas),
+          ...userOpWithBigIntAsHex,
+          signature: userOpWithBigIntAsHex.signature,
+          callGasLimit: BigInt(userOpWithBigIntAsHex.callGasLimit),
+          nonce: BigInt(userOpWithBigIntAsHex.nonce),
+          preVerificationGas: BigInt(userOpWithBigIntAsHex.preVerificationGas),
+          verificationGasLimit: BigInt(userOpWithBigIntAsHex.verificationGasLimit),
+          maxFeePerGas: BigInt(userOpWithBigIntAsHex.maxFeePerGas),
+          maxPriorityFeePerGas: BigInt(userOpWithBigIntAsHex.maxPriorityFeePerGas),
           paymasterVerificationGasLimit:
-            userOp.paymasterVerificationGasLimit && BigInt(userOp.paymasterVerificationGasLimit),
+            userOpWithBigIntAsHex.paymasterVerificationGasLimit &&
+            BigInt(userOpWithBigIntAsHex.paymasterVerificationGasLimit),
           paymasterPostOpGasLimit:
-            userOp.paymasterPostOpGasLimit && BigInt(userOp.paymasterPostOpGasLimit)
+            userOpWithBigIntAsHex.paymasterPostOpGasLimit &&
+            BigInt(userOpWithBigIntAsHex.paymasterPostOpGasLimit)
         }
       })
 
-      return {
-        userOpId
-      }
+      return userOpId
     } catch (e) {
       console.log(e)
       throw new Error('Failed to sign user operation with cosigner')

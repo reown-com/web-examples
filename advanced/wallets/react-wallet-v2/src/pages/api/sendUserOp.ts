@@ -1,6 +1,7 @@
 import {
   ErrorResponse,
-  SendUserOpResponseReturn
+  SendPreparedCallsParams,
+  SendPreparedCallsReturnValue
 } from '@/lib/smart-accounts/builders/UserOpBuilder'
 import { getChainById } from '@/utils/ChainUtil'
 import { getUserOpBuilder } from '@/utils/UserOpBuilderUtil'
@@ -8,7 +9,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<SendUserOpResponseReturn | ErrorResponse>
+  res: NextApiResponse<SendPreparedCallsReturnValue | ErrorResponse>
 ) {
   if (req.method !== 'POST') {
     return res.status(405).json({
@@ -39,20 +40,21 @@ export default async function handler(
     })
   }
   const projectId = req.query.projectId
-  const chainId = req.body.chainId
-  const account = req.body.userOp.sender
+  const data = req.body as SendPreparedCallsParams
+  const chainId = parseInt(data.preparedCalls.chainId, 16)
+  const account = data.preparedCalls.data.sender
   const chain = getChainById(chainId)
   try {
     const builder = await getUserOpBuilder({
       account,
       chain
     })
-    const response = await builder.sendUserOpWithSignature(projectId, req.body)
+    const response = await builder.sendPreparedCalls(projectId, data)
 
     res.status(200).json(response)
   } catch (error: any) {
     return res.status(200).json({
-      message: 'Unable to send userOp',
+      message: 'Unable to send preparedCalls',
       error: error.message
     })
   }
