@@ -9,13 +9,12 @@ import { EntryPoint } from 'permissionless/types/entrypoint'
 import {
   Address,
   Hex,
-  WalletGrantPermissionsParameters,
   createWalletClient,
   encodeFunctionData,
   getAddress,
   http,
   parseAbi,
-  type WalletGrantPermissionsReturnType
+  toHex
 } from 'viem'
 import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 import { ModuleType } from 'permissionless/actions/erc7579'
@@ -23,8 +22,12 @@ import {
   MOCK_VALIDATOR_ADDRESSES,
   TRUSTED_SMART_SESSIONS_ATTERSTER_ADDRESS
 } from './builders/SmartSessionUtil'
-import { Permission } from '@/data/EIP7715Data'
-import { getSmartSessionContext } from './builders/ContextBuilderUtil'
+import {
+  Permission,
+  WalletGrantPermissionsRequest,
+  WalletGrantPermissionsResponse
+} from '@/data/EIP7715Data'
+import { getContext } from './builders/ContextBuilderUtil'
 import { readContract } from 'viem/actions'
 import { Execution, Module } from '@rhinestone/module-sdk'
 
@@ -71,8 +74,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
   /* 7715 method */
   async grantPermissions(
-    grantPermissionsRequestParameters: WalletGrantPermissionsParameters
-  ): Promise<WalletGrantPermissionsReturnType> {
+    grantPermissionsRequestParameters: WalletGrantPermissionsRequest
+  ): Promise<WalletGrantPermissionsResponse> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
@@ -86,15 +89,12 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     console.log('walletClient chainId:', walletClient.chain.id)
     let permissionContext = '0x'
     try {
-      permissionContext = await getSmartSessionContext({
-        walletClient,
+      permissionContext = await getContext(walletClient, {
         account: getAccount({
           address: this.client.account.address,
           type: 'safe'
         }),
-        permissions: [...grantPermissionsRequestParameters.permissions] as unknown as Permission[],
-        expiry: grantPermissionsRequestParameters.expiry,
-        signer: grantPermissionsRequestParameters.signer as MultiKeySigner
+        grantPermissionsRequest: grantPermissionsRequestParameters
       })
     } catch (error) {
       console.error(`Error getting permission context: ${error}`)
@@ -103,13 +103,15 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
     console.log(`Returning the permissions request`)
     return {
-      permissionsContext: permissionContext,
-      grantedPermissions: grantPermissionsRequestParameters.permissions,
-      expiry: grantPermissionsRequestParameters.expiry,
-      signerData: {
-        submitToAddress: this.client.account.address
-      }
-    } as WalletGrantPermissionsReturnType
+      ...grantPermissionsRequestParameters,
+      context: permissionContext as Hex,
+      chainId: toHex(this.chain.id),
+      accountMeta: {
+        factory: (await this.client.account.getFactory()) || '0x',
+        factoryData: (await this.client.account.getFactoryData()) || '0x'
+      },
+      expiry: grantPermissionsRequestParameters.expiry
+    }
   }
 
   /**

@@ -1,113 +1,71 @@
-import { decodeDIDToPublicKey, KEY_TYPES } from '@/utils/HelperUtil'
 import {
   MOCK_VALIDATOR_ADDRESSES,
   MULTIKEY_SIGNER_ADDRESSES,
   TIME_FRAME_POLICY_ADDRESSES
 } from './SmartSessionUtil'
-import type { Session, ChainSession, Account } from '@rhinestone/module-sdk'
+import type { Session, ChainSession, Account, ActionData } from '@rhinestone/module-sdk'
 const {
   SMART_SESSIONS_ADDRESS,
   SmartSessionMode,
   getPermissionId,
   getSessionDigest,
   getSessionNonce,
-  encode1271Hash,
   encodeSmartSessionSignature,
-  hashChainSessions,
-  encodeUseOrEnableSmartSessionSignature,
-  decodeSmartSessionSignature
+  hashChainSessions
 } = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 import {
+  concat,
   createPublicClient,
   encodeAbiParameters,
   encodePacked,
   Hex,
   http,
-  pad,
   parseAbiParameters,
-  PublicClient,
-  slice,
   toBytes,
-  toFunctionSelector,
   toHex,
   WalletClient
 } from 'viem'
 import { publicKeyToAddress } from 'viem/accounts'
-import { ENTRYPOINT_ADDRESS_V07, getAccountNonce } from 'permissionless'
 import { parsePublicKey } from 'webauthn-p256'
-import { MultiKeySigner, Permission, Signer, SignerType } from '@/data/EIP7715Data'
+import {
+  MultiKeySigner,
+  Permission,
+  Signer,
+  WalletGrantPermissionsRequest,
+  ContractCallPermission,
+  WalletSigner,
+  KeySigner,
+  AccountSigner,
+  SignerKeyType,
+  NativeTokenTransferPermission,
+  ERC20TokenTransferPermission,
+  ERC721TokenTransferPermission,
+  GasLimitPermission,
+  ERC1155TokenTransferPermission,
+  CallLimitPermission,
+  RateLimitPermission
+} from '@/data/EIP7715Data'
 
-type GetNonceWithContextParams = {
-  publicClient: PublicClient
-  account: Account
-  permissionsContext: Hex
-}
-type GetDummySignatureParams = {
-  publicClient: PublicClient
-  permissionsContext: Hex
-  account: Account
-}
-type FormatSignatureParams = {
-  publicClient: PublicClient
-  modifiedSignature: Hex
-  permissionsContext: Hex
-  account: Account
-}
-type GetSmartSessionContextParams = {
-  walletClient: WalletClient
-  account: Account
-  permissions: Permission[]
-  expiry: number
-  signer: MultiKeySigner
-}
-
-export async function getSmartSessionContext({
-  walletClient,
-  account,
-  permissions,
-  expiry,
-  signer
-}: GetSmartSessionContextParams): Promise<`0x${string}`> {
+export async function getContext(
+  walletClient: WalletClient,
+  {
+    account,
+    grantPermissionsRequest
+  }: { account: Account; grantPermissionsRequest: WalletGrantPermissionsRequest }
+): Promise<`0x${string}`> {
+  const { permissions, expiry, signer, chainId: hexChainId } = grantPermissionsRequest
   if (walletClient.chain === undefined) {
     throw new Error('GetSmartSessionContextParams:Chain is undefined')
   }
+  if (toHex(walletClient.chain.id) !== hexChainId) {
+    throw new Error('GetSmartSessionContextParams:Invalid/Mismatched chainId')
+  }
   if (walletClient.account === undefined) {
-    throw new Error('wallet account is undefined')
+    throw new Error('GetSmartSessionContextParams: wallet account is undefined')
   }
-
   const chainId = walletClient.chain.id
+  const session: Session = getSmartSession(grantPermissionsRequest)
 
-  let signers: Signer[] = []
-  // if singer type if multiKeySigner
-  if (signer.type === 'keys') {
-    const publicKeys = signer.data.ids.map(id => decodeDIDToPublicKey(id))
-    publicKeys.forEach(key => {
-      if (key.keyType === KEY_TYPES.secp256k1) {
-        const eoaAddress = publicKeyToAddress(key.key)
-        const signer = { type: SignerType.EOA, data: eoaAddress }
-        signers.push(signer)
-      }
-      if (key.keyType === KEY_TYPES.secp256r1) {
-        const passkeyPublicKey = parsePublicKey(key.key as `0x${string}`)
-        const signer = {
-          type: SignerType.PASSKEY,
-          data: encodeAbiParameters(parseAbiParameters('uint256, uint256'), [
-            passkeyPublicKey.x,
-            passkeyPublicKey.y
-          ])
-        }
-        signers.push(signer)
-      }
-    })
-  }
-  const samplePermissionsSession: Session = getSamplePermissions(signers, chainId, {
-    permissions,
-    expiry
-  })
-  const session: Session = {
-    ...samplePermissionsSession,
-    salt: toHex(toBytes(55, { size: 32 }))
-  }
   const publicClient = createPublicClient({
     chain: walletClient.chain,
     transport: http()
@@ -116,6 +74,7 @@ export async function getSmartSessionContext({
     client: publicClient,
     session
   })) as Hex
+
   console.log('permissionId', permissionId)
   const sessionNonce = await getSessionNonce({
     client: publicClient,
@@ -187,124 +146,29 @@ export async function getSmartSessionContext({
   )
   return smartSessionContext
 }
-export async function getDummySignature({
-  publicClient,
-  permissionsContext,
-  account
-}: GetDummySignatureParams) {
-  const validatorAddress = slice(permissionsContext, 0, 20)
-  if (validatorAddress.toLowerCase() !== SMART_SESSIONS_ADDRESS.toLowerCase()) {
-    throw new Error('getDummySignature:Invalid permission context')
-  }
 
-  const smartSessionSignature = slice(permissionsContext, 20)
-  const { permissionId, enableSessionData } = decodeSmartSessionSignature({
-    signature: smartSessionSignature,
-    account: account
-  })
-
-  if (!enableSessionData) {
-    throw new Error('EnableSessionData is undefined, invalid smartSessionSignature')
-  }
-  const signerValidatorInitData =
-    enableSessionData?.enableSession.sessionToEnable.sessionValidatorInitData
-  const signers = decodeSigners(signerValidatorInitData)
-  console.log('signers', signers)
-  const dummySignatures: `0x${string}`[] = []
-  const dummyECDSASignature: `0x${string}` =
-    '0xe8b94748580ca0b4993c9a1b86b5be851bfc076ff5ce3a1ff65bf16392acfcb800f9b4f1aef1555c7fce5599fffb17e7c635502154a0333ba21f3ae491839af51c'
-  const dummyPasskeySignature: `0x${string}` = '0x'
-  for (let i = 0; i < signers.length; i++) {
-    const signer = signers[i]
-    if (signer.type === 0) {
-      dummySignatures.push(dummyECDSASignature)
-    } else if (signer.type === 1) {
-      dummySignatures.push(dummyPasskeySignature)
-    }
-  }
-  const concatenatedDummySignature = encodeAbiParameters([{ type: 'bytes[]' }], [dummySignatures])
-
-  return encodeUseOrEnableSmartSessionSignature({
-    account: account,
-    client: publicClient,
-    enableSessionData: enableSessionData,
-    permissionId: permissionId,
-    signature: concatenatedDummySignature
-  })
-}
-export async function formatSignature({
-  publicClient,
-  account,
-  modifiedSignature,
-  permissionsContext
-}: FormatSignatureParams) {
-  const validatorAddress = slice(permissionsContext, 0, 20)
-  if (validatorAddress.toLowerCase() !== SMART_SESSIONS_ADDRESS.toLowerCase()) {
-    throw new Error('formatSignature:Invalid permission context')
-  }
-
-  const smartSessionSignature = slice(permissionsContext, 20)
-  const { permissionId, enableSessionData } = decodeSmartSessionSignature({
-    signature: smartSessionSignature,
-    account: account
-  })
-
-  if (!enableSessionData) {
-    throw new Error('EnableSessionData is undefined, invalid smartSessionSignature')
-  }
-
-  return encodeUseOrEnableSmartSessionSignature({
-    account: account,
-    client: publicClient,
-    enableSessionData: enableSessionData,
-    permissionId: permissionId,
-    signature: modifiedSignature
-  })
-}
-export async function getNonce({
-  publicClient,
-  account,
-  permissionsContext
-}: GetNonceWithContextParams): Promise<bigint> {
-  const chainId = await publicClient.getChainId()
-  const validatorAddress = slice(permissionsContext, 0, 20)
-  if (validatorAddress.toLowerCase() !== SMART_SESSIONS_ADDRESS.toLowerCase()) {
-    throw new Error('getNonce:Invalid permission context')
-  }
-
-  return await getAccountNonce(publicClient, {
-    sender: account.address,
-    entryPoint: ENTRYPOINT_ADDRESS_V07,
-    key: BigInt(
-      pad(validatorAddress, {
-        dir: 'right',
-        size: 24
-      }) || 0
-    )
-  })
-}
-
-function getSamplePermissions(
-  signers: Signer[],
-  chainId: number,
-  { permissions, expiry }: { permissions: Permission[]; expiry: number }
-): Session {
-  console.log({ expiry })
+function getSmartSession({
+  chainId,
+  expiry,
+  permissions,
+  policies,
+  signer,
+  address
+}: WalletGrantPermissionsRequest): Session {
+  const salt = toHex(toBytes('1', { size: 32 }))
+  const chainIdNumber = parseInt(chainId, 16)
+  const actions = getActionsFromPermissions(permissions, chainIdNumber, expiry)
+  console.log('actions', actions)
+  const sessionValidator = getSessionValidatorAddress(signer, chainIdNumber)
+  console.log('sessionValidator', sessionValidator)
+  const sessionValidatorInitData = getSessionValidatorInitData(signer)
+  console.log('sessionValidatorInitData', sessionValidatorInitData)
   return {
-    sessionValidator: MULTIKEY_SIGNER_ADDRESSES[chainId],
-    sessionValidatorInitData: encodeMultiKeySignerInitData(signers),
-    salt: toHex(toBytes('1', { size: 32 })),
+    sessionValidator,
+    sessionValidatorInitData: sessionValidatorInitData,
+    salt: salt,
     userOpPolicies: [],
-    actions: permissions.map(permission => ({
-      actionTarget: permission.data.target,
-      actionTargetSelector: toFunctionSelector(permission.data.functionName),
-      actionPolicies: [
-        {
-          policy: TIME_FRAME_POLICY_ADDRESSES[chainId],
-          initData: encodePacked(['uint128', 'uint128'], [BigInt(expiry), BigInt(0)]) // hardcoded for demo
-        }
-      ]
-    })),
+    actions: actions,
     erc7739Policies: {
       allowedERC7739Content: [],
       erc1271Policies: []
@@ -312,44 +176,156 @@ function getSamplePermissions(
   }
 }
 
-function encodeMultiKeySignerInitData(signers: Signer[]): Hex {
-  let encoded: Hex = encodePacked(['uint8'], [signers.length])
-  for (const signer of signers) {
-    encoded = encodePacked(['bytes', 'uint8', 'bytes'], [encoded, signer.type, signer.data as Hex])
-  }
-
-  return encoded
+//---------------------------------------------------Signer Type guard---------------------------------------------------
+// Type guard for MultiKeySigner
+function isMultiKeySigner(signer: Signer): signer is MultiKeySigner {
+  return signer.type === 'keys'
 }
 
-function decodeSigners(encodedData: `0x${string}`): Array<{ type: number; data: `0x${string}` }> {
-  let offset = 2 // Start after '0x'
-  const signers: Array<{ type: number; data: `0x${string}` }> = []
+// Type guard for WalletSigner
+function isWalletSigner(signer: Signer): signer is WalletSigner {
+  return signer.type === 'wallet'
+}
 
-  // Decode the number of signers
-  const signersCount = parseInt(encodedData.slice(offset, offset + 2), 16)
-  offset += 2
+// Type guard for KeySigner
+function isKeySigner(signer: Signer): signer is KeySigner {
+  return signer.type === 'key'
+}
 
-  for (let i = 0; i < signersCount; i++) {
-    // Decode signer type
-    const signerType = parseInt(encodedData.slice(offset, offset + 2), 16)
-    offset += 2
+// Type guard for AccountSigner
+function isAccountSigner(signer: Signer): signer is AccountSigner {
+  return signer.type === 'account'
+}
 
-    // Determine data length based on signer type
-    let dataLength: number
-    if (signerType === 0) {
-      dataLength = 40 // 20 bytes
-    } else if (signerType === 1) {
-      dataLength = 128 // 64 bytes
-    } else {
-      throw new Error(`Unknown signer type: ${signerType}`)
+//---------------------------------------------------Process Signers---------------------------------------------------
+function processMultiKeySigner(signer: MultiKeySigner): { type: SignerKeyType; data: string }[] {
+  return signer.data.keys.map(key => {
+    if (key.type === 'secp256k1') {
+      const eoaAddress = publicKeyToAddress(key.publicKey)
+      return { type: SignerKeyType.SECP256K1, data: eoaAddress }
+    } else if (key.type === 'secp256r1') {
+      const passkeyPublicKey = parsePublicKey(key.publicKey as `0x${string}`)
+      const encodedData = encodeAbiParameters(parseAbiParameters('uint256, uint256'), [
+        passkeyPublicKey.x,
+        passkeyPublicKey.y
+      ])
+      return { type: SignerKeyType.SECP256R1, data: encodedData }
     }
+    throw new Error(`Unsupported key type: ${key.type}`)
+  })
+}
 
-    // Decode signer data
-    const signerData = `0x${encodedData.slice(offset, offset + dataLength)}` as `0x${string}`
-    offset += dataLength
-
-    signers.push({ type: signerType, data: signerData })
+//---------------------------------------------------Get Session Validator Address and Init Data---------------------------------------------------
+function getSessionValidatorAddress(signer: Signer, chainId: number): `0x${string}` {
+  if (isMultiKeySigner(signer)) {
+    return MULTIKEY_SIGNER_ADDRESSES[chainId]
   }
+  throw new Error('Unsupported signer type')
+}
 
-  return signers
+function getSessionValidatorInitData(signer: Signer): Hex {
+  if (isMultiKeySigner(signer)) {
+    const processedSigners = processMultiKeySigner(signer)
+    return encodeMultiKeySignersInitData(processedSigners)
+  }
+  throw new Error(`Unsupported signer type: ${(signer as Signer).type}`)
+}
+
+function encodeMultiKeySignersInitData(signers: { type: SignerKeyType; data: string }[]): Hex {
+  return signers.reduce(
+    (encoded, signer) =>
+      concat([encoded, encodePacked(['uint8', 'bytes'], [signer.type, signer.data as Hex])]),
+    encodePacked(['uint8'], [signers.length]) as Hex
+  )
+}
+
+//---------------------------------------------------Permission Type guard---------------------------------------------------
+// Type guard for contract-call permissions
+function isContractCallPermission(permission: Permission): permission is ContractCallPermission {
+  return permission.type === 'contract-call'
+}
+
+// Type guard for NativeTokenTransferPermission
+function isNativeTokenTransferPermission(
+  permission: Permission
+): permission is NativeTokenTransferPermission {
+  return permission.type === 'native-token-transfer'
+}
+
+// Type guard for ERC20TokenTransferPermission
+function isERC20TokenTransferPermission(
+  permission: Permission
+): permission is ERC20TokenTransferPermission {
+  return permission.type === 'erc20-token-transfer'
+}
+
+// Type guard for ERC721TokenTransferPermission
+function isERC721TokenTransferPermission(
+  permission: Permission
+): permission is ERC721TokenTransferPermission {
+  return permission.type === 'erc721-token-transfer'
+}
+
+// Type guard for ERC1155TokenTransferPermission
+function isERC1155TokenTransferPermission(
+  permission: Permission
+): permission is ERC1155TokenTransferPermission {
+  return permission.type === 'erc1155-token-transfer'
+}
+
+// Type guard for GasLimitPermission
+function isGasLimitPermission(permission: Permission): permission is GasLimitPermission {
+  return permission.type === 'gas-limit'
+}
+
+// Type guard for CallLimitPermission
+function isCallLimitPermission(permission: Permission): permission is CallLimitPermission {
+  return permission.type === 'call-limit'
+}
+
+// Type guard for RateLimitPermission
+function isRateLimitPermission(permission: Permission): permission is RateLimitPermission {
+  return permission.type === 'rate-limit'
+}
+
+//---------------------------------------------------Create Action for Permissions---------------------------------------------------
+// Function to create actions from permissions
+function getActionsFromPermissions(
+  permissions: Permission[],
+  chainId: number,
+  expiry: number
+): ActionData[] {
+  return permissions.reduce((actions: ActionData[], permission) => {
+    if (isContractCallPermission(permission)) {
+      console.log('permissions is of type contract-call')
+      actions.push(createActionForContractCall(permission, chainId, expiry))
+    }
+    console.log('permissions is not of type contract-call')
+    // Add more permission type handlers here as needed
+    return actions
+  }, [])
+}
+
+// Function to create action for contract-call permission
+function createActionForContractCall(
+  permission: ContractCallPermission,
+  chainId: number,
+  expiry: number
+): ActionData {
+  if (permission.data.address === undefined) {
+    throw new Error('Contract address is undefined')
+  }
+  if (permission.data.functionSelector === undefined) {
+    throw new Error('Function selector is undefined')
+  }
+  return {
+    actionTarget: permission.data.address,
+    actionTargetSelector: permission.data.functionSelector,
+    actionPolicies: [
+      {
+        policy: TIME_FRAME_POLICY_ADDRESSES[chainId],
+        initData: encodePacked(['uint128', 'uint128'], [BigInt(expiry), BigInt(0)]) // hardcoded for demo
+      }
+    ]
+  }
 }

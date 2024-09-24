@@ -31,7 +31,7 @@ import {
 import { bundlerUrl, paymasterUrl, publicClientUrl } from '@/utils/SmartAccountUtil'
 import { getChainById } from '@/utils/ChainUtil'
 import { SAFE_FALLBACK_HANDLER_STORAGE_SLOT } from '@/consts/smartAccounts'
-import { formatSignature, getDummySignature, getNonce } from './ContextBuilderUtil'
+import { formatSignature, getDummySignature, getNonce } from './UserOpBuilderUtil'
 import { WalletConnectCosigner } from './WalletConnectCosignerUtils'
 const { getAccount } = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
