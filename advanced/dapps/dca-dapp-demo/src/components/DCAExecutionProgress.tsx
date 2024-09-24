@@ -94,17 +94,18 @@ export function DCAExecutionProgress({
 
   return (
     <div className="flex flex-col w-full">
-      <h3 className="text-lg font-semibold mb-2">Executing the Strategy...</h3>
-      <p className="text-gray-700 mb-4">
-        Orders Remaining:{" "}
-        <span className="font-bold">{getRemainingOrders()}</span>
-      </p>
-      <Progress value={progress} className="w-full h-4 bg-blue-200" />
-      {nextExecutionTime && getRemainingOrders() > 0 && (
-        <p className="mt-2 text-sm text-gray-500">
-          Executing in {formatTimeRemaining(nextExecutionTime - Date.now())}
+      <p className="text-xs sm:text-sm font-semibold mb-1 sm:mb-2">Executing Strategy...</p>
+      <div className="flex items-center justify-between mb-1 sm:mb-2">
+        <p className="text-xs sm:text-sm text-gray-700">
+          Orders Left: <span className="font-bold">{getRemainingOrders()}</span>
         </p>
-      )}
+        {nextExecutionTime && getRemainingOrders() > 0 && (
+          <p className="text-2xs sm:text-xs text-gray-500">
+            Next: {formatTimeRemaining(nextExecutionTime - Date.now())}
+          </p>
+        )}
+      </div>
+      <Progress value={progress} className="w-full h-2 sm:h-3 bg-blue-200" />
     </div>
   );
 }

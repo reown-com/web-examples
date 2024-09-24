@@ -25,7 +25,7 @@ export default function Home() {
           </p>
         )}
 
-        <Tabs defaultValue="dca" className="w-[400px]">
+        <Tabs defaultValue="dca" className="max-w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="dca">DCA</TabsTrigger>
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
