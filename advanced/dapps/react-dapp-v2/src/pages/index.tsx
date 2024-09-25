@@ -19,7 +19,7 @@ import {
   DEFAULT_NEAR_METHODS,
   DEFAULT_KADENA_METHODS,
   DEFAULT_TRON_METHODS,
-  TEZOS_SAMPLE_KINDS,
+  DEFAULT_TEZOS_METHODS,
   TEZOS_SAMPLES,
   DEFAULT_EIP155_OPTIONAL_METHODS,
   DEFAULT_EIP5792_METHODS,
@@ -467,58 +467,58 @@ const Home: NextPage = () => {
     };
     return [
       {
-        method: TEZOS_SAMPLE_KINDS.GET_ACCOUNTS,
+        method: DEFAULT_TEZOS_METHODS.GET_ACCOUNTS,
         callback: onGetAccounts,
         description: "Use before sending a transaction to get peer address.",
       },
       {
-        method: TEZOS_SAMPLE_KINDS.SEND_TRANSACTION,
+        method: DEFAULT_TEZOS_METHODS.SEND_TRANSACTION,
         callback: onSignTransaction,
-        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_TRANSACTION],
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_TRANSACTION],
       },
       {
-        method: TEZOS_SAMPLE_KINDS.SEND_ORGINATION,
+        method: DEFAULT_TEZOS_METHODS.SEND_ORGINATION,
         callback: onSignOrigination,
-        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_ORGINATION],
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_ORGINATION],
       },
       {
-        method: TEZOS_SAMPLE_KINDS.SEND_CONTRACT_CALL,
+        method: DEFAULT_TEZOS_METHODS.SEND_CONTRACT_CALL,
         callback: onSignContractCall,
-        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_CONTRACT_CALL],
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_CONTRACT_CALL],
       },
       {
-        method: TEZOS_SAMPLE_KINDS.SEND_DELEGATION,
+        method: DEFAULT_TEZOS_METHODS.SEND_DELEGATION,
         callback: onSignDelegation,
-        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_DELEGATION],
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_DELEGATION],
       },
       {
-        method: TEZOS_SAMPLE_KINDS.SEND_UNDELEGATION,
+        method: DEFAULT_TEZOS_METHODS.SEND_UNDELEGATION,
         callback: onSignUndelegation,
-        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_UNDELEGATION],
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_UNDELEGATION],
       },
       {
-        method: TEZOS_SAMPLE_KINDS.SEND_STAKE,
+        method: DEFAULT_TEZOS_METHODS.SEND_STAKE,
         callback: onSignStake,
-        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_STAKE],
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_STAKE],
       },
       {
-        method: TEZOS_SAMPLE_KINDS.SEND_UNSTAKE,
+        method: DEFAULT_TEZOS_METHODS.SEND_UNSTAKE,
         callback: onSignUnstake,
-        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_UNSTAKE],
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_UNSTAKE],
       },
       {
-        method: TEZOS_SAMPLE_KINDS.SEND_FINALIZE,
+        method: DEFAULT_TEZOS_METHODS.SEND_FINALIZE,
         callback: onSignFinalize,
-        description: TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_FINALIZE],
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_FINALIZE],
       },
       {
-        method: TEZOS_SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE,
+        method: DEFAULT_TEZOS_METHODS.SEND_INCREASE_PAID_STORAGE,
         callback: onSignIncreasePaidStorage,
         description:
-          TEZOS_SAMPLES[TEZOS_SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE],
+          TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_INCREASE_PAID_STORAGE],
       },
       {
-        method: TEZOS_SAMPLE_KINDS.SIGN,
+        method: DEFAULT_TEZOS_METHODS.SIGN,
         callback: onSignMessage,
       },
     ];

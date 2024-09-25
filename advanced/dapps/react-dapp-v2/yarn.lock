@@ -3769,10 +3769,6 @@
     "@typescript-eslint/types" "5.62.0"
     eslint-visitor-keys "^3.3.0"
 
-"@vespaiach/axios-fetch-adapter@github:ecadlabs/axios-fetch-adapter":
-  version "0.3.1"
-  resolved "https://codeload.github.com/ecadlabs/axios-fetch-adapter/tar.gz/167684f522e90343b9f3439d9a43ac571e2396f6"
-
 "@walletconnect/core@2.16.1":
   version "2.16.1"
   resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.16.1.tgz#019b181387792e0d284e75074b961b48193d9b6a"
@@ -3921,7 +3917,7 @@
     idb-keyval "^6.2.1"
     unstorage "^1.9.0"
 
-"@walletconnect/logger@2.1.2", "@walletconnect/logger@^2.0.1":
+"@walletconnect/logger@2.1.2":
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/@walletconnect/logger/-/logger-2.1.2.tgz#813c9af61b96323a99f16c10089bfeb525e2a272"
   integrity sha512-aAb28I3S6pYXZHQm5ESB+V6rDqIYfsnHaQyzFbwUUBFY4H0OXx/YtTl8lvhUNhMMfb9UxbwEBS253TlXUYJWSw==
@@ -3937,14 +3933,7 @@
     pino "7.11.0"
     tslib "1.14.1"
 
-"@walletconnect/relay-api@1.0.11":
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/@walletconnect/relay-api/-/relay-api-1.0.11.tgz#80ab7ef2e83c6c173be1a59756f95e515fb63224"
-  integrity sha512-tLPErkze/HmC9aCmdZOhtVmYZq1wKfWTJtygQHoWtgg722Jd4homo54Cs4ak2RUFUZIGO2RsOpIcWipaua5D5Q==
-  dependencies:
-    "@walletconnect/jsonrpc-types" "^1.0.2"
-
-"@walletconnect/relay-api@^1.0.9":
+"@walletconnect/relay-api@1.0.11", "@walletconnect/relay-api@^1.0.9":
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/@walletconnect/relay-api/-/relay-api-1.0.11.tgz#80ab7ef2e83c6c173be1a59756f95e515fb63224"
   integrity sha512-tLPErkze/HmC9aCmdZOhtVmYZq1wKfWTJtygQHoWtgg722Jd4homo54Cs4ak2RUFUZIGO2RsOpIcWipaua5D5Q==
@@ -7006,7 +6995,7 @@ elliptic@6.5.4:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
-elliptic@^6.5.7:
+elliptic@^6.4.0, elliptic@^6.5.2, elliptic@^6.5.3, elliptic@^6.5.4, elliptic@^6.5.5, elliptic@^6.5.7:
   version "6.5.7"
   resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.7.tgz#8ec4da2cb2939926a1b9a73619d768207e647c8b"
   integrity sha512-ESVCtTwiA+XhY3wyh24QqRGBoP3rEdDUl3EDUUo9tft074fi19IrdpH7hLCMMP3CIj7jb3W96rn8lt/BqIlt5Q==
@@ -11611,17 +11600,10 @@ node-addon-api@^7.0.0:
   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-7.1.1.tgz#1aba6693b0f255258a049d621329329322aad558"
   integrity sha512-5m3bsyrjFWE1xf7nz7YXdN4udnVtXK6/Yfgn5qnahL6bCkf2yKt4k3nuTKAtT4r3IG8JNR2ncsIMdZuAzJjHQQ==
 
-node-fetch-native@^1.4.0, node-fetch-native@^1.4.1, node-fetch-native@^1.6.1:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/node-fetch-native/-/node-fetch-native-1.6.1.tgz#f95c74917d3cebc794cdae0cd2a9c7594aad0cb4"
-  integrity sha512-bW9T/uJDPAJB2YNYEpWzE54U5O3MQidXsOyTfnbKYtTtFexRvGzb1waphBN4ZwP6EcIvYYEOwW0b72BpAqydTw==
-
-node-fetch@2.6.7, node-fetch@~2.6.2:
-  version "2.6.7"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
-  integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
-  dependencies:
-    whatwg-url "^5.0.0"
+node-fetch-native@^1.6.2, node-fetch-native@^1.6.3, node-fetch-native@^1.6.4:
+  version "1.6.4"
+  resolved "https://registry.yarnpkg.com/node-fetch-native/-/node-fetch-native-1.6.4.tgz#679fc8fd8111266d47d7e72c379f1bed9acff06e"
+  integrity sha512-IhOigYzAKHd244OC0JIMIUrjzctirCmPkaIfhDeGcEETWof5zKYUW7e7MYvChGWh/4CJeXEgsRyGzuF334rOOQ==
 
 node-fetch@^2.6.12, node-fetch@^2.7.0:
   version "2.7.0"
@@ -15758,8 +15740,8 @@ unenv@^1.9.0:
     consola "^3.2.3"
     defu "^6.1.4"
     mime "^3.0.0"
-    node-fetch-native "^1.6.1"
-    pathe "^1.1.1"
+    node-fetch-native "^1.6.4"
+    pathe "^1.1.2"
 
 unicode-canonical-property-names-ecmascript@^2.0.0:
   version "2.0.0"

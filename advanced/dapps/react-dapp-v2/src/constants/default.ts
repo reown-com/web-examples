@@ -260,13 +260,8 @@ interface PartialTezosOriginationOperation
 }
 
 export enum DEFAULT_TEZOS_METHODS {
-  TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
-  TEZOS_SEND = "tezos_send",
-  TEZOS_SIGN = "tezos_sign",
-}
-
-export enum TEZOS_SAMPLE_KINDS {
   GET_ACCOUNTS = "tezos_getAccounts",
+  SIGN = "tezos_sign",
   SEND = "tezos_send",
   SEND_TRANSACTION = "tezos_send:transaction",
   SEND_ORGINATION = "tezos_send:origination",
@@ -277,7 +272,6 @@ export enum TEZOS_SAMPLE_KINDS {
   SEND_UNSTAKE = "tezos_send:unstake",
   SEND_FINALIZE = "tezos_send:finalize",
   SEND_INCREASE_PAID_STORAGE = "tezos_send:increase_paid_storage",
-  SIGN = "tezos_sign",
 }
 
 const tezosTransactionOperation: PartialTezosTransactionOperation = {
