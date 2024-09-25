@@ -8,7 +8,7 @@ import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approveSolanaRequest, rejectSolanaRequest } from '@/utils/SolanaRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 
 export default function SessionSignSolanaModal() {
@@ -29,19 +29,18 @@ export default function SessionSignSolanaModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (requestEvent) {
-      setIsLoadingApprove(true)
-      const response = await approveSolanaRequest(requestEvent)
-      try {
+    try {
+      if (requestEvent) {
+        setIsLoadingApprove(true)
+        const response = await approveSolanaRequest(requestEvent)
         await web3wallet.respondSessionRequest({
           topic,
           response
         })
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       setIsLoadingApprove(false)
       ModalStore.close()
     }

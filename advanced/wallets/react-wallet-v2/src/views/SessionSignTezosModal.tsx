@@ -8,7 +8,7 @@ import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approveTezosRequest, rejectTezosRequest } from '@/utils/TezosRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 
 export default function SessionSignTezosModal() {
@@ -29,19 +29,18 @@ export default function SessionSignTezosModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (requestEvent) {
-      setIsLoadingApprove(true)
-      const response = await approveTezosRequest(requestEvent)
-      try {
+    try {
+      if (requestEvent) {
+        setIsLoadingApprove(true)
+        const response = await approveTezosRequest(requestEvent)
         await web3wallet.respondSessionRequest({
           topic,
           response
         })
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       setIsLoadingApprove(false)
       ModalStore.close()
     }

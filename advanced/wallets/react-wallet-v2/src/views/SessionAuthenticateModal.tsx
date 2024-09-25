@@ -11,7 +11,7 @@ import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { styledToast } from '@/utils/HelperUtil'
 
@@ -92,26 +92,31 @@ export default function SessionAuthenticateModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (messages.length) {
-      const signedAuths = []
-      for (const message of messages) {
-        const signature = await eip155Wallets[address].signMessage(message.message)
-        const signedCacao = buildAuthObject(
-          message.authPayload,
-          {
-            t: 'eip191',
-            s: signature
-          },
-          message.iss
-        )
-        signedAuths.push(signedCacao)
-      }
+    try {
+      if (messages.length) {
+        const signedAuths = []
+        for (const message of messages) {
+          const signature = await eip155Wallets[address].signMessage(message.message)
+          const signedCacao = buildAuthObject(
+            message.authPayload,
+            {
+              t: 'eip191',
+              s: signature
+            },
+            message.iss
+          )
+          signedAuths.push(signedCacao)
+        }
 
-      await web3wallet.engine.signClient.approveSessionAuthenticate({
-        id: messages[0].id,
-        auths: signedAuths
-      })
-      SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+        await web3wallet.engine.signClient.approveSessionAuthenticate({
+          id: messages[0].id,
+          auths: signedAuths
+        })
+        SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+      }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       ModalStore.close()
     }
   }, [address, messages])

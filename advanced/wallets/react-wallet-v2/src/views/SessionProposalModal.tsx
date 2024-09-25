@@ -28,7 +28,7 @@ import { TRON_CHAINS, TRON_SIGNING_METHODS } from '@/data/TronData'
 import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
@@ -53,7 +53,7 @@ export default function SessionProposalModal() {
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  const { getAvailableSmartAccounts } = useSmartAccounts()
+  const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
 
   const supportedNamespaces = useMemo(() => {
     // eip155
@@ -267,9 +267,9 @@ export default function SessionProposalModal() {
 
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
-    if (proposal && namespaces) {
-      setIsLoadingApprove(true)
-      try {
+    try {
+      if (proposal && namespaces) {
+        setIsLoadingApprove(true)
         if (reorderedEip155Accounts.length > 0) {
           // we should append the smart accounts to the available eip155 accounts
           namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
@@ -284,14 +284,13 @@ export default function SessionProposalModal() {
           sessionProperties
         })
         SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
+      setIsLoadingApprove(false)
+      ModalStore.close()
     }
-    setIsLoadingApprove(false)
-    ModalStore.close()
   }, [namespaces, proposal, reorderedEip155Accounts])
 
   // Hanlde reject action
@@ -363,16 +362,19 @@ export default function SessionProposalModal() {
 
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
           {smartAccountEnabled &&
-            getAvailableSmartAccounts().map((account, i) => {
-              if (!account) {
-                return <></>
+            namespaces &&
+            getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
+              (account, i) => {
+                if (!account) {
+                  return <></>
+                }
+                return (
+                  <Row key={i}>
+                    <ChainSmartAddressMini account={account} />
+                  </Row>
+                )
               }
-              return (
-                <Row key={i}>
-                  <ChainSmartAddressMini account={account} />
-                </Row>
-              )
-            })}
+            )}
         </Grid>
         <Grid>
           <Row style={{ color: 'GrayText' }} justify="flex-end">
@@ -394,16 +396,19 @@ export default function SessionProposalModal() {
             Chains
           </Row>
           {smartAccountEnabled &&
-            getAvailableSmartAccounts().map(({ chain }, i) => {
-              if (!chain) {
-                return <></>
+            namespaces &&
+            getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
+              ({ chain }, i) => {
+                if (!chain) {
+                  return <></>
+                }
+                return (
+                  <Row key={i} style={{ marginTop: '24px' }}>
+                    <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
+                  </Row>
+                )
               }
-              return (
-                <Row key={i} style={{ marginTop: '24px' }}>
-                  <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
-                </Row>
-              )
-            })}
+            )}
         </Grid>
       </Grid.Container>
     </RequestModal>

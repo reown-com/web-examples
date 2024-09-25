@@ -7,7 +7,7 @@ import ModalStore from '@/store/ModalStore'
 import { convertHexToUtf8, styledToast } from '@/utils/HelperUtil'
 import { approveKadenaRequest, rejectKadenaRequest } from '@/utils/KadenaRequestHandlerUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 
 export default function SessionSignKadenaModal() {
@@ -31,19 +31,20 @@ export default function SessionSignKadenaModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (requestEvent) {
-      setIsLoadingApprove(true)
-      const response = await approveKadenaRequest(requestEvent)
-      try {
+    try {
+      if (requestEvent) {
+        setIsLoadingApprove(true)
+        const response = await approveKadenaRequest(requestEvent)
         await web3wallet.respondSessionRequest({
           topic,
           response
         })
-      } catch (e) {
         setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
+        ModalStore.close()
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       setIsLoadingApprove(false)
       ModalStore.close()
     }

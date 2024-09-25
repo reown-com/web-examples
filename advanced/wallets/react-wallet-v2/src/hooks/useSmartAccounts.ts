@@ -1,3 +1,4 @@
+import { EIP155Chain } from '@/data/EIP155Data'
 import SettingsStore from '@/store/SettingsStore'
 import {
   createOrRestoreBiconomySmartAccount,
@@ -51,8 +52,28 @@ export default function useSmartAccounts() {
     return accounts
   }
 
+  const getAvailableSmartAccountsOnNamespaceChains = (chains: string[] | undefined) => {
+    if (!smartAccountEnabled || chains === undefined) {
+      return []
+    }
+    const accounts = []
+    for (const [key, lib] of Object.entries(smartAccountWallets)) {
+      accounts.push({
+        address: key.split(':')[1],
+        type: lib.type,
+        chain: lib.chain
+      })
+    }
+
+    const filteredAccounts = accounts.filter(account =>
+      chains.some(chain => chain && parseInt(chain.split(':')[1]) === account.chain.id)
+    )
+    return filteredAccounts
+  }
+
   return {
     initializeSmartAccounts,
-    getAvailableSmartAccounts
+    getAvailableSmartAccounts,
+    getAvailableSmartAccountsOnNamespaceChains
   }
 }

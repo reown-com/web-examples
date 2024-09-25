@@ -3693,10 +3693,10 @@
     "@typescript-eslint/types" "5.59.7"
     eslint-visitor-keys "^3.3.0"
 
-"@walletconnect/core@2.15.0":
-  version "2.15.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.15.0.tgz#0d15e48964f99f2073964ec3776bd032fb6fa3b3"
-  integrity sha512-QekYQlpxyn2bcQXMkMxo0+v7nUOQKyu3j5ZKzTg/HGU1eSgTRLIvYIEkC8VVflIgOw7meOAb5pFChX51wShksQ==
+"@walletconnect/core@2.16.1":
+  version "2.16.1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.16.1.tgz#019b181387792e0d284e75074b961b48193d9b6a"
+  integrity sha512-UlsnEMT5wwFvmxEjX8s4oju7R3zadxNbZgsFeHEsjh7uknY2zgmUe1Lfc5XU6zyPb1Jx7Nqpdx1KN485ee8ogw==
   dependencies:
     "@walletconnect/heartbeat" "1.2.2"
     "@walletconnect/jsonrpc-provider" "1.0.14"
@@ -3709,8 +3709,8 @@
     "@walletconnect/relay-auth" "1.0.4"
     "@walletconnect/safe-json" "1.0.2"
     "@walletconnect/time" "1.0.2"
-    "@walletconnect/types" "2.15.0"
-    "@walletconnect/utils" "2.15.0"
+    "@walletconnect/types" "2.16.1"
+    "@walletconnect/utils" "2.16.1"
     events "3.3.0"
     lodash.isequal "4.5.0"
     uint8arrays "3.1.0"
@@ -3910,19 +3910,19 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/sign-client@2.15.0":
-  version "2.15.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.15.0.tgz#bad69a2850dac26d011ba54be86073455fc398c8"
-  integrity sha512-efwrPfIwKWKeku44TGBCnQqPZGCILI1wBKK9bTF0F0/qrLR/zRe6RWpM3/L4+jOMr/BktxPZ5lRozBh+c2U7Pg==
+"@walletconnect/sign-client@2.16.1":
+  version "2.16.1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.16.1.tgz#94a2f630ba741bd180f540c53576c5ceaace4857"
+  integrity sha512-s2Tx2n2duxt+sHtuWXrN9yZVaHaYqcEcjwlTD+55/vs5NUPlISf+fFmZLwSeX1kUlrSBrAuxPUcqQuRTKcjLOA==
   dependencies:
-    "@walletconnect/core" "2.15.0"
+    "@walletconnect/core" "2.16.1"
     "@walletconnect/events" "1.0.1"
     "@walletconnect/heartbeat" "1.2.2"
     "@walletconnect/jsonrpc-utils" "1.0.8"
     "@walletconnect/logger" "2.1.2"
     "@walletconnect/time" "1.0.2"
-    "@walletconnect/types" "2.15.0"
-    "@walletconnect/utils" "2.15.0"
+    "@walletconnect/types" "2.16.1"
+    "@walletconnect/utils" "2.16.1"
     events "3.3.0"
 
 "@walletconnect/sign-client@~2.8.1":
@@ -3947,10 +3947,10 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/types@2.15.0":
-  version "2.15.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.15.0.tgz#4593a138fbf31bf7dc4317f59de643c20d3c8dbb"
-  integrity sha512-hLffDKKe70jIrK+YcLkAnzi6vqNki1SDBWjV+M/72mKcU2KzXxk0G2STFsWsQDx8DoqxMiuGehd0DlD1jwQmBg==
+"@walletconnect/types@2.16.1":
+  version "2.16.1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.16.1.tgz#6583d458d3f7b1919d482ba516ccb7878ec8c91f"
+  integrity sha512-9P4RG4VoDEF+yBF/n2TF12gsvT/aTaeZTVDb/AOayafqiPnmrQZMKmNCJJjq1sfdsDcHXFcZWMGsuCeSJCmrXA==
   dependencies:
     "@walletconnect/events" "1.0.1"
     "@walletconnect/heartbeat" "1.2.2"
@@ -3971,10 +3971,10 @@
     "@walletconnect/logger" "^2.0.1"
     events "^3.3.0"
 
-"@walletconnect/utils@2.15.0":
-  version "2.15.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.15.0.tgz#864f800e7cccdabc631215119f8ab3f1c71d4e41"
-  integrity sha512-xaazgCMyr5fUPm2QuZ76G+W8beDfKMILqJ3INL6wyuaLil2YQNdsCSvWMNhSP+EZeKD3SUqqBmQaM/maP0YHTg==
+"@walletconnect/utils@2.16.1":
+  version "2.16.1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.16.1.tgz#2099cc2bd16b0edc32022f64aa2c2c323b45d1d4"
+  integrity sha512-aoQirVoDoiiEtYeYDtNtQxFzwO/oCrz9zqeEEXYJaAwXlGVTS34KFe7W3/Rxd/pldTYKFOZsku2EzpISfH8Wsw==
   dependencies:
     "@stablelib/chacha20poly1305" "1.0.1"
     "@stablelib/hkdf" "1.0.1"
@@ -3982,9 +3982,10 @@
     "@stablelib/sha256" "1.0.1"
     "@stablelib/x25519" "1.0.3"
     "@walletconnect/relay-api" "1.0.11"
+    "@walletconnect/relay-auth" "1.0.4"
     "@walletconnect/safe-json" "1.0.2"
     "@walletconnect/time" "1.0.2"
-    "@walletconnect/types" "2.15.0"
+    "@walletconnect/types" "2.16.1"
     "@walletconnect/window-getters" "1.0.1"
     "@walletconnect/window-metadata" "1.0.1"
     detect-browser "5.3.0"

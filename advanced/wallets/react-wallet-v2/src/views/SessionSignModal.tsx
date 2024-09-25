@@ -7,7 +7,7 @@ import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 export default function SessionSignModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
@@ -29,19 +29,18 @@ export default function SessionSignModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (requestEvent) {
-      setIsLoadingApprove(true)
-      const response = await approveEIP155Request(requestEvent)
-      try {
+    try {
+      if (requestEvent) {
+        setIsLoadingApprove(true)
+        const response = await approveEIP155Request(requestEvent)
         await web3wallet.respondSessionRequest({
           topic,
           response
         })
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       setIsLoadingApprove(false)
       ModalStore.close()
     }
