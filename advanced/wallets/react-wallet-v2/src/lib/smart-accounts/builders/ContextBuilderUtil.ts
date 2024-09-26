@@ -1,12 +1,9 @@
-import {
-  MOCK_VALIDATOR_ADDRESSES,
-  MULTIKEY_SIGNER_ADDRESSES,
-  TIME_FRAME_POLICY_ADDRESSES
-} from './SmartSessionUtil'
+import { MULTIKEY_SIGNER_ADDRESSES, TIME_FRAME_POLICY_ADDRESSES } from './SmartSessionUtil'
 import type { Session, ChainSession, Account, ActionData } from '@rhinestone/module-sdk'
 const {
   SMART_SESSIONS_ADDRESS,
   SmartSessionMode,
+  encode1271Hash,
   getPermissionId,
   getSessionDigest,
   getSessionNonce,
@@ -14,16 +11,18 @@ const {
   hashChainSessions
 } = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 import {
+  type Hex,
+  type WalletClient,
   concat,
   createPublicClient,
   encodeAbiParameters,
   encodePacked,
-  Hex,
+  getAbiItem,
   http,
   parseAbiParameters,
   toBytes,
-  toHex,
-  WalletClient
+  toFunctionSelector,
+  toHex
 } from 'viem'
 import { publicKeyToAddress } from 'viem/accounts'
 import { parsePublicKey } from 'webauthn-p256'
@@ -33,17 +32,7 @@ import {
   Signer,
   WalletGrantPermissionsRequest,
   ContractCallPermission,
-  WalletSigner,
-  KeySigner,
-  AccountSigner,
-  SignerKeyType,
-  NativeTokenTransferPermission,
-  ERC20TokenTransferPermission,
-  ERC721TokenTransferPermission,
-  GasLimitPermission,
-  ERC1155TokenTransferPermission,
-  CallLimitPermission,
-  RateLimitPermission
+  SignerKeyType
 } from '@/data/EIP7715Data'
 
 export async function getContext(
@@ -109,20 +98,20 @@ export async function getContext(
       }
     }
   ]
-  const permissionEnableHash = hashChainSessions(chainSessions)
+  const chainSessionHash = hashChainSessions(chainSessions)
 
-  // const formattedHash = encode1271Hash({
-  //   account,
-  //   chainId: chainId,
-  //   validator: account.address,
-  //   hash: permissionEnableHash
-  // })
-
-  const permissionEnableSig = await walletClient.signMessage({
-    account: walletClient.account,
-    // message: { raw: formattedHash }
-    message: { raw: permissionEnableHash }
+  const encodedChainSessionHash = encode1271Hash({
+    account,
+    chainId: chainId,
+    validator: account.address,
+    hash: chainSessionHash
   })
+
+  const encodedChainSessionSignature = await walletClient.signMessage({
+    account: walletClient.account,
+    message: { raw: toBytes(encodedChainSessionHash) }
+  })
+  const permissionEnableSignature = adjustVInSignature('eth_sign', encodedChainSessionSignature)
 
   const encodedSmartSessionSignature = encodeSmartSessionSignature({
     mode: SmartSessionMode.ENABLE,
@@ -133,9 +122,9 @@ export async function getContext(
         chainDigestIndex: 0,
         hashesAndChainIds: chainDigests,
         sessionToEnable: session,
-        permissionEnableSig
+        permissionEnableSig: permissionEnableSignature
       },
-      validator: MOCK_VALIDATOR_ADDRESSES[chainId], //account.address,
+      validator: account.address,
       accountType: 'safe'
     }
   })
@@ -145,6 +134,30 @@ export async function getContext(
     [SMART_SESSIONS_ADDRESS, encodedSmartSessionSignature]
   )
   return smartSessionContext
+}
+
+const adjustVInSignature = (
+  signingMethod: 'eth_sign' | 'eth_signTypedData',
+  signature: string
+): Hex => {
+  const ETHEREUM_V_VALUES = [0, 1, 27, 28]
+  const MIN_VALID_V_VALUE_FOR_SAFE_ECDSA = 27
+  let signatureV = Number.parseInt(signature.slice(-2), 16)
+  if (!ETHEREUM_V_VALUES.includes(signatureV)) {
+    throw new Error('Invalid signature')
+  }
+  if (signingMethod === 'eth_sign') {
+    if (signatureV < MIN_VALID_V_VALUE_FOR_SAFE_ECDSA) {
+      signatureV += MIN_VALID_V_VALUE_FOR_SAFE_ECDSA
+    }
+    signatureV += 4
+  }
+  if (signingMethod === 'eth_signTypedData') {
+    if (signatureV < MIN_VALID_V_VALUE_FOR_SAFE_ECDSA) {
+      signatureV += MIN_VALID_V_VALUE_FOR_SAFE_ECDSA
+    }
+  }
+  return (signature.slice(0, -2) + signatureV.toString(16)) as Hex
 }
 
 function getSmartSession({
@@ -180,21 +193,6 @@ function getSmartSession({
 // Type guard for MultiKeySigner
 function isMultiKeySigner(signer: Signer): signer is MultiKeySigner {
   return signer.type === 'keys'
-}
-
-// Type guard for WalletSigner
-function isWalletSigner(signer: Signer): signer is WalletSigner {
-  return signer.type === 'wallet'
-}
-
-// Type guard for KeySigner
-function isKeySigner(signer: Signer): signer is KeySigner {
-  return signer.type === 'key'
-}
-
-// Type guard for AccountSigner
-function isAccountSigner(signer: Signer): signer is AccountSigner {
-  return signer.type === 'account'
 }
 
 //---------------------------------------------------Process Signers---------------------------------------------------
@@ -245,49 +243,6 @@ function isContractCallPermission(permission: Permission): permission is Contrac
   return permission.type === 'contract-call'
 }
 
-// Type guard for NativeTokenTransferPermission
-function isNativeTokenTransferPermission(
-  permission: Permission
-): permission is NativeTokenTransferPermission {
-  return permission.type === 'native-token-transfer'
-}
-
-// Type guard for ERC20TokenTransferPermission
-function isERC20TokenTransferPermission(
-  permission: Permission
-): permission is ERC20TokenTransferPermission {
-  return permission.type === 'erc20-token-transfer'
-}
-
-// Type guard for ERC721TokenTransferPermission
-function isERC721TokenTransferPermission(
-  permission: Permission
-): permission is ERC721TokenTransferPermission {
-  return permission.type === 'erc721-token-transfer'
-}
-
-// Type guard for ERC1155TokenTransferPermission
-function isERC1155TokenTransferPermission(
-  permission: Permission
-): permission is ERC1155TokenTransferPermission {
-  return permission.type === 'erc1155-token-transfer'
-}
-
-// Type guard for GasLimitPermission
-function isGasLimitPermission(permission: Permission): permission is GasLimitPermission {
-  return permission.type === 'gas-limit'
-}
-
-// Type guard for CallLimitPermission
-function isCallLimitPermission(permission: Permission): permission is CallLimitPermission {
-  return permission.type === 'call-limit'
-}
-
-// Type guard for RateLimitPermission
-function isRateLimitPermission(permission: Permission): permission is RateLimitPermission {
-  return permission.type === 'rate-limit'
-}
-
 //---------------------------------------------------Create Action for Permissions---------------------------------------------------
 // Function to create actions from permissions
 function getActionsFromPermissions(
@@ -298,7 +253,8 @@ function getActionsFromPermissions(
   return permissions.reduce((actions: ActionData[], permission) => {
     if (isContractCallPermission(permission)) {
       console.log('permissions is of type contract-call')
-      actions.push(createActionForContractCall(permission, chainId, expiry))
+      const contractCallActions = createActionForContractCall(permission, chainId, expiry)
+      actions.push(...contractCallActions)
     }
     console.log('permissions is not of type contract-call')
     // Add more permission type handlers here as needed
@@ -311,21 +267,35 @@ function createActionForContractCall(
   permission: ContractCallPermission,
   chainId: number,
   expiry: number
-): ActionData {
+): ActionData[] {
   if (permission.data.address === undefined) {
     throw new Error('Contract address is undefined')
   }
-  if (permission.data.functionSelector === undefined) {
-    throw new Error('Function selector is undefined')
+  if (permission.data.functions === undefined || permission.data.functions.length === 0) {
+    throw new Error('Functions is undefined')
   }
-  return {
-    actionTarget: permission.data.address,
-    actionTargetSelector: permission.data.functionSelector,
-    actionPolicies: [
-      {
-        policy: TIME_FRAME_POLICY_ADDRESSES[chainId],
-        initData: encodePacked(['uint128', 'uint128'], [BigInt(expiry), BigInt(0)]) // hardcoded for demo
-      }
-    ]
-  }
+
+  return permission.data.functions.map(functionPermission => {
+    const functionName = functionPermission.functionName
+    const abi = permission.data.abi
+    const functionAbi = getAbiItem({
+      abi,
+      name: functionName
+    })
+    if (functionAbi === undefined || functionAbi.type !== 'function') {
+      throw new Error(`Function ABI not found for function: ${functionName}`)
+    }
+    const functionSelector = toFunctionSelector(functionAbi)
+
+    return {
+      actionTarget: permission.data.address,
+      actionTargetSelector: functionSelector,
+      actionPolicies: [
+        {
+          policy: TIME_FRAME_POLICY_ADDRESSES[chainId],
+          initData: encodePacked(['uint128', 'uint128'], [BigInt(expiry), BigInt(0)]) // hardcoded for demo
+        }
+      ]
+    }
+  })
 }
