@@ -83,7 +83,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
     const walletClient = createWalletClient({
       chain: this.chain,
-      account: this.client.account,
+      account: this.signer,
       transport: http()
     })
     console.log('walletClient chainId:', walletClient.chain.id)
