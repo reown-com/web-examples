@@ -71,5 +71,16 @@ export const supportedEIP5792CapabilitiesForSCA: GetCapabilitiesResult = {
     atomicBatch: {
       supported: true
     }
+  },
+  '0x14a34': {
+    paymasterService: {
+      supported: true
+    },
+    // sessionKey: {
+    //   supported: true,
+    // },
+    atomicBatch: {
+      supported: true
+    }
   }
 }
