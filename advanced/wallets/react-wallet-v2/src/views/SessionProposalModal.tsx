@@ -58,7 +58,7 @@ export default function SessionProposalModal() {
 
   const { query } = useRouter()
 
-  const amountsToApproveEvm = Number(query.amountsToApproveEvm) || null
+  const addressesToApprove = Number(query.addressesToApprove) || null
 
   const supportedNamespaces = useMemo(() => {
     // eip155
@@ -114,7 +114,7 @@ export default function SessionProposalModal() {
           .map(chain =>
             eip155Addresses
               .map(account => `${chain}:${account}`)
-              .slice(0, amountsToApproveEvm ?? eip155Addresses.length)
+              .slice(0, addressesToApprove ?? eip155Addresses.length)
           )
           .flat()
       },
