@@ -9,11 +9,11 @@ import { NextApiRequest, NextApiResponse } from 'next'
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<PrepareCallsReturnValue | ErrorResponse>
+  res: NextApiResponse<PrepareCallsReturnValue[] | ErrorResponse>
 ) {
-  const data = req.body as PrepareCallsParams
-  const chainId = parseInt(data.chainId, 16)
-  const account = data.from
+  const data = req.body as PrepareCallsParams[]
+  const chainId = parseInt(data[0].chainId, 16)
+  const account = data[0].from
   const chain = getChainById(chainId)
   try {
     const builder = await getUserOpBuilder({
@@ -21,7 +21,7 @@ export default async function handler(
       chain
     })
 
-    const response = await builder.prepareCalls(data)
+    const response = await builder.prepareCalls(data[0])
 
     res.status(200).json(response)
   } catch (error: any) {

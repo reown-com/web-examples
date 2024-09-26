@@ -1,4 +1,4 @@
-import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
+import { generatePrivateKey, privateKeyToAccount, signMessage } from 'viem/accounts'
 import {
   PrepareCallsParams,
   PrepareCallsReturnValue,
@@ -11,6 +11,7 @@ import {
   Address,
   Chain,
   createPublicClient,
+  encodeAbiParameters,
   Hex,
   http,
   parseAbi,
@@ -49,7 +50,7 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     })
     this.accountAddress = accountAddress
   }
-  async prepareCalls(params: PrepareCallsParams): Promise<PrepareCallsReturnValue> {
+  async prepareCalls(params: PrepareCallsParams): Promise<PrepareCallsReturnValue[]> {
     const privateKey = generatePrivateKey()
     const signer = privateKeyToAccount(privateKey)
 
@@ -103,10 +104,19 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       type: 'safe'
     })
 
+    const pci = params.capabilities.permissions?.context!
+    const walletConnectCosigner = new WalletConnectCosigner('projectId')
+    const caip10AccountAddress = `eip155:${this.chain.id}:${this.accountAddress}`
+    const permissionsContext = await walletConnectCosigner.getPermissionsContext(
+      caip10AccountAddress,
+      { pci }
+    )
+    console.log('permissionsContext:', permissionsContext)
+
     let nonce: bigint = await getNonce({
       publicClient: this.publicClient,
       account,
-      permissionsContext: params.capabilities.permissions?.context!
+      permissionsContext: permissionsContext.context
     })
     const callData = await smartAccountClient.account.encodeCallData(
       params.calls.map(call => ({
@@ -119,9 +129,8 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     const dummySignature = await getDummySignature({
       publicClient: this.publicClient,
       account,
-      permissionsContext: params.capabilities.permissions?.context!
+      permissionsContext: permissionsContext.context
     })
-
     const userOp = await smartAccountClient.prepareUserOperationRequest({
       userOperation: {
         nonce: nonce,
@@ -136,17 +145,19 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       entryPoint: ENTRYPOINT_ADDRESS_V07
     })
 
-    return {
-      context: params.capabilities.permissions?.context!,
-      preparedCalls: {
-        chainId: toHex(this.chain.id),
-        type: 'user-operation-v07',
-        data: userOp
-      },
-      signatureRequest: {
-        hash: hash
+    return [
+      {
+        context: params.capabilities.permissions?.context!,
+        preparedCalls: {
+          chainId: toHex(this.chain.id),
+          type: 'user-operation-v07',
+          data: userOp
+        },
+        signatureRequest: {
+          hash: hash
+        }
       }
-    }
+    ]
   }
 
   async sendPreparedCalls(
@@ -160,31 +171,60 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       if (type !== 'user-operation-v07') {
         throw new Error('Invalid preparedCalls type')
       }
-      const userOpWithBigIntAsHex: UserOperationWithBigIntAsHex = {
-        ...data,
-        nonce: toHex(data.nonce),
-        callGasLimit: toHex(data.callGasLimit),
-        verificationGasLimit: toHex(data.verificationGasLimit),
-        preVerificationGas: toHex(data.preVerificationGas),
-        maxFeePerGas: toHex(data.maxFeePerGas),
-        maxPriorityFeePerGas: toHex(data.maxPriorityFeePerGas),
-        paymasterPostOpGasLimit: data.paymasterPostOpGasLimit
-          ? toHex(data.paymasterPostOpGasLimit)
-          : undefined,
-        paymasterVerificationGasLimit: data.paymasterVerificationGasLimit
-          ? toHex(data.paymasterVerificationGasLimit)
-          : undefined,
-        factory: data.factory,
-        factoryData: data.factoryData,
-        paymaster: data.paymaster,
-        paymasterData: data.paymasterData,
-        signature: signature
-      }
+      // const userOpWithBigIntAsHex: UserOperationWithBigIntAsHex = {
+      //   ...data,
+      //   nonce: toHex(data.nonce),
+      //   callGasLimit: toHex(data.callGasLimit),
+      //   verificationGasLimit: toHex(data.verificationGasLimit),
+      //   preVerificationGas: toHex(data.preVerificationGas),
+      //   maxFeePerGas: toHex(data.maxFeePerGas),
+      //   maxPriorityFeePerGas: toHex(data.maxPriorityFeePerGas),
+      //   paymasterPostOpGasLimit: data.paymasterPostOpGasLimit
+      //     ? toHex(data.paymasterPostOpGasLimit)
+      //     : undefined,
+      //   paymasterVerificationGasLimit: data.paymasterVerificationGasLimit
+      //     ? toHex(data.paymasterVerificationGasLimit)
+      //     : undefined,
+      //   factory: data.factory,
+      //   factoryData: data.factoryData,
+      //   paymaster: data.paymaster,
+      //   paymasterData: data.paymasterData,
+      //   signature: signature
+      // }
 
-      const pci = context
+      console.log('userOp:', data)
       //TODO: get PermissionsContext from WalletConnectCosigner given pci
-      const permissionsContext = '0x'
+      const pci = context
+      const walletConnectCosigner = new WalletConnectCosigner('projectId')
+      const caip10AccountAddress = `eip155:${this.chain.id}:${this.accountAddress}`
+      const permissionsContext = await walletConnectCosigner.getPermissionsContext(
+        caip10AccountAddress,
+        { pci }
+      )
+      console.log('permissionsContext:', permissionsContext)
+
       if (pci && projectId) {
+        const userOpWithBigIntAsHex: UserOperationWithBigIntAsHex = {
+          ...data,
+          nonce: toHex(BigInt(data.nonce)),
+          callGasLimit: toHex(BigInt(data.callGasLimit)),
+          verificationGasLimit: toHex(BigInt(data.verificationGasLimit)),
+          preVerificationGas: toHex(BigInt(data.preVerificationGas)),
+          maxFeePerGas: toHex(BigInt(data.maxFeePerGas)),
+          maxPriorityFeePerGas: toHex(BigInt(data.maxPriorityFeePerGas)),
+          paymasterPostOpGasLimit: data.paymasterPostOpGasLimit
+            ? toHex(BigInt(data.paymasterPostOpGasLimit))
+            : undefined,
+          paymasterVerificationGasLimit: data.paymasterVerificationGasLimit
+            ? toHex(BigInt(data.paymasterVerificationGasLimit))
+            : undefined,
+          factory: data.factory,
+          factoryData: data.factoryData,
+          paymaster: data.paymaster,
+          paymasterData: data.paymasterData,
+          signature: signature
+        }
+        console.log('userOpWithBigIntAsHex:', userOpWithBigIntAsHex)
         const walletConnectCosigner = new WalletConnectCosigner(projectId)
         const caip10AccountAddress = `eip155:${chainIdNumber}:${userOpWithBigIntAsHex.sender}`
         const cosignResponse = await walletConnectCosigner.coSignUserOperation(
@@ -195,22 +235,48 @@ export class SafeUserOpBuilder implements UserOpBuilder {
           }
         )
         console.log('cosignResponse:', cosignResponse)
-        userOpWithBigIntAsHex.signature = cosignResponse.signature
+        data.signature = cosignResponse.signature
+
+        // const hash = getUserOperationHash({
+        //   userOperation: {
+        //     ...data,
+        //     nonce: BigInt(data.nonce),
+        //     callGasLimit: BigInt(data.callGasLimit),
+        //     verificationGasLimit: BigInt(data.verificationGasLimit),
+        //     preVerificationGas: BigInt(data.preVerificationGas),
+        //     maxFeePerGas: BigInt(data.maxFeePerGas),
+        //     maxPriorityFeePerGas: BigInt(data.maxPriorityFeePerGas),
+        //     paymasterVerificationGasLimit:
+        //       data.paymasterVerificationGasLimit && BigInt(data.paymasterVerificationGasLimit),
+        //     paymasterPostOpGasLimit: data.paymasterPostOpGasLimit && BigInt(data.paymasterPostOpGasLimit)
+        //   },
+        //   chainId: chainIdNumber,
+        //   entryPoint: ENTRYPOINT_ADDRESS_V07
+        // })
+        // console.log('hash:', hash)
+        // const cosignerSignature = await signMessage({
+        //   privateKey: '0x3856e031f6074f9dced509e7b3d623534f798b5adb9177eb386532f23c729190',
+        //   message: { raw: hash }
+        // })
+        // console.log('cosignerSignature:', cosignerSignature)
+        // const signatures = [cosignerSignature, signature]
+        // const concatenatedDSignature = encodeAbiParameters([{ type: 'bytes[]' }], [signatures])
+        // data.signature = concatenatedDSignature
       }
 
       const account = getAccount({
-        address: userOpWithBigIntAsHex.sender,
+        address: data.sender,
         type: 'safe'
       })
 
-      if (permissionsContext) {
+      if (permissionsContext.context) {
         const formattedSignature = await formatSignature({
           publicClient: this.publicClient,
           account,
-          modifiedSignature: userOpWithBigIntAsHex.signature,
-          permissionsContext
+          modifiedSignature: data.signature,
+          permissionsContext: permissionsContext.context
         })
-        userOpWithBigIntAsHex.signature = formattedSignature
+        data.signature = formattedSignature
       }
 
       const bundlerTransport = http(bundlerUrl({ chain: this.chain }), {
@@ -224,20 +290,18 @@ export class SafeUserOpBuilder implements UserOpBuilder {
 
       const userOpId = await pimlicoBundlerClient.sendUserOperation({
         userOperation: {
-          ...userOpWithBigIntAsHex,
-          signature: userOpWithBigIntAsHex.signature,
-          callGasLimit: BigInt(userOpWithBigIntAsHex.callGasLimit),
-          nonce: BigInt(userOpWithBigIntAsHex.nonce),
-          preVerificationGas: BigInt(userOpWithBigIntAsHex.preVerificationGas),
-          verificationGasLimit: BigInt(userOpWithBigIntAsHex.verificationGasLimit),
-          maxFeePerGas: BigInt(userOpWithBigIntAsHex.maxFeePerGas),
-          maxPriorityFeePerGas: BigInt(userOpWithBigIntAsHex.maxPriorityFeePerGas),
+          ...data,
+          signature: data.signature,
+          callGasLimit: BigInt(data.callGasLimit),
+          nonce: BigInt(data.nonce),
+          preVerificationGas: BigInt(data.preVerificationGas),
+          verificationGasLimit: BigInt(data.verificationGasLimit),
+          maxFeePerGas: BigInt(data.maxFeePerGas),
+          maxPriorityFeePerGas: BigInt(data.maxPriorityFeePerGas),
           paymasterVerificationGasLimit:
-            userOpWithBigIntAsHex.paymasterVerificationGasLimit &&
-            BigInt(userOpWithBigIntAsHex.paymasterVerificationGasLimit),
+            data.paymasterVerificationGasLimit && BigInt(data.paymasterVerificationGasLimit),
           paymasterPostOpGasLimit:
-            userOpWithBigIntAsHex.paymasterPostOpGasLimit &&
-            BigInt(userOpWithBigIntAsHex.paymasterPostOpGasLimit)
+            data.paymasterPostOpGasLimit && BigInt(data.paymasterPostOpGasLimit)
         }
       })
 
