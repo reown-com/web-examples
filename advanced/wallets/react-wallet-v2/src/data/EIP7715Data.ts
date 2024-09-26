@@ -61,13 +61,39 @@ export type Policy = {
   type: string
   data: Record<string, unknown>
 }
+// Enum for parameter operators
+enum ParamOperator {
+  EQUAL = 'EQUAL',
+  GREATER_THAN = 'GREATER_THAN',
+  LESS_THAN = 'LESS_THAN'
+  // Add other operators as needed
+}
 
+// Enum for operation types
+enum Operation {
+  Call = 'Call',
+  DelegateCall = 'DelegateCall'
+}
+
+// Type for a single argument condition
+type ArgumentCondition = {
+  operator: ParamOperator
+  value: any // You might want to be more specific based on your use case
+}
+
+// Type for a single function permission
+type FunctionPermission = {
+  functionName: string // Function name
+  args: ArgumentCondition[] // An array of conditions, each corresponding to an argument for the function
+  valueLimit: bigint // Maximum value that can be transferred for this specific function call
+  operation?: Operation // (optional) whether this is a call or a delegatecall. Defaults to call
+}
 export type ContractCallPermission = {
   type: 'contract-call'
   data: {
     address: `0x${string}`
-    functionSelector: `0x${string}`
-    abi?: Record<string, unknown>
+    abi: Record<string, unknown>[]
+    functions: FunctionPermission[]
   }
 }
 // Native token transfer, e.g. ETH on Ethereum
