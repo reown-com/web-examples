@@ -34,8 +34,8 @@ jobs:
       skip-playwright-webserver: false
       branch: main
       command: playwright:test:wallet
-    uses: WalletConnect/web3modal/.github/workflows/ui_tests.yml@main
+    uses: reown-com/appkit/.github/workflows/ui_tests.yml@main
     secrets:
       NEXT_PUBLIC_PROJECT_ID: ${{ secrets.UI_TEST_PROJECT_ID }}
-      TESTS_NEXTAUTH_SECRET: ${{ secrets.TESTS_NEXTAUTH_SECRET }}
-      TESTS_MAILSEC_API_KEY: ${{ secrets.MAILSAC_API_KEY }}
+      RELEASE_TOKEN_V2: ${{ secrets.RELEASE_TOKEN_V2 }}
+      TFC_INFRA_TOKEN: ${{ secrets.TFC_INFRA_TOKEN }}
