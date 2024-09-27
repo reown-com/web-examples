@@ -78,8 +78,22 @@ export default class SolanaLib {
     return { signature }
   }
 
+  public async signAllTransactions(
+    params: SolanaLib.SignAllTransactions['params']
+  ): Promise<SolanaLib.SignAllTransactions['result']> {
+    const signedTransactions = params.transactions.map(transaction => {
+      const transactionObj = this.deserialize(transaction)
+
+      this.sign(transactionObj)
+
+      return this.serialize(transactionObj)
+    })
+
+    return { transactions: signedTransactions }
+  }
+
   private serialize(transaction: VersionedTransaction): string {
-    return bs58.encode(transaction.serialize())
+    return Buffer.from(transaction.serialize()).toString('base64')
   }
 
   private deserialize(transaction: string): VersionedTransaction {
@@ -114,5 +128,10 @@ export namespace SolanaLib {
   export type SignAndSendTransaction = RPCRequest<
     { transaction: string; options?: SendOptions },
     { signature: string }
+  >
+
+  export type SignAllTransactions = RPCRequest<
+    { transactions: string[] },
+    { transactions: string[] }
   >
 }

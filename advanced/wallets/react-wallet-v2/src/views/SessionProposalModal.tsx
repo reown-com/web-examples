@@ -37,6 +37,7 @@ import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
+import { useRouter } from 'next/router'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -54,6 +55,10 @@ export default function SessionProposalModal() {
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
   const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
+
+  const { query } = useRouter()
+
+  const addressesToApprove = Number(query.addressesToApprove) || null
 
   const supportedNamespaces = useMemo(() => {
     // eip155
@@ -106,7 +111,11 @@ export default function SessionProposalModal() {
         methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains
-          .map(chain => eip155Addresses.map(account => `${chain}:${account}`))
+          .map(chain =>
+            eip155Addresses
+              .map(account => `${chain}:${account}`)
+              .slice(0, addressesToApprove ?? eip155Addresses.length)
+          )
           .flat()
       },
       cosmos: {
