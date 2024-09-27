@@ -10,6 +10,16 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<BuildUserOpResponseReturn | ErrorResponse>
 ) {
+  if (req.method === 'OPTIONS') {
+    res.status(200).end()
+    return
+  }
+  if (req.method !== 'POST') {
+    return res.status(405).json({
+      message: 'Method not allowed',
+      error: 'Method not allowed'
+    })
+  }
   const chainId = req.body.chainId
   const account = req.body.account
   const chain = getChainById(chainId)
