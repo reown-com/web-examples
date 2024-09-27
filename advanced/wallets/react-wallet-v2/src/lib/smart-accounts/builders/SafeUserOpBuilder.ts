@@ -171,29 +171,9 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       if (type !== 'user-operation-v07') {
         throw new Error('Invalid preparedCalls type')
       }
-      // const userOpWithBigIntAsHex: UserOperationWithBigIntAsHex = {
-      //   ...data,
-      //   nonce: toHex(data.nonce),
-      //   callGasLimit: toHex(data.callGasLimit),
-      //   verificationGasLimit: toHex(data.verificationGasLimit),
-      //   preVerificationGas: toHex(data.preVerificationGas),
-      //   maxFeePerGas: toHex(data.maxFeePerGas),
-      //   maxPriorityFeePerGas: toHex(data.maxPriorityFeePerGas),
-      //   paymasterPostOpGasLimit: data.paymasterPostOpGasLimit
-      //     ? toHex(data.paymasterPostOpGasLimit)
-      //     : undefined,
-      //   paymasterVerificationGasLimit: data.paymasterVerificationGasLimit
-      //     ? toHex(data.paymasterVerificationGasLimit)
-      //     : undefined,
-      //   factory: data.factory,
-      //   factoryData: data.factoryData,
-      //   paymaster: data.paymaster,
-      //   paymasterData: data.paymasterData,
-      //   signature: signature
-      // }
 
       console.log('userOp:', data)
-      //TODO: get PermissionsContext from WalletConnectCosigner given pci
+      //Get PermissionsContext from WalletConnectCosigner given pci
       const pci = context
       const walletConnectCosigner = new WalletConnectCosigner('projectId')
       const caip10AccountAddress = `eip155:${this.chain.id}:${this.accountAddress}`
@@ -236,32 +216,6 @@ export class SafeUserOpBuilder implements UserOpBuilder {
         )
         console.log('cosignResponse:', cosignResponse)
         data.signature = cosignResponse.signature
-
-        // const hash = getUserOperationHash({
-        //   userOperation: {
-        //     ...data,
-        //     nonce: BigInt(data.nonce),
-        //     callGasLimit: BigInt(data.callGasLimit),
-        //     verificationGasLimit: BigInt(data.verificationGasLimit),
-        //     preVerificationGas: BigInt(data.preVerificationGas),
-        //     maxFeePerGas: BigInt(data.maxFeePerGas),
-        //     maxPriorityFeePerGas: BigInt(data.maxPriorityFeePerGas),
-        //     paymasterVerificationGasLimit:
-        //       data.paymasterVerificationGasLimit && BigInt(data.paymasterVerificationGasLimit),
-        //     paymasterPostOpGasLimit: data.paymasterPostOpGasLimit && BigInt(data.paymasterPostOpGasLimit)
-        //   },
-        //   chainId: chainIdNumber,
-        //   entryPoint: ENTRYPOINT_ADDRESS_V07
-        // })
-        // console.log('hash:', hash)
-        // const cosignerSignature = await signMessage({
-        //   privateKey: '0x3856e031f6074f9dced509e7b3d623534f798b5adb9177eb386532f23c729190',
-        //   message: { raw: hash }
-        // })
-        // console.log('cosignerSignature:', cosignerSignature)
-        // const signatures = [cosignerSignature, signature]
-        // const concatenatedDSignature = encodeAbiParameters([{ type: 'bytes[]' }], [signatures])
-        // data.signature = concatenatedDSignature
       }
 
       const account = getAccount({
