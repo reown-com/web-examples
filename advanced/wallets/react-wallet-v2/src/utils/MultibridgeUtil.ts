@@ -245,8 +245,10 @@ async function getBridgeStatus(params: BridgeStatusParams): Promise<any> {
   return json
 }
 
-
-async function getBridgingTransactions(bridgingParams: BridgingParams, walletAddress: string): Promise<any>{
+async function getBridgingTransactions(
+  bridgingParams: BridgingParams,
+  walletAddress: string
+): Promise<any> {
   const transactions = []
   const originalAmount = bridgingParams.amount
   bridgingParams.amount = Math.round(originalAmount * AMOUNT_MULTIPLIER)
@@ -325,7 +327,6 @@ async function getBridgingTransactions(bridgingParams: BridgingParams, walletAdd
   return transactions
 }
 
-
 export async function bridgeFunds(
   bridgingParams: BridgingParams,
   wallet: EIP155Lib | SmartAccountLib
@@ -338,12 +339,11 @@ export async function bridgeFunds(
   const walletAddress = wallet.getAddress()
   console.log('Getting bridging transactions')
   const transactions = await getBridgingTransactions(bridgingParams, walletAddress)
-  console.log('Bridging transactions', transactions);
+  console.log('Bridging transactions', transactions)
   for (const transaction of transactions) {
     const hash = await sourceChainConnectedWallet.sendTransaction(transaction)
     const receipt = typeof hash === 'string' ? hash : hash?.hash
-    console.log('Transaction broadcasted', {receipt});
-    
+    console.log('Transaction broadcasted', { receipt })
   }
   let interations = 0
   while (interations < 20) {
@@ -361,4 +361,3 @@ export async function bridgeFunds(
     interations++
   }
 }
-

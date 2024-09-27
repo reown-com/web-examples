@@ -872,7 +872,7 @@ export function JsonRpcContextProvider({
               })),
               transaction: transaction
                 .serialize({ verifySignatures: false })
-                .toString('base64'),
+                .toString("base64"),
             },
           },
         });
