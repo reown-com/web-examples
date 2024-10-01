@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@reown/appkit": "^1.0.5",
-    "@reown/appkit-adapter-ethers5": "^1.0.5",
-    "@reown/appkit-ethers5": "^1.0.5",
-    "ethers": "^5.7.2",
+    "@reown/appkit-adapter-solana": "^1.0.5",
+    "@reown/appkit-solana": "^1.0.5",
+    "@solana/wallet-adapter-wallets": "^0.19.32",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

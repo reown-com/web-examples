@@ -2,6 +2,8 @@ import { createAppKit } from '@reown/appkit/react'
 import { EthersAdapter } from '@reown/appkit-adapter-ethers'
 import { arbitrum, mainnet } from '@reown/appkit/networks'
 
+import { Hooks } from './components/hooks'
+
 import "./App.css"
 
 // 1. Get projectId from https://cloud.reown.com
@@ -23,7 +25,7 @@ const networks = [arbitrum, mainnet]
 
 
 // 4. Create a AppKit instance
-createAppKit({
+const modal = createAppKit({
   adapters: [new EthersAdapter()],
   networks,
   metadata,
@@ -36,8 +38,12 @@ createAppKit({
 export function App() {
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <w3m-button />
+          <Hooks />
+          <p>
+            <button onClick={() => modal.adapter?.connectionControllerClient?.disconnect()}>Disconnect</button>
+          </p>
     </div>
   )
 }

@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@coinbase/wallet-sdk": "^4.1.0",
-    "@reown/appkit": "^1.0.4",
-    "@reown/appkit-adapter-ethers": "^1.0.4",
+    "@reown/appkit": "^1.0.5",
+    "@reown/appkit-adapter-ethers": "^1.0.5",
+    "@reown/appkit-ethers": "^1.0.5",
     "ethers": "^6.13.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

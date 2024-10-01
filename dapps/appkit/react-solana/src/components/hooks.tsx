@@ -1,7 +1,7 @@
 import { useAppKitAccount } from '@reown/appkit/react'
-import { useDisconnect, useAppKit } from '@reown/appkit-ethers/react'
+import { useDisconnect, useAppKit } from '@reown/appkit-solana/react'
 
-export function Hooks() {
+export function SolanaHooks() {
   const { address, caipAddress, isConnected } = useAppKitAccount();
   const { open, close } = useAppKit();
   const { disconnect } = useDisconnect();

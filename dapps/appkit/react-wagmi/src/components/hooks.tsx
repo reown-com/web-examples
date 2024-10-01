@@ -13,7 +13,7 @@ export function WagmiHooks() {
         <div>
           <p>Address: {address}</p>
           <p>Chain ID: {chainId}</p>
-          <p><button onClick={() => disconnect()}>disconnect</button></p>
+          <p><button onClick={() => disconnect()}>Disconnect Hook</button></p>
         </div>
       ) : (
         <p>Not connected</p>
