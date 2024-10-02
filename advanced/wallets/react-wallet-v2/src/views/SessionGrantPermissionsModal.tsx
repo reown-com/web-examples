@@ -9,7 +9,11 @@ import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 import PermissionDetailsCard from '@/components/PermissionDetailsCard'
-import { approveEIP7715Request, rejectEIP7715Request } from '@/utils/EIP7715RequestHandlerUtils'
+import {
+  approveEIP7715Request,
+  createErrorResponse,
+  rejectEIP7715Request
+} from '@/utils/EIP7715RequestHandlerUtils'
 import { GrantPermissionsParameters } from 'viem/experimental'
 // import { GrantPermissionsRequestParams } from '@/data/EIP7715Data'
 
@@ -46,6 +50,11 @@ export default function SessionGrantPermissionsModal() {
       }
     } catch (e) {
       styledToast((e as Error).message, 'error')
+      const response = createErrorResponse(requestEvent, (e as Error).message)
+      await web3wallet.respondSessionRequest({
+        topic,
+        response
+      })
     } finally {
       setIsLoadingApprove(false)
       ModalStore.close()

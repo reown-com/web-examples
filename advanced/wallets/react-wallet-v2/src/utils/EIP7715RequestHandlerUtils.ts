@@ -73,3 +73,9 @@ export function rejectEIP7715Request(request: RequestEventArgs) {
 
   return formatJsonRpcError(id, getSdkError('USER_REJECTED').message)
 }
+
+export function createErrorResponse(request: RequestEventArgs, errorMessage: string) {
+  const { id } = request
+
+  return formatJsonRpcError(id, errorMessage)
+}
