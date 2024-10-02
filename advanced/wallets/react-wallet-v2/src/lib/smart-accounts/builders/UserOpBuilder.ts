@@ -57,9 +57,9 @@ export type SendPreparedCallsParams = {
   context: `0x${string}`
 }
 
-export type SendPreparedCallsReturnValue = `0x${string}`
+export type SendPreparedCallsReturnValue = string
 export interface UserOpBuilder {
-  prepareCalls(params: PrepareCallsParams): Promise<PrepareCallsReturnValue[]>
+  prepareCalls(projectId: string, params: PrepareCallsParams): Promise<PrepareCallsReturnValue>
   sendPreparedCalls(
     projectId: string,
     params: SendPreparedCallsParams

@@ -87,19 +87,14 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       transport: http()
     })
     console.log('walletClient chainId:', walletClient.chain.id)
-    let permissionContext = '0x'
-    try {
-      permissionContext = await getContext(walletClient, {
-        account: getAccount({
-          address: this.client.account.address,
-          type: 'safe'
-        }),
-        grantPermissionsRequest: grantPermissionsRequestParameters
-      })
-    } catch (error) {
-      console.error(`Error getting permission context: ${error}`)
-      throw error
-    }
+
+    const permissionContext = await getContext(walletClient, {
+      account: getAccount({
+        address: this.client.account.address,
+        type: 'safe'
+      }),
+      grantPermissionsRequest: grantPermissionsRequestParameters
+    })
 
     console.log(`Returning the permissions request`)
     return {
