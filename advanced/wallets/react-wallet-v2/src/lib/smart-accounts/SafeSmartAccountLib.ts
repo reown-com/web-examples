@@ -16,7 +16,6 @@ import {
   parseAbi,
   toHex
 } from 'viem'
-import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 import { ModuleType } from 'permissionless/actions/erc7579'
 import {
   MOCK_VALIDATOR_ADDRESSES,

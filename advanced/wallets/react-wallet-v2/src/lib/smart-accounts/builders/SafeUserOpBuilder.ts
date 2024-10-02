@@ -33,7 +33,7 @@ import { bundlerUrl, paymasterUrl, publicClientUrl } from '@/utils/SmartAccountU
 import { getChainById } from '@/utils/ChainUtil'
 import { SAFE_FALLBACK_HANDLER_STORAGE_SLOT } from '@/consts/smartAccounts'
 import { formatSignature, getDummySignature, getNonce } from './UserOpBuilderUtil'
-import { WalletConnectCosigner } from './WalletConnectCosignerUtils'
+import { CosignerService } from './CosignerService'
 const { getAccount } = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 const ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
@@ -107,12 +107,11 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     })
 
     const pci = params.capabilities.permissions?.context!
-    const walletConnectCosigner = new WalletConnectCosigner(projectId)
+    const cosignerService = new CosignerService(projectId)
     const caip10AccountAddress = `eip155:${this.chain.id}:${this.accountAddress}`
-    const permissionsContext = await walletConnectCosigner.getPermissionsContext(
-      caip10AccountAddress,
-      { pci }
-    )
+    const permissionsContext = await cosignerService.getPermissionsContext(caip10AccountAddress, {
+      pci
+    })
     let nonce: bigint = await getNonce({
       publicClient: this.publicClient,
       account,
@@ -172,12 +171,11 @@ export class SafeUserOpBuilder implements UserOpBuilder {
 
       //Get PermissionsContext from WalletConnectCosigner given pci
       const pci = context
-      const walletConnectCosigner = new WalletConnectCosigner(projectId)
+      const cosignerService = new CosignerService(projectId)
       const caip10AccountAddress = `eip155:${this.chain.id}:${this.accountAddress}`
-      const permissionsContext = await walletConnectCosigner.getPermissionsContext(
-        caip10AccountAddress,
-        { pci }
-      )
+      const permissionsContext = await cosignerService.getPermissionsContext(caip10AccountAddress, {
+        pci
+      })
       if (pci && projectId) {
         const userOpWithBigIntAsHex: UserOperationWithBigIntAsHex = {
           ...data,
@@ -199,15 +197,12 @@ export class SafeUserOpBuilder implements UserOpBuilder {
           paymasterData: data.paymasterData,
           signature: signature
         }
-        const walletConnectCosigner = new WalletConnectCosigner(projectId)
+        const cosignerService = new CosignerService(projectId)
         const caip10AccountAddress = `eip155:${chainIdNumber}:${userOpWithBigIntAsHex.sender}`
-        const cosignResponse = await walletConnectCosigner.coSignUserOperation(
-          caip10AccountAddress,
-          {
-            pci,
-            userOp: userOpWithBigIntAsHex
-          }
-        )
+        const cosignResponse = await cosignerService.coSignUserOperation(caip10AccountAddress, {
+          pci,
+          userOp: userOpWithBigIntAsHex
+        })
         data.signature = cosignResponse.signature
       }
 

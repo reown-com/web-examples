@@ -291,7 +291,7 @@ function getActionsFromPermissions(
 ): ActionData[] {
   return permissions.reduce((actions: ActionData[], permission) => {
     if (!isContractCallPermission(permission)) {
-      throw new Error(ERROR_MESSAGES.UNSUPPORTED_PERMISSION_TYPE(permission.type))
+      throw new Error(ERROR_MESSAGES.UNSUPPORTED_PERMISSION_TYPE((permission as Permission).type))
     }
 
     const contractCallActions = createActionForContractCall(permission, chainId, expiry)

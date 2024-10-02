@@ -13,7 +13,7 @@ import { smartAccountWallets } from './SmartAccountUtil'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
-function getSmartWalletAddressFromSession(requestSession: SessionTypes.Struct, chainId: string) {
+function getSmartAccountLibFromSession(requestSession: SessionTypes.Struct, chainId: string) {
   const sessionAccounts = requestSession.namespaces['eip155'].accounts.filter(value =>
     value.startsWith(chainId)
   )
@@ -48,7 +48,7 @@ export async function approveEIP7715Request(requestEvent: RequestEventArgs) {
   SettingsStore.setActiveChainId(chainId)
   switch (request.method) {
     case EIP7715_METHOD.WALLET_GRANT_PERMISSIONS: {
-      const wallet = getSmartWalletAddressFromSession(requestSession, chainId)
+      const wallet = getSmartAccountLibFromSession(requestSession, chainId)
       let grantPermissionsRequestParams: WalletGrantPermissionsRequest = request.params[0]
       if (
         wallet instanceof SafeSmartAccountLib
