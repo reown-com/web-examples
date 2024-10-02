@@ -50,7 +50,10 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     })
     this.accountAddress = accountAddress
   }
-  async prepareCalls(params: PrepareCallsParams): Promise<PrepareCallsReturnValue[]> {
+  async prepareCalls(
+    projectId: string,
+    params: PrepareCallsParams
+  ): Promise<PrepareCallsReturnValue> {
     const privateKey = generatePrivateKey()
     const signer = privateKeyToAccount(privateKey)
 
@@ -94,7 +97,6 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       bundlerTransport,
       middleware: {
         sponsorUserOperation: paymasterClient.sponsorUserOperation,
-        // params.capabilities.paymasterService && paymasterClient.sponsorUserOperation, // optional
         gasPrice: async () => (await pimlicoBundlerClient.getUserOperationGasPrice()).fast // if using pimlico bundler
       }
     })
@@ -105,14 +107,12 @@ export class SafeUserOpBuilder implements UserOpBuilder {
     })
 
     const pci = params.capabilities.permissions?.context!
-    const walletConnectCosigner = new WalletConnectCosigner('projectId')
+    const walletConnectCosigner = new WalletConnectCosigner(projectId)
     const caip10AccountAddress = `eip155:${this.chain.id}:${this.accountAddress}`
     const permissionsContext = await walletConnectCosigner.getPermissionsContext(
       caip10AccountAddress,
       { pci }
     )
-    console.log('permissionsContext:', permissionsContext)
-
     let nonce: bigint = await getNonce({
       publicClient: this.publicClient,
       account,
@@ -145,19 +145,17 @@ export class SafeUserOpBuilder implements UserOpBuilder {
       entryPoint: ENTRYPOINT_ADDRESS_V07
     })
 
-    return [
-      {
-        context: params.capabilities.permissions?.context!,
-        preparedCalls: {
-          chainId: toHex(this.chain.id),
-          type: 'user-operation-v07',
-          data: userOp
-        },
-        signatureRequest: {
-          hash: hash
-        }
+    return {
+      context: params.capabilities.permissions?.context!,
+      preparedCalls: {
+        chainId: toHex(this.chain.id),
+        type: 'user-operation-v07',
+        data: userOp
+      },
+      signatureRequest: {
+        hash: hash
       }
-    ]
+    }
   }
 
   async sendPreparedCalls(
@@ -172,17 +170,14 @@ export class SafeUserOpBuilder implements UserOpBuilder {
         throw new Error('Invalid preparedCalls type')
       }
 
-      console.log('userOp:', data)
       //Get PermissionsContext from WalletConnectCosigner given pci
       const pci = context
-      const walletConnectCosigner = new WalletConnectCosigner('projectId')
+      const walletConnectCosigner = new WalletConnectCosigner(projectId)
       const caip10AccountAddress = `eip155:${this.chain.id}:${this.accountAddress}`
       const permissionsContext = await walletConnectCosigner.getPermissionsContext(
         caip10AccountAddress,
         { pci }
       )
-      console.log('permissionsContext:', permissionsContext)
-
       if (pci && projectId) {
         const userOpWithBigIntAsHex: UserOperationWithBigIntAsHex = {
           ...data,
@@ -204,7 +199,6 @@ export class SafeUserOpBuilder implements UserOpBuilder {
           paymasterData: data.paymasterData,
           signature: signature
         }
-        console.log('userOpWithBigIntAsHex:', userOpWithBigIntAsHex)
         const walletConnectCosigner = new WalletConnectCosigner(projectId)
         const caip10AccountAddress = `eip155:${chainIdNumber}:${userOpWithBigIntAsHex.sender}`
         const cosignResponse = await walletConnectCosigner.coSignUserOperation(
@@ -214,7 +208,6 @@ export class SafeUserOpBuilder implements UserOpBuilder {
             userOp: userOpWithBigIntAsHex
           }
         )
-        console.log('cosignResponse:', cosignResponse)
         data.signature = cosignResponse.signature
       }
 
@@ -259,7 +252,7 @@ export class SafeUserOpBuilder implements UserOpBuilder {
         }
       })
 
-      return userOpId
+      return `${toHex(this.chain.id)}:${userOpId}`
     } catch (e) {
       console.log(e)
       throw new Error('Failed to sign user operation with cosigner')
