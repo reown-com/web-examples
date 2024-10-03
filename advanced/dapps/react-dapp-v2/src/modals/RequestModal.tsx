@@ -12,6 +12,9 @@ interface RequestModalProps {
 
 const RequestModal = (props: RequestModalProps) => {
   const { pending, result } = props;
+  if (result) {
+    console.log("Got operation result:", result);
+  }
   return (
     <>
       {pending ? (
@@ -35,7 +38,7 @@ const RequestModal = (props: RequestModalProps) => {
             {Object.keys(result).map((key) => (
               <SRow key={key}>
                 <SKey>{key}</SKey>
-                <SValue>{result[key].toString()}</SValue>
+                <SValue>{result[key]?.toString() ?? "undefined"}</SValue>
               </SRow>
             ))}
           </STable>

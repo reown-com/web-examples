@@ -14,6 +14,7 @@ export interface ChainData {
   rpc: string[];
   slip44: number;
   testnet: boolean;
+  indexer?: string;
 }
 export interface ChainsMap {
   [reference: string]: ChainData;
@@ -152,6 +153,7 @@ export interface ChainNamespaces {
 export interface AccountAction {
   method: string;
   callback: (chainId: string, address: string) => Promise<void>;
+  description?: any;
 }
 
 export interface AccountBalances {

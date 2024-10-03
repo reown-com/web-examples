@@ -50,7 +50,7 @@ export const getSupportedRequiredMethodsByNamespace = (namespace: string) => {
     case "tron":
       return Object.values(DEFAULT_TRON_METHODS);
     case "tezos":
-      return Object.values(DEFAULT_TEZOS_METHODS);
+      return Object.values([DEFAULT_TEZOS_METHODS.GET_ACCOUNTS, DEFAULT_TEZOS_METHODS.SIGN, DEFAULT_TEZOS_METHODS.SEND]);
     case "kadena":
       return Object.values(DEFAULT_KADENA_METHODS);
     default:

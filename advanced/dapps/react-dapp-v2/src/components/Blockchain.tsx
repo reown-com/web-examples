@@ -81,6 +81,16 @@ const SBlockchainChildrenContainer = styled(SFullWidthContainer)`
   flex-direction: column;
 `;
 
+const SPre = styled.div`
+  background-color: #f4f4f4;
+  width: 100%;
+  min-width: 700px;
+  textalign: "left";
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+`;
+
 interface BlockchainProps {
   chainData: ChainNamespaces;
   fetching?: boolean;
@@ -126,6 +136,10 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
     balances,
     actions,
   } = props;
+  const [hoveredDescription, setHoveredDescription] = React.useState<
+    string | null
+  >(null);
+
   if (!Object.keys(chainData).length) return null;
 
   const chain = getBlockchainDisplayData(chainId, chainData);
@@ -139,6 +153,15 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
     typeof account !== "undefined" && typeof balances !== "undefined"
       ? balances[account]
       : [];
+
+  const handleActionHover = (description: string | undefined) => {
+    if (description) {
+      setHoveredDescription(JSON.stringify(description, null, 2));
+    } else {
+      setHoveredDescription(null);
+    }
+  };
+
   return (
     <React.Fragment>
       <SAccount
@@ -181,6 +204,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                       left
                       rgb={chain.meta.rgb}
                       onClick={() => action.callback(chainId, address)}
+                      onMouseEnter={() => handleActionHover(action.description)}
                     >
                       {action.method}
                     </SAction>
@@ -191,7 +215,13 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
           )}
         </SBlockchainChildrenContainer>
       </SAccount>
+      {hoveredDescription && (
+        <SPre>
+          <pre style={{ textAlign: "left" }}>{hoveredDescription}</pre>
+        </SPre>
+      )}
     </React.Fragment>
   );
 };
+
 export default Blockchain;

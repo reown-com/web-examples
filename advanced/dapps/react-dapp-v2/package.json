@@ -5,12 +5,14 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
+    "clean": "rm -rf dist",
     "start": "next start",
     "lint": "next lint",
     "prettier": "prettier --check '**/*.{js,ts,jsx,tsx}'",
     "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
   },
   "dependencies": {
+    "@airgap/beacon-types": "^4.2.2",
     "@celo/wallet-base": "^5.1.1",
     "@ethereumjs/tx": "^3.5.0",
     "@kadena/client": "^0.5.0",
@@ -20,6 +22,8 @@
     "@multiversx/sdk-wallet": "4.2.0",
     "@polkadot/util-crypto": "^10.1.2",
     "@solana/web3.js": "^1.36.0",
+    "@taquito/rpc": "^20.0.1",
+    "@taquito/taquito": "^20.0.1",
     "@walletconnect/encoding": "^1.0.1",
     "@walletconnect/sign-client": "2.16.1",
     "@walletconnect/types": "2.16.1",
@@ -52,14 +56,14 @@
     "@types/pino": "^7.0.5",
     "@types/prop-types": "^15.7.4",
     "@types/qr-image": "^3.2.5",
-    "@types/react": "18.0.15",
-    "@types/react-dom": "18.0.6",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
     "@types/styled-components": "^5.1.25",
     "eslint": "8.21.0",
     "eslint-config-next": "12.2.4",
     "eslint-plugin-package-json": "^0.13.1",
     "jsonc-eslint-parser": "^2.4.0",
     "prettier": "^2.8.8",
-    "typescript": "^4.7.4"
+    "typescript": "^5.5.4"
   }
 }

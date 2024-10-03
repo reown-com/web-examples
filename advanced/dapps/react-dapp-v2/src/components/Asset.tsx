@@ -10,6 +10,7 @@ import { getChainMetadata } from "../chains";
 const xdaiLogo = getChainMetadata("eip155:100").logo;
 const maticLogo = getChainMetadata("eip155:137").logo;
 const kadenaLogo = getChainMetadata("kadena:testnet04").logo;
+const tezosLogo = getChainMetadata("tezos:ghostnet").logo;
 
 const SAsset = styled.div`
   width: 100%;
@@ -48,8 +49,19 @@ function getAssetIcon(asset: AssetData): JSX.Element {
       return <Icon src={maticLogo} />;
     case "kda":
       return <Icon src={kadenaLogo} />;
+    case "xtz":
+      return <Icon src={tezosLogo} />;
     default:
       return <Icon src={"/assets/eth20.svg"} />;
+  }
+}
+
+function getDecimals(asset: AssetData): number {
+  switch (asset?.symbol?.toLowerCase()) {
+    case "xtz":
+      return 6;
+    default:
+      return 18;
   }
 }
 
@@ -67,7 +79,7 @@ const Asset = (props: AssetProps) => {
       </SAssetLeft>
       <SAssetRight>
         <SAssetBalance>
-          {fromWad(asset.balance || "0")} {asset.symbol}
+          {fromWad(asset.balance || "0", getDecimals(asset))} {asset.symbol}
         </SAssetBalance>
       </SAssetRight>
     </SAsset>
