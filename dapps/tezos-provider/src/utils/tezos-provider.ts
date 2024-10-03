@@ -89,8 +89,8 @@ export const TezosChainDataMainnet: ChainData = {
 };
 
 export const TezosChainDataTestnet: ChainData = {
-  name: "Tezos Testnet",
-  id: "tezos:testnet",
+  name: "Tezos Ghostnet",
+  id: "tezos:ghostnet",
   rpc: ["https://rpc.ghostnet.teztnets.com"],
   api: "https://api.ghostnet.tzkt.io/v1",
   slip44: 1729,
@@ -102,7 +102,7 @@ export interface ChainsMap {
 }
 export const TezosChainMap: ChainsMap = {
   "tezos:mainnet": TezosChainDataMainnet,
-  "tezos:testnet": TezosChainDataTestnet,
+  "tezos:ghostnet": TezosChainDataTestnet,
 };
 
 export interface AssetData {
