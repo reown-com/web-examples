@@ -21,10 +21,10 @@ const projectId = import.meta.env.VITE_PROJECT_ID
 
 const rpcMap = {
   'tezos:mainnet': 'https://rpc.tzbeta.net',
-  'tezos:testnet': 'https://rpc.ghostnet.teztnets.com'
+  'tezos:ghostnet': 'https://rpc.ghostnet.teztnets.com'
 }
 
-const chains = ['tezos:mainnet', 'tezos:testnet']
+const chains = ['tezos:mainnet', 'tezos:ghostnet']
 const methods = ['tezos_getAccounts', 'tezos_sign', 'tezos_send']
 
 const App = () => {
@@ -117,8 +117,8 @@ const App = () => {
         setIsConnected(true)
         console.log('Connected successfully. Provider', provider)
 
-        const chainId = await getChainId('tezos:testnet')
-        provider.setDefaultChain(chainId, rpcMap['tezos:testnet'])
+        const chainId = await getChainId('tezos:ghostnet')
+        provider.setDefaultChain(chainId, rpcMap['tezos:ghostnet'])
 
         await getBalance()
       }
@@ -150,16 +150,16 @@ const App = () => {
         let res = null
         switch (kind) {
           case SAMPLE_KINDS.GET_ACCOUNTS:
-            res = await getAccounts(TezosChainData['testnet'].id, provider, address)
+            res = await getAccounts(TezosChainData['ghostnet'].id, provider, address)
             break
           case SAMPLE_KINDS.SIGN:
-            res = await signMessage(TezosChainData['testnet'].id, provider, address)
+            res = await signMessage(TezosChainData['ghostnet'].id, provider, address)
             break
           case SAMPLE_KINDS.SEND_TRANSACTION:
           case SAMPLE_KINDS.SEND_DELEGATION:
           case SAMPLE_KINDS.SEND_UNDELEGATION:
             res = await sendTransaction(
-              TezosChainData['testnet'].id,
+              TezosChainData['ghostnet'].id,
               provider,
               address,
               SAMPLES[kind]
@@ -167,7 +167,7 @@ const App = () => {
             break
           case SAMPLE_KINDS.SEND_ORGINATION:
             res = await sendTransaction(
-              TezosChainData['testnet'].id,
+              TezosChainData['ghostnet'].id,
               provider,
               address,
               SAMPLES[kind]
@@ -175,7 +175,7 @@ const App = () => {
             console.log('TezosRpc origination result: ', res)
             for (let attempt = 0; attempt < 10; attempt++) {
               const contractAddressList = await apiGetContractAddress(
-                TezosChainData['testnet'].id,
+                TezosChainData['ghostnet'].id,
                 res.hash
               )
               if (contractAddressList.length > 0) {
@@ -193,7 +193,7 @@ const App = () => {
             break
           case SAMPLE_KINDS.SEND_CONTRACT_CALL:
           case SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE:
-            res = await sendTransaction(TezosChainData['testnet'].id, provider, address, {
+            res = await sendTransaction(TezosChainData['ghostnet'].id, provider, address, {
               ...SAMPLES[kind],
               destination: contractAddress
             })
@@ -201,7 +201,7 @@ const App = () => {
           case SAMPLE_KINDS.SEND_STAKE:
           case SAMPLE_KINDS.SEND_UNSTAKE:
           case SAMPLE_KINDS.SEND_FINALIZE:
-            res = await sendTransaction(TezosChainData['testnet'].id, provider, address, {
+            res = await sendTransaction(TezosChainData['ghostnet'].id, provider, address, {
               ...SAMPLES[kind],
               destination: address
             })
@@ -223,7 +223,7 @@ const App = () => {
 
   const getBalance = useCallback(async () => {
     if (address) {
-      const balance = await apiGetTezosAccountBalance(address, 'testnet')
+      const balance = await apiGetTezosAccountBalance(address, 'ghostnet')
       setBalance(formatTezosBalance(balance))
     }
   }, [address])

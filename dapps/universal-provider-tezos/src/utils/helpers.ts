@@ -49,9 +49,9 @@ export const TezosChainData: ChainsMap = {
     slip44: 1729,
     testnet: false
   },
-  testnet: {
-    name: 'Tezos Testnet',
-    id: 'tezos:testnet',
+  ghostnet: {
+    name: 'Tezos Ghostnet',
+    id: 'tezos:ghostnet',
     rpc: ['https://rpc.ghostnet.teztnets.com'],
     api: 'https://api.ghostnet.tzkt.io/v1',
     slip44: 1729,
