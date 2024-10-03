@@ -12,7 +12,7 @@ export const TezosMetadata: NamespaceMetadata = {
     logo: "/assets/tezos.svg",
     rgb: "44, 125, 247",
   },
-  testnet: {
+  ghostnet: {
     logo: "/assets/tezos.svg",
     rgb: "44, 125, 247",
   },
@@ -27,9 +27,9 @@ export const TezosChainData: ChainsMap = {
     slip44: 1729,
     testnet: false,
   },
-  testnet: {
-    name: "Tezos Testnet",
-    id: "tezos:testnet",
+  ghostnet: {
+    name: "Tezos Ghostnet",
+    id: "tezos:ghostnet",
     rpc: ["https://rpc.ghostnet.teztnets.com"],
     indexer: "https://api.ghostnet.tzkt.io/v1",
     slip44: 1729,

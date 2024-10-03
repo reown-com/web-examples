@@ -44,7 +44,7 @@ export const DEFAULT_TEST_CHAINS = [
   "near:testnet",
   "mvx:D",
   "tron:0xcd8690dc",
-  "tezos:testnet",
+  "tezos:ghostnet",
   "kadena:testnet04",
 ];
 

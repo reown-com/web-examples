@@ -10,7 +10,7 @@ import { getChainMetadata } from "../chains";
 const xdaiLogo = getChainMetadata("eip155:100").logo;
 const maticLogo = getChainMetadata("eip155:137").logo;
 const kadenaLogo = getChainMetadata("kadena:testnet04").logo;
-const tezosLogo = getChainMetadata("tezos:testnet").logo;
+const tezosLogo = getChainMetadata("tezos:ghostnet").logo;
 
 const SAsset = styled.div`
   width: 100%;
