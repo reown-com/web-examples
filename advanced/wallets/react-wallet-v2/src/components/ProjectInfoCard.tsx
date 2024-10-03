@@ -61,7 +61,7 @@ export default function ProjectInfoCard({ metadata, intention }: IProps) {
         <Col>
           <Text h3 data-testid="session-info-card-text">
             <span>{name}</span> <br />
-            <Text h4> wants to {intention ? intention : 'connect'}</Text>
+            <Text> wants to {intention ? intention : 'connect'}</Text>
           </Text>
         </Col>
       </Row>
