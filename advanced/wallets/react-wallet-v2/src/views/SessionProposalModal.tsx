@@ -372,6 +372,7 @@ export default function SessionProposalModal() {
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
           {smartAccountEnabled &&
             namespaces &&
+            namespaces.eip155 &&
             getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
               (account, i) => {
                 if (!account) {
@@ -406,6 +407,7 @@ export default function SessionProposalModal() {
           </Row>
           {smartAccountEnabled &&
             namespaces &&
+            namespaces.eip155 &&
             getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
               ({ chain }, i) => {
                 if (!chain) {
