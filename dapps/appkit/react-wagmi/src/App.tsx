@@ -55,13 +55,15 @@ const modal = createAppKit({
 export function App() {
 
   return (
-    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-          <w3m-button />
-          <WagmiHooks />
-          <button onClick={() => modal.adapter?.connectionControllerClient?.disconnect()}>Disconnect JS</button>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+        <QueryClientProvider client={queryClient}>
+            <w3m-button />
+            <WagmiHooks />
+            <button onClick={() => modal.adapter?.connectionControllerClient?.disconnect()}>Disconnect JS</button>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </div>
   )
 }
 

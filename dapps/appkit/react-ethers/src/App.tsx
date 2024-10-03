@@ -42,7 +42,7 @@ export function App() {
           <w3m-button />
           <Hooks />
           <p>
-            <button onClick={() => modal.adapter?.connectionControllerClient?.disconnect()}>Disconnect</button>
+            <button onClick={() => modal.adapter?.connectionControllerClient?.disconnect()}>Disconnect JS</button>
           </p>
     </div>
   )
