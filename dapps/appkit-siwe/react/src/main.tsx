@@ -2,11 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { CaipNetwork, createAppKit } from '@reown/appkit/react'
 import { arbitrum, mainnet } from '@reown/appkit/networks'
-import { WagmiAdapter, authConnector } from '@reown/appkit-adapter-wagmi'
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { WagmiProvider } from "wagmi";
-import { walletConnect, coinbaseWallet, injected } from "wagmi/connectors";
-//import type { CaipNetwork, ChainNamespace } from '@reown/appkit-common';
-import type { CreateConnectorFn } from '@wagmi/core'
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
