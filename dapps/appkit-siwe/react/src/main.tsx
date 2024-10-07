@@ -22,7 +22,7 @@ const queryClient = new QueryClient();
 const projectId = import.meta.env.VITE_PROJECT_ID;
 if (!projectId) throw new Error("Project ID is undefined");
 
-// 2. Create wagmiConfig
+// 2. Create metadata
 const metadata = {
   name: "AppKit SIWE",
   description: "AppKit SIWE Example",
@@ -40,11 +40,11 @@ const wagmiAdapter = new WagmiAdapter({
   ssr: true
 });
 
-// 3. Create a SIWE configuration object
+// 5. Create a SIWE configuration object
 const siweConfig = createSIWE(networks);
 
 
-// 4. Create modal
+// 6. Create modal
 createAppKit({ 
     adapters: [wagmiAdapter], 
     networks, 
