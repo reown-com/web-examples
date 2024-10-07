@@ -18,10 +18,10 @@ export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 if (!projectId) throw new Error('Project ID is not defined');
 
 export const metadata = {
-  name: 'Appkit',
+  name: 'Appkit SIWE Example',
   description: 'Appkit Siwe Example - Next.js',
-  url: 'https://web3modal.com', // origin must match your domain & subdomain
-  icons: ['https://avatars.githubusercontent.com/u/37784886'],
+  url: 'https://reown.com', // origin must match your domain & subdomain
+  icons: ["https://avatars.githubusercontent.com/u/179229932"],
 };
 
 // Create wagmiConfig
