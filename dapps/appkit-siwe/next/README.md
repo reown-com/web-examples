@@ -21,6 +21,6 @@ NEXTAUTH_SECRET=<any-random-text>
 
 ## Reference
 
-- https://docs.walletconnect.com/appkit/next/core/siwe
+- https://docs.reown.com/appkit/react/core/siwe
 - https://docs.login.xyz/general-information/siwe-overview/eip-4361
 - https://next-auth.js.org/
