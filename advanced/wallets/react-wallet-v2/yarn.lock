@@ -2077,10 +2077,10 @@
     "@react-types/grid" "^3.2.6"
     "@react-types/shared" "^3.23.1"
 
-"@rhinestone/module-sdk@0.1.16":
-  version "0.1.16"
-  resolved "https://registry.yarnpkg.com/@rhinestone/module-sdk/-/module-sdk-0.1.16.tgz#8bbc5ed193ad4f3656a0ac1aa1f438771734d182"
-  integrity sha512-Cn+JJ/8J6f5rk9ihagCoQ815bqve0YOpPCzkxEIqFzsyVYOuEUrEbX5ED9KJhoyyZSuAk2Ar8yxNGJBlS56RvA==
+"@rhinestone/module-sdk@0.1.18":
+  version "0.1.18"
+  resolved "https://registry.yarnpkg.com/@rhinestone/module-sdk/-/module-sdk-0.1.18.tgz#24bdf5235ccdbf7a595955cf002941243dead862"
+  integrity sha512-mYWB9P1Q7TE++QbkE6+DTBcWZTYykEhdzsyw9O4uUi2CCE/KUFwKfU0PmxjOTLDw4zcUxL8ponAys8avOJOYRg==
   dependencies:
     solady "^0.0.235"
     tslib "^2.7.0"

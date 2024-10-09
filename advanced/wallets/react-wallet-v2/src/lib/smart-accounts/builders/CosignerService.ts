@@ -163,13 +163,17 @@ export class CosignerService {
     address: string,
     getPermissionsContextRequest: GetPermissionsContextRequest
   ): Promise<GetPermissionsContextResponse> {
-    // need to change the method to use POST method and pass pci in the body with url as /{address}/getcontext
-    const url = `${this.baseUrl}/${encodeURIComponent(address)}/${getPermissionsContextRequest.pci}`
-    return await sendCoSignerRequest<never, GetPermissionsContextResponse, { projectId: string }>({
+    // need to change the method to use POST method and pass pci in the body with url as /{address}/getContext
+    const url = `${this.baseUrl}/${encodeURIComponent(address)}/getContext`
+    return await sendCoSignerRequest<
+      never,
+      GetPermissionsContextResponse,
+      { projectId: string; pci: string }
+    >({
       url,
       method: 'GET',
       // request: getPermissionsContextRequest,
-      queryParams: { projectId: this.projectId },
+      queryParams: { projectId: this.projectId, pci: getPermissionsContextRequest.pci },
       headers: { 'Content-Type': 'application/json' }
     })
   }

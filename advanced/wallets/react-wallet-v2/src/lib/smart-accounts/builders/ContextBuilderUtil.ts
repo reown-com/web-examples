@@ -12,20 +12,18 @@ const {
 } = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 import {
   type Hex,
+  PublicClient,
   type WalletClient,
   concat,
-  createPublicClient,
   encodeAbiParameters,
   encodePacked,
   getAbiItem,
-  http,
-  parseAbiParameters,
   toBytes,
   toFunctionSelector,
   toHex
 } from 'viem'
 import { publicKeyToAddress } from 'viem/accounts'
-import { parsePublicKey } from 'webauthn-p256'
+import { parsePublicKey as parsePasskeyPublicKey } from 'webauthn-p256'
 import {
   MultiKeySigner,
   Permission,
@@ -37,37 +35,27 @@ import {
 
 // Constants for error messages
 const ERROR_MESSAGES = {
-  CHAIN_UNDEFINED: 'getContext: Chain is undefined',
-  INVALID_CHAIN_ID: 'getContext: Invalid/Mismatched chainId',
+  CHAIN_UNDEFINED: 'getContext: chain is undefined',
+  MISMATCHED_CHAIN_ID: 'getContext: chain mismatch',
   ACCOUNT_UNDEFINED: 'getContext: Wallet account is undefined',
   CONTRACT_ADDRESS_UNDEFINED: 'Contract address is undefined',
   FUNCTIONS_UNDEFINED: 'Functions is undefined',
+  UNSUPPORTED_SIGNER_TYPE: 'Unsupported signer type',
+  INVALID_SIGNATURE: 'Invalid signature',
   FUNCTION_ABI_NOT_FOUND: (functionName: string) =>
     `Function ABI not found for function: ${functionName}`,
   UNSUPPORTED_KEY_TYPE: (keyType: string) => `Unsupported key type: ${keyType}`,
-  UNSUPPORTED_SIGNER_TYPE: 'Unsupported signer type',
-  INVALID_SIGNATURE: 'Invalid signature',
   UNSUPPORTED_PERMISSION_TYPE: (permissionType: string) =>
     `Unsupported permission type: ${permissionType}. Only 'contract-call' is allowed.`
 }
-
-// Validate inputs for getContext
-async function validateInputs(walletClient: WalletClient, hexChainId: `0x${string}`) {
-  if (!walletClient.chain) throw new Error(ERROR_MESSAGES.CHAIN_UNDEFINED)
-  if (toHex(walletClient.chain.id) !== hexChainId) throw new Error(ERROR_MESSAGES.INVALID_CHAIN_ID)
-  if (!walletClient.account) throw new Error(ERROR_MESSAGES.ACCOUNT_UNDEFINED)
-}
-
-// Parse hex chain ID to number
-function parseChainId(hexChainId: `0x${string}`): number {
-  return parseInt(hexChainId, 16)
-}
+// 32 byte salt for the session
+const SESSION_SALT = toHex(toBytes('1', { size: 32 }))
 
 // Build a ChainSession from given parameters
 function buildChainSession(
   chainId: number,
   session: Session,
-  accountAddress: `0x${string}`,
+  accountAddress: Hex,
   sessionNonce: bigint
 ): ChainSession {
   return {
@@ -84,15 +72,10 @@ function buildChainSession(
 
 // Fetch session data using the WalletClient
 async function fetchSessionData(
-  walletClient: WalletClient,
+  publicClient: PublicClient,
   account: Account,
   session: Session
-): Promise<{ sessionNonce: bigint; sessionDigest: `0x${string}`; permissionId: Hex }> {
-  const publicClient = createPublicClient({
-    chain: walletClient.chain,
-    transport: http()
-  })
-
+): Promise<{ sessionNonce: bigint; sessionDigest: Hex; permissionId: Hex }> {
   const permissionId = (await getPermissionId({ client: publicClient, session })) as Hex
   const sessionNonce = await getSessionNonce({ client: publicClient, account, permissionId })
   const sessionDigest = await getSessionDigest({
@@ -106,38 +89,56 @@ async function fetchSessionData(
   return { sessionNonce, sessionDigest, permissionId }
 }
 
-// Get context for the smart session
+/**
+ *  1. Check if walletClient account is defined,
+ *   Note - currently walletClient account is the smartAccountSigner address not smartAccount
+ *  2. Check if walletClient chain is same as permissions request chain
+ *
+ * @param walletClient
+ * @param param
+ * @returns
+ */
 export async function getContext(
+  publicClient: PublicClient,
   walletClient: WalletClient,
   {
     account,
     grantPermissionsRequest
   }: { account: Account; grantPermissionsRequest: WalletGrantPermissionsRequest }
-): Promise<`0x${string}`> {
-  const { permissions, expiry, signer, chainId: hexChainId } = grantPermissionsRequest
+): Promise<Hex> {
+  if (!walletClient.account) throw new Error(ERROR_MESSAGES.ACCOUNT_UNDEFINED)
 
-  // Validate inputs
-  await validateInputs(walletClient, hexChainId)
+  const { chainId: hexChainId } = grantPermissionsRequest
+  console.log('walletClient.chain:', walletClient.chain)
+  console.log('publicClient.chain:', publicClient.chain)
+  console.log('hexChainId:', hexChainId)
+  if (!walletClient.chain || !publicClient.chain || !hexChainId)
+    throw new Error(ERROR_MESSAGES.CHAIN_UNDEFINED)
+  if (toHex(walletClient.chain.id) !== hexChainId || toHex(publicClient.chain.id) !== hexChainId)
+    throw new Error(ERROR_MESSAGES.MISMATCHED_CHAIN_ID)
 
-  // Parse chain ID and retrieve session
-  const chainId = parseChainId(hexChainId)
   const session: Session = getSmartSession(grantPermissionsRequest)
 
   // Fetch session data
   const { sessionNonce, sessionDigest, permissionId } = await fetchSessionData(
-    walletClient,
+    publicClient,
     account,
     session
   )
 
   // Build chain session and hash it
-  const chainSession = buildChainSession(chainId, session, account.address, sessionNonce)
+  const chainSession = buildChainSession(
+    walletClient.chain.id,
+    session,
+    account.address,
+    sessionNonce
+  )
   const chainSessionHash = hashChainSessions([chainSession])
 
   // Encode chain session hash
   const encodedChainSessionHash = encode1271Hash({
     account,
-    chainId,
+    chainId: walletClient.chain.id,
     validator: account.address,
     hash: chainSessionHash
   })
@@ -160,7 +161,7 @@ export async function getContext(
     enableSessionData: {
       enableSession: {
         chainDigestIndex: 0,
-        hashesAndChainIds: [{ chainId: BigInt(chainId), sessionDigest }],
+        hashesAndChainIds: [{ chainId: BigInt(walletClient.chain.id), sessionDigest }],
         sessionToEnable: session,
         permissionEnableSig: permissionEnableSignature
       },
@@ -169,7 +170,7 @@ export async function getContext(
     }
   })
 
-  // Return the encoded packed data
+  // Return the encoded packed data - this is the permission context which will be used for preparing the calls
   return encodePacked(['address', 'bytes'], [SMART_SESSIONS_ADDRESS, encodedSmartSessionSignature])
 }
 
@@ -202,14 +203,19 @@ const adjustVInSignature = (
   return (signature.slice(0, -2) + signatureV.toString(16)) as Hex
 }
 
-// Get the Smart Session based on the request parameters
+/**
+ * This method transforms the WalletGrantPermissionsRequest into a Session object
+ * The Session object includes permittied actions and policies.
+ * It also includes the Session Validator Address(MultiKeySigner module) and Init Data needed for setting up the module.
+ * @param WalletGrantPermissionsRequest
+ * @returns
+ */
 function getSmartSession({
   chainId,
   expiry,
   permissions,
   signer
 }: WalletGrantPermissionsRequest): Session {
-  const salt = toHex(toBytes('1', { size: 32 }))
   const chainIdNumber = parseInt(chainId, 16)
   const actions = getActionsFromPermissions(permissions, chainIdNumber, expiry)
 
@@ -219,7 +225,7 @@ function getSmartSession({
   return {
     sessionValidator,
     sessionValidatorInitData,
-    salt,
+    salt: SESSION_SALT,
     userOpPolicies: [],
     actions,
     erc7739Policies: {
@@ -229,38 +235,54 @@ function getSmartSession({
   }
 }
 
-// Type Guards for Signers
+// Type Guard for MultiKey Signer
 function isMultiKeySigner(signer: Signer): signer is MultiKeySigner {
   return signer.type === 'keys'
 }
 
-// Process MultiKey Signer
+/**
+ *  This method processes the MultiKeySigner object from the permissions request and returns an array of SignerKeyType and data
+ * @param signer
+ * @returns
+ */
 function processMultiKeySigner(signer: MultiKeySigner): { type: SignerKeyType; data: string }[] {
   return signer.data.keys.map(key => {
-    if (key.type === 'secp256k1') {
-      const eoaAddress = publicKeyToAddress(key.publicKey)
-      return { type: SignerKeyType.SECP256K1, data: eoaAddress }
-    } else if (key.type === 'secp256r1') {
-      const passkeyPublicKey = parsePublicKey(key.publicKey as `0x${string}`)
-      const encodedData = encodeAbiParameters(parseAbiParameters('uint256, uint256'), [
-        passkeyPublicKey.x,
-        passkeyPublicKey.y
-      ])
-      return { type: SignerKeyType.SECP256R1, data: encodedData }
+    switch (key.type) {
+      case 'secp256k1':
+        return {
+          type: SignerKeyType.SECP256K1,
+          data: publicKeyToAddress(key.publicKey)
+        }
+      case 'secp256r1':
+        const { x, y } = parsePasskeyPublicKey(key.publicKey as Hex)
+        return {
+          type: SignerKeyType.SECP256R1,
+          data: encodeAbiParameters([{ type: 'uint256' }, { type: 'uint256' }], [x, y])
+        }
+      default:
+        throw new Error(ERROR_MESSAGES.UNSUPPORTED_KEY_TYPE(key.type))
     }
-    throw new Error(ERROR_MESSAGES.UNSUPPORTED_KEY_TYPE(key.type))
   })
 }
 
-// Get the Session Validator Address and Init Data
-function getSessionValidatorAddress(signer: Signer, chainId: number): `0x${string}` {
+/**
+ *  Get the Session Validator Address, based on signer type in permissions request
+ *  Note - Currently only MultiKeySigner is supported
+ */
+function getSessionValidatorAddress(signer: Signer, chainId: number): Hex {
   if (isMultiKeySigner(signer)) {
     return MULTIKEY_SIGNER_ADDRESSES[chainId]
   }
   throw new Error(ERROR_MESSAGES.UNSUPPORTED_SIGNER_TYPE)
 }
 
-// Get the Session Validator Init Data
+/**
+ *  Get the Session Validator Init Data, based on signer type in permissions request
+ *  Note - Currently only MultiKeySigner is supported
+ *  This method return the init data in a format which can be used to initialize the MultiKeySigner module
+ * @param signer
+ * @returns
+ */
 function getSessionValidatorInitData(signer: Signer): Hex {
   if (isMultiKeySigner(signer)) {
     const processedSigners = processMultiKeySigner(signer)
@@ -269,7 +291,11 @@ function getSessionValidatorInitData(signer: Signer): Hex {
   throw new Error(ERROR_MESSAGES.UNSUPPORTED_SIGNER_TYPE)
 }
 
-// Encode MultiKey Signers Init Data
+/**
+ * This method encodes the signers array into a format which can be used to initialize the MultiKeySigner module
+ * @param signers
+ * @returns
+ */
 function encodeMultiKeySignersInitData(signers: { type: SignerKeyType; data: string }[]): Hex {
   return signers.reduce(
     (encoded, signer) =>
@@ -283,7 +309,18 @@ function isContractCallPermission(permission: Permission): permission is Contrac
   return permission.type === 'contract-call'
 }
 
-// Create Actions from Permissions
+/**
+ *  This method processes the permissions array from the permissions request and returns the actions array
+ *  Note - Currently only 'contract-call' permission type is supported
+ *       - For each contract-call permission, it creates an action for each function in the permission
+ *       - It also adds the TIME_FRAME_POLICY for each action as the actionPolicy
+ *        - The expiry time indicated in the permissions request is used as the expiry time for the actions
+ *        - Function Arguments are not supported in this version
+ * @param permissions - Permissions array from the permissions request
+ * @param chainId - Chain ID on which the actions are to be performed
+ * @param expiry - Expiry time for the actions
+ * @returns
+ */
 function getActionsFromPermissions(
   permissions: Permission[],
   chainId: number,
@@ -291,7 +328,7 @@ function getActionsFromPermissions(
 ): ActionData[] {
   return permissions.reduce((actions: ActionData[], permission) => {
     if (!isContractCallPermission(permission)) {
-      throw new Error(ERROR_MESSAGES.UNSUPPORTED_PERMISSION_TYPE((permission as Permission).type))
+      throw new Error(ERROR_MESSAGES.UNSUPPORTED_PERMISSION_TYPE(JSON.stringify(permission)))
     }
 
     const contractCallActions = createActionForContractCall(permission, chainId, expiry)
@@ -329,7 +366,7 @@ function createActionForContractCall(
       actionPolicies: [
         {
           policy: TIME_FRAME_POLICY_ADDRESSES[chainId],
-          initData: encodePacked(['uint128', 'uint128'], [BigInt(expiry), BigInt(0)]) // hardcoded for demo
+          initData: encodePacked(['uint128', 'uint128'], [BigInt(expiry), BigInt(0)])
         }
       ]
     }
