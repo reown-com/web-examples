@@ -9,10 +9,10 @@ import { WagmiAdapter, authConnector } from '@reown/appkit-adapter-wagmi'
 import { getCsrfToken, getSession, signIn, signOut } from 'next-auth/react';
 
 import { cookieStorage, createStorage } from 'wagmi';
-import { arbitrum, mainnet, sepolia, optimism } from '@reown/appkit/networks'
+import { arbitrum, mainnet, sepolia, optimism, AppKitNetwork } from '@reown/appkit/networks'
 import { CaipNetwork } from '@reown/appkit';
 
-// Get projectId from https://cloud.walletconnect.com
+// Get projectId from https://cloud.reown.com
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
 if (!projectId) throw new Error('Project ID is not defined');
@@ -25,7 +25,7 @@ export const metadata = {
 };
 
 // Create wagmiConfig
-export const chains: CaipNetwork[] = [mainnet, optimism, arbitrum, sepolia];
+export const chains: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, optimism, arbitrum, sepolia];
 
 // 4. Create Wagmi Adapter
 export const wagmiAdapter = new WagmiAdapter({
@@ -38,7 +38,7 @@ export const siweConfig = createSIWEConfig({
   getMessageParams: async () => ({
     domain: typeof window !== 'undefined' ? window.location.host : '',
     uri: typeof window !== 'undefined' ? window.location.origin : '',
-    chains: chains.map((chain: CaipNetwork) => parseInt(chain.id.split(':')[1])),
+    chains: chains.map((chain: AppKitNetwork) => parseInt(chain.id.toString())),
     statement: 'Please sign with your account',
   }),
   createMessage: ({ address, ...args }: SIWECreateMessageArgs) =>

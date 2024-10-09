@@ -4,7 +4,7 @@ A Minimal demo using React so developers can work on their integration with Wall
 
 1. Install dependencies in the frontend: `pnpm install`
 
-2. Create and complete the .env.local file with your Project Id from http://cloud.walletconnect.com
+2. Create and complete the .env.local file with your Project Id from http://cloud.reown.com
 
 ```
 VITE_PROJECT_ID=...

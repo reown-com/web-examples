@@ -1,4 +1,4 @@
-import { CaipNetwork } from '@reown/appkit';
+import { AppKitNetwork } from '@reown/appkit/networks'
 import {
     type SIWESession,
     type SIWEVerifyMessageArgs,
@@ -80,14 +80,14 @@ const signOut =  async (): Promise<boolean> => {
   return data == "{}";
 } 
 
-export const createSIWE = (chains: CaipNetwork[]) => {
+export const createSIWE = (chains: [AppKitNetwork, ...AppKitNetwork[]]) => {
     return createSIWEConfig({
       signOutOnAccountChange: true,
       signOutOnNetworkChange: true,
         getMessageParams: async () => ({
               domain: window.location.host,
               uri: window.location.origin, 
-              chains: chains.map((chain: CaipNetwork) => parseInt(chain.id.split(':')[1])),
+              chains: chains.map((chain: AppKitNetwork) => parseInt(chain.id.toString())),
               statement: 'Please sign with your account',
             }),
         createMessage: ({ address, ...args }: SIWECreateMessageArgs) => {

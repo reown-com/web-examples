@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { CaipNetwork, createAppKit } from '@reown/appkit/react'
-import { arbitrum, mainnet } from '@reown/appkit/networks'
+import { createAppKit } from '@reown/appkit/react'
+import { arbitrum, mainnet, AppKitNetwork } from '@reown/appkit/networks'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { WagmiProvider } from "wagmi";
 
@@ -15,7 +15,7 @@ import "./styles.css"
 // 0. Setup queryClient
 const queryClient = new QueryClient();
 
-// 1. Get projectId at https://cloud.walletconnect.com
+// 1. Get projectId at https://cloud.reown.com
 const projectId = import.meta.env.VITE_PROJECT_ID;
 if (!projectId) throw new Error("Project ID is undefined");
 
@@ -28,23 +28,23 @@ const metadata = {
 };
 
 // 3. Set the networks
-const networks: CaipNetwork[] = [mainnet, arbitrum];
+export const chains: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, arbitrum];
 
 // 4. Create Wagmi Adapter
 const wagmiAdapter = new WagmiAdapter({
-  networks,
+  networks: chains,
   projectId,
   ssr: true
 });
 
 // 5. Create a SIWE configuration object
-const siweConfig = createSIWE(networks);
+const siweConfig = createSIWE(chains);
 
 
 // 6. Create modal
 createAppKit({ 
     adapters: [wagmiAdapter], 
-    networks, 
+    networks: chains, 
     projectId, 
     siweConfig, 
     metadata,
