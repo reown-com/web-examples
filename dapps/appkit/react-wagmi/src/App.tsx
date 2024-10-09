@@ -1,23 +1,12 @@
 import { createAppKit } from '@reown/appkit/react'
 
 import { WagmiProvider } from 'wagmi'
-import { arbitrum, mainnet } from '@reown/appkit/networks'
+import { arbitrum, mainnet, polygon, acala, chiliz, berachainTestnetbArtio, AppKitNetwork, sepolia } from '@reown/appkit/networks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { WagmiHooks } from './components/hooks'
 
 import "./App.css"
-
-// add a Custom Chain
-const chiliz = {
-  id: 'eip155:88888',
-  chainId: 88_888,
-  name: 'Chiliz Chain',
-  currency: 'CHZ',
-  explorerUrl: 'https://scan.chiliz.com',
-  rpcUrl: "https://rpc.ankr.com/chiliz",
-  chainNamespace: 'eip155'
-} as const
 
 
 // 0. Setup queryClient
@@ -37,10 +26,12 @@ const metadata = {
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 }
 
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [arbitrum, mainnet, polygon, acala, chiliz, berachainTestnetbArtio, sepolia];
+
 const generalConfig = {
   projectId,
   metadata,
-  networks: [arbitrum, mainnet, chiliz],
+  networks
 }
 
 // 3. Create Wagmi Adapter
@@ -61,6 +52,7 @@ export function App() {
             <w3m-button />
             <WagmiHooks />
             <button onClick={() => modal.adapter?.connectionControllerClient?.disconnect()}>Disconnect JS</button>
+
         </QueryClientProvider>
       </WagmiProvider>
     </div>

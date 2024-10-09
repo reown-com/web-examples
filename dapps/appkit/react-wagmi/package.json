@@ -10,9 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@reown/appkit": "^1.0.7",
-    "@reown/appkit-adapter-wagmi": "^1.0.7",
-    "@reown/appkit-wagmi": "^1.0.7",
+    "@reown/appkit": "^1.1.0",
+    "@reown/appkit-adapter-wagmi": "^1.1.0",
     "@tanstack/react-query": "^5.56.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
