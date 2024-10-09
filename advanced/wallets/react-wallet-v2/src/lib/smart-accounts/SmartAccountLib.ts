@@ -6,7 +6,8 @@ import {
   http,
   createClient,
   HttpTransport,
-  Address
+  Address,
+  Chain
 } from 'viem'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -32,7 +33,6 @@ import {
   publicRPCUrl,
   UrlConfig
 } from '@/utils/SmartAccountUtil'
-import { Chain } from '@/consts/smartAccounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 import { Erc7579Actions, erc7579Actions } from 'permissionless/actions/erc7579'
 import { SmartAccount } from 'permissionless/accounts'
@@ -120,8 +120,9 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     })
 
     this.publicClient = createPublicClient({
+      chain: this.chain,
       transport: http(publicClientUrl({ chain: this.chain }))
-    }).extend(bundlerActions(this.entryPoint))
+    })
 
     this.paymasterClient = createPimlicoPaymasterClient({
       transport: this.paymasterUrl,

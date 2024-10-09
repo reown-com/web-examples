@@ -1,5 +1,3 @@
-import { Address } from 'viem'
-
 /**
  * EIP7715Method
  */
@@ -7,76 +5,92 @@ export const EIP7715_METHOD = {
   WALLET_GRANT_PERMISSIONS: 'wallet_grantPermissions'
 }
 
-// `data` is not necessary for this signer type as the wallet is both the signer and grantor of these permissions
-export type WalletSigner = {
-  type: 'wallet'
-  data: {}
+export type Signer = MultiKeySigner
+export type KeyType = 'secp256k1' | 'secp256r1'
+// The types of keys that are supported for the following `key` and `keys` signer types.
+export enum SignerKeyType {
+  SECP256K1 = 0, // EOA - k1
+  SECP256R1 = 1 // Passkey - r1
 }
-
-// A signer representing a single key.
-// `id` is a did:key identifier and can therefore represent both Secp256k1 or Secp256r1 keys, among other key types.
-export type KeySigner = {
-  type: 'key'
-  data: {
-    id: string
-  }
-}
-
-// A signer representing a multisig signer.
-// Each element of `ids` is a did:key identifier just like the `key` signer.
+/*
+ * A signer representing a multisig signer.
+ * Each element of `publicKeys` are all explicitly the same `KeyType`, and the public keys are hex-encoded.
+ */
 export type MultiKeySigner = {
   type: 'keys'
   data: {
-    ids: string[]
-    address?: Address
+    keys: {
+      type: KeyType
+      publicKey: `0x${string}`
+    }[]
   }
 }
 
-// An account that can be granted with permissions as in ERC-7710.
-export type AccountSigner = {
-  type: 'account'
-  data: {
-    id: `0x${string}`
-  }
-}
-
-export enum SignerType {
-  EOA,
-  PASSKEY
-}
-
-export type Signer = {
-  type: SignerType
-  data: string
-}
-
-export type Permission = {
-  type: PermissionType
-  policies: Policy[]
-  required: boolean
-  data: any
-}
 export type Policy = {
-  type: PolicyType
-  data: any
+  type: string
+  data: Record<string, unknown>
 }
-export type PermissionType =
-  | 'native-token-transfer'
-  | 'erc20-token-transfer'
-  | 'erc721-token-transfer'
-  | 'erc1155-token-transfer'
-  | {
-      custom: any
-    }
-export type PolicyType =
-  | 'gas-limit'
-  | 'call-limit'
-  | 'rate-limit'
-  | 'spent-limit'
-  | 'value-limit'
-  | 'time-frame'
-  | 'uni-action'
-  | 'simpler-signer'
-  | {
-      custom: any
-    }
+// Enum for parameter operators
+enum ParamOperator {
+  EQUAL = 'EQUAL',
+  GREATER_THAN = 'GREATER_THAN',
+  LESS_THAN = 'LESS_THAN'
+  // Add other operators as needed
+}
+
+// Enum for operation types
+enum Operation {
+  Call = 'Call',
+  DelegateCall = 'DelegateCall'
+}
+
+// Type for a single argument condition
+type ArgumentCondition = {
+  operator: ParamOperator
+  value: any // You might want to be more specific based on your use case
+}
+
+// Type for a single function permission
+type FunctionPermission = {
+  functionName: string // Function name
+  args: ArgumentCondition[] // An array of conditions, each corresponding to an argument for the function
+  valueLimit: bigint // Maximum value that can be transferred for this specific function call
+  operation?: Operation // (optional) whether this is a call or a delegatecall. Defaults to call
+}
+export type ContractCallPermission = {
+  type: 'contract-call'
+  data: {
+    address: `0x${string}`
+    abi: Record<string, unknown>[]
+    functions: FunctionPermission[]
+  }
+}
+
+// Union type for all possible permissions
+export type Permission = ContractCallPermission
+
+export type WalletGrantPermissionsRequest = {
+  chainId: `0x${string}`
+  address?: `0x${string}`
+  expiry: number
+  signer: Signer
+  permissions: Permission[]
+  policies: {
+    type: string
+    data: Record<string, unknown>
+  }[]
+}
+
+export type WalletGrantPermissionsResponse = WalletGrantPermissionsRequest & {
+  context: `0x${string}`
+  accountMeta?: {
+    factory: `0x${string}`
+    factoryData: `0x${string}`
+  }
+  signerMeta?: {
+    // 7679 userOp building
+    userOpBuilder?: `0x${string}`
+    // 7710 delegation
+    delegationManager?: `0x${string}`
+  }
+}
