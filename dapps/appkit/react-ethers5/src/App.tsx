@@ -1,6 +1,8 @@
 import { createAppKit } from '@reown/appkit/react'
 import { Ethers5Adapter } from '@reown/appkit-adapter-ethers5'
-import { mainnet, arbitrum } from '@reown/appkit/networks'
+
+// for custom networks visit -> https://docs.reown.com/appkit/react/core/custom-networks
+import { arbitrum, mainnet, polygon, acala, chiliz, berachainTestnetbArtio, AppKitNetwork, sepolia } from '@reown/appkit/networks'
 
 import { Hooks } from './components/hooks'
 
@@ -21,7 +23,7 @@ const metadata = {
 }
 
 // 3. Set the networks
-const networks = [arbitrum, mainnet]
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [arbitrum, mainnet, polygon, acala, chiliz, berachainTestnetbArtio, sepolia];
 
 
 // 4. Create a AppKit instance

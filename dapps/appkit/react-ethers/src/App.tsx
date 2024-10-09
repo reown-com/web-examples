@@ -1,7 +1,8 @@
 import { createAppKit } from '@reown/appkit/react'
 import { EthersAdapter } from '@reown/appkit-adapter-ethers'
-import { arbitrum, mainnet } from '@reown/appkit/networks'
 
+// for custom networks visit -> https://docs.reown.com/appkit/react/core/custom-networks
+import { arbitrum, mainnet, polygon, acala, chiliz, berachainTestnetbArtio, AppKitNetwork, sepolia } from '@reown/appkit/networks'
 import { Hooks } from './components/hooks'
 
 import "./App.css"
@@ -21,7 +22,7 @@ const metadata = {
 }
 
 // 3. Set the networks
-const networks = [arbitrum, mainnet]
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [arbitrum, mainnet];
 
 
 // 4. Create a AppKit instance
@@ -42,7 +43,7 @@ export function App() {
           <w3m-button />
           <Hooks />
           <p>
-            <button onClick={() => modal.adapter?.connectionControllerClient?.disconnect()}>Disconnect JS</button>
+            <button onClick={() => modal.adapters![0].connectionControllerClient?.disconnect()}>Disconnect JS</button>
           </p>
     </div>
   )
