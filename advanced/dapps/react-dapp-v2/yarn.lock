@@ -3693,10 +3693,10 @@
     "@typescript-eslint/types" "5.59.7"
     eslint-visitor-keys "^3.3.0"
 
-"@walletconnect/core@2.17.1-rc-0":
-  version "2.17.1-rc-0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.17.1-rc-0.tgz#7e55acb738c455caa224ea38cba58083ecc2898b"
-  integrity sha512-2oPH52xobodV7cUPYy5dPfLowiEnCFIsT98VcUuOomgZruk+9uAuKfT3aBGnPX+VSbK88kaQXWcV2Jq6VEXWiw==
+"@walletconnect/core@2.17.1-canary-0":
+  version "2.17.1-canary-0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.17.1-canary-0.tgz#3aac8d7eb1c7f030770387b5165c2c6a75d116b3"
+  integrity sha512-hGp2N0FhhvBivCrN9t6AaRb86znlENUvyYn0olWnopNyGZ8qRgBILUpLOa0fUZwOG5RLBCy8RcHNDogfPF9Xgg==
   dependencies:
     "@walletconnect/heartbeat" "1.2.2"
     "@walletconnect/jsonrpc-provider" "1.0.14"
@@ -3709,8 +3709,8 @@
     "@walletconnect/relay-auth" "1.0.4"
     "@walletconnect/safe-json" "1.0.2"
     "@walletconnect/time" "1.0.2"
-    "@walletconnect/types" "2.17.1-rc-0"
-    "@walletconnect/utils" "2.17.1-rc-0"
+    "@walletconnect/types" "2.17.1-canary-0"
+    "@walletconnect/utils" "2.17.1-canary-0"
     "@walletconnect/window-getters" "1.0.1"
     events "3.3.0"
     lodash.isequal "4.5.0"
@@ -3911,19 +3911,19 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/sign-client@2.17.1-rc-0":
-  version "2.17.1-rc-0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.17.1-rc-0.tgz#6c2913e2f89952f3d632b4278b5b084c75edf5bc"
-  integrity sha512-lJcfjCXAMarG9n5cl1Y/rI1ddHu8zA4+QSZ2HbBEQircnaKppha88Rt2fuRQC9StX5LW3YBMHbjEmtMiJz6F5w==
+"@walletconnect/sign-client@2.17.1-canary-0":
+  version "2.17.1-canary-0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.17.1-canary-0.tgz#4a9f9080fea3fe3ae7d02d38667bb20b9039f042"
+  integrity sha512-JwyUaKcP5OBbTwPyq715a0Eex61iTFLZaet0timm+RTyoWBio9Msb7lYS8PSPBo7m0zJz8csp6Zy18nYj5WB+A==
   dependencies:
-    "@walletconnect/core" "2.17.1-rc-0"
+    "@walletconnect/core" "2.17.1-canary-0"
     "@walletconnect/events" "1.0.1"
     "@walletconnect/heartbeat" "1.2.2"
     "@walletconnect/jsonrpc-utils" "1.0.8"
     "@walletconnect/logger" "2.1.2"
     "@walletconnect/time" "1.0.2"
-    "@walletconnect/types" "2.17.1-rc-0"
-    "@walletconnect/utils" "2.17.1-rc-0"
+    "@walletconnect/types" "2.17.1-canary-0"
+    "@walletconnect/utils" "2.17.1-canary-0"
     events "3.3.0"
 
 "@walletconnect/sign-client@~2.8.1":
@@ -3948,10 +3948,10 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/types@2.17.1-rc-0":
-  version "2.17.1-rc-0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.17.1-rc-0.tgz#505df6e6b7df35d9c392b685b74712c2db72d773"
-  integrity sha512-EiYG8oO8ibTaAVcim/HUOj2tcGJXelkYnqLWlD+SDFu9LLyxfurzedDXjx56P3d4Olj/HXeQ53PsT2foEMYTcg==
+"@walletconnect/types@2.17.1-canary-0":
+  version "2.17.1-canary-0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.17.1-canary-0.tgz#46baee5da5719fe286e479f7f7e7f9faa85688ac"
+  integrity sha512-peratuL5G5OBgYTYT4bFU2n1qqFvyR72uSWOgiR8YyhAvSrCEaBknuP7FQ0Ey6UneG9qgwoGF7KpH8dBWse/lA==
   dependencies:
     "@walletconnect/events" "1.0.1"
     "@walletconnect/heartbeat" "1.2.2"
@@ -3972,10 +3972,10 @@
     "@walletconnect/logger" "^2.0.1"
     events "^3.3.0"
 
-"@walletconnect/utils@2.17.1-rc-0":
-  version "2.17.1-rc-0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.17.1-rc-0.tgz#415610fde3ce6e0752783a430993d00519c9377f"
-  integrity sha512-d9olbsET5eTQ0snrLS8yASHzftielGXRL+LbdXvqJd/aSTvrGT98nskhXSePG0jgMaTsZOMgUFELiJbY7BguPw==
+"@walletconnect/utils@2.17.1-canary-0":
+  version "2.17.1-canary-0"
+  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.17.1-canary-0.tgz#d00422f74e618785fb4b300478dd2e55e81a0d88"
+  integrity sha512-yNKNkDJYyfGYe9MLNSHoywJ1MsTp7demTRATYthFRfE+BeWRX+nJyQQfYLwezjTpLVYTQRBwc+YYHx8iGbx3Ow==
   dependencies:
     "@ethersproject/hash" "5.7.0"
     "@ethersproject/transactions" "5.7.0"
@@ -3990,7 +3990,7 @@
     "@walletconnect/relay-auth" "1.0.4"
     "@walletconnect/safe-json" "1.0.2"
     "@walletconnect/time" "1.0.2"
-    "@walletconnect/types" "2.17.1-rc-0"
+    "@walletconnect/types" "2.17.1-canary-0"
     "@walletconnect/window-getters" "1.0.1"
     "@walletconnect/window-metadata" "1.0.1"
     detect-browser "5.3.0"
