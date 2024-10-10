@@ -16,7 +16,7 @@ import { FieldProps } from "./DCAForm";
 const ForwardedSelect = React.forwardRef<
   never, // Select does not accept ref prop
   React.ComponentPropsWithoutRef<typeof Select>
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
 >((props, _ref) => <Select {...props} />);
 ForwardedSelect.displayName = "ForwardedSelect";
 

@@ -31,8 +31,7 @@ export default function DCA() {
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           </TabsList>
           <TabsContent value="dca">
-            <DCAForm
-            />
+            <DCAForm />
           </TabsContent>
           <TabsContent value="dashboard">
             <Dashboard />

@@ -47,7 +47,10 @@ function DCAForm() {
   const { address, status } = useAppKitAccount();
   const { createNewDCAStrategy } = useDCA();
   const [isLoading, setLoading] = React.useState(false);
-  const isSupported = useMemo(() => isSmartSessionSupported(), [status,address])
+  const isSupported = useMemo(
+    () => isSmartSessionSupported(),
+    [status, address],
+  );
 
   const isWalletConnecting =
     status === "connecting" || status === "reconnecting";
@@ -107,13 +110,13 @@ function DCAForm() {
             <Button className="w-full bg-blue-500 hover:bg-blue-700" disabled>
               Reconnecting Wallet...
             </Button>
-          ) : status !== 'connected' && !address ? (
+          ) : status !== "connected" && !address ? (
             <ConnectWalletButton />
-          ) : !isSupported ?(
+          ) : !isSupported ? (
             <Button className="w-full bg-blue-500 hover:bg-blue-700" disabled>
               Unsupported Wallet
             </Button>
-          ): (
+          ) : (
             <Button
               type="submit"
               className="w-full bg-blue-500 hover:bg-blue-700"
