@@ -13,14 +13,12 @@ import { getChain } from "@/utils/ChainsUtil";
 const validateRequestInputs = (
   strategy: DCAFormSchemaType,
   permissions: SmartSessionGrantPermissionsResponse,
-  pci: string,
   privateKey: string | undefined,
 ) => {
   if (!privateKey) throw new Error("No application signer");
   if (!strategy) throw new Error("No strategy provided");
   if (!permissions || !permissions.context || !permissions.address)
     throw new Error("No permissions provided");
-  if (!pci) throw new Error("No PCI provided");
 };
 
 // Helper function to validate chain ID and get chain object
@@ -48,17 +46,15 @@ export async function POST(request: Request) {
     const {
       strategy,
       permissions,
-      pci,
     }: {
       strategy: DCAFormSchemaType;
       permissions: SmartSessionGrantPermissionsResponse;
-      pci: string;
     } = await request.json();
     const APPLICATION_PRIVATE_KEY = process.env
       .APPLICATION_PRIVATE_KEY as `0x${string}`;
-
     // Validate inputs and get chain
-    validateRequestInputs(strategy, permissions, pci, APPLICATION_PRIVATE_KEY);
+    validateRequestInputs(strategy, permissions, APPLICATION_PRIVATE_KEY);
+
     const chain = getValidatedChain(permissions.chainId);
 
     // Create purchase call data
@@ -70,6 +66,7 @@ export async function POST(request: Request) {
         data: purchaseDonutCallData,
       },
     ];
+    console.log("Received request:", { strategy, permissions });
 
     // Execute the actions using ECDSA key
     await executeActionsWithECDSAKey({

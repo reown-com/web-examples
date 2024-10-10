@@ -54,7 +54,6 @@ export function DCAExecutionProgress({
           body: JSON.stringify({
             strategy,
             permissions: smartSession?.grantedPermissions,
-            pci: smartSession?.grantedPermissions?.context,
           }),
         });
       } catch (error) {

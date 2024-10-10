@@ -6,8 +6,8 @@ import Dashboard from "@/components/DcaComponents/Dashboard";
 import { useAppKitAccount } from "@reown/appkit/react";
 
 export default function DCA() {
-  const { address, status } = useAppKitAccount();
-  console.log({ status, address });
+  const { status, address } = useAppKitAccount();
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-100 dark:bg-gray-900">
       <div className="w-full max-w-sm text-center mb-12">
@@ -32,7 +32,6 @@ export default function DCA() {
           </TabsList>
           <TabsContent value="dca">
             <DCAForm
-              walletConnected={status === "connected" || address != undefined}
             />
           </TabsContent>
           <TabsContent value="dashboard">

@@ -14,9 +14,10 @@ import { assetsToAllocate } from "@/utils/DCAUtils";
 import { FieldProps } from "./DCAForm";
 
 const ForwardedSelect = React.forwardRef<
-  HTMLButtonElement,
+  never, // Select does not accept ref prop
   React.ComponentPropsWithoutRef<typeof Select>
->((props) => <Select {...props} />);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+>((props, _ref) => <Select {...props} />);
 ForwardedSelect.displayName = "ForwardedSelect";
 
 const ForwardedInput = React.forwardRef<

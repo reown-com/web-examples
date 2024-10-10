@@ -2,14 +2,7 @@ import React from "react";
 import { Controller } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { FieldProps } from "./DCAForm";
-
-const ForwardedSelect = React.forwardRef<
-  never, // Select does not accept ref prop
-  React.ComponentPropsWithoutRef<typeof Select>
->((props) => <Select {...props} />);
-ForwardedSelect.displayName = "ForwardedSelect";
 
 // Forward ref correctly for Input, since it accepts ref prop
 const ForwardedInput = React.forwardRef<

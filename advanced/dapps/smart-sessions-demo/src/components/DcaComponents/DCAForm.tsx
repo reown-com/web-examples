@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useForm, Control, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { dcaFormSchema, DCAFormSchemaType } from "@/schema/DCAFormSchema";
@@ -21,13 +21,14 @@ import AssetAllocationField from "./AssetAllocationField";
 import AssetToBuyField from "./AssetToBuyField";
 import InvestmentIntervalField from "./InvestmentIntervalField";
 import NumberOfOrdersField from "./NumberOfOrdersField";
+import { isSmartSessionSupported } from "@reown/appkit-experimental/smart-session";
 
 export interface FieldProps {
   control: Control<DCAFormSchemaType>;
   errors: FieldErrors<DCAFormSchemaType>;
 }
 
-function DCAForm({ walletConnected }: { walletConnected: boolean }) {
+function DCAForm() {
   const {
     control,
     handleSubmit,
@@ -38,11 +39,15 @@ function DCAForm({ walletConnected }: { walletConnected: boolean }) {
       assetToAllocate: "eth",
       assetToBuy: "donut",
       intervalUnit: "minute",
+      allocationAmount: 0,
+      investmentInterval: 0,
+      numberOfOrders: 0,
     },
   });
-  const { status } = useAppKitAccount();
+  const { address, status } = useAppKitAccount();
   const { createNewDCAStrategy } = useDCA();
   const [isLoading, setLoading] = React.useState(false);
+  const isSupported = useMemo(() => isSmartSessionSupported(), [status,address])
 
   const isWalletConnecting =
     status === "connecting" || status === "reconnecting";
@@ -102,9 +107,13 @@ function DCAForm({ walletConnected }: { walletConnected: boolean }) {
             <Button className="w-full bg-blue-500 hover:bg-blue-700" disabled>
               Reconnecting Wallet...
             </Button>
-          ) : !walletConnected ? (
+          ) : status !== 'connected' && !address ? (
             <ConnectWalletButton />
-          ) : (
+          ) : !isSupported ?(
+            <Button className="w-full bg-blue-500 hover:bg-blue-700" disabled>
+              Unsupported Wallet
+            </Button>
+          ): (
             <Button
               type="submit"
               className="w-full bg-blue-500 hover:bg-blue-700"
