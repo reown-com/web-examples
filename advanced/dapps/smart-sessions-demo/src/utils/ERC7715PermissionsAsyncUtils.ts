@@ -19,7 +19,7 @@ export async function executeActionsWithECDSAKey(args: {
   chain: Chain;
   accountAddress: `0x${string}`;
   permissionsContext: string;
-}): Promise<string[]> {
+}): Promise<string> {
   const {
     ecdsaPrivateKey,
     actions,
@@ -59,11 +59,13 @@ export async function executeActionsWithECDSAKey(args: {
     message: { raw: signatureRequest.hash },
   });
 
-  const sendUserOpResponse = await sendPreparedCalls({
+  const sendPreparedCallsResponse = await sendPreparedCalls({
     context: response.context,
     preparedCalls: response.preparedCalls,
     signature: dappSignature,
   });
 
-  return sendUserOpResponse;
+  const userOpIdentifier = sendPreparedCallsResponse[0];
+
+  return userOpIdentifier;
 }

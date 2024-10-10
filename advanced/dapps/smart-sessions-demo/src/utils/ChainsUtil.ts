@@ -4,7 +4,7 @@ if (!process.env["NEXT_PUBLIC_PROJECT_ID"]) {
   throw new Error("NEXT_PUBLIC_PROJECT_ID is required");
 }
 
-function getBlockchainApiRpcUrl(chainId: number) {
+export function getBlockchainApiRpcUrl(chainId: number) {
   return `https://rpc.walletconnect.org/v1/?chainId=eip155:${chainId}&projectId=${process.env["NEXT_PUBLIC_PROJECT_ID"]}`;
 }
 

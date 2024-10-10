@@ -11,4 +11,9 @@ export const smartSessionsDemoAppMetadata: DemoAppMetadata[] = [
     link: "/demo/dca",
     description: "Dollar Cost Averaging Dapp Demo",
   },
+  {
+    title: "TicTacToe",
+    link: "/demo/tictactoe",
+    description: "Play TicTacToe",
+  },
 ];

@@ -2,10 +2,9 @@
 import { bigIntReplacer } from "./CommonUtils";
 
 export const LAST_USED_ADDRESS_KEY = "lastUsedAddress";
-export const GRANTED_PERMISSIONS_KEY = "grantedPermissions";
-export const SMART_SESSION_KEY = "smart-session";
 export const DCA_APP_DATA = "dca";
-export const DCA_STRATERGIES = "dcaStrategies";
+export const TICTACTOE_APP_DATA = "tictactoe";
+
 /**
  * Sets an item in the local storage.
  * @param key - The key to set the item with.
