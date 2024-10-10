@@ -35,7 +35,6 @@ createAppKit({
   termsConditionsUrl: "https://reown.com/terms-of-service",
   privacyPolicyUrl: "https://reown.com/privacy-policy",
 });
-console.log("here");
 
 export default function DCAPage() {
   return (
