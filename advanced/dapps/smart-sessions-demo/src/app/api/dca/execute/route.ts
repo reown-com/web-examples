@@ -66,8 +66,6 @@ export async function POST(request: Request) {
         data: purchaseDonutCallData,
       },
     ];
-    console.log("Received request:", { strategy, permissions });
-
     // Execute the actions using ECDSA key
     await executeActionsWithECDSAKey({
       ecdsaPrivateKey: APPLICATION_PRIVATE_KEY,
