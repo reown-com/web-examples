@@ -4,26 +4,21 @@ import { headers } from 'next/headers';
 
 import { cookieToInitialState } from 'wagmi';
 
-import { config } from './config';
-import Web3ModalProvider from './context';
-
-export const metadata: Metadata = {
-  title: 'Appkit SIWE Example - Next.js',
-  description: 'Appkit example using SIWE with Next.js',
-};
+import { wagmiAdapter } from './config';
+import AppKitProvider from './context';
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const initialState = cookieToInitialState(config, headers().get('cookie'));
+  const initialState = cookieToInitialState(wagmiAdapter.wagmiConfig, headers().get('cookie'));
   return (
     <html lang='en'>
       <body>
-        <Web3ModalProvider initialState={initialState}>
+        <AppKitProvider initialState={initialState}>
           {children}
-        </Web3ModalProvider>
+        </AppKitProvider>
       </body>
     </html>
   );

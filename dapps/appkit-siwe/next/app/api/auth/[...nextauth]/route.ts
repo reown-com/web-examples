@@ -4,8 +4,8 @@ import {
   type SIWESession,
   verifySignature,
   getChainIdFromMessage,
-  getAddressFromMessage,
-} from '@web3modal/siwe';
+  getAddressFromMessage
+} from '@reown/appkit-siwe'
 
 declare module 'next-auth' {
   interface Session extends SIWESession {

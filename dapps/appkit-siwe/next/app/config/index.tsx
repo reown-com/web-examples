@@ -1,45 +1,44 @@
 import {
+  type SIWESession,
+  type SIWEVerifyMessageArgs,
+  type SIWECreateMessageArgs,
   createSIWEConfig,
-  SIWECreateMessageArgs,
   formatMessage,
-  SIWESession,
-  SIWEVerifyMessageArgs,
-} from '@web3modal/siwe';
-import { defaultWagmiConfig } from '@web3modal/wagmi/react/config';
+} from '@reown/appkit-siwe'
+import { WagmiAdapter, authConnector } from '@reown/appkit-adapter-wagmi'
 import { getCsrfToken, getSession, signIn, signOut } from 'next-auth/react';
 
 import { cookieStorage, createStorage } from 'wagmi';
-import { arbitrum, mainnet, optimism, sepolia } from 'wagmi/chains';
+import { arbitrum, mainnet, sepolia, optimism, AppKitNetwork } from '@reown/appkit/networks'
+import { CaipNetwork } from '@reown/appkit';
 
-// Get projectId from https://cloud.walletconnect.com
+// Get projectId from https://cloud.reown.com
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
 if (!projectId) throw new Error('Project ID is not defined');
 
 export const metadata = {
-  name: 'Appkit',
+  name: 'Appkit SIWE Example',
   description: 'Appkit Siwe Example - Next.js',
-  url: 'https://web3modal.com', // origin must match your domain & subdomain
-  icons: ['https://avatars.githubusercontent.com/u/37784886'],
+  url: 'https://reown.com', // origin must match your domain & subdomain
+  icons: ["https://avatars.githubusercontent.com/u/179229932"],
 };
 
 // Create wagmiConfig
-const chains = [mainnet, optimism, arbitrum, sepolia] as const;
-export const config = defaultWagmiConfig({
-  chains,
+export const chains: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, optimism, arbitrum, sepolia];
+
+// 4. Create Wagmi Adapter
+export const wagmiAdapter = new WagmiAdapter({
+  networks: chains,
   projectId,
-  metadata,
-  ssr: true,
-  storage: createStorage({
-    storage: cookieStorage,
-  }),
+  ssr: true
 });
 
 export const siweConfig = createSIWEConfig({
   getMessageParams: async () => ({
     domain: typeof window !== 'undefined' ? window.location.host : '',
     uri: typeof window !== 'undefined' ? window.location.origin : '',
-    chains: [mainnet.id, sepolia.id, optimism.id, arbitrum.id],
+    chains: chains.map((chain: AppKitNetwork) => parseInt(chain.id.toString())),
     statement: 'Please sign with your account',
   }),
   createMessage: ({ address, ...args }: SIWECreateMessageArgs) =>

@@ -4,7 +4,7 @@ A Minimal demo using React so developers can work on their integration with Wall
 
 1. Install dependencies in the frontend: `pnpm install`
 
-2. Create and complete the .env.local file with your Project Id from http://cloud.walletconnect.com
+2. Create and complete the .env.local file with your Project Id from http://cloud.reown.com
 
 ```
 VITE_PROJECT_ID=...
@@ -26,5 +26,5 @@ pnpm install
 
 ## Reference
 
-- https://docs.walletconnect.com/appkit/react/core/siwe
+- https://docs.reown.com/appkit/react/core/siwe
 - https://docs.login.xyz/general-information/siwe-overview/eip-4361

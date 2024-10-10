@@ -1,10 +1,11 @@
+import { AppKitNetwork } from '@reown/appkit/networks'
 import {
     type SIWESession,
     type SIWEVerifyMessageArgs,
     type SIWECreateMessageArgs,
     createSIWEConfig,
     formatMessage,
-  } from '@web3modal/siwe'
+  } from '@reown/appkit-siwe'
   
 
 const BASE_URL = 'http://localhost:8080';
@@ -79,14 +80,14 @@ const signOut =  async (): Promise<boolean> => {
   return data == "{}";
 } 
 
-export const createSIWE = (chains: [number]) => {
+export const createSIWE = (chains: [AppKitNetwork, ...AppKitNetwork[]]) => {
     return createSIWEConfig({
       signOutOnAccountChange: true,
       signOutOnNetworkChange: true,
         getMessageParams: async () => ({
               domain: window.location.host,
               uri: window.location.origin, 
-              chains,
+              chains: chains.map((chain: AppKitNetwork) => parseInt(chain.id.toString())),
               statement: 'Please sign with your account',
             }),
         createMessage: ({ address, ...args }: SIWECreateMessageArgs) => {
