@@ -4,9 +4,9 @@ import { Col, Divider, Row, Text } from '@nextui-org/react'
 import RequestDataCard from '@/components/RequestDataCard'
 import RequestDetailsCard from '@/components/RequestDetalilsCard'
 import ModalStore from '@/store/ModalStore'
-import { convertHexToUtf8, styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import { styledToast } from '@/utils/HelperUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
+import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 import { approveBip122Request, rejectBip122Request } from '@/utils/Bip122RequestHandlerUtil'
 
@@ -33,7 +33,7 @@ export default function SessionSignBip122Modal() {
       const response = await approveBip122Request(requestEvent)
       console.log('response', response)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
@@ -53,7 +53,7 @@ export default function SessionSignBip122Modal() {
       setIsLoadingReject(true)
       const response = rejectBip122Request(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

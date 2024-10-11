@@ -15,7 +15,7 @@ import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
@@ -28,7 +28,7 @@ import { TRON_CHAINS, TRON_SIGNING_METHODS } from '@/data/TronData'
 import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
 import { getChainData } from '@/data/chainsUtil'
-import RequestModal from './RequestModal'
+import RequestModal from '../components/RequestModal'
 import ChainSmartAddressMini from '@/components/ChainSmartAddressMini'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
@@ -38,6 +38,8 @@ import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 import { bip122Addresses } from '@/utils/Bip122WalletUtil'
 import { BIP122_CHAINS, BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
+import { EIP7715_METHOD } from '@/data/EIP7715Data'
+import { useRouter } from 'next/router'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -54,7 +56,11 @@ export default function SessionProposalModal() {
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  const { getAvailableSmartAccounts } = useSmartAccounts()
+  const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
+
+  const { query } = useRouter()
+
+  const addressesToApprove = Number(query.addressesToApprove) || null
 
   const supportedNamespaces = useMemo(() => {
     // eip155
@@ -64,6 +70,10 @@ export default function SessionProposalModal() {
     //eip5792
     const eip5792Chains = Object.keys(EIP155_CHAINS)
     const eip5792Methods = Object.values(EIP5792_METHODS)
+
+    //eip7715
+    const eip7715Chains = Object.keys(EIP155_CHAINS)
+    const eip7715Methods = Object.values(EIP7715_METHOD)
 
     // cosmos
     const cosmosChains = Object.keys(COSMOS_MAINNET_CHAINS)
@@ -103,33 +113,47 @@ export default function SessionProposalModal() {
     return {
       eip155: {
         chains: eip155Chains,
-        methods: eip155Methods.concat(eip5792Methods),
+        methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
-        accounts: eip155Chains.map(chain => `${chain}:${eip155Addresses[0]}`).flat()
+        accounts: eip155Chains
+          .map(chain =>
+            eip155Addresses
+              .map(account => `${chain}:${account}`)
+              .slice(0, addressesToApprove ?? eip155Addresses.length)
+          )
+          .flat()
       },
       cosmos: {
         chains: cosmosChains,
         methods: cosmosMethods,
         events: [],
-        accounts: cosmosChains.map(chain => `${chain}:${cosmosAddresses[0]}`).flat()
+        accounts: cosmosChains
+          .map(chain => cosmosAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       kadena: {
         chains: kadenaChains,
         methods: kadenaMethods,
         events: [],
-        accounts: kadenaChains.map(chain => `${chain}:${kadenaAddresses[0]}`).flat()
+        accounts: kadenaChains
+          .map(chain => kadenaAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       mvx: {
         chains: multiversxChains,
         methods: multiversxMethods,
         events: [],
-        accounts: multiversxChains.map(chain => `${chain}:${multiversxAddresses[0]}`).flat()
+        accounts: multiversxChains
+          .map(chain => multiversxAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       near: {
         chains: nearChains,
         methods: nearMethods,
         events: ['accountsChanged', 'chainChanged'],
-        accounts: nearChains.map(chain => `${chain}:${nearAddresses[0]}`).flat()
+        accounts: nearChains
+          .map(chain => nearAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       polkadot: {
         chains: polkadotChains,
@@ -159,7 +183,9 @@ export default function SessionProposalModal() {
         chains: tronChains,
         methods: tronMethods,
         events: [],
-        accounts: tronChains.map(chain => `${chain}:${tronAddresses[0]}`)
+        accounts: tronChains
+          .map(chain => tronAddresses.map(address => `${chain}:${address}`))
+          .flat()
       },
       bip122: {
         chains: bip122Chains,
@@ -168,7 +194,7 @@ export default function SessionProposalModal() {
         accounts: bip122Chains.map(chainId => `${chainId}:${bip122Addresses[0]}`)
       }
     }
-  }, [])
+  }, [addressesToApprove])
   console.log('supportedNamespaces', supportedNamespaces, eip155Addresses)
 
   const requestedChains = useMemo(() => {
@@ -267,31 +293,30 @@ export default function SessionProposalModal() {
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
     console.log('onApprove', { proposal, namespaces })
-    if (proposal && namespaces) {
-      setIsLoadingApprove(true)
-      try {
+    try {
+      if (proposal && namespaces) {
+        setIsLoadingApprove(true)
         if (reorderedEip155Accounts.length > 0) {
-          // reorderedEip155Accounts includes Smart Accounts(if enabled) and EOA's
-          namespaces.eip155.accounts = reorderedEip155Accounts
+          // we should append the smart accounts to the available eip155 accounts
+          namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
         const sessionProperties = { capabilities: JSON.stringify(capabilities) }
 
-        await web3wallet.approveSession({
+        await walletkit.approveSession({
           id: proposal.id,
           namespaces,
           sessionProperties
         })
-        SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
+        SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
+      setIsLoadingApprove(false)
+      ModalStore.close()
     }
-    setIsLoadingApprove(false)
-    ModalStore.close()
   }, [namespaces, proposal, reorderedEip155Accounts])
 
   // Hanlde reject action
@@ -301,7 +326,7 @@ export default function SessionProposalModal() {
       try {
         setIsLoadingReject(true)
         await new Promise(resolve => setTimeout(resolve, 1000))
-        await web3wallet.rejectSession({
+        await walletkit.rejectSession({
           id: proposal.id,
           reason: getSdkError('USER_REJECTED_METHODS')
         })
@@ -364,16 +389,19 @@ export default function SessionProposalModal() {
 
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
           {smartAccountEnabled &&
-            getAvailableSmartAccounts().map((account, i) => {
-              if (!account) {
-                return <></>
+            namespaces &&
+            getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
+              (account, i) => {
+                if (!account) {
+                  return <></>
+                }
+                return (
+                  <Row key={i}>
+                    <ChainSmartAddressMini account={account} />
+                  </Row>
+                )
               }
-              return (
-                <Row key={i}>
-                  <ChainSmartAddressMini account={account} />
-                </Row>
-              )
-            })}
+            )}
         </Grid>
         <Grid>
           <Row style={{ color: 'GrayText' }} justify="flex-end">
@@ -396,16 +424,19 @@ export default function SessionProposalModal() {
             Chains
           </Row>
           {smartAccountEnabled &&
-            getAvailableSmartAccounts().map(({ chain }, i) => {
-              if (!chain) {
-                return <></>
+            namespaces &&
+            getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
+              ({ chain }, i) => {
+                if (!chain) {
+                  return <></>
+                }
+                return (
+                  <Row key={i} style={{ marginTop: '24px' }}>
+                    <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
+                  </Row>
+                )
               }
-              return (
-                <Row key={i} style={{ marginTop: '24px' }}>
-                  <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
-                </Row>
-              )
-            })}
+            )}
         </Grid>
       </Grid.Container>
     </RequestModal>

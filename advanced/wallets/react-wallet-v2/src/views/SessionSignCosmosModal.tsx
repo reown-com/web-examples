@@ -8,8 +8,8 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
 import { approveCosmosRequest, rejectCosmosRequest } from '@/utils/CosmosRequestHandler'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import { walletkit } from '@/utils/WalletConnectUtil'
+import RequestModal from '../components/RequestModal'
 
 export default function SessionSignCosmosModal() {
   // Get request and wallet data from store
@@ -29,19 +29,18 @@ export default function SessionSignCosmosModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (requestEvent) {
-      setIsLoadingApprove(true)
-      const response = await approveCosmosRequest(requestEvent)
-      try {
-        await web3wallet.respondSessionRequest({
+    try {
+      if (requestEvent) {
+        setIsLoadingApprove(true)
+        const response = await approveCosmosRequest(requestEvent)
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       setIsLoadingApprove(false)
       ModalStore.close()
     }
@@ -53,7 +52,7 @@ export default function SessionSignCosmosModal() {
       setIsLoadingReject(true)
       const response = rejectCosmosRequest(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

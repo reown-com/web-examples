@@ -5,10 +5,9 @@ import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
-import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import { walletkit } from '@/utils/WalletConnectUtil'
+import RequestModal from '../components/RequestModal'
 import { approveBip122Request, rejectBip122Request } from '@/utils/Bip122RequestHandlerUtil'
 
 export default function SessionSendTransactionBip122Modal() {
@@ -31,7 +30,7 @@ export default function SessionSendTransactionBip122Modal() {
       setIsLoadingApprove(true)
       try {
         const response = await approveBip122Request(requestEvent)
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
@@ -51,7 +50,7 @@ export default function SessionSendTransactionBip122Modal() {
       setIsLoadingReject(true)
       const response = rejectBip122Request(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

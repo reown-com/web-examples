@@ -27,7 +27,9 @@ export default function SettingsPage() {
     smartAccountEnabled,
     kernelSmartAccountEnabled,
     safeSmartAccountEnabled,
-    biconomySmartAccountEnabled
+    biconomySmartAccountEnabled,
+    moduleManagementEnabled,
+    chainAbstractionEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -38,8 +40,8 @@ export default function SettingsPage() {
         Packages
       </Text>
       <Row justify="space-between" align="center">
-        <Text color="$gray400">@walletconnect/sign-client</Text>
-        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/web3wallet']}</Text>
+        <Text color="$gray400">@reown/walletkit</Text>
+        <Text color="$gray400">{packageJSON.dependencies['@reown/walletkit']}</Text>
       </Row>
 
       <Divider y={2} />
@@ -54,6 +56,30 @@ export default function SettingsPage() {
           data-testid="settings-toggle-testnets"
         />
         <Text>{testNets ? 'Enabled' : 'Disabled'}</Text>
+      </Row>
+
+      <Divider y={2} />
+
+      <Row>
+        <Col>
+          <Text h4 css={{ marginBottom: '$5' }}>
+            Chain Abstraction
+          </Text>
+          {testNets ? (
+            <>
+              <Row justify="space-between" align="center">
+                <Switch
+                  checked={chainAbstractionEnabled}
+                  onChange={SettingsStore.toggleChainAbstractionEnabled}
+                  data-testid="settings-toggle-chain-abstraction-enabled"
+                />
+                <Text>{chainAbstractionEnabled ? 'Enabled' : 'Disabled'}</Text>
+              </Row>
+            </>
+          ) : (
+            <Text color="$gray400">This feature requires testnets</Text>
+          )}
+        </Col>
       </Row>
 
       <Divider y={2} />
@@ -122,6 +148,23 @@ export default function SettingsPage() {
                       data-testid="settings-toggle-smart-account-sponsorship"
                     />
                     <Text>{smartAccountSponsorshipEnabled ? 'Enabled' : 'Disabled'}</Text>
+                  </Row>
+                  <Divider y={2} />
+                  <Text h4 css={{ marginBottom: '$5', cursor: 'pointer' }}>
+                    Module Management
+                  </Text>
+                  <Row justify="space-between" align="center">
+                    <Switch
+                      disabled={
+                        !kernelSmartAccountEnabled &&
+                        !safeSmartAccountEnabled &&
+                        !biconomySmartAccountEnabled
+                      }
+                      checked={moduleManagementEnabled}
+                      onChange={SettingsStore.toggleModuleManagement}
+                      data-testid="settings-toggle-module-management"
+                    />
+                    <Text>{moduleManagementEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>
                 </>
               ) : null}

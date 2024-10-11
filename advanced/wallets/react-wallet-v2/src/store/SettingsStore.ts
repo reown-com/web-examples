@@ -1,11 +1,20 @@
+import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
+import {
+  createOrRestoreBiconomySmartAccount,
+  createOrRestoreKernelSmartAccount,
+  createOrRestoreSafeSmartAccount,
+  removeSmartAccount
+} from '@/utils/SmartAccountUtil'
 import { Verify, SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
 
 const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
+const CA_ENABLED_KEY = 'CHAIN_ABSTRACTION'
 const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
 const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
 const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
+const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
 
 /**
  * Types
@@ -35,6 +44,8 @@ interface State {
   kernelSmartAccountEnabled: boolean
   safeSmartAccountEnabled: boolean
   biconomySmartAccountEnabled: boolean
+  moduleManagementEnabled: boolean
+  chainAbstractionEnabled: boolean
 }
 
 /**
@@ -78,7 +89,13 @@ const state = proxy<State>({
   biconomySmartAccountEnabled:
     typeof localStorage !== 'undefined'
       ? Boolean(localStorage.getItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY))
-      : false
+      : false,
+  moduleManagementEnabled:
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(MODULE_MANAGEMENT_ENABLED_KEY))
+      : false,
+  chainAbstractionEnabled:
+    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false
 })
 
 /**
@@ -176,30 +193,74 @@ const SettingsStore = {
       localStorage.removeItem(SMART_ACCOUNTS_ENABLED_KEY)
     }
   },
+  toggleModuleManagement() {
+    state.moduleManagementEnabled = !state.moduleManagementEnabled
+    if (state.moduleManagementEnabled) {
+      localStorage.setItem(MODULE_MANAGEMENT_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
+    }
+  },
 
-  toggleKernelSmartAccountsEnabled() {
+  toggleChainAbstractionEnabled() {
+    state.chainAbstractionEnabled = !state.chainAbstractionEnabled
+    if (state.chainAbstractionEnabled) {
+      localStorage.setItem(CA_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(CA_ENABLED_KEY)
+    }
+  },
+
+  async toggleKernelSmartAccountsEnabled() {
     state.kernelSmartAccountEnabled = !state.kernelSmartAccountEnabled
     if (state.kernelSmartAccountEnabled) {
+      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+      const { kernelSmartAccountAddress } = await createOrRestoreKernelSmartAccount(
+        eip155Wallets[eip155Addresses[0]].getPrivateKey()
+      )
+      SettingsStore.setKernelSmartAccountAddress(kernelSmartAccountAddress)
       localStorage.setItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
+      removeSmartAccount(SettingsStore.state.kernelSmartAccountAddress)
+      SettingsStore.setKernelSmartAccountAddress('')
+      state.moduleManagementEnabled = false
+      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
       localStorage.removeItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY)
     }
   },
 
-  toggleSafeSmartAccountsEnabled() {
+  async toggleSafeSmartAccountsEnabled() {
     state.safeSmartAccountEnabled = !state.safeSmartAccountEnabled
     if (state.safeSmartAccountEnabled) {
+      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+      const { safeSmartAccountAddress } = await createOrRestoreSafeSmartAccount(
+        eip155Wallets[eip155Addresses[0]].getPrivateKey()
+      )
+      SettingsStore.setSafeSmartAccountAddress(safeSmartAccountAddress)
       localStorage.setItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
+      removeSmartAccount(SettingsStore.state.safeSmartAccountAddress)
+      SettingsStore.setSafeSmartAccountAddress('')
+      state.moduleManagementEnabled = false
+      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
       localStorage.removeItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY)
     }
   },
 
-  toggleBiconomySmartAccountsEnabled() {
+  async toggleBiconomySmartAccountsEnabled() {
     state.biconomySmartAccountEnabled = !state.biconomySmartAccountEnabled
     if (state.biconomySmartAccountEnabled) {
+      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+      const { biconomySmartAccountAddress } = await createOrRestoreBiconomySmartAccount(
+        eip155Wallets[eip155Addresses[0]].getPrivateKey()
+      )
+      SettingsStore.setBiconomySmartAccountAddress(biconomySmartAccountAddress)
       localStorage.setItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
     } else {
+      removeSmartAccount(SettingsStore.state.biconomySmartAccountAddress)
+      SettingsStore.setBiconomySmartAccountAddress('')
+      state.moduleManagementEnabled = false
+      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
       localStorage.removeItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY)
     }
   }

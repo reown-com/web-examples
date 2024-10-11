@@ -16,11 +16,11 @@ import SessionSendCallsModal from '@/views/SessionSendCallsModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
 import { useCallback, useMemo } from 'react'
-import AuthRequestModal from '@/views/AuthRequestModal'
 import LoadingModal from '@/views/LoadingModal'
 import SessionAuthenticateModal from '@/views/SessionAuthenticateModal'
 import SessionSignBip122Modal from '@/views/SessionSignBip122Modal'
 import SessionSendTransactionBip122Modal from '@/views/SessionSendTransactionBip122Modal'
+import SessionGrantPermissionsModal from '@/views/SessionGrantPermissionsModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -41,6 +41,8 @@ export default function Modal() {
         return <SessionSignTypedDataModal />
       case 'SessionSendTransactionModal':
         return <SessionSendTransactionModal />
+      case 'SessionGrantPermissionsModal':
+        return <SessionGrantPermissionsModal />
       case 'SessionSendCallsModal':
         return <SessionSendCallsModal />
       case 'SessionUnsuportedMethodModal':
@@ -61,8 +63,6 @@ export default function Modal() {
         return <SessionSignTezosModal />
       case 'SessionSignKadenaModal':
         return <SessionSignKadenaModal />
-      case 'AuthRequestModal':
-        return <AuthRequestModal />
       case 'LoadingModal':
         return <LoadingModal />
       case 'SessionAuthenticateModal':

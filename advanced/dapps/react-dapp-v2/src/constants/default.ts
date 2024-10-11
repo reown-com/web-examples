@@ -103,7 +103,52 @@ export type GetCallsResult = {
     transactionHash: `0x${string}`;
   }[];
 };
+/**
+ * EIP7715
+ */
+export const DEFAULT_EIP7715_METHODS = {
+  WALLET_GRANT_PERMISSIONS: "wallet_grantPermissions",
+} as const;
+export type WalletGrantPermissionsParameters = {
+  signer?:
+    | {
+        type: string;
+        data?: unknown | undefined;
+      }
+    | undefined;
+  permissions: readonly {
+    data: unknown;
+    policies: readonly {
+      data: unknown;
+      type: string;
+    }[];
+    required?: boolean | undefined;
+    type: string;
+  }[];
+  expiry: number;
+};
 
+export type WalletGrantPermissionsReturnType = {
+  expiry: number;
+  factory?: `0x${string}` | undefined;
+  factoryData?: string | undefined;
+  grantedPermissions: readonly {
+    data: unknown;
+    policies: readonly {
+      data: unknown;
+      type: string;
+    }[];
+    required?: boolean | undefined;
+    type: string;
+  }[];
+  permissionsContext: string;
+  signerData?:
+    | {
+        userOpBuilder?: `0x${string}` | undefined;
+        submitToAddress?: `0x${string}` | undefined;
+      }
+    | undefined;
+};
 /**
  * EIP155
  */
@@ -122,6 +167,7 @@ export const DEFAULT_EIP155_OPTIONAL_METHODS = {
 export const DEFAULT_OPTIONAL_METHODS = {
   ...DEFAULT_EIP155_OPTIONAL_METHODS,
   ...DEFAULT_EIP5792_METHODS,
+  ...DEFAULT_EIP7715_METHODS,
 };
 
 export enum DEFAULT_EIP_155_EVENTS {
@@ -145,6 +191,8 @@ export enum DEFAULT_COSMOS_EVENTS {}
 export enum DEFAULT_SOLANA_METHODS {
   SOL_SIGN_TRANSACTION = "solana_signTransaction",
   SOL_SIGN_MESSAGE = "solana_signMessage",
+  SOL_SIGN_AND_SEND_TRANSACTION = "solana_signAndSendTransaction",
+  SOL_SIGN_ALL_TRANSACTIONS = "solana_signAllTransactions",
 }
 
 export enum DEFAULT_SOLANA_EVENTS {}

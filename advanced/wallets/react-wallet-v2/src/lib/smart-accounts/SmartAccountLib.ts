@@ -6,7 +6,8 @@ import {
   http,
   createClient,
   HttpTransport,
-  Address
+  Address,
+  Chain
 } from 'viem'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -23,13 +24,22 @@ import {
   SmartAccountClient,
   SmartAccountClientConfig,
   bundlerActions,
-  createSmartAccountClient,
-  isSmartAccountDeployed
+  createSmartAccountClient
 } from 'permissionless'
 import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/actions/pimlico'
-import { PIMLICO_NETWORK_NAMES, UrlConfig, publicRPCUrl } from '@/utils/SmartAccountUtil'
-import { Chain } from '@/consts/smartAccounts'
+import {
+  PIMLICO_NETWORK_NAMES,
+  publicClientUrl,
+  publicRPCUrl,
+  UrlConfig
+} from '@/utils/SmartAccountUtil'
 import { EntryPoint } from 'permissionless/types/entrypoint'
+import { Erc7579Actions, erc7579Actions } from 'permissionless/actions/erc7579'
+import { SmartAccount } from 'permissionless/accounts'
+import { SendCallsParams, SendCallsPaymasterServiceCapabilityParam } from '@/data/EIP5792Data'
+import { UserOperation } from 'permissionless/_types/types'
+import { paymasterActionsEip7677 } from 'permissionless/experimental'
+import { getSendCallData } from '@/utils/EIP5792WalletUtil'
 
 type SmartAccountLibOptions = {
   privateKey: string
@@ -54,7 +64,11 @@ export abstract class SmartAccountLib implements EIP155Wallet {
   protected bundlerClient: BundlerClient<EntryPoint> &
     BundlerActions<EntryPoint> &
     PimlicoBundlerActions
-  protected client: (SmartAccountClient<EntryPoint> & PimlicoBundlerActions) | undefined
+  protected client:
+    | (SmartAccountClient<EntryPoint> &
+        PimlicoBundlerActions &
+        Erc7579Actions<EntryPoint, SmartAccount<EntryPoint> | undefined>)
+    | undefined
 
   // Transport
   protected bundlerUrl: HttpTransport
@@ -71,32 +85,49 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     entryPointVersion = 6
   }: SmartAccountLibOptions) {
     const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
-    const paymasterUrl = ({ chain }: UrlConfig) =>
-      `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
-    const bundlerUrl = ({ chain }: UrlConfig) =>
-      `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
-
-    let entryPoint: EntryPoint = ENTRYPOINT_ADDRESS_V06
-    if (entryPointVersion === 7) {
-      entryPoint = ENTRYPOINT_ADDRESS_V07
+    const publicClientRPCUrl = process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL || publicRPCUrl({ chain })
+    const paymasterUrl = ({ chain }: UrlConfig) => {
+      const localPaymasterUrl = process.env.NEXT_PUBLIC_LOCAL_PAYMASTER_URL
+      if (localPaymasterUrl) {
+        return localPaymasterUrl
+      }
+      return `https://api.pimlico.io/v2/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
     }
-    this.entryPoint = entryPoint
+
+    const bundlerUrl = ({ chain }: UrlConfig) => {
+      const localBundlerUrl = process.env.NEXT_PUBLIC_LOCAL_BUNDLER_URL
+      if (localBundlerUrl) {
+        return localBundlerUrl
+      }
+      return `https://api.pimlico.io/v1/${PIMLICO_NETWORK_NAMES[chain.name]}/rpc?apikey=${apiKey}`
+    }
+
+    this.entryPoint = ENTRYPOINT_ADDRESS_V06
+    if (entryPointVersion === 7) {
+      this.entryPoint = ENTRYPOINT_ADDRESS_V07
+    }
 
     this.chain = chain
     this.sponsored = sponsored
     this.#signerPrivateKey = privateKey
     this.signer = privateKeyToAccount(privateKey as Hex)
 
-    this.bundlerUrl = http(bundlerUrl({ chain: this.chain }))
-    this.paymasterUrl = http(paymasterUrl({ chain: this.chain }))
+    this.bundlerUrl = http(bundlerUrl({ chain: this.chain }), {
+      timeout: 30000
+    })
+    this.paymasterUrl = http(paymasterUrl({ chain: this.chain }), {
+      timeout: 30000
+    })
 
     this.publicClient = createPublicClient({
-      transport: http(publicRPCUrl({ chain: this.chain }))
-    }).extend(bundlerActions(this.entryPoint))
+      chain: this.chain,
+      transport: http(publicClientUrl({ chain: this.chain }))
+    })
 
     this.paymasterClient = createPimlicoPaymasterClient({
       transport: this.paymasterUrl,
-      entryPoint: this.entryPoint
+      entryPoint: this.entryPoint,
+      chain: this.chain
     })
 
     this.bundlerClient = createClient({
@@ -114,9 +145,11 @@ export abstract class SmartAccountLib implements EIP155Wallet {
 
   async init() {
     const config = await this.getClientConfig()
-    this.client = createSmartAccountClient(config).extend(pimlicoBundlerActions(this.entryPoint))
+    this.client = createSmartAccountClient(config)
+      .extend(pimlicoBundlerActions(this.entryPoint))
+      .extend(erc7579Actions({ entryPoint: this.entryPoint }))
     console.log('Smart account initialized', {
-      address: this.client.account?.address,
+      address: this.client?.account?.address,
       chain: this.chain.name,
       type: this.type
     })
@@ -174,18 +207,17 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const signature = await this.client.account.signTransaction(transaction)
     return signature || ''
   }
-  async sendTransaction({ to, value, data }: { to: Address; value: bigint; data: Hex }) {
-    if (!this.client || !this.client.account) {
+  async sendTransaction({ to, value, data }: { to: Address; value: bigint | Hex; data: Hex }) {
+    if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
     const txResult = await this.client.sendTransaction({
       to,
-      value,
+      value: BigInt(value),
       data,
       account: this.client.account,
       chain: this.chain
     })
-
     return txResult
   }
 
@@ -209,6 +241,124 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     })
 
     const newSignature = await this.client.account.signUserOperation(userOp)
+    userOp.signature = newSignature
+
+    const userOpHash = await this.bundlerClient.sendUserOperation({
+      userOperation: userOp
+    })
+    return userOpHash
+  }
+
+  getAccount() {
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    return this.client.account
+  }
+
+  async sendERC5792Calls(sendCallsParam: SendCallsParams) {
+    if (!this.client || !this.client.account) {
+      throw new Error('Client not initialized')
+    }
+    const calls = getSendCallData(sendCallsParam)
+
+    const capabilities = sendCallsParam.capabilities
+    if (capabilities && capabilities['paymasterService']) {
+      const paymasterService = capabilities[
+        'paymasterService'
+      ] as SendCallsPaymasterServiceCapabilityParam
+
+      return this.handleERC5792CallsWithPaymasterService({
+        paymasterService,
+        calls
+      })
+    }
+
+    return this.sendBatchTransaction(calls)
+  }
+
+  async handleERC5792CallsWithPaymasterService(args: {
+    paymasterService: SendCallsPaymasterServiceCapabilityParam
+    calls: {
+      to: `0x${string}`
+      value: bigint
+      data: `0x${string}`
+    }[]
+  }) {
+    console.log('executing sendCalls with paymasterService')
+    const { paymasterService, calls } = args
+    if (!this.client?.account) {
+      throw new Error('Client not initialized')
+    }
+    const gasPrice = (await this.bundlerClient.getUserOperationGasPrice()).fast
+    const userOpPreStubData: Omit<
+      UserOperation<'v0.7'>,
+      'signature' | 'paymaster' | 'paymasterData'
+    > = {
+      sender: this.client.account.address,
+      nonce: await this.client.account.getNonce(),
+      factory: await this.client.account.getFactory(),
+      factoryData: await this.client.account.getFactoryData(),
+      callData: await this.client.account.encodeCallData(calls),
+      callGasLimit: 0n,
+      verificationGasLimit: 0n,
+      preVerificationGas: 0n,
+      maxFeePerGas: gasPrice.maxFeePerGas,
+      maxPriorityFeePerGas: gasPrice.maxPriorityFeePerGas,
+      // paymaster: '0x',
+      paymasterVerificationGasLimit: 0n,
+      paymasterPostOpGasLimit: 0n
+      // paymasterData: '0x',
+      // signature: '0x'
+    }
+
+    const paymasterClient = createClient({
+      chain: this.chain,
+      transport: http(paymasterService.url)
+    }).extend(paymasterActionsEip7677(ENTRYPOINT_ADDRESS_V07))
+
+    const paymasterStubData = await paymasterClient.getPaymasterStubData({
+      userOperation: userOpPreStubData,
+      chain: this.chain,
+      context: paymasterService.context
+    })
+    console.log({ paymasterStubData })
+    const userOpWithStubData: UserOperation<'v0.7'> = {
+      ...userOpPreStubData,
+      ...paymasterStubData,
+      signature: '0x'
+    }
+
+    const dummySignature = await this.client.account.getDummySignature(userOpWithStubData)
+    userOpWithStubData.signature = dummySignature
+
+    const gasEstimation = await this.bundlerClient.estimateUserOperationGas({
+      userOperation: userOpWithStubData
+    })
+    console.log({ gasEstimation })
+    const userOpWithGasEstimates: UserOperation<'v0.7'> = {
+      ...userOpWithStubData,
+      ...gasEstimation
+    }
+
+    const paymasterData = await paymasterClient.getPaymasterData({
+      userOperation: {
+        ...userOpWithGasEstimates,
+        paymasterPostOpGasLimit: gasEstimation.paymasterPostOpGasLimit || 0n,
+        paymasterVerificationGasLimit: gasEstimation.paymasterVerificationGasLimit || 0n
+      },
+      chain: this.chain,
+      context: paymasterService.context
+    })
+    console.log({ paymasterData })
+    const userOpWithPaymasterData: UserOperation<'v0.7'> = {
+      ...userOpWithGasEstimates,
+      ...paymasterData
+    }
+
+    const userOp = userOpWithPaymasterData
+
+    const newSignature = await this.client.account.signUserOperation(userOp)
     console.log('Signatures', { old: userOp.signature, new: newSignature })
 
     userOp.signature = newSignature
@@ -216,6 +366,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const userOpHash = await this.bundlerClient.sendUserOperation({
       userOperation: userOp
     })
+    console.log({ userOpHash })
     return userOpHash
   }
 }

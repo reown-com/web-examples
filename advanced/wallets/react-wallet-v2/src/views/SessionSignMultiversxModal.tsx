@@ -11,8 +11,8 @@ import {
   approveMultiversxRequest,
   rejectMultiversxRequest
 } from '@/utils/MultiversxRequestHandlerUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
-import RequestModal from './RequestModal'
+import { walletkit } from '@/utils/WalletConnectUtil'
+import RequestModal from '../components/RequestModal'
 
 export default function SessionSignMultiversxModal() {
   // Get request and wallet data from store
@@ -32,19 +32,18 @@ export default function SessionSignMultiversxModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (requestEvent) {
-      setIsLoadingApprove(true)
-      const response = await approveMultiversxRequest(requestEvent)
-      try {
-        await web3wallet.respondSessionRequest({
+    try {
+      if (requestEvent) {
+        setIsLoadingApprove(true)
+        const response = await approveMultiversxRequest(requestEvent)
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       setIsLoadingApprove(false)
       ModalStore.close()
     }
@@ -56,7 +55,7 @@ export default function SessionSignMultiversxModal() {
       setIsLoadingReject(true)
       const response = rejectMultiversxRequest(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
