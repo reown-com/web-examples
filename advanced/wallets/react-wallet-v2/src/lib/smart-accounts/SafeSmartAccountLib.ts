@@ -6,24 +6,20 @@ import {
 import { SmartAccountLib } from './SmartAccountLib'
 import { SmartAccount, signerToSafeSmartAccount } from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
-import {
-  Address,
-  Hex,
-  WalletGrantPermissionsParameters,
-  createWalletClient,
-  http,
-  type WalletGrantPermissionsReturnType
-} from 'viem'
-import { MultiKeySigner } from 'viem/_types/experimental/erc7715/types/signer'
-import {
-  getContext,
-  mockValidator,
-  Permission,
-  smartSessionAddress,
-  userOperationBuilderAddress
-} from '@biconomy/permission-context-builder'
-import { ModuleType } from 'permissionless/actions/erc7579'
+import { Address, Hex, createWalletClient, http, toHex } from 'viem'
+import { TRUSTED_SMART_SESSIONS_ATTERSTER_ADDRESS } from './builders/SmartSessionUtil'
+import { WalletGrantPermissionsRequest, WalletGrantPermissionsResponse } from '@/data/EIP7715Data'
+import { getContext } from './builders/ContextBuilderUtil'
+import { Execution, Module } from '@rhinestone/module-sdk'
 
+const {
+  SMART_SESSIONS_ADDRESS,
+  getTrustAttestersAction,
+  getAccount,
+  getSmartSessionsValidator,
+  findTrustedAttesters,
+  installModule
+} = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 export class SafeSmartAccountLib extends SmartAccountLib {
   protected ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
   protected SAFE_4337_MODULE_ADDRESS: Address = '0x3Fdb5BC686e861480ef99A6E3FaAe03c0b9F32e2'
@@ -60,8 +56,8 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
   /* 7715 method */
   async grantPermissions(
-    grantPermissionsRequestParameters: WalletGrantPermissionsParameters
-  ): Promise<WalletGrantPermissionsReturnType> {
+    grantPermissionsRequestParameters: WalletGrantPermissionsRequest
+  ): Promise<WalletGrantPermissionsResponse> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
@@ -69,33 +65,38 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
     const walletClient = createWalletClient({
       chain: this.chain,
-      account: this.client.account,
+      account: this.signer,
       transport: http()
     })
+    console.log('walletClient chainId:', walletClient.chain.id)
 
-    const permissionContext = await getContext(walletClient, {
-      permissions: [...grantPermissionsRequestParameters.permissions] as unknown as Permission[],
-      expiry: grantPermissionsRequestParameters.expiry,
-      signer: grantPermissionsRequestParameters.signer as MultiKeySigner,
-      smartAccountAddress: this.client.account.address
+    const permissionContext = await getContext(this.publicClient, walletClient, {
+      account: getAccount({
+        address: this.client.account.address,
+        type: 'safe'
+      }),
+      grantPermissionsRequest: grantPermissionsRequestParameters
     })
+
     console.log(`Returning the permissions request`)
     return {
-      permissionsContext: permissionContext,
-      grantedPermissions: grantPermissionsRequestParameters.permissions,
-      expiry: grantPermissionsRequestParameters.expiry,
-      signerData: {
-        userOpBuilder: userOperationBuilderAddress,
-        submitToAddress: this.client.account.address
-      }
-    } as WalletGrantPermissionsReturnType
+      ...grantPermissionsRequestParameters,
+      context: permissionContext as Hex,
+      chainId: toHex(this.chain.id),
+      accountMeta: {
+        factory: (await this.client.account.getFactory()) || '0x',
+        factoryData: (await this.client.account.getFactoryData()) || '0x'
+      },
+      expiry: grantPermissionsRequestParameters.expiry
+    }
   }
 
   /**
    * Check Safe7579 Account is ready for processing this RPC request
    * - Check Account is deployed
+   * - Check SmartSession Attesters are trusted
    * - Check Permission Validator & Mock Validator modules are installed
-   * If not, Deploy and installed all necessary module for processing this RPC request
+   * If not, Deploy and installed all necessary module and enable trusted attester if not trusted for processing this RPC request
    * @returns
    */
   private async ensureAccountReadyForGrantPermissions(): Promise<void> {
@@ -103,52 +104,67 @@ export class SafeSmartAccountLib extends SmartAccountLib {
       throw new Error('Client not initialized')
     }
     try {
-      const isAccountDeployed = await isSmartAccountDeployed(
-        this.publicClient,
-        this.client.account.address
-      )
+      const setUpSmartAccountForSmartSession: Execution[] = []
+
+      const [isAccountDeployed, isSmartAccountTrustSmartSessionAttesters] = await Promise.all([
+        isSmartAccountDeployed(this.publicClient, this.client.account.address),
+        this.isSmartAccountTrustSmartSessionAttesters()
+      ])
 
       let smartSessionValidatorInstalled = false
-      let mockValidatorInstalled = false
-
       if (isAccountDeployed) {
-        ;[smartSessionValidatorInstalled, mockValidatorInstalled] = await Promise.all([
-          this.isValidatorModuleInstalled(smartSessionAddress),
-          this.isValidatorModuleInstalled(mockValidator)
-        ])
+        smartSessionValidatorInstalled = await this.isValidatorModuleInstalled(
+          SMART_SESSIONS_ADDRESS as Address
+        )
       }
-      console.log({ smartSessionValidatorInstalled, mockValidatorInstalled })
 
-      if (isAccountDeployed && smartSessionValidatorInstalled && mockValidatorInstalled) {
+      if (
+        isAccountDeployed &&
+        smartSessionValidatorInstalled &&
+        isSmartAccountTrustSmartSessionAttesters
+      ) {
         console.log('Account is already set up with required modules')
         return
       }
 
       console.log('Setting up the Account with required modules')
 
-      const installModules: {
-        address: Address
-        type: ModuleType
-        context: Hex
-      }[] = []
-
       if (!isAccountDeployed || !smartSessionValidatorInstalled) {
-        installModules.push({
-          address: smartSessionAddress,
-          type: 'validator',
-          context: '0x'
+        const smartSessionValidator: Module = getSmartSessionsValidator({})
+        const installSmartSessionValidatorAction = await installModule({
+          client: this.publicClient,
+          account: getAccount({
+            address: this.client.account.address,
+            type: 'safe'
+          }),
+          module: smartSessionValidator
         })
+
+        setUpSmartAccountForSmartSession.push(installSmartSessionValidatorAction[0])
       }
 
-      if (!isAccountDeployed || !mockValidatorInstalled) {
-        installModules.push({
-          address: mockValidator,
-          type: 'validator',
-          context: '0x'
+      if (!isSmartAccountTrustSmartSessionAttesters) {
+        console.log('Smart Account do not trusted the attesters of the smartsessions module')
+        console.log('Enable trusting the attesters of the smartsessions module')
+        const trustAttestersAction = getTrustAttestersAction({
+          attesters: [TRUSTED_SMART_SESSIONS_ATTERSTER_ADDRESS],
+          threshold: 1
         })
+        setUpSmartAccountForSmartSession.push(trustAttestersAction)
       }
 
-      await this.installModules(installModules)
+      console.log('Setting up the Account with Executions', { setUpSmartAccountForSmartSession })
+      const userOpHash = await this.sendBatchTransaction(
+        setUpSmartAccountForSmartSession.map(action => {
+          return {
+            to: action.target,
+            value: action.value.valueOf(),
+            data: action.callData
+          }
+        })
+      )
+      const receipt = await this.bundlerClient.waitForUserOperationReceipt({ hash: userOpHash })
+      console.log(`Account setup receipt:`, receipt)
       console.log('Account setup completed')
     } catch (error) {
       console.error(`Error ensuring account is ready for grant permissions: ${error}`)
@@ -168,21 +184,25 @@ export class SafeSmartAccountLib extends SmartAccountLib {
     })
   }
 
-  private async installModules(
-    modules: {
-      address: Address
-      type: ModuleType
-      context: Hex
-    }[]
-  ): Promise<void> {
+  private async isSmartAccountTrustSmartSessionAttesters(): Promise<boolean> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
-    const userOpHash = await this.client.installModules({
-      account: this.client.account,
-      modules: modules
+
+    const attesters = await findTrustedAttesters({
+      client: this.publicClient,
+      accountAddress: this.client.account.address
     })
-    const receipt = await this.bundlerClient.waitForUserOperationReceipt({ hash: userOpHash })
-    console.log(`Module installation receipt:`, receipt)
+
+    if (attesters.length > 0) {
+      return Boolean(
+        attesters.find(
+          (attester: Address) =>
+            attester.toLowerCase() === TRUSTED_SMART_SESSIONS_ATTERSTER_ADDRESS.toLowerCase()
+        )
+      )
+    }
+
+    return false
   }
 }

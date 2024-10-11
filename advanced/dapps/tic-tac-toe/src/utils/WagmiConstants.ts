@@ -1,10 +1,10 @@
 import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
-import { sepolia, type Chain } from "wagmi/chains";
+import { baseSepolia, type Chain } from "wagmi/chains";
 import { ConstantsUtil } from "./ConstantsUtil";
 import type { CreateConnectorFn } from "wagmi";
 
 export const WagmiConstantsUtil = {
-  chains: [sepolia] as [Chain, ...Chain[]],
+  chains: [baseSepolia] as [Chain, ...Chain[]],
 };
 
 export function getWagmiConfig(

@@ -106,19 +106,18 @@ export default function SessionSendTransactionModal() {
 
   // Handle approve action
   const onApprove = useCallback(async () => {
-    if (requestEvent && topic) {
-      setIsLoadingApprove(true)
-      try {
+    try {
+      if (requestEvent && topic) {
+        setIsLoadingApprove(true)
         const response = await approveEIP155Request(requestEvent)
         await walletkit.respondSessionRequest({
           topic,
           response
         })
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       setIsLoadingApprove(false)
       ModalStore.close()
     }

@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import DisplayPlayerScore from "./DisplayPlayerScore";
 import PositionSquare from "./PositionSquare";
 import { createPimlicoBundlerClient } from "permissionless/clients/pimlico";
-import { sepolia } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
 import { http } from "viem";
 import {
@@ -39,7 +39,7 @@ function TicTacToeBoard() {
       const data = await handleUserMove(gameId, position);
       const { userOpIdentifier } = data;
       const bundlerClient = createPimlicoBundlerClient({
-        chain: sepolia,
+        chain: baseSepolia,
         entryPoint: ENTRYPOINT_ADDRESS_V07,
         transport: http(getBundlerUrl(), {
           timeout: 300000,

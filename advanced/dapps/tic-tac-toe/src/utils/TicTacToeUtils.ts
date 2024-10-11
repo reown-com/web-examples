@@ -11,12 +11,12 @@ import {
   http,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { sepolia } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import { getBlockchainApiRpcUrl } from "./ChainsUtil";
 import { executeActionsWithECDSAAndCosignerPermissions } from "./ERC7715PermissionsAsyncUtils";
 
 export const ticTacToeAddress =
-  "0xC77189Ad823767366b1c5459029CE638ef5AEc12" as `0x${string}`;
+  "0x6Fd3d86C43BD571F40a3eF2b6BB58B257eC2F392" as `0x${string}`;
 const PROJECT_ID = process.env.NEXT_PUBLIC_PROJECT_ID;
 
 if (!PROJECT_ID) {
@@ -24,8 +24,8 @@ if (!PROJECT_ID) {
 }
 
 const publicClient = createPublicClient({
-  chain: sepolia,
-  transport: http(getBlockchainApiRpcUrl(sepolia.id), { timeout: 300000 }),
+  chain: baseSepolia,
+  transport: http(getBlockchainApiRpcUrl(baseSepolia.id), { timeout: 300000 }),
 });
 
 type Board = number[];
@@ -44,7 +44,7 @@ export function getTicTacToeAsyncPermissions(
           target: ticTacToeAddress,
           abi: ticTacToeAbi,
           valueLimit: parseEther("0").toString(),
-          functionName: "function makeMove(uint256,uint8)",
+          functionName: "makeMove(uint256,uint8)",
         },
         policies: [],
       },
@@ -65,7 +65,7 @@ export async function createGame(
   const account = privateKeyToAccount(applicationPrivateKey as `0x${string}`);
   const walletClient = createWalletClient({
     account,
-    chain: sepolia,
+    chain: baseSepolia,
     transport: http(),
   });
   const txHash = await walletClient.writeContract({
@@ -170,7 +170,7 @@ export async function makeUserMove(
     ecdsaPrivateKey: applicationPrivateKey as `0x${string}`,
     pci,
     permissions,
-    chain: sepolia,
+    chain: baseSepolia,
     actions: makeMoveCallDataExecution,
   });
 }
@@ -183,7 +183,7 @@ export async function makeComputerMove(
   const account = privateKeyToAccount(applicationPrivateKey as `0x${string}`);
   const walletClient = createWalletClient({
     account,
-    chain: sepolia,
+    chain: baseSepolia,
     transport: http(),
   });
 

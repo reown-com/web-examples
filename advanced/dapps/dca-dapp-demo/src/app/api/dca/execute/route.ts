@@ -7,7 +7,7 @@ import { CoSignerApiError } from "@/utils/WalletConnectCosignerUtils";
 import { NextResponse } from "next/server";
 import { encodeFunctionData, parseEther } from "viem";
 import { GrantPermissionsReturnType } from "viem/experimental";
-import { sepolia } from "viem/chains";
+import { baseSepolia } from "viem/chains";
 import { DCAFormSchemaType } from "@/schema/DCAFormSchema";
 
 export async function POST(request: Request) {
@@ -20,7 +20,8 @@ export async function POST(request: Request) {
     permissions: GrantPermissionsReturnType;
     pci: string;
   } = await request.json();
-  const APPLICATION_PRIVATE_KEY = process.env.APPLICATION_PRIVATE_KEY as `0x${string}`;
+  const APPLICATION_PRIVATE_KEY = process.env
+    .APPLICATION_PRIVATE_KEY as `0x${string}`;
 
   try {
     if (!APPLICATION_PRIVATE_KEY) {
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
       ecdsaPrivateKey: APPLICATION_PRIVATE_KEY,
       pci,
       permissions,
-      chain: sepolia,
+      chain: baseSepolia,
       actions: purchaseDonutCallDataExecution,
     });
 

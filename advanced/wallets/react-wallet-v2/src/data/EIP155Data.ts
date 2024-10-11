@@ -146,7 +146,8 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/base.webp',
     rgb: '22, 83, 241',
     rpc: 'https://sepolia.base.org',
-    namespace: 'eip155'
+    namespace: 'eip155',
+    smartAccountEnabled: true
   }
 }
 

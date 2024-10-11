@@ -9,11 +9,12 @@ export const EIP5792_METHODS = {
 }
 
 // capability names as string literals
-export type CapabilityName = 'atomicBatch' | 'paymasterService' | 'sessionKey'
+export type CapabilityName = 'atomicBatch' | 'paymasterService' | 'permissions'
 // Capability type where each key is a capability name and value has `supported` field
 export type Capabilities = {
   [K in CapabilityName]?: {
     supported: boolean
+    [key: string]: any
   }
 }
 // GetCapabilitiesResult type using mapped types
@@ -65,9 +66,26 @@ export const supportedEIP5792CapabilitiesForSCA: GetCapabilitiesResult = {
     paymasterService: {
       supported: true
     },
-    // sessionKey: {
-    //   supported: true,
-    // },
+    permissions: {
+      supported: true,
+      signerTypes: ['keys'],
+      permissionTypes: ['contract-call'],
+      policyTypes: []
+    },
+    atomicBatch: {
+      supported: true
+    }
+  },
+  '0x14a34': {
+    paymasterService: {
+      supported: true
+    },
+    permissions: {
+      supported: true,
+      signerTypes: ['keys'],
+      permissionTypes: ['contract-call'],
+      policyTypes: []
+    },
     atomicBatch: {
       supported: true
     }

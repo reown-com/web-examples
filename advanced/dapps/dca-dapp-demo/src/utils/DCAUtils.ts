@@ -37,7 +37,7 @@ export function getSampleAsyncDCAPermissions(
           target: donutContractAddress,
           abi: donutContractAbi,
           valueLimit: parseEther("10").toString(),
-          functionName: "function purchase()",
+          functionName: "purchase(uint256)",
         },
         policies: [],
       },

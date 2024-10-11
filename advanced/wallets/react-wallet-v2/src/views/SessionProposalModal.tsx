@@ -37,6 +37,7 @@ import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
+import { useRouter } from 'next/router'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -53,7 +54,11 @@ export default function SessionProposalModal() {
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  const { getAvailableSmartAccounts } = useSmartAccounts()
+  const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
+
+  const { query } = useRouter()
+
+  const addressesToApprove = Number(query.addressesToApprove) || null
 
   const supportedNamespaces = useMemo(() => {
     // eip155
@@ -106,7 +111,11 @@ export default function SessionProposalModal() {
         methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains
-          .map(chain => eip155Addresses.map(account => `${chain}:${account}`))
+          .map(chain =>
+            eip155Addresses
+              .map(account => `${chain}:${account}`)
+              .slice(0, addressesToApprove ?? eip155Addresses.length)
+          )
           .flat()
       },
       cosmos: {
@@ -267,9 +276,9 @@ export default function SessionProposalModal() {
 
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
-    if (proposal && namespaces) {
-      setIsLoadingApprove(true)
-      try {
+    try {
+      if (proposal && namespaces) {
+        setIsLoadingApprove(true)
         if (reorderedEip155Accounts.length > 0) {
           // we should append the smart accounts to the available eip155 accounts
           namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
@@ -284,14 +293,13 @@ export default function SessionProposalModal() {
           sessionProperties
         })
         SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
+      setIsLoadingApprove(false)
+      ModalStore.close()
     }
-    setIsLoadingApprove(false)
-    ModalStore.close()
   }, [namespaces, proposal, reorderedEip155Accounts])
 
   // Hanlde reject action
@@ -363,16 +371,19 @@ export default function SessionProposalModal() {
 
           <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
           {smartAccountEnabled &&
-            getAvailableSmartAccounts().map((account, i) => {
-              if (!account) {
-                return <></>
+            namespaces &&
+            getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
+              (account, i) => {
+                if (!account) {
+                  return <></>
+                }
+                return (
+                  <Row key={i}>
+                    <ChainSmartAddressMini account={account} />
+                  </Row>
+                )
               }
-              return (
-                <Row key={i}>
-                  <ChainSmartAddressMini account={account} />
-                </Row>
-              )
-            })}
+            )}
         </Grid>
         <Grid>
           <Row style={{ color: 'GrayText' }} justify="flex-end">
@@ -394,16 +405,19 @@ export default function SessionProposalModal() {
             Chains
           </Row>
           {smartAccountEnabled &&
-            getAvailableSmartAccounts().map(({ chain }, i) => {
-              if (!chain) {
-                return <></>
+            namespaces &&
+            getAvailableSmartAccountsOnNamespaceChains(namespaces.eip155.chains).map(
+              ({ chain }, i) => {
+                if (!chain) {
+                  return <></>
+                }
+                return (
+                  <Row key={i} style={{ marginTop: '24px' }}>
+                    <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
+                  </Row>
+                )
               }
-              return (
-                <Row key={i} style={{ marginTop: '24px' }}>
-                  <ChainDataMini key={i} chainId={`eip155:${chain.id}`} />
-                </Row>
-              )
-            })}
+            )}
         </Grid>
       </Grid.Container>
     </RequestModal>

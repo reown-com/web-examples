@@ -1,12 +1,8 @@
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { Col, Divider, Row, Text, Code, Checkbox, Grid } from '@nextui-org/react'
+import { Col, Row, Text, Code, Checkbox, Grid } from '@nextui-org/react'
 import { buildAuthObject, getSdkError, populateAuthPayload } from '@walletconnect/utils'
 
-import ModalFooter from '@/components/ModalFooter'
-import ProjectInfoCard from '@/components/ProjectInfoCard'
-import RequestModalContainer from '@/components/RequestModalContainer'
-import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
@@ -31,17 +27,14 @@ export default function SessionAuthenticateModal() {
   const address = eip155Addresses[account]
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const getMessageToSign = useCallback(
-    (authPayload, iss) => {
-      const message = walletkit.engine.signClient.formatAuthMessage({
-        request: authPayload,
-        iss
-      })
-      console.log('message', message)
-      return message
-    },
-    [address]
-  )
+  const getMessageToSign = useCallback((authPayload, iss) => {
+    const message = walletkit.engine.signClient.formatAuthMessage({
+      request: authPayload,
+      iss
+    })
+    console.log('message', message)
+    return message
+  }, [])
 
   useEffect(() => {
     if (!authRequest?.params?.authPayload) return
@@ -92,26 +85,30 @@ export default function SessionAuthenticateModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (messages.length) {
-      const signedAuths = []
-      for (const message of messages) {
-        const signature = await eip155Wallets[address].signMessage(message.message)
-        const signedCacao = buildAuthObject(
-          message.authPayload,
-          {
-            t: 'eip191',
-            s: signature
-          },
-          message.iss
-        )
-        signedAuths.push(signedCacao)
+    try {
+      if (messages.length) {
+        const signedAuths = []
+        for (const message of messages) {
+          const signature = await eip155Wallets[address].signMessage(message.message)
+          const signedCacao = buildAuthObject(
+            message.authPayload,
+            {
+              t: 'eip191',
+              s: signature
+            },
+            message.iss
+          )
+          signedAuths.push(signedCacao)
+        }
+        await walletkit.engine.signClient.approveSessionAuthenticate({
+          id: messages[0].id,
+          auths: signedAuths
+        })
+        SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }
-
-      await walletkit.engine.signClient.approveSessionAuthenticate({
-        id: messages[0].id,
-        auths: signedAuths
-      })
-      SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       ModalStore.close()
     }
   }, [address, messages])

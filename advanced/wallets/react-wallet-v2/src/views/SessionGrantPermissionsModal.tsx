@@ -9,7 +9,11 @@ import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 import PermissionDetailsCard from '@/components/PermissionDetailsCard'
-import { approveEIP7715Request, rejectEIP7715Request } from '@/utils/EIP7715RequestHandlerUtils'
+import {
+  approveEIP7715Request,
+  createErrorResponse,
+  rejectEIP7715Request
+} from '@/utils/EIP7715RequestHandlerUtils'
 import { GrantPermissionsParameters } from 'viem/experimental'
 // import { GrantPermissionsRequestParams } from '@/data/EIP7715Data'
 
@@ -44,12 +48,16 @@ export default function SessionGrantPermissionsModal() {
           response
         })
       } catch (e) {
-        setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
-        return
+        const response = createErrorResponse(requestEvent, (e as Error).message)
+        await walletkit.respondSessionRequest({
+          topic,
+          response
+        })
+      } finally {
+        setIsLoadingApprove(false)
+        ModalStore.close()
       }
-      setIsLoadingApprove(false)
-      ModalStore.close()
     }
   }, [requestEvent, topic])
 
