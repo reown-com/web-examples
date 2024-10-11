@@ -285,7 +285,10 @@ export default function SessionProposalModal() {
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
-        const sessionProperties = { capabilities: JSON.stringify(capabilities) }
+        const sessionProperties = {
+          capabilities: JSON.stringify(capabilities),
+          bundler_name: 'pimlico'
+        }
 
         await walletkit.approveSession({
           id: proposal.id,
