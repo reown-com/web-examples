@@ -3,8 +3,9 @@ import * as encoding from "@walletconnect/encoding";
 import { TypedDataUtils } from "eth-sig-util";
 import * as ethUtil from "ethereumjs-util";
 
-import { eip1271, verifySignMessageSignatureUniversal } from "./eip1271";
+import { eip1271 } from "./eip1271";
 import { DEFAULT_CHAINS } from "../constants";
+import { verifySignMessageSignatureUniversal } from "./eip6492";
 
 export function capitalize(string: string): string {
   return string
