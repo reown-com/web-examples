@@ -7,7 +7,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approveTronRequest, rejectTronRequest } from '@/utils/TronRequestHandlerUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 
@@ -33,7 +33,7 @@ export default function SessionSignTronModal() {
       if (requestEvent) {
         setIsLoadingApprove(true)
         const response = await approveTronRequest(requestEvent)
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
@@ -52,7 +52,7 @@ export default function SessionSignTronModal() {
       setIsLoadingReject(true)
       const response = rejectTronRequest(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

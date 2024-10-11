@@ -6,7 +6,7 @@ import RequestDetailsCard from '@/components/RequestDetalilsCard'
 import ModalStore from '@/store/ModalStore'
 import { convertHexToUtf8, styledToast } from '@/utils/HelperUtil'
 import { approveKadenaRequest, rejectKadenaRequest } from '@/utils/KadenaRequestHandlerUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 
@@ -35,7 +35,7 @@ export default function SessionSignKadenaModal() {
       if (requestEvent) {
         setIsLoadingApprove(true)
         const response = await approveKadenaRequest(requestEvent)
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
@@ -56,7 +56,7 @@ export default function SessionSignKadenaModal() {
       setIsLoadingReject(true)
       const response = rejectKadenaRequest(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

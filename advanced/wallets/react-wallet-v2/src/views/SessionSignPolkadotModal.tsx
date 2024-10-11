@@ -7,7 +7,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approvePolkadotRequest, rejectPolkadotRequest } from '@/utils/PolkadotRequestHandlerUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 
@@ -33,7 +33,7 @@ export default function SessionSignPolkadotModal() {
       if (requestEvent) {
         setIsLoadingApprove(true)
         const response = await approvePolkadotRequest(requestEvent)
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
@@ -52,7 +52,7 @@ export default function SessionSignPolkadotModal() {
       setIsLoadingReject(true)
       const response = rejectPolkadotRequest(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

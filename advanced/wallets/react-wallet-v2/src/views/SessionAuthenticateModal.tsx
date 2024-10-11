@@ -1,16 +1,12 @@
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSnapshot } from 'valtio'
-import { Col, Divider, Row, Text, Code, Checkbox, Grid } from '@nextui-org/react'
+import { Col, Row, Text, Code, Checkbox, Grid } from '@nextui-org/react'
 import { buildAuthObject, getSdkError, populateAuthPayload } from '@walletconnect/utils'
 
-import ModalFooter from '@/components/ModalFooter'
-import ProjectInfoCard from '@/components/ProjectInfoCard'
-import RequestModalContainer from '@/components/RequestModalContainer'
-import VerifyInfobox from '@/components/VerifyInfobox'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { styledToast } from '@/utils/HelperUtil'
@@ -31,17 +27,14 @@ export default function SessionAuthenticateModal() {
   const address = eip155Addresses[account]
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const getMessageToSign = useCallback(
-    (authPayload, iss) => {
-      const message = web3wallet.engine.signClient.formatAuthMessage({
-        request: authPayload,
-        iss
-      })
-      console.log('message', message)
-      return message
-    },
-    [address]
-  )
+  const getMessageToSign = useCallback((authPayload, iss) => {
+    const message = walletkit.engine.signClient.formatAuthMessage({
+      request: authPayload,
+      iss
+    })
+    console.log('message', message)
+    return message
+  }, [])
 
   useEffect(() => {
     if (!authRequest?.params?.authPayload) return
@@ -75,7 +68,7 @@ export default function SessionAuthenticateModal() {
       const messagesToSign: any[] = []
       newAuthPayload.chains.forEach((chain: string) => {
         const iss = `${chain}:${address}`
-        const message = web3wallet.engine.signClient.formatAuthMessage({
+        const message = walletkit.engine.signClient.formatAuthMessage({
           request: newAuthPayload,
           iss
         })
@@ -107,12 +100,11 @@ export default function SessionAuthenticateModal() {
           )
           signedAuths.push(signedCacao)
         }
-
-        await web3wallet.engine.signClient.approveSessionAuthenticate({
+        await walletkit.engine.signClient.approveSessionAuthenticate({
           id: messages[0].id,
           auths: signedAuths
         })
-        SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+        SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }
     } catch (e) {
       styledToast((e as Error).message, 'error')
@@ -124,7 +116,7 @@ export default function SessionAuthenticateModal() {
   // Handle reject action
   const onReject = useCallback(async () => {
     if (authRequest?.params?.authPayload) {
-      await web3wallet.engine.signClient.rejectSessionAuthenticate({
+      await walletkit.engine.signClient.rejectSessionAuthenticate({
         id: authRequest.id,
         reason: getSdkError('USER_REJECTED')
       })

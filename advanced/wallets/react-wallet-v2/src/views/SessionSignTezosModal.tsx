@@ -7,7 +7,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approveTezosRequest, rejectTezosRequest } from '@/utils/TezosRequestHandlerUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 
@@ -33,7 +33,7 @@ export default function SessionSignTezosModal() {
       if (requestEvent) {
         setIsLoadingApprove(true)
         const response = await approveTezosRequest(requestEvent)
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
@@ -52,7 +52,7 @@ export default function SessionSignTezosModal() {
       setIsLoadingReject(true)
       const response = rejectTezosRequest(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

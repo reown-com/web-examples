@@ -15,7 +15,7 @@ import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
@@ -287,12 +287,12 @@ export default function SessionProposalModal() {
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
         const sessionProperties = { capabilities: JSON.stringify(capabilities) }
 
-        await web3wallet.approveSession({
+        await walletkit.approveSession({
           id: proposal.id,
           namespaces,
           sessionProperties
         })
-        SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+        SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }
     } catch (e) {
       styledToast((e as Error).message, 'error')
@@ -309,7 +309,7 @@ export default function SessionProposalModal() {
       try {
         setIsLoadingReject(true)
         await new Promise(resolve => setTimeout(resolve, 1000))
-        await web3wallet.rejectSession({
+        await walletkit.rejectSession({
           id: proposal.id,
           reason: getSdkError('USER_REJECTED_METHODS')
         })

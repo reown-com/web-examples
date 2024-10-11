@@ -5,7 +5,7 @@ import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { approveEIP5792Request, rejectEIP5792Request } from '@/utils/EIP5792RequestHandlerUtils'
 
@@ -30,7 +30,7 @@ export default function SessionSendCallsModal() {
         setIsLoadingApprove(true)
         console.log('Calls approved.')
         const response = await approveEIP5792Request(requestEvent)
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
@@ -49,7 +49,7 @@ export default function SessionSendCallsModal() {
       setIsLoadingReject(true)
       const response = rejectEIP5792Request(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

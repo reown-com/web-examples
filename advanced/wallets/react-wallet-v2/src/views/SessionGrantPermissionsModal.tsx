@@ -5,7 +5,7 @@ import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 import PermissionDetailsCard from '@/components/PermissionDetailsCard'
@@ -39,25 +39,25 @@ export default function SessionGrantPermissionsModal() {
   console.log({ grantPermissionsRequestParams })
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    try {
-      if (requestEvent) {
-        setIsLoadingApprove(true)
-        const response = await approveEIP7715Request(requestEvent)
-        await web3wallet.respondSessionRequest({
+    if (requestEvent) {
+      setIsLoadingApprove(true)
+      const response = await approveEIP7715Request(requestEvent)
+      try {
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
+      } catch (e) {
+        styledToast((e as Error).message, 'error')
+        const response = createErrorResponse(requestEvent, (e as Error).message)
+        await walletkit.respondSessionRequest({
+          topic,
+          response
+        })
+      } finally {
+        setIsLoadingApprove(false)
+        ModalStore.close()
       }
-    } catch (e) {
-      styledToast((e as Error).message, 'error')
-      const response = createErrorResponse(requestEvent, (e as Error).message)
-      await web3wallet.respondSessionRequest({
-        topic,
-        response
-      })
-    } finally {
-      setIsLoadingApprove(false)
-      ModalStore.close()
     }
   }, [requestEvent, topic])
 
@@ -67,7 +67,7 @@ export default function SessionGrantPermissionsModal() {
       setIsLoadingReject(true)
       const response = rejectEIP7715Request(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

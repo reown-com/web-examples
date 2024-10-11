@@ -8,7 +8,7 @@ import {
   WalletGrantPermissionsResponse
 } from '@/data/EIP7715Data'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
-import { web3wallet } from './WalletConnectUtil'
+import { walletkit } from './WalletConnectUtil'
 import { smartAccountWallets } from './SmartAccountUtil'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
@@ -43,7 +43,7 @@ function getSmartAccountLibFromSession(requestSession: SessionTypes.Struct, chai
 
 export async function approveEIP7715Request(requestEvent: RequestEventArgs) {
   const { params, id, topic } = requestEvent
-  const requestSession = web3wallet.engine.signClient.session.get(topic)
+  const requestSession = walletkit.engine.signClient.session.get(topic)
   const { chainId, request } = params
   SettingsStore.setActiveChainId(chainId)
   switch (request.method) {
