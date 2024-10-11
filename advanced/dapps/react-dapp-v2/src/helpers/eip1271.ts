@@ -49,8 +49,6 @@ async function isValidSignature(
   return returnValue.toLowerCase() === magicValue.toLowerCase();
 }
 
-
-
 export const eip1271 = {
   spec,
   isValidSignature,
