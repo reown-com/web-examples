@@ -40,6 +40,7 @@ app.post('/verify', async (req, res) => {
       
       // save the session with the address and chainId (SIWESession)
       req.session.siwe = { address, chainId };
+      console.log("/verify");
       req.session.save(() => res.status(200).send(true));
     } catch (e) {
       // clean the session
@@ -52,6 +53,7 @@ app.post('/verify', async (req, res) => {
   // get the session
   app.get('/session', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
+    console.log("/session");
     res.send(req.session.siwe);
   });
 
@@ -59,6 +61,7 @@ app.post('/verify', async (req, res) => {
   app.get('/signout', (req, res) => {
     req.session.siwe = null;
     req.session.nonce = null;
+    console.log("/singout");
     req.session.save(() => res.send({}));
   });
 
