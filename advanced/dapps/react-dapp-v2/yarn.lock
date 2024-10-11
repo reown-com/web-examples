@@ -3693,10 +3693,10 @@
     "@typescript-eslint/types" "5.59.7"
     eslint-visitor-keys "^3.3.0"
 
-"@walletconnect/core@2.16.1":
-  version "2.16.1"
-  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.16.1.tgz#019b181387792e0d284e75074b961b48193d9b6a"
-  integrity sha512-UlsnEMT5wwFvmxEjX8s4oju7R3zadxNbZgsFeHEsjh7uknY2zgmUe1Lfc5XU6zyPb1Jx7Nqpdx1KN485ee8ogw==
+"@walletconnect/core@2.16.2-canary-tma-1":
+  version "2.16.2-canary-tma-1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/core/-/core-2.16.2-canary-tma-1.tgz#6a7d6eceb36a84c7ee1b31a249c95350119f4c6a"
+  integrity sha512-VZ0AH5D+GvRpTVOLYxEyLJ0B2Sj5Ega9vTATjc94IM4bQurbEL7cvHGZXP6h8XzyxWNTjKCbCK6gIHszmE2uBQ==
   dependencies:
     "@walletconnect/heartbeat" "1.2.2"
     "@walletconnect/jsonrpc-provider" "1.0.14"
@@ -3709,8 +3709,8 @@
     "@walletconnect/relay-auth" "1.0.4"
     "@walletconnect/safe-json" "1.0.2"
     "@walletconnect/time" "1.0.2"
-    "@walletconnect/types" "2.16.1"
-    "@walletconnect/utils" "2.16.1"
+    "@walletconnect/types" "2.16.2-canary-tma-1"
+    "@walletconnect/utils" "2.16.2-canary-tma-1"
     events "3.3.0"
     lodash.isequal "4.5.0"
     uint8arrays "3.1.0"
@@ -3876,6 +3876,31 @@
     pino "7.11.0"
     tslib "1.14.1"
 
+"@walletconnect/modal-core@2.6.2-canary-tma-3":
+  version "2.6.2-canary-tma-3"
+  resolved "https://registry.yarnpkg.com/@walletconnect/modal-core/-/modal-core-2.6.2-canary-tma-3.tgz#609509a4f2a81d85e7ca9d4f0b4211b0b257b6ba"
+  integrity sha512-iB2uMBcpJH5/XEFv37d9vACuoD13T2ciLCOVKmuLbtUZZcya3E6hsYpDubOTz9l25A0iPurjcMkOik99Mj1aJA==
+  dependencies:
+    valtio "1.11.2"
+
+"@walletconnect/modal-ui@2.6.2-canary-tma-3":
+  version "2.6.2-canary-tma-3"
+  resolved "https://registry.yarnpkg.com/@walletconnect/modal-ui/-/modal-ui-2.6.2-canary-tma-3.tgz#72bf5ae94ab1ea49490f969290837b09072fb223"
+  integrity sha512-cpIFtKgySySk+wqLxdU7tWEZ9dEA+yOJiSL6OWFpUU/7RvnT4Mm64VNU5FZwK1LxnaVnpBlETAjn2IiahJWMvw==
+  dependencies:
+    "@walletconnect/modal-core" "2.6.2-canary-tma-3"
+    lit "2.8.0"
+    motion "10.16.2"
+    qrcode "1.5.3"
+
+"@walletconnect/modal@2.6.2-canary-tma-3":
+  version "2.6.2-canary-tma-3"
+  resolved "https://registry.yarnpkg.com/@walletconnect/modal/-/modal-2.6.2-canary-tma-3.tgz#1670ed2f00b3bb6240ad17d22bbb41b29e8155d0"
+  integrity sha512-J5pvJEWOVxQ4KZR3V6WsvlSXWt5qqtn+XB7KCxDNUrXwAjp4QUQBl5HMpGUjEsz4m2L/daoFlN7jdq7/cx/HDA==
+  dependencies:
+    "@walletconnect/modal-core" "2.6.2-canary-tma-3"
+    "@walletconnect/modal-ui" "2.6.2-canary-tma-3"
+
 "@walletconnect/relay-api@1.0.11":
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/@walletconnect/relay-api/-/relay-api-1.0.11.tgz#80ab7ef2e83c6c173be1a59756f95e515fb63224"
@@ -3910,19 +3935,19 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/sign-client@2.16.1":
-  version "2.16.1"
-  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.16.1.tgz#94a2f630ba741bd180f540c53576c5ceaace4857"
-  integrity sha512-s2Tx2n2duxt+sHtuWXrN9yZVaHaYqcEcjwlTD+55/vs5NUPlISf+fFmZLwSeX1kUlrSBrAuxPUcqQuRTKcjLOA==
+"@walletconnect/sign-client@2.16.2-canary-tma-1":
+  version "2.16.2-canary-tma-1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/sign-client/-/sign-client-2.16.2-canary-tma-1.tgz#5f6fe6f742b86a50c5abb2df22d3b025b412f31d"
+  integrity sha512-3RYoBc0OU05GUJvWJBr8rmCvmQ4F715EzY7SnRrCTMBYMqeHaKwsVl9NfA9Nh6zdUtz669G7YDPSBxJ3xkC8Og==
   dependencies:
-    "@walletconnect/core" "2.16.1"
+    "@walletconnect/core" "2.16.2-canary-tma-1"
     "@walletconnect/events" "1.0.1"
     "@walletconnect/heartbeat" "1.2.2"
     "@walletconnect/jsonrpc-utils" "1.0.8"
     "@walletconnect/logger" "2.1.2"
     "@walletconnect/time" "1.0.2"
-    "@walletconnect/types" "2.16.1"
-    "@walletconnect/utils" "2.16.1"
+    "@walletconnect/types" "2.16.2-canary-tma-1"
+    "@walletconnect/utils" "2.16.2-canary-tma-1"
     events "3.3.0"
 
 "@walletconnect/sign-client@~2.8.1":
@@ -3947,10 +3972,10 @@
   dependencies:
     tslib "1.14.1"
 
-"@walletconnect/types@2.16.1":
-  version "2.16.1"
-  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.16.1.tgz#6583d458d3f7b1919d482ba516ccb7878ec8c91f"
-  integrity sha512-9P4RG4VoDEF+yBF/n2TF12gsvT/aTaeZTVDb/AOayafqiPnmrQZMKmNCJJjq1sfdsDcHXFcZWMGsuCeSJCmrXA==
+"@walletconnect/types@2.16.2-canary-tma-1":
+  version "2.16.2-canary-tma-1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/types/-/types-2.16.2-canary-tma-1.tgz#867d5e4e562a0693d3d776d3fa4a66b09e7e1b1c"
+  integrity sha512-pVzfrs4TNVMO9CQVA4g34XgfSwJDE6eC68unbbg7Lec65rsbiMTVY9iesD08ioYjNivU7nizoXS4rMOMMyfKYA==
   dependencies:
     "@walletconnect/events" "1.0.1"
     "@walletconnect/heartbeat" "1.2.2"
@@ -3971,10 +3996,10 @@
     "@walletconnect/logger" "^2.0.1"
     events "^3.3.0"
 
-"@walletconnect/utils@2.16.1":
-  version "2.16.1"
-  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.16.1.tgz#2099cc2bd16b0edc32022f64aa2c2c323b45d1d4"
-  integrity sha512-aoQirVoDoiiEtYeYDtNtQxFzwO/oCrz9zqeEEXYJaAwXlGVTS34KFe7W3/Rxd/pldTYKFOZsku2EzpISfH8Wsw==
+"@walletconnect/utils@2.16.2-canary-tma-1":
+  version "2.16.2-canary-tma-1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/utils/-/utils-2.16.2-canary-tma-1.tgz#63c7404ee6d41a4c8b014707e07bf30ba8656941"
+  integrity sha512-xalt+qiaEReehA92/1ci+b+rEpLiq81o81qvjYKKRkeEsL7XIHCB+ZAHQ8DeQzu7z+Ui1H+wtJOwoSGBYs7uNw==
   dependencies:
     "@stablelib/chacha20poly1305" "1.0.1"
     "@stablelib/hkdf" "1.0.1"
@@ -3985,7 +4010,7 @@
     "@walletconnect/relay-auth" "1.0.4"
     "@walletconnect/safe-json" "1.0.2"
     "@walletconnect/time" "1.0.2"
-    "@walletconnect/types" "2.16.1"
+    "@walletconnect/types" "2.16.2-canary-tma-1"
     "@walletconnect/window-getters" "1.0.1"
     "@walletconnect/window-metadata" "1.0.1"
     detect-browser "5.3.0"
@@ -4027,32 +4052,6 @@
   dependencies:
     "@walletconnect/window-getters" "^1.0.1"
     tslib "1.14.1"
-
-"@web3modal/core@2.4.3":
-  version "2.4.3"
-  resolved "https://registry.yarnpkg.com/@web3modal/core/-/core-2.4.3.tgz#ea6d3911e52a132c70defb7584f869d09a8af974"
-  integrity sha512-7Z/sDe9RIYQ2k9ITcxgEa/u7FvlI76vcVVZn9UY4ISivefqrH4JAS3GX4JmVNUUlovwuiZdyqBv4llAQOMK6Rg==
-  dependencies:
-    buffer "6.0.3"
-    valtio "1.10.5"
-
-"@web3modal/standalone@2.4.3":
-  version "2.4.3"
-  resolved "https://registry.yarnpkg.com/@web3modal/standalone/-/standalone-2.4.3.tgz#98aaa65eba725c34d5be9078ef04b4e9b769d0f3"
-  integrity sha512-5ATXBoa4GGm+TIUSsKWsfWCJunv1XevOizpgTFhqyeGgRDmWhqsz9UIPzH/1mk+g0iJ/xqMKs5F6v9D2QeKxag==
-  dependencies:
-    "@web3modal/core" "2.4.3"
-    "@web3modal/ui" "2.4.3"
-
-"@web3modal/ui@2.4.3":
-  version "2.4.3"
-  resolved "https://registry.yarnpkg.com/@web3modal/ui/-/ui-2.4.3.tgz#986c6bed528dccab679c734ff531e42f6605c5b2"
-  integrity sha512-J989p8CdtEhI9gZHf/rZ/WFqYlrAHWw9GmAhFoiNODwjAp0BoG/uoaPiijJMchXdngihZOjLGCQwDXU16DHiKg==
-  dependencies:
-    "@web3modal/core" "2.4.3"
-    lit "2.7.5"
-    motion "10.16.2"
-    qrcode "1.5.3"
 
 "@webassemblyjs/ast@1.9.0":
   version "1.9.0"
@@ -10693,14 +10692,21 @@ lit-html@^2.7.0:
   dependencies:
     "@types/trusted-types" "^2.0.2"
 
-lit@2.7.5:
-  version "2.7.5"
-  resolved "https://registry.yarnpkg.com/lit/-/lit-2.7.5.tgz#60bc82990cfad169d42cd786999356dcf79b035f"
-  integrity sha512-i/cH7Ye6nBDUASMnfwcictBnsTN91+aBjXoTHF2xARghXScKxpD4F4WYI+VLXg9lqbMinDfvoI7VnZXjyHgdfQ==
+lit-html@^2.8.0:
+  version "2.8.0"
+  resolved "https://registry.yarnpkg.com/lit-html/-/lit-html-2.8.0.tgz#96456a4bb4ee717b9a7d2f94562a16509d39bffa"
+  integrity sha512-o9t+MQM3P4y7M7yNzqAyjp7z+mQGa4NS4CxiyLqFPyFWyc4O+nodLrkrxSaCTrla6M5YOLaT3RpbbqjszB5g3Q==
+  dependencies:
+    "@types/trusted-types" "^2.0.2"
+
+lit@2.8.0:
+  version "2.8.0"
+  resolved "https://registry.yarnpkg.com/lit/-/lit-2.8.0.tgz#4d838ae03059bf9cafa06e5c61d8acc0081e974e"
+  integrity sha512-4Sc3OFX9QHOJaHbmTMk28SYgVxLN3ePDjg7hofEft2zWlehFL3LiAuapWc4U/kYwMYJSh2hTCPZ6/LIC7ii0MA==
   dependencies:
     "@lit/reactive-element" "^1.6.0"
     lit-element "^3.3.0"
-    lit-html "^2.7.0"
+    lit-html "^2.8.0"
 
 loader-runner@^2.4.0:
   version "2.4.0"
@@ -15835,10 +15841,10 @@ validator@^13.7.0:
   resolved "https://registry.yarnpkg.com/validator/-/validator-13.9.0.tgz#33e7b85b604f3bbce9bb1a05d5c3e22e1c2ff855"
   integrity sha512-B+dGG8U3fdtM0/aNK4/X8CXq/EcxU2WPrPEkJGslb47qyHsxmbggTWK0yEA4qnYVNF+nxNlN88o14hIcPmSIEA==
 
-valtio@1.10.5:
-  version "1.10.5"
-  resolved "https://registry.yarnpkg.com/valtio/-/valtio-1.10.5.tgz#7852125e3b774b522827d96bd9c76d285c518678"
-  integrity sha512-jTp0k63VXf4r5hPoaC6a6LCG4POkVSh629WLi1+d5PlajLsbynTMd7qAgEiOSPxzoX5iNvbN7iZ/k/g29wrNiQ==
+valtio@1.11.2:
+  version "1.11.2"
+  resolved "https://registry.yarnpkg.com/valtio/-/valtio-1.11.2.tgz#b8049c02dfe65620635d23ebae9121a741bb6530"
+  integrity sha512-1XfIxnUXzyswPAPXo1P3Pdx2mq/pIqZICkWN60Hby0d9Iqb+MEIpqgYVlbflvHdrp2YR/q3jyKWRPJJ100yxaw==
   dependencies:
     proxy-compare "2.5.1"
     use-sync-external-store "1.2.0"

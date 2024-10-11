@@ -1,6 +1,6 @@
 import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import { Web3Modal } from "@web3modal/standalone";
+import { WalletConnectModal } from "@walletconnect/modal";
 import { RELAYER_EVENTS } from "@walletconnect/core";
 import toast from "react-hot-toast";
 
@@ -59,10 +59,9 @@ export const ClientContext = createContext<IContext>({} as IContext);
 /**
  * Web3Modal Config
  */
-const web3Modal = new Web3Modal({
+const web3Modal = new WalletConnectModal({
   projectId: DEFAULT_PROJECT_ID,
   themeMode: "light",
-  walletConnectVersion: 2,
 });
 
 /**
