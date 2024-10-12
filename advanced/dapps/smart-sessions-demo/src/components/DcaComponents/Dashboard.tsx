@@ -6,8 +6,8 @@ import {
 } from "@/utils/DonutContract";
 import { useReadContract } from "wagmi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import AddressDisplay from "../AddressDisplay";
-import AssetBalance from "../AssetBalance";
+import AddressDisplay from "./AddressDisplay";
+import AssetBalance from "./AssetBalance";
 import { useAppKitAccount } from "@reown/appkit/react";
 
 export default function Dashboard() {

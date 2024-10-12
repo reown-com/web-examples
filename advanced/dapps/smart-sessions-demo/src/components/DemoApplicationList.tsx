@@ -15,9 +15,9 @@ interface DemoApplicationsProps {
   demoAppsMetadata: DemoAppMetadata[];
 }
 
-const DemoApplicationList: React.FC<DemoApplicationsProps> = ({
+export default function DemoApplicationList({
   demoAppsMetadata,
-}) => {
+}: DemoApplicationsProps) {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-6">Applications</h2>
@@ -28,33 +28,34 @@ const DemoApplicationList: React.FC<DemoApplicationsProps> = ({
       </div>
     </div>
   );
-};
+}
 
-const DemoApplication: React.FC<DemoAppMetadata> = ({
-  title,
-  link,
-  description,
-}) => {
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between gap-4">
-          <CardDescription className="flex-grow text-sm text-muted-foreground">
-            {description}
-          </CardDescription>
-          <Link href={link} passHref legacyBehavior>
-            <Button size="sm" variant="outline" className="flex-shrink-0">
-              Go
-              <ArrowRightIcon className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-export default DemoApplicationList;
+const DemoApplication: React.FC<DemoAppMetadata> = React.memo(
+  function DemoApplication({ title, link, description }: DemoAppMetadata) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between gap-4">
+            <CardDescription className="flex-grow text-sm text-muted-foreground">
+              {description}
+            </CardDescription>
+            <Link href={link}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-shrink-0"
+                aria-label={`Go to ${title}`}
+              >
+                Go
+                <ArrowRightIcon className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  },
+);
