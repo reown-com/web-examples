@@ -63,6 +63,16 @@ const web3Modal = new Web3Modal({
   projectId: DEFAULT_PROJECT_ID,
   themeMode: "light",
   walletConnectVersion: 2,
+  mobileWallets: [
+    {
+      id: "bifrost",
+      name: "Bifrost Wallet",
+      links: {
+        native: "bifrostwallet://",
+        universal: "https://bifrostwallet.com",
+      },
+    },
+  ],
 });
 
 /**
