@@ -49,6 +49,7 @@ interface IContext {
   setChains: any;
   setRelayerRegion: any;
   origin: string;
+  setAccounts: any;
 }
 
 /**
@@ -116,7 +117,6 @@ export function ClientContextProvider({
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
           const assets = await apiGetAccountBalance(address, chainId);
-
           return { account, assets: [assets] };
         })
       );
@@ -132,6 +132,11 @@ export function ClientContextProvider({
       setIsFetchingBalances(false);
     }
   };
+
+  useMemo(() => {
+    if (!accounts.length) return;
+    getAccountBalances(accounts);
+  }, [accounts]);
 
   const onSessionConnected = useCallback(
     async (_session: SessionTypes.Struct) => {
@@ -385,6 +390,7 @@ export function ClientContextProvider({
       setChains,
       setRelayerRegion,
       origin,
+      setAccounts,
     }),
     [
       pairings,
@@ -402,6 +408,7 @@ export function ClientContextProvider({
       setChains,
       setRelayerRegion,
       origin,
+      setAccounts,
     ]
   );
 

@@ -175,7 +175,7 @@ export function JsonRpcContextProvider({
     null
   );
 
-  const { client, session, accounts, balances, solanaPublicKeys } =
+  const { client, session, accounts, balances, solanaPublicKeys, setAccounts } =
     useWalletConnectClient();
 
   const { chainData } = useChainData();
@@ -1753,6 +1753,10 @@ export function JsonRpcContextProvider({
           },
         });
         console.log("result", result);
+
+        const accounts = result.map((r: any) => `${chainId}:${r.address}`);
+        setAccounts(accounts);
+
         return {
           method,
           address: address,
