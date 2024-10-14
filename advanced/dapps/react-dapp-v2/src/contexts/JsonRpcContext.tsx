@@ -1757,7 +1757,7 @@ export function JsonRpcContextProvider({
           method,
           address: address,
           valid: true,
-          result: result,
+          result: result.map((r: any) => r.address).join(", "),
         };
       }
     ),
