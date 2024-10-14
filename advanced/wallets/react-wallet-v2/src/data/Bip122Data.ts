@@ -2,8 +2,8 @@
  * Chains
  */
 export const BITCOIN_MAINNET = {
-  'bip122:000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f': {
-    chainId: '000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f',
+  'bip122:000000000933ea01ad0ee984209779ba4ff763ae46a2a6c172b3f1b60a8ce26f': {
+    chainId: '000000000933ea01ad0ee984209779ba4ff763ae46a2a6c172b3f1b60a8ce26f',
     name: 'BTC Mainnet',
     logo: '/chain-logos/btc-mainnet.png',
     rgb: '107, 111, 147',

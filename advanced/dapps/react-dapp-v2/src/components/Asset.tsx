@@ -11,7 +11,7 @@ const xdaiLogo = getChainMetadata("eip155:100").logo;
 const maticLogo = getChainMetadata("eip155:137").logo;
 const kadenaLogo = getChainMetadata("kadena:testnet04").logo;
 const btcLogo = getChainMetadata(
-  "bip122:000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
+  "bip122:000000000933ea01ad0ee984209779ba"
 ).logo;
 
 const SAsset = styled.div`

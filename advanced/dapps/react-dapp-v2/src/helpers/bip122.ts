@@ -10,7 +10,7 @@ export async function apiGetBip122AccountBalance(
 
 export async function apiGetAddressUtxos(address: string, chainId: string) {
   return await (
-    await fetch(`https://mempool.space/signet/api/address/${address}/utxo`)
+    await fetch(`https://mempool.space/testnet/api/address/${address}/utxo`)
   ).json();
 }
 

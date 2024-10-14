@@ -146,6 +146,7 @@ interface IContext {
   bip122Rpc: {
     testSignMessage: TRpcRequestCallback;
     testSendTransaction: TRpcRequestCallback;
+    testGetAccountAddresses: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -1656,7 +1657,7 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE;
+        const method = ""; //DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE;
         const message = "This is a message to be signed for BIP122";
         const result = await client!.request<{
           signature: string;
@@ -1696,20 +1697,62 @@ export function JsonRpcContextProvider({
         const method = DEFAULT_BIP122_METHODS.BIP122_SEND_TRANSACTION;
 
         const utxos = await apiGetAddressUtxos(address, chainId);
+        console.log("utxos", utxos);
         const availableBalance = getAvailableBalanceFromUtxos(utxos); // in satoshis
+        console.log("availableBalance", availableBalance);
+        const toSend = Math.floor(availableBalance / 5); // in satoshis
+        const req = {
+          account: address,
+          recipientAddress: address,
+          amount: "550",
+        };
+        console.log("request", {
+          method,
+          params: req,
+          chainId,
+        });
+
+        const result = await client!.request<{ txId: string }>({
+          topic: session!.topic,
+          chainId: chainId,
+          request: {
+            method,
+            params: req,
+          },
+        });
+        console.log("result", result);
+        return {
+          method,
+          address: address,
+          valid: true,
+          result: result?.txId,
+        };
+      }
+    ),
+    testGetAccountAddresses: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES;
+        const req = {
+          account: address,
+        };
+        console.log("request", {
+          method,
+          params: req,
+          chainId,
+        });
+
         const result = await client!.request<any>({
           topic: session!.topic,
           chainId: chainId,
           request: {
             method,
-            params: {
-              address,
-              value: availableBalance,
-              transactionType: "p2wpkh",
-            },
+            params: req,
           },
         });
-
+        console.log("result", result);
         return {
           method,
           address: address,

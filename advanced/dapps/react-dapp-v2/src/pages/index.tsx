@@ -484,18 +484,22 @@ const Home: NextPage = () => {
       openRequestModal();
       await bip122Rpc.testSignMessage(chainId, address);
     };
+    const onGetAccountAddresses = async (chainId: string, address: string) => {
+      openRequestModal();
+      await bip122Rpc.testGetAccountAddresses(chainId, address);
+    };
     const onSendTransaction = async (chainId: string, address: string) => {
       openRequestModal();
       await bip122Rpc.testSendTransaction(chainId, address);
     };
     return [
       {
-        method: DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE,
-        callback: onSignMessage,
-      },
-      {
         method: DEFAULT_BIP122_METHODS.BIP122_SEND_TRANSACTION,
         callback: onSendTransaction,
+      },
+      {
+        method: DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES,
+        callback: onGetAccountAddresses,
       },
     ];
   };
