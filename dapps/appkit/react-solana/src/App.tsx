@@ -39,8 +39,10 @@ const modal = createAppKit({
 
 export function App() {
 
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <h2>Reown AppKit + Solana</h2>
       <w3m-button />
       <SolanaHooks />
       <p>
