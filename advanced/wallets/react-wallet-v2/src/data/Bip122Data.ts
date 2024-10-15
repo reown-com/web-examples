@@ -12,9 +12,9 @@ export const BITCOIN_MAINNET = {
   }
 }
 export const BITCOIN_TESTNET = {
-  'bip122:000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943': {
-    chainId: '000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943',
-    name: 'BTC Signet',
+  'bip122:000000000933ea01ad0ee984209779ba': {
+    chainId: '000000000933ea01ad0ee984209779ba',
+    name: 'BTC Testnet',
     logo: '/chain-logos/btc-testnet.png',
     rgb: '247, 147, 25',
     rpc: '',
@@ -28,6 +28,16 @@ export const BIP122_CHAINS = { ...BITCOIN_TESTNET }
  * Methods
  */
 export const BIP122_SIGNING_METHODS = {
-  BIP122_SIGN_MESSAGE: 'btc_signMessage',
-  BIP122_SEND_TRANSACTION: 'btc_sendTransaction'
+  BIP122_SIGN_MESSAGE: 'signMessage',
+  BIP122_GET_ACCOUNT_ADDRESSES: 'getAccountAddresses',
+  BIP122_SEND_TRANSACTION: 'sendTransfer',
+  BIP122_SIGN_PSBT: 'signPsbt'
+}
+
+/**
+ * Events
+ */
+
+export const BIP122_EVENTS = {
+  BIP122_ADDRESSES_CHANGED: 'bip122_addressesChanged'
 }

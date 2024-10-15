@@ -81,6 +81,7 @@ const Home: NextPage = () => {
     setChains,
     setRelayerRegion,
     origin,
+    setAccounts,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -492,6 +493,10 @@ const Home: NextPage = () => {
       openRequestModal();
       await bip122Rpc.testSendTransaction(chainId, address);
     };
+    const onSignPsbt = async (chainId: string, address: string) => {
+      openRequestModal();
+      await bip122Rpc.testSignPsbt(chainId, address);
+    };
     return [
       {
         method: DEFAULT_BIP122_METHODS.BIP122_SEND_TRANSACTION,
@@ -500,6 +505,14 @@ const Home: NextPage = () => {
       {
         method: DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES,
         callback: onGetAccountAddresses,
+      },
+      {
+        method: DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE,
+        callback: onSignMessage,
+      },
+      {
+        method: DEFAULT_BIP122_METHODS.BIP122_SIGN_PSBT,
+        callback: onSignPsbt,
       },
     ];
   };

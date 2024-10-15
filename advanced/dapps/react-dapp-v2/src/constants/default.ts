@@ -281,9 +281,8 @@ export enum DEFAULT_BIP122_METHODS {
   // BIP122_SEND_TRANSACTION = "btc_sendTransaction",
   BIP122_SEND_TRANSACTION = "sendTransfer",
   BIP122_GET_ACCOUNT_ADDRESSES = "getAccountAddresses",
-  // not yet implemented
-  // BIP122_SIGN_MESSAGE = "", //"signMessage",
-  // BIP122_SIGN_PSBT = "signPsbt",
+  BIP122_SIGN_MESSAGE = "signMessage",
+  BIP122_SIGN_PSBT = "signPsbt",
 }
 export enum DEFAULT_BIP122_EVENTS {
   BIP122_ADDRESS_CHANGED = "bip122_addressesChanged",

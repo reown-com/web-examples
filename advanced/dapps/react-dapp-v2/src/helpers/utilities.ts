@@ -182,6 +182,13 @@ export function convertHexToUtf8(hex: string) {
     return hex;
   }
 }
+export function convertHexToBase64(hex: string) {
+  try {
+    return encoding.hexToBuffer(hex).toString("base64");
+  } catch (e) {
+    return hex;
+  }
+}
 
 export const sanitizeDecimals = (value: string, decimals = 18): string => {
   const [integer, fractional] = value.split(".");

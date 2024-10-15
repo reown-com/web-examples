@@ -143,6 +143,9 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           return ModalStore.open('SessionSignKadenaModal', { requestEvent, requestSession })
         case BIP122_SIGNING_METHODS.BIP122_SIGN_MESSAGE:
           return ModalStore.open('SessionSignBip122Modal', { requestEvent, requestSession })
+        case BIP122_SIGNING_METHODS.BIP122_GET_ACCOUNT_ADDRESSES:
+          return ModalStore.open('SessionGetBip122AddressesModal', { requestEvent, requestSession })
+        case BIP122_SIGNING_METHODS.BIP122_SIGN_PSBT:
         case BIP122_SIGNING_METHODS.BIP122_SEND_TRANSACTION:
           return ModalStore.open('SessionSendTransactionBip122Modal', {
             requestEvent,

@@ -20,3 +20,15 @@ export function getAvailableBalanceFromUtxos(utxos: any[]) {
   }
   return utxos.reduce((acc, { value }) => acc + value, 0);
 }
+
+export function calculateChange(
+  utxos: any[],
+  amount: number,
+  feeRate: number
+): number {
+  const inputSum = utxos.reduce((sum, utxo) => sum + utxo.value, 0); // Sum of all UTXO values
+  const estimatedSize = 10 + 148 * utxos.length + 34 * 2; // Rough estimate of transaction size
+  const fee = estimatedSize * feeRate; // Transaction fee
+  const change = inputSum - amount - fee; // Calculate change
+  return change;
+}

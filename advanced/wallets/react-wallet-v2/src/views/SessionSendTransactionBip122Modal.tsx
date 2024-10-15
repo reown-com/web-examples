@@ -9,6 +9,7 @@ import { styledToast } from '@/utils/HelperUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { approveBip122Request, rejectBip122Request } from '@/utils/Bip122RequestHandlerUtil'
+import { JsonRpcResponse } from '@json-rpc-tools/utils'
 
 export default function SessionSendTransactionBip122Modal() {
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
@@ -24,6 +25,28 @@ export default function SessionSendTransactionBip122Modal() {
   const request = params?.request
   const transaction = request?.params
 
+  // Handle reject action
+  const onReject = useCallback(
+    async (rejection?: JsonRpcResponse) => {
+      if (requestEvent && topic) {
+        setIsLoadingReject(true)
+        const response = rejection || rejectBip122Request(requestEvent)
+        try {
+          await walletkit.respondSessionRequest({
+            topic,
+            response
+          })
+        } catch (e) {
+          setIsLoadingReject(false)
+          styledToast((e as Error).message, 'error')
+          return
+        }
+        setIsLoadingReject(false)
+        ModalStore.close()
+      }
+    },
+    [requestEvent, topic]
+  )
   // Handle approve action
   const onApprove = useCallback(async () => {
     if (requestEvent && topic) {
@@ -37,32 +60,12 @@ export default function SessionSendTransactionBip122Modal() {
       } catch (e) {
         setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
-        return
+        onReject(rejectBip122Request(requestEvent, (e as Error).message))
       }
       setIsLoadingApprove(false)
       ModalStore.close()
     }
-  }, [requestEvent, topic])
-
-  // Handle reject action
-  const onReject = useCallback(async () => {
-    if (requestEvent && topic) {
-      setIsLoadingReject(true)
-      const response = rejectBip122Request(requestEvent)
-      try {
-        await walletkit.respondSessionRequest({
-          topic,
-          response
-        })
-      } catch (e) {
-        setIsLoadingReject(false)
-        styledToast((e as Error).message, 'error')
-        return
-      }
-      setIsLoadingReject(false)
-      ModalStore.close()
-    }
-  }, [requestEvent, topic])
+  }, [onReject, requestEvent, topic])
 
   return request && requestSession ? (
     <RequestModal

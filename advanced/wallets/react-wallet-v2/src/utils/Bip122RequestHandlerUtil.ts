@@ -4,43 +4,78 @@ import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { getWalletAddressFromParams } from './HelperUtil'
 import { BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
-import { bip122Addresses, bip122Wallets } from './Bip122WalletUtil'
+import { bip122Addresses, bip122Wallet } from './Bip122WalletUtil'
 
 export async function approveBip122Request(
   requestEvent: SignClientTypes.EventArguments['session_request']
 ) {
   const { params, id } = requestEvent
   const { request } = params
-  const account = request.params?.address || request.params[1]
-  const wallet = bip122Wallets[account]
-  console.log('wallet:', wallet, bip122Wallets)
+  const account = request.params.account
+  const wallet = bip122Wallet
+  console.log('wallet:', wallet, bip122Wallet)
   console.log('account:', account)
+  console.log('request:', request.method)
   switch (request.method) {
     case BIP122_SIGNING_METHODS.BIP122_SIGN_MESSAGE:
-      const message = request.params[0]
-      console.log('signing message:', message, 'with account:', account)
-      const signature = wallet.signMessage(message)
+      const message = request.params.message
+      const address = request.params.address
+      const protocol = request.params.protocol
+      console.log('signing message:', message, 'with address:', address || account)
+      const signature = wallet.signMessage({
+        message,
+        address: address || account,
+        protocol
+      })
       return formatJsonRpcResult(id, signature)
     case BIP122_SIGNING_METHODS.BIP122_SEND_TRANSACTION:
-      const transactionParams = request.params as {
-        address: string
-        value: number
-        transactionType: string
-      }
+      const transactionParams = request.params
       console.log('signing transaction:', transactionParams, 'with account:', account)
-      const signedTransaction = await wallet.signTransaction({
-        address: transactionParams.address,
-        amount: transactionParams.value,
-        transactionType: transactionParams.transactionType
+      const txid = await wallet.sendTransfer({
+        account: transactionParams.account,
+        recipientAddress: transactionParams.recipientAddress,
+        amount: transactionParams.amount,
+        changeAddress: transactionParams.changeAddress,
+        memo: transactionParams.memo
       })
-      return formatJsonRpcResult(id, signedTransaction)
+      console.log('signed transaction:', txid)
+      return formatJsonRpcResult(id, { txid })
+    case BIP122_SIGNING_METHODS.BIP122_GET_ACCOUNT_ADDRESSES:
+      console.log('getting addresses for account:', account)
+      const addresses = wallet.getAddresses()
+      return formatJsonRpcResult(id, Array.from(addresses.values()))
+    case BIP122_SIGNING_METHODS.BIP122_SIGN_PSBT:
+      const psbt = request.params.psbt
+      const signInputs = request.params.signInputs
+      const broadcast = request.params.broadcast
+      console.log(
+        'signing psbt:',
+        psbt,
+        'with account:',
+        account,
+        'inputs:',
+        signInputs,
+        'broadcast:',
+        broadcast
+      )
+      const result = await wallet.signPsbt({
+        account,
+        psbt,
+        signInputs,
+        broadcast
+      })
+      console.log('signed psbt:', result)
+      return formatJsonRpcResult(id, result)
     default:
       throw new Error(getSdkError('UNSUPPORTED_METHODS').message)
   }
 }
 
-export function rejectBip122Request(request: SignClientTypes.EventArguments['session_request']) {
+export function rejectBip122Request(
+  request: SignClientTypes.EventArguments['session_request'],
+  message?: string
+) {
   const { id } = request
 
-  return formatJsonRpcError(id, getSdkError('USER_REJECTED_METHODS').message)
+  return formatJsonRpcError(id, message || getSdkError('USER_REJECTED_METHODS').message)
 }

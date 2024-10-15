@@ -3,7 +3,7 @@ import { NamespaceMetadata, ChainMetadata, ChainsMap } from "../helpers";
 export const BtcChainData: ChainsMap = {
   "000000000933ea01ad0ee984209779ba": {
     id: "bip122:000000000933ea01ad0ee984209779ba",
-    name: "BTC Signet",
+    name: "BTC Testnet",
     rpc: [],
     slip44: 501,
     testnet: true,

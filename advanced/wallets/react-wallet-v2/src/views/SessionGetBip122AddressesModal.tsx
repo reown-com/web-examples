@@ -2,15 +2,15 @@
 import { Col, Divider, Row, Text } from '@nextui-org/react'
 
 import RequestDataCard from '@/components/RequestDataCard'
-import RequestDetailsCard from '@/components/RequestDetalilsCard'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 import { approveBip122Request, rejectBip122Request } from '@/utils/Bip122RequestHandlerUtil'
+import { bip122Wallet } from '@/utils/Bip122WalletUtil'
 
-export default function SessionSignBip122Modal() {
+export default function SessionGetBip122AddressesModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
@@ -24,9 +24,8 @@ export default function SessionSignBip122Modal() {
 
   const { topic, params } = requestEvent
   const { request, chainId } = params
-  const message = request.params.message
   const account = request.params.account
-  const address = request.params.address
+  const addresses = bip122Wallet.getAddresses()
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
     if (requestEvent) {
@@ -68,31 +67,25 @@ export default function SessionSignBip122Modal() {
 
   return (
     <RequestModal
-      intention="sign a BTC message"
+      intention="access your BTC addresses"
       metadata={requestSession.peer.metadata}
       onApprove={onApprove}
       onReject={onReject}
       approveLoader={{ active: isLoadingApprove }}
       rejectLoader={{ active: isLoadingReject }}
     >
-      <Divider y={1} />
-      {message && (
+      {account && (
         <>
           <Row>
             <Col>
-              <Text h5>Message</Text>
-              <code color="$gray400">{message}</code>
+              <Text h5>Addresses for account</Text>
+              <Text color="$gray400">{account}</Text>
             </Col>
           </Row>
           <Divider y={1} />
-          <Row>
-            <Col>
-              <Text h5>To sign with address</Text>
-              <Text color="$gray400">{address || account}</Text>
-            </Col>
-          </Row>
         </>
       )}
+      <RequestDataCard data={Object.fromEntries(addresses.entries())} />
     </RequestModal>
   )
 }

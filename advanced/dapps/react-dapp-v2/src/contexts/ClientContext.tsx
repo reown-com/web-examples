@@ -162,26 +162,17 @@ export function ClientContextProvider({
       }
       console.log("connect, pairing topic is:", pairing?.topic);
       try {
-        const requiredNamespaces = getRequiredNamespaces(chains);
-        console.log(
-          "requiredNamespaces config for connect:",
-          requiredNamespaces
-        );
-        const optionalNamespaces = getOptionalNamespaces(chains);
-        console.log(
-          "optionalNamespaces config for connect:",
-          optionalNamespaces
-        );
+        const namespacesToRequest = getRequiredNamespaces(chains);
         const { uri, approval } = await client.connect({
           pairingTopic: pairing?.topic,
-          requiredNamespaces,
-          optionalNamespaces,
+          requiredNamespaces: {},
+          optionalNamespaces: namespacesToRequest,
         });
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
         if (uri) {
           // Create a flat array of all requested chains across namespaces.
-          const standaloneChains = Object.values(requiredNamespaces)
+          const standaloneChains = Object.values(namespacesToRequest)
             .map((namespace) => namespace.chains)
             .flat() as string[];
 

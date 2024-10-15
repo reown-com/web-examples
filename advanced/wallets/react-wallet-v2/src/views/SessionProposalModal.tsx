@@ -37,7 +37,7 @@ import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 import { bip122Addresses } from '@/utils/Bip122WalletUtil'
-import { BIP122_CHAINS, BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
+import { BIP122_CHAINS, BIP122_EVENTS, BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { useRouter } from 'next/router'
 
@@ -107,8 +107,10 @@ export default function SessionProposalModal() {
     const tronChains = Object.keys(TRON_CHAINS)
     const tronMethods = Object.values(TRON_SIGNING_METHODS)
 
+    // bip122
     const bip122Chains = Object.keys(BIP122_CHAINS)
     const bip122Methods = Object.values(BIP122_SIGNING_METHODS)
+    const pi122Events = Object.values(BIP122_EVENTS)
 
     return {
       eip155: {
@@ -190,7 +192,7 @@ export default function SessionProposalModal() {
       bip122: {
         chains: bip122Chains,
         methods: bip122Methods,
-        events: [],
+        events: pi122Events,
         accounts: bip122Chains.map(chainId => `${chainId}:${bip122Addresses[0]}`)
       }
     }

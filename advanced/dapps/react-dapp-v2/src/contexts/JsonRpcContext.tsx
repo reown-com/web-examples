@@ -3,6 +3,7 @@ import { createContext, ReactNode, useContext, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import { recoverTransaction } from "@celo/wallet-base";
+import * as bitcoin from "bitcoinjs-lib";
 import {
   formatDirectSignDoc,
   stringifySignDocValues,
@@ -30,6 +31,8 @@ import { PactNumber } from "@kadena/pactjs";
 import BitcoinMessage from "bitcoinjs-message";
 import {
   KadenaAccount,
+  convertHexToBase64,
+  convertHexToUtf8,
   eip712,
   formatTestBatchCall,
   formatTestTransaction,
@@ -75,8 +78,10 @@ import { SignClient } from "@walletconnect/sign-client/dist/types/client";
 import { parseEther } from "ethers/lib/utils";
 import {
   apiGetAddressUtxos,
+  calculateChange,
   getAvailableBalanceFromUtxos,
 } from "../helpers/bip122";
+import { getAddressFromAccount } from "@walletconnect/utils";
 
 /**
  * Types
@@ -144,9 +149,10 @@ interface IContext {
     testQuicksign: TRpcRequestCallback;
   };
   bip122Rpc: {
+    testGetAccountAddresses: TRpcRequestCallback;
     testSignMessage: TRpcRequestCallback;
     testSendTransaction: TRpcRequestCallback;
-    testGetAccountAddresses: TRpcRequestCallback;
+    testSignPsbt: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -1657,35 +1663,37 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const method = ""; //DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE;
+        console.log("testSignMessage", chainId, address);
+        const method = DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE;
         const message = "This is a message to be signed for BIP122";
+        const shouldAddAddress = address !== getAddressFromAccount(accounts[0]);
         const result = await client!.request<{
           signature: string;
-          segwitType: string;
+          address: string;
         }>({
           topic: session!.topic,
           chainId: chainId,
           request: {
             method,
-            params: [message, address],
+            params: {
+              message,
+              account: getAddressFromAccount(accounts[0]),
+              address: shouldAddAddress ? address : undefined,
+            },
           },
         });
-        const checkSegwitAlways =
-          result.segwitType === ("p2wpkh" || "p2sh(p2wpkh)");
+
         return {
           method,
           address: address,
           valid: BitcoinMessage.verify(
             message,
             address,
-            result.signature,
+            convertHexToBase64(result.signature),
             undefined,
-            checkSegwitAlways
+            true
           ),
-          result: `
-              signature: ${result.signature}\n
-              segwitType: ${result.segwitType}
-            `,
+          result: result.signature,
         };
       }
     ),
@@ -1700,7 +1708,6 @@ export function JsonRpcContextProvider({
         console.log("utxos", utxos);
         const availableBalance = getAvailableBalanceFromUtxos(utxos); // in satoshis
         console.log("availableBalance", availableBalance);
-        const toSend = Math.floor(availableBalance / 5); // in satoshis
         const req = {
           account: address,
           recipientAddress: address,
@@ -1712,7 +1719,7 @@ export function JsonRpcContextProvider({
           chainId,
         });
 
-        const result = await client!.request<{ txId: string }>({
+        const result = await client!.request<{ txid: string }>({
           topic: session!.topic,
           chainId: chainId,
           request: {
@@ -1725,7 +1732,104 @@ export function JsonRpcContextProvider({
           method,
           address: address,
           valid: true,
-          result: result?.txId,
+          result: result?.txid,
+        };
+      }
+    ),
+    testSignPsbt: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_BIP122_METHODS.BIP122_SIGN_PSBT;
+
+        const utxos = (await apiGetAddressUtxos(address, chainId)) as {
+          value: number;
+        }[];
+        if (!utxos || utxos.length === 0) {
+          throw new Error("No UTXOs found for address: " + address);
+        }
+
+        const availableBalance = getAvailableBalanceFromUtxos(utxos); // in satoshis
+        const satoshisToTransfer = 550;
+        if (availableBalance < satoshisToTransfer) {
+          throw new Error(
+            "Insufficient balance: " + availableBalance + " satoshis"
+          );
+        }
+        const network = bitcoin.networks.testnet;
+        const psbt = new bitcoin.Psbt({ network });
+
+        const utxosToSpend: any[] = [];
+        let utxosValue = 0;
+        utxos.forEach((utxo) => {
+          utxosValue += utxo.value;
+          utxosToSpend.push(utxo);
+          if (utxosValue >= satoshisToTransfer) {
+            return;
+          }
+        });
+        const signInputs: unknown[] = [];
+
+        utxosToSpend.forEach((utxo, index) => {
+          psbt.addInput({
+            hash: utxo.txid,
+            index: utxo.vout,
+            witnessUtxo: {
+              script: bitcoin.address.toOutputScript(address, network),
+              value: utxo.value,
+            },
+          });
+          signInputs.push({
+            address,
+            index,
+            sighashTypes: [bitcoin.Transaction.SIGHASH_ALL],
+          });
+        });
+
+        const change = calculateChange(utxosToSpend, satoshisToTransfer, 5);
+        if (change > 0) {
+          psbt.addOutput({
+            address: address,
+            value: change,
+          });
+        }
+
+        psbt.addOutput({
+          address: address,
+          value: satoshisToTransfer,
+        });
+
+        const transaction = psbt.toBase64();
+
+        console.log("availableBalance", availableBalance);
+        const req = {
+          account: address,
+          psbt: transaction,
+          signInputs,
+          broadcast: false,
+        };
+        console.log("signPsbt", {
+          method,
+          params: req,
+          chainId,
+        });
+
+        const result = await client!.request<{ psbt: string }>({
+          topic: session!.topic,
+          chainId: chainId,
+          request: {
+            method,
+            params: req,
+          },
+        });
+        console.log("result", result);
+        const reconstructed = bitcoin.Psbt.fromBase64(result.psbt, { network });
+        return {
+          method,
+          address: address,
+          valid: true,
+          result: reconstructed.extractTransaction().toHex(),
         };
       }
     ),
