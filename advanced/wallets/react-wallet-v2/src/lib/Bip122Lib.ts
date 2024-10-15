@@ -4,6 +4,8 @@ import * as ecc from 'tiny-secp256k1'
 import * as bip39 from 'bip39'
 import BIP32Factory, { BIP32Interface } from 'bip32'
 import bitcoinMessage from 'bitcoinjs-message'
+import { schnorr } from '@noble/secp256k1'
+bitcoin.initEccLib(ecc)
 
 const ECPair = ECPairFactory(ecc)
 const bip32 = BIP32Factory(ecc)
@@ -52,6 +54,7 @@ export default class Bip122Lib {
   private account: BIP32Interface
   private mnemonic: string
   private addresses = new Map<string, IAddressData>()
+  private ordinals = new Map<string, IAddressData>()
   private keys = new Map<string, { wif: string; network: bitcoin.Network }>()
 
   constructor(key?: string) {
@@ -71,15 +74,22 @@ export default class Bip122Lib {
     return Array.from(this.addresses.values())[0].address
   }
 
+  public getOrdinalsAddress() {
+    return Array.from(this.ordinals.values())[0].address
+  }
+
   public getPrivateKey() {
     return this.mnemonic
   }
 
-  public getAddresses() {
+  public getAddresses(intentions?: string[]) {
+    if (intentions && intentions[0] === 'ordinal') {
+      return this.ordinals
+    }
     return this.addresses
   }
 
-  public signMessage({
+  public async signMessage({
     message,
     address,
     protocol
@@ -91,16 +101,25 @@ export default class Bip122Lib {
     if (protocol && protocol !== 'ecdsa') {
       throw new Error(`Supported signing protols: ecdsa, received: ${protocol}`)
     }
-    const addressData = this.addresses.get(address)
+    const addressData = this.getAddressData(address)
     if (!addressData) {
       throw new Error(`Unkown address: ${address}`)
     }
     const keyData = this.keys.get(address)!
     var keyPair = ECPair.fromWIF(keyData.wif)
     var privateKey = keyPair.privateKey!
-    var signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed, {
-      segwitType: 'p2wpkh'
-    })
+
+    let signature
+    if (this.isOrdinal(address)) {
+      const messageHash = bitcoin.crypto.sha256(Buffer.from(message))
+
+      const sig = await schnorr.sign(messageHash, privateKey)
+      signature = Buffer.from(sig)
+    } else {
+      signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed, {
+        segwitType: 'p2wpkh'
+      })
+    }
 
     return {
       signature: signature.toString('hex').replace('0x', ''),
@@ -118,7 +137,7 @@ export default class Bip122Lib {
     const { account, recipientAddress, amount, changeAddress, memo } = params
     const satoshis = parseInt(amount)
 
-    const addressData = this.addresses.get(account)
+    const addressData = this.getAddressData(account)
     if (!addressData) {
       throw new Error(`Unkown address: ${account}`)
     }
@@ -194,20 +213,30 @@ export default class Bip122Lib {
   private generateAddress({
     index,
     network,
-    change = false
+    change = false,
+    taproot = false
   }: {
     index: number
     network: bitcoin.Network
     change?: boolean
+    taproot?: boolean
   }) {
     const path = `m/84'/${network === bitcoin.networks.testnet ? '1' : '0'}'/0'/${
       change ? 1 : 0
     }/${index}`
     const child = this.account.derivePath(path)
-    const address = bitcoin.payments.p2wpkh({
-      pubkey: child.publicKey,
-      network
-    }).address!
+    let address
+    if (taproot) {
+      address = bitcoin.payments.p2tr({
+        pubkey: child.publicKey.slice(1),
+        network
+      }).address!
+    } else {
+      address = bitcoin.payments.p2wpkh({
+        pubkey: child.publicKey,
+        network
+      }).address!
+    }
     const wif = child.toWIF()
     this.keys.set(address, { wif, network })
     return { address, path, publicKey: child.publicKey.toString('hex') }
@@ -215,10 +244,21 @@ export default class Bip122Lib {
 
   private loadAddresses(startIndex = 0) {
     const addressesToLoad = startIndex + 20
+    const network = bitcoin.networks.testnet
     for (let i = startIndex; i < addressesToLoad; i++) {
-      const addressData = this.generateAddress({ index: i, network: bitcoin.networks.testnet })
+      // payment addresses
+      const addressData = this.generateAddress({ index: i, network })
       this.addresses.set(addressData.address, addressData)
+
+      // ordinals
+      const taprootAddress = this.generateAddress({
+        index: i,
+        network,
+        taproot: true
+      })
+      this.ordinals.set(taprootAddress.address, taprootAddress)
     }
+    console.log('Loaded addresses:', this.addresses, this.ordinals)
   }
 
   private async createTransaction({
@@ -318,5 +358,15 @@ export default class Bip122Lib {
     const fee = estimatedSize * feeRate
     const change = inputSum - amount - fee
     return change
+  }
+
+  private getAddressData(address: string) {
+    const addressData = this.addresses.get(address)
+    if (addressData) return addressData
+    return this.ordinals.get(address)
+  }
+
+  private isOrdinal(address: string) {
+    return this.ordinals.has(address)
   }
 }

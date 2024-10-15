@@ -22,7 +22,7 @@ export async function approveBip122Request(
       const address = request.params.address
       const protocol = request.params.protocol
       console.log('signing message:', message, 'with address:', address || account)
-      const signature = wallet.signMessage({
+      const signature = await wallet.signMessage({
         message,
         address: address || account,
         protocol

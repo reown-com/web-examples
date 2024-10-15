@@ -193,7 +193,9 @@ export default function SessionProposalModal() {
         chains: bip122Chains,
         methods: bip122Methods,
         events: pi122Events,
-        accounts: bip122Chains.map(chainId => `${chainId}:${bip122Addresses[0]}`)
+        accounts: bip122Chains
+          .map(chainId => bip122Addresses.map(address => `${chainId}:${address}`))
+          .flat()
       }
     }
   }, [addressesToApprove])

@@ -25,7 +25,8 @@ export default function SessionGetBip122AddressesModal() {
   const { topic, params } = requestEvent
   const { request, chainId } = params
   const account = request.params.account
-  const addresses = bip122Wallet.getAddresses()
+  const intentions = request.params.intentions
+  const addresses = bip122Wallet.getAddresses(intentions)
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
     if (requestEvent) {

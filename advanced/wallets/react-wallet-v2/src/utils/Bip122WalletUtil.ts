@@ -27,7 +27,7 @@ export async function createOrRestoreBip122Wallet() {
   console.log('address1', { address1, privateKey1 }, address1)
 
   bip122Wallet = wallet1
-  bip122Addresses = [wallet1.getAddress()]
+  bip122Addresses = [wallet1.getAddress(), wallet1.getOrdinalsAddress()]
 
   return {
     bip122Wallet,

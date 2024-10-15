@@ -4,6 +4,7 @@ import * as encoding from "@walletconnect/encoding";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import { recoverTransaction } from "@celo/wallet-base";
 import * as bitcoin from "bitcoinjs-lib";
+import BitcoinMessage from "bitcoinjs-message";
 import {
   formatDirectSignDoc,
   stringifySignDocValues,
@@ -28,7 +29,6 @@ import {
   createWalletConnectSign,
 } from "@kadena/client";
 import { PactNumber } from "@kadena/pactjs";
-import BitcoinMessage from "bitcoinjs-message";
 import {
   KadenaAccount,
   convertHexToBase64,
@@ -80,6 +80,8 @@ import {
   apiGetAddressUtxos,
   calculateChange,
   getAvailableBalanceFromUtxos,
+  isOrdinalAddress,
+  isValidBip122Signature,
 } from "../helpers/bip122";
 import { getAddressFromAccount } from "@walletconnect/utils";
 
@@ -1686,12 +1688,10 @@ export function JsonRpcContextProvider({
         return {
           method,
           address: address,
-          valid: BitcoinMessage.verify(
-            message,
+          valid: await isValidBip122Signature(
             address,
-            convertHexToBase64(result.signature),
-            undefined,
-            true
+            result.signature,
+            message
           ),
           result: result.signature,
         };
@@ -1839,8 +1839,10 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES;
+        const isOrdinal = isOrdinalAddress(address);
         const req = {
           account: address,
+          intentions: isOrdinal ? ["ordinal"] : ["payment"],
         };
         console.log("request", {
           method,
