@@ -8,6 +8,13 @@ import {
   getChainIdFromMessage,
 } from '@reown/appkit-siwe'
 
+
+// get env variables
+import dotenv from 'dotenv';
+
+// get Project ID
+const projectId = process.env.PROJECT_ID;
+
 const app = express();
 
 // configure cors and sessions
@@ -47,7 +54,7 @@ app.post('/verify', async (req, res) => {
         message,
         signature: req.body.signature,
         chainId,
-        projectId: "...",
+        projectId,
       });
       if (!isValid) {
         // throw an error if the signature is invalid
