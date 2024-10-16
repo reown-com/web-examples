@@ -1,7 +1,19 @@
 import cors from 'cors';
 import express from 'express';
 import Session from 'express-session';
-import { generateNonce,  SiweMessage } from 'siwe';
+import { generateNonce } from 'siwe';
+import {
+  verifySignature,
+  getAddressFromMessage,
+  getChainIdFromMessage,
+} from '@reown/appkit-siwe'
+
+
+// get env variables
+import dotenv from 'dotenv';
+
+// get Project ID
+const projectId = process.env.PROJECT_ID;
 
 const app = express();
 
@@ -32,11 +44,22 @@ app.post('/verify', async (req, res) => {
       if (!req.body.message) {
         return res.status(400).json({ error: 'SiweMessage is undefined' });
       }
-      let SIWEObject = new SiweMessage(req.body.message);
-      const { data: message } = await SIWEObject.verify({ signature: req.body.signature, nonce: req.session.nonce });
+      const message = req.body.message;
+
+      const address = getAddressFromMessage(message);
+      const chainId = getChainIdFromMessage(message);
       
-      const address = message.address;
-      const chainId = message.chainId;
+      const isValid = await verifySignature({
+        address,
+        message,
+        signature: req.body.signature,
+        chainId,
+        projectId,
+      });
+      if (!isValid) {
+        // throw an error if the signature is invalid
+        throw new Error('Invalid signature');
+      }
       
       // save the session with the address and chainId (SIWESession)
       req.session.siwe = { address, chainId };
