@@ -190,6 +190,8 @@ export enum DEFAULT_COSMOS_EVENTS {}
 export enum DEFAULT_SOLANA_METHODS {
   SOL_SIGN_TRANSACTION = "solana_signTransaction",
   SOL_SIGN_MESSAGE = "solana_signMessage",
+  SOL_SIGN_AND_SEND_TRANSACTION = "solana_signAndSendTransaction",
+  SOL_SIGN_ALL_TRANSACTIONS = "solana_signAllTransactions",
 }
 
 export enum DEFAULT_SOLANA_EVENTS {}

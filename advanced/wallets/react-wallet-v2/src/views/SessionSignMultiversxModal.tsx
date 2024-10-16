@@ -11,7 +11,7 @@ import {
   approveMultiversxRequest,
   rejectMultiversxRequest
 } from '@/utils/MultiversxRequestHandlerUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 
 export default function SessionSignMultiversxModal() {
@@ -36,7 +36,7 @@ export default function SessionSignMultiversxModal() {
       if (requestEvent) {
         setIsLoadingApprove(true)
         const response = await approveMultiversxRequest(requestEvent)
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
@@ -55,7 +55,7 @@ export default function SessionSignMultiversxModal() {
       setIsLoadingReject(true)
       const response = rejectMultiversxRequest(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

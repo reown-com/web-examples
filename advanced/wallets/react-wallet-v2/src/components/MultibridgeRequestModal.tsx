@@ -2,7 +2,7 @@ import { LoaderProps } from '@/components/ModalFooter'
 
 import RequestMethodCard from '@/components/RequestMethodCard'
 import { Avatar, Col, Container, Divider, Row, Text } from '@nextui-org/react'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 import ModalStore from '@/store/ModalStore'
 import { useCallback, useState } from 'react'
@@ -92,7 +92,7 @@ export default function MultibridgeRequestModal({
           } ms`
         )
 
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

@@ -15,7 +15,7 @@ import { solanaAddresses } from '@/utils/SolanaWalletUtil'
 import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
@@ -37,6 +37,7 @@ import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
+import { useRouter } from 'next/router'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -54,6 +55,10 @@ export default function SessionProposalModal() {
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
   const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
+
+  const { query } = useRouter()
+
+  const addressesToApprove = Number(query.addressesToApprove) || null
 
   const supportedNamespaces = useMemo(() => {
     // eip155
@@ -106,7 +111,11 @@ export default function SessionProposalModal() {
         methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains
-          .map(chain => eip155Addresses.map(account => `${chain}:${account}`))
+          .map(chain =>
+            eip155Addresses
+              .map(account => `${chain}:${account}`)
+              .slice(0, addressesToApprove ?? eip155Addresses.length)
+          )
           .flat()
       },
       cosmos: {
@@ -278,12 +287,12 @@ export default function SessionProposalModal() {
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
         const sessionProperties = { capabilities: JSON.stringify(capabilities) }
 
-        await web3wallet.approveSession({
+        await walletkit.approveSession({
           id: proposal.id,
           namespaces,
           sessionProperties
         })
-        SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+        SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }
     } catch (e) {
       styledToast((e as Error).message, 'error')
@@ -300,7 +309,7 @@ export default function SessionProposalModal() {
       try {
         setIsLoadingReject(true)
         await new Promise(resolve => setTimeout(resolve, 1000))
-        await web3wallet.rejectSession({
+        await walletkit.rejectSession({
           id: proposal.id,
           reason: getSdkError('USER_REJECTED_METHODS')
         })

@@ -7,7 +7,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { getSignTypedDataParamsData, styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 import PermissionDetailsCard from '@/components/PermissionDetailsCard'
@@ -44,7 +44,7 @@ export default function SessionSignTypedDataModal() {
       if (requestEvent) {
         setIsLoadingApprove(true)
         const response = await approveEIP155Request(requestEvent)
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
@@ -63,7 +63,7 @@ export default function SessionSignTypedDataModal() {
       setIsLoadingReject(true)
       const response = rejectEIP155Request(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
