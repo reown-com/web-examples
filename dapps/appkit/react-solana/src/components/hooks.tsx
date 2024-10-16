@@ -52,8 +52,7 @@ export function SolanaHooks() {
           <p><button onClick={() => open()}>open hook</button> - <button onClick={() => close()}>close hook</button></p>
           
           <div className="btn-container">
-            <button onClick={handleFaucet}>Solana faucet</button>
-            <button onClick={handleSign}>Sign MSG</button>
+            <button onClick={handleFaucet}>Solana faucet</button> - <button onClick={handleSign}>Sign MSG</button>
           </div>
           <br />
           <div>
