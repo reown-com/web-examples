@@ -36,7 +36,7 @@ import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
-import { bip122Addresses } from '@/utils/Bip122WalletUtil'
+import { bip122Addresses, bip122Wallet } from '@/utils/Bip122WalletUtil'
 import { BIP122_CHAINS, BIP122_EVENTS, BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { useRouter } from 'next/router'
@@ -110,7 +110,7 @@ export default function SessionProposalModal() {
     // bip122
     const bip122Chains = Object.keys(BIP122_CHAINS)
     const bip122Methods = Object.values(BIP122_SIGNING_METHODS)
-    const pi122Events = Object.values(BIP122_EVENTS)
+    const bip122Events = Object.values(BIP122_EVENTS)
 
     return {
       eip155: {
@@ -192,7 +192,7 @@ export default function SessionProposalModal() {
       bip122: {
         chains: bip122Chains,
         methods: bip122Methods,
-        events: pi122Events,
+        events: bip122Events,
         accounts: bip122Chains
           .map(chainId => bip122Addresses.map(address => `${chainId}:${address}`))
           .flat()
@@ -307,7 +307,13 @@ export default function SessionProposalModal() {
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
         const sessionProperties = { capabilities: JSON.stringify(capabilities) }
-
+        if (namespaces.bip122) {
+          sessionProperties.bip122_getAccountAddresses = JSON.stringify({
+            payment: Array.from(bip122Wallet.getAddresses().values()),
+            ordinal: Array.from(bip122Wallet.getAddresses(['ordinal']).values())
+          })
+        }
+        console.log('sessionProperties', sessionProperties)
         await walletkit.approveSession({
           id: proposal.id,
           namespaces,

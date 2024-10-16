@@ -1844,24 +1844,37 @@ export function JsonRpcContextProvider({
           account: address,
           intentions: isOrdinal ? ["ordinal"] : ["payment"],
         };
-        console.log("request", {
-          method,
-          params: req,
-          chainId,
-        });
-
-        const result = await client!.request<any>({
-          topic: session!.topic,
-          chainId: chainId,
-          request: {
+        const addresses =
+          session?.sessionProperties?.[
+            `bip122_${DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES}`
+          ];
+        let result;
+        if (addresses) {
+          console.log("cached addresses", addresses);
+          const parsed = JSON.parse(addresses);
+          result = isOrdinal ? parsed.ordinal : parsed.payment;
+          console.log("parsed", result);
+        } else {
+          console.log("request", {
             method,
             params: req,
-          },
-        });
-        console.log("result", result);
+            chainId,
+          });
+
+          result = await client!.request<any>({
+            topic: session!.topic,
+            chainId: chainId,
+            request: {
+              method,
+              params: req,
+            },
+          });
+
+          console.log("result", result);
+        }
 
         const accounts = result.map((r: any) => `${chainId}:${r.address}`);
-        setAccounts(accounts);
+        setAccounts((prev: string[]) => [...new Set([...prev, ...accounts])]);
 
         return {
           method,
