@@ -306,7 +306,10 @@ export default function SessionProposalModal() {
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
-        const sessionProperties = { capabilities: JSON.stringify(capabilities) }
+        const sessionProperties = {
+          capabilities: JSON.stringify(capabilities),
+          bip122_getAccountAddresses: ''
+        }
         if (namespaces.bip122) {
           sessionProperties.bip122_getAccountAddresses = JSON.stringify({
             payment: Array.from(bip122Wallet.getAddresses().values()),
