@@ -277,8 +277,6 @@ export enum DEFAULT_KADENA_EVENTS {}
  * BITCOIN
  */
 export enum DEFAULT_BIP122_METHODS {
-  // BIP122_SIGN_MESSAGE = "btc_signMessage",
-  // BIP122_SEND_TRANSACTION = "btc_sendTransaction",
   BIP122_SEND_TRANSACTION = "sendTransfer",
   BIP122_GET_ACCOUNT_ADDRESSES = "getAccountAddresses",
   BIP122_SIGN_MESSAGE = "signMessage",

@@ -2,7 +2,7 @@ import { schnorr } from "@noble/secp256k1";
 import * as bitcoin from "bitcoinjs-lib";
 import BitcoinMessage from "bitcoinjs-message";
 import { convertHexToBase64 } from "./utilities";
-
+import { IUTXO } from "./types";
 export async function apiGetBip122AccountBalance(
   address: string,
   chainId: string
@@ -19,7 +19,7 @@ export async function apiGetAddressUtxos(address: string, chainId: string) {
   ).json();
 }
 
-export function getAvailableBalanceFromUtxos(utxos: any[]) {
+export function getAvailableBalanceFromUtxos(utxos: IUTXO[]) {
   if (!utxos || !utxos.length) {
     return 0;
   }
@@ -27,7 +27,7 @@ export function getAvailableBalanceFromUtxos(utxos: any[]) {
 }
 
 export function calculateChange(
-  utxos: any[],
+  utxos: IUTXO[],
   amount: number,
   feeRate: number
 ): number {

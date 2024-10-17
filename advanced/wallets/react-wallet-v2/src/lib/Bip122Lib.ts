@@ -13,13 +13,25 @@ interface IInitArguments {
   privateKey?: string
 }
 
+interface IUTXO {
+  txid: string
+  vout: number
+  value: number
+  status: {
+    confirmed: boolean
+    block_height: number
+    block_hash: string
+    block_time: number
+  }
+}
+
 interface ICreateTransaction {
   network: bitcoin.Network
   recipientAddress: string
   amount: number
   changeAddress: string
   memo?: string
-  utxos: any[]
+  utxos: IUTXO[]
   privateKeyWIF: string
   feeRate: number
 }
@@ -146,13 +158,13 @@ export default class Bip122Lib {
       throw new Error(`Invalid amount: ${amount}`)
     }
 
-    const utxos = await this.getUtXOs(account)
+    const utxos = (await this.getUTXOs(account)) as IUTXO[]
     if (!utxos || utxos.length === 0) {
       throw new Error(`No UTXOs found for address: ${account}`)
     }
 
     let utxosValue = 0
-    const utxosToSpend: any[] = []
+    const utxosToSpend: IUTXO[] = []
     utxos.forEach(utxo => {
       utxosValue += utxo.value
       utxosToSpend.push(utxo)
@@ -175,7 +187,7 @@ export default class Bip122Lib {
     return await this.broadcastTransaction(transaction)
   }
 
-  async getUtXOs(address: string): Promise<any[]> {
+  async getUTXOs(address: string): Promise<IUTXO[]> {
     // make chain dynamic
     return await (await fetch(`https://mempool.space/testnet/api/address/${address}/utxo`)).json()
   }
@@ -192,7 +204,7 @@ export default class Bip122Lib {
     throw new Error('Error broadcasting transaction: ' + (await result.text()))
   }
 
-  getAvailableBalance(utxos: any[]) {
+  getAvailableBalance(utxos: IUTXO[]) {
     return utxos.reduce((acc, { value }) => acc + value, 0)
   }
 
@@ -352,8 +364,14 @@ export default class Bip122Lib {
   }
 
   // Helper function to calculate change
-  private calculateChange(utxos: any[], amount: number, feeRate: number): number {
+  private calculateChange(utxos: IUTXO[], amount: number, feeRate: number): number {
     const inputSum = utxos.reduce((sum, utxo) => sum + utxo.value, 0)
+    /**
+     * 10 bytes: This is an estimated fixed overhead for the transaction.
+     * 148 bytes: This is the average size of each input (UTXO).
+     * 34 bytes: This is the size of each output.
+     * The multiplication by 2 indicates that there are usually two outputs in a typical transaction (one for the recipient and one for change)
+     */
     const estimatedSize = 10 + 148 * utxos.length + 34 * 2
     const fee = estimatedSize * feeRate
     const change = inputSum - amount - fee

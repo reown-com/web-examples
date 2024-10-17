@@ -50,7 +50,6 @@ import OriginSimulationDropdown from "../components/OriginSimulationDropdown";
 import LoaderModal from "../modals/LoaderModal";
 import { numberToHex } from "@walletconnect/encoding";
 import RequestLoaderModal from "../modals/RequestLoaderModal";
-import { cons } from "fp-ts/lib/ReadonlyNonEmptyArray";
 
 // Normal import does not work here
 const { version } = require("@walletconnect/sign-client/package.json");
