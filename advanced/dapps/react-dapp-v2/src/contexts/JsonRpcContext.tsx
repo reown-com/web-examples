@@ -4,7 +4,7 @@ import * as encoding from "@walletconnect/encoding";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import { recoverTransaction } from "@celo/wallet-base";
 import * as bitcoin from "bitcoinjs-lib";
-import BitcoinMessage from "bitcoinjs-message";
+
 import {
   formatDirectSignDoc,
   stringifySignDocValues,
@@ -30,9 +30,8 @@ import {
 } from "@kadena/client";
 import { PactNumber } from "@kadena/pactjs";
 import {
+  IUTXO,
   KadenaAccount,
-  convertHexToBase64,
-  convertHexToUtf8,
   eip712,
   formatTestBatchCall,
   formatTestTransaction,
@@ -74,7 +73,6 @@ import {
   SignableMessage,
 } from "@multiversx/sdk-core";
 import { UserVerifier } from "@multiversx/sdk-wallet/out/userVerifier";
-import { SignClient } from "@walletconnect/sign-client/dist/types/client";
 import { parseEther } from "ethers/lib/utils";
 import {
   apiGetAddressUtxos,
@@ -1743,9 +1741,7 @@ export function JsonRpcContextProvider({
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_BIP122_METHODS.BIP122_SIGN_PSBT;
 
-        const utxos = (await apiGetAddressUtxos(address, chainId)) as {
-          value: number;
-        }[];
+        const utxos = (await apiGetAddressUtxos(address, chainId)) as IUTXO[];
         if (!utxos || utxos.length === 0) {
           throw new Error("No UTXOs found for address: " + address);
         }
