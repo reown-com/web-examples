@@ -36,6 +36,8 @@ import usePriorityAccounts from '@/hooks/usePriorityAccounts'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
+import { bip122Addresses, bip122Wallet } from '@/utils/Bip122WalletUtil'
+import { BIP122_CHAINS, BIP122_EVENTS, BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { useRouter } from 'next/router'
 
@@ -104,6 +106,11 @@ export default function SessionProposalModal() {
     // tron
     const tronChains = Object.keys(TRON_CHAINS)
     const tronMethods = Object.values(TRON_SIGNING_METHODS)
+
+    // bip122
+    const bip122Chains = Object.keys(BIP122_CHAINS)
+    const bip122Methods = Object.values(BIP122_SIGNING_METHODS)
+    const bip122Events = Object.values(BIP122_EVENTS)
 
     return {
       eip155: {
@@ -181,9 +188,17 @@ export default function SessionProposalModal() {
         accounts: tronChains
           .map(chain => tronAddresses.map(address => `${chain}:${address}`))
           .flat()
+      },
+      bip122: {
+        chains: bip122Chains,
+        methods: bip122Methods,
+        events: bip122Events,
+        accounts: bip122Chains
+          .map(chainId => bip122Addresses.map(address => `${chainId}:${address}`))
+          .flat()
       }
     }
-  }, [])
+  }, [addressesToApprove])
   console.log('supportedNamespaces', supportedNamespaces, eip155Addresses)
 
   const requestedChains = useMemo(() => {
@@ -238,6 +253,7 @@ export default function SessionProposalModal() {
   }, [proposal, supportedChains])
   console.log('notSupportedChains', { notSupportedChains, supportedChains })
   const getAddress = useCallback((namespace?: string) => {
+    console.log('getAddress', namespace)
     if (!namespace) return 'N/A'
     switch (namespace) {
       case 'eip155':
@@ -258,6 +274,8 @@ export default function SessionProposalModal() {
         return tezosAddresses[0]
       case 'tron':
         return tronAddresses[0]
+      case 'bip122':
+        return bip122Addresses[0]
     }
   }, [])
 
@@ -268,7 +286,9 @@ export default function SessionProposalModal() {
         proposal: proposal.params,
         supportedNamespaces
       })
-    } catch (e) {}
+    } catch (e) {
+      console.error('Error building approved namespaces', e)
+    }
   }, [proposal.params, supportedNamespaces])
 
   const reorderedEip155Accounts = usePriorityAccounts({ namespaces })
@@ -276,6 +296,7 @@ export default function SessionProposalModal() {
 
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
+    console.log('onApprove', { proposal, namespaces })
     try {
       if (proposal && namespaces) {
         setIsLoadingApprove(true)
@@ -285,8 +306,17 @@ export default function SessionProposalModal() {
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
-        const sessionProperties = { capabilities: JSON.stringify(capabilities) }
-
+        const sessionProperties = {
+          capabilities: JSON.stringify(capabilities),
+          bip122_getAccountAddresses: ''
+        }
+        if (namespaces.bip122) {
+          sessionProperties.bip122_getAccountAddresses = JSON.stringify({
+            payment: Array.from(bip122Wallet.getAddresses().values()),
+            ordinal: Array.from(bip122Wallet.getAddresses(['ordinal']).values())
+          })
+        }
+        console.log('sessionProperties', sessionProperties)
         await walletkit.approveSession({
           id: proposal.id,
           namespaces,
@@ -323,6 +353,7 @@ export default function SessionProposalModal() {
     ModalStore.close()
   }, [proposal])
   console.log('notSupportedChains', notSupportedChains)
+  console.log('supportedChains', supportedChains)
   return (
     <RequestModal
       metadata={proposal.params.proposer.metadata}
@@ -391,6 +422,7 @@ export default function SessionProposalModal() {
           </Row>
           {(supportedChains.length > 0 &&
             supportedChains.map((chain, i) => {
+              console.log('chain', chain)
               if (!chain) {
                 return <></>
               }

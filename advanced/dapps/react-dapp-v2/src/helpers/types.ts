@@ -163,3 +163,15 @@ export interface KadenaAccount {
   account: string; // Kadena account
   chainId: ChainId; // Kadena ChainId
 }
+
+export interface IUTXO {
+  txid: string;
+  vout: number;
+  value: number;
+  status: {
+    confirmed: boolean;
+    block_height: number;
+    block_hash: string;
+    block_time: number;
+  };
+}
