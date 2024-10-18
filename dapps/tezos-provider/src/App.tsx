@@ -1,16 +1,14 @@
 import { WalletConnectModal } from "@walletconnect/modal";
 import { useEffect, useState, useCallback } from "react";
 import { SAMPLES, SAMPLE_KINDS } from "./utils/samples";
-import TezosProvider, {
-  TezosChainDataMainnet,
-  TezosChainDataTestnet,
-} from "./utils/tezos-provider";
 import {
+  TezosProvider,
+  TezosChainDataTestnet,
   TezosGetAccountResponse,
   TezosSendResponse,
   TezosSignResponse,
-} from "./utils/tezos-provider";
-import { ErrorObject } from '@walletconnect/utils';
+} from "@trili/tezos-provider";
+import { ErrorObject } from "@walletconnect/utils";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
@@ -103,9 +101,7 @@ const App = () => {
     if (!provider) return;
 
     try {
-      await provider.connect({
-        chains: [TezosChainDataTestnet, TezosChainDataMainnet],
-      });
+      await provider.connect({ chain: TezosChainDataTestnet });
       setIsConnected(true);
       console.log("Connected to Tezos");
       const balance = await provider.getBalance();
@@ -143,26 +139,26 @@ const App = () => {
         let res = null;
         switch (kind) {
           case SAMPLE_KINDS.GET_ACCOUNTS:
-            res = await provider.tezosGetAccounts();
+            res = await provider.getAccounts();
             break;
           case SAMPLE_KINDS.SIGN:
-            res = await provider.tezosSign("05010000004254");
+            res = await provider.sign("05010000004254");
             break;
           case SAMPLE_KINDS.SEND_TRANSACTION:
-            res = await provider.tezosSendTransaction(
+            res = await provider.sendTransaction(
               SAMPLES[SAMPLE_KINDS.SEND_TRANSACTION],
             );
             break;
           case SAMPLE_KINDS.SEND_DELEGATION:
-            res = await provider.tezosSendDelegation(
+            res = await provider.sendDelegation(
               SAMPLES[SAMPLE_KINDS.SEND_DELEGATION],
             );
             break;
           case SAMPLE_KINDS.SEND_UNDELEGATION:
-            res = await provider.tezosSendUndelegation();
+            res = await provider.sendUndelegation();
             break;
           case SAMPLE_KINDS.SEND_ORGINATION:
-            res = await provider.tezosSendOrigination(
+            res = await provider.sendOrigination(
               SAMPLES[SAMPLE_KINDS.SEND_ORGINATION],
             );
             for (let attempt = 0; attempt < 10; attempt++) {
@@ -186,28 +182,26 @@ const App = () => {
             }
             break;
           case SAMPLE_KINDS.SEND_CONTRACT_CALL:
-            res = await provider.tezosSendContractCall({
+            res = await provider.sendContractCall({
               ...SAMPLES[SAMPLE_KINDS.SEND_CONTRACT_CALL],
               destination: contractAddress,
             });
             break;
           case SAMPLE_KINDS.SEND_STAKE:
-            res = await provider.tezosSendStake(
-              SAMPLES[SAMPLE_KINDS.SEND_STAKE],
-            );
+            res = await provider.sendStake(SAMPLES[SAMPLE_KINDS.SEND_STAKE]);
             break;
           case SAMPLE_KINDS.SEND_UNSTAKE:
-            res = await provider.tezosSendUnstake(
+            res = await provider.sendUnstake(
               SAMPLES[SAMPLE_KINDS.SEND_UNSTAKE],
             );
             break;
           case SAMPLE_KINDS.SEND_FINALIZE:
-            res = await provider.tezosSendFinalizeUnstake(
+            res = await provider.sendFinalizeUnstake(
               SAMPLES[SAMPLE_KINDS.SEND_FINALIZE],
             );
             break;
           case SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE:
-            res = await provider.tezosSendIncreasePaidStorage({
+            res = await provider.sendIncreasePaidStorage({
               ...SAMPLES[SAMPLE_KINDS.SEND_INCREASE_PAID_STORAGE],
               destination: contractAddress,
             });
@@ -253,13 +247,16 @@ const App = () => {
         case SAMPLE_KINDS.SEND_STAKE:
         case SAMPLE_KINDS.SEND_UNSTAKE:
         case SAMPLE_KINDS.SEND_FINALIZE:
-          setDescription({ ...SAMPLES[kind], destination: provider?.address });
+          setDescription({
+            ...SAMPLES[kind],
+            destination: provider?.connection?.address,
+          });
           break;
         default:
           setDescription("No description available");
       }
     },
-    [contractAddress, provider?.address],
+    [contractAddress, provider?.connection?.address],
   );
 
   const describeClear = useCallback(() => {
@@ -281,7 +278,7 @@ const App = () => {
         <>
           <p>
             <b>Public Key: </b>
-            {provider?.address ?? "No account connected"}
+            {provider?.connection?.address ?? "No account connected"}
           </p>
           <p>
             <b>Balance: </b>
