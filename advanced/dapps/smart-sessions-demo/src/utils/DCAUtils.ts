@@ -20,7 +20,9 @@ export const intervalOptions = [
   { value: "week", label: "Week" },
 ];
 
-export function getSampleAsyncDCAPermissions(data: DCAFormSchemaType): Omit<
+export function getSampleAsyncDCAPermissions(
+  data: DCAFormSchemaType,
+): Omit<
   SmartSessionGrantPermissionsRequest,
   "signer" | "chainId" | "address" | "expiry"
 > {
@@ -31,8 +33,8 @@ export function getSampleAsyncDCAPermissions(data: DCAFormSchemaType): Omit<
         data: {
           allowance: toHex(parseEther(data.allocationAmount.toString())),
           period: calculateInterval(data.investmentInterval, data.intervalUnit),
-          start: Date.now()
-        }
+          start: Date.now(),
+        },
       },
     ],
     policies: [],
