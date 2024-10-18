@@ -2,10 +2,10 @@ import axios, { Method, AxiosError } from 'axios'
 import { UserOperationWithBigIntAsHex } from './UserOpBuilder'
 import { bigIntReplacer } from '@/utils/HelperUtil'
 import { COSIGNER_BASE_URL } from '@/utils/ConstantsUtil'
-import { WalletGrantPermissionsRequest } from '@/data/EIP7715Data'
+import { SmartSessionGrantPermissionsRequest } from '@reown/appkit-experimental/smart-session'
 
 //--Cosigner Types----------------------------------------------------------------------- //
-export type AddPermissionRequest = WalletGrantPermissionsRequest
+export type AddPermissionRequest = SmartSessionGrantPermissionsRequest
 
 export type AddPermissionResponse = {
   pci: string
@@ -164,7 +164,7 @@ export class CosignerService {
     getPermissionsContextRequest: GetPermissionsContextRequest
   ): Promise<GetPermissionsContextResponse> {
     // need to change the method to use POST method and pass pci in the body with url as /{address}/getContext
-    const url = `${this.baseUrl}/${encodeURIComponent(address)}/getContext`
+    const url = `${this.baseUrl}/${encodeURIComponent(address)}/getcontext`
     return await sendCoSignerRequest<
       never,
       GetPermissionsContextResponse,

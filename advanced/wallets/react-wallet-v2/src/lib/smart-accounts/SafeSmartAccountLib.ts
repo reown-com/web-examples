@@ -8,7 +8,10 @@ import { SmartAccount, signerToSafeSmartAccount } from 'permissionless/accounts'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 import { Address, Hex, createWalletClient, http, toHex } from 'viem'
 import { TRUSTED_SMART_SESSIONS_ATTERSTER_ADDRESS } from './builders/SmartSessionUtil'
-import { WalletGrantPermissionsRequest, WalletGrantPermissionsResponse } from '@/data/EIP7715Data'
+import {
+  SmartSessionGrantPermissionsRequest,
+  WalletGrantPermissionsResponse
+} from '@reown/appkit-experimental/smart-session'
 import { getContext } from './builders/ContextBuilderUtil'
 import { Execution, Module } from '@rhinestone/module-sdk'
 
@@ -56,7 +59,7 @@ export class SafeSmartAccountLib extends SmartAccountLib {
 
   /* 7715 method */
   async grantPermissions(
-    grantPermissionsRequestParameters: WalletGrantPermissionsRequest
+    grantPermissionsRequestParameters: SmartSessionGrantPermissionsRequest
   ): Promise<WalletGrantPermissionsResponse> {
     if (!this.client?.account) {
       throw new Error('Client not initialized')

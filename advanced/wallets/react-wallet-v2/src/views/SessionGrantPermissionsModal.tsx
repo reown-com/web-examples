@@ -15,7 +15,6 @@ import {
   rejectEIP7715Request
 } from '@/utils/EIP7715RequestHandlerUtils'
 import { GrantPermissionsParameters } from 'viem/experimental'
-// import { GrantPermissionsRequestParams } from '@/data/EIP7715Data'
 
 export default function SessionGrantPermissionsModal() {
   // Get request and wallet data from store

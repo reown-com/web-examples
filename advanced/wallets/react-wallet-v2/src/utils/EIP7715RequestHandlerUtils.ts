@@ -2,11 +2,11 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import SettingsStore from '@/store/SettingsStore'
+import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import {
-  EIP7715_METHOD,
-  WalletGrantPermissionsRequest,
+  SmartSessionGrantPermissionsRequest,
   WalletGrantPermissionsResponse
-} from '@/data/EIP7715Data'
+} from '@reown/appkit-experimental/smart-session'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 import { walletkit } from './WalletConnectUtil'
 import { smartAccountWallets } from './SmartAccountUtil'
@@ -49,7 +49,7 @@ export async function approveEIP7715Request(requestEvent: RequestEventArgs) {
   switch (request.method) {
     case EIP7715_METHOD.WALLET_GRANT_PERMISSIONS: {
       const wallet = getSmartAccountLibFromSession(requestSession, chainId)
-      let grantPermissionsRequestParams: WalletGrantPermissionsRequest = request.params[0]
+      let grantPermissionsRequestParams: SmartSessionGrantPermissionsRequest = request.params[0]
       if (
         wallet instanceof SafeSmartAccountLib
         //TODO:fix kernel grantPermissions
