@@ -23,7 +23,7 @@ export function useDCA() {
     });
     const dappSignerData = await getDappKeyResponse.json();
     const dAppECDSAPublicKey = dappSignerData.key;
-    const sampleDCAPermissions = getSampleAsyncDCAPermissions();
+    const sampleDCAPermissions = getSampleAsyncDCAPermissions(data);
     const grantDCAPermissions: SmartSessionGrantPermissionsRequest = {
       // Adding 24 hours to the current time
       expiry: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
