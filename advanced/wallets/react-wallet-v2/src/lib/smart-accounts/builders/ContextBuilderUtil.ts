@@ -326,11 +326,9 @@ function isERC20RecurringAllowancePermission(
 
 /**
  *  This method processes the permissions array from the permissions request and returns the actions array
- *  Note - Currently only 'contract-call' permission type is supported
- *       - For each contract-call permission, it creates an action for each function in the permission
+ *  Note - For each permission, it creates an action data
  *       - It also adds the TIME_FRAME_POLICY for each action as the actionPolicy
  *        - The expiry time indicated in the permissions request is used as the expiry time for the actions
- *        - Function Arguments are not supported in this version
  * @param permissions - Permissions array from the permissions request
  * @param chainId - Chain ID on which the actions are to be performed
  * @param expiry - Expiry time for the actions
@@ -342,17 +340,18 @@ function getActionsFromPermissions(
   expiry: number
 ): ActionData[] {
   return permissions.reduce((actions: ActionData[], permission) => {
-    if (isContractCallPermission(permission)) {
-      const contractCallActions = createActionForContractCall(permission, chainId, expiry)
-      actions.push(...contractCallActions)
-    } else if (
-      isNativeTokenRecurringAllowancePermission(permission) ||
-      isERC20RecurringAllowancePermission(permission)
-    ) {
-      const fallbackActions = createFallbackActionData(permission, chainId, expiry)
-      actions.push(...fallbackActions)
-    } else {
-      throw new Error(ERROR_MESSAGES.UNSUPPORTED_PERMISSION_TYPE(JSON.stringify(permission)))
+    switch (true) {
+      case isContractCallPermission(permission):
+        actions.push(...createActionForContractCall(permission, chainId, expiry))
+        break
+
+      case isNativeTokenRecurringAllowancePermission(permission):
+      case isERC20RecurringAllowancePermission(permission):
+        actions.push(...createFallbackActionData(permission, chainId, expiry))
+        break
+
+      default:
+        throw new Error(ERROR_MESSAGES.UNSUPPORTED_PERMISSION_TYPE(JSON.stringify(permission)))
     }
 
     return actions
@@ -394,7 +393,9 @@ function createActionForContractCall(
   })
 }
 
-// Create Action for Contract Call Permission
+/**
+ * This is a fallback action data which will be used to skip the functionSelector and address check.
+ * */
 function createFallbackActionData(
   permission: Permission,
   chainId: number,

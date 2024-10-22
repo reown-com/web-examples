@@ -1,18 +1,19 @@
 import { Address } from 'viem'
+import { baseSepolia, sepolia } from 'viem/chains'
 
 export const TIME_FRAME_POLICY_ADDRESSES: Record<number, Address> = {
-  84532: '0x9A6c4974dcE237E01Ff35c602CA9555a3c0Fa5EF',
-  11155111: '0x6E1FCe0ec6feaD8dBD2D36a5b9eCf8e33A538479'
+  [baseSepolia.id]: '0x9A6c4974dcE237E01Ff35c602CA9555a3c0Fa5EF',
+  [sepolia.id]: '0x6E1FCe0ec6feaD8dBD2D36a5b9eCf8e33A538479'
 }
 
 export const MULTIKEY_SIGNER_ADDRESSES: Record<number, Address> = {
-  84532: '0xcaF0461410340F8F366f1F7F7716cF1D90b6bdA4',
-  11155111: '0x3cA2D7D588FA66248a49c1C885997e5017aF9Dc7'
+  [baseSepolia.id]: '0xcaF0461410340F8F366f1F7F7716cF1D90b6bdA4',
+  [sepolia.id]: '0x3cA2D7D588FA66248a49c1C885997e5017aF9Dc7'
 }
 
 export const MOCK_VALIDATOR_ADDRESSES: Record<number, Address> = {
-  84532: '0x8F8842B9b7346529484F282902Af173217411076',
-  11155111: '0xaE15a31afb2770cE4c5C6131925564B03b597Fe3'
+  [baseSepolia.id]: '0x8F8842B9b7346529484F282902Af173217411076',
+  [sepolia.id]: '0xaE15a31afb2770cE4c5C6131925564B03b597Fe3'
 }
 
 // All on sepolia
