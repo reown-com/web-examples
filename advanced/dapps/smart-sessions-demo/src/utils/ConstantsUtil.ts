@@ -15,7 +15,7 @@ export function getPublicUrl() {
 
 export const CUSTOM_WALLET = "wc:custom_wallet";
 export const USEROP_BUILDER_SERVICE_BASE_URL =
-  "https://rpc.walletconnect.com/v1/wallet";
+  "https://react-wallet.walletconnect.com/api/wallet";
 
 let storedCustomWallet;
 if (typeof window !== "undefined") {
