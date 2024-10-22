@@ -2237,10 +2237,10 @@
     "@walletconnect/types" "2.16.1"
     "@walletconnect/utils" "2.16.1"
 
-"@rhinestone/module-sdk@0.1.24":
-  version "0.1.24"
-  resolved "https://registry.yarnpkg.com/@rhinestone/module-sdk/-/module-sdk-0.1.24.tgz#09fcb03d1addfde20b0a21dec4eda55633780bae"
-  integrity sha512-9VlmaOZLWoCTJXnWFdTTyjE0Q0bZ7KpWARhpBG3/1lXjqHYhSjB+0bjLDjH5wH0757xIJVsgn4t07OYJUbO9og==
+"@rhinestone/module-sdk@0.1.25":
+  version "0.1.25"
+  resolved "https://registry.yarnpkg.com/@rhinestone/module-sdk/-/module-sdk-0.1.25.tgz#a385680f8eb1f23f474dcda05416d274999b8dcc"
+  integrity sha512-BJnEtKDpAx0VgWGl/iWE4WAB2MKJVmy+5euCtfUdQrRawA5CI54bQNi966UuDrf/yY9GT/yEOvYX+5VwLxGjsw==
   dependencies:
     solady "^0.0.235"
     tslib "^2.7.0"
