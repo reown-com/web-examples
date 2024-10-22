@@ -3,11 +3,7 @@ import React from "react";
 import { createAppKit } from "@reown/appkit/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import {
-  sepolia,
-  baseSepolia,
-  type AppKitNetwork,
-} from "@reown/appkit/networks";
+import { baseSepolia, type AppKitNetwork } from "@reown/appkit/networks";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { DcaApplicationContextProvider } from "@/context/DcaApplicationContextProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -27,7 +23,7 @@ const wagmiAdapter = new WagmiAdapter({
 createAppKit({
   adapters: [wagmiAdapter],
   networks,
-  defaultNetwork: sepolia,
+  defaultNetwork: baseSepolia,
   projectId: ConstantsUtil.ProjectId,
   features: {
     analytics: true,
