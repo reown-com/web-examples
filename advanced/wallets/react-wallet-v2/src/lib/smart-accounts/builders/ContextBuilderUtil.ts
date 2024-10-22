@@ -342,7 +342,9 @@ function getActionsFromPermissions(
   return permissions.reduce((actions: ActionData[], permission) => {
     switch (true) {
       case isContractCallPermission(permission):
-        actions.push(...createActionForContractCall(permission, chainId, expiry))
+        actions.push(
+          ...createActionForContractCall(permission as ContractCallPermission, chainId, expiry)
+        )
         break
 
       case isNativeTokenRecurringAllowancePermission(permission):
