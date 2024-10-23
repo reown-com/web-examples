@@ -291,6 +291,10 @@ export function ClientContextProvider({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
+        metadata: {
+          ...DEFAULT_APP_METADATA,
+          url: claimedOrigin,
+        },
       });
 
       setClient(_client);
