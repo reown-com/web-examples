@@ -1,5 +1,9 @@
-import { MULTIKEY_SIGNER_ADDRESSES, TIME_FRAME_POLICY_ADDRESSES } from './SmartSessionUtil'
-import type { Session, ChainSession, Account, ActionData } from '@rhinestone/module-sdk'
+import {
+  MOCK_POLICY,
+  MULTIKEY_SIGNER_ADDRESSES,
+  TIME_FRAME_POLICY_ADDRESSES
+} from './SmartSessionUtil'
+import type { Session, ChainSession, Account, ActionData, PolicyData } from '@rhinestone/module-sdk'
 const {
   SMART_SESSIONS_ADDRESS,
   SmartSessionMode,
@@ -28,10 +32,12 @@ import {
   MultiKeySigner,
   Permission,
   Signer,
-  WalletGrantPermissionsRequest,
+  SmartSessionGrantPermissionsRequest,
   ContractCallPermission,
-  SignerKeyType
-} from '@/data/EIP7715Data'
+  NativeTokenRecurringAllowancePermission,
+  ERC20RecurringAllowancePermission
+} from '@reown/appkit-experimental/smart-session'
+import { SignerKeyType } from '@/data/EIP7715Data'
 
 // Constants for error messages
 const ERROR_MESSAGES = {
@@ -76,7 +82,7 @@ async function fetchSessionData(
   account: Account,
   session: Session
 ): Promise<{ sessionNonce: bigint; sessionDigest: Hex; permissionId: Hex }> {
-  const permissionId = (await getPermissionId({ client: publicClient, session })) as Hex
+  const permissionId = (await getPermissionId({ session })) as Hex
   const sessionNonce = await getSessionNonce({ client: publicClient, account, permissionId })
   const sessionDigest = await getSessionDigest({
     client: publicClient,
@@ -104,14 +110,11 @@ export async function getContext(
   {
     account,
     grantPermissionsRequest
-  }: { account: Account; grantPermissionsRequest: WalletGrantPermissionsRequest }
+  }: { account: Account; grantPermissionsRequest: SmartSessionGrantPermissionsRequest }
 ): Promise<Hex> {
   if (!walletClient.account) throw new Error(ERROR_MESSAGES.ACCOUNT_UNDEFINED)
 
   const { chainId: hexChainId } = grantPermissionsRequest
-  console.log('walletClient.chain:', walletClient.chain)
-  console.log('publicClient.chain:', publicClient.chain)
-  console.log('hexChainId:', hexChainId)
   if (!walletClient.chain || !publicClient.chain || !hexChainId)
     throw new Error(ERROR_MESSAGES.CHAIN_UNDEFINED)
   if (toHex(walletClient.chain.id) !== hexChainId || toHex(publicClient.chain.id) !== hexChainId)
@@ -204,10 +207,10 @@ const adjustVInSignature = (
 }
 
 /**
- * This method transforms the WalletGrantPermissionsRequest into a Session object
+ * This method transforms the SmartSessionGrantPermissionsRequest into a Session object
  * The Session object includes permittied actions and policies.
  * It also includes the Session Validator Address(MultiKeySigner module) and Init Data needed for setting up the module.
- * @param WalletGrantPermissionsRequest
+ * @param SmartSessionGrantPermissionsRequest
  * @returns
  */
 function getSmartSession({
@@ -215,14 +218,14 @@ function getSmartSession({
   expiry,
   permissions,
   signer
-}: WalletGrantPermissionsRequest): Session {
+}: SmartSessionGrantPermissionsRequest): Session {
   const chainIdNumber = parseInt(chainId, 16)
   const actions = getActionsFromPermissions(permissions, chainIdNumber, expiry)
-
   const sessionValidator = getSessionValidatorAddress(signer, chainIdNumber)
   const sessionValidatorInitData = getSessionValidatorInitData(signer)
 
   return {
+    chainId: BigInt(chainId),
     sessionValidator,
     sessionValidatorInitData,
     salt: SESSION_SALT,
@@ -309,13 +312,23 @@ function isContractCallPermission(permission: Permission): permission is Contrac
   return permission.type === 'contract-call'
 }
 
+function isNativeTokenRecurringAllowancePermission(
+  permission: Permission
+): permission is NativeTokenRecurringAllowancePermission {
+  return permission.type === 'native-token-recurring-allowance'
+}
+
+function isERC20RecurringAllowancePermission(
+  permission: Permission
+): permission is ERC20RecurringAllowancePermission {
+  return permission.type === 'erc20-recurring-allowance'
+}
+
 /**
  *  This method processes the permissions array from the permissions request and returns the actions array
- *  Note - Currently only 'contract-call' permission type is supported
- *       - For each contract-call permission, it creates an action for each function in the permission
+ *  Note - For each permission, it creates an action data
  *       - It also adds the TIME_FRAME_POLICY for each action as the actionPolicy
  *        - The expiry time indicated in the permissions request is used as the expiry time for the actions
- *        - Function Arguments are not supported in this version
  * @param permissions - Permissions array from the permissions request
  * @param chainId - Chain ID on which the actions are to be performed
  * @param expiry - Expiry time for the actions
@@ -327,12 +340,21 @@ function getActionsFromPermissions(
   expiry: number
 ): ActionData[] {
   return permissions.reduce((actions: ActionData[], permission) => {
-    if (!isContractCallPermission(permission)) {
-      throw new Error(ERROR_MESSAGES.UNSUPPORTED_PERMISSION_TYPE(JSON.stringify(permission)))
-    }
+    switch (true) {
+      case isContractCallPermission(permission):
+        actions.push(
+          ...createActionForContractCall(permission as ContractCallPermission, chainId, expiry)
+        )
+        break
 
-    const contractCallActions = createActionForContractCall(permission, chainId, expiry)
-    actions.push(...contractCallActions)
+      case isNativeTokenRecurringAllowancePermission(permission):
+      case isERC20RecurringAllowancePermission(permission):
+        actions.push(...createFallbackActionData(permission, chainId, expiry))
+        break
+
+      default:
+        throw new Error(ERROR_MESSAGES.UNSUPPORTED_PERMISSION_TYPE(JSON.stringify(permission)))
+    }
 
     return actions
   }, [])
@@ -371,4 +393,30 @@ function createActionForContractCall(
       ]
     }
   })
+}
+
+/**
+ * This is a fallback action data which will be used to skip the functionSelector and address check.
+ * */
+function createFallbackActionData(
+  permission: Permission,
+  chainId: number,
+  expiry: number
+): ActionData[] {
+  const fallbackActionSelector = '0x00000001'
+  const fallbackActionAddress = '0x0000000000000000000000000000000000000001'
+
+  return [
+    {
+      actionTarget: fallbackActionAddress,
+      actionTargetSelector: fallbackActionSelector,
+      // Need atleast 1 actionPolicy, so hardcoding the TIME_FRAME_POLICY for now
+      actionPolicies: [
+        {
+          policy: TIME_FRAME_POLICY_ADDRESSES[chainId],
+          initData: encodePacked(['uint128', 'uint128'], [BigInt(expiry), BigInt(0)])
+        }
+      ]
+    }
+  ]
 }
