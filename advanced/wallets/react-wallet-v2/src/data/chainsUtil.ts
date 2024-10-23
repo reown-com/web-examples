@@ -1,3 +1,4 @@
+import { BIP122_CHAINS } from './Bip122Data'
 import * as viemChains from 'viem/chains'
 import { COSMOS_MAINNET_CHAINS } from './COSMOSData'
 import { EIP155_CHAINS } from './EIP155Data'
@@ -18,7 +19,8 @@ export const ALL_CHAINS = {
   ...POLKADOT_CHAINS,
   ...SOLANA_CHAINS,
   ...TEZOS_CHAINS,
-  ...TRON_CHAINS
+  ...TRON_CHAINS,
+  ...BIP122_CHAINS
 }
 
 export function getChainData(chainId?: string) {

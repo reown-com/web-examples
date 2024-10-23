@@ -33,6 +33,9 @@ interface State {
     | 'SessionSignKadenaModal'
     | 'SessionAuthenticateModal'
     | 'LoadingModal'
+    | 'SessionSignBip122Modal'
+    | 'SessionGetBip122AddressesModal'
+    | 'SessionSendTransactionBip122Modal'
   data?: ModalData
 }
 
