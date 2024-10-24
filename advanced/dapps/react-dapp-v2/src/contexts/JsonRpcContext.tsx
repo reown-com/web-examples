@@ -57,6 +57,7 @@ import {
   DEFAULT_EIP7715_METHODS,
   WalletGrantPermissionsParameters,
   WalletGrantPermissionsReturnType,
+  TEZOS_SAMPLES,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -69,8 +70,8 @@ import {
   SignableMessage,
 } from "@multiversx/sdk-core";
 import { UserVerifier } from "@multiversx/sdk-wallet/out/userVerifier";
-import { SignClient } from "@walletconnect/sign-client/dist/types/client";
 import { parseEther } from "ethers/lib/utils";
+import { apiGetContractAddress } from "../helpers/tezos";
 
 /**
  * Types
@@ -131,6 +132,14 @@ interface IContext {
     testGetAccounts: TRpcRequestCallback;
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
+    testSignOrigination: TRpcRequestCallback;
+    testSignContractCall: TRpcRequestCallback;
+    testSignDelegation: TRpcRequestCallback;
+    testSignUndelegation: TRpcRequestCallback;
+    testSignStake: TRpcRequestCallback;
+    testSignUnstake: TRpcRequestCallback;
+    testSignFinalize: TRpcRequestCallback;
+    testSignIncreasePaidStorage: TRpcRequestCallback;
   };
   kadenaRpc: {
     testGetAccounts: TRpcRequestCallback;
@@ -162,6 +171,9 @@ export function JsonRpcContextProvider({
   const [lastTxId, setLastTxId] = useState<`0x${string}`>();
   const [kadenaAccount, setKadenaAccount] = useState<KadenaAccount | null>(
     null
+  );
+  const [contractAddress, setContractAddress] = useState(
+    "[Run Origination to get contract address]"
   );
 
   const { client, session, accounts, balances, solanaPublicKeys } =
@@ -872,7 +884,7 @@ export function JsonRpcContextProvider({
               })),
               transaction: transaction
                 .serialize({ verifySignatures: false })
-                .toString('base64'),
+                .toString("base64"),
             },
           },
         });
@@ -1405,59 +1417,139 @@ export function JsonRpcContextProvider({
 
   // -------- TEZOS RPC METHODS --------
 
+  const signTransaction = (method: DEFAULT_TEZOS_METHODS) => {
+    return _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        let operation;
+        switch (method) {
+          case DEFAULT_TEZOS_METHODS.SEND_TRANSACTION:
+            operation = TEZOS_SAMPLES[method];
+            break;
+
+          case DEFAULT_TEZOS_METHODS.SEND_DELEGATION:
+            operation = TEZOS_SAMPLES[method];
+            break;
+
+          case DEFAULT_TEZOS_METHODS.SEND_UNDELEGATION:
+            operation = TEZOS_SAMPLES[method];
+            break;
+
+          case DEFAULT_TEZOS_METHODS.SEND_ORGINATION:
+            operation = TEZOS_SAMPLES[method];
+            break;
+
+          case DEFAULT_TEZOS_METHODS.SEND_CONTRACT_CALL:
+            operation = {
+              ...TEZOS_SAMPLES[method],
+              destination: contractAddress,
+            };
+            break;
+
+          case DEFAULT_TEZOS_METHODS.SEND_STAKE:
+            operation = { ...TEZOS_SAMPLES[method], destination: address };
+            break;
+
+          case DEFAULT_TEZOS_METHODS.SEND_UNSTAKE:
+            operation = { ...TEZOS_SAMPLES[method], destination: address };
+            break;
+
+          case DEFAULT_TEZOS_METHODS.SEND_FINALIZE:
+            operation = { ...TEZOS_SAMPLES[method], destination: address };
+            break;
+
+          case DEFAULT_TEZOS_METHODS.SEND_INCREASE_PAID_STORAGE:
+            operation = {
+              ...TEZOS_SAMPLES[method],
+              destination: contractAddress,
+            };
+            break;
+
+          default:
+            throw new Error(`Unsupported method ${method}`);
+        }
+        console.log("TezosRpc operation: ", operation);
+        const result = await client!.request<{ hash: string }>({
+          chainId,
+          topic: session!.topic,
+          request: {
+            method: DEFAULT_TEZOS_METHODS.SEND,
+            params: {
+              account: address,
+              operations: [operation],
+            },
+          },
+        });
+
+        // Get the contract ID if it's an origination
+        if (method === DEFAULT_TEZOS_METHODS.SEND_ORGINATION) {
+          for (let attempt = 0; attempt < 10; attempt++) {
+            const contractAddressList = await apiGetContractAddress(
+              chainId,
+              result.hash
+            );
+            if (contractAddressList.length > 0) {
+              setContractAddress(contractAddressList[0]);
+              console.log("TezosRpc stored contract: ", contractAddressList[0]);
+              break;
+            }
+            console.log("Waiting for contract address...");
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+          if (!contractAddress) {
+            console.error(
+              "TezosRpc could not find contract address in origination operation."
+            );
+          }
+        }
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: JSON.stringify(result, null, 2),
+        };
+      }
+    );
+  };
+
   const tezosRpc = {
     testGetAccounts: _createJsonRpcRequestHandler(
       async (
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const result = await client!.request<{ signature: string }>({
+        const result = await client!.request<Array<{ address: string }>>({
           chainId,
           topic: session!.topic,
           request: {
-            method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+            method: DEFAULT_TEZOS_METHODS.GET_ACCOUNTS,
             params: {},
           },
         });
 
         return {
-          method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+          method: DEFAULT_TEZOS_METHODS.GET_ACCOUNTS,
           address,
           valid: true,
           result: JSON.stringify(result, null, 2),
         };
       }
     ),
-    testSignTransaction: _createJsonRpcRequestHandler(
-      async (
-        chainId: string,
-        address: string
-      ): Promise<IFormattedRpcResponse> => {
-        const result = await client!.request<{ hash: string }>({
-          chainId,
-          topic: session!.topic,
-          request: {
-            method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
-            params: {
-              account: address,
-              operations: [
-                {
-                  kind: "transaction",
-                  amount: "1", // 1 mutez, smallest unit
-                  destination: address, // send to ourselves
-                },
-              ],
-            },
-          },
-        });
-
-        return {
-          method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
-          address,
-          valid: true,
-          result: result.hash,
-        };
-      }
+    testSignTransaction: signTransaction(DEFAULT_TEZOS_METHODS.SEND_TRANSACTION),
+    testSignOrigination: signTransaction(DEFAULT_TEZOS_METHODS.SEND_ORGINATION),
+    testSignContractCall: signTransaction(
+      DEFAULT_TEZOS_METHODS.SEND_CONTRACT_CALL
+    ),
+    testSignDelegation: signTransaction(DEFAULT_TEZOS_METHODS.SEND_DELEGATION),
+    testSignUndelegation: signTransaction(DEFAULT_TEZOS_METHODS.SEND_UNDELEGATION),
+    testSignStake: signTransaction(DEFAULT_TEZOS_METHODS.SEND_STAKE),
+    testSignUnstake: signTransaction(DEFAULT_TEZOS_METHODS.SEND_UNSTAKE),
+    testSignFinalize: signTransaction(DEFAULT_TEZOS_METHODS.SEND_FINALIZE),
+    testSignIncreasePaidStorage: signTransaction(
+      DEFAULT_TEZOS_METHODS.SEND_INCREASE_PAID_STORAGE
     ),
     testSignMessage: _createJsonRpcRequestHandler(
       async (
@@ -1470,7 +1562,7 @@ export function JsonRpcContextProvider({
           chainId,
           topic: session!.topic,
           request: {
-            method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+            method: DEFAULT_TEZOS_METHODS.SIGN,
             params: {
               account: address,
               payload,
@@ -1479,10 +1571,10 @@ export function JsonRpcContextProvider({
         });
 
         return {
-          method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+          method: DEFAULT_TEZOS_METHODS.SIGN,
           address,
           valid: true,
-          result: result.signature,
+          result: JSON.stringify(result, null, 2),
         };
       }
     ),

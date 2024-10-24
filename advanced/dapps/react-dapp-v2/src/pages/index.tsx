@@ -20,6 +20,7 @@ import {
   DEFAULT_KADENA_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TEZOS_METHODS,
+  TEZOS_SAMPLES,
   DEFAULT_EIP155_OPTIONAL_METHODS,
   DEFAULT_EIP5792_METHODS,
   GetCapabilitiesResult,
@@ -425,21 +426,99 @@ const Home: NextPage = () => {
       openRequestModal();
       await tezosRpc.testSignTransaction(chainId, address);
     };
+    const onSignOrigination = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignOrigination(chainId, address);
+    };
+    const onSignContractCall = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignContractCall(chainId, address);
+    };
+    const onSignDelegation = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignDelegation(chainId, address);
+    };
+    const onSignUndelegation = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignUndelegation(chainId, address);
+    };
+    const onSignStake = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignStake(chainId, address);
+    };
+    const onSignUnstake = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignUnstake(chainId, address);
+    };
+    const onSignFinalize = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tezosRpc.testSignFinalize(chainId, address);
+    };
+    const onSignIncreasePaidStorage = async (
+      chainId: string,
+      address: string
+    ) => {
+      openRequestModal();
+      await tezosRpc.testSignIncreasePaidStorage(chainId, address);
+    };
     const onSignMessage = async (chainId: string, address: string) => {
       openRequestModal();
       await tezosRpc.testSignMessage(chainId, address);
     };
     return [
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
+        method: DEFAULT_TEZOS_METHODS.GET_ACCOUNTS,
         callback: onGetAccounts,
+        description: "Use before sending a transaction to get peer address.",
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
+        method: DEFAULT_TEZOS_METHODS.SEND_TRANSACTION,
         callback: onSignTransaction,
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_TRANSACTION],
       },
       {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
+        method: DEFAULT_TEZOS_METHODS.SEND_ORGINATION,
+        callback: onSignOrigination,
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_ORGINATION],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.SEND_CONTRACT_CALL,
+        callback: onSignContractCall,
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_CONTRACT_CALL],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.SEND_DELEGATION,
+        callback: onSignDelegation,
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_DELEGATION],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.SEND_UNDELEGATION,
+        callback: onSignUndelegation,
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_UNDELEGATION],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.SEND_STAKE,
+        callback: onSignStake,
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_STAKE],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.SEND_UNSTAKE,
+        callback: onSignUnstake,
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_UNSTAKE],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.SEND_FINALIZE,
+        callback: onSignFinalize,
+        description: TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_FINALIZE],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.SEND_INCREASE_PAID_STORAGE,
+        callback: onSignIncreasePaidStorage,
+        description:
+          TEZOS_SAMPLES[DEFAULT_TEZOS_METHODS.SEND_INCREASE_PAID_STORAGE],
+      },
+      {
+        method: DEFAULT_TEZOS_METHODS.SIGN,
         callback: onSignMessage,
       },
     ];

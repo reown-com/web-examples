@@ -1,4 +1,12 @@
 import { getAppMetadata } from "@walletconnect/utils";
+import {
+  PartialTezosDelegationOperation,
+  PartialTezosIncreasePaidStorageOperation,
+  PartialTezosOriginationOperation as PartialTezosOriginationOperationOriginal,
+  PartialTezosTransactionOperation,
+  TezosOperationType,
+} from "@airgap/beacon-types";
+import { ScriptedContracts } from "@taquito/rpc";
 
 if (!process.env.NEXT_PUBLIC_PROJECT_ID)
   throw new Error("`NEXT_PUBLIC_PROJECT_ID` env variable is missing.");
@@ -36,7 +44,7 @@ export const DEFAULT_TEST_CHAINS = [
   "near:testnet",
   "mvx:D",
   "tron:0xcd8690dc",
-  "tezos:testnet",
+  "tezos:ghostnet",
   "kadena:testnet04",
 ];
 
@@ -246,11 +254,124 @@ export enum DEFAULT_TRON_EVENTS {}
 /**
  * TEZOS
  */
-export enum DEFAULT_TEZOS_METHODS {
-  TEZOS_GET_ACCOUNTS = "tezos_getAccounts",
-  TEZOS_SEND = "tezos_send",
-  TEZOS_SIGN = "tezos_sign",
+// Can be removed when the fix for Origination is released:
+// https://github.com/airgap-it/beacon-sdk/pull/806
+interface PartialTezosOriginationOperation
+  extends Omit<PartialTezosOriginationOperationOriginal, "script"> {
+  script: ScriptedContracts;
 }
+
+export enum DEFAULT_TEZOS_METHODS {
+  GET_ACCOUNTS = "tezos_getAccounts",
+  SIGN = "tezos_sign",
+  SEND = "tezos_send",
+  SEND_TRANSACTION = "tezos_send:transaction",
+  SEND_ORGINATION = "tezos_send:origination",
+  SEND_CONTRACT_CALL = "tezos_send:contract_call",
+  SEND_DELEGATION = "tezos_send:delegation",
+  SEND_UNDELEGATION = "tezos_send:undelegation",
+  SEND_STAKE = "tezos_send:stake",
+  SEND_UNSTAKE = "tezos_send:unstake",
+  SEND_FINALIZE = "tezos_send:finalize",
+  SEND_INCREASE_PAID_STORAGE = "tezos_send:increase_paid_storage",
+}
+
+const tezosTransactionOperation: PartialTezosTransactionOperation = {
+  kind: TezosOperationType.TRANSACTION,
+  destination: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve", // Tezos Foundation Ghost Baker
+  amount: "100000",
+};
+
+const tezosOriginationOperation: PartialTezosOriginationOperation = {
+  kind: TezosOperationType.ORIGINATION,
+  balance: "1",
+  script: {
+    // This contract adds the parameter to the storage value
+    code: [
+      { prim: "parameter", args: [{ prim: "int" }] },
+      { prim: "storage", args: [{ prim: "int" }] },
+      {
+        prim: "code",
+        args: [
+          [
+            { prim: "DUP" }, // Duplicate the parameter (parameter is pushed onto the stack)
+            { prim: "CAR" }, // Access the parameter from the stack (parameter is on top)
+            { prim: "DIP", args: [[{ prim: "CDR" }]] }, // Access the storage value (storage is on the stack)
+            { prim: "ADD" }, // Add the parameter to the storage value
+            { prim: "NIL", args: [{ prim: "operation" }] }, // Create an empty list of operations
+            { prim: "PAIR" }, // Pair the updated storage with the empty list of operations
+          ],
+        ],
+      },
+    ],
+    storage: { int: "10" },
+  },
+};
+
+const tezosContractCallOperation: PartialTezosTransactionOperation = {
+  kind: TezosOperationType.TRANSACTION,
+  destination: "[contract address]",
+  amount: "0",
+  parameters: { entrypoint: "default", value: { int: "20" } }, // Add 20 to the current storage value
+};
+
+const tezosDelegationOperation: PartialTezosDelegationOperation = {
+  kind: TezosOperationType.DELEGATION,
+  delegate: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve", // Tezos Foundation Ghost Baker. Cannot delegate to ourself as that would block undelegation
+};
+
+const tezosUndelegationOperation: PartialTezosDelegationOperation = {
+  kind: TezosOperationType.DELEGATION,
+};
+
+const tezosStakeOperation: PartialTezosTransactionOperation = {
+  kind: TezosOperationType.TRANSACTION,
+  destination: "[own adress]",
+  amount: "1000000",
+  parameters: {
+    entrypoint: "stake",
+    value: { prim: "Unit" },
+  },
+};
+
+const tezosUnstakeOperation: PartialTezosTransactionOperation = {
+  kind: TezosOperationType.TRANSACTION,
+  destination: "[own adress]",
+  amount: "1000000",
+  parameters: {
+    entrypoint: "unstake",
+    value: { prim: "Unit" },
+  },
+};
+
+const tezosFinalizeOperation: PartialTezosTransactionOperation = {
+  kind: TezosOperationType.TRANSACTION,
+  destination: "[own adress]",
+  amount: "0",
+  parameters: {
+    entrypoint: "finalize_unstake",
+    value: { prim: "Unit" },
+  },
+};
+
+const TezosIncreasePaidStorageOperation: PartialTezosIncreasePaidStorageOperation =
+  {
+    kind: TezosOperationType.INCREASE_PAID_STORAGE,
+    amount: "10",
+    destination: "[contract address]",
+  };
+
+export const TEZOS_SAMPLES = {
+  "tezos_send:transaction": tezosTransactionOperation,
+  "tezos_send:origination": tezosOriginationOperation,
+  "tezos_send:contract_call": tezosContractCallOperation,
+  "tezos_send:delegation": tezosDelegationOperation,
+  "tezos_send:undelegation": tezosUndelegationOperation,
+  "tezos_send:stake": tezosStakeOperation,
+  "tezos_send:unstake": tezosUnstakeOperation,
+  "tezos_send:finalize": tezosFinalizeOperation,
+  "tezos_send:increase_paid_storage": TezosIncreasePaidStorageOperation,
+};
 
 export enum DEFAULT_TEZOS_EVENTS {}
 

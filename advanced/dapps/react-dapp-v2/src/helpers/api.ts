@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { apiGetKadenaAccountBalance } from "./kadena";
+import { apiGetTezosAccountBalance } from "./tezos";
 
 import { AssetData } from "./types";
 import { PactCommand } from "@kadena/client";
@@ -153,6 +154,10 @@ export async function apiGetAccountBalance(
       address,
       networkId as PactCommand["networkId"]
     );
+  }
+
+  if (namespace === "tezos") {
+    return apiGetTezosAccountBalance(address, networkId);
   }
 
   if (namespace !== "eip155") {
