@@ -86,6 +86,22 @@ export type SendPreparedCallsParams = {
 };
 
 export type SendPreparedCallsReturnValue = string;
+export type GetCallsStatusParams = string;
+export type GetCallsStatusReturnValue = {
+  status: 'PENDING' | 'CONFIRMED'
+  receipts?: {
+    logs: {
+      address: `0x${string}`
+      data: `0x${string}`
+      topics: `0x${string}`[]
+    }[]
+    status: `0x${string}` // Hex 1 or 0 for success or failure, respectively
+    blockHash: `0x${string}`
+    blockNumber: `0x${string}`
+    gasUsed: `0x${string}`
+    transactionHash: `0x${string}`
+  }[]
+}
 
 // Define a custom error type
 export class UserOpBuilderApiError extends Error {
@@ -163,4 +179,20 @@ export async function sendPreparedCalls(
     SendPreparedCallsParams[],
     SendPreparedCallsReturnValue[]
   >("wallet_sendPreparedCalls", [args], url);
+}
+
+export async function getCallsStatus(
+  args: GetCallsStatusParams,
+): Promise<GetCallsStatusReturnValue[]> {
+  const projectId = process.env["NEXT_PUBLIC_PROJECT_ID"];
+  if (!projectId) {
+    throw new Error("NEXT_PUBLIC_PROJECT_ID is not set");
+  }
+
+  const url = `${USEROP_BUILDER_SERVICE_BASE_URL}?projectId=${projectId}`;
+
+  return jsonRpcRequest<
+    GetCallsStatusParams[],
+    GetCallsStatusReturnValue[]
+  >("wallet_getCallsStatus", [args], url);
 }
