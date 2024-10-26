@@ -1,5 +1,7 @@
 import {
   ErrorResponse,
+  GetCallsStatusParams,
+  GetCallsStatusReturnValue,
   PrepareCallsParams,
   PrepareCallsReturnValue,
   SendPreparedCallsParams,
@@ -8,6 +10,9 @@ import {
 import { getChainById } from '@/utils/ChainUtil'
 import { getUserOpBuilder } from '@/utils/UserOpBuilderUtil'
 import { NextApiRequest, NextApiResponse } from 'next'
+import { ENTRYPOINT_ADDRESS_V07 } from 'permissionless'
+import { createPimlicoBundlerClient } from 'permissionless/clients/pimlico'
+import { http, toHex } from 'viem'
 
 type JsonRpcRequest = {
   jsonrpc: '2.0'
@@ -27,7 +32,7 @@ type JsonRpcResponse<T> = {
   }
 }
 
-type SupportedMethods = 'wallet_prepareCalls' | 'wallet_sendPreparedCalls'
+type SupportedMethods = 'wallet_prepareCalls' | 'wallet_sendPreparedCalls' | 'wallet_getCallsStatus'
 
 const ERROR_CODES = {
   INVALID_REQUEST: -32600,
@@ -73,10 +78,51 @@ async function handleSendPreparedCalls(
   return builder.sendPreparedCalls(projectId, data)
 }
 
+async function handleGetCallsStatus(
+  projectId: string,
+  params: GetCallsStatusParams[]
+): Promise<GetCallsStatusReturnValue> {
+  const [userOpIdentifier] = params
+  const chainId = userOpIdentifier.split(':')[0]
+  const userOpHash = userOpIdentifier.split(':')[1]
+
+  const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
+  const localBundlerUrl = process.env.NEXT_PUBLIC_LOCAL_BUNDLER_URL
+  const bundlerUrl = localBundlerUrl || `https://api.pimlico.io/v1/base-sepolia/rpc?apikey=${apiKey}`
+  const bundlerClient = createPimlicoBundlerClient({
+    entryPoint: ENTRYPOINT_ADDRESS_V07,
+    transport: http(bundlerUrl)
+  })
+  const userOpReceipt = await bundlerClient.getUserOperationReceipt({
+    hash: userOpHash as `0x${string}`
+  })
+  const receipt: GetCallsStatusReturnValue = {
+    status: userOpReceipt ? 'CONFIRMED' : 'PENDING',
+    receipts: userOpReceipt
+      ? [
+          {
+            logs: userOpReceipt.logs.map(log => ({
+              data: log.data,
+              address: log.address,
+              topics: log.topics
+            })),
+            blockHash: userOpReceipt.receipt.blockHash,
+            blockNumber: toHex(userOpReceipt.receipt.blockNumber),
+            gasUsed: toHex(userOpReceipt.actualGasUsed),
+            transactionHash: userOpReceipt.receipt.transactionHash,
+            status: userOpReceipt.success ? '0x1' : '0x0'
+          }
+        ]
+      : undefined
+  }
+  return receipt
+
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<
-    JsonRpcResponse<PrepareCallsReturnValue[] | SendPreparedCallsReturnValue[] | ErrorResponse>
+    JsonRpcResponse<PrepareCallsReturnValue[] | SendPreparedCallsReturnValue[] | GetCallsStatusReturnValue[] | ErrorResponse>
   >
 ) {
   if (req.method === 'OPTIONS') {
@@ -92,7 +138,7 @@ export default async function handler(
   const jsonRpcRequest: JsonRpcRequest = req.body
   const { id, method, params } = jsonRpcRequest
 
-  if (!['wallet_prepareCalls', 'wallet_sendPreparedCalls'].includes(method)) {
+  if (!['wallet_prepareCalls', 'wallet_sendPreparedCalls', 'wallet_getCallsStatus'].includes(method)) {
     return res
       .status(200)
       .json(createErrorResponse(id, ERROR_CODES.METHOD_NOT_FOUND, `${method} method not found`))
@@ -106,7 +152,7 @@ export default async function handler(
   }
 
   try {
-    let response: PrepareCallsReturnValue | SendPreparedCallsReturnValue
+    let response: PrepareCallsReturnValue | SendPreparedCallsReturnValue | GetCallsStatusReturnValue
 
     switch (method as SupportedMethods) {
       case 'wallet_prepareCalls':
@@ -123,6 +169,14 @@ export default async function handler(
           jsonrpc: '2.0',
           id,
           result: [response] as SendPreparedCallsReturnValue[]
+        })
+
+      case 'wallet_getCallsStatus':
+        response = await handleGetCallsStatus(projectId, params as GetCallsStatusParams[])
+        return res.status(200).json({
+          jsonrpc: '2.0',
+          id,
+          result: [response] as GetCallsStatusReturnValue[]
         })
 
       default:
