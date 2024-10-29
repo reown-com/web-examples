@@ -1,8 +1,18 @@
 import { NamespaceMetadata, ChainMetadata, ChainsMap } from "../helpers";
 
+export const BIP122_MAINNET = "000000000019d6689c085ae165831e93";
+export const BIP122_TESTNET = "000000000933ea01ad0ee984209779ba";
+
 export const BtcChainData: ChainsMap = {
-  "000000000933ea01ad0ee984209779ba": {
-    id: "bip122:000000000933ea01ad0ee984209779ba",
+  [BIP122_MAINNET]: {
+    id: `bip122:${BIP122_MAINNET}`,
+    name: "BTC Mainnet",
+    rpc: [],
+    slip44: 0,
+    testnet: false,
+  },
+  [BIP122_TESTNET]: {
+    id: `bip122:${BIP122_TESTNET}`,
     name: "BTC Testnet",
     rpc: [],
     slip44: 501,
@@ -11,7 +21,11 @@ export const BtcChainData: ChainsMap = {
 };
 
 export const BtcMetadata: NamespaceMetadata = {
-  "000000000933ea01ad0ee984209779ba": {
+  [BIP122_MAINNET]: {
+    logo: "/assets/btc-testnet.png",
+    rgb: "247, 147, 25",
+  },
+  [BIP122_TESTNET]: {
     logo: "/assets/btc-testnet.png",
     rgb: "247, 147, 25",
   },

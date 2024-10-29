@@ -19,6 +19,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "tron:0x2b6653dc",
   "tezos:mainnet",
   "kadena:mainnet01",
+  "bip122:000000000019d6689c085ae165831e93",
 ];
 
 export const DEFAULT_TEST_CHAINS = [

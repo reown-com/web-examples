@@ -5,6 +5,7 @@ import * as bip39 from 'bip39'
 import BIP32Factory, { BIP32Interface } from 'bip32'
 import bitcoinMessage from 'bitcoinjs-message'
 import { schnorr } from '@noble/secp256k1'
+import { BIP122_CHAINS, IBip122ChainId } from '@/data/Bip122Data'
 bitcoin.initEccLib(ecc)
 
 const ECPair = ECPairFactory(ecc)
@@ -53,6 +54,7 @@ interface ISignPsbt {
   psbt: string
   signInputs: IPsbtInput[]
   broadcast: boolean
+  chainId: IBip122ChainId
 }
 
 const validator = (pubkey: Buffer, msghash: Buffer, signature: Buffer): boolean => {
@@ -65,11 +67,27 @@ const validator = (pubkey: Buffer, msghash: Buffer, signature: Buffer): boolean 
 export default class Bip122Lib {
   private account: BIP32Interface
   private mnemonic: string
-  private addresses = new Map<string, IAddressData>()
-  private ordinals = new Map<string, IAddressData>()
-  private keys = new Map<string, { wif: string; network: bitcoin.Network }>()
+  private addresses = {} as Record<IBip122ChainId, Map<string, IAddressData>>
+  private ordinals = {} as Record<IBip122ChainId, Map<string, IAddressData>>
+  private keys = {} as Record<
+    IBip122ChainId,
+    Map<string, { wif: string; network: bitcoin.Network }>
+  >
 
   constructor(key?: string) {
+    this.keys = Object.values(BIP122_CHAINS).reduce((acc, chain) => {
+      acc[chain.caip2] = new Map<string, { wif: string; network: bitcoin.Network }>()
+      return acc
+    }, this.keys)
+    this.addresses = Object.values(BIP122_CHAINS).reduce((acc, chain) => {
+      acc[chain.caip2] = new Map<string, IAddressData>()
+      return acc
+    }, this.addresses)
+    this.ordinals = Object.values(BIP122_CHAINS).reduce((acc, chain) => {
+      acc[chain.caip2] = new Map<string, IAddressData>()
+      return acc
+    }, this.ordinals)
+
     this.mnemonic = key ? key : bip39.generateMnemonic()
     const seed = bip39.mnemonicToSeedSync(this.mnemonic)
     const root = bip32.fromSeed(seed)
@@ -82,47 +100,49 @@ export default class Bip122Lib {
     return new Bip122Lib(privateKey)
   }
 
-  public getAddress() {
-    return Array.from(this.addresses.values())[0].address
+  public getAddress(chainId: IBip122ChainId) {
+    return Array.from(this.addresses[chainId].values())[0].address
   }
 
-  public getOrdinalsAddress() {
-    return Array.from(this.ordinals.values())[0].address
+  public getOrdinalsAddress(chainId: IBip122ChainId) {
+    return Array.from(this.ordinals[chainId].values())[0].address
   }
 
   public getPrivateKey() {
     return this.mnemonic
   }
 
-  public getAddresses(intentions?: string[]) {
+  public getAddresses(chainId: IBip122ChainId, intentions?: string[]) {
     if (intentions && intentions[0] === 'ordinal') {
-      return this.ordinals
+      return this.ordinals[chainId]
     }
-    return this.addresses
+    return this.addresses[chainId]
   }
 
   public async signMessage({
     message,
     address,
-    protocol
+    protocol,
+    chainId
   }: {
     message: string
     address: string
     protocol?: string
+    chainId: IBip122ChainId
   }) {
     if (protocol && protocol !== 'ecdsa') {
       throw new Error(`Supported signing protols: ecdsa, received: ${protocol}`)
     }
-    const addressData = this.getAddressData(address)
+    const addressData = this.getAddressData(address, chainId)
     if (!addressData) {
       throw new Error(`Unkown address: ${address}`)
     }
-    const keyData = this.keys.get(address)!
+    const keyData = this.keys[chainId].get(address)!
     var keyPair = ECPair.fromWIF(keyData.wif)
     var privateKey = keyPair.privateKey!
 
     let signature
-    if (this.isOrdinal(address)) {
+    if (this.isOrdinal(address, chainId)) {
       const messageHash = bitcoin.crypto.sha256(Buffer.from(message))
 
       const sig = await schnorr.sign(messageHash, privateKey)
@@ -145,11 +165,12 @@ export default class Bip122Lib {
     amount: string
     changeAddress?: string
     memo?: string
+    chainId: IBip122ChainId
   }) {
-    const { account, recipientAddress, amount, changeAddress, memo } = params
+    const { account, recipientAddress, amount, changeAddress, memo, chainId } = params
     const satoshis = parseInt(amount)
 
-    const addressData = this.getAddressData(account)
+    const addressData = this.getAddressData(account, chainId)
     if (!addressData) {
       throw new Error(`Unkown address: ${account}`)
     }
@@ -173,7 +194,7 @@ export default class Bip122Lib {
       }
     })
 
-    const keyData = this.keys.get(account)!
+    const keyData = this.keys[chainId].get(account)!
     const transaction = await this.createTransaction({
       network: keyData.network,
       recipientAddress,
@@ -224,18 +245,19 @@ export default class Bip122Lib {
 
   private generateAddress({
     index,
-    network,
+    coinType,
+    chainId,
     change = false,
     taproot = false
   }: {
     index: number
-    network: bitcoin.Network
+    coinType: string
+    chainId: IBip122ChainId
     change?: boolean
     taproot?: boolean
   }) {
-    const path = `m/84'/${network === bitcoin.networks.testnet ? '1' : '0'}'/0'/${
-      change ? 1 : 0
-    }/${index}`
+    const network = this.getNetwork(coinType)
+    const path = `m/84'/${coinType}'/0'/${change ? 1 : 0}/${index}`
     const child = this.account.derivePath(path)
     let address
     if (taproot) {
@@ -250,27 +272,46 @@ export default class Bip122Lib {
       }).address!
     }
     const wif = child.toWIF()
-    this.keys.set(address, { wif, network })
+    this.keys[chainId].set(address, { wif, network })
     return { address, path, publicKey: child.publicKey.toString('hex') }
   }
 
   private loadAddresses(startIndex = 0) {
-    const addressesToLoad = startIndex + 20
-    const network = bitcoin.networks.testnet
-    for (let i = startIndex; i < addressesToLoad; i++) {
-      // payment addresses
-      const addressData = this.generateAddress({ index: i, network })
-      this.addresses.set(addressData.address, addressData)
+    console.log('Loading addresses...')
+    console.log('Keys:', this.keys)
+    console.log('Addresses:', this.addresses)
+    console.log('Ordinals:', this.ordinals)
+    Object.keys(this.keys).forEach(chainId => {
+      const data = BIP122_CHAINS[chainId as IBip122ChainId]
+      const addressesToLoad = startIndex + 20
 
-      // ordinals
-      const taprootAddress = this.generateAddress({
-        index: i,
-        network,
-        taproot: true
-      })
-      this.ordinals.set(taprootAddress.address, taprootAddress)
+      for (let i = startIndex; i < addressesToLoad; i++) {
+        const addressParams = {
+          index: i,
+          chainId: data.caip2,
+          coinType: data.coinType
+        }
+        // payment addresses
+        const addressData = this.generateAddress(addressParams)
+        this.addresses[data.caip2].set(addressData.address, addressData)
+        // ordinals
+        const taprootAddress = this.generateAddress({
+          ...addressParams,
+          taproot: true
+        })
+        this.ordinals[data.caip2].set(taprootAddress.address, taprootAddress)
+      }
+      console.log('Loaded addresses:', this.addresses, this.ordinals)
+    })
+  }
+
+  private getNetwork(coinType: string) {
+    if (coinType === '0') {
+      return bitcoin.networks.bitcoin
+    } else if (coinType === '1') {
+      return bitcoin.networks.testnet
     }
-    console.log('Loaded addresses:', this.addresses, this.ordinals)
+    throw new Error(`Unsupported coin type: ${coinType}`)
   }
 
   private async createTransaction({
@@ -334,14 +375,14 @@ export default class Bip122Lib {
     return tx.toHex()
   }
 
-  public async signPsbt({ account, psbt, signInputs, broadcast = false }: ISignPsbt) {
-    const keyData = this.keys.get(account)!
+  public async signPsbt({ account, psbt, signInputs, broadcast = false, chainId }: ISignPsbt) {
+    const keyData = this.keys[chainId].get(account)!
     const keyPair = ECPair.fromWIF(keyData.wif)
     const transaction = bitcoin.Psbt.fromBase64(psbt, { network: keyData.network })
     signInputs.forEach(({ address, index, sighashTypes }) => {
       let keyPairToSignWith = keyPair
       if (address !== account) {
-        const keyData = this.keys.get(address)!
+        const keyData = this.keys[chainId].get(address)!
         keyPairToSignWith = ECPair.fromWIF(keyData.wif)
       }
       transaction.signInput(index, keyPairToSignWith, sighashTypes)
@@ -378,13 +419,13 @@ export default class Bip122Lib {
     return change
   }
 
-  private getAddressData(address: string) {
-    const addressData = this.addresses.get(address)
+  private getAddressData(address: string, chainId: IBip122ChainId) {
+    const addressData = this.addresses[chainId].get(address)
     if (addressData) return addressData
-    return this.ordinals.get(address)
+    return this.ordinals[chainId].get(address)
   }
 
-  private isOrdinal(address: string) {
-    return this.ordinals.has(address)
+  private isOrdinal(address: string, chainId: IBip122ChainId) {
+    return this.ordinals[chainId].has(address)
   }
 }

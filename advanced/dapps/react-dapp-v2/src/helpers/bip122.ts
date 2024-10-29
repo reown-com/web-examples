@@ -3,6 +3,7 @@ import * as bitcoin from "bitcoinjs-lib";
 import BitcoinMessage from "bitcoinjs-message";
 import { convertHexToBase64 } from "./utilities";
 import { IUTXO } from "./types";
+import { BIP122_TESTNET } from "../chains/bip122";
 export async function apiGetBip122AccountBalance(
   address: string,
   chainId: string
@@ -14,8 +15,13 @@ export async function apiGetBip122AccountBalance(
 }
 
 export async function apiGetAddressUtxos(address: string, chainId: string) {
+  const isTestnet = chainId.includes(BIP122_TESTNET);
   return await (
-    await fetch(`https://mempool.space/testnet/api/address/${address}/utxo`)
+    await fetch(
+      `https://mempool.space${
+        isTestnet ? "/testnet" : ""
+      }/api/address/${address}/utxo`
+    )
   ).json();
 }
 

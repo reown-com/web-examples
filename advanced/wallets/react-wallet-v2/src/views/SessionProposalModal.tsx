@@ -37,7 +37,12 @@ import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { getWalletCapabilities } from '@/utils/EIP5792WalletUtil'
 import { bip122Addresses, bip122Wallet } from '@/utils/Bip122WalletUtil'
-import { BIP122_CHAINS, BIP122_EVENTS, BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
+import {
+  BIP122_CHAINS,
+  BIP122_EVENTS,
+  BIP122_SIGNING_METHODS,
+  IBip122ChainId
+} from '@/data/Bip122Data'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { useRouter } from 'next/router'
 
@@ -193,9 +198,7 @@ export default function SessionProposalModal() {
         chains: bip122Chains,
         methods: bip122Methods,
         events: bip122Events,
-        accounts: bip122Chains
-          .map(chainId => bip122Addresses.map(address => `${chainId}:${address}`))
-          .flat()
+        accounts: bip122Addresses
       }
     }
   }, [addressesToApprove])
@@ -306,14 +309,16 @@ export default function SessionProposalModal() {
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
-        const sessionProperties = {
-          capabilities: JSON.stringify(capabilities),
-          bip122_getAccountAddresses: ''
-        }
+        let sessionProperties = {
+          capabilities: JSON.stringify(capabilities)
+        } as any
         if (namespaces.bip122) {
+          const bip122Chain = namespaces.bip122.chains?.[0]!
           sessionProperties.bip122_getAccountAddresses = JSON.stringify({
-            payment: Array.from(bip122Wallet.getAddresses().values()),
-            ordinal: Array.from(bip122Wallet.getAddresses(['ordinal']).values())
+            payment: Array.from(bip122Wallet.getAddresses(bip122Chain as IBip122ChainId).values()),
+            ordinal: Array.from(
+              bip122Wallet.getAddresses(bip122Chain as IBip122ChainId, ['ordinal']).values()
+            )
           })
         }
         console.log('sessionProperties', sessionProperties)

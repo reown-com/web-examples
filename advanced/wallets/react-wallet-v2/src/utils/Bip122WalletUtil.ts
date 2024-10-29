@@ -1,11 +1,10 @@
+import { BIP122_MAINNET_CAIP2, BIP122_TESTNET_CAIP2 } from '@/data/Bip122Data'
 import BitcoinLib from '@/lib/Bip122Lib'
 
 export let wallet1: BitcoinLib
 export let wallet2: BitcoinLib
 export let bip122Wallet: BitcoinLib
 export let bip122Addresses: string[]
-
-let address1: string
 
 /**
  * Utilities
@@ -23,11 +22,17 @@ export async function createOrRestoreBip122Wallet() {
     console.log('BITCOIN_PRIVATE_KEY_1', wallet1.getPrivateKey())
   }
 
-  address1 = await wallet1.getAddress()
-  console.log('address1', { address1, privateKey1 }, address1)
+  const mainnetAddress = wallet1.getAddress(BIP122_MAINNET_CAIP2)
+
+  console.log('address1', { mainnetAddress, privateKey1 }, mainnetAddress)
 
   bip122Wallet = wallet1
-  bip122Addresses = [wallet1.getAddress(), wallet1.getOrdinalsAddress()]
+  bip122Addresses = [
+    `${BIP122_MAINNET_CAIP2}:${wallet1.getAddress(BIP122_MAINNET_CAIP2)}`,
+    `${BIP122_MAINNET_CAIP2}:${wallet1.getOrdinalsAddress(BIP122_MAINNET_CAIP2)}`,
+    `${BIP122_TESTNET_CAIP2}:${wallet1.getAddress(BIP122_TESTNET_CAIP2)}`,
+    `${BIP122_TESTNET_CAIP2}:${wallet1.getOrdinalsAddress(BIP122_TESTNET_CAIP2)}`
+  ]
 
   return {
     bip122Wallet,

@@ -3,7 +3,7 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { getWalletAddressFromParams } from './HelperUtil'
-import { BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
+import { BIP122_SIGNING_METHODS, IBip122ChainId } from '@/data/Bip122Data'
 import { bip122Addresses, bip122Wallet } from './Bip122WalletUtil'
 
 export async function approveBip122Request(
@@ -11,6 +11,7 @@ export async function approveBip122Request(
 ) {
   const { params, id } = requestEvent
   const { request } = params
+  const chainId = params.chainId as IBip122ChainId
   const account = request.params.account
   const wallet = bip122Wallet
   console.log('wallet:', wallet, bip122Wallet)
@@ -21,11 +22,19 @@ export async function approveBip122Request(
       const message = request.params.message
       const address = request.params.address
       const protocol = request.params.protocol
-      console.log('signing message:', message, 'with address:', address || account)
+      console.log(
+        'signing message:',
+        message,
+        'with address:',
+        address || account,
+        'chainId:',
+        params
+      )
       const signature = await wallet.signMessage({
         message,
         address: address || account,
-        protocol
+        protocol,
+        chainId
       })
       return formatJsonRpcResult(id, signature)
     case BIP122_SIGNING_METHODS.BIP122_SEND_TRANSACTION:
@@ -36,13 +45,14 @@ export async function approveBip122Request(
         recipientAddress: transactionParams.recipientAddress,
         amount: transactionParams.amount,
         changeAddress: transactionParams.changeAddress,
-        memo: transactionParams.memo
+        memo: transactionParams.memo,
+        chainId
       })
       console.log('signed transaction:', txid)
       return formatJsonRpcResult(id, { txid })
     case BIP122_SIGNING_METHODS.BIP122_GET_ACCOUNT_ADDRESSES:
       console.log('getting addresses for account:', account)
-      const addresses = wallet.getAddresses()
+      const addresses = wallet.getAddresses(chainId)
       return formatJsonRpcResult(id, Array.from(addresses.values()))
     case BIP122_SIGNING_METHODS.BIP122_SIGN_PSBT:
       const psbt = request.params.psbt
@@ -62,7 +72,8 @@ export async function approveBip122Request(
         account,
         psbt,
         signInputs,
-        broadcast
+        broadcast,
+        chainId
       })
       console.log('signed psbt:', result)
       return formatJsonRpcResult(id, result)
