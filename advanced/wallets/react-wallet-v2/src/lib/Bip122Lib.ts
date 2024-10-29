@@ -5,7 +5,7 @@ import * as bip39 from 'bip39'
 import BIP32Factory, { BIP32Interface } from 'bip32'
 import bitcoinMessage from 'bitcoinjs-message'
 import { schnorr } from '@noble/secp256k1'
-import { BIP122_CHAINS, IBip122ChainId } from '@/data/Bip122Data'
+import { BIP122_CHAINS, BIP122_TESTNET_ID, IBip122ChainId } from '@/data/Bip122Data'
 bitcoin.initEccLib(ecc)
 
 const ECPair = ECPairFactory(ecc)
@@ -179,7 +179,7 @@ export default class Bip122Lib {
       throw new Error(`Invalid amount: ${amount}`)
     }
 
-    const utxos = (await this.getUTXOs(account)) as IUTXO[]
+    const utxos = (await this.getUTXOs(account, chainId)) as IUTXO[]
     if (!utxos || utxos.length === 0) {
       throw new Error(`No UTXOs found for address: ${account}`)
     }
@@ -205,16 +205,20 @@ export default class Bip122Lib {
       memo,
       feeRate: await this.getFeeRate()
     })
-    return await this.broadcastTransaction(transaction)
+    return await this.broadcastTransaction(transaction, chainId)
   }
 
-  async getUTXOs(address: string): Promise<IUTXO[]> {
+  async getUTXOs(address: string, chainId: IBip122ChainId): Promise<IUTXO[]> {
+    const isTestnet = this.isTestnet(chainId)
     // make chain dynamic
-    return await (await fetch(`https://mempool.space/testnet/api/address/${address}/utxo`)).json()
+    return await (
+      await fetch(`https://mempool.space${isTestnet ? '/testnet' : ''}/api/address/${address}/utxo`)
+    ).json()
   }
 
-  async broadcastTransaction(transaction: string) {
-    const result = await fetch(`https://mempool.space/testnet/api/tx`, {
+  async broadcastTransaction(transaction: string, chainId: IBip122ChainId) {
+    const isTestnet = this.isTestnet(chainId)
+    const result = await fetch(`https://mempool.space${isTestnet ? '/testnet' : ''}/api/tx`, {
       method: 'POST',
       body: transaction
     })
@@ -397,7 +401,7 @@ export default class Bip122Lib {
     }
 
     const tx = transaction.extractTransaction()
-    const txId = await this.broadcastTransaction(tx.toHex())
+    const txId = await this.broadcastTransaction(tx.toHex(), chainId)
     return {
       psbt: transaction.toBase64(),
       txid: txId
@@ -427,5 +431,9 @@ export default class Bip122Lib {
 
   private isOrdinal(address: string, chainId: IBip122ChainId) {
     return this.ordinals[chainId].has(address)
+  }
+
+  private isTestnet(chainId: IBip122ChainId) {
+    return chainId.includes(BIP122_TESTNET_ID)
   }
 }
