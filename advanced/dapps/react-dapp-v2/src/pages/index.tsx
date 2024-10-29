@@ -23,6 +23,7 @@ import {
   DEFAULT_EIP155_OPTIONAL_METHODS,
   DEFAULT_EIP5792_METHODS,
   GetCapabilitiesResult,
+  DEFAULT_BIP122_METHODS,
   DEFAULT_EIP7715_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
@@ -79,6 +80,7 @@ const Home: NextPage = () => {
     setChains,
     setRelayerRegion,
     origin,
+    setAccounts,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -93,6 +95,7 @@ const Home: NextPage = () => {
     tronRpc,
     tezosRpc,
     kadenaRpc,
+    bip122Rpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -476,6 +479,43 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getBip122Actions = (): AccountAction[] => {
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await bip122Rpc.testSignMessage(chainId, address);
+    };
+    const onGetAccountAddresses = async (chainId: string, address: string) => {
+      openRequestModal();
+      await bip122Rpc.testGetAccountAddresses(chainId, address);
+    };
+    const onSendTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await bip122Rpc.testSendTransaction(chainId, address);
+    };
+    const onSignPsbt = async (chainId: string, address: string) => {
+      openRequestModal();
+      await bip122Rpc.testSignPsbt(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_BIP122_METHODS.BIP122_SEND_TRANSACTION,
+        callback: onSendTransaction,
+      },
+      {
+        method: DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES,
+        callback: onGetAccountAddresses,
+      },
+      {
+        method: DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE,
+        callback: onSignMessage,
+      },
+      {
+        method: DEFAULT_BIP122_METHODS.BIP122_SIGN_PSBT,
+        callback: onSignPsbt,
+      },
+    ];
+  };
+
   const getBlockchainActions = (account: string) => {
     const [namespace, chainId, address] = account.split(":");
     switch (namespace) {
@@ -497,6 +537,8 @@ const Home: NextPage = () => {
         return getTezosActions();
       case "kadena":
         return getKadenaActions();
+      case "bip122":
+        return getBip122Actions();
       default:
         break;
     }

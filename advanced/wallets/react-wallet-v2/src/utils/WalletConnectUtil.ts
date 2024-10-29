@@ -6,7 +6,7 @@ export async function createWalletKit(relayerRegionURL: string) {
   const core = new Core({
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
     relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL,
-    logger: 'trace'
+    logger: 'error'
   })
   walletkit = await WalletKit.init({
     core,
@@ -15,6 +15,9 @@ export async function createWalletKit(relayerRegionURL: string) {
       description: 'React Wallet for WalletConnect',
       url: 'https://walletconnect.com/',
       icons: ['https://avatars.githubusercontent.com/u/37784886']
+    },
+    signConfig: {
+      disableRequestQueue: true
     }
   })
 

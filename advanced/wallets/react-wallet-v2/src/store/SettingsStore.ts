@@ -31,6 +31,7 @@ interface State {
   tronAddress: string
   tezosAddress: string
   kadenaAddress: string
+  bip122Address: string
   kernelSmartAccountAddress: string
   safeSmartAccountAddress: string
   biconomySmartAccountAddress: string
@@ -66,6 +67,7 @@ const state = proxy<State>({
   tronAddress: '',
   tezosAddress: '',
   kadenaAddress: '',
+  bip122Address: '',
   kernelSmartAccountAddress: '',
   safeSmartAccountAddress: '',
   biconomySmartAccountAddress: '',
@@ -126,6 +128,9 @@ const SettingsStore = {
   },
   setKadenaAddress(kadenaAddress: string) {
     state.kadenaAddress = kadenaAddress
+  },
+  setbip122Address(bip122Address: string) {
+    state.bip122Address = bip122Address
   },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL
