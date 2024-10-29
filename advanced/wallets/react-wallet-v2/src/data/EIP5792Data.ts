@@ -83,7 +83,11 @@ export const supportedEIP5792CapabilitiesForSCA: GetCapabilitiesResult = {
     permissions: {
       supported: true,
       signerTypes: ['keys'],
-      permissionTypes: ['contract-call'],
+      permissionTypes: [
+        'contract-call',
+        'native-token-recurring-allowance',
+        'erc20-recurring-allowance'
+      ],
       policyTypes: []
     },
     atomicBatch: {
