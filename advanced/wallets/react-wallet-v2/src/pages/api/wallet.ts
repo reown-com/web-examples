@@ -93,7 +93,7 @@ async function handleGetCallsStatus(
     entryPoint: ENTRYPOINT_ADDRESS_V07,
     transport: http(bundlerUrl)
   })
-  const userOpReceipt = await bundlerClient.getUserOperationReceipt({
+  const userOpReceipt = await bundlerClient.waitForUserOperationReceipt({
     hash: userOpHash as `0x${string}`
   })
   const receipt: GetCallsStatusReturnValue = {
