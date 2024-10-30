@@ -36,17 +36,7 @@ function TicTacToeBoard() {
       const data = await handleUserMove(gameId, position);
       const { userOpIdentifier } = data;
       await getCallsStatus(userOpIdentifier);
-      // const bundlerClient = createPimlicoBundlerClient({
-      //   chain: baseSepolia,
-      //   entryPoint: ENTRYPOINT_ADDRESS_V07,
-      //   transport: http(getBundlerUrl(), {
-      //     timeout: 300000,
-      //   }),
-      // });
-
-      // await bundlerClient.waitForUserOperationReceipt({
-      //   hash: userOpIdentifier,
-      // });
+      
       console.log("User move made successfully");
       // After the user's move, read the updated board state
       const updatedBoard = await getBoardState(gameId);
