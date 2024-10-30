@@ -88,20 +88,20 @@ export type SendPreparedCallsParams = {
 export type SendPreparedCallsReturnValue = string;
 export type GetCallsStatusParams = string;
 export type GetCallsStatusReturnValue = {
-  status: 'PENDING' | 'CONFIRMED'
+  status: "PENDING" | "CONFIRMED";
   receipts?: {
     logs: {
-      address: `0x${string}`
-      data: `0x${string}`
-      topics: `0x${string}`[]
-    }[]
-    status: `0x${string}` // Hex 1 or 0 for success or failure, respectively
-    blockHash: `0x${string}`
-    blockNumber: `0x${string}`
-    gasUsed: `0x${string}`
-    transactionHash: `0x${string}`
-  }[]
-}
+      address: `0x${string}`;
+      data: `0x${string}`;
+      topics: `0x${string}`[];
+    }[];
+    status: `0x${string}`; // Hex 1 or 0 for success or failure, respectively
+    blockHash: `0x${string}`;
+    blockNumber: `0x${string}`;
+    gasUsed: `0x${string}`;
+    transactionHash: `0x${string}`;
+  }[];
+};
 
 // Define a custom error type
 export class UserOpBuilderApiError extends Error {
@@ -183,7 +183,7 @@ export async function sendPreparedCalls(
 
 export async function getCallsStatus(
   args: GetCallsStatusParams,
-  options: { timeout?: number; interval?: number } = {}
+  options: { timeout?: number; interval?: number } = {},
 ): Promise<GetCallsStatusReturnValue[]> {
   const projectId = process.env["NEXT_PUBLIC_PROJECT_ID"];
   if (!projectId) {
@@ -191,16 +191,15 @@ export async function getCallsStatus(
   }
 
   const url = `${USEROP_BUILDER_SERVICE_BASE_URL}?projectId=${projectId}`;
-  
+
   const { timeout = 30000, interval = 3000 } = options; // Default timeout to 30 seconds and interval to 2 second
   const endTime = Date.now() + timeout;
 
   while (Date.now() < endTime) {
-    const response = await jsonRpcRequest<GetCallsStatusParams[], GetCallsStatusReturnValue[]>(
-      "wallet_getCallsStatus",
-      [args],
-      url
-    );
+    const response = await jsonRpcRequest<
+      GetCallsStatusParams[],
+      GetCallsStatusReturnValue[]
+    >("wallet_getCallsStatus", [args], url);
 
     // Check if the response is valid (not null)
     if (response) {
@@ -208,8 +207,10 @@ export async function getCallsStatus(
     }
 
     // Wait for the specified interval before polling again
-    await new Promise(resolve => setTimeout(resolve, interval));
+    await new Promise((resolve) => setTimeout(resolve, interval));
   }
 
-  throw new Error("Timeout: No valid response received from wallet_getCallsStatus");
+  throw new Error(
+    "Timeout: No valid response received from wallet_getCallsStatus",
+  );
 }

@@ -36,7 +36,7 @@ function TicTacToeBoard() {
       const data = await handleUserMove(gameId, position);
       const { userOpIdentifier } = data;
       await getCallsStatus(userOpIdentifier);
-      
+
       console.log("User move made successfully");
       // After the user's move, read the updated board state
       const updatedBoard = await getBoardState(gameId);
