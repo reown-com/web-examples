@@ -9,22 +9,18 @@ import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155Request
 import { styledToast } from '@/utils/HelperUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '@/components/RequestModal'
-import {
-  BridgingRequest,
-  decodeErc20Transaction,
-  getCrossChainTokens,
-  getErc20TokenBalance
-} from '@/utils/MultibridgeUtil'
 import MultibridgeRequestModal from '@/components/MultibridgeRequestModal'
 import SettingsStore from '@/store/SettingsStore'
+import { ChainAbstractionService, Transaction } from '@/utils/ChainAbstractionService'
+import { getChainById } from '@/utils/ChainUtil'
 
 export default function SessionSendTransactionModal() {
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
   const [isTypeResolved, setIsTypeResolved] = useState(false)
-  const [shouldUseMultibridge, setShouldUseMultibridge] = useState(false)
-  const [bridgingRequest, setBirdgingRequest] = useState<BridgingRequest>()
-
+  const [requiresMultiChain, setRequiresMultiChain] = useState(false)
+  const [routeTransactions, setRouteTransactions] = useState<Transaction[]>([])
+  const [orchestrationId, setOrchestrationId] = useState<string | null>(null)
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
@@ -38,63 +34,64 @@ export default function SessionSendTransactionModal() {
   useEffect(() => {
     const multibridgeCheck = async () => {
       setIsTypeResolved(false)
+      if(!chainId){
+        throw new Error('Chain ID is not available')
+      }
+      console.log({chainId: chainId.split(':')[1]})
+      const chain = getChainById(parseInt(chainId.split(':')[1]))
       try {
         if (!request) {
           setIsTypeResolved(true)
           return
         }
+        console.log({chain})
+
         if (!SettingsStore.state.chainAbstractionEnabled) {
           setIsTypeResolved(true)
           return
         }
-        const transfer = decodeErc20Transaction(request.params[0])
-        if (!transfer) {
-          setIsTypeResolved(true)
-          return
-        }
-        const parsedChainId = chainId?.split(':')[1]
-        const tokenBalance = await getErc20TokenBalance(
-          transfer.contract,
-          Number(parsedChainId),
-          transfer.from,
-          false
-        )
-        if (transfer.amount <= tokenBalance) {
-          setIsTypeResolved(true)
-          return
-        }
-        const otherTokens = getCrossChainTokens(transfer.contract)
-        let otherBalance = 0
-        let otherChain = 0
 
-        for (const chain in otherTokens) {
-          const balance = await getErc20TokenBalance(
-            otherTokens[Number(chain)],
-            Number(chain),
-            transfer.from,
-            false
-          )
-          if (balance >= transfer.amount) {
-            otherBalance = balance
-            otherChain = Number(chain)
-
-            console.log('Found chain to bridge from', {
-              otherBalance,
-              requiredBalance: transfer.amount,
-              otherChain
-            })
-            const bridgingRequest = {
-              transfer,
-              sourceChain: otherChain,
-              targetChain: Number(parsedChainId)
-            }
-            console.log({ bridgingRequest })
-            setBirdgingRequest(bridgingRequest)
-            setShouldUseMultibridge(true)
-            setIsTypeResolved(true)
-            return
-          }
+        const {
+          data,
+          from,
+          to
+        } = request.params[0]
+        
+        const caService = new ChainAbstractionService()
+        const isRequiresMultiChain = await caService.checkTransaction({
+          from: from,
+          to: to,
+          value: '0',
+          gas: '0',
+          gasPrice: '0',
+          data: data,
+          nonce: '0',
+          maxFeePerGas: '0',
+          maxPriorityFeePerGas: '0',
+          chainId: chainId
+        })
+        console.log('Checking multibridge availability', {isRequiresMultiChain})
+        if(isRequiresMultiChain){
+          const routeTransactions = await caService.routeTransaction({
+            from: from,
+            to: to,
+            value: '0',
+            gas: '0',
+            gasPrice: '0',
+            data: data,
+            nonce: '0',
+            maxFeePerGas: '0',
+            maxPriorityFeePerGas: '0',
+            chainId: chainId
+          })
+          const status = await caService.getOrchestrationStatus(routeTransactions.orchestrationId)
+          console.log('Orchestration status', status)
+          console.log('Route transactions', routeTransactions) 
+          setRequiresMultiChain(isRequiresMultiChain)
+          setRouteTransactions(routeTransactions.transactions)
+          setOrchestrationId(routeTransactions.orchestrationId)
         }
+        
       } catch (error) {
         console.log('Unable to check multibridge availability', error)
       } finally {
@@ -157,7 +154,7 @@ export default function SessionSendTransactionModal() {
     )
   }
 
-  return !shouldUseMultibridge && isTypeResolved ? (
+  return !requiresMultiChain && isTypeResolved || (orchestrationId === null || orchestrationId === undefined) ? (
     <RequestModal
       intention="sign a transaction"
       metadata={requestSession?.peer.metadata}
@@ -174,9 +171,10 @@ export default function SessionSendTransactionModal() {
     </RequestModal>
   ) : (
     <MultibridgeRequestModal
-      bridgingRequest={bridgingRequest}
+      transactions={routeTransactions}
+      orchestrationId={orchestrationId} 
       onReject={onReject}
       rejectLoader={{ active: isLoadingReject }}
     />
-  )
+  );
 }
