@@ -138,7 +138,6 @@ export default async function handler(
 
   const jsonRpcRequest: JsonRpcRequest = req.body
   const { id, method, params } = jsonRpcRequest
-  console.log({ id, method, params })
   if (!['wallet_prepareCalls', 'wallet_sendPreparedCalls', 'wallet_getCallsStatus'].includes(method)) {
     return res
       .status(200)
