@@ -8,6 +8,7 @@ import {
   SendPreparedCallsReturnValue
 } from '@/lib/smart-accounts/builders/UserOpBuilder'
 import { getChainById } from '@/utils/ChainUtil'
+import { PIMLICO_NETWORK_NAMES } from '@/utils/SmartAccountUtil'
 import { getUserOpBuilder } from '@/utils/UserOpBuilderUtil'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { ENTRYPOINT_ADDRESS_V07 } from 'permissionless'
@@ -33,7 +34,6 @@ type JsonRpcResponse<T> = {
 }
 
 type SupportedMethods = 'wallet_prepareCalls' | 'wallet_sendPreparedCalls' | 'wallet_getCallsStatus'
-
 const ERROR_CODES = {
   INVALID_REQUEST: -32600,
   METHOD_NOT_FOUND: -32601,
@@ -85,15 +85,16 @@ async function handleGetCallsStatus(
   const [userOpIdentifier] = params
   const chainId = userOpIdentifier.split(':')[0]
   const userOpHash = userOpIdentifier.split(':')[1]
-
+  const chain = getChainById(parseInt(chainId, 16))
+  const pimlicoChainName = PIMLICO_NETWORK_NAMES[chain.name]
   const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
   const localBundlerUrl = process.env.NEXT_PUBLIC_LOCAL_BUNDLER_URL
-  const bundlerUrl = localBundlerUrl || `https://api.pimlico.io/v1/base-sepolia/rpc?apikey=${apiKey}`
+  const bundlerUrl = localBundlerUrl || `https://api.pimlico.io/v1/${pimlicoChainName}/rpc?apikey=${apiKey}`
   const bundlerClient = createPimlicoBundlerClient({
     entryPoint: ENTRYPOINT_ADDRESS_V07,
     transport: http(bundlerUrl)
   })
-  const userOpReceipt = await bundlerClient.waitForUserOperationReceipt({
+  const userOpReceipt = await bundlerClient.getUserOperationReceipt({
     hash: userOpHash as `0x${string}`
   })
   const receipt: GetCallsStatusReturnValue = {
@@ -137,7 +138,7 @@ export default async function handler(
 
   const jsonRpcRequest: JsonRpcRequest = req.body
   const { id, method, params } = jsonRpcRequest
-
+  console.log({ id, method, params })
   if (!['wallet_prepareCalls', 'wallet_sendPreparedCalls', 'wallet_getCallsStatus'].includes(method)) {
     return res
       .status(200)
