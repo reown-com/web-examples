@@ -1,6 +1,9 @@
 import { DCAFormSchemaType } from "@/schema/DCAFormSchema";
 import { SmartSessionGrantPermissionsRequest } from "@reown/appkit-experimental/smart-session";
-import { abi as donutContractAbi, address as donutContractAddress } from './DonutContract'
+import {
+  abi as donutContractAbi,
+  address as donutContractAddress,
+} from "./DonutContract";
 
 export const assetsToAllocate = [
   { value: "eth", label: "ETH", supported: true },
@@ -30,19 +33,19 @@ export function getSampleAsyncDCAPermissions(
   return {
     permissions: [
       {
-        type: 'contract-call',
+        type: "contract-call",
         data: {
           address: donutContractAddress,
           abi: donutContractAbi,
           functions: [
             {
-              functionName: 'purchase'
-            }
-          ]
-        }
-      }
+              functionName: "purchase",
+            },
+          ],
+        },
+      },
     ],
-    policies: []
+    policies: [],
   };
 }
 

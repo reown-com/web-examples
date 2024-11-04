@@ -150,14 +150,13 @@ async function jsonRpcRequest<TParams, TResult>(
       }
 
       return data.result; // Return the result if successful
-
     } catch (error) {
       attempt++; // Increment the attempt counter
       if (attempt >= maxRetries) {
         throw error; // If max retries reached, throw the error
       }
       console.warn(`Attempt ${attempt} failed. Retrying...`); // Log the retry attempt
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait before retrying (optional delay)
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait before retrying (optional delay)
     }
   }
   throw new Error("Failed to get a valid response after maximum retries");
@@ -212,7 +211,7 @@ export async function getCallsStatus(
       GetCallsStatusParams[],
       GetCallsStatusReturnValue
     >("wallet_getCallsStatus", [args], url);
-    
+
     // Check if the response is valid (not null)
     if (response.status === "CONFIRMED") {
       return response;
