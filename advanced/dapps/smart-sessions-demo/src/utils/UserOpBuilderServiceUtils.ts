@@ -118,34 +118,49 @@ async function jsonRpcRequest<TParams, TResult>(
   method: string,
   params: TParams,
   url: string,
+  maxRetries: number = 3,
 ): Promise<TResult> {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(
-      {
-        jsonrpc: "2.0",
-        id: "1",
-        method,
-        params,
-      },
-      bigIntReplacer,
-    ),
-  });
+  let attempt = 0; // Initialize attempt counter
+  while (attempt < maxRetries) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          {
+            jsonrpc: "2.0",
+            id: "1",
+            method,
+            params,
+          },
+          bigIntReplacer,
+        ),
+      });
 
-  if (!response.ok) {
-    throw new UserOpBuilderApiError(response.status, await response.text());
+      if (!response.ok) {
+        throw new UserOpBuilderApiError(response.status, await response.text());
+      }
+
+      const data = await response.json();
+
+      if ("error" in data) {
+        throw new UserOpBuilderApiError(500, JSON.stringify(data.error));
+      }
+
+      return data.result; // Return the result if successful
+
+    } catch (error) {
+      attempt++; // Increment the attempt counter
+      if (attempt >= maxRetries) {
+        throw error; // If max retries reached, throw the error
+      }
+      console.warn(`Attempt ${attempt} failed. Retrying...`); // Log the retry attempt
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait before retrying (optional delay)
+    }
   }
-
-  const data = await response.json();
-
-  if ("error" in data) {
-    throw new UserOpBuilderApiError(500, JSON.stringify(data.error));
-  }
-
-  return data.result;
+  throw new Error("Failed to get a valid response after maximum retries");
 }
 
 export async function prepareCalls(
@@ -155,7 +170,6 @@ export async function prepareCalls(
   if (!projectId) {
     throw new Error("NEXT_PUBLIC_PROJECT_ID is not set");
   }
-
   const url = `${USEROP_BUILDER_SERVICE_BASE_URL}?projectId=${projectId}`;
 
   return jsonRpcRequest<PrepareCallsParams[], PrepareCallsReturnValue[]>(
@@ -172,7 +186,6 @@ export async function sendPreparedCalls(
   if (!projectId) {
     throw new Error("NEXT_PUBLIC_PROJECT_ID is not set");
   }
-
   const url = `${USEROP_BUILDER_SERVICE_BASE_URL}?projectId=${projectId}`;
 
   return jsonRpcRequest<
@@ -184,7 +197,7 @@ export async function sendPreparedCalls(
 export async function getCallsStatus(
   args: GetCallsStatusParams,
   options: { timeout?: number; interval?: number } = {},
-): Promise<GetCallsStatusReturnValue[]> {
+): Promise<GetCallsStatusReturnValue> {
   const projectId = process.env["NEXT_PUBLIC_PROJECT_ID"];
   if (!projectId) {
     throw new Error("NEXT_PUBLIC_PROJECT_ID is not set");
@@ -194,22 +207,20 @@ export async function getCallsStatus(
 
   const { timeout = 30000, interval = 3000 } = options; // Default timeout to 30 seconds and interval to 2 second
   const endTime = Date.now() + timeout;
-
   while (Date.now() < endTime) {
     const response = await jsonRpcRequest<
       GetCallsStatusParams[],
-      GetCallsStatusReturnValue[]
+      GetCallsStatusReturnValue
     >("wallet_getCallsStatus", [args], url);
-
+    
     // Check if the response is valid (not null)
-    if (response && response.length > 0 && response[0].status === "CONFIRMED") {
+    if (response.status === "CONFIRMED") {
       return response;
     }
 
     // Wait for the specified interval before polling again
     await new Promise((resolve) => setTimeout(resolve, interval));
   }
-
   throw new Error(
     "Timeout: No valid response received from wallet_getCallsStatus",
   );
