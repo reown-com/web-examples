@@ -202,7 +202,7 @@ export async function getCallsStatus(
     >("wallet_getCallsStatus", [args], url);
 
     // Check if the response is valid (not null)
-    if (response) {
+    if (response && response.length > 0 && response[0].status === "CONFIRMED") {
       return response;
     }
 
