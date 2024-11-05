@@ -118,48 +118,34 @@ async function jsonRpcRequest<TParams, TResult>(
   method: string,
   params: TParams,
   url: string,
-  maxRetries: number = 3,
 ): Promise<TResult> {
-  let attempt = 0; // Initialize attempt counter
-  while (attempt < maxRetries) {
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-          {
-            jsonrpc: "2.0",
-            id: "1",
-            method,
-            params,
-          },
-          bigIntReplacer,
-        ),
-      });
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(
+      {
+        jsonrpc: "2.0",
+        id: "1",
+        method,
+        params,
+      },
+      bigIntReplacer,
+    ),
+  });
 
-      if (!response.ok) {
-        throw new UserOpBuilderApiError(response.status, await response.text());
-      }
-
-      const data = await response.json();
-
-      if ("error" in data) {
-        throw new UserOpBuilderApiError(500, JSON.stringify(data.error));
-      }
-
-      return data.result; // Return the result if successful
-    } catch (error) {
-      attempt++; // Increment the attempt counter
-      if (attempt >= maxRetries) {
-        throw error; // If max retries reached, throw the error
-      }
-      console.warn(`Attempt ${attempt} failed. Retrying...`); // Log the retry attempt
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait before retrying (optional delay)
-    }
+  if (!response.ok) {
+    throw new UserOpBuilderApiError(response.status, await response.text());
   }
-  throw new Error("Failed to get a valid response after maximum retries");
+
+  const data = await response.json();
+
+  if ("error" in data) {
+    throw new UserOpBuilderApiError(500, JSON.stringify(data.error));
+  }
+
+  return data.result; // Return the result if successful
 }
 
 export async function prepareCalls(
