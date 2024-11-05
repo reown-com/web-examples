@@ -1,8 +1,6 @@
 import { createPublicClient, decodeFunctionData, erc20Abi, getContract, Hex, http } from 'viem'
 import { arbitrum, base, optimism } from 'viem/chains'
 import { getChainById } from './ChainUtil'
-import EIP155Lib from '@/lib/EIP155Lib'
-import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
 import { providers } from 'ethers'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 
@@ -80,12 +78,6 @@ export async function getErc20TokenBalance(
   const decimals = await contract.read.decimals()
   const balance = BigInt(result) / BigInt(10 ** decimals)
   return Number(balance)
-}
-
-export type BridgingRequest = {
-  transfer: Erc20Transfer
-  sourceChain: number
-  targetChain: number
 }
 
 type Erc20Transfer = {
@@ -325,39 +317,4 @@ async function getBridgingTransactions(
     nonce: currentNonce
   })
   return transactions
-}
-
-export async function bridgeFunds(
-  bridgingParams: BridgingParams,
-  wallet: EIP155Lib | SmartAccountLib
-): Promise<void> {
-  const originalAmount = bridgingParams.amount
-  const sourceChainProvider = new providers.JsonRpcProvider(
-    EIP155_CHAINS[`eip155:${bridgingParams.fromChainId}` as TEIP155Chain].rpc
-  )
-  const sourceChainConnectedWallet = await wallet.connect(sourceChainProvider)
-  const walletAddress = wallet.getAddress()
-  console.log('Getting bridging transactions')
-  const transactions = await getBridgingTransactions(bridgingParams, walletAddress)
-  console.log('Bridging transactions', transactions)
-  for (const transaction of transactions) {
-    const hash = await sourceChainConnectedWallet.sendTransaction(transaction)
-    const receipt = typeof hash === 'string' ? hash : hash?.hash
-    console.log('Transaction broadcasted', { receipt })
-  }
-  let interations = 0
-  while (interations < 20) {
-    const balance = await getErc20TokenBalance(
-      bridgingParams.toAssetAddress as Hex,
-      bridgingParams.toChainId,
-      walletAddress as Hex,
-      false
-    )
-    if (balance >= originalAmount) {
-      console.log('Bridging completed')
-      return
-    }
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    interations++
-  }
 }

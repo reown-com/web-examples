@@ -78,10 +78,12 @@ import {
   apiGetAddressUtxos,
   calculateChange,
   getAvailableBalanceFromUtxos,
+  isBip122Testnet,
   isOrdinalAddress,
   isValidBip122Signature,
 } from "../helpers/bip122";
 import { getAddressFromAccount } from "@walletconnect/utils";
+import { BIP122_DUST_LIMIT } from "../chains/bip122";
 
 /**
  * Types
@@ -1709,7 +1711,7 @@ export function JsonRpcContextProvider({
         const req = {
           account: address,
           recipientAddress: address,
-          amount: "550",
+          amount: BIP122_DUST_LIMIT,
         };
         console.log("request", {
           method,
@@ -1741,19 +1743,24 @@ export function JsonRpcContextProvider({
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_BIP122_METHODS.BIP122_SIGN_PSBT;
 
+        const network = isBip122Testnet(chainId)
+          ? bitcoin.networks.testnet
+          : bitcoin.networks.bitcoin;
+
+        console.log("network", isBip122Testnet(chainId), network);
         const utxos = (await apiGetAddressUtxos(address, chainId)) as IUTXO[];
         if (!utxos || utxos.length === 0) {
           throw new Error("No UTXOs found for address: " + address);
         }
 
         const availableBalance = getAvailableBalanceFromUtxos(utxos); // in satoshis
-        const satoshisToTransfer = 550;
+        const satoshisToTransfer = parseInt(BIP122_DUST_LIMIT, 10);
         if (availableBalance < satoshisToTransfer) {
           throw new Error(
             "Insufficient balance: " + availableBalance + " satoshis"
           );
         }
-        const network = bitcoin.networks.testnet;
+
         const psbt = new bitcoin.Psbt({ network });
 
         const utxosToSpend: any[] = [];

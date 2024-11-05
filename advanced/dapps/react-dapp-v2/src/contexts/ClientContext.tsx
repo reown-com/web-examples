@@ -297,8 +297,18 @@ export function ClientContextProvider({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
+        metadata: {
+          name: "React App",
+          description: "App to test WalletConnect network",
+          url: claimedOrigin,
+          icons: [],
+        },
       });
-
+      if (claimedOrigin === "unknown") {
+        //@ts-expect-error - private property
+        _client.core.verify.verifyUrlV3 = "0xdeafbeef";
+        console.log("verify", _client.core.verify);
+      }
       setClient(_client);
       setOrigin(_client.metadata.url);
       console.log("metadata url:", _client.metadata);
@@ -323,6 +333,7 @@ export function ClientContextProvider({
   useEffect(() => {
     const claimedOrigin =
       localStorage.getItem("wallet_connect_dapp_origin") || origin;
+    console.log("claimedOrigin:", claimedOrigin);
     let interval: NodeJS.Timer;
     // simulates `UNKNOWN` validation by removing the verify iframe thus preventing POST message
     if (claimedOrigin === "unknown") {
