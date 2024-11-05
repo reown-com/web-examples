@@ -28,6 +28,7 @@ createAppKit({
   features: {
     analytics: true,
   },
+  themeMode: "light",
   termsConditionsUrl: "https://reown.com/terms-of-service",
   privacyPolicyUrl: "https://reown.com/privacy-policy",
 });

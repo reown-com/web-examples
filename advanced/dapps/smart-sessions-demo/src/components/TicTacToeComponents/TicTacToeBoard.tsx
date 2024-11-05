@@ -8,16 +8,12 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import DisplayPlayerScore from "./DisplayPlayerScore";
 import PositionSquare from "./PositionSquare";
-import { createPimlicoBundlerClient } from "permissionless/clients/pimlico";
-import { baseSepolia } from "viem/chains";
-import { ENTRYPOINT_ADDRESS_V07 } from "permissionless";
-import { http } from "viem";
 import {
   checkWinner,
   getBoardState,
   transformBoard,
 } from "@/utils/TicTacToeUtils";
-import { getBundlerUrl } from "@/utils/ConstantsUtil";
+import { getCallsStatus } from "@/utils/UserOpBuilderServiceUtils";
 
 function TicTacToeBoard() {
   const { smartSession, setSmartSession } = useTicTacToeContext();
@@ -39,17 +35,8 @@ function TicTacToeBoard() {
     try {
       const data = await handleUserMove(gameId, position);
       const { userOpIdentifier } = data;
-      const bundlerClient = createPimlicoBundlerClient({
-        chain: baseSepolia,
-        entryPoint: ENTRYPOINT_ADDRESS_V07,
-        transport: http(getBundlerUrl(), {
-          timeout: 300000,
-        }),
-      });
+      await getCallsStatus(userOpIdentifier);
 
-      await bundlerClient.waitForUserOperationReceipt({
-        hash: userOpIdentifier,
-      });
       console.log("User move made successfully");
       // After the user's move, read the updated board state
       const updatedBoard = await getBoardState(gameId);

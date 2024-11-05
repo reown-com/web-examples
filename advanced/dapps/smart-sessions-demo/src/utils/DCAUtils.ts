@@ -1,6 +1,9 @@
 import { DCAFormSchemaType } from "@/schema/DCAFormSchema";
 import { SmartSessionGrantPermissionsRequest } from "@reown/appkit-experimental/smart-session";
-import { parseEther, toHex } from "viem";
+import {
+  abi as donutContractAbi,
+  address as donutContractAddress,
+} from "./DonutContract";
 
 export const assetsToAllocate = [
   { value: "eth", label: "ETH", supported: true },
@@ -21,6 +24,7 @@ export const intervalOptions = [
 ];
 
 export function getSampleAsyncDCAPermissions(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   data: DCAFormSchemaType,
 ): Omit<
   SmartSessionGrantPermissionsRequest,
@@ -29,11 +33,15 @@ export function getSampleAsyncDCAPermissions(
   return {
     permissions: [
       {
-        type: "native-token-recurring-allowance",
+        type: "contract-call",
         data: {
-          allowance: toHex(parseEther(data.allocationAmount.toString())),
-          period: calculateInterval(data.investmentInterval, data.intervalUnit),
-          start: Date.now(),
+          address: donutContractAddress,
+          abi: donutContractAbi,
+          functions: [
+            {
+              functionName: "purchase",
+            },
+          ],
         },
       },
     ],
