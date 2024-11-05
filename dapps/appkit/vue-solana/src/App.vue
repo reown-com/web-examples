@@ -13,6 +13,7 @@
     <div class="button-group">
         <button @click="modal.open()">Open Connect Modal</button>
         <button @click="modal.open({ view: 'Networks' })">Open Network Modal</button>
+        <button @click="disconnect()">Disconnect</button>
         <button @click="toggleTheme">Toggle Theme Mode</button>
     </div>
 
@@ -62,7 +63,8 @@ import {
   useAppKitState,
   useAppKitTheme,
   useAppKitEvents,
-  useAppKitAccount
+  useAppKitAccount,
+  useDisconnect
 } from '@reown/appkit/vue'
 import { solanaWeb3JsAdapter, networks, projectId } from './config'
 
@@ -81,13 +83,12 @@ const modal = createAppKit({
 })
 
 // State Management
-
-
 const accountState = ref({})
 const networkState = ref({})
 const appState = useAppKitState()
 const { setThemeMode } = useAppKitTheme()
 const events = useAppKitEvents()
+const { disconnect } = useDisconnect()
 const walletInfo = ref({})
 import type { ThemeMode } from '@reown/appkit/vue'
 

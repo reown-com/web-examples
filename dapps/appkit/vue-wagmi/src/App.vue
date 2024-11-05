@@ -13,6 +13,7 @@
     <div class="button-group">
         <button @click="modal.open()">Open Connect Modal</button>
         <button @click="modal.open({ view: 'Networks' })">Open Network Modal</button>
+        <button @click="disconnect()">Disconnect</button>
         <button @click="toggleTheme">Toggle Theme Mode</button>
     </div>
 
@@ -20,28 +21,30 @@
      <div class="button-group">
       <textarea rows="10" cols="50">
 Account
-        {{ JSON.stringify(accountState, null, 2) }}
+{{ JSON.stringify(accountState, null, 2) }}
 
 
 Network
-        {{ JSON.stringify(networkState, null, 2) }}
+{{ JSON.stringify(networkState, null, 2) }}
 
 
 State
-        {{ JSON.stringify(appState, null, 2) }}
+{{ JSON.stringify(appState, null, 2) }}
 
 
 Theme
-        {{ JSON.stringify(themeState, null, 2) }}
+{{ JSON.stringify(themeState, null, 2) }}
 
 
 Events
-        {{ JSON.stringify(events, null, 2) }}
+{{ JSON.stringify(events, null, 2) }}
 
         
 Wallet Info
-        {{ JSON.stringify(walletInfo, null, 2) }}
+{{ JSON.stringify(walletInfo, null, 2) }}
 
+wagmiAccount
+{{ JSON.stringify(wagmiAccount, null, 2) }}
       </textarea>
     
     </div>
@@ -53,14 +56,16 @@ Wallet Info
 
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onUpdated, watch } from 'vue'
 import { useAccount } from '@wagmi/vue'
 import {
   createAppKit,
   useAppKitState,
   useAppKitTheme,
-  useAppKitEvents
+  useAppKitEvents,
+  useDisconnect
 } from '@reown/appkit/vue'
+
 import { wagmiAdapter, networks, projectId } from './config'
 
 
@@ -83,8 +88,11 @@ const networkState = ref({})
 const appState = useAppKitState()
 const { setThemeMode } = useAppKitTheme()
 const events = useAppKitEvents()
+const { disconnect } = useDisconnect()
 const walletInfo = ref({})
-const themeState = ref({ themeMode: 'light', themeVariables: {} })
+import type { ThemeMode } from '@reown/appkit/vue'
+
+const themeState = ref<{ themeMode: ThemeMode }>({ themeMode: 'light' })
 
 // Setup hooks
 const wagmiAccount = useAccount()
@@ -101,6 +109,7 @@ const toggleTheme = () => {
 onMounted(() => {
   // Set initial theme
   document.body.className = themeState.value.themeMode
+  setThemeMode(themeState.value.themeMode)
 
   // Setup subscriptions
   modal.subscribeAccount(state => {
