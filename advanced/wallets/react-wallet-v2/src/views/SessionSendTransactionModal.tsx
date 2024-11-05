@@ -12,7 +12,6 @@ import RequestModal from '@/components/RequestModal'
 import MultibridgeRequestModal from '@/components/MultibridgeRequestModal'
 import SettingsStore from '@/store/SettingsStore'
 import { ChainAbstractionService, Transaction } from '@/utils/ChainAbstractionService'
-import { getChainById } from '@/utils/ChainUtil'
 
 export default function SessionSendTransactionModal() {
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
@@ -34,29 +33,22 @@ export default function SessionSendTransactionModal() {
   useEffect(() => {
     const multibridgeCheck = async () => {
       setIsTypeResolved(false)
-      if(!chainId){
+      if (!chainId) {
         throw new Error('Chain ID is not available')
       }
-      console.log({chainId: chainId.split(':')[1]})
-      const chain = getChainById(parseInt(chainId.split(':')[1]))
+      console.log({ chainId: chainId.split(':')[1] })
       try {
         if (!request) {
           setIsTypeResolved(true)
           return
         }
-        console.log({chain})
-
         if (!SettingsStore.state.chainAbstractionEnabled) {
           setIsTypeResolved(true)
           return
         }
 
-        const {
-          data,
-          from,
-          to
-        } = request.params[0]
-        
+        const { data, from, to } = request.params[0]
+
         const caService = new ChainAbstractionService()
         const isRequiresMultiChain = await caService.checkTransaction({
           from: from,
@@ -70,8 +62,8 @@ export default function SessionSendTransactionModal() {
           maxPriorityFeePerGas: '0',
           chainId: chainId
         })
-        console.log('Checking multibridge availability', {isRequiresMultiChain})
-        if(isRequiresMultiChain){
+        console.log('Checking multibridge availability', { isRequiresMultiChain })
+        if (isRequiresMultiChain) {
           const routeTransactions = await caService.routeTransaction({
             from: from,
             to: to,
@@ -84,14 +76,11 @@ export default function SessionSendTransactionModal() {
             maxPriorityFeePerGas: '0',
             chainId: chainId
           })
-          const status = await caService.getOrchestrationStatus(routeTransactions.orchestrationId)
-          console.log('Orchestration status', status)
-          console.log('Route transactions', routeTransactions) 
+          console.log('Route transactions', routeTransactions)
           setRequiresMultiChain(isRequiresMultiChain)
           setRouteTransactions(routeTransactions.transactions)
           setOrchestrationId(routeTransactions.orchestrationId)
         }
-        
       } catch (error) {
         console.log('Unable to check multibridge availability', error)
       } finally {
@@ -154,7 +143,9 @@ export default function SessionSendTransactionModal() {
     )
   }
 
-  return !requiresMultiChain && isTypeResolved || (orchestrationId === null || orchestrationId === undefined) ? (
+  return (!requiresMultiChain && isTypeResolved) ||
+    orchestrationId === null ||
+    orchestrationId === undefined ? (
     <RequestModal
       intention="sign a transaction"
       metadata={requestSession?.peer.metadata}
@@ -172,9 +163,9 @@ export default function SessionSendTransactionModal() {
   ) : (
     <MultibridgeRequestModal
       transactions={routeTransactions}
-      orchestrationId={orchestrationId} 
+      orchestrationId={orchestrationId}
       onReject={onReject}
       rejectLoader={{ active: isLoadingReject }}
     />
-  );
+  )
 }
