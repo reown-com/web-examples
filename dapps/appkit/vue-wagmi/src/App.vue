@@ -56,7 +56,7 @@ wagmiAccount
 
 
 <script lang="ts" setup>
-import { ref, onMounted, onUpdated, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAccount } from '@wagmi/vue'
 import {
   createAppKit,
