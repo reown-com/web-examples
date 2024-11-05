@@ -12,6 +12,7 @@ import { walletkit } from '@/utils/WalletConnectUtil'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { ChainAbstractionService, Transaction } from '@/utils/ChainAbstractionService'
 import { providers } from 'ethers'
+import { formatJsonRpcError } from '@json-rpc-tools/utils'
 
 interface IProps {
   onReject: () => void
@@ -134,8 +135,15 @@ export default function MultibridgeRequestModal({
 
         await walletkit.respondSessionRequest({ topic, response })
       } catch (e) {
-        console.error(e)
+        const { id } = requestEvent
+        const errorMessage = (e as Error).message || 'Error bridging funds'
+        const response = formatJsonRpcError(id, errorMessage)
+        await walletkit.respondSessionRequest({
+          topic,
+          response
+        })
         styledToast((e as Error).message, 'error')
+        console.error(e)
       } finally {
         setIsLoadingApprove(false)
       }
