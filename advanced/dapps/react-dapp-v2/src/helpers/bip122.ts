@@ -71,7 +71,13 @@ export async function isValidBip122Signature(
     );
   }
 
-  return BitcoinMessage.verify(message, address, convertHexToBase64(signature));
+  return BitcoinMessage.verify(
+    message,
+    address,
+    convertHexToBase64(signature),
+    undefined,
+    true
+  );
 }
 
 export function isOrdinalAddress(address: string) {
