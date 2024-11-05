@@ -24,8 +24,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const initialState = cookieToInitialState(config, headers().get("cookie"));
-
+  const cookies = headers().get('cookie')
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -35,7 +34,7 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <AppKitProvider initialState={initialState}>
+        <AppKitProvider cookies={cookies}>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
