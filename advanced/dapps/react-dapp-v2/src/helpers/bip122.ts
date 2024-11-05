@@ -4,6 +4,7 @@ import BitcoinMessage from "bitcoinjs-message";
 import { convertHexToBase64 } from "./utilities";
 import { IUTXO } from "./types";
 import { BIP122_TESTNET } from "../chains/bip122";
+
 export async function apiGetBip122AccountBalance(
   address: string,
   chainId: string
@@ -75,4 +76,8 @@ export async function isValidBip122Signature(
 
 export function isOrdinalAddress(address: string) {
   return address.startsWith("tb1p");
+}
+
+export function isBip122Testnet(chainId: string) {
+  return chainId.includes(BIP122_TESTNET);
 }
