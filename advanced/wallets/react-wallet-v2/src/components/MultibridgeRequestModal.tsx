@@ -1,20 +1,14 @@
-import { LoaderProps } from '@/components/ModalFooter'
-
-import RequestMethodCard from '@/components/RequestMethodCard'
+import { useCallback, useState } from 'react'
 import { Avatar, Col, Divider, Row, Text } from '@nextui-org/react'
-import { walletkit } from '@/utils/WalletConnectUtil'
+import { LoaderProps } from '@/components/ModalFooter'
+import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModal from './RequestModal'
 import ModalStore from '@/store/ModalStore'
-import { useCallback, useState } from 'react'
-import {
-  convertTokenBalance,
-  decodeErc20Transaction,
-  getAssetByContractAddress
-} from '@/utils/MultibridgeUtil'
-import { getWallet } from '@/utils/EIP155WalletUtil'
-
 import { styledToast } from '@/utils/HelperUtil'
 import { approveEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
+import { convertTokenBalance, decodeErc20Transaction, getAssetByContractAddress } from '@/utils/MultibridgeUtil'
+import { getWallet } from '@/utils/EIP155WalletUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { ChainAbstractionService, Transaction } from '@/utils/ChainAbstractionService'
 import { providers } from 'ethers'
@@ -32,12 +26,15 @@ export default function MultibridgeRequestModal({
   onReject,
   rejectLoader
 }: IProps) {
-  const [isLoadingApprove, setIsLoadingApprove] = useState(false)
+  const [isLoadingApprove, setIsLoadingApprove] = useState<boolean>(false)
+
   const bridgingTransactions = transactions?.slice(0, transactions.length - 1) || []
   const initialTransaction = transactions?.[transactions.length - 1]
+
   const eip155ChainsFundsSourcedFrom = transactions
     ? new Set(bridgingTransactions.map(transaction => transaction.chainId))
-    : new Set([])
+    : new Set<TEIP155Chain>()
+
   const eip155ChainFundsDestination = initialTransaction?.chainId
 
   // Get request and wallet data from store
@@ -51,9 +48,9 @@ export default function MultibridgeRequestModal({
   const request = params?.request
   const caService = new ChainAbstractionService()
 
-  const bridgeRouteFunds = useCallback(async () => {
-    if (!transactions) {
-      throw new Error('Transactions are unavailable')
+  const bridgeFunds = useCallback(async (): Promise<void> => {
+    if (!bridgingTransactions) {
+      throw new Error('bridgingTransactions are unavailable')
     }
 
     const wallet = await getWallet(params)
@@ -63,12 +60,11 @@ export default function MultibridgeRequestModal({
       'to',
       eip155ChainFundsDestination
     )
+
     for (const transaction of bridgingTransactions) {
       console.log('Bridging transaction', transaction)
       const chainId = transaction.chainId
-      const chainProvider = new providers.JsonRpcProvider(
-        EIP155_CHAINS[chainId as TEIP155Chain].rpc
-      )
+      const chainProvider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
       const chainConnectedWallet = await wallet.connect(chainProvider)
       const walletAddress = wallet.getAddress()
       const gasPrice = await chainProvider.getGasPrice()
@@ -92,42 +88,38 @@ export default function MultibridgeRequestModal({
       console.log(`Transaction broadcasted on chain ${chainId} , ${{ receipt }}`)
     }
 
-    // Call the polling function
     try {
       await pollOrchestrationStatus(orchestrationId)
     } catch (e) {
       console.error(e)
       onReject()
     }
-  }, [])
+  }, [ bridgingTransactions, orchestrationId, onReject, params])
 
   async function pollOrchestrationStatus(
     orchestrationId: string,
     maxAttempts = 100,
     interval = 1500
-  ) {
+  ): Promise<void> {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const { status } = await caService.getOrchestrationStatus(orchestrationId)
       console.log(attempt, '- Orchestration status:', status)
       if (status === 'completed') {
         console.log('Bridging completed')
-        return // Exit if the status is completed
+        return
       }
-
-      // Wait for the specified interval before the next attempt
       await new Promise(resolve => setTimeout(resolve, interval))
     }
-
     console.log('Max attempts reached. Orchestration not completed.')
     throw new Error('Max attempts reached. Orchestration not completed.')
   }
 
-  const onApprove = useCallback(async () => {
+  const onApprove = useCallback(async (): Promise<void> => {
     if (requestEvent && topic) {
       setIsLoadingApprove(true)
       try {
         performance.mark('startInititalTransactionSend')
-        await bridgeRouteFunds()
+        await bridgeFunds()
         const response = await approveEIP155Request(requestEvent)
         performance.mark('endInititalTransactionSend')
         console.log(
@@ -140,26 +132,21 @@ export default function MultibridgeRequestModal({
           } ms`
         )
 
-        await walletkit.respondSessionRequest({
-          topic,
-          response
-        })
+        await walletkit.respondSessionRequest({ topic, response })
       } catch (e) {
-        console.log('Error')
         console.error(e)
-
-        setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
-        return
+      } finally {
+        setIsLoadingApprove(false)
       }
-      setIsLoadingApprove(false)
       ModalStore.close()
     }
-  }, [requestEvent, topic])
+  }, [bridgeFunds, requestEvent, topic])
 
   if (!request || !requestSession || !bridgingTransactions || bridgingTransactions.length === 0) {
     return <Text>Request not found</Text>
   }
+
   const transfer = decodeErc20Transaction(request.params[0])
   if (!transfer) {
     return <Text>Invalid transfer request</Text>
@@ -174,7 +161,7 @@ export default function MultibridgeRequestModal({
   return (
     <RequestModal
       intention="Multibridge"
-      metadata={requestSession?.peer.metadata}
+      metadata={requestSession.peer.metadata}
       onApprove={onApprove}
       onReject={onReject}
       approveLoader={{ active: isLoadingApprove }}
@@ -184,11 +171,7 @@ export default function MultibridgeRequestModal({
       <Row>
         <Col>
           <Text h5>Transaction details</Text>
-          <Text
-            color=""
-            data-testid="request-details-chain"
-            css={{ paddingTop: '$6', paddingBottom: '$6' }}
-          >
+          <Text color="" data-testid="request-details-chain" css={{ paddingTop: '$6', paddingBottom: '$6' }}>
             Sending {amount} {asset} to:
           </Text>
           <Text color="$gray400" data-testid="request-details-chain" size="sm">
@@ -202,17 +185,13 @@ export default function MultibridgeRequestModal({
           <Text h5>Chain details</Text>
           <Text color="">Target chain:</Text>
           <Row align="center" css={{ marginTop: '$6' }}>
-            <Col>
-              <Avatar src={targetChain.logo} />
-            </Col>
+            <Col><Avatar src={targetChain.logo} /></Col>
             <Col>{targetChain.name}</Col>
           </Row>
 
           <Text color="">Sourcing funds from:</Text>
           <Row align="center" css={{ marginTop: '$6' }}>
-            <Col>
-              <Avatar src={sourceChain.logo} />
-            </Col>
+            <Col><Avatar src={sourceChain.logo} /></Col>
             <Col>{sourceChain.name}</Col>
           </Row>
         </Col>
