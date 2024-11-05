@@ -68,22 +68,15 @@ export default function MultibridgeRequestModal({
       const chainProvider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
       const chainConnectedWallet = await wallet.connect(chainProvider)
       const walletAddress = wallet.getAddress()
-      const gasPrice = await chainProvider.getGasPrice()
-      const gasEstimate = await chainProvider.estimateGas({
-        from: walletAddress,
-        to: transaction.to,
-        value: transaction.value,
-        data: transaction.data,
-        gasPrice: gasPrice
-      })
 
       const hash = await chainConnectedWallet.sendTransaction({
         from: walletAddress,
         to: transaction.to,
         value: transaction.value,
         data: transaction.data,
-        gasPrice: gasPrice,
-        gasLimit: gasEstimate
+        nonce:transaction.nonce,
+        gasPrice: transaction.gasPrice,
+        gasLimit: transaction.gas
       })
       const receipt = typeof hash === 'string' ? hash : hash?.hash
       console.log(`Transaction broadcasted on chain ${chainId} , ${{ receipt }}`)
