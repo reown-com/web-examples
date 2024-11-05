@@ -1,28 +1,31 @@
-import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
+import { cookieStorage, createStorage, http } from '@wagmi/core'
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
+import { arbitrum, optimism, base } from '@reown/appkit/networks'
 
-import { cookieStorage, createStorage } from "wagmi";
-import { arbitrum, base, optimism } from "wagmi/chains";
+export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID
 
-// Get projectId from https://cloud.walletconnect.com
-export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
+if (!projectId) {
+  throw new Error('Project ID is not defined')
+}
 
-if (!projectId) throw new Error("Project ID is not defined");
+export const networks = [base, optimism, arbitrum]
+
+export const wagmiAdapter = new WagmiAdapter({
+  storage: createStorage({
+    storage: cookieStorage
+  }),
+  ssr: true,
+  projectId,
+  networks
+})
+
 
 export const metadata = {
-  name: "AppKit",
-  description: "AppKit Example",
+  name: "Chain Abstraction Demo",
+  description: "A demo of Chain Abstraction",
   url: "https://web3modal.com", // origin must match your domain & subdomain
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
 
-// Create wagmiConfig
-const chains = [base, optimism, arbitrum] as const;
-export const config = defaultWagmiConfig({
-  chains,
-  projectId,
-  metadata,
-  ssr: true,
-  storage: createStorage({
-    storage: cookieStorage,
-  }),
-});
+
+export const config = wagmiAdapter.wagmiConfig
