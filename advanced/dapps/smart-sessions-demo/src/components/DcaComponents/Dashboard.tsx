@@ -38,6 +38,7 @@ function DashboardContent({ address }: { address: string }) {
     data: donutsOwned,
     isLoading: donutsQueryLoading,
     isRefetching: donutsQueryRefetching,
+    refetch,
   } = useReadContract({
     abi: donutAbi,
     address: donutAddress,
@@ -55,6 +56,7 @@ function DashboardContent({ address }: { address: string }) {
         assetName="Donut"
         balance={donutsOwned?.toString()}
         isLoading={donutsQueryLoading || donutsQueryRefetching}
+        refetch={refetch}
       />
     </div>
   );
