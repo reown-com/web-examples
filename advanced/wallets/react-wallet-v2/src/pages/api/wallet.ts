@@ -89,7 +89,8 @@ async function handleGetCallsStatus(
   const pimlicoChainName = PIMLICO_NETWORK_NAMES[chain.name]
   const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
   const localBundlerUrl = process.env.NEXT_PUBLIC_LOCAL_BUNDLER_URL
-  const bundlerUrl = localBundlerUrl || `https://api.pimlico.io/v1/${pimlicoChainName}/rpc?apikey=${apiKey}`
+  const bundlerUrl =
+    localBundlerUrl || `https://api.pimlico.io/v1/${pimlicoChainName}/rpc?apikey=${apiKey}`
   const bundlerClient = createPimlicoBundlerClient({
     entryPoint: ENTRYPOINT_ADDRESS_V07,
     transport: http(bundlerUrl)
@@ -117,13 +118,17 @@ async function handleGetCallsStatus(
       : undefined
   }
   return receipt
-
 }
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<
-    JsonRpcResponse<PrepareCallsReturnValue[] | SendPreparedCallsReturnValue[] | GetCallsStatusReturnValue[] | ErrorResponse>
+    JsonRpcResponse<
+      | PrepareCallsReturnValue[]
+      | SendPreparedCallsReturnValue[]
+      | GetCallsStatusReturnValue[]
+      | ErrorResponse
+    >
   >
 ) {
   if (req.method === 'OPTIONS') {
@@ -138,7 +143,9 @@ export default async function handler(
 
   const jsonRpcRequest: JsonRpcRequest = req.body
   const { id, method, params } = jsonRpcRequest
-  if (!['wallet_prepareCalls', 'wallet_sendPreparedCalls', 'wallet_getCallsStatus'].includes(method)) {
+  if (
+    !['wallet_prepareCalls', 'wallet_sendPreparedCalls', 'wallet_getCallsStatus'].includes(method)
+  ) {
     return res
       .status(200)
       .json(createErrorResponse(id, ERROR_CODES.METHOD_NOT_FOUND, `${method} method not found`))
