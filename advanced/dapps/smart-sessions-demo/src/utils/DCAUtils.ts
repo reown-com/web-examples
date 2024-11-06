@@ -17,6 +17,7 @@ export const assetsToBuy = [
 ];
 
 export const intervalOptions = [
+  { value: "second", label: "Second" },
   { value: "minute", label: "Minute" },
   { value: "hour", label: "Hour" },
   { value: "day", label: "Day" },
@@ -55,6 +56,7 @@ export function calculateInterval(
   intervalUnit: string,
 ): number {
   const unitToMilliseconds: Record<string, number> = {
+    second: 1000,
     minute: 60 * 1000,
     hour: 60 * 60 * 1000,
     day: 24 * 60 * 60 * 1000,
