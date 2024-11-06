@@ -33,7 +33,7 @@ export const dcaFormSchema = z.object({
       message: "Must be at least 1.",
     }),
 
-  intervalUnit: z.enum(["minute", "hour", "day", "week"], {
+  intervalUnit: z.enum(["second","minute", "hour", "day", "week"], {
     required_error: "Unit required",
   }),
 
