@@ -59,7 +59,7 @@ export type SendPreparedCallsParams = {
 
 export type SendPreparedCallsReturnValue = string
 
-export type GetCallsStatusParams = string;
+export type GetCallsStatusParams = string
 export type GetCallsStatusReturnValue = {
   status: 'PENDING' | 'CONFIRMED'
   receipts?: {

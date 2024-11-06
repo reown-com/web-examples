@@ -66,12 +66,15 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
         const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
         const sendTransaction = request.params[0]
         const connectedWallet = await wallet.connect(provider)
-        const hash = await connectedWallet.sendTransaction(sendTransaction)
-        const receipt = typeof hash === 'string' ? hash : hash?.hash // TODO improve interface
-        return formatJsonRpcResult(id, receipt)
+        const txResponse = await connectedWallet.sendTransaction(sendTransaction)
+        const txHash = typeof txResponse === 'string' ? txResponse : txResponse?.hash
+        const txReceipt = await txResponse.wait()
+        console.log(
+          `Transaction broadcasted on chain ${chainId} , ${{ txHash }}, status: ${txReceipt.status}`
+        )
+        return formatJsonRpcResult(id, txHash)
       } catch (error: any) {
         console.error(error)
-        alert(error.message)
         return formatJsonRpcError(id, error.message)
       }
 

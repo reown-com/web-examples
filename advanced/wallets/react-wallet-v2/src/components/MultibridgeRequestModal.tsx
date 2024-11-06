@@ -6,7 +6,11 @@ import RequestModal from './RequestModal'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
 import { approveEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
-import { convertTokenBalance, decodeErc20Transaction, getAssetByContractAddress } from '@/utils/MultibridgeUtil'
+import {
+  convertTokenBalance,
+  decodeErc20Transaction,
+  getAssetByContractAddress
+} from '@/utils/MultibridgeUtil'
 import { getWallet } from '@/utils/EIP155WalletUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
@@ -65,30 +69,30 @@ export default function MultibridgeRequestModal({
     for (const transaction of bridgingTransactions) {
       console.log('Bridging transaction', transaction)
       const chainId = transaction.chainId
-      const chainProvider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
+      const chainProvider = new providers.JsonRpcProvider(
+        EIP155_CHAINS[chainId as TEIP155Chain].rpc
+      )
       const chainConnectedWallet = await wallet.connect(chainProvider)
       const walletAddress = wallet.getAddress()
 
-      const hash = await chainConnectedWallet.sendTransaction({
+      const txResponse = await chainConnectedWallet.sendTransaction({
         from: walletAddress,
         to: transaction.to,
         value: transaction.value,
         data: transaction.data,
-        nonce:transaction.nonce,
+        nonce: transaction.nonce,
         gasPrice: transaction.gasPrice,
         gasLimit: transaction.gas
       })
-      const receipt = typeof hash === 'string' ? hash : hash?.hash
-      console.log(`Transaction broadcasted on chain ${chainId} , ${{ receipt }}`)
+      const txHash = typeof txResponse === 'string' ? txResponse : txResponse?.hash
+      const txReceipt = await txResponse.wait()
+      const txStatus = txReceipt.status
+      console.log(
+        `Transaction broadcasted on chain ${chainId} , ${{ txHash }}, status: ${txStatus}`
+      )
     }
-
-    try {
-      await pollOrchestrationStatus(orchestrationId)
-    } catch (e) {
-      console.error(e)
-      onReject()
-    }
-  }, [ bridgingTransactions, orchestrationId, onReject, params])
+    await pollOrchestrationStatus(orchestrationId)
+  }, [bridgingTransactions, orchestrationId, onReject, params])
 
   async function pollOrchestrationStatus(
     orchestrationId: string,
@@ -172,7 +176,11 @@ export default function MultibridgeRequestModal({
       <Row>
         <Col>
           <Text h5>Transaction details</Text>
-          <Text color="" data-testid="request-details-chain" css={{ paddingTop: '$6', paddingBottom: '$6' }}>
+          <Text
+            color=""
+            data-testid="request-details-chain"
+            css={{ paddingTop: '$6', paddingBottom: '$6' }}
+          >
             Sending {amount} {asset} to:
           </Text>
           <Text color="$gray400" data-testid="request-details-chain" size="sm">
@@ -186,13 +194,17 @@ export default function MultibridgeRequestModal({
           <Text h5>Chain details</Text>
           <Text color="">Target chain:</Text>
           <Row align="center" css={{ marginTop: '$6' }}>
-            <Col><Avatar src={targetChain.logo} /></Col>
+            <Col>
+              <Avatar src={targetChain.logo} />
+            </Col>
             <Col>{targetChain.name}</Col>
           </Row>
 
           <Text color="">Sourcing funds from:</Text>
           <Row align="center" css={{ marginTop: '$6' }}>
-            <Col><Avatar src={sourceChain.logo} /></Col>
+            <Col>
+              <Avatar src={sourceChain.logo} />
+            </Col>
             <Col>{sourceChain.name}</Col>
           </Row>
         </Col>
