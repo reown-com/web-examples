@@ -6,7 +6,6 @@ import {
     useAppKitTheme,
     useAppKitEvents,
     useAppKitAccount,
-    useAppKitNetwork,
     useWalletInfo
      } from '@reown/appkit/react'
 
