@@ -51,7 +51,7 @@ export function App() {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <WagmiProvider config={wagmiAdapter.wagmiConfig}>
         <QueryClientProvider client={queryClient}>
-            <w3m-button />
+            <appkit-button />
             <WagmiHooks />
             <button onClick={() => modal.adapter?.connectionControllerClient?.disconnect()}>Disconnect JS</button>
 
