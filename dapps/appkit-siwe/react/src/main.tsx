@@ -60,7 +60,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <WagmiProvider config={wagmiAdapter.wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <div className="centered-div">
-          <w3m-button />
+          <appkit-button />
         </div>
       </QueryClientProvider>
     </WagmiProvider>

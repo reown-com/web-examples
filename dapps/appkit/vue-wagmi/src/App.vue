@@ -5,8 +5,8 @@
 
     <!-- AppKit UI Components -->
     <div class="button-group">
-      <w3m-button />
-      <w3m-network-button />
+      <appkit-button />
+      <appkit-network-button />
     </div>
     <br />
     <!-- Modal Controls -->

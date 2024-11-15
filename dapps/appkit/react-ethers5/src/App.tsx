@@ -41,7 +41,7 @@ export function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <w3m-button />
+          <appkit-button />
           <Hooks />
           <p>
             <button onClick={() => modal.adapter?.connectionControllerClient?.disconnect()}>Disconnect</button>
