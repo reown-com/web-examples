@@ -8,14 +8,14 @@ import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155Request
 import { getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
-import { useWeb3ModalProvider } from '@web3modal/ethers/react'
+import { useAppKitProvider } from '@reown/appkit/react'
 export default function SessionSignModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  const { walletProvider } = useWeb3ModalProvider()
+  const { walletProvider } = useAppKitProvider('eip155')
 
   // Ensure request and wallet are defined
   if (!requestEvent || !requestSession) {

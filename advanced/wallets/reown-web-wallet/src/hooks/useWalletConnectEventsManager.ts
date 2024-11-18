@@ -5,12 +5,12 @@ import SettingsStore from '@/store/SettingsStore'
 import { web3wallet } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect } from 'react'
-import { useWeb3ModalProvider } from '@web3modal/ethers/react'
+import { useAppKitProvider } from '@reown/appkit/react'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { formatJsonRpcResult } from '@json-rpc-tools/utils'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
-  const { walletProvider } = useWeb3ModalProvider()
+  const { walletProvider } = useAppKitProvider('eip155')
 
 
   /******************************************************************************

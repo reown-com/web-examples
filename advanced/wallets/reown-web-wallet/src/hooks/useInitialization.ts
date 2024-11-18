@@ -1,14 +1,14 @@
 import SettingsStore from '@/store/SettingsStore'
 import { createWeb3Wallet, web3wallet } from '@/utils/WalletConnectUtil'
-import { useWeb3Modal, useWeb3ModalAccount } from '@web3modal/ethers/react'
+import { useAppKit, useAppKitAccount } from '@reown/appkit/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
   const prevRelayerURLValue = useRef<string>('')
-  const { address } = useWeb3ModalAccount()
-  const modal = useWeb3Modal()
+  const { address } = useAppKitAccount()
+  const modal = useAppKit()
 
   const { relayerRegionURL } = useSnapshot(SettingsStore.state)
 

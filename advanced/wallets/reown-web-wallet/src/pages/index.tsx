@@ -3,11 +3,11 @@ import PageHeader from '@/components/PageHeader'
 import { EIP155_MAINNET_CHAINS } from '@/data/EIP155Data'
 import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
-import { useWeb3ModalAccount } from '@web3modal/ethers/react'
+import { useAppKitAccount } from '@reown/appkit/react'
 import { Box } from '@mui/material'
 
 export default function HomePage() {
-  const { address } = useWeb3ModalAccount()
+  const { address } = useAppKitAccount()
   return address ? (
     <Fragment>
       <PageHeader title="Accounts">

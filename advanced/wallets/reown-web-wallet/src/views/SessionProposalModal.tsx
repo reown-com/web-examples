@@ -15,7 +15,7 @@ import RequestModal from './RequestModal'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
-import { useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react'
+import { useAppKitAccount, useAppKitProvider } from '@reown/appkit/react'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -31,8 +31,8 @@ export default function SessionProposalModal() {
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  const { address } = useWeb3ModalAccount()
-  const { walletProvider } = useWeb3ModalProvider()
+  const { address } = useAppKitAccount()
+  const { walletProvider } = useAppKitProvider('eip155')
 
   const supportedNamespaces = useMemo(() => {
     // eip155

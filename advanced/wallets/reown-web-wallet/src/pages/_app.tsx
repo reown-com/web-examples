@@ -11,42 +11,31 @@ import { RELAYER_EVENTS } from '@walletconnect/core'
 import  type { AppProps } from 'next/app'
 import '../../public/main.css'
 import { styledToast } from '@/utils/HelperUtil'
-import { createWeb3Modal, defaultConfig } from '@web3modal/ethers/react'
+import { createAppKit } from '@reown/appkit/react'
+import { EthersAdapter } from '@reown/appkit-adapter-ethers'
 import { EIP155_CHAINS } from '@/data/EIP155Data'
+import { mainnet, polygon, arbitrum, base} from '@reown/appkit/networks'
 
-const chains = Object.values(EIP155_CHAINS).map((chain) => ({
-  ...chain,
-  rpcUrl: chain.rpc,
-  chainId: chain.chainId,
-  explorerUrl: 'https://etherscan.io',
-  currency: 'ETH'
-}))
+
+const ethersAdapter = new EthersAdapter()
 
 const metadata = {
-  name: 'Web3Modal',
-  description: 'Web3Modal Laboratory',
-  url: 'https://lab.web3modal.com',
+  name: 'Reown Web Wallet',
+  description: 'Reown Web Wallet',
+  url: 'https://web-wallet.reown.com',
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
 }
 
-const modal = createWeb3Modal({
-  ethersConfig: defaultConfig({
-    metadata,
-    defaultChainId: 1,
-    rpcUrl: 'https://cloudflare-eth.com',
-    chains,
-    enableEmail: true,
-  }),
-  projectId: process.env.NEXT_PUBLIC_PROJECT_ID as string,
-  chains,
-  enableAnalytics: true,
-  metadata,
-  termsConditionsUrl: 'https://walletconnect.com/terms',
-  privacyPolicyUrl: 'https://walletconnect.com/privacy',
-  enableOnramp: true,
-  enableWalletFeatures: true,
+const modal = createAppKit({
+  adapters: [ethersAdapter],
+  networks: [mainnet, polygon, arbitrum, base],
+  defaultNetwork: mainnet,
+  projectId:  process.env.NEXT_PUBLIC_PROJECT_ID as string,
+  features: {
+    analytics: true
+  },
+  metadata
 })
-
 
 export default function App({ Component, pageProps }: AppProps) {
   // Step 1 - Initialize wallets and wallet connect client

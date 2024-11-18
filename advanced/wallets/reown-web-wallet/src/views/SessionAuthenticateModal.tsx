@@ -8,7 +8,7 @@ import { web3wallet } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { styledToast } from '@/utils/HelperUtil'
-import { useWeb3ModalAccount, useWeb3ModalProvider } from '@web3modal/ethers/react'
+import { useAppKitAccount, useAppKitProvider } from '@reown/appkit/react'
 
 export default function SessionAuthenticateModal() {
   // Get request and wallet data from store
@@ -20,8 +20,8 @@ export default function SessionAuthenticateModal() {
   const [supportedChains] = useState<string[]>(Object.keys(EIP155_CHAINS))
   const [supportedMethods] = useState<string[]>(Object.values(EIP155_SIGNING_METHODS))
   const [signStrategy, setSignStrategy] = useState(1)
-  const { address } = useWeb3ModalAccount()
-  const { walletProvider } = useWeb3ModalProvider()
+  const { address } = useAppKitAccount()
+  const { walletProvider } = useAppKitProvider('eip155')
   // Ensure request and wallet are defined
 
 
