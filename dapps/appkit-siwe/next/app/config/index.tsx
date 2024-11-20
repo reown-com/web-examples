@@ -10,7 +10,7 @@ import { getCsrfToken, getSession, signIn, signOut } from 'next-auth/react';
 
 import { cookieStorage, createStorage } from 'wagmi';
 import { arbitrum, mainnet, sepolia, optimism, AppKitNetwork } from '@reown/appkit/networks'
-import { CaipNetwork } from '@reown/appkit';
+import { getAddress } from 'viem';
 
 // Get projectId from https://cloud.reown.com
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
@@ -34,6 +34,21 @@ export const wagmiAdapter = new WagmiAdapter({
   ssr: true
 });
 
+// Normalize the address (checksum)
+const normalizeAddress = (address: string): string => {
+  try {
+    const splitAddress = address.split(':');
+    const extractedAddress = splitAddress[splitAddress.length - 1];
+    const checksumAddress = getAddress(extractedAddress);
+    splitAddress[splitAddress.length - 1] = checksumAddress;
+    const normalizedAddress = splitAddress.join(':');
+
+    return normalizedAddress;
+  } catch (error) {
+    return address;
+  }
+}
+
 export const siweConfig = createSIWEConfig({
   getMessageParams: async () => ({
     domain: typeof window !== 'undefined' ? window.location.host : '',
@@ -42,7 +57,7 @@ export const siweConfig = createSIWEConfig({
     statement: 'Please sign with your account',
   }),
   createMessage: ({ address, ...args }: SIWECreateMessageArgs) =>
-    formatMessage(args, address),
+    formatMessage(args, normalizeAddress(address)),
   getNonce: async () => {
     const nonce = await getCsrfToken();
     if (!nonce) {
