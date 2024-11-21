@@ -3,7 +3,6 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
-
 // https://vite.dev/config/
 export default defineConfig({
   resolve: {
@@ -15,7 +14,7 @@ export default defineConfig({
     vue({
       template: {
         compilerOptions: {
-          isCustomElement: (tag:any) => ['appkit-button', 'appkit-network-button'].includes(tag),
+          isCustomElement: (tag) => ['w3m-button', 'w3m-network-button'].includes(tag),
         },
       },
     }),

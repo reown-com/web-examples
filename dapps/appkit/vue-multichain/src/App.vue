@@ -1,28 +1,28 @@
 
 <template>
-  <div class="pages">
-     <img src="/reown.svg" alt="Reown" width="150" height="150" />
-     <h1>AppKit solana vue Example</h1>
+   <div class="pages">
+      <img src="/reown.svg" alt="Reown" width="150" height="150" />
+      <h1>AppKit multichain vue Example</h1>
 
-     <appkit-button />
-     <ActionButtonList />
-     <InfoList />
-   </div>
+      <appkit-button />
+      <ActionButtonList />
+      <InfoList />
+    </div>
 </template>
 
 
-<script lang="ts">
+<script>
 import {
   createAppKit,
 } from '@reown/appkit/vue'
-import {solanaWeb3JsAdapter , networks, projectId } from './config/index'
+import { solanaWeb3JsAdapter, wagmiAdapter, networks, projectId } from './config/index'
 
-import ActionButtonList from "./components/ActionButton.vue"
+import ActionButtonList from "./components/ActionButton.vue"; 
 import InfoList from "./components/InfoList.vue";
 
 // Initialize AppKit
 createAppKit({
-  adapters: [solanaWeb3JsAdapter],
+  adapters: [wagmiAdapter, solanaWeb3JsAdapter],
   networks,
   projectId,
   metadata: {
