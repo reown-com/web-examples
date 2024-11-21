@@ -2,33 +2,14 @@ import { createAppKit } from '@reown/appkit/react'
 
 import { WagmiProvider } from 'wagmi'
 
-// for custom networks visit -> https://docs.reown.com/appkit/react/core/custom-networks
-import { arbitrum, mainnet, polygon, acala, chiliz, berachainTestnetbArtio, AppKitNetwork, sepolia } from '@reown/appkit/networks'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import { WagmiHooks } from './components/hooks'
+import { ActionButtonList } from './components/ActionButtonList'
+import { InfoList } from './components/InfoList'
+import { projectId, metadata, networks, wagmiAdapter } from './config'
 
 import "./App.css"
 
-
-// 0. Setup queryClient
 const queryClient = new QueryClient()
-
-// 1. Get projectId from https://cloud.reown.com
-const projectId = import.meta.env.VITE_PROJECT_ID
-if (!projectId) {
-  throw new Error('VITE_PROJECT_ID is not set')
-}
-
-// 2. Create a metadata object - optional
-const metadata = {
-  name: 'AppKit',
-  description: 'AppKit Example',
-  url: 'https://reown.com', // origin must match your domain & subdomain
-  icons: ['https://avatars.githubusercontent.com/u/179229932']
-}
-
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [arbitrum, mainnet, polygon, acala, chiliz, berachainTestnetbArtio, sepolia];
 
 const generalConfig = {
   projectId,
@@ -36,11 +17,8 @@ const generalConfig = {
   networks
 }
 
-// 3. Create Wagmi Adapter
-const wagmiAdapter = new WagmiAdapter(generalConfig)
-
-// 4. Create modal
-const modal = createAppKit({
+// Create modal
+createAppKit({
   adapters: [wagmiAdapter],
   ...generalConfig,
 })
@@ -48,13 +26,14 @@ const modal = createAppKit({
 export function App() {
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div className={"pages"}>
+      <img src="/reown.svg" alt="Reown" style={{ width: '150px', height: '150px' }} />
+      <h1>AppKit Wagmi React dApp Example</h1>
       <WagmiProvider config={wagmiAdapter.wagmiConfig}>
         <QueryClientProvider client={queryClient}>
-            <w3m-button />
-            <WagmiHooks />
-            <button onClick={() => modal.adapter?.connectionControllerClient?.disconnect()}>Disconnect JS</button>
-
+            <appkit-button />
+            <ActionButtonList />
+            <InfoList />
         </QueryClientProvider>
       </WagmiProvider>
     </div>
