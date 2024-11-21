@@ -1,5 +1,5 @@
-import { SolanaAdapter } from '@reown/appkit-adapter-solana/vue'
-import {solana, solanaTestnet, solanaDevnet, type AppKitNetwork} from '@reown/appkit/networks'
+import { SolanaAdapter } from '@reown/appkit-adapter-solana'
+import { solana, solanaTestnet, solanaDevnet, type AppKitNetwork } from '@reown/appkit/networks'
 import {PhantomWalletAdapter,SolflareWalletAdapter} from '@solana/wallet-adapter-wallets'
 
 
