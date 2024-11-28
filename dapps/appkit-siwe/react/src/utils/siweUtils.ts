@@ -80,10 +80,9 @@ const normalizeAddress = (address: string): string => {
   
   const data = await res.json();
   
-  // Check if data is an empty object
-  const isEmptyData = data && Object.keys(data).length === 0;
+  const isValidData = typeof data === 'object' && typeof data.address === 'string' && (typeof data.chainId === 'number' ||  typeof data.chainId === 'string' && !isNaN(Number(data.chainId)));
 
-  return isEmptyData ?  null : data as SIWESession;
+  return isValidData ? data as SIWESession : null;
 }
 
 // call the server to sign out
