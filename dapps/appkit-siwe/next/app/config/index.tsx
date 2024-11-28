@@ -69,12 +69,15 @@ export const siweConfig = createSIWEConfig({
   getSession: async () => {
     const session = await getSession();
     if (!session) {
-      throw new Error('Failed to get session!');
+      return null;
+    }
+    
+    // Validate address and chainId types
+    if (typeof session.address !== "string" || typeof session.chainId !== "number") {
+      return null;
     }
 
-    const { address, chainId } = session as unknown as SIWESession;
-
-    return { address, chainId };
+    return { address: session.address, chainId: session.chainId } satisfies SIWESession;
   },
   verifyMessage: async ({ message, signature }: SIWEVerifyMessageArgs) => {
     try {

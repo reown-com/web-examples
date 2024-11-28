@@ -47,7 +47,7 @@ app.post('/verify', async (req, res) => {
       const message = req.body.message;
 
       const address = getAddressFromMessage(message);
-      const chainId = getChainIdFromMessage(message);
+      let chainId = getChainIdFromMessage(message);
       
       const isValid = await verifySignature({
         address,
@@ -56,14 +56,23 @@ app.post('/verify', async (req, res) => {
         chainId,
         projectId,
       });
+
       if (!isValid) {
         // throw an error if the signature is invalid
         throw new Error('Invalid signature');
       }
+      if (chainId.includes(":")) {
+        chainId = chainId.split(":")[1];
+      }
+      // Convert chainId to a number
+      chainId = Number(chainId);
+
+      if (isNaN(chainId)) {
+          throw new Error("Invalid chainId");
+      }
       
       // save the session with the address and chainId (SIWESession)
       req.session.siwe = { address, chainId };
-      console.log("/verify");
       req.session.save(() => res.status(200).send(true));
     } catch (e) {
       // clean the session
@@ -76,7 +85,8 @@ app.post('/verify', async (req, res) => {
   // get the session
   app.get('/session', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    console.log("/session");
+    console.log("/session", req.session.siwe);
+
     res.send(req.session.siwe);
   });
 

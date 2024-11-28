@@ -79,7 +79,10 @@ const normalizeAddress = (address: string): string => {
   }
   
   const data = await res.json();
-  return data == "{}" ?  null : data as SIWESession;
+  
+  const isValidData = typeof data === 'object' && typeof data.address === 'string' && typeof data.chainId === 'number';
+
+  return isValidData ? data as SIWESession : null;
 }
 
 // call the server to sign out
