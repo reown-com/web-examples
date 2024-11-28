@@ -73,6 +73,10 @@ export const siweConfig = createSIWEConfig({
     }
 
     const { address, chainId } = session as unknown as SIWESession;
+    // Validate address and chainId types
+    if (typeof address !== "string" || typeof chainId !== "number") {
+      return null;
+    }
 
     return { address, chainId };
   },
