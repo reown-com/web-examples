@@ -80,7 +80,7 @@ const normalizeAddress = (address: string): string => {
   
   const data = await res.json();
   
-  const isValidData = typeof data === 'object' && typeof data.address === 'string' && (typeof data.chainId === 'number' ||  typeof data.chainId === 'string' && !isNaN(Number(data.chainId)));
+  const isValidData = typeof data === 'object' && typeof data.address === 'string' && typeof data.chainId === 'number';
 
   return isValidData ? data as SIWESession : null;
 }

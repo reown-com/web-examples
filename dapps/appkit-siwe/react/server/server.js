@@ -64,6 +64,12 @@ app.post('/verify', async (req, res) => {
       if (chainId.includes(":")) {
         chainId = chainId.split(":")[1];
       }
+      // Convert chainId to a number
+      chainId = Number(chainId);
+
+      if (isNaN(chainId)) {
+          throw new Error("Invalid chainId");
+      }
       
       // save the session with the address and chainId (SIWESession)
       req.session.siwe = { address, chainId };
