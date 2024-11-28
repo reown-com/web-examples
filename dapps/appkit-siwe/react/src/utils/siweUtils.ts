@@ -79,7 +79,11 @@ const normalizeAddress = (address: string): string => {
   }
   
   const data = await res.json();
-  return data == "{}" ?  null : data as SIWESession;
+  
+  // Check if data is an empty object
+  const isEmptyData = data && Object.keys(data).length === 0;
+
+  return isEmptyData ?  null : data as SIWESession;
 }
 
 // call the server to sign out
