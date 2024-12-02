@@ -1,6 +1,5 @@
 import cors from 'cors';
 import express from 'express';
-import Session from 'express-session';
 import { generateNonce } from 'siwe';
 import {
   verifySignature,
@@ -17,19 +16,12 @@ const projectId = process.env.PROJECT_ID;
 
 const app = express();
 
-// configure cors and sessions
+// configure cors
 app.use(cors({
   origin: 'http://localhost:5174', // frontend URL
   credentials: true,
 }))
 app.use(express.json())
-app.use(Session({
-  name: 'siwe-quickstart',
-  secret: "siwe-quickstart-secret",
-  resave: true,
-  saveUninitialized: true,
-  cookie: { secure: false, sameSite: true }
-}));
 
 // generate a nonce
 app.get('/nonce', function (_, res) {
@@ -71,31 +63,13 @@ app.post('/verify', async (req, res) => {
           throw new Error("Invalid chainId");
       }
       
-      // save the session with the address and chainId (SIWESession)
-      req.session.siwe = { address, chainId };
-      req.session.save(() => res.status(200).send(true));
+      res.status(200).send({
+        address,
+        chainId
+      });
     } catch (e) {
-      // clean the session
-      req.session.siwe = null;
-      req.session.nonce = null;
-      req.session.save(() => res.status(500).json({ message: e.message }));
+      res.status(500).json({ message: e.message });
     }
-  });
-
-  // get the session
-  app.get('/session', (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    console.log("/session", req.session.siwe);
-
-    res.send(req.session.siwe);
-  });
-
-  // signout and clean the session
-  app.get('/signout', (req, res) => {
-    req.session.siwe = null;
-    req.session.nonce = null;
-    console.log("/singout");
-    req.session.save(() => res.send({}));
   });
 
 // start the server

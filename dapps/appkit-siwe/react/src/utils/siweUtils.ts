@@ -7,9 +7,9 @@ import {
     formatMessage,
   } from '@reown/appkit-siwe'
 import { getAddress } from 'viem';
-  
 
 const BASE_URL = 'http://localhost:8080';
+let session: SIWESession | null = null;
 
 // Normalize the address (checksum)
 const normalizeAddress = (address: string): string => {
@@ -21,7 +21,7 @@ const normalizeAddress = (address: string): string => {
     const normalizedAddress = splitAddress.join(':');
 
     return normalizedAddress;
-  } catch (error) {
+  } catch {
     return address;
   }
 }
@@ -39,65 +39,27 @@ const normalizeAddress = (address: string): string => {
     console.log('Nonce:', nonce);
     return nonce;
 }
-  
+
 // call the server to verify the message
- const verifyMessage = async ({ message, signature }: SIWEVerifyMessageArgs) => {
-    try {
-        const response = await fetch(BASE_URL + "/verify", {
-            method: "POST",
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-            mode: 'cors',
-            body: JSON.stringify({ message, signature }),
-            credentials: 'include'
-        });
+ const verifyMessage = async ({ message, signature }: SIWEVerifyMessageArgs): Promise<{ address: string, chainId: number }> => {
+    const response = await fetch(BASE_URL + "/verify", {
+        method: "POST",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors',
+        body: JSON.stringify({ message, signature }),
+        credentials: 'include'
+    });
 
-        if (!response.ok) {
-            return false;
-        }
-        
-        const result = await response.json();
-        return result === true;
-      } catch (error) {
-        return false;
-      }
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+    return data as { address: string, chainId: number };
 }
-
-// call the server to get the session
- const getSession = async () => {
-   const res = await fetch(BASE_URL+ "/session", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: 'include',
-  });
-  if (!res.ok) {
-      throw new Error('Network response was not ok');
-  }
-  
-  const data = await res.json();
-  
-  const isValidData = typeof data === 'object' && typeof data.address === 'string' && typeof data.chainId === 'number';
-
-  return isValidData ? data as SIWESession : null;
-}
-
-// call the server to sign out
-const signOut =  async (): Promise<boolean> => {
-  const res = await fetch(BASE_URL + "/signout", {
-   method: "GET",
-   credentials: 'include',
- });
-  if (!res.ok) {
-      throw new Error('Network response was not ok');
-  }
- 
-  const data = await res.json();
-  return data == "{}";
-} 
 
 export const createSIWE = (chains: [AppKitNetwork, ...AppKitNetwork[]]) => {
     return createSIWEConfig({
@@ -105,7 +67,7 @@ export const createSIWE = (chains: [AppKitNetwork, ...AppKitNetwork[]]) => {
       signOutOnNetworkChange: true,
         getMessageParams: async () => ({
               domain: window.location.host,
-              uri: window.location.origin, 
+              uri: window.location.origin,
               chains: chains.map((chain: AppKitNetwork) => parseInt(chain.id.toString())),
               statement: 'Welcome to the dApp!\nPlease sign this message',
             }),
@@ -114,8 +76,18 @@ export const createSIWE = (chains: [AppKitNetwork, ...AppKitNetwork[]]) => {
           return formatMessage(args, normalizeAddress(address))
         },
         getNonce,
-        getSession,
-        verifyMessage,
-        signOut,
+        getSession: async () => session,
+        verifyMessage: async ({ message, signature }: SIWEVerifyMessageArgs) => {
+          const response = await verifyMessage({ message, signature }).catch(() => undefined);
+          if (response) {
+            session = { address: response.address, chainId: response.chainId };
+            return true
+          }
+          return false
+        },
+        signOut: async () => {
+          session = null;
+          return true
+        }
     })
 }
