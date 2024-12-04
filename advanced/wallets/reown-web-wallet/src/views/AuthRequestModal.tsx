@@ -4,7 +4,7 @@ import { Col, Row, Text, Code } from '@nextui-org/react'
 import { getSdkError } from '@walletconnect/utils'
 
 import ModalStore from '@/store/ModalStore'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletKit } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 import { useAppKitAccount, useAppKitProvider } from '@reown/appkit/react'
 
@@ -25,7 +25,7 @@ export default function AuthRequestModal() {
   // Get required request data
   const { params } = request
 
-  const message = web3wallet.formatMessage(params.cacaoPayload, iss)
+  const message = walletKit.formatMessage(params.cacaoPayload, iss)
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
@@ -35,7 +35,7 @@ export default function AuthRequestModal() {
         method: 'personal_sign',
         params: [message, address]
       })
-      await web3wallet.respondAuthRequest(
+      await walletKit.respondAuthRequest(
         {
           id: request.id,
           signature: {
@@ -54,7 +54,7 @@ export default function AuthRequestModal() {
   const onReject = useCallback(async () => {
     if (request) {
       setIsLoadingReject(true)
-      await web3wallet.respondAuthRequest(
+      await walletKit.respondAuthRequest(
         {
           id: request.id,
           error: getSdkError('USER_REJECTED')

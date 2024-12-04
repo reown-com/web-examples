@@ -1,5 +1,5 @@
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
-import { Web3WalletTypes } from '@walletconnect/web3wallet'
+import { WalletKitTypes } from '@reown/walletkit'
 import { proxy } from 'valtio'
 
 /**
@@ -9,7 +9,7 @@ interface ModalData {
   proposal?: SignClientTypes.EventArguments['session_proposal']
   requestEvent?: SignClientTypes.EventArguments['session_request']
   requestSession?: SessionTypes.Struct
-  request?: Web3WalletTypes.AuthRequest
+  request?: WalletKitTypes.SessionAuthenticate
   loadingMessage?: string
   authRequest?: SignClientTypes.EventArguments['session_authenticate']
 }
@@ -34,6 +34,7 @@ interface State {
     | 'AuthRequestModal'
     | 'SessionAuthenticateModal'
     | 'LoadingModal'
+    | 'AppKitConnectionModal',
   data?: ModalData
 }
 

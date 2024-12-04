@@ -1,12 +1,12 @@
 import { Col, Grid, Row, Text, styled } from '@nextui-org/react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import DoneIcon from '@mui/icons-material/Done'
 import CloseIcon from '@mui/icons-material/Close'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletKit } from '@/utils/WalletConnectUtil'
 import { EIP155Chain, EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import ChainDataMini from '@/components/ChainDataMini'
 import ChainAddressMini from '@/components/ChainAddressMini'
@@ -15,7 +15,9 @@ import RequestModal from './RequestModal'
 import { useSnapshot } from 'valtio'
 import SettingsStore from '@/store/SettingsStore'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
-import { useAppKitAccount, useAppKitProvider } from '@reown/appkit/react'
+import { ChainController, useAppKitAccount, useAppKitProvider, useAppKitState } from '@reown/appkit/react'
+import { W3mFrameProvider } from '@reown/appkit-wallet'
+import LoadingModal from './LoadingModal'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -31,27 +33,54 @@ export default function SessionProposalModal() {
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  const { address } = useAppKitAccount()
-  const { walletProvider } = useAppKitProvider('eip155')
+  const { address, caipAddress } = useAppKitAccount()
+  const { walletProvider } = useAppKitProvider<W3mFrameProvider>('eip155')
 
-  const supportedNamespaces = useMemo(() => {
-    // eip155
-    const eip155Chains = Object.keys(EIP155_CHAINS)
-    const eip155Methods = Object.values(EIP155_SIGNING_METHODS)
+  const [supportedNamespaces, setSupportedNamespaces] = useState<any>(null);
+  const [smartAccounts, setSmartAccounts] = useState<string[]>([]);
+  const [activeChainId, setActiveChainId] = useState<string>('');
 
-    //eip5792
-    const eip5792Chains = Object.keys(EIP155_CHAINS)
-    const eip5792Methods = Object.values(EIP5792_METHODS)
+  useEffect(() => {
+    if (!walletProvider)
+      return;
 
-    return {
-      eip155: {
-        chains: eip155Chains,
-        methods: eip155Methods.concat(eip5792Methods),
-        events: ['accountsChanged', 'chainChanged'],
-        accounts: eip155Chains.map(chain => `${chain}:${address}`).flat()
-      },
-    }
-  }, [address])
+    const fetchSupportedNamespaces = async () => {
+      console.log('fetchSupportedNamespaces', walletProvider)
+
+      const user = await walletProvider.getUser({});
+
+      var saAddress = user.accounts?.find(account => account.type === 'smartAccount')?.address;
+      var eoaAddress = user.accounts?.find(account => account.type === 'eoa')?.address;
+
+      const activeChainId = `eip155:${user.chainId}`;
+
+      // eip155
+      const eip155Chains = Object.keys(EIP155_CHAINS)
+      const eip155Methods = Object.values(EIP155_SIGNING_METHODS);
+
+      // eip5792
+      const eip5792Chains = Object.keys(EIP155_CHAINS);
+      const eip5792Methods = Object.values(EIP5792_METHODS);
+
+      const smartAccounts = eip155Chains.map(chain => `${chain}:${saAddress}`)
+      const allAccounts = smartAccounts.concat(eip155Chains.map(chain => `${chain}:${eoaAddress}`));
+
+      const result = {
+        eip155: {
+          chains: eip155Chains,
+          methods: eip155Methods.concat(eip5792Methods),
+          events: ['accountsChanged', 'chainChanged'],
+          accounts: allAccounts,
+        },
+      };
+
+      setActiveChainId(activeChainId);
+      setSmartAccounts(smartAccounts);
+      setSupportedNamespaces(result);
+    };
+
+    fetchSupportedNamespaces();
+  }, [walletProvider]);
 
   const requestedChains = useMemo(() => {
     if (!proposal) return []
@@ -125,12 +154,19 @@ export default function SessionProposalModal() {
   const onApprove = useCallback(async () => {
     if (proposal && namespaces) {
       setIsLoadingApprove(true)
+      console.log('onApprove. proposal id', proposal.id)
+      console.log('onApprove. proposal params', proposal.params)
       try {
-        await web3wallet.approveSession({
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        await walletKit.approveSession({
           id: proposal.id,
           namespaces,
+          sessionProperties: {
+            "smartAccounts": JSON.stringify(smartAccounts),
+          }
         })
-        SettingsStore.setSessions(Object.values(web3wallet.getActiveSessions()))
+        SettingsStore.setSessions(Object.values(walletKit.getActiveSessions()))
       } catch (e) {
         setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
@@ -139,7 +175,7 @@ export default function SessionProposalModal() {
     }
     setIsLoadingApprove(false)
     ModalStore.close()
-  }, [namespaces, proposal])
+  }, [namespaces, proposal, walletProvider])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -148,7 +184,7 @@ export default function SessionProposalModal() {
       try {
         setIsLoadingReject(true)
         await new Promise(resolve => setTimeout(resolve, 1000))
-        await web3wallet.rejectSession({
+        await walletKit.rejectSession({
           id: proposal.id,
           reason: getSdkError('USER_REJECTED_METHODS')
         })
@@ -161,6 +197,7 @@ export default function SessionProposalModal() {
     setIsLoadingReject(false)
     ModalStore.close()
   }, [proposal])
+
   return (
     <RequestModal
       metadata={proposal.params.proposer.metadata}

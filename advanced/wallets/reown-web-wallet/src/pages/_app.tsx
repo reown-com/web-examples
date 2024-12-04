@@ -6,7 +6,7 @@ import Layout from '@/components/Layout'
 import Modal from '@/components/Modal'
 import useInitialization from '@/hooks/useInitialization'
 import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletKit } from '@/utils/WalletConnectUtil'
 import { RELAYER_EVENTS } from '@walletconnect/core'
 import  type { AppProps } from 'next/app'
 import '../../public/main.css'
@@ -14,7 +14,8 @@ import { styledToast } from '@/utils/HelperUtil'
 import { createAppKit } from '@reown/appkit/react'
 import { EthersAdapter } from '@reown/appkit-adapter-ethers'
 import { EIP155_CHAINS } from '@/data/EIP155Data'
-import { mainnet, polygon, arbitrum, base} from '@reown/appkit/networks'
+import { mainnet, polygon, arbitrum, base, optimism} from '@reown/appkit/networks'
+import useAppKitProviderEventsManager from '@/hooks/useAppKitProviderEventsManager'
 
 
 const ethersAdapter = new EthersAdapter()
@@ -28,7 +29,7 @@ const metadata = {
 
 const modal = createAppKit({
   adapters: [ethersAdapter],
-  networks: [mainnet, polygon, arbitrum, base],
+  networks: [mainnet, polygon, arbitrum, base, optimism],
   defaultNetwork: mainnet,
   projectId:  process.env.NEXT_PUBLIC_PROJECT_ID as string,
   features: {
@@ -43,13 +44,14 @@ export default function App({ Component, pageProps }: AppProps) {
 
   // Step 2 - Once initialized, set up wallet connect event manager
   useWalletConnectEventsManager(initialized)
+  useAppKitProviderEventsManager()
   useEffect(() => {
     if (!initialized) return
-    web3wallet?.core.relayer.on(RELAYER_EVENTS.connect, () => {
+    walletKit?.core.relayer.on(RELAYER_EVENTS.connect, () => {
       styledToast('Network connection is restored!', 'success')
     })
 
-    web3wallet?.core.relayer.on(RELAYER_EVENTS.disconnect, () => {
+    walletKit?.core.relayer.on(RELAYER_EVENTS.disconnect, () => {
       styledToast('Network connection lost.', 'error')
     })
   }, [initialized])

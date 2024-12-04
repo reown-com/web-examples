@@ -20,7 +20,7 @@ export default function SettingsPage() {
       </Text>
       <Row justify="space-between" align="center">
         <Text color="$gray400">@walletconnect/sign-client</Text>
-        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/web3wallet']}</Text>
+        <Text color="$gray400">{packageJSON.dependencies['@reown/walletkit']}</Text>
       </Row>
 
       <Divider y={2} />

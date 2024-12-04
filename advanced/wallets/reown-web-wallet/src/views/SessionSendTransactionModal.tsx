@@ -7,7 +7,7 @@ import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletKit } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 import { useAppKitProvider } from '@reown/appkit/react'
 
@@ -32,7 +32,7 @@ export default function SessionSendTransactionModal() {
       setIsLoadingApprove(true)
       try {
         const response = await approveEIP155Request(requestEvent, walletProvider)
-        await web3wallet.respondSessionRequest({
+        await walletKit.respondSessionRequest({
           topic,
           response
         })
@@ -52,7 +52,7 @@ export default function SessionSendTransactionModal() {
       setIsLoadingReject(true)
       const response = rejectEIP155Request(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletKit.respondSessionRequest({
           topic,
           response
         })

@@ -1,7 +1,7 @@
 import { parseUri } from '@walletconnect/utils'
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletKit } from '@/utils/WalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
 import { Fragment, useEffect, useState } from 'react'
 import { styledToast } from '@/utils/HelperUtil'
@@ -16,20 +16,25 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     const { topic: pairingTopic } = parseUri(uri)
     // if for some reason, the proposal is not received, we need to close the modal when the pairing expires (5mins)
     const pairingExpiredListener = ({ topic }: { topic: string }) => {
+      console.log('pairingExpiredListener', topic)
       if (pairingTopic === topic) {
         styledToast('Pairing expired. Please try again with new Connection URI', 'error')
         ModalStore.close()
-        web3wallet.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
+        walletKit.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
       }
     }
-    web3wallet.once('session_proposal', () => {
-      web3wallet.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
+    walletKit.once('session_proposal', (proposal) => {
+      console.log('session_proposal', proposal)
+      walletKit.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
     })
     try {
       setLoading(true)
-      web3wallet.core.pairing.events.on('pairing_expire', pairingExpiredListener)
-      await web3wallet.pair({ uri })
+      walletKit.core.pairing.events.on('pairing_expire', pairingExpiredListener)
+      console.log('pair', uri)
+      await walletKit.pair({ uri })
+      console.log('paired')
     } catch (error) {
+      console.log('error', error)
       styledToast((error as Error).message, 'error')
       ModalStore.close()
     } finally {
@@ -40,6 +45,7 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
 
   useEffect(() => {
     if (deepLink) {
+      console.log('wc page -- deepLink', deepLink)
       onConnect(deepLink)
     }
   }, [deepLink])

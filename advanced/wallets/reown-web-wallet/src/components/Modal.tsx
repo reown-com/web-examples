@@ -11,6 +11,7 @@ import { useCallback, useMemo } from 'react'
 import AuthRequestModal from '@/views/AuthRequestModal'
 import LoadingModal from '@/views/LoadingModal'
 import SessionAuthenticateModal from '@/views/SessionAuthenticateModal'
+import AppKitConnectionModal from '@/views/AppKitConnectionModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -39,6 +40,8 @@ export default function Modal() {
         return <LoadingModal />
       case 'SessionAuthenticateModal':
         return <SessionAuthenticateModal />
+      case 'AppKitConnectionModal':
+        return <AppKitConnectionModal />
       default:
         return null
     }

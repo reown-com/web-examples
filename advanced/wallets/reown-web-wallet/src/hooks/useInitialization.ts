@@ -1,5 +1,5 @@
 import SettingsStore from '@/store/SettingsStore'
-import { createWeb3Wallet, web3wallet } from '@/utils/WalletConnectUtil'
+import { createWalletKit, walletKit } from '@/utils/WalletConnectUtil'
 import { useAppKit, useAppKitAccount } from '@reown/appkit/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
@@ -14,7 +14,7 @@ export default function useInitialization() {
 
   const onInitialize = useCallback(async () => {
     try {
-      await createWeb3Wallet(relayerRegionURL)
+      await createWalletKit(relayerRegionURL)
       setInitialized(true)
       if (address) {
         SettingsStore.setEIP155Address(address)
@@ -29,7 +29,7 @@ export default function useInitialization() {
   // restart transport if relayer region changes
   const onRelayerRegionChange = useCallback(() => {
     try {
-      web3wallet?.core?.relayer.restartTransport(relayerRegionURL)
+      walletKit?.core?.relayer.restartTransport(relayerRegionURL)
       prevRelayerURLValue.current = relayerRegionURL
     } catch (err: unknown) {
       alert(err)
