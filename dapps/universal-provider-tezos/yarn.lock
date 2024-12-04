@@ -899,9 +899,9 @@
     typedarray-to-buffer "^4.0.0"
 
 "@trili/tezos-provider@^1.0.4":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@trili/tezos-provider/-/tezos-provider-1.0.9.tgz#c655abfd2af1ac90af9b369ab046ac3f6da57cc4"
-  integrity sha512-ykABhLpvGmWl9g5b7Qnb5jr6nIcxt7vR3Y2Opflrfh2hKaJSjwePpsaQKJBZX5aLMRwYdAtNt+TIbpku24kKRg==
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@trili/tezos-provider/-/tezos-provider-1.0.10.tgz#fd8f99cf471e2a1046bdaff448616cbe41450982"
+  integrity sha512-2YuLDcXixSHEopiOmidqXAGqbGWX5LuQ13aIkWFrfpRpANQIaHwlyCcpzcrBJKVEEDveJUHHWjOFJVt5BPJXaw==
   dependencies:
     micromatch "^4.0.8"
 
