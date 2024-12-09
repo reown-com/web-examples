@@ -17,7 +17,7 @@
     "@solana/web3.js": "^1.78.4",
     "@taquito/rpc": "^20.0.1",
     "@taquito/taquito": "^20.1.0",
-    "@trili/tezos-provider": "^1.0.4",
+    "@trili/tezos-provider": "^1.0.18",
     "@walletconnect/keyvaluestorage": ">=1.1.1",
     "@walletconnect/logger": ">=2.1.2",
     "@walletconnect/modal": "^2.6.2",

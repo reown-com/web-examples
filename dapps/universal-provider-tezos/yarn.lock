@@ -898,10 +898,10 @@
     elliptic "^6.5.7"
     typedarray-to-buffer "^4.0.0"
 
-"@trili/tezos-provider@^1.0.4":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@trili/tezos-provider/-/tezos-provider-1.0.9.tgz#c655abfd2af1ac90af9b369ab046ac3f6da57cc4"
-  integrity sha512-ykABhLpvGmWl9g5b7Qnb5jr6nIcxt7vR3Y2Opflrfh2hKaJSjwePpsaQKJBZX5aLMRwYdAtNt+TIbpku24kKRg==
+"@trili/tezos-provider@^1.0.18":
+  version "1.0.18"
+  resolved "https://registry.yarnpkg.com/@trili/tezos-provider/-/tezos-provider-1.0.18.tgz#44a1014f084b1a924b1bc4acdf82f004a3bd5883"
+  integrity sha512-rmTCh1llAItV2IEl592byzC7+8+bvdqIaOsDs9arrFuVVlpyNvI8cJYSqRxxUM0+UPBM7mEZsGKc+7bLPjYa/w==
   dependencies:
     micromatch "^4.0.8"
 
