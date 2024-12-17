@@ -9,6 +9,7 @@ import {
   TezosSignResponse,
 } from "@trili/tezos-provider";
 import { ErrorObject } from "@walletconnect/utils";
+import { stringToBytes } from "@taquito/utils";
 
 const projectId = import.meta.env.VITE_PROJECT_ID;
 
@@ -141,9 +142,14 @@ const App = () => {
           case SAMPLE_KINDS.GET_ACCOUNTS:
             res = await provider.getAccounts();
             break;
-          case SAMPLE_KINDS.SIGN:
-            res = await provider.sign("05010000004254");
+          case SAMPLE_KINDS.SIGN: {
+            const formattedInput = ` Payload from TezosProvider dapp generated at ${new Date().toISOString()}`;
+            const bytes = stringToBytes(formattedInput);
+            const payload =
+              "05" + "0100" + stringToBytes(bytes.length.toString()) + bytes;
+            res = await provider.sign(payload);
             break;
+          }
           case SAMPLE_KINDS.SEND_TRANSACTION:
             res = await provider.sendTransaction(
               SAMPLES[SAMPLE_KINDS.SEND_TRANSACTION],

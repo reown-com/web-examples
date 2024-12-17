@@ -6,10 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0 --fix",
     "preview": "vite preview",
-    "prettier": "prettier --check '**/*.{js,ts,jsx,tsx}'",
-    "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
+    "prettier": "prettier --check '**/*.{js,ts,jsx,tsx}' --write"
   },
   "dependencies": {
     "@airgap/beacon-types": "^4.3.1",
