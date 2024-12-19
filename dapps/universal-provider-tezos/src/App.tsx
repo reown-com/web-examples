@@ -7,6 +7,8 @@ import {
   TezosGetAccountResponse,
   TezosSendResponse,
   TezosSignResponse,
+  ChainData,
+  TezosChainDataMainnet,
 } from "@trili/tezos-provider";
 import { ErrorObject } from "@walletconnect/utils";
 import { stringToBytes } from "@taquito/utils";
@@ -98,21 +100,31 @@ const App = () => {
   }, []);
 
   // Connect to Tezos
-  const connect = useCallback(async () => {
-    if (!provider) return;
+  const connect = useCallback(
+    async (chain: string) => {
+      if (!provider) return;
 
-    try {
-      await provider.connect({ chain: TezosChainDataTestnet });
-      setIsConnected(true);
-      console.log("Connected to Tezos");
-      const balance = await provider.getBalance();
-      setBalance(TezosProvider.formatTezosBalance(balance));
-    } catch (error) {
-      console.error("Error connecting to Tezos:", error);
-    } finally {
-      modal.closeModal();
-    }
-  }, [provider]);
+      try {
+        switch (chain) {
+          case "mainnet":
+            await provider.connect({ chain: TezosChainDataMainnet });
+            break;
+          case "ghostnet":
+            await provider.connect({ chain: TezosChainDataTestnet });
+            break;
+          default:
+            throw new Error(`Unsupported chain: ${chain}`);
+        }
+        setIsConnected(true);
+        console.log("Connected to Tezos");
+        modal.closeModal();
+        const balance = await provider.getBalance();
+        setBalance(TezosProvider.formatTezosBalance(balance));
+      } catch (error) {
+        console.error("Error connecting to Tezos:", error);
+      }
+    }, [provider],
+  );
 
   // Disconnect from Tezos
   const disconnect = useCallback(async () => {
@@ -390,7 +402,16 @@ const App = () => {
       ) : (
         <>
           <p>Connect your wallet to get started</p>
-          <button onClick={connect}>Connect</button>
+          <div className="layout-container">
+            <div className="btn-container">
+              <button onClick={() => connect("ghostnet")}>
+                Connect ghostnet
+              </button>
+              <button onClick={() => connect("mainnet")}>
+                Connect mainnet
+              </button>
+            </div>
+          </div>
         </>
       )}
     </div>
