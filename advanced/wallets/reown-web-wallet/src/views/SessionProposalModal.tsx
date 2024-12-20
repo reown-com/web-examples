@@ -18,6 +18,7 @@ import { EIP5792_METHODS } from '@/data/EIP5792Data'
 import { ChainController, useAppKitAccount, useAppKitProvider, useAppKitState } from '@reown/appkit/react'
 import { W3mFrameProvider } from '@reown/appkit-wallet'
 import LoadingModal from './LoadingModal'
+import { useRouter } from 'next/router'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -36,9 +37,10 @@ export default function SessionProposalModal() {
   const { address, caipAddress } = useAppKitAccount()
   const { walletProvider } = useAppKitProvider<W3mFrameProvider>('eip155')
 
-  const [supportedNamespaces, setSupportedNamespaces] = useState<any>(null);
-  const [smartAccounts, setSmartAccounts] = useState<string[]>([]);
-  const [activeChainId, setActiveChainId] = useState<string>('');
+  const [supportedNamespaces, setSupportedNamespaces] = useState<any>(null)
+  const [smartAccounts, setSmartAccounts] = useState<string[]>([])
+  const [activeChainId, setActiveChainId] = useState<string>('')
+  const [email, setEmail] = useState<string>('')
 
   useEffect(() => {
     if (!walletProvider)
@@ -47,23 +49,37 @@ export default function SessionProposalModal() {
     const fetchSupportedNamespaces = async () => {
       console.log('fetchSupportedNamespaces', walletProvider)
 
-      const user = await walletProvider.getUser({});
+      const user = await walletProvider.getUser({})
 
-      var saAddress = user.accounts?.find(account => account.type === 'smartAccount')?.address;
-      var eoaAddress = user.accounts?.find(account => account.type === 'eoa')?.address;
+      const saAddress = user.accounts?.find(account => account.type === 'smartAccount')?.address
+      const eoaAddress = user.accounts?.find(account => account.type === 'eoa')?.address
 
-      const activeChainId = `eip155:${user.chainId}`;
+      const activeChainId = `eip155:${user.chainId}`
 
       // eip155
       const eip155Chains = Object.keys(EIP155_CHAINS)
-      const eip155Methods = Object.values(EIP155_SIGNING_METHODS);
+      const eip155Methods = Object.values(EIP155_SIGNING_METHODS)
 
       // eip5792
-      const eip5792Chains = Object.keys(EIP155_CHAINS);
-      const eip5792Methods = Object.values(EIP5792_METHODS);
+      const eip5792Chains = Object.keys(EIP155_CHAINS)
+      const eip5792Methods = Object.values(EIP5792_METHODS)
 
       const smartAccounts = eip155Chains.map(chain => `${chain}:${saAddress}`)
-      const allAccounts = smartAccounts.concat(eip155Chains.map(chain => `${chain}:${eoaAddress}`));
+      const eoaAccounts = eip155Chains.map(chain => `${chain}:${eoaAddress}`)
+      
+      let allAccounts = [...smartAccounts, ...eoaAccounts];
+      
+      // Move preferred account type for active chain to the front
+      const preferredAccountType = user.preferredAccountType
+      const preferredAccountAddress = preferredAccountType === 'smartAccount' ? saAddress : eoaAddress
+      const preferredAccountForActiveChain = `${activeChainId}:${preferredAccountAddress}`
+      
+      allAccounts = [
+        preferredAccountForActiveChain,
+        ...allAccounts.filter(account => account !== preferredAccountForActiveChain)
+      ];
+
+      console.log('allAccounts', allAccounts)
 
       const result = {
         eip155: {
@@ -75,6 +91,7 @@ export default function SessionProposalModal() {
       };
 
       setActiveChainId(activeChainId);
+      setEmail(user.email || '')
       setSmartAccounts(smartAccounts);
       setSupportedNamespaces(result);
     };
@@ -154,19 +171,36 @@ export default function SessionProposalModal() {
   const onApprove = useCallback(async () => {
     if (proposal && namespaces) {
       setIsLoadingApprove(true)
-      console.log('onApprove. proposal id', proposal.id)
-      console.log('onApprove. proposal params', proposal.params)
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
-        await walletKit.approveSession({
+        const session = await walletKit.approveSession({
           id: proposal.id,
           namespaces,
           sessionProperties: {
             "smartAccounts": JSON.stringify(smartAccounts),
+            "email": email,
           }
         })
         SettingsStore.setSessions(Object.values(walletKit.getActiveSessions()))
+
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      
+        const chainChanged = {
+          topic: session.topic,
+          event: {
+            name: 'chainChanged',
+            data: `0x${parseInt(activeChainId.split(':')[1]).toString(16)}`
+          },
+          chainId: activeChainId
+        }
+  
+        console.log('chainChanged', chainChanged)
+        await walletKit.emitSessionEvent(chainChanged)
+
+        const nativeRedirect = session.peer.metadata.redirect?.native
+        if (nativeRedirect) {
+          // Try to open the native app using the URL schema
+          window.location.assign(nativeRedirect)
+        }
       } catch (e) {
         setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')

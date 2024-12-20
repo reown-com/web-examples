@@ -9,13 +9,15 @@ import { getSignParamsMessage, styledToast } from '@/utils/HelperUtil'
 import { walletKit } from '@/utils/WalletConnectUtil'
 import RequestModal from './RequestModal'
 import { useAppKitProvider } from '@reown/appkit/react'
+import { W3mFrameProvider } from '@reown/appkit-wallet'
+
 export default function SessionSignModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  const { walletProvider } = useAppKitProvider('eip155')
+  const { walletProvider } = useAppKitProvider<W3mFrameProvider>('eip155')
 
   // Ensure request and wallet are defined
   if (!requestEvent || !requestSession) {

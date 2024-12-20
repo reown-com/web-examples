@@ -1,27 +1,24 @@
 import ModalStore from "@/store/ModalStore"
-import { useAppKit, useAppKitAccount } from "@reown/appkit/react"
+import { useAppKit, useAppKitAccount, useAppKitState } from "@reown/appkit/react"
 import { useEffect } from "react"
 import LoadingModal from "./LoadingModal"
 import RequestModalContainer from "@/components/RequestModalContainer"
 import { Row, Col, Loading, Divider, Text } from "@nextui-org/react"
+import { useSnapshot } from "valtio"
 
 export default function AppKitConnectionModal() {
+    const { open } = useAppKitState()
     const { isConnected, status } = useAppKitAccount()
-    const appkit= useAppKit()
+
+    const { view } = useSnapshot(ModalStore.state)
 
     // for now just open appkit modal if not connected
-    useEffect(() => {
-        console.log('appkit connection modal', status)
-        if (!isConnected && status !== undefined && status !== 'reconnecting' && status !== 'connecting') {
-            console.log('opening appkit')
-            ModalStore.close()
-            appkit.open()
-        } 
-
-        if (isConnected) {
-            ModalStore.close()
-        }
-    }, [isConnected, status])
+    // useEffect(() => {
+    //     console.log('appkit connection modal', status)
+    //     if (!isConnected && status !== undefined && status !== 'reconnecting' && status !== 'connecting') {
+    //       appkit.open()
+    //     }
+    // }, [isConnected, status])
 
     return (
         <RequestModalContainer title="">

@@ -32,15 +32,15 @@ export default function DeepLinkPairingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.view])
 
-  useEffect(() => {
-    if (requestId) {
-      ModalStore.open('LoadingModal', { loadingMessage })
-    }
+  // useEffect(() => {
+  //   if (requestId) {
+  //     ModalStore.open('LoadingModal', { loadingMessage })
+  //   }
 
-    if (uri) {
-      ModalStore.open('LoadingModal', { loadingMessage })
-    }
-  }, [uri, requestId, loadingMessage])
+  //   if (uri) {
+  //     ModalStore.open('LoadingModal', { loadingMessage })
+  //   }
+  // }, [uri, requestId, loadingMessage])
 
   if (!uri && !requestId) {
     return (

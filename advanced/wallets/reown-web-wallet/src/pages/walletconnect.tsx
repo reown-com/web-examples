@@ -30,9 +30,7 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     try {
       setLoading(true)
       walletKit.core.pairing.events.on('pairing_expire', pairingExpiredListener)
-      console.log('pair', uri)
       await walletKit.pair({ uri })
-      console.log('paired')
     } catch (error) {
       console.log('error', error)
       styledToast((error as Error).message, 'error')
@@ -46,7 +44,8 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
   useEffect(() => {
     if (deepLink) {
       console.log('wc page -- deepLink', deepLink)
-      onConnect(deepLink)
+
+      // onConnect(deepLink)
     }
   }, [deepLink])
 

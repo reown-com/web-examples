@@ -83,31 +83,31 @@ export default function SessionAuthenticateModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (messages.length) {
-      const signedAuths = []
-      for (const message of messages) {
-        const signature = await walletProvider?.request({
-          method: 'personal_sign',
-          params: [message.message, address]
-        })
-        const signedCacao = buildAuthObject(
-          message.authPayload,
-          {
-            t: 'eip191',
-            s: signature
-          },
-          message.iss
-        )
-        signedAuths.push(signedCacao)
-      }
+    // if (messages.length) {
+    //   const signedAuths = []
+    //   for (const message of messages) {
+    //     const signature = await walletProvider?.request({
+    //       method: 'personal_sign',
+    //       params: [message.message, address]
+    //     })
+    //     const signedCacao = buildAuthObject(
+    //       message.authPayload,
+    //       {
+    //         t: 'eip191',
+    //         s: signature
+    //       },
+    //       message.iss
+    //     )
+    //     signedAuths.push(signedCacao)
+    //   }
 
-      await walletKit.engine.signClient.approveSessionAuthenticate({
-        id: messages[0].id,
-        auths: signedAuths
-      })
-      SettingsStore.setSessions(Object.values(walletKit.getActiveSessions()))
-      ModalStore.close()
-    }
+    //   await walletKit.engine.signClient.approveSessionAuthenticate({
+    //     id: messages[0].id,
+    //     auths: signedAuths
+    //   })
+    //   SettingsStore.setSessions(Object.values(walletKit.getActiveSessions()))
+    //   ModalStore.close()
+    // }
   }, [address, messages])
 
   // Handle reject action

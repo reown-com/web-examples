@@ -13,30 +13,34 @@ import '../../public/main.css'
 import { styledToast } from '@/utils/HelperUtil'
 import { createAppKit } from '@reown/appkit/react'
 import { EthersAdapter } from '@reown/appkit-adapter-ethers'
-import { EIP155_CHAINS } from '@/data/EIP155Data'
-import { mainnet, polygon, arbitrum, base, optimism} from '@reown/appkit/networks'
+import { mainnet, polygon, optimism, avalanche} from '@reown/appkit/networks'
 import useAppKitProviderEventsManager from '@/hooks/useAppKitProviderEventsManager'
-
 
 const ethersAdapter = new EthersAdapter()
 
 const metadata = {
   name: 'Reown Web Wallet',
   description: 'Reown Web Wallet',
-  url: 'https://web-wallet.reown.com',
+  url: 'reown-web-wallet.vercel.app',
   icons: ['https://avatars.githubusercontent.com/u/37784886'],
+  redirect: {
+    native: typeof window !== 'undefined' ? window.location.origin : undefined
+  }
 }
 
 const modal = createAppKit({
   adapters: [ethersAdapter],
-  networks: [mainnet, polygon, arbitrum, base, optimism],
+  networks: [mainnet, polygon, optimism, avalanche],
   defaultNetwork: mainnet,
-  projectId:  process.env.NEXT_PUBLIC_PROJECT_ID as string,
+  projectId:  process.env.NEXT_PUBLIC_PROJECT_ID as string, 
   features: {
-    analytics: true
+    analytics: true,
+    emailShowWallets: false,
   },
+  allWallets: 'HIDE',
   metadata
 })
+
 
 export default function App({ Component, pageProps }: AppProps) {
   // Step 1 - Initialize wallets and wallet connect client

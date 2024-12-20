@@ -25,64 +25,65 @@ export default function AuthRequestModal() {
   // Get required request data
   const { params } = request
 
-  const message = walletKit.formatMessage(params.cacaoPayload, iss)
+  // const message = walletKit.formatMessage(params.cacaoPayload, iss)
 
-  // Handle approve action (logic varies based on request method)
-  const onApprove = useCallback(async () => {
-    if (request) {
-      setIsLoadingApprove(true)
-      const signature = await walletProvider?.request({
-        method: 'personal_sign',
-        params: [message, address]
-      })
-      await walletKit.respondAuthRequest(
-        {
-          id: request.id,
-          signature: {
-            s: signature,
-            t: 'eip191'
-          }
-        },
-        iss
-      )
-      setIsLoadingApprove(false)
-      ModalStore.close()
-    }
-  }, [request, address, message, iss, walletProvider])
+  // // Handle approve action (logic varies based on request method)
+  // const onApprove = useCallback(async () => {
+  //   if (request) {
+  //     setIsLoadingApprove(true)
+  //     const signature = await walletProvider?.request({
+  //       method: 'personal_sign',
+  //       params: [message, address]
+  //     })
+  //     await walletKit.respondAuthRequest(
+  //       {
+  //         id: request.id,
+  //         signature: {
+  //           s: signature,
+  //           t: 'eip191'
+  //         }
+  //       },
+  //       iss
+  //     )
+  //     setIsLoadingApprove(false)
+  //     ModalStore.close()
+  //   }
+  // }, [request, address, message, iss, walletProvider])
 
-  // Handle reject action
-  const onReject = useCallback(async () => {
-    if (request) {
-      setIsLoadingReject(true)
-      await walletKit.respondAuthRequest(
-        {
-          id: request.id,
-          error: getSdkError('USER_REJECTED')
-        },
-        iss
-      )
-      setIsLoadingReject(false)
-      ModalStore.close()
-    }
-  }, [request, iss])
+  // // Handle reject action
+  // const onReject = useCallback(async () => {
+  //   if (request) {
+  //     setIsLoadingReject(true)
+  //     await walletKit.respondAuthRequest(
+  //       {
+  //         id: request.id,
+  //         error: getSdkError('USER_REJECTED')
+  //       },
+  //       iss
+  //     )
+  //     setIsLoadingReject(false)
+  //     ModalStore.close()
+  //   }
+  // }, [request, iss])
 
   return (
-    <RequestModal
-      intention="request a signature"
-      metadata={request.params.requester.metadata}
-      onApprove={onApprove}
-      onReject={onReject}
-      approveLoader={{ active: isLoadingApprove }}
-      rejectLoader={{ active: isLoadingReject }}
-    >
-      <Row>
-        <Col>
-          <Text h5>Message</Text>
-          <Code>
-            <Text color="$gray400">{message}</Text>
-          </Code>
-        </Col>
-      </Row>
-    </RequestModal>
+    <div>disabled</div>
+    // <RequestModal
+    //   intention="request a signature"
+    //   metadata={request.params.requester.metadata}
+    //   onApprove={onApprove}
+    //   onReject={onReject}
+    //   approveLoader={{ active: isLoadingApprove }}
+    //   rejectLoader={{ active: isLoadingReject }}
+    // >
+    //   <Row>
+    //     <Col>
+    //       <Text h5>Message</Text>
+    //       <Code>
+    //         <Text color="$gray400">{message}</Text>
+    //       </Code>
+    //     </Col>
+    //   </Row>
+    // </RequestModal>
   )
 }

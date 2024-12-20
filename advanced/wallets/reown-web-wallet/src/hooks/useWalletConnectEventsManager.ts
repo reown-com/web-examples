@@ -12,73 +12,21 @@ import type { W3mFrameProvider, W3mFrameTypes } from '@reown/appkit-wallet';
 
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
-  const { address, isConnected, caipAddress, status } = useAppKitAccount()
   const { walletProvider } = useAppKitProvider<W3mFrameProvider>('eip155')
-
-  useEffect(() => {
-    if (!walletProvider) return
-
-    console.log('walletProvider', walletProvider)
-
-    walletProvider.onSetPreferredAccount(async (account) => {
-      console.log('onSetPreferredAccount', account.address)
-
-      const {chainId} = await walletProvider.getChainId();
-      const chainIdString = chainId.toString()
-      console
-
-      const sessions = walletKit.getActiveSessions()
-      console.log('sessions', sessions)
-
-      Object.values(sessions).forEach(async session => {
-        await walletKit.updateSession({
-          topic: session.topic,
-          namespaces: {
-            ...session.namespaces,
-            eip155: {
-              ...session.namespaces.eip155,
-              accounts: [`eip155:1:${account.address}`]
-            }
-          }
-        })
-      })
-    })
-
-  }, [walletProvider])
-
 
   /******************************************************************************
    * 1. Open session proposal modal for confirmation / rejection
    *****************************************************************************/
   const onSessionProposal = useCallback(
     async (proposal: SignClientTypes.EventArguments['session_proposal']) => {
-      console.log('session_proposal', proposal)
-
-
-      if (!isConnected || !walletProvider) {
-
-
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
-        // save proposal in local storage
-        // localStorage.setItem('pendingSessionProposal', JSON.stringify(proposal))
-        let pendingSessionProposals = Object.values(await walletKit.getPendingSessionProposals())
-
-        console.log('pendingSessionProposals before appkit', pendingSessionProposals)
-
-
-
-        console.log('onSessionProposal - opening connection modal', isConnected, walletProvider)
-        ModalStore.open('AppKitConnectionModal', undefined)
-        return;
-      }
+      console.log('useWalletConnectEventsManager: session_proposal', proposal)
 
       // set the verify context so it can be displayed in the projectInfoCard
       SettingsStore.setCurrentRequestVerifyContext(proposal.verifyContext)
       console.log('Session Proposal - Opening modal', proposal)
       ModalStore.open('SessionProposalModal', { proposal })
     },
-    [walletKit, walletProvider]
+    [walletKit]
   )
   /******************************************************************************
    * 2. Open Auth modal for confirmation / rejection
@@ -93,34 +41,33 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    *****************************************************************************/
   const onSessionRequest = useCallback(
     async (requestEvent: SignClientTypes.EventArguments['session_request']) => {
+      console.log('onSessionRequest', requestEvent)
       const { topic, params, verifyContext, id } = requestEvent
-      const { request } = params
+      const { request, chainId: requestChainId } = params
       const requestSession = walletKit.engine.signClient.session.get(topic)
+
+      if (!walletProvider) {
+        console.log('AppKit wallet provider is not ready. Rejecting request.')
+        return;
+      }
+
       // set the verify context so it can be displayed in the projectInfoCard
       SettingsStore.setCurrentRequestVerifyContext(verifyContext)
       console.log('requestEvent', requestEvent, walletProvider)
 
-      if (!walletProvider) 
-        return;
-      // if (!walletProvider) {
-      //   console.log('AppKit wallet provider is not ready. Rejecting request.')
-      //   const response = {
-      //     id,
-      //     jsonrpc: '2.0',
-      //     error: {
-      //       code: 5000,
-      //       message: 'User rejected. AppKit wallet provider is not ready.'
-      //     }
-      //   }
-      //   await walletKit.respondSessionRequest({
-      //     topic,
-      //     response
-      //   })
-      //   console.log('rejected')
-      //   return
-      // }
+      const { chainId: activeEthChainId } = await walletProvider.getChainId()
+      
+      const activeChainId = `eip155:${activeEthChainId}`
+
+      if (requestChainId !== activeChainId) {
+        ModalStore.open('LoadingModal', {loadingMessage: 'Switching network...'})    
+        await walletProvider.switchNetwork(requestChainId)
+        ModalStore.close()
+      }
+      
       try {
-        console.log('resolving request', requestEvent)
+        // request.params.chainId = requestChainId.split(':')[1]
+        console.log('resolving request', request)
         const response = await walletProvider.request(request as any)
         console.log('response', response)
         await walletKit.respondSessionRequest({
@@ -152,13 +99,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
   useEffect(() => {
     if (initialized && walletKit) {
 
-      window['walletkit'] = walletKit
-
-      
+      //window['walletKit'] = walletKit   
+      console.log('setting up walletconnect event listeners')
       //sign
       walletKit.on('session_proposal', onSessionProposal)
       walletKit.on('session_request', onSessionRequest)
-      walletKit.on('session_request', () => console.log('session_request!'))
       // auth
       // walletKit.on('session_authenticate', onAuthRequest)
       // TODOs
@@ -171,5 +116,5 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
       // load sessions on init
       SettingsStore.setSessions(Object.values(walletKit.getActiveSessions()))
     }
-  }, [initialized, onAuthRequest, onSessionProposal, onSessionRequest, onSessionAuthenticate])
+  }, [initialized, walletKit, onAuthRequest, onSessionProposal, onSessionRequest, onSessionAuthenticate])
 }
