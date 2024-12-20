@@ -22,7 +22,7 @@ export type GiftDonutModalViewProps = {
 
 export type GiftDonutState = {
   donutCount: number;
-  network: Network;
+  network?: Network;
   token: Token;
   recipient?: string;
 };
@@ -44,7 +44,6 @@ class GiftDonutModalManager {
       views: {},
       state: {
         token: supportedTokens[0],
-        network: supportedNetworks[0],
         donutCount: 1,
       },
     });
@@ -114,7 +113,7 @@ class GiftDonutModalManager {
     return this.state.state.token;
   }
 
-  getNetwork(): Network {
+  getNetwork(): Network | undefined {
     return this.state.state.network;
   }
 

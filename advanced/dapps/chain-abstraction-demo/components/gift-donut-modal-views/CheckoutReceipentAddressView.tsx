@@ -10,6 +10,7 @@ import { ArrowLeft, ChevronLeft, Copy, UserRound, X } from "lucide-react";
 import { Input } from "../ui/input";
 import GiftSvg from "../assets/GiftSVG";
 import useGiftDonut from "@/app/hooks/useGiftDonut";
+import { toast } from "sonner";
 
 function CheckoutReceipentAddressView({
   onViewChange,
@@ -45,13 +46,23 @@ function GiftDonutForm({
   };
 
   const handleCheckout = () => {
-    const to = recipientAddress as `0x${string}`;
-    const token = giftDonutModalManager.getToken();
-    const network = giftDonutModalManager.getNetwork();
-    onClose()
-    giftDonutAsync(to, donutCount, token, network);
-
+    try{
+      const to = recipientAddress as `0x${string}`;
+      const token = giftDonutModalManager.getToken();
+      const network = giftDonutModalManager.getNetwork();
+      if(!network) {
+        throw new Error("Network not selected");
+      }
+      onClose()
+      giftDonutAsync(to, donutCount, token, network);
+    }catch(e){
+      console.error(e)
+      if(e instanceof Error){
+        toast.error(e.message)
+      }
+    }
   };
+  
   return (
     <div
       className={cn("flex flex-col items-start gap-4 text-primary", className)}
