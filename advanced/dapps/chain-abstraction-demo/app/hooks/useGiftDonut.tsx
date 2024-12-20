@@ -2,12 +2,11 @@
 import { config } from "@/config";
 import { tokenAddresses } from "@/consts/tokens";
 import { Network, Token } from "@/data/EIP155Data";
-import {  useAppKitNetwork } from "@reown/appkit/react";
+import { toast } from "sonner";
 import { erc20Abi, Hex } from "viem";
 import { getAccount, getWalletClient } from "wagmi/actions";
 
 export default function useGiftDonut() {
-  const { chainId, switchNetwork } = useAppKitNetwork();
 
   const giftDonutAsync = async (
     to: Hex,
@@ -25,20 +24,10 @@ export default function useGiftDonut() {
         throw new Error("Chain undefined");
       }
 
-      console.log({ network });
-      console.log({ connectedChainId });
-
       if (connectedChainId !== network.chainId) {
-        console.log("need switching network");
-        switchNetwork(network.chain);
-        console.log("switched network");
+        throw new Error("Please switch chain, connected chain does not match network");
       }
-      // wait for network switch
-      while (chainId !== network.chainId)
-      {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
-
+      
       const tokenName = token.name;
       const tokenChainMapping = tokenAddresses[tokenName];
       if (!tokenChainMapping) {
@@ -60,9 +49,14 @@ export default function useGiftDonut() {
       });
       return tx;
     } catch (e) {
-      if (e instanceof Error) console.error(e.message);
 
-      console.log("Error sending gift donut");
+      if (e instanceof Error) {
+        toast.error(e.message)
+      }
+      else {
+        toast.error("Error sending gift donut");
+      }
+      console.error(e);
     }
   };
   return { giftDonutAsync };

@@ -15,7 +15,7 @@ const modal = createAppKit({
   adapters: [wagmiAdapter],
   projectId,
   networks: [base, optimism, arbitrum],
-  defaultNetwork: base,
+  defaultNetwork: arbitrum,
   metadata: metadata,
   features: {
     analytics: true,

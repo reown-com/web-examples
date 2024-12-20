@@ -10,6 +10,8 @@ import {
   GiftDonutModalViewProps,
 } from "@/controllers/GiftDonutModalManager";
 import { Button } from "../ui/button";
+import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
+import { toast } from "sonner";
 
 function ChooseNetworkView({ onViewChange, onClose }: GiftDonutModalViewProps) {
   return (
@@ -36,6 +38,7 @@ function ChooseNetworkView({ onViewChange, onClose }: GiftDonutModalViewProps) {
 
 function NetworkList({ className }: React.ComponentProps<"form">) {
   const selectedNetwork = giftDonutModalManager.getNetwork();
+  const { switchNetwork, caipNetwork } = useAppKitNetwork();
   const [network, setNetwork] = React.useState<Network | undefined>(
     selectedNetwork,
   );
@@ -43,6 +46,10 @@ function NetworkList({ className }: React.ComponentProps<"form">) {
   const setSelectedNetwork = (network: Network) => {
     setNetwork(network);
     giftDonutModalManager.setNetwork(network);
+    if(caipNetwork?.id !== network.chainId){
+      switchNetwork(network.chain);
+      toast.info("Switching Network from " + caipNetwork?.name + " to " + network.name,)
+    }
   };
 
   return (

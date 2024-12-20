@@ -17,19 +17,19 @@ export const supportedNetworks: Network[] = [
   {
     name: "Arbitrum",
     icon: "/chain-logos/arbitrum.png",
-    chainId: 42161,
+    chainId: arbitrum.id,
     chain:arbitrum
   },
   {
     name: "Base",
     icon: "/chain-logos/base.webp",
-    chainId: 8542,
+    chainId: base.id,
     chain:base
   },
   {
     name: "Optimism",
     icon: "/chain-logos/eip155-10.png",
-    chainId: 10,
+    chainId: optimism.id,
     chain:optimism
   },
 ];
