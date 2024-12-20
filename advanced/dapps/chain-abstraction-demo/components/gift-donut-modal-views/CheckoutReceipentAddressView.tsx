@@ -120,10 +120,10 @@ function GiftDonutForm({
           <UserRound className="w-4 h-4 absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-500" />
           <Input
             type="text"
-            placeholder="Type ENS or address"
+            placeholder="Type address"
             value={recipientAddress}
             onChange={(e) => setRecipient(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full rounded-s border h-16 bg-background"
+            className="px-10 py-2 w-full rounded-s border h-16 bg-background"
           />
           <Copy className="w-4 h-4 absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500" />
         </div>

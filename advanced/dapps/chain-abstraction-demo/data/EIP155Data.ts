@@ -15,19 +15,19 @@ export interface Token {
 
 export const supportedNetworks: Network[] = [
   {
-    name: "Arbitrum",
+    name: arbitrum.name,
     icon: "/chain-logos/arbitrum.png",
     chainId: arbitrum.id,
     chain:arbitrum
   },
   {
-    name: "Base",
+    name: base.name,
     icon: "/chain-logos/base.webp",
     chainId: base.id,
     chain:base
   },
   {
-    name: "Optimism",
+    name: optimism.name,
     icon: "/chain-logos/eip155-10.png",
     chainId: optimism.id,
     chain:optimism
