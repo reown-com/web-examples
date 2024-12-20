@@ -30,7 +30,7 @@ export default function Home() {
           <div className="flex justify-between items-center w-full">
             <div className="flex flex-col text-left">
               <p className=" text-secondary">Price</p>
-              <p className=" font-bold text-primary">$10.00</p>
+              <p className=" font-bold text-primary">$1.00</p>
             </div>
             {status === "connected" || address ? (
               <div>

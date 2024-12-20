@@ -85,7 +85,7 @@ function GiftDonutForm({
             <div className="grid grid-cols-2">
               <div className="flex flex-col">
                 <p className="text-xs text-secondary">Price</p>
-                <span className="text-lg font-bold">$10.00</span>
+                <span className="text-lg font-bold">$1.00</span>
               </div>
               <div className="flex flex-col">
                 <p className="text-xs text-secondary">Qty</p>
@@ -104,7 +104,7 @@ function GiftDonutForm({
           <p className="text-xl text-secondary">Total</p>
           <div className="flex flex-col">
             <p className="text-xl font-bold">
-              ${(donutCount * 10.0).toFixed(2)}
+              ${(donutCount * 1.00).toFixed(2)}
             </p>
             <p className="flex justify-end text-xs text-secondary">(+fee)</p>
           </div>

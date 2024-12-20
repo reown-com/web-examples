@@ -58,7 +58,7 @@ function GiftDonutForm({
           <div className="flex flex-col">
             <p className="text-secondary">Price</p>
             <div className="flex justify-between">
-              <p className="text-primary font-bold">$10.00</p>
+              <p className="text-primary font-bold">$1.00</p>
               <div className="text-primary">
                 <Button
                   variant="outline"
@@ -157,7 +157,7 @@ function GiftDonutForm({
       <div className="flex justify-between w-full items-center">
         <p className="text-secondary">Total</p>
         <p className="text-md font-bold text-primary">
-          ${(count * 10.0).toFixed(2)}
+          ${(count * 1.00).toFixed(2)}
         </p>
       </div>
       <div className="flex gap-2 w-full">
