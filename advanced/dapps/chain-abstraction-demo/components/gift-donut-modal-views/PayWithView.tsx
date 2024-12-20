@@ -1,4 +1,4 @@
-import { Network, networks, supportedTokens, Token } from "@/data/EIP155Data";
+import { Network, supportedTokens, Token } from "@/data/EIP155Data";
 import { Separator } from "../ui/separator";
 import React from "react";
 import Image from "next/image";

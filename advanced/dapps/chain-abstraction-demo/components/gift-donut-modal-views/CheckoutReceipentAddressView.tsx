@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { ArrowLeft, ChevronLeft, Copy, UserRound, X } from "lucide-react";
 import { Input } from "../ui/input";
 import GiftSvg from "../assets/GiftSVG";
+import useGiftDonut from "@/app/hooks/useGiftDonut";
 
 function CheckoutReceipentAddressView({
   onViewChange,
@@ -32,7 +33,23 @@ function GiftDonutForm({
   onClose,
 }: GiftDonutFormProps) {
   const donutCount = giftDonutModalManager.getDonutCount();
+  const recipient = giftDonutModalManager.getRecipient();
+  const [recipientAddress, setRecipientAddress] = React.useState(
+    recipient || "",
+  );
+  const { giftDonutAsync } = useGiftDonut();
 
+  const setRecipient = (address: string) => {
+    setRecipientAddress(address);
+    giftDonutModalManager.setRecipient(address);
+  };
+
+  const handleCheckout = () => {
+    const to = recipientAddress as `0x${string}`;
+    const token = giftDonutModalManager.getToken();
+    const network = giftDonutModalManager.getNetwork();
+    giftDonutAsync(to, donutCount, token, network);
+  };
   return (
     <div
       className={cn("flex flex-col items-start gap-4 text-primary", className)}
@@ -102,6 +119,8 @@ function GiftDonutForm({
           <Input
             type="text"
             placeholder="Type ENS or address"
+            value={recipientAddress}
+            onChange={(e) => setRecipient(e.target.value)}
             className="pl-10 pr-4 py-2 w-full rounded-s border h-16 bg-background"
           />
           <Copy className="w-4 h-4 absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500" />
@@ -127,7 +146,8 @@ function GiftDonutForm({
             background:
               "var(--foreground-foreground-accent-primary-010, rgba(9, 136, 240, 0.1))",
           }}
-          onClick={() => onViewChange("CheckoutReceipentAddress")}
+          disabled={!recipientAddress}
+          onClick={handleCheckout}
           type="button"
           variant="secondary"
           className="flex flex-1 gap-1"

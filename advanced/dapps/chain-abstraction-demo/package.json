@@ -17,8 +17,8 @@
     "@radix-ui/react-slot": "1.1.0",
     "@radix-ui/react-toast": "1.2.2",
     "@radix-ui/react-visually-hidden": "^1.1.1",
-    "@reown/appkit": "1.2.1",
-    "@reown/appkit-adapter-wagmi": "1.2.1",
+    "@reown/appkit": "1.6.2",
+    "@reown/appkit-adapter-wagmi": "1.6.2",
     "@tanstack/react-query": "5.59.19",
     "@web3modal/wagmi": "5.1.11",
     "class-variance-authority": "0.7.0",
@@ -31,8 +31,8 @@
     "tailwind-merge": "2.5.2",
     "tailwindcss-animate": "1.0.7",
     "vaul": "^1.1.2",
-    "viem": "2.21.40",
-    "wagmi": "2.12.25"
+    "viem": "2.21.55",
+    "wagmi": "2.14.3"
   },
   "devDependencies": {
     "@types/node": "^20",
