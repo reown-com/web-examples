@@ -8,7 +8,8 @@ export function ConnectWalletButton() {
   return (
     <Button
       type="button"
-      className="w-full bg-gray-700 hover:bg-gray-600 text-white"
+      style={{background: "var(--foreground-foreground-secondary, hsla(0, 0%, 16%, 1))" }}
+      className="w-full text-primary rounded-full"
       size="lg"
       onClick={() => open({ view: "Connect" })}
     >

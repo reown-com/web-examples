@@ -1,16 +1,13 @@
 "use client";
 import { config } from "@/config";
-import { tokenAddresses, usdcTokenAddresses } from "@/consts/tokens";
+import { tokenAddresses } from "@/consts/tokens";
 import { Network, Token } from "@/data/EIP155Data";
-import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
+import {  useAppKitNetwork } from "@reown/appkit/react";
 import { erc20Abi, Hex } from "viem";
-import { useAccount, useSwitchChain } from "wagmi";
 import { getAccount, getWalletClient } from "wagmi/actions";
 
 export default function useGiftDonut() {
-  const { status } = useAccount();
-  const { address, status: walletStatus } = useAppKitAccount();
-  const { chains, switchChain } = useSwitchChain();
+  const { chainId, switchNetwork } = useAppKitNetwork();
 
   const giftDonutAsync = async (
     to: Hex,
@@ -33,8 +30,13 @@ export default function useGiftDonut() {
 
       if (connectedChainId !== network.chainId) {
         console.log("need switching network");
-        switchChain({ chainId: network.chainId });
+        switchNetwork(network.chain);
         console.log("switched network");
+      }
+      // wait for network switch
+      while (chainId !== network.chainId)
+      {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
       const tokenName = token.name;

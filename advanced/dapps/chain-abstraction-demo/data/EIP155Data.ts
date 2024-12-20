@@ -1,7 +1,10 @@
+import { AppKitNetwork, arbitrum, base, optimism } from "@reown/appkit/networks";
+
 export interface Network {
   name: string;
   icon: string;
   chainId: number;
+  chain: AppKitNetwork;
 }
 
 export interface Token {
@@ -15,16 +18,19 @@ export const supportedNetworks: Network[] = [
     name: "Arbitrum",
     icon: "/chain-logos/arbitrum.png",
     chainId: 42161,
+    chain:arbitrum
   },
   {
     name: "Base",
     icon: "/chain-logos/base.webp",
     chainId: 8542,
+    chain:base
   },
   {
     name: "Optimism",
     icon: "/chain-logos/eip155-10.png",
     chainId: 10,
+    chain:optimism
   },
 ];
 

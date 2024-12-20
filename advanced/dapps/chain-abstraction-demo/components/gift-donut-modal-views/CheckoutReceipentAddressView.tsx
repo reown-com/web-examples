@@ -48,7 +48,9 @@ function GiftDonutForm({
     const to = recipientAddress as `0x${string}`;
     const token = giftDonutModalManager.getToken();
     const network = giftDonutModalManager.getNetwork();
+    onClose()
     giftDonutAsync(to, donutCount, token, network);
+
   };
   return (
     <div
