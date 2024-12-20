@@ -10,7 +10,7 @@ import { ArrowRight, ChevronRight, X } from "lucide-react";
 import CoinSVG from "../assets/CoinSVG";
 import NetworkSVG from "../assets/NetworkSVG";
 
-function Checkout1View({ onViewChange, onClose }: GiftDonutModalViewProps) {
+function CheckoutView({ onViewChange, onClose }: GiftDonutModalViewProps) {
   return (
     <div>
       <GiftDonutForm onClose={onClose} onViewChange={onViewChange} />
@@ -196,4 +196,4 @@ function GiftDonutForm({
   );
 }
 
-export default Checkout1View;
+export default CheckoutView;

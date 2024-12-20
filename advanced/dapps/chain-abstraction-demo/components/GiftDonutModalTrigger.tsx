@@ -25,7 +25,7 @@ type GiftDonutModalTriggerProps = {
 
 export const GiftDonutModalTrigger: React.FC<GiftDonutModalTriggerProps> = ({
   views = GiftDonutModalViews,
-  initialView = "Checkout1",
+  initialView = "Checkout",
   triggerText = "Gift Donut",
   className,
   variant = "default",

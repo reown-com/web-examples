@@ -5,7 +5,7 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { giftDonutModalManager } from "@/controllers/GiftDonutModalManager";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { Drawer, DrawerContent } from "./ui/drawer";
+import { Drawer, DrawerContent, DrawerTitle } from "./ui/drawer";
 
 const GiftDonutModal: React.FC = () => {
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -47,6 +47,9 @@ const GiftDonutModal: React.FC = () => {
 
   return (
     <Drawer open={state.isOpen}>
+      <VisuallyHidden.Root asChild>
+        <DrawerTitle>Modal Title</DrawerTitle>
+      </VisuallyHidden.Root>
       <DrawerContent aria-describedby={undefined} className="bg-background p-4">
         {CurrentView && (
           <CurrentView onClose={handleClose} onViewChange={handleViewChange} />

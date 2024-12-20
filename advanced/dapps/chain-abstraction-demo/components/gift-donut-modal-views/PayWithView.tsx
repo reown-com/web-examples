@@ -16,7 +16,7 @@ function PayWithkView({ onViewChange, onClose }: GiftDonutModalViewProps) {
     <div className={cn("flex flex-col items-start gap-4 text-primary")}>
       <div className="grid grid-cols-3 items-center w-full">
         <div className="flex justify-start">
-          <Button variant="ghost" onClick={() => onViewChange("Checkout1")}>
+          <Button variant="ghost" onClick={() => onViewChange("Checkout")}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
         </div>

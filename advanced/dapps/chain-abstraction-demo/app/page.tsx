@@ -36,7 +36,7 @@ export default function Home() {
               <div>
                 <GiftDonutModalTrigger
                   triggerText="Gift Donut"
-                  initialView="Checkout1"
+                  initialView="Checkout"
                   className="bg-blue-500 hover:bg-blue-700 text-invert"
                 />
               </div>

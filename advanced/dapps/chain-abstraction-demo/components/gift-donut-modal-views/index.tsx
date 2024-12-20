@@ -1,11 +1,11 @@
-import Checkout1View from "./Checkout1View";
+import CheckoutView from "./CheckoutView";
 import CheckoutReceipentAddressView from "./CheckoutReceipentAddressView";
 import ChooseNetworkView from "./ChooseNetworkView";
 import PayWithkView from "./PayWithView";
 
 // Default Views with clear type annotations
 export const GiftDonutModalViews = {
-  Checkout1: Checkout1View,
+  Checkout: CheckoutView,
   ChooseNetwork: ChooseNetworkView,
   PayWith: PayWithkView,
   CheckoutReceipentAddress: CheckoutReceipentAddressView,
