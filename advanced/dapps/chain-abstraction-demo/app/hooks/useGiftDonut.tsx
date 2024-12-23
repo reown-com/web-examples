@@ -47,6 +47,7 @@ export default function useGiftDonut() {
         functionName: "transfer",
         args: [to, BigInt(tokenAmount)],
       });
+      toast.success(`Transaction sent with hash: ${tx}`);
       return tx;
     } catch (e) {
 
