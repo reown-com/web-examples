@@ -12,7 +12,7 @@ export default function DCA() {
     <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-gray-100 dark:bg-gray-900">
       <div className="w-full max-w-sm text-center mb-12">
         <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-200">
-          Dollor Cost Average
+          Dollar Cost Average
         </h1>
 
         {status === "connected" || address ? (
@@ -21,7 +21,7 @@ export default function DCA() {
           </div>
         ) : (
           <p className="text-lg text-gray-600 dark:text-gray-400 font-bold">
-            Connect wallet to create startegy.
+            Connect wallet to create startegy
           </p>
         )}
 
