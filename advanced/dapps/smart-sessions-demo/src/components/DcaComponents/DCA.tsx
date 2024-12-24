@@ -21,7 +21,7 @@ export default function DCA() {
           </div>
         ) : (
           <p className="text-lg text-gray-600 dark:text-gray-400 font-bold">
-            Connect wallet to create startegy.
+            Connect wallet to create startegy
           </p>
         )}
 
