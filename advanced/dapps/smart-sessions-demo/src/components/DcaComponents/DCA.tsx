@@ -4,6 +4,7 @@ import DCAForm from "@/components/DcaComponents/DCAForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Dashboard from "@/components/DcaComponents/Dashboard";
 import { useAppKitAccount } from "@reown/appkit/react";
+import { Card } from "../ui/card";
 
 export default function DCA() {
   const { status, address } = useAppKitAccount();
@@ -20,9 +21,16 @@ export default function DCA() {
             <w3m-button />
           </div>
         ) : (
-          <p className="text-lg text-gray-600 dark:text-gray-400 font-bold">
-            Connect wallet to create startegy
-          </p>
+          <Card className="p-3 mb-3">
+            <p className=" text-gray-600 dark:text-gray-400 text-sm">
+              Please connect your wallet in order to create a DCA strategy. When
+              connecting, be sure to use Email Wallet with
+              <span className="font-semibold">+smart-sessions</span> in the
+              email. Example:
+              <br />
+              <span className="font-semibold">john+smart-sessions@doe.com</span>
+            </p>
+          </Card>
         )}
 
         <Tabs defaultValue="dca" className="w-[400px]">
