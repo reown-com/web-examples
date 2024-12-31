@@ -53,7 +53,7 @@ export default function ModalFooter({
           auto
           flat
           style={{ color: 'white', backgroundColor: 'grey' }}
-          onPress={onReject}
+          onClick={onReject}
           data-testid="session-reject-button"
           disabled={disableReject || rejectLoader?.active}
         >
@@ -68,7 +68,7 @@ export default function ModalFooter({
           flat
           color={approveButtonColor}
           disabled={disableApprove || approveLoader?.active}
-          onPress={onApprove}
+          onClick={onApprove}
           data-testid="session-approve-button"
         >
           {approveLoader && approveLoader.active ? (
