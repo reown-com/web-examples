@@ -1,13 +1,12 @@
 import { WalletConnectModal } from "@walletconnect/modal";
 import { useEffect, useState, useCallback } from "react";
-import { SAMPLES, SAMPLE_KINDS } from "./utils/samples";
+import { SAMPLES, SAMPLE_KINDS, getBakerAddress } from "./utils/samples";
 import {
   TezosProvider,
   TezosChainDataTestnet,
   TezosGetAccountResponse,
   TezosSendResponse,
   TezosSignResponse,
-  ChainData,
   TezosChainDataMainnet,
 } from "@trili/tezos-provider";
 import { ErrorObject } from "@walletconnect/utils";
@@ -123,7 +122,8 @@ const App = () => {
       } catch (error) {
         console.error("Error connecting to Tezos:", error);
       }
-    }, [provider],
+    },
+    [provider],
   );
 
   // Disconnect from Tezos
@@ -156,9 +156,12 @@ const App = () => {
             break;
           case SAMPLE_KINDS.SIGN: {
             const formattedInput = ` Payload from TezosProvider dapp generated at ${new Date().toISOString()}`;
+            // build payload following https://taquito.io/docs/signing/#generating-a-signature-with-beacon-sdk
             const bytes = stringToBytes(formattedInput);
-            const payload =
-              "05" + "0100" + stringToBytes(bytes.length.toString()) + bytes;
+            const bytesLength = (bytes.length / 2).toString(16);
+            const addPadding = `00000000${bytesLength}`;
+            const paddedBytesLength = addPadding.slice(-8);
+            const payload = "05" + "01" + paddedBytesLength + bytes;
             res = await provider.sign(payload);
             break;
           }
@@ -168,9 +171,10 @@ const App = () => {
             );
             break;
           case SAMPLE_KINDS.SEND_DELEGATION:
-            res = await provider.sendDelegation(
-              SAMPLES[SAMPLE_KINDS.SEND_DELEGATION],
-            );
+            res = await provider.sendDelegation({
+              ...SAMPLES[SAMPLE_KINDS.SEND_DELEGATION],
+              delegate: getBakerAddress(provider?.getChainId()),
+            });
             break;
           case SAMPLE_KINDS.SEND_UNDELEGATION:
             res = await provider.sendUndelegation();
@@ -248,9 +252,15 @@ const App = () => {
     (kind: SAMPLE_KINDS) => {
       switch (kind) {
         case SAMPLE_KINDS.SEND_TRANSACTION:
-        case SAMPLE_KINDS.SEND_DELEGATION:
         case SAMPLE_KINDS.SEND_UNDELEGATION:
           setDescription(SAMPLES[kind]);
+          break;
+        case SAMPLE_KINDS.SEND_DELEGATION:
+          // provider address depends on the chain
+          setDescription({
+            ...SAMPLES[kind],
+            delegate: getBakerAddress(provider?.getChainId()),
+          });
           break;
         case SAMPLE_KINDS.SEND_ORGINATION:
           setDescription(SAMPLES[kind] as unknown as Record<string, unknown>);
@@ -297,6 +307,10 @@ const App = () => {
           <p>
             <b>Public Key: </b>
             {provider?.connection?.address ?? "No account connected"}
+          </p>
+          <p>
+            <b>Chain: </b>
+            {provider?.getChainId() ?? "No chain connected"}
           </p>
           <p>
             <b>Balance: </b>

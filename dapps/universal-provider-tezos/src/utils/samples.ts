@@ -67,9 +67,20 @@ const tezosContractCallOperation: PartialTezosTransactionOperation = {
   parameters: { entrypoint: "default", value: { int: "20" } }, // Add 20 to the current storage value
 };
 
+export const SAMPLE_BAKER_MAINNET = "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve";
+export const SAMPLE_BAKER_TESTNET = "tz3cqThj23Feu55KDynm7Vg81mCMpWDgzQZq";
+
+export const getBakerAddress = (network?: string) => {
+  return network === "tezos:mainnet"
+    ? SAMPLE_BAKER_MAINNET
+    : network === "tezos:ghostnet"
+      ? SAMPLE_BAKER_TESTNET
+      : "[no baker found]";
+};
+
 const tezosDelegationOperation: PartialTezosDelegationOperation = {
   kind: TezosOperationType.DELEGATION,
-  delegate: "tz3ZmB8oWUmi8YZXgeRpgAcPnEMD8VgUa4Ve", // Tezos Foundation Ghost Baker. Cannot delegate to ourself as that would block undelegation
+  delegate: SAMPLE_BAKER_TESTNET,
 };
 
 const tezosUndelegationOperation: PartialTezosDelegationOperation = {
