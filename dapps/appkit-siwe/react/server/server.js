@@ -3,7 +3,7 @@ import express from 'express';
 import Session from 'express-session';
 import { generateNonce } from 'siwe';
 import {
-  verifySignature,
+  /* verifySignature, */
   getAddressFromMessage,
   getChainIdFromMessage,
 } from '@reown/appkit-siwe'
