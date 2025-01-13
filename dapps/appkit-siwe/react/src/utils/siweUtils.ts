@@ -107,7 +107,7 @@ export const createSIWE = (chains: [AppKitNetwork, ...AppKitNetwork[]]) => {
               domain: window.location.host,
               uri: window.location.origin, 
               chains: chains.map((chain: AppKitNetwork) => parseInt(chain.id.toString())),
-              statement: 'Welcome to the dApp!\nPlease sign this message',
+              statement: 'Welcome to the dApp! Please sign this message',
             }),
         createMessage: ({ address, ...args }: SIWECreateMessageArgs) => {
           // normalize the address in case you are not using our library in the backend

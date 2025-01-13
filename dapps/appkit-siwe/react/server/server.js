@@ -3,15 +3,16 @@ import express from 'express';
 import Session from 'express-session';
 import { generateNonce } from 'siwe';
 import {
-  verifySignature,
+  /* verifySignature, */
   getAddressFromMessage,
   getChainIdFromMessage,
 } from '@reown/appkit-siwe'
+import { createPublicClient, http } from 'viem'
 
 
 // get env variables
 import dotenv from 'dotenv';
-
+dotenv.config();
 // get Project ID
 const projectId = process.env.PROJECT_ID;
 
@@ -49,13 +50,29 @@ app.post('/verify', async (req, res) => {
       const address = getAddressFromMessage(message);
       let chainId = getChainIdFromMessage(message);
       
-      const isValid = await verifySignature({
+
+// for the moment, the verifySignature is not working with social logins and emails  with non deployed smart accounts    
+/*       const isValid = await verifySignature({
         address,
         message,
         signature: req.body.signature,
         chainId,
         projectId,
+      }); */
+ // we are going to use https://viem.sh/docs/actions/public/verifyMessage.html   
+      const publicClient = createPublicClient(
+        {
+          transport: http(
+            `https://rpc.walletconnect.org/v1/?chainId=${chainId}&projectId=${projectId}`
+          )
+        }
+      );
+      const isValid = await publicClient.verifyMessage({
+        message,
+        address,
+        signature: req.body.signature
       });
+// end o view verifyMessage      
 
       if (!isValid) {
         // throw an error if the signature is invalid
