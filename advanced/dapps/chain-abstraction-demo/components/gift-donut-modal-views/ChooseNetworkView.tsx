@@ -10,8 +10,9 @@ import {
   GiftDonutModalViewProps,
 } from "@/controllers/GiftDonutModalManager";
 import { Button } from "../ui/button";
-import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
+import { useAppKitNetwork } from "@reown/appkit/react";
 import { toast } from "sonner";
+import { getSupportedNetworks } from "@/consts/tokens";
 
 function ChooseNetworkView({ onViewChange, onClose }: GiftDonutModalViewProps) {
   return (
@@ -38,32 +39,39 @@ function ChooseNetworkView({ onViewChange, onClose }: GiftDonutModalViewProps) {
 
 function NetworkList({ className }: React.ComponentProps<"form">) {
   const selectedNetwork = giftDonutModalManager.getNetwork();
+  const selectedToken = giftDonutModalManager.getToken();
+  const tokenSupportedNetworks = getSupportedNetworks(selectedToken.name);
+
   const { switchNetwork, caipNetwork } = useAppKitNetwork();
   const [network, setNetwork] = React.useState<Network | undefined>(
-    selectedNetwork,
+    selectedNetwork
   );
 
   const setSelectedNetwork = (network: Network) => {
     setNetwork(network);
     giftDonutModalManager.setNetwork(network);
-    if(caipNetwork?.id !== network.chainId){
+    if (caipNetwork?.id !== network.chainId) {
       switchNetwork(network.chain);
-      toast.info("Switching Network from " + caipNetwork?.name + " to " + network.name,)
+      toast.info(
+        "Switching Network from " + caipNetwork?.name + " to " + network.name
+      );
     }
   };
 
   return (
     <div className={cn("flex flex-col items-start gap-4", className)}>
-      {supportedNetworks.map((networkItem, index) => (
-        <div key={index} className="flex items-center flex-col gap-4 w-full">
-          <NetworkItem
-            network={networkItem}
-            selected={network?.chainId === networkItem.chainId}
-            onClick={() => setSelectedNetwork(networkItem)}
-          />
-          {supportedNetworks.length - 1 !== index && <Separator />}
-        </div>
-      ))}
+      {supportedNetworks
+        .filter((network) => tokenSupportedNetworks.includes(network.chainId))
+        .map((networkItem, index) => (
+          <div key={index} className="flex items-center flex-col gap-4 w-full">
+            <NetworkItem
+              network={networkItem}
+              selected={network?.chainId === networkItem.chainId}
+              onClick={() => setSelectedNetwork(networkItem)}
+            />
+            {supportedNetworks.length - 1 !== index && <Separator />}
+          </div>
+        ))}
     </div>
   );
 }
