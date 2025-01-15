@@ -15,3 +15,12 @@ export const tokenAddresses: Record<string, Record<string, Hex>> = {
   USDC: usdcTokenAddresses,
   USDT: usdtTokenAddresses
 };
+
+export const getSupportedNetworks = (token: string): number[] => {
+  const tokenNetworks = tokenAddresses[token];
+  if (!tokenNetworks) {
+    throw new Error(`Token ${token} not found`);
+  }
+
+  return Object.keys(tokenNetworks).map(Number);
+};
