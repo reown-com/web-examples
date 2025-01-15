@@ -1,4 +1,4 @@
-import { IChatMessage } from '@/types/ui/types';
+import { IChatMessage } from '@/types/chat/types';
 import React from 'react';
 
 interface ChatMessageProps {

@@ -1,4 +1,4 @@
-import { IChatMessage } from "@/types/ui/types";
+import { IChatMessage } from "@/types/chat/types";
 import { ScrollArea } from "../ui/scroll-area";
 import { ChatMessage } from "./ChatMessage";
 

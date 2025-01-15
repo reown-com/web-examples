@@ -1,34 +1,59 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai'
-import { Address } from 'viem';
-import { performTokenSwap, SwapParams } from '@/lib/services/swap'
+import OpenAI from 'openai';
+import { Address, parseEther } from 'viem';
+import { performTokenSwap, SwapParams } from '@/lib/services/swap';
+import { MessageWithContext } from '@/types/chat/types';
 
-interface ChatGPTResponse{
+interface ChatGPTResponse {
   role: string;
   content: string;
 }
 
 type ExpectedResponse = {
-  intent: "NOT_SWAP"| "SWAP";
+  intent: "NOT_SWAP" | "SWAP";
   responseText?: string;
 }
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { text } = body;
+    const body: MessageWithContext = await request.json();
+    const { currentMessage, messageHistory, permissions } = body;
 
-    const chatgptResponse = await getOpenAIResponse(text)
+    // Format chat history for OpenAI context
+    const chatHistory: {
+      role: 'system'|'user';
+      content: string;
+    }[] = messageHistory.map(msg => ({
+      role: msg.sender === 'user' ? 'user' : 'system',
+      content: msg.text
+    }));
+
+    const chatgptResponse = await getOpenAIResponse(currentMessage, chatHistory);
     const expectedResponse: ExpectedResponse = JSON.parse(chatgptResponse.content);
-    if(expectedResponse.intent === "SWAP"){
+
+    if (expectedResponse.intent === "SWAP") {
       console.log('SWAP detected');
-      console.log(expectedResponse);
-      await handleSwapAction();
+      
+      const amount = parseEther('0.00005')
+
+      const swapParams: SwapParams = {
+        src: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',  // ETH
+        dst: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',  // USDC
+        amount: amount.toString(10),
+        from: permissions.address,
+        slippage: 1,
+        disableEstimate: false,
+        allowPartialFill: false
+      };
+
+      await handleSwapAction(swapParams);
+      
       return NextResponse.json({
-        message: "Executing swap...",
+        message: `Executing swap of '0.00005' ETH to USDC...`,
         status: 'success'
       });
     }
-    console.log(expectedResponse);
+
     return NextResponse.json({
       message: expectedResponse.responseText || "I'm sorry, I didn't understand that.",
       status: 'success'
@@ -42,96 +67,89 @@ export async function POST(request: Request) {
   }
 }
 
- 
-const getOpenAIResponse = async (message:string):Promise<ChatGPTResponse> => {
+const getOpenAIResponse = async (
+  currentMessage: string, 
+  chatHistory: { role: 'system'|'user'; content: string; }[]
+): Promise<ChatGPTResponse> => {
   const openai = new OpenAI({
-    apiKey:process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY,
   });
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-          { role: "system", content:  `You are an AI assistant specialized in processing chat messages for a Web3 application.
-            Your primary functions are:
-            1. Identify SWAP intents in user messages
-            2. Provide helpful responses for non-SWAP queries
-            3. Extract relevant transaction parameters when SWAP intent is detected
-            
-            RESPONSE FORMAT REQUIREMENTS:
-            You must always respond with a JSON object following these exact structures:
-            
-            For SWAP intents:
-            {
-                "intent": "SWAP",
-                "swapParameters": {
-                    "tokenIn": string,    // Input token symbol (e.g., "ETH", "USDT")
-                    "tokenOut": string,   // Output token symbol
-                    "amount": string      // Amount to swap as string
-                }
-            }
-            
-            For non-SWAP intents:
-            {
-                "intent": "NOT_SWAP",
-                "responseText": string    // Your helpful response as text
-            }
-            
-            Examples of valid responses:
-            
-            SWAP Example:
-            {
-                "intent": "SWAP",
-                "swapParameters": {
-                    "tokenIn": "ETH",
-                    "tokenOut": "USDT",
-                    "amount": "1.5"
-                }
-            }
-            
-            Non-SWAP Example:
-            {
-                "intent": "NOT_SWAP",
-                "responseText": "The current gas fees depend on network congestion. Would you like me to explain how gas fees work?"
-            }
-            
-            IMPORTANT:
-            - Always return valid JSON
-            - Never include additional fields
-            - Never include explanatory text outside the JSON structure
-            - For SWAP intents, always include all required swapParameters fields
-            - Amounts should always be strings to preserve precision
-            - Token symbols should be standardized uppercase strings` },
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { 
+        role: "system", 
+        content: `You are an AI assistant specialized in processing chat messages for a Web3 application.
+          Your primary function is to identify ETH to USDC swap requests and provide helpful responses for other queries.
+          
+          RESPONSE FORMAT REQUIREMENTS:
+          You must always respond with a JSON object following these exact structures:
+          
+          For SWAP intents:
           {
-              role: "user",
-              content: message,
-          },
-      ],
+              "intent": "SWAP",
+          }
+          
+          For non-SWAP intents:
+          {
+              "intent": "NOT_SWAP",
+              "responseText": string    // Your helpful response as text
+          }
+          
+          IMPORTANT:
+          - Always return valid JSON
+          - Never include additional fields
+          - Never include explanatory text outside the JSON structure
+          - Only process ETH to USDC swap requests
+          - For any other token swap requests, respond with helpful message explaining only ETH to USDC swaps are supported
+          
+          Example valid responses:
+          
+          For "I want to swap ETH to USDC":
+          {
+              "intent": "SWAP"
+          }
+          
+          For "What's the gas fee?":
+          {
+              "intent": "NOT_SWAP",
+              "responseText": "Gas fees vary depending on network congestion. Would you like me to explain how gas fees work?"
+          }
+          
+          For "I want to swap USDT to DAI":
+          {
+              "intent": "NOT_SWAP",
+              "responseText": "I apologize, but currently I can only help with swapping ETH to USDC. Would you like to swap ETH to USDC instead?"
+          }
+          
+          Consider the chat history provided for context in your responses.`
+      },
+      ...chatHistory,
+      {
+        role: "user",
+        content: currentMessage,
+      },
+    ],
   });
 
   return completion.choices[0].message as ChatGPTResponse;
 }
 
-const handleSwapAction = async () => {
-  console.info('>> Starting Swap Demo')
+const handleSwapAction = async (swapParams: SwapParams) => {
+  console.info('>> Starting Swap');
+  console.log({ swapParams });
 
-const privateKey = process.env.FUNDER_PRIVATE_KEY as Address
+  const privateKey = process.env.FUNDER_PRIVATE_KEY as Address;
 
-const swapParams: SwapParams = {
-  src: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',  // ETH token
-  dst: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC token
-  amount: '400000000000000',  // 0.0004 ETH
-  from: '0xc3cE257B5e2A2ad92747dd486B38d7b4B36Ac7C9',
-  slippage: 1,
-  disableEstimate: false,
-  allowPartialFill: false
+  try {
+    const result = await performTokenSwap(swapParams, privateKey);
+    console.log('Swap completed:', result);
+    return result;
+  } catch (error) {
+    console.error('Swap failed:', error);
+    throw error;
+  } finally {
+    console.info('>> Done');
+  }
 };
-  console.log({swapParams})
-try {
-  const result = await performTokenSwap(swapParams, privateKey);
-  console.log('Swap completed:', result);
-} catch (error) {
-  console.error('Swap failed:', error);
-}
-
-console.info('>> Done')
-}
