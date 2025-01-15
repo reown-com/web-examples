@@ -40,9 +40,9 @@ export const supportedTokens: Token[] = [
     icon: "/token-images/USDC.png",
     address: "0x1",
   },
-  // {
-  //   name: "USDT",
-  //   icon: "/token-images/USDT.png",
-  //   address: "0x2",
-  // },
+  {
+    name: "USDT",
+    icon: "/token-images/USDT.png",
+    address: "0x2",
+  },
 ];
