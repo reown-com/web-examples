@@ -8,7 +8,7 @@ export const usdcTokenAddresses: Record<number, Hex> = {
 export const usdtTokenAddresses: Record<number, Hex> = {
   42161: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", // Arbitrum
   10: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", // Optimism
-  8453: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2", // Base
+  // 8453: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2", // Base - No liqiduty
 };
 
 export const tokenAddresses: Record<string, Record<string, Hex>> = {
