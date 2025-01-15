@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai'
+import { Address } from 'viem';
+import { performTokenSwap, SwapParams } from '@/lib/services/swap'
 
 interface ChatGPTResponse{
   role: string;
@@ -17,6 +19,15 @@ export async function POST(request: Request) {
 
     const chatgptResponse = await getOpenAIResponse(text)
     const expectedResponse: ExpectedResponse = JSON.parse(chatgptResponse.content);
+    if(expectedResponse.intent === "SWAP"){
+      console.log('SWAP detected');
+      console.log(expectedResponse);
+      await handleSwapAction();
+      return NextResponse.json({
+        message: "Executing swap...",
+        status: 'success'
+      });
+    }
     console.log(expectedResponse);
     return NextResponse.json({
       message: expectedResponse.responseText || "I'm sorry, I didn't understand that.",
@@ -98,4 +109,29 @@ const getOpenAIResponse = async (message:string):Promise<ChatGPTResponse> => {
   });
 
   return completion.choices[0].message as ChatGPTResponse;
+}
+
+const handleSwapAction = async () => {
+  console.info('>> Starting Swap Demo')
+
+const privateKey = process.env.FUNDER_PRIVATE_KEY as Address
+
+const swapParams: SwapParams = {
+  src: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',  // ETH token
+  dst: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', // USDC token
+  amount: '400000000000000',  // 0.0004 ETH
+  from: '0xc3cE257B5e2A2ad92747dd486B38d7b4B36Ac7C9',
+  slippage: 1,
+  disableEstimate: false,
+  allowPartialFill: false
+};
+  console.log({swapParams})
+try {
+  const result = await performTokenSwap(swapParams, privateKey);
+  console.log('Swap completed:', result);
+} catch (error) {
+  console.error('Swap failed:', error);
+}
+
+console.info('>> Done')
 }
