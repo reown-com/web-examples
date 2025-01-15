@@ -5,7 +5,7 @@ import { getRequiredPermissions } from '@/utils/ChatSmartSessionsPermissionsUtil
 import { PERMISSIONS_STORAGE_KEY, STORAGE_KEY } from '@/utils/ChatContants';
 import { chatReducer, initialState } from '@/reducers/chatReducer';
 import { ChatContextType, MessageWithContext } from '@/types/chat/types';
-import { sendMessageToApi } from '@/lib/chatApi';
+import { sendChatMessageToApi } from '@/lib/chatApi';
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
@@ -68,7 +68,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       dispatch({ type: 'SET_LOADING', payload: true });
       
-      const userMessage = createMessage(text, 'user');
+      const userMessage = createMessage(text, 'user', 'text');
       dispatch({ type: 'ADD_MESSAGE', payload: userMessage });
 
       const messageWithContext: MessageWithContext = {
@@ -77,17 +77,17 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         permissions: grantedPermissions,
       };
 
-      const data = await sendMessageToApi(messageWithContext);
+      const data = await sendChatMessageToApi(messageWithContext);
       
-      const botResponse = createMessage(data.message, 'bot');
+      const botResponse = createMessage(data.message, 'bot', 'text');
       dispatch({ type: 'ADD_MESSAGE', payload: botResponse });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
-      console.error('Error sending message:', error);
+      const errorMessage = createMessage(
+        `Error: ${error instanceof Error ? error.message : 'Some error occurred'}`,
+        'bot',
+        'error'
+      );
+      dispatch({ type: 'ADD_MESSAGE', payload: errorMessage });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }

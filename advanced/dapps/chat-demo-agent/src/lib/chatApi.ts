@@ -1,17 +1,25 @@
 import { MessageWithContext } from "@/types/chat/types";
 
-export const sendMessageToApi = async (messageWithContext: MessageWithContext): Promise<{ message: string }> => {
-  const response = await fetch('/api/send-message', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(messageWithContext),
-  });
+export const sendChatMessageToApi = async (messageWithContext: MessageWithContext): Promise<{ message: string }> => {
+  try {
+    const API_URL = '/api/send-message';
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(messageWithContext),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to get response from server');
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage = errorData.error || `Failed to get response from server: ${response.status}`;
+        throw new Error(errorMessage);
+      }
+  
+      const data = await response.json();
+      return { message: data.message };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to send message:Unknown error');
+    }
   }
-
-  return response.json();
-};

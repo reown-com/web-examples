@@ -10,11 +10,12 @@ export const getLastMessage = (messages: IChatMessage[]) => {
   return messages[messages.length - 1];
 };
 
-export const createMessage = (text: string, sender: 'user' | 'bot'): IChatMessage => {
+export const createMessage = (text: string, sender: 'user' | 'bot', type: 'text'|'error'): IChatMessage => {
   return {
     id: uuidv4(),
     text,
     sender,
     timestamp: new Date(),
+    type
   };
 };

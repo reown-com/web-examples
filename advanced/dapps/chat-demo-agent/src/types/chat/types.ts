@@ -5,6 +5,7 @@ export interface IChatMessage {
   text: string;
   sender: 'user' | 'bot';
   timestamp: Date;
+  type: 'text' | 'error' 
 }
 
 export interface ChatState {
