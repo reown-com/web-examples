@@ -1,48 +1,78 @@
 import React from 'react';
-import Header from '@/components/chat-components/Header';
-import MessagesArea from '@/components/chat-components/MessageArea';
-import MessageInput from '@/components/chat-components/MessageInput';
-import Sidebar from '@/components/chat-components/Sidebar';
-import { useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react';
+import { Button } from "@/components/ui/button";
+import { useAppKit, useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react';
 import { useChat } from '@/hooks/use-chat';
+import MessagesArea from './MessageArea';
+import Header from './Header';
+import MessageInput from './MessageInput';
 
-const ChatInterface: React.FC = () => {
+// Connection Screen Component
+const ConnectionScreen = ({ onConnect }: { onConnect: () => void }) => (
+  <div className="h-screen flex flex-col items-center justify-center bg-zinc-900 gap-4 p-4">
+    <h1 className="text-2xl font-bold text-white mb-4">
+      Welcome to Smart-Session x AI Agent
+    </h1>
+    <p className="text-white mb-4 text-center max-w-md">
+      Please connect your wallet in order to grant agent spend ETH on your behalf. 
+      When connecting, be sure to use Email Wallet with +smart-sessions in the email. 
+      Example: john+smart-sessions@doe.com
+    </p>
+    <Button 
+      onClick={onConnect}
+      className="bg-[rgb(0,136,71)] text-white hover:bg-[rgb(0,136,71)]/90"
+    >
+      Connect Wallet
+    </Button>
+  </div>
+);
+
+
+
+const ChatInterface = () => {
   const { state, startChat, sendMessage } = useChat();
-  const { address } = useAppKitAccount();
+  const { address, isConnected } = useAppKitAccount();
   const { chainId } = useAppKitNetwork();
-  const { messages, isChatStarted, isLoading } = state;
+  const { open } = useAppKit();
+  const { messages, isLoading } = state;
+  const {grantedPermissions} = state
+  const permissionAddress = grantedPermissions?.address;
   
-  if (!chainId || !address) {
+  // First check if there's a granted permissions address
+  // If yes, show chat screen regardless of other conditions
+  if (permissionAddress) {
     return (
-      <div className="h-screen flex items-center justify-center text-white text-lg">
-        Check your wallet connection
+      <div className="h-screen flex bg-zinc-900">
+        <div className="flex-1 flex flex-col">
+          <Header  />
+          <MessagesArea messages={messages} isLoading={isLoading} />
+          <MessageInput 
+            onSubmit={sendMessage}
+            isLoading={isLoading}
+          />
+        </div>
       </div>
     );
   }
 
+  // If no permissions granted, check wallet connection
+  if (!address || !isConnected ) {
+    return <ConnectionScreen onConnect={() => open({ view: "Connect" })} />;
+  }
+
+  // Wallet is connected but no permissions granted yet
   return (
-    <div className="relative h-screen">
-      <div className={`${!isChatStarted ? 'opacity-70 blur-sm' : ''} transition-all duration-300`}>
-        <div className="flex h-screen bg-black">
-          <Sidebar />
-          <div className="flex-1 flex flex-col">
-            <Header />
-            <MessagesArea messages={messages} isLoading={isLoading} />
-            <MessageInput onSendMessage={sendMessage} isLoading={isLoading} />
-          </div>
+    <div className="h-screen flex bg-zinc-900">
+      <div className="flex-1 flex flex-col">
+        <Header  />
+        <div className="h-full flex items-center justify-center">
+          <Button 
+            onClick={() => startChat(Number(chainId), address as `0x${string}`)}
+            className="bg-[rgb(0,136,71)] text-white hover:bg-[rgb(0,136,71)]/90"
+          >
+            Start New Chat
+          </Button>
         </div>
       </div>
-
-      {!isChatStarted && (
-        <div className="absolute inset-0 flex items-center justify-center bg-transparent">
-          <button 
-            onClick={() => startChat(Number(chainId), address as `0x${string}`)}
-            className="bg-[rgb(0,136,71)] hover:bg-[rgb(0,156,91)] text-white font-bold py-4 px-8 rounded-lg transition-colors duration-200"
-          >
-            Start Chat
-          </button>
-        </div>
-      )}
     </div>
   );
 };

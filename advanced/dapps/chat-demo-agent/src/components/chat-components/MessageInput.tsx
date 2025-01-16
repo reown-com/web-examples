@@ -1,27 +1,31 @@
-import { useState } from "react";
-import { Input } from "../ui/input";
+import { FormEvent, useState } from "react";
 import { Button } from "../ui/button";
 import { Send } from "lucide-react";
+interface MessageInputProps {
+  onSubmit: (message: string) => void;
+  isLoading: boolean;
+}
 
-const MessageInput: React.FC<{ onSendMessage: (text: string) => void; isLoading: boolean }> = ({ onSendMessage, isLoading }) => {
-  const [messageText, setMessageText] = useState('');
+const MessageInput = ({ onSubmit, isLoading }: MessageInputProps) => {
+  const [inputMessage, setInputMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (messageText.trim() && !isLoading) {
-      onSendMessage(messageText);
-      setMessageText('');
+    if (inputMessage.trim()) {
+      onSubmit(inputMessage);
+      setInputMessage('');
     }
   };
 
   return (
-    <div className="p-4 border-t border-zinc-800">
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <Input
-          value={messageText}
-          onChange={(e) => setMessageText(e.target.value)}
+    <form onSubmit={handleSubmit} className="p-4 border-t border-zinc-700">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={inputMessage}
+          onChange={(e) => setInputMessage(e.target.value)}
           placeholder="Type your message..."
-          className="flex-1 bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400"
+          className="flex-1 bg-zinc-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[rgb(0,136,71)]"
           disabled={isLoading}
         />
         <Button
@@ -31,8 +35,8 @@ const MessageInput: React.FC<{ onSendMessage: (text: string) => void; isLoading:
         >
           {isLoading ? '...' : <Send className="h-4 w-4" />}
         </Button>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 };
 
