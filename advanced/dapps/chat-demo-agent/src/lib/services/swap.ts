@@ -1,144 +1,74 @@
-import { createWalletClient, http } from 'viem';
-import { base } from 'viem/chains';
+import { parseEther } from 'viem';
+import { executeActionsWithECDSAKey } from '@/utils/ERC7715PermissionsAsyncUtils';
+import { SmartSessionGrantPermissionsResponse } from '@reown/appkit-experimental/smart-session';
+import { SWAP_CONFIG } from '@/config/constants';
+import { ChainUtil } from '@/utils/ChainUtil';
+import { SwapResponse } from '@/types/api';
+import { OneInchApiService } from './1inch';
+import type { SwapParams } from '@/types/1inch';
+import { ApiError, SwapError } from '@/errors/api-errors';
 
-export interface SwapParams {
-  src: `0x${string}`;
-  dst: `0x${string}`;
-  amount: string;
-  from: `0x${string}`;
-  slippage: number;
-  disableEstimate?: boolean;
-  allowPartialFill?: boolean;
-}
+export class SwapService {
+  private static async prepareSwapTransaction(swapParams: SwapParams) {
+    const oneInchApi = OneInchApiService.getInstance();
+    
+    try {
+      // Uncomment to add allowance checking if needed
+      // const allowance = await oneInchApi.checkAllowance(swapParams.src, swapParams.from);
+      // if (BigInt(allowance) < BigInt(swapParams.amount)) {
+      //   await oneInchApi.buildApprovalTransaction(swapParams.src);
+      // }
 
-interface AllowanceResponse {
-  allowance: string;
-}
-
-interface ApprovalTransaction {
-  from: `0x${string}`;
-  to: `0x${string}`;
-  data: `0x${string}`;
-  value: bigint;
-  gas: bigint;
-}
-
-interface SwapTransactionResponse {
-  tx: {
-    from: `0x${string}`;
-    to: `0x${string}`;
-    data: `0x${string}`;
-    value: string;
-    gas: number;
-    gasPrice:string
-  };
-}
-
-class ApiError extends Error {
-  constructor(message: string, public status: number, public path: string) {
-    super(message);
-    this.name = 'ApiError';
-    Object.setPrototypeOf(this, new.target.prototype);
-  }
-}
-
-class SwapError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
-    super(message);
-    this.name = 'SwapError';
-    Object.setPrototypeOf(this, new.target.prototype);
-  }
-}
-
-const CHAIN_ID = base.id;
-
-const client = createWalletClient({
-  chain: base,
-  transport: http(),
-});
-
-async function callApi<T>(path: string, params: Record<string, string> = {}): Promise<T> {
-  const queryParams = new URLSearchParams(params);
-  const apiPath = `https://api.1inch.dev/swap/v6.0/${CHAIN_ID}${path}`;
-  const API_KEY = process.env.ONEINCH_API_KEY;
-
-  if (!API_KEY) {
-    throw new ApiError('API Key not configured', 500, path);
+      return await oneInchApi.buildSwapTransaction(swapParams);
+    } catch (error) {
+      if (error instanceof SwapError || error instanceof ApiError) {
+        throw error;
+      }
+      throw new SwapError('Unexpected error occurred during swap preparation', error);
+    }
   }
 
-  const url = queryParams.toString() ? `${apiPath}?${queryParams}` : apiPath;
+  static async executeSwap(
+    permissions: SmartSessionGrantPermissionsResponse
+  ): Promise<SwapResponse> {
+    const amount = parseEther(SWAP_CONFIG.AMOUNT_ETH);
+    
+    const swapParams: SwapParams = {
+      src: SWAP_CONFIG.ETH_ADDRESS,
+      dst: SWAP_CONFIG.USDC_ADDRESS,
+      amount: amount.toString(10),
+      from: permissions.address,
+      slippage: SWAP_CONFIG.DEFAULT_SLIPPAGE,
+      disableEstimate: false,
+      allowPartialFill: false
+    };
 
-  try {
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-        Accept: 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorMessage = await response.text().catch(() => response.statusText);
-      throw new ApiError(errorMessage, response.status, path);
+    const chain = ChainUtil.getValidatedChain(permissions.chainId);
+    const privateKey = process.env.APPLICATION_PRIVATE_KEY as `0x${string}`;
+    
+    if (!privateKey) {
+      throw new Error('APPLICATION_PRIVATE_KEY is not set');
     }
 
-    return await response.json();
-  } catch (error) {
-    if (error instanceof ApiError) throw error;
-    throw new ApiError('Failed to fetch data from API', 500, path);
-  }
-}
+    const swapTransaction = await this.prepareSwapTransaction(swapParams);
+    const calls = [{
+      to: swapTransaction.tx.to,
+      data: swapTransaction.tx.data,
+      value: BigInt(swapTransaction.tx.value),
+    }];
 
-export async function checkAllowance(tokenAddress: string, walletAddress: string): Promise<string> {
-  try {
-    const data = await callApi<AllowanceResponse>('/approve/allowance', { tokenAddress, walletAddress });
-    return data.allowance;
-  } catch (error) {
-    throw new SwapError(`Failed to check allowance for token ${tokenAddress}`, error);
-  }
-}
-
-export async function buildApprovalTransaction(tokenAddress: string, amount?: string): Promise<ApprovalTransaction> {
-  try {
-    const params: Record<string, string> = { tokenAddress, ...(amount && { amount }) };
-    const transaction = await callApi<ApprovalTransaction>('/approve/transaction', params);
-
-    const gasEstimate = await client.prepareTransactionRequest({
-      ...transaction,
-      account: transaction.from,
+    const userOpHash = await executeActionsWithECDSAKey({
+      actions: calls,
+      ecdsaPrivateKey: privateKey,
+      chain,
+      accountAddress: swapParams.from,
+      permissionsContext: permissions.context
     });
 
     return {
-      ...transaction,
-      gas: gasEstimate.gas ?? BigInt(0),
+      message: `Successfully swapped ${SWAP_CONFIG.AMOUNT_ETH} ETH to USDC`,
+      status: 'success',
+      userOpHash
     };
-  } catch (error) {
-    throw new SwapError(`Failed to build approval transaction for token ${tokenAddress}`, error);
-  }
-}
-
-export async function buildSwapTransaction(swapParams: SwapParams): Promise<SwapTransactionResponse> {
-  try {
-    const data = await callApi<SwapTransactionResponse>('/swap', swapParams as unknown as Record<string, string>);
-    return data;
-  } catch (error) {
-    throw new SwapError('Failed to build swap transaction', error);
-  }
-}
-
-export async function getSwapTransaction(swapParams: SwapParams): Promise<SwapTransactionResponse> {
-  try {
-    // Optional: Check allowance if required before swap
-    // const allowance = await checkAllowance(swapParams.src, swapParams.from);
-    // if (BigInt(allowance) < BigInt(swapParams.amount)) {
-    //   await buildApprovalTransaction(swapParams.src);
-    // }
-
-    const swapTx = await buildSwapTransaction(swapParams);
-    return swapTx;
-  } catch (error) {
-    if (error instanceof SwapError || error instanceof ApiError) {
-      throw error;
-    }
-    throw new SwapError('Unexpected error occurred during the swap', error);
   }
 }

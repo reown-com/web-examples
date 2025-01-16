@@ -29,8 +29,8 @@ export const ConstantsUtil = {
   SigningFailedToastTitle: "Signing Failed",
   TestIdSiweAuthenticationStatus: "w3m-authentication-status",
   Metadata: {
-    name: "AppKit Lab",
-    description: "Laboratory environment for AppKit testing",
+    name: "Demo Agent",
+    description: "Smart Sessions x Demo AI Agent demo app",
     url: getPublicUrl(),
     icons: [`${getPublicUrl()}/metadata-icon.svg`],
     verifyUrl: "",
@@ -77,16 +77,3 @@ export const ConstantsUtil = {
   ],
   ProjectId: projectId,
 };
-
-export function getBundlerUrl(): string {
-  const localBundlerUrl = process.env["NEXT_PUBLIC_LOCAL_BUNDLER_URL"];
-  if (localBundlerUrl) {
-    return localBundlerUrl;
-  }
-  const apiKey = process.env["NEXT_PUBLIC_PIMLICO_KEY"];
-  if (!apiKey) {
-    throw new Error("env NEXT_PUBLIC_PIMLICO_KEY missing.");
-  }
-
-  return `https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${apiKey}`;
-}

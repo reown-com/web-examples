@@ -3,7 +3,7 @@ import { Clock, LogOut, Trash2, XCircle } from 'lucide-react';
 import { useChat } from '@/hooks/use-chat';
 import { Button } from '../ui/button';
 import { useAppKit, useAppKitAccount, useDisconnect } from '@reown/appkit/react';
-import { getChain } from '@/utils/CommonUtils';
+import {ChainUtil} from '@/utils/ChainUtil';
 import { formatDistanceToNow } from 'date-fns';
 
 const Header: React.FC<object> = () => {
@@ -20,7 +20,7 @@ const Header: React.FC<object> = () => {
 
     try {
       const parsedChainId = parseInt(grantedPermissions.chainId, 16);
-      const chain = getChain(parsedChainId);
+      const chain = ChainUtil.getChain(parsedChainId);
       setChainName(chain?.name || 'Unknown Network');
 
       const updateTimeLeft = () => {

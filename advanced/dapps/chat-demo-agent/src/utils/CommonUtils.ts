@@ -1,5 +1,3 @@
-import * as viemChains from 'viem/chains'
-
 export function parseJSON(str: string) {
   try {
     return JSON.parse(str);
@@ -15,11 +13,5 @@ export function bigIntReplacer(_key: string, value: any) {
   }
 
   return value;
-}
-
-export function getChain(id: number) {
-  const chains = Object.values(viemChains) as viemChains.Chain[]
-
-  return chains.find(x => x.id === id)
 }
 
