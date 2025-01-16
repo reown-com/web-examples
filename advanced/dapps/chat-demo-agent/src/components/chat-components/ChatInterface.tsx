@@ -13,7 +13,7 @@ const ConnectionScreen = ({ onConnect }: { onConnect: () => void }) => (
       Welcome to Smart-Session x AI Agent
     </h1>
     <p className="text-white mb-4 text-center max-w-md">
-      Please connect your wallet in order to grant agent spend ETH on your behalf. 
+      Please connect your wallet in order to grant agent permissions to spend ETH on your behalf. 
       When connecting, be sure to use Email Wallet with +smart-sessions in the email. 
       Example: john+smart-sessions@doe.com
     </p>
