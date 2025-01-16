@@ -41,7 +41,7 @@ async function handlePost(request: Request) {
 
   } catch (error) {
     console.error('API Error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorMessage = 'Internal error occurred';
     
     return NextResponse.json(
       { 

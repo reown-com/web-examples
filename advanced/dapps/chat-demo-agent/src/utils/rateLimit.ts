@@ -1,12 +1,7 @@
-// utils/rateLimit.ts
 import { NextResponse } from 'next/server';
 import { sign, verify } from 'jsonwebtoken';
 
-// Load environment variables with validation
 const JWT_SECRET = process.env.RATE_LIMIT_JWT_SECRET;
-
-
-// Configuration with environment variable fallbacks
 const WINDOW_SIZE_IN_MINUTES = parseInt(process.env.RATE_LIMIT_WINDOW_MINUTES || '60', 10);
 const MAX_REQUESTS_PER_WINDOW = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '15', 10);
 
@@ -27,45 +22,78 @@ class RateLimiter {
     if (!JWT_SECRET) {
       throw new Error('RATE_LIMIT_JWT_SECRET environment variable is not set');
     }
+    
+    const remaining = Math.max(0, MAX_REQUESTS_PER_WINDOW - tokenPayload.requestCount);
+    
+    console.log('[Rate Limit] Generating headers:', {
+      requestCount: tokenPayload.requestCount,
+      remaining,
+      windowStart: new Date(tokenPayload.windowStart).toISOString(),
+      resetTime: resetTime.toISOString()
+    });
+    
     return {
       token: sign(tokenPayload, JWT_SECRET, { expiresIn: `${WINDOW_SIZE_IN_MINUTES}m` }),
-      remaining: MAX_REQUESTS_PER_WINDOW - tokenPayload.requestCount,
+      remaining: remaining,
       reset: resetTime.toISOString()
     };
   }
 
-  public static createNewWindow(): TokenPayload {
-    return {
-      requestCount: 1,
-      windowStart: Date.now()
-    };
-  }
-
-  public static async validateToken(token: string | null): Promise<TokenPayload> {
+  public static async validateToken(token: string | null): Promise<TokenPayload | null> {
+    console.log('[Rate Limit] Validating token:', token ? 'Token present' : 'No token');
+    
     if (!token) {
-      return this.createNewWindow();
+      console.log('[Rate Limit] No token provided');
+      return null;
     }
 
     try {
       if (!JWT_SECRET) {
         throw new Error('JWT_SECRET is not defined');
       }
+      
       const payload = verify(token, JWT_SECRET) as unknown as TokenPayload;
+      console.log('[Rate Limit] Token decoded:', {
+        currentCount: payload.requestCount,
+        windowStart: new Date(payload.windowStart).toISOString()
+      });
+      
       const windowExpired = Date.now() - payload.windowStart > WINDOW_SIZE_IN_MINUTES * 60 * 1000;
       
       if (windowExpired) {
-        return this.createNewWindow();
+        console.log('[Rate Limit] Window expired');
+        return null;
       }
 
-      return {
+      const updatedPayload = {
         ...payload,
         requestCount: payload.requestCount + 1
       };
+      
+      console.log('[Rate Limit] Updated payload:', {
+        newCount: updatedPayload.requestCount,
+        windowStart: new Date(updatedPayload.windowStart).toISOString()
+      });
+      
+      return updatedPayload;
     } catch (error) {
-      console.error('Token validation error:', error);
-      // If token is invalid or expired, start new window
-      return this.createNewWindow();
+      console.error('[Rate Limit] Token validation error:', error);
+      return null;
     }
+  }
+
+  public static createNewWindow(): TokenPayload {
+    const newWindow = {
+      requestCount: 1,
+      windowStart: Date.now()
+    };
+    
+    console.log('[Rate Limit] Created new window:', {
+      requestCount: newWindow.requestCount,
+      windowStart: new Date(newWindow.windowStart).toISOString()
+    });
+    
+    return newWindow;
   }
 
   public static createResponse(
@@ -77,6 +105,11 @@ class RateLimiter {
     newHeaders.set('x-rate-limit-remaining', headers.remaining.toString());
     newHeaders.set('x-rate-limit-reset', headers.reset);
     
+    console.log('[Rate Limit] Response headers set:', {
+      remaining: headers.remaining,
+      reset: headers.reset
+    });
+    
     return new NextResponse(originalResponse.body, {
       status: originalResponse.status,
       statusText: originalResponse.statusText,
@@ -85,6 +118,11 @@ class RateLimiter {
   }
 
   public static createLimitExceededResponse(resetTime: string): Response {
+    console.log('[Rate Limit] Limit exceeded response:', {
+      resetTime,
+      retryAfter: Math.ceil((new Date(resetTime).getTime() - Date.now()) / 1000)
+    });
+    
     return NextResponse.json(
       {
         error: 'Rate limit exceeded',
@@ -104,30 +142,41 @@ class RateLimiter {
 export function withRateLimit(handler: (request: Request) => Promise<Response>) {
   return async function rateLimit(request: Request) {
     try {
-      // Validate rate limit token
-      const tokenPayload = await RateLimiter.validateToken(
-        request.headers.get('x-rate-limit-token')
-      );
+      console.log('\n[Rate Limit] New request received');
+      
+      const existingToken = request.headers.get('x-rate-limit-token');
+      const tokenPayload = await RateLimiter.validateToken(existingToken);
 
-      // Check if limit exceeded
-      if (tokenPayload.requestCount > MAX_REQUESTS_PER_WINDOW) {
+      console.log('[Rate Limit] Validation result:', tokenPayload ? {
+        existingCount: tokenPayload.requestCount,
+        windowStart: new Date(tokenPayload.windowStart).toISOString()
+      } : 'No valid token');
+
+      const currentPayload = tokenPayload || RateLimiter.createNewWindow();
+
+      console.log('[Rate Limit] Current payload:', {
+        requestCount: currentPayload.requestCount,
+        windowStart: new Date(currentPayload.windowStart).toISOString(),
+        maxRequests: MAX_REQUESTS_PER_WINDOW
+      });
+
+      if (currentPayload.requestCount > MAX_REQUESTS_PER_WINDOW) {
+        console.log('[Rate Limit] Request limit exceeded');
         const resetTime = new Date(
-          tokenPayload.windowStart + WINDOW_SIZE_IN_MINUTES * 60 * 1000
+          currentPayload.windowStart + WINDOW_SIZE_IN_MINUTES * 60 * 1000
         ).toISOString();
         return RateLimiter.createLimitExceededResponse(resetTime);
       }
 
-      // Execute the handler
       const response = await handler(request);
-
-      // Generate new headers
-      const headers = RateLimiter.generateHeaders(tokenPayload);
-
-      // Return response with rate limit headers
+      const headers = RateLimiter.generateHeaders(currentPayload);
+      
+      console.log('[Rate Limit] Request completed successfully');
+      
       return RateLimiter.createResponse(response, headers);
 
     } catch (error) {
-      console.error('Rate limit error:', error);
+      console.error('[Rate Limit] Error:', error);
       return NextResponse.json(
         { error: 'Internal server error' }, 
         { status: 500 }
