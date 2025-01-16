@@ -17,6 +17,7 @@ export const initialState: ChatState = {
     text: INITIAL_MESSAGE,
     sender: "bot",
     timestamp: new Date(),
+    type: "text",
   }],
   isChatStarted: false,
   isLoading: false,
