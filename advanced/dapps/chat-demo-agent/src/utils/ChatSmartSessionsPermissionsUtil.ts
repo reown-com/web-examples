@@ -1,10 +1,10 @@
 import { grantPermissions, SmartSessionGrantPermissionsRequest, SmartSessionGrantPermissionsResponse } from "@reown/appkit-experimental/smart-session";
-import { toHex } from "viem";
+import { parseEther, toHex } from "viem";
 
 
-const getCurrentTimestampInSeconds = () => Math.floor(Date.now() / 1000);
-const PERMISSION_PERIOD = 60000; // Define period as a constant
-const ALLOWANCE_VALUE = '0x1000000000000000000';
+const getCurrentTimestampInSeconds = () => Math.floor(Date.now() / 1000) + 20;
+const PERMISSION_PERIOD =  24 * 60 * 60; //  1 day
+const ALLOWANCE_VALUE = parseEther("0.01");
 
 export function getChatAgentPermissions(): Omit<
     SmartSessionGrantPermissionsRequest,
@@ -16,8 +16,8 @@ export function getChatAgentPermissions(): Omit<
           type: "native-token-recurring-allowance",
           data: {
             period: PERMISSION_PERIOD,
-            start: getCurrentTimestampInSeconds() + 60 * 60,
-            allowance: ALLOWANCE_VALUE,
+            start: getCurrentTimestampInSeconds(),
+            allowance: toHex(ALLOWANCE_VALUE),
           },
         },
       ],
@@ -34,6 +34,7 @@ export function getChatAgentPermissions(): Omit<
 
     const chatAgentPermission = getChatAgentPermissions();
     const smartSessionChatAgentPermissions: SmartSessionGrantPermissionsRequest = {
+      // Adding 24 hours to the current time
       expiry: getCurrentTimestampInSeconds() + 24 * 60 * 60,
       chainId: toHex(chainId),
       address: address as `0x${string}`,

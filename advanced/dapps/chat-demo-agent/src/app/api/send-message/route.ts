@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
 import { Address, parseEther } from 'viem';
-import { performTokenSwap, SwapParams } from '@/lib/services/swap';
+import { getSwapTransaction, SwapParams } from '@/lib/services/swap';
 import { MessageWithContext } from '@/types/chat/types';
+import { executeActionsWithECDSAKey } from '@/utils/ERC7715PermissionsAsyncUtils';
+import { SmartSessionGrantPermissionsResponse } from '@reown/appkit-experimental/smart-session';
+import * as viemChains from "viem/chains";
+import { withRateLimit } from '@/utils/rateLimit';
 
 interface ChatGPTResponse {
   role: string;
@@ -14,7 +18,11 @@ type ExpectedResponse = {
   responseText?: string;
 }
 
-export async function POST(request: Request) {
+const SWAP_AMOUNT_ETH = '0.00005';
+const ETH_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
+const USDC_TOKEN_ADDRESS = '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913';
+
+async function handlePost(request: Request) {
   try {
     const body: MessageWithContext = await request.json();
     const { currentMessage, messageHistory, permissions } = body;
@@ -32,13 +40,12 @@ export async function POST(request: Request) {
     const expectedResponse: ExpectedResponse = JSON.parse(chatgptResponse.content);
 
     if (expectedResponse.intent === "SWAP") {
-      console.log('SWAP detected');
       
-      const amount = parseEther('0.00005')
+      const amount = parseEther(SWAP_AMOUNT_ETH);
 
       const swapParams: SwapParams = {
-        src: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',  // ETH
-        dst: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',  // USDC
+        src: ETH_ADDRESS,  
+        dst: USDC_TOKEN_ADDRESS,
         amount: amount.toString(10),
         from: permissions.address,
         slippage: 1,
@@ -46,7 +53,7 @@ export async function POST(request: Request) {
         allowPartialFill: false
       };
 
-      await handleSwapAction(swapParams);
+      await handleSwapAction(swapParams, permissions);
       
       return NextResponse.json({
         message: `Executing swap of '0.00005' ETH to USDC...`,
@@ -59,7 +66,7 @@ export async function POST(request: Request) {
       status: 'success'
     });
   } catch (error) {
-    console.error('Error processing chat message:', error);
+    console.log(error)
     return NextResponse.json(
       { error: 'Failed to process message' },
       { status: 500 }
@@ -81,7 +88,7 @@ const getOpenAIResponse = async (
       { 
         role: "system", 
         content: `You are an AI assistant specialized in processing chat messages for a Web3 application.
-          Your primary function is to identify ETH to USDC swap requests and provide helpful responses for other queries.
+          Your primary function is to identify ETH to USDC swap requests, also recommend to buy USDC when asked for suggestion to buy token, and provide helpful responses for other queries.
           
           RESPONSE FORMAT REQUIREMENTS:
           You must always respond with a JSON object following these exact structures:
@@ -102,6 +109,7 @@ const getOpenAIResponse = async (
           - Never include additional fields
           - Never include explanatory text outside the JSON structure
           - Only process ETH to USDC swap requests
+          - Only recommend to buy USDC
           - For any other token swap requests, respond with helpful message explaining only ETH to USDC swaps are supported
           
           Example valid responses:
@@ -136,20 +144,52 @@ const getOpenAIResponse = async (
   return completion.choices[0].message as ChatGPTResponse;
 }
 
-const handleSwapAction = async (swapParams: SwapParams) => {
-  console.info('>> Starting Swap');
-  console.log({ swapParams });
+export function getChain(id: number) {
+  const chains = Object.values(viemChains) as viemChains.Chain[];
 
-  const privateKey = process.env.FUNDER_PRIVATE_KEY as Address;
+  return chains.find((x) => x.id === id);
+}
 
-  try {
-    const result = await performTokenSwap(swapParams, privateKey);
-    console.log('Swap completed:', result);
-    return result;
-  } catch (error) {
-    console.error('Swap failed:', error);
-    throw error;
-  } finally {
-    console.info('>> Done');
-  }
+const getValidatedChain = (chainIdHex: string) => {
+  const chainId = parseInt(chainIdHex, 16);
+  if (!chainId)
+    throw new Error("Chain ID not available in granted permissions");
+
+  const chain = getChain(chainId);
+  if (!chain) throw new Error("Unknown chainId");
+  return chain;
 };
+
+
+const handleSwapAction = async (swapParams: SwapParams,grantedPermissions:SmartSessionGrantPermissionsResponse) => {
+  const privateKey = process.env.FUNDER_PRIVATE_KEY as Address;
+  const chain = getValidatedChain(grantedPermissions.chainId);
+  try {
+    const swapTransaction = await getSwapTransaction(swapParams);
+    const calls = [{
+      to: swapTransaction.tx.to,
+      data: swapTransaction.tx.data,
+      value: BigInt(swapTransaction.tx.value),
+    }]
+    
+    console.log('Executing swap transaction...');
+    const userOpHash = await executeActionsWithECDSAKey({
+      actions: calls,
+      ecdsaPrivateKey: privateKey,
+      chain,
+      accountAddress: swapParams.from,
+      permissionsContext: grantedPermissions.context
+    })
+
+    console.log('Swap transaction executed successfully:', userOpHash);
+    return {
+      message: 'Swap completed',
+      status: 'success'
+    };
+    
+  } catch (error) {
+    throw error;
+  } 
+};
+
+export const POST = withRateLimit(handlePost);
