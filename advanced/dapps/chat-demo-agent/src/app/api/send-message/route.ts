@@ -189,7 +189,7 @@ const getValidatedChain = (chainIdHex: string) => {
 
 
 const handleSwapAction = async (swapParams: SwapParams,grantedPermissions:SmartSessionGrantPermissionsResponse) => {
-  const privateKey = process.env.FUNDER_PRIVATE_KEY as Address;
+  const privateKey = process.env.APPLICATION_PRIVATE_KEY as Address;
   const chain = getValidatedChain(grantedPermissions.chainId);
   try {
     const swapTransaction = await getSwapTransaction(swapParams);
