@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { privateKeyToAccount } from "viem/accounts";
 
+export const dynamic = "force-static"
+
 export function GET() {
   try {
     const APPLICATION_PRIVATE_KEY = process.env
