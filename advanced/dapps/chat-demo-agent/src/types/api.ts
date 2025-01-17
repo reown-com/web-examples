@@ -10,6 +10,14 @@ export interface ChatResponse {
 }
 
 export interface ExpectedResponse {
-  intent: "NOT_SWAP" | "SWAP";
+  intent: "NOT_SWAP" | "SWAP" | "GET_SWAP_RECEIPT" ;
   responseText?: string;
+  purchaseId?: string;
+  amount?: string;
 }
+
+export type SwapReceipt = {
+    message: string ,
+    receiptLink: string,
+    status:  'success' | 'error';
+};

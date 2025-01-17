@@ -25,22 +25,34 @@ async function handlePost(request: Request) {
     }
 
     const parsedResponse = JSON.parse(response.content) as ExpectedResponse;
+    console.log(parsedResponse);
 
-    // Handle swap intent
-    if (parsedResponse.intent === "SWAP") {
-      const swapResult = await SwapService.executeSwap(permissions);
-      return NextResponse.json(swapResult);
+    // Handle different intents
+    switch (parsedResponse.intent) {
+      case "SWAP":
+        const swapResult = await SwapService.executeSwap(permissions);
+        return NextResponse.json(swapResult);
+
+      case "GET_SWAP_RECEIPT":
+        if(!parsedResponse.purchaseId || !parsedResponse.amount) {
+          throw new Error('Error occurred getting swap receipt');
+        }
+        const receipt = await SwapService.getSwapReceipt(parsedResponse.purchaseId);
+        return NextResponse.json(receipt);
+
+      case "NOT_SWAP":
+        return NextResponse.json({
+          message: parsedResponse.responseText || "I'm sorry, I didn't understand that.",
+          status: 'success'
+        });
+
+      default:
+        throw new Error(`Unhandled intent: ${parsedResponse.intent}`);
     }
-
-    // Handle non-swap intent
-    return NextResponse.json({
-      message: parsedResponse.responseText || "I'm sorry, I didn't understand that.",
-      status: 'success'
-    });
 
   } catch (error) {
     console.error('API Error:', error);
-    const errorMessage = 'Internal error occurred';
+    const errorMessage = error instanceof Error ? error.message : 'Internal error occurred';
     
     return NextResponse.json(
       { 

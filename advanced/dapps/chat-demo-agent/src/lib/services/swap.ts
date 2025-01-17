@@ -3,10 +3,11 @@ import { executeActionsWithECDSAKey } from '@/utils/ERC7715PermissionsAsyncUtils
 import { SmartSessionGrantPermissionsResponse } from '@reown/appkit-experimental/smart-session';
 import { SWAP_CONFIG } from '@/config/constants';
 import { ChainUtil } from '@/utils/ChainUtil';
-import { SwapResponse } from '@/types/api';
+import { SwapReceipt, SwapResponse } from '@/types/api';
 import { OneInchApiService } from './1inch';
 import type { SwapParams } from '@/types/1inch';
 import { ApiError, SwapError } from '@/errors/api-errors';
+import { getCallsStatus } from '@/utils/UserOpBuilderServiceUtils';
 
 export class SwapService {
   private static async prepareSwapTransaction(swapParams: SwapParams) {
@@ -64,11 +65,20 @@ export class SwapService {
       accountAddress: swapParams.from,
       permissionsContext: permissions.context
     });
-
+    console.log({userOpHash})
     return {
-      message: `Successfully swapped ${SWAP_CONFIG.AMOUNT_ETH} ETH to USDC`,
+      message: `Successfully swapped ${SWAP_CONFIG.AMOUNT_ETH} ETH to USDC, and this is the purchase id: ${userOpHash}. Do you need a detail receipt or tx hash?`,
       status: 'success',
       userOpHash
     };
+  }
+
+  static async getSwapReceipt(purchaseId: string) :Promise<SwapReceipt> {
+    const receipt = await getCallsStatus(purchaseId)
+    return {
+      message: `Swap receipt for the purchase` ,
+      receiptLink: receipt.receipts ? `https://basescan.org/tx/${receipt.receipts[0].transactionHash}`: 'Pending...',
+      status: 'success'
+    }
   }
 }
