@@ -35,6 +35,9 @@ importers:
       autoprefixer:
         specifier: 10.4.18
         version: 10.4.18(postcss@8.4.49)
+      caniuse-lite:
+        specifier: ^1.0.30001692
+        version: 1.0.30001692
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1

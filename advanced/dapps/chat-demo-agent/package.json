@@ -23,6 +23,7 @@
     "@shadcn/ui": "^0.0.4",
     "@tanstack/react-query": "5.24.8",
     "autoprefixer": "10.4.18",
+    "caniuse-lite": "^1.0.30001692",
     "class-variance-authority": "^0.7.1",
     "clsx": "2.1.0",
     "date-fns": "^4.1.0",
