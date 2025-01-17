@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { withRateLimit } from '@/utils/rateLimit';
 import { OpenAIService } from '@/lib/services/openai';
 import { SwapService } from '@/lib/services/swap';
 import { MessageWithContext } from '@/types/chat/types';
@@ -54,4 +53,4 @@ async function handlePost(request: Request) {
   }
 }
 
-export const POST = withRateLimit(handlePost);
+export const POST = handlePost;
