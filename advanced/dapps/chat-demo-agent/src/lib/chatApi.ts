@@ -20,7 +20,10 @@ export const sendChatMessageToApi = async (messageWithContext: MessageWithContex
       const data = await response.json();
       if (data.receiptLink) {
         return {
-          message: data.message + ` [Receipt](${data.receiptLink})`,
+          message:`${data.message}
+            <a href="${data.receiptLink}" target="_blank" rel="noopener noreferrer" style={{ color: 'blue', textDecoration: 'underline' }}>
+              Receipt
+            </a>})`,
         };
       }
       return { message: data.message };
