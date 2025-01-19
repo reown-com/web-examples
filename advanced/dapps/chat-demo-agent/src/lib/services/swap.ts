@@ -6,27 +6,18 @@ import { ChainUtil } from '@/utils/ChainUtil';
 import { SwapReceipt, SwapResponse } from '@/types/api';
 import { OneInchApiService } from './1inch';
 import type { SwapParams } from '@/types/1inch';
-import { ApiError, SwapError } from '@/errors/api-errors';
+import { AppError, ErrorCodes } from '@/errors/api-errors';
 import { getCallsStatus } from '@/utils/UserOpBuilderServiceUtils';
 
 export class SwapService {
   private static async prepareSwapTransaction(swapParams: SwapParams) {
     const oneInchApi = OneInchApiService.getInstance();
-    
-    try {
-      // Uncomment to add allowance checking if needed
-      // const allowance = await oneInchApi.checkAllowance(swapParams.src, swapParams.from);
-      // if (BigInt(allowance) < BigInt(swapParams.amount)) {
-      //   await oneInchApi.buildApprovalTransaction(swapParams.src);
-      // }
-
-      return await oneInchApi.buildSwapTransaction(swapParams);
-    } catch (error) {
-      if (error instanceof SwapError || error instanceof ApiError) {
-        throw error;
-      }
-      throw new SwapError('Unexpected error occurred during swap preparation', error);
-    }
+    // Uncomment to add allowance checking if needed
+    // const allowance = await oneInchApi.checkAllowance(swapParams.src, swapParams.from);
+    // if (BigInt(allowance) < BigInt(swapParams.amount)) {
+    //   await oneInchApi.buildApprovalTransaction(swapParams.src);
+    // }
+    return await oneInchApi.buildSwapTransaction(swapParams);
   }
 
   static async executeSwap(
@@ -48,7 +39,10 @@ export class SwapService {
     const privateKey = process.env.APPLICATION_PRIVATE_KEY as `0x${string}`;
     
     if (!privateKey) {
-      throw new Error('APPLICATION_PRIVATE_KEY is not set');
+      throw new AppError(
+        ErrorCodes.SWAP_EXECUTION_ERROR,
+        'APPLICATION_PRIVATE_KEY is not set'
+      );
     }
 
     const swapTransaction = await this.prepareSwapTransaction(swapParams);

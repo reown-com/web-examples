@@ -1,13 +1,88 @@
 import { NextResponse } from 'next/server';
-import { OpenAIService } from '@/lib/services/openai';
+import { getOpenAIResponse } from '@/lib/services/openai';
 import { SwapService } from '@/lib/services/swap';
-import { MessageWithContext } from '@/types/chat/types';
 import { ExpectedResponse } from '@/types/api';
+import { ErrorCodes, ErrorDescriptions, AppError, ErrorCodeType } from '@/errors/api-errors';
+import { SmartSessionGrantPermissionsResponse } from '@reown/appkit-experimental/smart-session';
+import { parseRequest } from './request-validation';
 
+export const runtime = 'edge';
+
+// Type guard for parsed response
+function isValidResponse(response: unknown): response is ExpectedResponse {
+  return Boolean(
+    response && 
+    typeof response === 'object' && 
+    'intent' in response &&
+    typeof response.intent === 'string'
+  );
+}
+
+// Separate intent handler functions
+async function handleSwapIntent(permissions: SmartSessionGrantPermissionsResponse) {
+  const swapResult = await SwapService.executeSwap(permissions);
+  return NextResponse.json(swapResult);
+}
+
+async function handleReceiptIntent(purchaseId: string | undefined, amount: number | undefined) {
+  if (!purchaseId || !amount) {
+    throw new AppError(
+      ErrorCodes.RECEIPT_FETCH_ERROR,
+      'Missing required fields for receipt'
+    );
+  }
+  
+  const receipt = await SwapService.getSwapReceipt(purchaseId);
+  return NextResponse.json(receipt);
+}
+
+function handleNotSwapIntent(responseText: string | undefined) {
+  return NextResponse.json({
+    message: responseText || "I'm sorry, I didn't understand that.",
+    status: 'success'
+  });
+}
+
+// Process OpenAI response
+async function processOpenAIResponse(
+  currentMessage: string,
+  chatHistory: Array<{ role: 'system' | 'user'; content: string }>
+) {
+  try {
+    const completion = await getOpenAIResponse(currentMessage, chatHistory);
+    const response = completion.choices[0].message;
+
+    if (!response?.content) {
+      throw new AppError(
+        ErrorCodes.INVALID_OPENAI_RESPONSE,
+        'Empty response from OpenAI'
+      );
+    }
+
+    const parsedResponse = JSON.parse(response.content);
+    
+    if (!isValidResponse(parsedResponse)) {
+      throw new AppError(
+        ErrorCodes.INVALID_OPENAI_RESPONSE,
+        'Invalid response structure from OpenAI'
+      );
+    }
+
+    return parsedResponse;
+  } catch (e) {
+    if (e instanceof AppError) throw e;
+    throw new AppError(
+      ErrorCodes.OPENAI_RESPONSE_ERROR,
+      'Failed to process OpenAI response'
+    );
+  }
+}
+
+// Main handler
 async function handlePost(request: Request) {
   try {
-    const body: MessageWithContext = await request.json();
-    const { currentMessage, messageHistory, permissions } = body;
+    // Parse request
+    const { currentMessage, messageHistory, permissions } = await parseRequest(request);
 
     // Format chat history
     const chatHistory = messageHistory.map(msg => ({
@@ -15,50 +90,43 @@ async function handlePost(request: Request) {
       content: msg.text
     } as const));
 
-    // Get OpenAI response
-    const openAIService = OpenAIService.getInstance();
-    const completion = await openAIService.getResponse(currentMessage, chatHistory);
-    const response = completion.choices[0].message;
+    // Get and process OpenAI response
+    const parsedResponse = await processOpenAIResponse(currentMessage, chatHistory);
 
-    if (!response?.content) {
-      throw new Error('Invalid response from OpenAI');
-    }
-
-    const parsedResponse = JSON.parse(response.content) as ExpectedResponse;
-    console.log(parsedResponse);
-
-    // Handle different intents
+    // Handle intents
     switch (parsedResponse.intent) {
       case "SWAP":
-        const swapResult = await SwapService.executeSwap(permissions);
-        return NextResponse.json(swapResult);
+        return handleSwapIntent(permissions);
 
       case "GET_SWAP_RECEIPT":
-        if(!parsedResponse.purchaseId || !parsedResponse.amount) {
-          throw new Error('Error occurred getting swap receipt');
-        }
-        const receipt = await SwapService.getSwapReceipt(parsedResponse.purchaseId);
-        return NextResponse.json(receipt);
+        return handleReceiptIntent(parsedResponse.purchaseId, parsedResponse.amount ? parseFloat(parsedResponse.amount) : undefined);
 
       case "NOT_SWAP":
-        return NextResponse.json({
-          message: parsedResponse.responseText || "I'm sorry, I didn't understand that.",
-          status: 'success'
-        });
+        return handleNotSwapIntent(parsedResponse.responseText);
 
       default:
-        throw new Error(`Unhandled intent: ${parsedResponse.intent}`);
+        throw new AppError(
+          ErrorCodes.INVALID_INTENT,
+          `Unhandled intent: ${parsedResponse.intent}`
+        );
     }
 
-  } catch (error) {
-    console.error('API Error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Internal error occurred';
+  } catch (error: unknown) {
+    const { errorCode, errorMessage } = error instanceof AppError
+      ? { errorCode: error.code, errorMessage: error.message }
+      : { errorCode: ErrorCodes.UNKNOWN_ERROR as ErrorCodeType, errorMessage: ErrorDescriptions[ErrorCodes.UNKNOWN_ERROR] };
+
+    // Log the full error details for debugging
+    console.error('API Error:', {
+      code: errorCode,
+      message: errorMessage,
+      error
+    });
     
     return NextResponse.json(
       { 
         status: 'error',
-        message: 'Failed to process message',
-        error: errorMessage
+        message: `Internal error occurred [${errorCode}]`
       },
       { status: 500 }
     );

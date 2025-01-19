@@ -79,12 +79,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const data = await sendChatMessageToApi(messageWithContext);
       
-      const botResponse = createMessage(data.message, 'bot', 'text');
+      const botResponse = createMessage(data.message, 'system', 'text');
       dispatch({ type: 'ADD_MESSAGE', payload: botResponse });
     } catch (error) {
       const errorMessage = createMessage(
         `Error: ${error instanceof Error ? error.message : 'Some error occurred'}`,
-        'bot',
+        'system',
         'error'
       );
       dispatch({ type: 'ADD_MESSAGE', payload: errorMessage });

@@ -3,7 +3,7 @@ import { SmartSessionGrantPermissionsResponse } from "@reown/appkit-experimental
 export interface IChatMessage {
   id: string;
   text: string;
-  sender: 'user' | 'bot';
+  sender: 'user' | 'system';
   timestamp: Date;
   type: 'text' | 'error' 
 }

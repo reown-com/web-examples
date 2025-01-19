@@ -1,42 +1,76 @@
 import { CHATGPT_MODEL, SYSTEM_PROMPT } from '@/config/constants';
-import { OpenAI } from 'openai';
+import { AppError, ErrorCodes } from '@/errors/api-errors';
 
-export class OpenAIService {
-  private client: OpenAI;
-  private static instance: OpenAIService;
+type Message = {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+};
 
-  private constructor() {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is not set');
-    }
-    this.client = new OpenAI({ apiKey });
+type ChatResponse = {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: Array<{
+    index: number;
+    message: {
+      role: string;
+      content: string;
+    };
+    finish_reason: string;
+  }>;
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+};
+
+export async function getOpenAIResponse(
+  currentMessage: string,
+  chatHistory: Array<{ role: 'system' | 'user'; content: string }>
+) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new AppError(
+      ErrorCodes.INVALID_OPENAI_RESPONSE,
+      'OPENAI_API_KEY is not set'
+    );
   }
 
-  public static getInstance(): OpenAIService {
-    if (!OpenAIService.instance) {
-      OpenAIService.instance = new OpenAIService();
+  const messages: Message[] = [
+    { 
+      role: "system", 
+      content: SYSTEM_PROMPT
+    },
+    ...chatHistory,
+    {
+      role: "user",
+      content: currentMessage,
     }
-    return OpenAIService.instance;
-  }
+  ];
 
-  async getResponse(
-    currentMessage: string,
-    chatHistory: Array<{ role: 'system' | 'user'; content: string }>
-  ) {
-    return this.client.chat.completions.create({
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
       model: CHATGPT_MODEL,
-      messages: [
-        { 
-          role: "system", 
-          content: SYSTEM_PROMPT
-        },
-        ...chatHistory,
-        {
-          role: "user",
-          content: currentMessage,
-        },
-      ],
-    });
+      messages,
+      store: true,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new AppError(
+      ErrorCodes.INVALID_OPENAI_RESPONSE,
+      `OpenAI API error: ${error?.error?.message || response.statusText}`
+    );
   }
+
+  const data = await response.json() as ChatResponse;
+  return data;
 }

@@ -1,6 +1,6 @@
 import { base } from 'viem/chains';
 import { createWalletClient, http } from 'viem';
-import { ApiError, SwapError } from '@/errors/api-errors';
+import { AppError, ErrorCodes } from '@/errors/api-errors';
 import type { 
   AllowanceResponse, 
   ApprovalTransaction, 
@@ -17,7 +17,10 @@ export class OneInchApiService {
   private constructor() {
     const apiKey = process.env.ONEINCH_API_KEY;
     if (!apiKey) {
-      throw new Error('ONEINCH_API_KEY is not configured');
+      throw new AppError(
+        ErrorCodes.SWAP_EXECUTION_ERROR,
+        'ONEINCH_API_KEY is not configured'
+      );
     }
     
     this.apiKey = apiKey;
@@ -50,13 +53,13 @@ export class OneInchApiService {
 
       if (!response.ok) {
         const errorMessage = await response.text().catch(() => response.statusText);
-        throw new ApiError(errorMessage, response.status, path);
+        throw new AppError(ErrorCodes.SWAP_EXECUTION_ERROR, errorMessage);
       }
 
       return await response.json();
     } catch (error) {
-      if (error instanceof ApiError) throw error;
-      throw new ApiError('Failed to fetch data from API', 500, path);
+      if (error instanceof AppError) throw error;
+      throw new AppError(ErrorCodes.SWAP_EXECUTION_ERROR, 'Failed to fetch data from 1Inch API');
     }
   }
 
@@ -67,8 +70,12 @@ export class OneInchApiService {
         walletAddress 
       });
       return data.allowance;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      throw new SwapError(`Failed to check allowance for token ${tokenAddress}`, error);
+      throw new AppError(
+        ErrorCodes.SWAP_EXECUTION_ERROR, 
+        `Failed to check allowance for token ${tokenAddress}`, 
+      );
     }
   }
 
@@ -90,18 +97,27 @@ export class OneInchApiService {
         ...transaction,
         gas: gasEstimate.gas ?? BigInt(0),
       };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      throw new SwapError(`Failed to build approval transaction for token ${tokenAddress}`, error);
+      throw new AppError(
+        ErrorCodes.SWAP_EXECUTION_ERROR, 
+        `Failed to build approval transaction for token ${tokenAddress}`, 
+      );
     }
   }
 
   async buildSwapTransaction(swapParams: SwapParams): Promise<SwapTransactionResponse> {
     try {
-      return await this.callApi<SwapTransactionResponse>('/swap', 
+      return await this.callApi<SwapTransactionResponse>(
+        '/swap', 
         swapParams as unknown as Record<string, string>
       );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      throw new SwapError('Failed to build swap transaction', error);
+      throw new AppError(
+        ErrorCodes.SWAP_EXECUTION_ERROR, 
+        'Failed to build swap transaction', 
+      );
     }
   }
 }

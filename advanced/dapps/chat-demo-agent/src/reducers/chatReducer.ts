@@ -15,7 +15,7 @@ export const initialState: ChatState = {
   messages: [{
     id: uuidv4(),
     text: INITIAL_MESSAGE,
-    sender: "bot",
+    sender: "system",
     timestamp: new Date(),
     type: "text",
   }],

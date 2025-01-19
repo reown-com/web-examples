@@ -13,7 +13,7 @@ export const sendChatMessageToApi = async (messageWithContext: MessageWithContex
 
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData.error || `Failed to get response from server: ${response.status}`;
+        const errorMessage = errorData.message || `Failed to get response from server: ${response.status}`;
         throw new Error(errorMessage);
       }
   
