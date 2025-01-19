@@ -21,11 +21,15 @@ function isValidResponse(response: unknown): response is ExpectedResponse {
 // Separate intent handler functions
 async function handleSwapIntent(permissions: SmartSessionGrantPermissionsResponse) {
   const swapResult = await SwapService.executeSwap(permissions);
+  const userOpHash = swapResult.userOpHash;
+  if(userOpHash){
+    return handleReceiptIntent(userOpHash);
+  }
   return NextResponse.json(swapResult);
 }
 
-async function handleReceiptIntent(purchaseId: string | undefined, amount: number | undefined) {
-  if (!purchaseId || !amount) {
+async function handleReceiptIntent(purchaseId: string | undefined) {
+  if (!purchaseId) {
     throw new AppError(
       ErrorCodes.RECEIPT_FETCH_ERROR,
       'Missing required fields for receipt'
@@ -99,7 +103,7 @@ async function handlePost(request: Request) {
         return handleSwapIntent(permissions);
 
       case "GET_SWAP_RECEIPT":
-        return handleReceiptIntent(parsedResponse.purchaseId, parsedResponse.amount ? parseFloat(parsedResponse.amount) : undefined);
+        return handleReceiptIntent(parsedResponse.purchaseId);
 
       case "NOT_SWAP":
         return handleNotSwapIntent(parsedResponse.responseText);
