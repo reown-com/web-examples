@@ -23,7 +23,7 @@ const MessageInput = ({ onSubmit, isLoading }: MessageInputProps) => {
       onSubmit={handleSubmit}
       className="p-3 sm:p-4 border-t border-zinc-700 bg-zinc-900 w-full overflow-x-hidden"
     >
-      <div className="flex gap-2 w-full">
+      <div className="flex gap-2 items-center w-full">
         <input
           type="text"
           value={inputMessage}
