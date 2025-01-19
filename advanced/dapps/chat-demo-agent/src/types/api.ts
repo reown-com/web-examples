@@ -1,23 +1,30 @@
+
 export interface SwapResponse {
   message: string;
-  status: 'success' | 'error';
-  userOpHash?: string;
+  status: 'success' | 'error' | 'pending';
+  userOpHash: string;
+  amount: string;
+  txLink: string;
 }
-
 export interface ChatResponse {
   message: string;
   status: 'success' | 'error';
 }
 
-export interface ExpectedResponse {
-  intent: "NOT_SWAP" | "SWAP" | "GET_SWAP_RECEIPT" ;
-  responseText?: string;
-  purchaseId?: string;
-  amount?: string;
+export type ExpectedResponse = {
+  intent: 'SWAP';
+  amount: string;
+} | {
+  intent: 'GET_SWAP_RECEIPT';
+  purchaseId: string;
+} | {
+  intent: 'NOT_SWAP';
+  responseText: string;
 }
 
-export type SwapReceipt = {
-    message: string ,
-    receiptLink: string,
-    status:  'success' | 'error';
-};
+export interface SwapReceipt {
+  message: string;
+  txLink: string;
+  userOpHash: string;
+  status: 'success' | 'error' | 'pending';
+}

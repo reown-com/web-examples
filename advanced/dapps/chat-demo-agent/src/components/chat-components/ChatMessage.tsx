@@ -1,38 +1,44 @@
-import { IChatMessage } from '@/types/chat/types';
 import React from 'react';
+import { IChatMessage } from '@/types/chat/types';
+import DOMPurify from 'dompurify';
 
 interface ChatMessageProps {
   message: IChatMessage;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export const ChatMessage = ({ message }: ChatMessageProps) => {
+  // Function to safely render HTML content
+  const createMarkup = (content: string) => {
+    return {
+      __html: DOMPurify.sanitize(content, {
+        ALLOWED_TAGS: ['a', 'br', 'p', 'span', 'strong', 'em'],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'style', 'class']
+      })
+    };
+  };
+
   return (
     <div
-      style={{
-        display: 'flex',
-        justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
-        width: '100%',
-      }}
+      className={`flex w-full ${
+        message.sender === 'user' ? 'justify-end' : 'justify-start'
+      }`}
     >
       <div
-        style={{
-          maxWidth: '80%', // Limit width for better readability on mobile
-          padding: '0.5rem 1rem', // Padding for the message box
-          borderRadius: '0.375rem', // Rounded corners
-          wordBreak: 'break-word', // Word break handling
-          whiteSpace: 'pre-wrap', // Preserve whitespace
-          overflow: 'hidden', // Hide overflow
-          backgroundColor: message.sender === 'user' ? 'rgb(0,136,71)' : '#374151', // Background color based on sender
-          color: message.sender === 'user' ? '#FFFFFF' : '#D1D5DB', // Text color based on sender
-        }}
+        className={`max-w-[80%] px-4 py-2 rounded-md break-words whitespace-pre-wrap overflow-hidden ${
+          message.sender === 'user'
+            ? 'bg-[rgb(0,136,71)] text-white'
+            : 'bg-gray-700 text-gray-300'
+        }`}
       >
-        {message.type === 'error' && (
-          <span style={{ color: '#EF4444' }}> {/* Error text color */}
-            {message.text}
-          </span>
+        {message.type === 'error' ? (
+          <span className="text-red-500">{message.text}</span>
+        ) : (
+          <div
+            dangerouslySetInnerHTML={createMarkup(message.text)}
+            className="chat-message-content [&_a]:text-blue-400 [&_a]:hover:text-blue-300 [&_a]:underline"
+          />
         )}
-        {message.type !== 'error' && message.text}
       </div>
     </div>
   );
-}
+};

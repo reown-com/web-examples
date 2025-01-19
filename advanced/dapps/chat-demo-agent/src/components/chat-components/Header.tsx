@@ -5,9 +5,14 @@ import { Button } from "../ui/button";
 import { useAppKit, useAppKitAccount, useDisconnect } from "@reown/appkit/react";
 import { ChainUtil } from "@/utils/ChainUtil";
 import { formatDistanceToNow } from "date-fns";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
-const Header: React.FC<object> = () => {
+const Header: React.FC = () => {
   const { clearChat, clearPermissions, state } = useChat();
   const { grantedPermissions } = state;
   const [timeLeft, setTimeLeft] = useState<string>("");
@@ -75,70 +80,27 @@ const Header: React.FC<object> = () => {
   };
 
   return (
-    <div
-      style={{
-        height: '80px',
-        borderBottom: '1px solid #4B5563', // Equivalent to border-zinc-700
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 16px', // Padding for mobile
-        flexWrap: 'wrap', // Allow wrapping for smaller screens
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center', // Align items horizontally
-          gap: '16px', // Space between Demo Agent and permissions details
-          flexGrow: 1,
-        }}
-      >
+    <div className="h-20 border-b border-zinc-700 flex items-center justify-between px-4 flex-wrap">
+      <div className="flex items-center gap-4 flex-grow">
         {/* Demo Agent Title */}
-        <h1
-          style={{
-            fontSize: '1.125rem', // Equivalent to text-lg
-            fontWeight: 'bold',
-            color: '#FFFFFF',
-            marginBottom: '0', // Ensure no unnecessary margin
-          }}
-        >
+        <h1 className="text-lg font-bold text-white m-0">
           Reown Agent
         </h1>
 
         {/* Permissions Details */}
         {grantedPermissions && (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span
-                style={{
-                  color: '#FFFFFF',
-                  fontWeight: '500',
-                  fontSize: '0.875rem', // Equivalent to text-sm
-                }}
-              >
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="text-white font-medium text-sm">
                 {grantedPermissions.address.slice(0, 6)}...
                 {grantedPermissions.address.slice(-4)}
               </span>
-              <span
-                style={{
-                  fontSize: '0.75rem', // Equivalent to text-xs
-                  color: '#A1A1AA', // Equivalent to text-zinc-400
-                }}
-              >
+              <span className="text-xs text-zinc-400">
                 on {chainName}
               </span>
             </div>
             {grantedPermissions?.expiry && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '0.75rem', // Equivalent to text-xs
-                  color: '#A1A1AA', // Equivalent to text-zinc-400
-                }}
-              >
+              <div className="flex items-center gap-1 text-xs text-zinc-400">
                 <Clock size={14} />
                 <span>Permissions expire {timeLeft}</span>
               </div>
@@ -147,7 +109,7 @@ const Header: React.FC<object> = () => {
         )}
       </div>
 
-      {/* Hamburger Menu for Mobile */}
+      {/* Mobile Menu */}
       <div className="sm:hidden">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -162,7 +124,6 @@ const Header: React.FC<object> = () => {
           <DropdownMenuContent className="bg-zinc-800">
             {isConnected ? (
               <>
-                {/* Wallet Button */}
                 <DropdownMenuItem asChild>
                   {/* @ts-expect-error - Custom web component */}
                   <w3m-button />
@@ -215,7 +176,7 @@ const Header: React.FC<object> = () => {
         </DropdownMenu>
       </div>
 
-      {/* Buttons for Desktop */}
+      {/* Desktop Menu */}
       <div className="hidden sm:flex flex-wrap items-center gap-2">
         {isConnected ? (
           <>

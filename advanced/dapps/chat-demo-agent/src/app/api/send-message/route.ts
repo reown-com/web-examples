@@ -8,23 +8,32 @@ import { parseRequest } from './request-validation';
 
 export const runtime = 'edge';
 
-// Type guard for parsed response
+// Updated type guard for new response format
 function isValidResponse(response: unknown): response is ExpectedResponse {
-  return Boolean(
-    response && 
-    typeof response === 'object' && 
-    'intent' in response &&
-    typeof response.intent === 'string'
-  );
+  if (!response || typeof response !== 'object' || !('intent' in response)) {
+    return false;
+  }
+
+  const typedResponse = response as Record<string, unknown>;
+
+  if (typedResponse.intent === 'SWAP') {
+    return typeof typedResponse.amount === 'string';
+  }
+
+  if (typedResponse.intent === 'GET_SWAP_RECEIPT') {
+    return typeof typedResponse.purchaseId === 'string';
+  }
+
+  if (typedResponse.intent === 'NOT_SWAP') {
+    return typeof typedResponse.responseText === 'string';
+  }
+
+  return false;
 }
 
 // Separate intent handler functions
-async function handleSwapIntent(permissions: SmartSessionGrantPermissionsResponse) {
-  const swapResult = await SwapService.executeSwap(permissions);
-  const userOpHash = swapResult.userOpHash;
-  if(userOpHash){
-    return handleReceiptIntent(userOpHash);
-  }
+async function handleSwapIntent(permissions: SmartSessionGrantPermissionsResponse, amount:string) {
+  const swapResult = await SwapService.executeSwap(permissions, amount);
   return NextResponse.json(swapResult);
 }
 
@@ -85,22 +94,18 @@ async function processOpenAIResponse(
 // Main handler
 async function handlePost(request: Request) {
   try {
-    // Parse request
     const { currentMessage, messageHistory, permissions } = await parseRequest(request);
 
-    // Format chat history
     const chatHistory = messageHistory.map(msg => ({
       role: msg.sender === 'user' ? 'user' : 'system',
       content: msg.text
     } as const));
 
-    // Get and process OpenAI response
     const parsedResponse = await processOpenAIResponse(currentMessage, chatHistory);
 
-    // Handle intents
     switch (parsedResponse.intent) {
       case "SWAP":
-        return handleSwapIntent(permissions);
+        return handleSwapIntent(permissions, parsedResponse.amount);
 
       case "GET_SWAP_RECEIPT":
         return handleReceiptIntent(parsedResponse.purchaseId);
@@ -111,7 +116,7 @@ async function handlePost(request: Request) {
       default:
         throw new AppError(
           ErrorCodes.INVALID_INTENT,
-          `Unhandled intent: ${parsedResponse.intent}`
+          `Unhandled intent: ${parsedResponse}`
         );
     }
 
@@ -120,7 +125,6 @@ async function handlePost(request: Request) {
       ? { errorCode: error.code, errorMessage: error.message }
       : { errorCode: ErrorCodes.UNKNOWN_ERROR as ErrorCodeType, errorMessage: ErrorDescriptions[ErrorCodes.UNKNOWN_ERROR] };
 
-    // Log the full error details for debugging
     console.error('API Error:', {
       code: errorCode,
       message: errorMessage,

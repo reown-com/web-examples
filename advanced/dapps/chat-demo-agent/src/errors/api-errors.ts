@@ -7,6 +7,7 @@ export const ErrorCodes = {
   INVALID_INTENT: 'ERR004',
   SWAP_EXECUTION_ERROR: 'ERR005',
   RECEIPT_FETCH_ERROR: 'ERR006',
+  TIMEOUT_ERROR: 'ERR007',
   UNKNOWN_ERROR: 'ERR999',
 } as const;
 
@@ -21,6 +22,7 @@ export const ErrorDescriptions: Record<ErrorCodeType, string> = {
   [ErrorCodes.INVALID_INTENT]: 'Unhandled or invalid intent received',
   [ErrorCodes.SWAP_EXECUTION_ERROR]: 'Error executing swap operation',
   [ErrorCodes.RECEIPT_FETCH_ERROR]: 'Error fetching swap receipt',
+  [ErrorCodes.TIMEOUT_ERROR]: 'Operation timed out',
   [ErrorCodes.UNKNOWN_ERROR]: 'An unknown error occurred',
 };
 

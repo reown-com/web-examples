@@ -180,8 +180,7 @@ export async function sendPreparedCalls(
 }
 
 export async function getCallsStatus(
-  args: GetCallsStatusParams,
-  options: { timeout?: number; interval?: number } = {},
+  args: GetCallsStatusParams
 ): Promise<GetCallsStatusReturnValue> {
   const projectId = process.env["NEXT_PUBLIC_PROJECT_ID"];
   if (!projectId) {
@@ -190,23 +189,9 @@ export async function getCallsStatus(
 
   const url = `${USEROP_BUILDER_SERVICE_BASE_URL}?projectId=${projectId}`;
 
-  const { timeout = 30000, interval = 3000 } = options; // Default timeout to 30 seconds and interval to 2 second
-  const endTime = Date.now() + timeout;
-  while (Date.now() < endTime) {
-    const response = await jsonRpcRequest<
-      GetCallsStatusParams[],
-      GetCallsStatusReturnValue
-    >("wallet_getCallsStatus", [args], url);
-
-    // Check if the response is valid (not null)
-    if (response.status === "CONFIRMED") {
-      return response;
-    }
-
-    // Wait for the specified interval before polling again
-    await new Promise((resolve) => setTimeout(resolve, interval));
-  }
-  throw new Error(
-    "Timeout: No valid response received from wallet_getCallsStatus",
-  );
+  return await jsonRpcRequest<
+    GetCallsStatusParams[],
+    GetCallsStatusReturnValue
+  >("wallet_getCallsStatus", [args], url);
 }
+
