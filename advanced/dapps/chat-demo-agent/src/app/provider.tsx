@@ -22,8 +22,12 @@ createAppKit({
   defaultNetwork: base,
   projectId: ConstantsUtil.ProjectId,
   features: {
+    email: true, 
+    socials: [],
+    emailShowWallets: false, 
     analytics: true,
   },
+  allWallets: 'HIDE', 
   themeMode: "dark",
   termsConditionsUrl: "https://reown.com/terms-of-service",
   privacyPolicyUrl: "https://reown.com/privacy-policy",

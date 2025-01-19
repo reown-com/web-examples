@@ -7,18 +7,31 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message }: ChatMessageProps) {
   return (
-    <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-      
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
+        width: '100%',
+      }}
+    >
       <div
-        className={`max-w-[80%] px-4 py-2 rounded-lg break-words whitespace-pre-wrap  ${
-          message.sender === 'user'
-            ? 'bg-[rgb(0,136,71)] text-white'
-            : 'bg-zinc-800 text-zinc-100'
-        }
-        ${message.type === 'error' && 'text-red-500 bg-red-100'}
-        `} 
+        style={{
+          maxWidth: '80%', // Limit width for better readability on mobile
+          padding: '0.5rem 1rem', // Padding for the message box
+          borderRadius: '0.375rem', // Rounded corners
+          wordBreak: 'break-word', // Word break handling
+          whiteSpace: 'pre-wrap', // Preserve whitespace
+          overflow: 'hidden', // Hide overflow
+          backgroundColor: message.sender === 'user' ? 'rgb(0,136,71)' : '#374151', // Background color based on sender
+          color: message.sender === 'user' ? '#FFFFFF' : '#D1D5DB', // Text color based on sender
+        }}
       >
-        {message.text}
+        {message.type === 'error' && (
+          <span style={{ color: '#EF4444' }}> {/* Error text color */}
+            {message.text}
+          </span>
+        )}
+        {message.type !== 'error' && message.text}
       </div>
     </div>
   );
