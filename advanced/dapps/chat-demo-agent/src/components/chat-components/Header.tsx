@@ -103,7 +103,7 @@ const Header: React.FC<object> = () => {
             marginBottom: '0', // Ensure no unnecessary margin
           }}
         >
-          Demo Agent
+          Reown Agent
         </h1>
 
         {/* Permissions Details */}
