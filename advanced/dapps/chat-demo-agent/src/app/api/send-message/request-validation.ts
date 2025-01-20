@@ -5,12 +5,12 @@ import { SmartSessionGrantPermissionsResponse } from '@reown/appkit-experimental
 /**
  * Maximum allowed length for message text to prevent abuse
  */
-const MAX_MESSAGE_LENGTH = 1000;
+const MAX_MESSAGE_LENGTH = 300;
 
 /**
  * Maximum allowed number of messages in history to prevent memory issues
  */
-const MAX_HISTORY_LENGTH = 10;
+const MAX_HISTORY_LENGTH = 6;
 
 /**
  * Type guard to validate the structure and content of message history
