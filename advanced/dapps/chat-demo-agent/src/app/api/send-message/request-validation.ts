@@ -60,7 +60,7 @@ function isValidMessageHistory(
       );
     }
 
-    if (msg.text.length > MAX_MESSAGE_LENGTH) {
+    if ( msg.sender !== 'system' && msg.text.length > MAX_MESSAGE_LENGTH) {
       throw new AppError(
         ErrorCodes.INVALID_REQUEST_BODY,
         `Message text exceeds maximum length at index ${index}`

@@ -76,7 +76,6 @@ export class ConvertTransactionService {
           'Slippage cannot exceed 50'
         );
       }
-      console.log({params},{projectId: this.projectId})
       const response = await fetch(`${this.baseUrl}/v1/convert/build-transaction`, {
         method: 'POST',
         headers: {
@@ -89,7 +88,6 @@ export class ConvertTransactionService {
       });
 
       if (!response.ok) {
-        console.log({response})
         if (response.status === 400) {
           throw new AppError(
             ErrorCodes.SWAP_EXECUTION_ERROR, 
