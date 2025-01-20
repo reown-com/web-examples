@@ -35,6 +35,12 @@ export class SwapService {
   ): Promise<SwapResponse> {
     const amount = parseEther(ethAmount || SWAP_CONFIG.AMOUNT_ETH);
     
+    if(amount > parseEther('0.001')){
+      throw new AppError(
+        ErrorCodes.SWAP_EXECUTION_ERROR,
+        'Amount must be less than 0.001 ETH'
+      );
+    }
     const swapParams: SwapParams = {
       src: SWAP_CONFIG.ETH_ADDRESS,
       dst: SWAP_CONFIG.USDC_ADDRESS,

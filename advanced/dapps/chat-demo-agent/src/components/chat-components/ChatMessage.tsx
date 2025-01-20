@@ -26,8 +26,8 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
       <div
         className={`max-w-[80%] px-4 py-2 rounded-md break-words whitespace-pre-wrap overflow-hidden ${
           message.sender === 'user'
-            ? 'bg-[rgb(0,136,71)] text-white'
-            : 'bg-gray-700 text-gray-300'
+            ? 'bg-blue-400/10 text-blue-500'
+            : 'bg-foreground text-secondary'
         }`}
       >
         {message.type === 'error' ? (

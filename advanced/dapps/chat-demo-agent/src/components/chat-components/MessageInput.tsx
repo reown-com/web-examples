@@ -43,7 +43,7 @@ const MessageInput = ({ onSubmit, isLoading }: MessageInputProps) => {
       )}
       <form
         onSubmit={handleSubmit}
-        className="p-3 sm:p-4 border-t border-zinc-700 bg-zinc-900 w-full overflow-x-hidden"
+        className="p-3 sm:p-2 bg-foreground w-full overflow-x-hidden"
       >
         <div className="flex flex-col gap-1 w-full">
           <div className="flex gap-2 items-center w-full">
@@ -52,14 +52,12 @@ const MessageInput = ({ onSubmit, isLoading }: MessageInputProps) => {
               value={inputMessage}
               onChange={(e) => handleInputChange(e.target.value)}
               placeholder="Type your message..."
-              className={`flex-1 bg-zinc-800 text-white rounded-lg px-3 py-2 sm:px-4 sm:py-3 focus:outline-none focus:ring-2 ${
-                isOverLimit ? 'focus:ring-red-500 border-red-500' : 'focus:ring-[rgb(0,136,71)]'
-              } text-sm sm:text-base w-full`}
+              className="flex-1 bg-foreground text-secondary px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base w-full ring-0 focus:ring-0 outline-none"
               disabled={isLoading}
             />
             <Button
               type="submit"
-              className={`bg-[rgb(0,136,71)] hover:bg-[rgb(0,116,61)] ${
+              className={`bg-blue-500 hover:bg-blue-400 ${
                 (isLoading || isOverLimit) ? 'opacity-50 cursor-not-allowed' : ''
               }`}
               disabled={isLoading || isOverLimit}
@@ -67,7 +65,7 @@ const MessageInput = ({ onSubmit, isLoading }: MessageInputProps) => {
               {isLoading ? '...' : <Send className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
           </div>
-          <div className={`text-xs text-right ${isOverLimit ? 'text-red-500' : 'text-zinc-400'}`}>
+          <div className={`text-xs text-right ${isOverLimit ? 'text-red-500' : 'text-secondary'}`}>
             {remainingChars} characters remaining
           </div>
         </div>

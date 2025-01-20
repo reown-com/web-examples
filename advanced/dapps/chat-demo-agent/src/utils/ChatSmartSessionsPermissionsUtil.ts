@@ -3,8 +3,8 @@ import { parseEther, toHex } from "viem";
 
 
 const getCurrentTimestampInSeconds = () => Math.floor(Date.now() / 1000) + 20;
-const PERMISSION_PERIOD =  24 * 60 * 60; //  1 day
-const ALLOWANCE_VALUE = parseEther("0.01");
+const PERMISSION_PERIOD =  60 * 60; //  1 hour
+const ALLOWANCE_VALUE = parseEther("0.001");
 
 export function getChatAgentPermissions(): Omit<
     SmartSessionGrantPermissionsRequest,
@@ -34,8 +34,8 @@ export function getChatAgentPermissions(): Omit<
 
     const chatAgentPermission = getChatAgentPermissions();
     const smartSessionChatAgentPermissions: SmartSessionGrantPermissionsRequest = {
-      // Adding 24 hours to the current time
-      expiry: getCurrentTimestampInSeconds() + 24 * 60 * 60,
+      // Adding 1 hours to the current time
+      expiry: getCurrentTimestampInSeconds() +  60 * 60,
       chainId: toHex(chainId),
       address: address as `0x${string}`,
       signer: {
