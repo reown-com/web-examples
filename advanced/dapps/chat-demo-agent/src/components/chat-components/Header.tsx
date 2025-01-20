@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Clock, LogOut, Trash2, XCircle, Menu, X } from "lucide-react";
+import { Clock, LogOut, Trash2, XCircle, Menu } from "lucide-react";
 import { useChat } from "@/hooks/use-chat";
 import { Button } from "../ui/button";
 import { useAppKit, useAppKitAccount, useDisconnect } from "@reown/appkit/react";
@@ -9,6 +9,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 
@@ -18,9 +20,8 @@ const Header: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState<string>("");
   const [chainName, setChainName] = useState<string>("");
   const { disconnect } = useDisconnect();
-  const { isConnected } = useAppKitAccount();
+  const { isConnected, status } = useAppKitAccount();
   const { open } = useAppKit();
-  const [isMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!grantedPermissions?.expiry) return;
@@ -80,145 +81,155 @@ const Header: React.FC = () => {
   };
 
   return (
-    <div className="h-20 border-b border-zinc-700 flex items-center justify-between px-4 flex-wrap">
-      <div className="flex items-center gap-4 flex-grow">
-        {/* Demo Agent Title */}
-        <h1 className="text-lg font-bold text-white m-0">
-          Reown Agent
-        </h1>
-
-        {/* Permissions Details */}
-        {grantedPermissions && (
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="text-white font-medium text-sm">
-                {grantedPermissions.address.slice(0, 6)}...
-                {grantedPermissions.address.slice(-4)}
-              </span>
-              <span className="text-xs text-zinc-400">
-                on {chainName}
-              </span>
+    <header className="sticky top-0 z-50 bg-zinc-900/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75">
+      <div className="h-20 border-b border-zinc-700 flex items-center justify-between px-4">
+        <div className="flex items-center gap-4">
+          {/* Logo and Title */}
+          <div className="flex items-center gap-2">
+            <div className="bg-[rgb(0,136,71)] p-2 rounded-lg">
+              <h1 className="text-lg font-bold text-white m-0">Reown Agent</h1>
             </div>
-            {grantedPermissions?.expiry && (
-              <div className="flex items-center gap-1 text-xs text-zinc-400">
-                <Clock size={14} />
-                <span>Permissions expire {timeLeft}</span>
-              </div>
-            )}
           </div>
-        )}
-      </div>
 
-      {/* Mobile Menu */}
-      <div className="sm:hidden">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              {isMenuOpen ? (
-                <X className="h-5 w-5 text-white" />
-              ) : (
-                <Menu className="h-5 w-5 text-white" />
+          {/* Permissions Details */}
+          {grantedPermissions && (
+            <div className="hidden sm:flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="text-white font-medium text-sm">
+                  {grantedPermissions.address.slice(0, 6)}...
+                  {grantedPermissions.address.slice(-4)}
+                </span>
+                <span className="text-xs text-zinc-400 bg-zinc-800 px-2 py-1 rounded-full">
+                  {chainName}
+                </span>
+              </div>
+              {grantedPermissions?.expiry && (
+                <div className="flex items-center gap-1 text-xs text-zinc-400">
+                  <Clock size={14} />
+                  <span>Expires {timeLeft}</span>
+                </div>
               )}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Actions */}
+        <div className="hidden sm:flex items-center gap-3">
+          {isConnected && status === 'connected' ? (
+            <>
+              {/* @ts-expect-error - Custom web component */}
+              <w3m-button />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDisconnect}
+                className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </>
+          ) : status === 'connecting' 
+          ? <Button
+              disabled
+              className="bg-[rgb(0,136,71)] text-white hover:bg-[rgb(0,116,61)]"
+          >
+            Connecting...
+          </Button>
+          : (
+            <Button
+              onClick={() => open({ view: "Connect" })}
+              className="bg-[rgb(0,136,71)] text-white hover:bg-[rgb(0,116,61)]"
+            >
+              Connect Wallet
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-zinc-800">
-            {isConnected ? (
-              <>
-                <DropdownMenuItem asChild>
-                  {/* @ts-expect-error - Custom web component */}
-                  <w3m-button />
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleDisconnect}
-                    className="flex items-center w-full"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Disconnect
-                  </Button>
-                </DropdownMenuItem>
-              </>
-            ) : (
-              <DropdownMenuItem asChild>
-                <Button
+          )}
+          <div className="h-6 w-px bg-zinc-700" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearPermissions}
+            className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+          >
+            <XCircle className="h-4 w-4" /> Clear Permissions
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearChat}
+            className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+          >
+            <Trash2 className="h-4 w-4" /> Clear Chat
+          </Button>
+        </div>
+
+        {/* Mobile Menu */}
+        <div className="sm:hidden">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-300">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-zinc-900 border border-zinc-700">
+              {grantedPermissions && (
+                <>
+                  <DropdownMenuLabel className="text-xs font-normal text-zinc-400">
+                    Session Details
+                  </DropdownMenuLabel>
+                  <DropdownMenuItem className="flex flex-col items-start gap-1">
+                    <span className="text-sm font-medium text-zinc-400">
+                      {grantedPermissions.address.slice(0, 6)}...
+                      {grantedPermissions.address.slice(-4)}
+                    </span>
+                    <span className="text-xs text-zinc-400">
+                      {chainName} • Expires {timeLeft}
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-zinc-700" />
+                </>
+              )}
+              <DropdownMenuLabel className="text-xs font-normal text-zinc-400">
+                Wallet
+              </DropdownMenuLabel>
+              {isConnected && status === 'connected' ? (
+                <>
+                  <DropdownMenuItem className="gap-2">
+                    {/* @ts-expect-error - Custom web component */}
+                    <w3m-button />
+                  </DropdownMenuItem>
+                </>
+              ) : status === 'connecting' 
+              ? <DropdownMenuItem
+                  disabled
+                  className="gap-2 bg-[rgb(0,136,71)] text-white hover:bg-[rgb(0,116,61)] focus:bg-[rgb(0,116,61)]"
+              >
+                Connecting...
+              </DropdownMenuItem>
+              :(
+                <DropdownMenuItem
                   onClick={() => open({ view: "Connect" })}
-                  className="bg-[rgb(0,136,71)] text-white hover:bg-[rgb(0,136,71)]/90 w-full"
+                  className="gap-2 bg-[rgb(0,136,71)] text-white hover:bg-[rgb(0,116,61)] focus:bg-[rgb(0,116,61)]"
                 >
                   Connect Wallet
-                </Button>
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem asChild>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleClearPermissions}
-                className="flex items-center w-full"
-              >
-                <XCircle className="mr-2 h-4 w-4" />
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator className="bg-zinc-700" />
+              <DropdownMenuLabel className="text-xs font-normal text-zinc-400">
+                Actions
+              </DropdownMenuLabel>
+              <DropdownMenuItem onClick={handleClearPermissions} className="gap-2 text-red-400 hover:text-red-300 focus:bg-red-400/10">
+                <XCircle className="h-4 w-4" />
                 Clear Permissions
-              </Button>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleClearChat}
-                className="flex items-center w-full"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleClearChat} className="gap-2 text-red-400 hover:text-red-300 focus:bg-red-400/10">
+                <Trash2 className="h-4 w-4" />
                 Clear Chat
-              </Button>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
-
-      {/* Desktop Menu */}
-      <div className="hidden sm:flex flex-wrap items-center gap-2">
-        {isConnected ? (
-          <>
-            {/* @ts-expect-error - Custom web component */}
-            <w3m-button />
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDisconnect}
-              className="flex items-center"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </>
-        ) : (
-          <Button
-            onClick={() => open({ view: "Connect" })}
-            className="bg-[rgb(0,136,71)] text-white hover:bg-[rgb(0,136,71)]/90"
-          >
-            Connect Wallet
-          </Button>
-        )}
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={handleClearPermissions}
-          className="flex items-center"
-        >
-          <XCircle className="mr-1 h-4 w-4" />
-          Clear Permissions
-        </Button>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={handleClearChat}
-          className="flex items-center"
-        >
-          <Trash2 className="mr-1 h-4 w-4" />
-          Clear Chat
-        </Button>
-      </div>
-    </div>
+    </header>
   );
 };
 
