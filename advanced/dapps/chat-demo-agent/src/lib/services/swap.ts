@@ -4,15 +4,29 @@ import { SmartSessionGrantPermissionsResponse } from '@reown/appkit-experimental
 import { SWAP_CONFIG } from '@/config/constants';
 import { ChainUtil } from '@/utils/ChainUtil';
 import { SwapReceipt, SwapResponse } from '@/types/api';
-import { OneInchApiService } from './1inch';
+// import { OneInchApiService } from './1inch';
 import type { SwapParams } from '@/types/1inch';
 import { AppError, ErrorCodes } from '@/errors/api-errors';
 import { getCallsStatus } from '@/utils/UserOpBuilderServiceUtils';
+import { ConvertTransactionService } from './blockchainapi';
 
 export class SwapService {
   private static async prepareSwapTransaction(swapParams: SwapParams) {
-    const oneInchApi = OneInchApiService.getInstance();
-    return await oneInchApi.buildSwapTransaction(swapParams);
+    // const oneInchApi = OneInchApiService.getInstance();
+    // return await oneInchApi.buildSwapTransaction(swapParams);
+
+    const convertService = ConvertTransactionService.getInstance()
+    const data = await convertService.buildTransaction({
+      amount: swapParams.amount,
+      from: `eip155:8453:${swapParams.src}`,
+      to: `eip155:8453:${swapParams.dst}`,
+      userAddress: `eip155:8453:${swapParams.from}`,
+      eip155:{
+        slippage: swapParams.slippage
+      }
+    })
+    return data;
+
   }
 
   static async executeSwap(
@@ -43,11 +57,10 @@ export class SwapService {
 
     const swapTransaction = await this.prepareSwapTransaction(swapParams);
     const calls = [{
-      to: swapTransaction.tx.to,
-      data: swapTransaction.tx.data,
-      value: BigInt(swapTransaction.tx.value),
+      to: swapTransaction.tx.to.split(':')[2] as `0x${string}`,
+      data: swapTransaction.tx.data  as `0x${string}`,
+      value: BigInt(amount.toString(10)),
     }];
-
     const userOpHash = await executeActionsWithECDSAKey({
       actions: calls,
       ecdsaPrivateKey: privateKey,
@@ -55,7 +68,6 @@ export class SwapService {
       accountAddress: swapParams.from,
       permissionsContext: permissions.context
     });
-    
     try {
       const receipt = await handleFetchReceipt(userOpHash);
       const txHash = receipt.receipts?.[0]?.transactionHash;

@@ -8,6 +8,8 @@ export const ErrorCodes = {
   SWAP_EXECUTION_ERROR: 'ERR005',
   RECEIPT_FETCH_ERROR: 'ERR006',
   TIMEOUT_ERROR: 'ERR007',
+  CONFIGURATION_ERROR: 'ERR008',
+  UNAUTHORIZED: 'ERR009',
   UNKNOWN_ERROR: 'ERR999',
 } as const;
 
@@ -16,6 +18,8 @@ export type ErrorCodeType = typeof ErrorCodes[keyof typeof ErrorCodes];
 
 // Private error descriptions - only for logging, not for client response
 export const ErrorDescriptions: Record<ErrorCodeType, string> = {
+  [ErrorCodes.UNAUTHORIZED]: 'Unauthorized',
+  [ErrorCodes.CONFIGURATION_ERROR]: 'Configuration error',
   [ErrorCodes.INVALID_REQUEST_BODY]: 'Failed to parse request body',
   [ErrorCodes.OPENAI_RESPONSE_ERROR]: 'Error getting response from OpenAI',
   [ErrorCodes.INVALID_OPENAI_RESPONSE]: 'Invalid or empty response from OpenAI',
