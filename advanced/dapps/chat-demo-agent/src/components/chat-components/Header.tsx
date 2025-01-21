@@ -123,14 +123,14 @@ const Header = () => {
             </>
           )}
           <div className="h-6 w-px bg-zinc-700" />
-          <Button
+          {grantedPermissions && <Button
             variant="ghost"
             size="sm"
             onClick={handleClearPermissions}
             className="text-red-500 bg-red-400/20 hover:text-red-400 hover:bg-red-400/10 whitespace-nowrap"
           >
             <XCircle className="h-4 w-4" /> Clear Permissions
-          </Button>
+          </Button> }
           {isConnected && status === 'connected' && (
             <Button
               variant="ghost"
