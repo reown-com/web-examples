@@ -55,7 +55,7 @@ const ChatInterface = () => {
                 <div className="flex gap-3">
                   <span className="text-blue-400">1.</span>
                   <p className="text-sm sm:text-base text-zinc-400">
-                    Will deploy a secure ERC-7579 Safe Account with smart session module enabled
+                    AppKit Embedded Wallet provides you with a secure Safe ERC-7579 compatible account with Smart Sessions module enabled
                   </p>
                 </div>
 
