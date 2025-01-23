@@ -134,7 +134,7 @@ async function handlePost(request: Request) {
     return NextResponse.json(
       { 
         status: 'error',
-        message: `Internal error occurred [${errorCode}]`
+        message: `Unable to process the request [${errorCode}]`
       },
       { status: 500 }
     );
