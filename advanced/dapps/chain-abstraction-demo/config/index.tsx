@@ -23,7 +23,7 @@ export const metadata = {
   name: "Chain Abstraction Demo",
   description: "A demo of Chain Abstraction",
   url: "https://ca-demo.reown.com", // origin must match your domain & subdomain
-  icons: ["https://avatars.githubusercontent.com/u/37784886"],
+  icons: ["https://ca-demo.reown.com/donut.png"],
 };
 
 export const config = wagmiAdapter.wagmiConfig;
