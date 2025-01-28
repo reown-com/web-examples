@@ -22,7 +22,7 @@ export const wagmiAdapter = new WagmiAdapter({
 export const metadata = {
   name: "Chain Abstraction Demo",
   description: "A demo of Chain Abstraction",
-  url: "https://web3modal.com", // origin must match your domain & subdomain
+  url: "https://ca-demo.reown.com", // origin must match your domain & subdomain
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
 };
 
