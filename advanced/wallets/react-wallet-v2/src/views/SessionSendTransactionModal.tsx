@@ -28,14 +28,13 @@ export default function SessionSendTransactionModal() {
   const [requiresMultiChain, setRequiresMultiChain] = useState<boolean>(false)
   const [routeTransactions, setRouteTransactions] = useState<Transaction[]>([])
   const [orchestrationId, setOrchestrationId] = useState<string | null>(null)
-
+  const [initialTransaction, setInitialTransaction] = useState<Transaction>()
   // Extract request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
   const { topic, params } = requestEvent || {}
   const { chainId, request } = params || {}
   const transaction = request?.params[0]
-
   // Check for multi-chain requirement and handle routing
   useEffect(() => {
     const initializeMultiChainCheck = async (): Promise<void> => {
@@ -53,11 +52,11 @@ export default function SessionSendTransactionModal() {
       }
 
       try {
-        const caService = new ChainAbstractionService()
-        const isMultiChain = await checkMultiChainRequirement(caService, request, chainId)
-        if (isMultiChain) {
-          await setupRouteTransactions(caService, request, chainId)
-        }
+        // const caService = new ChainAbstractionService()
+        // const isMultiChain = await checkMultiChainRequirement(caService, request, chainId)
+        // if (isMultiChain) {
+        await setupRouteTransactions(request, chainId)
+        // }
       } catch (error) {
         console.error('Error during multi-chain check:', error)
         styledToast('Unable to check multibridge availability', 'error')
@@ -69,48 +68,42 @@ export default function SessionSendTransactionModal() {
     initializeMultiChainCheck()
   }, [request, chainId])
 
-  const checkMultiChainRequirement = async (
-    caService: ChainAbstractionService,
-    request: { params: [{ from: string; to: string; data: string }] },
-    chainId: string
-  ): Promise<boolean> => {
-    const { data, from, to } = request.params[0]
-    const isMultiChain = await caService.checkTransaction({
-      from,
-      to,
-      value: '0',
-      gas: '0',
-      gasPrice: '0',
-      data,
-      nonce: '0',
-      maxFeePerGas: '0',
-      maxPriorityFeePerGas: '0',
-      chainId
-    })
-    setRequiresMultiChain(isMultiChain)
-    return isMultiChain
-  }
-
   const setupRouteTransactions = async (
-    caService: ChainAbstractionService,
+    // caService: ChainAbstractionService,
     request: { params: [{ from: string; to: string; data: string }] },
     chainId: string
   ): Promise<void> => {
     const { data, from, to } = request.params[0]
-    const routeResult = await caService.routeTransaction({
-      from,
-      to,
-      value: '0',
-      gas: '0',
-      gasPrice: '0',
-      data,
-      nonce: '0',
-      maxFeePerGas: '0',
-      maxPriorityFeePerGas: '0',
-      chainId
+
+    const result = await walletkit.prepareFulfilment({
+      transaction: {
+        to,
+        from,
+        data,
+        chainId
+      }
     })
-    setRouteTransactions(routeResult.transactions)
-    setOrchestrationId(routeResult.orchestrationId)
+    console.log('Fulfilment result:', result)
+    if (result.status === 'available') {
+      const routes = result.data.transactions.map(tx => ({
+        ...tx,
+        data: tx.input
+      }))
+      setRouteTransactions(routes)
+      setOrchestrationId(result.data.fulfilmentId)
+      setRequiresMultiChain(true)
+      setInitialTransaction({
+        to: result.data.initialTransaction.to,
+        from: result.data.initialTransaction.from,
+        value: result.data.initialTransaction.value,
+        data: result.data.initialTransaction.input,
+        nonce: result.data.initialTransaction.nonce,
+        maxFeePerGas: result.data.initialTransaction.maxFeePerGas,
+        maxPriorityFeePerGas: result.data.initialTransaction.maxPriorityFeePerGas,
+        chainId: result.data.initialTransaction.chainId,
+        gasLimit: result.data.initialTransaction.gasLimit
+      })
+    }
   }
 
   const handleApproval = useCallback(async (): Promise<void> => {
@@ -159,6 +152,7 @@ export default function SessionSendTransactionModal() {
     <MultiChainModal
       transactions={routeTransactions}
       orchestrationId={orchestrationId}
+      initialTransaction={initialTransaction}
       onReject={handleRejection}
       loadingReject={isLoadingReject}
     />
@@ -214,6 +208,7 @@ const SingleChainModal = ({
 
 type MultiChainModalProps = {
   transactions: Transaction[]
+  initialTransaction?: Transaction
   orchestrationId: string
   onReject: () => Promise<void>
   loadingReject: boolean
@@ -221,12 +216,14 @@ type MultiChainModalProps = {
 
 const MultiChainModal = ({
   transactions,
+  initialTransaction,
   orchestrationId,
   onReject,
   loadingReject
 }: MultiChainModalProps): JSX.Element => (
   <MultibridgeRequestModal
     transactions={transactions}
+    initialTransaction={initialTransaction}
     orchestrationId={orchestrationId}
     onReject={onReject}
     rejectLoader={{ active: loadingReject }}

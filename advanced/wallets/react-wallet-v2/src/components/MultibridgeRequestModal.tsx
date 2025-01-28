@@ -21,22 +21,27 @@ import { formatJsonRpcError } from '@json-rpc-tools/utils'
 interface IProps {
   onReject: () => void
   transactions?: Transaction[]
+  initialTransaction?: Transaction
   orchestrationId: string
   rejectLoader?: LoaderProps
 }
 
 export default function MultibridgeRequestModal({
   transactions,
+  initialTransaction,
   orchestrationId,
   onReject,
   rejectLoader
 }: IProps) {
   const [isLoadingApprove, setIsLoadingApprove] = useState<boolean>(false)
 
-  const bridgingTransactions = transactions?.slice(0, transactions.length - 1) || []
-  const initialTransaction = transactions?.[transactions.length - 1]
+  if (!transactions || transactions?.length === 0) {
+    return null
+  }
+  console.log('transactions', transactions)
+  const bridgingTransactions = transactions
 
-  const eip155ChainsFundsSourcedFrom = transactions
+  const eip155ChainsFundsSourcedFrom = bridgingTransactions
     ? new Set(bridgingTransactions.map(transaction => transaction.chainId))
     : new Set<TEIP155Chain>()
 
@@ -74,15 +79,16 @@ export default function MultibridgeRequestModal({
       )
       const chainConnectedWallet = await wallet.connect(chainProvider)
       const walletAddress = wallet.getAddress()
-
+      console.log('Connected wallet address', chainConnectedWallet)
       const txResponse = await chainConnectedWallet.sendTransaction({
         from: walletAddress,
         to: transaction.to,
         value: transaction.value,
         data: transaction.data,
         nonce: transaction.nonce,
-        gasPrice: transaction.gasPrice,
-        gasLimit: transaction.gas
+        maxFeePerGas: transaction.maxFeePerGas,
+        maxPriorityFeePerGas: transaction.maxPriorityFeePerGas,
+        gasLimit: transaction.gasLimit
       })
       const txHash = typeof txResponse === 'string' ? txResponse : txResponse?.hash
       const txReceipt = await txResponse.wait()
@@ -102,7 +108,7 @@ export default function MultibridgeRequestModal({
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const { status } = await caService.getOrchestrationStatus(orchestrationId)
       console.log(attempt, '- Orchestration status:', status)
-      if (status === 'completed') {
+      if (status.toLowerCase() === 'completed') {
         console.log('Bridging completed')
         return
       }
@@ -118,7 +124,18 @@ export default function MultibridgeRequestModal({
       try {
         performance.mark('startInititalTransactionSend')
         await bridgeFunds()
-        const response = await approveEIP155Request(requestEvent)
+        const response = await approveEIP155Request({
+          ...requestEvent,
+          params: {
+            ...requestEvent.params,
+            request: {
+              ...requestEvent.params.request,
+              params: {
+                ...initialTransaction
+              }
+            }
+          }
+        })
         performance.mark('endInititalTransactionSend')
         console.log(
           `Initial transaction send: ${
@@ -160,7 +177,7 @@ export default function MultibridgeRequestModal({
   const asset = getAssetByContractAddress(transfer.contract)
   const amount = convertTokenBalance(asset, transfer.amount)
   const destination = transfer.to
-  const sourceChain = EIP155_CHAINS[Array.from(eip155ChainsFundsSourcedFrom)[0] as TEIP155Chain]
+  const sourceChain = EIP155_CHAINS[transactions[0].chainId as TEIP155Chain]
   const targetChain = EIP155_CHAINS[eip155ChainFundsDestination as TEIP155Chain]
 
   return (
