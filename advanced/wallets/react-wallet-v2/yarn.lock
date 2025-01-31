@@ -2231,10 +2231,10 @@
     valtio "1.11.2"
     viem "2.x"
 
-"@reown/walletkit@1.1.2-canary-wasm-3":
-  version "1.1.2-canary-wasm-3"
-  resolved "https://registry.yarnpkg.com/@reown/walletkit/-/walletkit-1.1.2-canary-wasm-3.tgz#4373ca64d487d481a778bdc29a7c3ace0f6c0477"
-  integrity sha512-7n0WdudqSQqvUThxbq1tdfYmBhJXP0nr/8dynIgeNS01cPiiSSvOvuekhU2FuqLYBT4lW4u6IZ9eo3hWE1iWLg==
+"@reown/walletkit@1.1.2-canary-wasm-5":
+  version "1.1.2-canary-wasm-5"
+  resolved "https://registry.yarnpkg.com/@reown/walletkit/-/walletkit-1.1.2-canary-wasm-5.tgz#168a95d95c77f6bdd2c7d62c0b64b46c42dbd9d2"
+  integrity sha512-8pR4Sg7L8gT/gsPGgv0FygSNu7ZXu6Rb8AgjcazNcEb4ml8RhYPpXmX/GGI/iz6zXB9jxDYERCmAQDFfzpkm9w==
   dependencies:
     "@walletconnect/core" "2.17.3"
     "@walletconnect/jsonrpc-provider" "1.0.14"

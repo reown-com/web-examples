@@ -61,7 +61,7 @@ export async function getErc20TokenBalance(
   chainId: number,
   account: Hex,
   convert: boolean = true
-): Promise<number> {
+): Promise<string> {
   const publicClient = createPublicClient({
     chain: getChainById(chainId),
     transport: http()
@@ -73,11 +73,12 @@ export async function getErc20TokenBalance(
   })
   const result = await contract.read.balanceOf([account])
   if (!convert) {
-    return Number(result)
+    return result.toString()
   }
   const decimals = await contract.read.decimals()
-  const balance = BigInt(result) / BigInt(10 ** decimals)
-  return Number(balance)
+  console.log('result', result, decimals)
+  const balance = Number(result) / Number(10 ** decimals)
+  return balance.toFixed(2)
 }
 
 type Erc20Transfer = {

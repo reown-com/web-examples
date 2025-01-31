@@ -11,7 +11,7 @@ import { Hex } from 'viem'
 
 export default function ChainAbstractionBalanceCard() {
   const { eip155Address } = useSnapshot(SettingsStore.state)
-  const [balances, setBalances] = useState<Record<string, Record<string, number>>>({})
+  const [balances, setBalances] = useState<Record<string, Record<string, string>>>({})
   const [totalBalance, setTotalBalance] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function ChainAbstractionBalanceCard() {
 
       const fetchedBalances: Record<string, any> = {}
       for (const asset of Object.keys(multibridgeSupportedAssets)) {
-        const assetBalances: Record<string, number> = {}
+        const assetBalances: Record<string, string> = {}
         for (const chainId of Object.keys(multibridgeSupportedAssets[asset])) {
           const tokenAddress = multibridgeSupportedAssets[asset][Number(chainId)]
           const balance = await getErc20TokenBalance(
@@ -43,7 +43,7 @@ export default function ChainAbstractionBalanceCard() {
     for (const asset of Object.keys(balances)) {
       let total = 0
       for (const chainBalance of Object.values(balances[asset])) {
-        total += chainBalance
+        total += parseFloat(chainBalance)
       }
       totalBalances[asset] = total
     }
