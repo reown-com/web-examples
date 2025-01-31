@@ -2,12 +2,12 @@ import PageHeader from '@/components/PageHeader'
 import RelayRegionPicker from '@/components/RelayRegionPicker'
 import SettingsStore from '@/store/SettingsStore'
 import { cosmosWallets } from '@/utils/CosmosWalletUtil'
-import { eip155Wallets } from '@/utils/EIP155WalletUtil'
+import { eip155Wallets, replaceEip155Mnemonic } from '@/utils/EIP155WalletUtil'
 import { solanaWallets } from '@/utils/SolanaWalletUtil'
 import { multiversxWallets } from '@/utils/MultiversxWalletUtil'
 import { tronWallets } from '@/utils/TronWalletUtil'
 import { kadenaWallets } from '@/utils/KadenaWalletUtil'
-import { Card, Col, Divider, Row, Switch, Text } from '@nextui-org/react'
+import { Button, Card, Col, Divider, Row, Switch, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 import packageJSON from '../../package.json'
@@ -31,6 +31,12 @@ export default function SettingsPage() {
     moduleManagementEnabled,
     chainAbstractionEnabled
   } = useSnapshot(SettingsStore.state)
+
+  const onImportEip155Mnemonic = (value: string | null) => {
+    console.log('Importing EIP155 Mnemonic: ', value)
+    if (!value) throw new Error('No value provided')
+    replaceEip155Mnemonic(value.trim())
+  }
 
   return (
     <Fragment>
@@ -191,8 +197,14 @@ export default function SettingsPage() {
         be used elsewhere!
       </Text>
 
-      <Text h4 css={{ marginTop: '$5', marginBottom: '$5' }}>
+      <Text h4 css={{ marginTop: '$5', marginBottom: '$5', display: 'flex' }}>
         EIP155 Mnemonic
+        <Button
+          style={{ marginLeft: 10 }}
+          onClick={() => onImportEip155Mnemonic(prompt('Enter mnemonic or private key'))}
+        >
+          Import
+        </Button>
       </Text>
       <Card bordered borderWeight="light" css={{ minHeight: '100px' }}>
         <Text css={{ fontFamily: '$mono' }}>{eip155Wallets[eip155Address].getMnemonic()}</Text>
