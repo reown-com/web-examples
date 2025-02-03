@@ -6,6 +6,7 @@ import { createAppKit } from "@reown/appkit/react";
 import { arbitrum, base, optimism } from "@reown/appkit/networks";
 import React, { type ReactNode } from "react";
 import { cookieToInitialState, WagmiProvider, type Config } from "wagmi";
+import { WalletAssetsProvider } from "./WalletAssetsProvider";
 
 const queryClient = new QueryClient();
 
@@ -39,7 +40,11 @@ function AppKitProvider({
       config={wagmiAdapter.wagmiConfig}
       initialState={initialState}
     >
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <WalletAssetsProvider>
+          {children}
+        </WalletAssetsProvider>
+      </QueryClientProvider>
     </WagmiProvider>
   );
 }

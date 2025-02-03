@@ -10,8 +10,8 @@ import { GiftDonutModalViews } from "./gift-donut-modal-views";
 type GiftDonutModalTriggerProps = {
   views?: Record<string, React.FC<GiftDonutModalViewProps>>;
   initialView?: string;
-  triggerText?: string;
-  // Button customization props
+  triggerText?: string | React.ReactElement;
+  disabled?: boolean; 
   className?: string;
   variant?:
     | "default"
@@ -27,6 +27,7 @@ export const GiftDonutModalTrigger: React.FC<GiftDonutModalTriggerProps> = ({
   views = GiftDonutModalViews,
   initialView = "Checkout",
   triggerText = "Gift Donut",
+  disabled = false, 
   className,
   variant = "default",
   buttonProps = {},
@@ -63,6 +64,7 @@ export const GiftDonutModalTrigger: React.FC<GiftDonutModalTriggerProps> = ({
         }}
         variant={variant}
         className={className}
+        disabled={disabled}  
         {...buttonProps}
       >
         {triggerText}
