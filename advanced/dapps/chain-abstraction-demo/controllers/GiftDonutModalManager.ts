@@ -44,7 +44,7 @@ class GiftDonutModalManager {
       views: {},
       state: {
         token: supportedTokens[0],
-        donutCount: 1,
+        donutCount: 0,
       },
     });
   }
@@ -98,6 +98,7 @@ class GiftDonutModalManager {
   }
 
   setToken(token: Token): void {
+    this.state.state.donutCount = 0; // Reset donut count when changing token
     this.state.state.token = token;
   }
 

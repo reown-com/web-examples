@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { ArrowRight, ChevronRight, X } from "lucide-react";
 import CoinSVG from "../assets/CoinSVG";
 import NetworkSVG from "../assets/NetworkSVG";
+import { useWalletAssets } from "@/context/WalletAssetsProvider";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 function CheckoutView({ onViewChange, onClose }: GiftDonutModalViewProps) {
   return (
@@ -29,13 +31,18 @@ function GiftDonutForm({
   onClose,
 }: GiftDonutFormProps) {
   const donutCount = giftDonutModalManager.getDonutCount();
+  const {getBalanceBySymbol} = useWalletAssets();
   const [count, setCount] = React.useState(donutCount);
 
   const selectedToken = giftDonutModalManager.getToken();
   const selectedNetwork = giftDonutModalManager.getNetwork();
-
+  const tokenBalance = getBalanceBySymbol(selectedToken.name);
+  const maxDonutPurchasable = Math.trunc(parseFloat(tokenBalance) / 1.00);
+  
   const setDonutCount = (count: number) => {
     if (count < 0) return;
+    const balance = getBalanceBySymbol(selectedToken.name);
+    if (count > parseFloat(balance)) return;
     setCount(count);
     giftDonutModalManager.setDonutCount(count);
   };
@@ -69,14 +76,24 @@ function GiftDonutForm({
                   -
                 </Button>
                 {count}
-                <Button
-                  variant="outline"
-                  onClick={() => setDonutCount(count + 1)}
-                  style={{ backgroundColor: "var(--tertiary-foreground)" }}
-                  className="ml-2 rounded-full "
-                >
-                  +
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        onClick={() => setDonutCount(count + 1)}
+                        style={{ backgroundColor: "var(--tertiary-foreground)" }}
+                        className="ml-2 rounded-full "
+                      >
+                        +
+                      </Button>
+                </TooltipTrigger>
+                  <TooltipContent >
+                    <p>Maximum donuts you can gift: {maxDonutPurchasable}</p>
+                    <p className="text-xs">Available: {tokenBalance} {selectedToken.name}</p>
+                  </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>
