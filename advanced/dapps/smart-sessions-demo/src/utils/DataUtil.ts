@@ -16,4 +16,9 @@ export const smartSessionsDemoAppMetadata: DemoAppMetadata[] = [
     link: "/demo/tictactoe",
     description: "Play TicTacToe",
   },
+  {
+    title: "Chat Agent",
+    link: "https://ai-agent-demo.reown.com/",
+    description: "Demo Chat Agent using smart-sessions and ai-agent ",
+  },
 ];
