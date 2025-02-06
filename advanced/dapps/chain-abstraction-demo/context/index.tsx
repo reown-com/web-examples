@@ -41,9 +41,7 @@ function AppKitProvider({
       initialState={initialState}
     >
       <QueryClientProvider client={queryClient}>
-        <WalletAssetsProvider>
-          {children}
-        </WalletAssetsProvider>
+        <WalletAssetsProvider>{children}</WalletAssetsProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

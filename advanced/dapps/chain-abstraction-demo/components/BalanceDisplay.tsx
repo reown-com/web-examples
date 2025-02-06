@@ -5,7 +5,10 @@ interface BalanceDisplayProps {
   isLoading: boolean;
 }
 
-export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({ balances, isLoading }) => {
+export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
+  balances,
+  isLoading,
+}) => {
   if (isLoading) {
     return null;
   }
@@ -14,7 +17,7 @@ export const BalanceDisplay: React.FC<BalanceDisplayProps> = ({ balances, isLoad
     <div className="flex flex-col items-center gap-1 text-sm text-secondary mt-2">
       {balances.map((token) => (
         <div key={token.address}>
-          Available {token.symbol} Balance: {token.balance} {token.symbol} 
+          Available {token.symbol} Balance: {token.balance} {token.symbol}
         </div>
       ))}
     </div>

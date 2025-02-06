@@ -21,9 +21,9 @@ export const GiftDonutButton: React.FC<GiftDonutButtonProps> = ({
 }) => {
   if (!isConnected) {
     return (
-    <div>
-      <ConnectWalletButton />
-    </div>
+      <div>
+        <ConnectWalletButton />
+      </div>
     );
   }
 
@@ -45,7 +45,7 @@ export const GiftDonutButton: React.FC<GiftDonutButtonProps> = ({
               }
               initialView="Checkout"
               className={`${
-                isLoading 
+                isLoading
                   ? "bg-blue-400"
                   : hasEnoughBalance
                     ? "bg-blue-500 hover:bg-blue-700"

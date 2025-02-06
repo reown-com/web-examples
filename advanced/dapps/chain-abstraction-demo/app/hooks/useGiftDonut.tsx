@@ -7,7 +7,6 @@ import { erc20Abi, Hex } from "viem";
 import { getAccount, getWalletClient } from "wagmi/actions";
 
 export default function useGiftDonut() {
-
   const giftDonutAsync = async (
     to: Hex,
     donutCount: number,
@@ -25,9 +24,11 @@ export default function useGiftDonut() {
       }
 
       if (connectedChainId !== network.chainId) {
-        throw new Error("Please switch chain, connected chain does not match network");
+        throw new Error(
+          "Please switch chain, connected chain does not match network",
+        );
       }
-      
+
       const tokenName = token.name;
       const tokenChainMapping = tokenAddresses[tokenName];
       if (!tokenChainMapping) {
@@ -50,11 +51,9 @@ export default function useGiftDonut() {
       toast.success(`Transaction sent with hash: ${tx}`);
       return tx;
     } catch (e) {
-
       if (e instanceof Error) {
-        toast.error(e.message)
-      }
-      else {
+        toast.error(e.message);
+      } else {
         toast.error("Error sending gift donut");
       }
       console.error(e);

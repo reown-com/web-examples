@@ -11,7 +11,7 @@ type GiftDonutModalTriggerProps = {
   views?: Record<string, React.FC<GiftDonutModalViewProps>>;
   initialView?: string;
   triggerText?: string | React.ReactElement;
-  disabled?: boolean; 
+  disabled?: boolean;
   className?: string;
   variant?:
     | "default"
@@ -27,7 +27,7 @@ export const GiftDonutModalTrigger: React.FC<GiftDonutModalTriggerProps> = ({
   views = GiftDonutModalViews,
   initialView = "Checkout",
   triggerText = "Gift Donut",
-  disabled = false, 
+  disabled = false,
   className,
   variant = "default",
   buttonProps = {},
@@ -64,7 +64,7 @@ export const GiftDonutModalTrigger: React.FC<GiftDonutModalTriggerProps> = ({
         }}
         variant={variant}
         className={className}
-        disabled={disabled}  
+        disabled={disabled}
         {...buttonProps}
       >
         {triggerText}

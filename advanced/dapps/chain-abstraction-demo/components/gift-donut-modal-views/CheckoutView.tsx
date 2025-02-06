@@ -10,7 +10,12 @@ import { ArrowRight, ChevronRight, X } from "lucide-react";
 import CoinSVG from "../assets/CoinSVG";
 import NetworkSVG from "../assets/NetworkSVG";
 import { useWalletAssets } from "@/context/WalletAssetsProvider";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 function CheckoutView({ onViewChange, onClose }: GiftDonutModalViewProps) {
   return (
@@ -31,14 +36,14 @@ function GiftDonutForm({
   onClose,
 }: GiftDonutFormProps) {
   const donutCount = giftDonutModalManager.getDonutCount();
-  const {getBalanceBySymbol} = useWalletAssets();
+  const { getBalanceBySymbol } = useWalletAssets();
   const [count, setCount] = React.useState(donutCount);
 
   const selectedToken = giftDonutModalManager.getToken();
   const selectedNetwork = giftDonutModalManager.getNetwork();
   const tokenBalance = getBalanceBySymbol(selectedToken.name);
-  const maxDonutPurchasable = Math.trunc(parseFloat(tokenBalance) / 1.00);
-  
+  const maxDonutPurchasable = Math.trunc(parseFloat(tokenBalance) / 1.0);
+
   const setDonutCount = (count: number) => {
     if (count < 0) return;
     const balance = getBalanceBySymbol(selectedToken.name);
@@ -82,16 +87,20 @@ function GiftDonutForm({
                       <Button
                         variant="outline"
                         onClick={() => setDonutCount(count + 1)}
-                        style={{ backgroundColor: "var(--tertiary-foreground)" }}
+                        style={{
+                          backgroundColor: "var(--tertiary-foreground)",
+                        }}
                         className="ml-2 rounded-full "
                       >
                         +
                       </Button>
-                </TooltipTrigger>
-                  <TooltipContent >
-                    <p>Maximum donuts you can gift: {maxDonutPurchasable}</p>
-                    <p className="text-xs">Available: {tokenBalance} {selectedToken.name}</p>
-                  </TooltipContent>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Maximum donuts you can gift: {maxDonutPurchasable}</p>
+                      <p className="text-xs">
+                        Available: {tokenBalance} {selectedToken.name}
+                      </p>
+                    </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
@@ -174,7 +183,7 @@ function GiftDonutForm({
       <div className="flex justify-between w-full items-center">
         <p className="text-secondary">Total</p>
         <p className="text-md font-bold text-primary">
-          ${(count * 1.00).toFixed(2)}
+          ${(count * 1.0).toFixed(2)}
         </p>
       </div>
       <div className="flex gap-2 w-full">
