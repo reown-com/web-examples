@@ -30,7 +30,7 @@
     "@polkadot/keyring": "^10.1.2",
     "@polkadot/types": "^9.3.3",
     "@reown/appkit-experimental": "1.1.5",
-    "@reown/walletkit": "1.1.2-canary-wasm-5",
+    "@reown/walletkit": "1.1.2-canary-tvf-1",
     "@rhinestone/module-sdk": "0.1.25",
     "@solana/web3.js": "1.89.2",
     "@taquito/signer": "^15.1.0",
