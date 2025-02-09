@@ -10,7 +10,6 @@ import { TRON_CHAINS, TTronChain } from '@/data/TronData'
 import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
 
 import { utils } from 'ethers'
-import { Verify } from '@walletconnect/types'
 import bs58 from 'bs58'
 
 /**
