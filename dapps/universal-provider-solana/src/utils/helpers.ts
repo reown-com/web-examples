@@ -21,7 +21,7 @@ export function verifyTransactionSignature(
   tx: Transaction
 ) {
   return nacl.sign.detached.verify(
-    tx.serializeMessage(),
+    new Uint8Array(tx.serializeMessage()),
     bs58.decode(signature),
     bs58.decode(address)
   );
