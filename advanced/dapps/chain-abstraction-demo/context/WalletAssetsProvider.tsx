@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
+import { useAppKitAccount, useAppKitNetwork, useAppKitProvider } from "@reown/appkit/react";
 import { base, optimism } from "viem/chains";
 import UniversalProvider from "@walletconnect/universal-provider";
 import { usdcTokenAddresses, usdtTokenAddresses } from "@/consts/tokens";
@@ -26,6 +26,13 @@ interface WalletGetAssetsRPCResponse {
   result: Record<Hex, Asset[]>[];
 }
 
+type WalletAssetRequest = {
+  account: string;
+  chainFilter?: Hex[];
+  assetFilter?: Record<Hex, (Hex|'native')[]>;
+  assetTypeFilter?: ('NATIVE'|'ERC20')[];
+};
+
 export interface TokenBalance {
   symbol: string;
   balance: string;
@@ -38,6 +45,9 @@ interface WalletCapability {
 
 interface ChainCapabilities {
   walletService?: WalletCapability;
+  assetDiscovery?: {
+    supported: boolean;
+  };
 }
 
 interface Capabilities {
@@ -59,6 +69,7 @@ export const WalletAssetsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { address, status } = useAppKitAccount();
+  const { chainId } = useAppKitNetwork()
   const { walletProvider, walletProviderType } =
     useAppKitProvider<UniversalProvider>("eip155");
   const [balances, setBalances] = React.useState<TokenBalance[]>([]);
@@ -75,103 +86,113 @@ export const WalletAssetsProvider: React.FC<{ children: React.ReactNode }> = ({
     const significantDecimals = Math.min(6, decimals);
     return value.toFixed(significantDecimals).replace(/\.?0+$/, "");
   };
+// Utility functions
+const convertChainIdToHex = (chainId: number): Hex => {
+  return `0x${parseInt(chainId.toString()).toString(16)}` as Hex;
+};
 
-  const fetchBalances = React.useCallback(async () => {
-    const chainIdAsHex = `0x${optimism.id.toString(16)}` as Hex;
-    if (!address || status !== "connected") return;
-    if (!walletProvider) {
-      console.log("Wallet provider not available");
-      return;
-    }
-    const walletGetAssetsRequest = {
-      account: address,
-      assetFilter: {
-        [chainIdAsHex]: [
-          usdcTokenAddresses[optimism.id],
-          usdtTokenAddresses[optimism.id],
-          "native",
-        ],
-      },
-    };
+const processAssetsToBalances = (chainAssets: Asset[]): TokenBalance[] => {
+  return chainAssets.map((asset) => ({
+    symbol: asset.metadata.symbol,
+    balance: formatBalance(BigInt(asset.balance), asset.metadata.decimals),
+    address: asset.address as Hex,
+  }));
+};
 
-    try {
-      setIsLoading(true);
-      let assetsResponse: Record<Hex, Asset[]>[];
+// WalletConnect specific functions
+const getWalletConnectAssets = async (
+  walletProvider: UniversalProvider,
+  request: WalletAssetRequest,
+  chainIdAsHex: Hex,
+  projectId: string
+): Promise<Record<Hex, Asset[]>[]> => {
+  const capabilities = JSON.parse(
+    walletProvider.session?.sessionProperties?.["capabilities"] || "{}"
+  );
+  
+  const walletGetAssetsUrl = capabilities[chainIdAsHex]?.["walletService"]?.["wallet_getAssets"];
+  if (!walletGetAssetsUrl) {
+    throw new Error("Wallet does not support wallet_getAssets");
+  }
 
-      if (walletProviderType === "WALLET_CONNECT") {
-        // WalletConnect specific logic
-        const capabilities = walletProvider.session?.sessionProperties?.[
-          "capabilities"
-        ]
-          ? JSON.parse(
-              walletProvider.session.sessionProperties?.["capabilities"],
-            )
-          : {};
+  const store = RpcRequest.createStore();
+  const rpcRequest = store.prepare({
+    method: "wallet_getAssets",
+    params: [request],
+  });
 
-        const walletGetAssetsUrl =
-          capabilities[chainIdAsHex]?.["walletService"]?.["wallet_getAssets"];
+  const url = new URL(walletGetAssetsUrl);
+  url.searchParams.set("projectId", projectId);
 
-        if (!walletGetAssetsUrl) {
-          console.log("Wallet does not support wallet_getAssets");
-          return;
-        }
+  const response = await fetch(url.toString(), {
+    body: JSON.stringify(rpcRequest),
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
 
-        const store = RpcRequest.createStore();
-        const request = store.prepare({
-          method: "wallet_getAssets",
-          params: [walletGetAssetsRequest],
-        });
+  const { result } = await response.json() as WalletGetAssetsRPCResponse;
+  return result;
+};
 
-        const url = new URL(walletGetAssetsUrl);
-        url.searchParams.set("projectId", projectId!);
+// Embedded Wallet specific functions
+const getEmbeddedWalletAssets = async (
+  walletProvider: UniversalProvider,
+  request: WalletAssetRequest,
+  chainIdAsHex: Hex,
+  address: string
+): Promise<Record<Hex, Asset[]>[]> => {
+  const capabilities = await walletProvider.request({
+    method: "wallet_getCapabilities",
+    params: [address]
+  }) as Capabilities;
 
-        const response = await fetch(url.toString(), {
-          body: JSON.stringify(request),
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+  if (!capabilities[chainIdAsHex]?.assetDiscovery?.supported) {
+    throw new Error("Wallet does not support wallet_getAssets");
+  }
 
-        const walletGetAssetsResponse =
-          (await response.json()) as WalletGetAssetsRPCResponse;
-        assetsResponse = walletGetAssetsResponse.result;
-      } else {
-        // Other wallet providers[Embedded Wallet]
-        const response = (await walletProvider.request({
-          method: "wallet_getAssets",
-          params: [walletGetAssetsRequest],
-        })) as Record<Hex, Asset[]>;
+  const response = await walletProvider.request({
+    method: "wallet_getAssets",
+    params: [request],
+  }) as Record<Hex, Asset[]>;
 
-        assetsResponse = [response];
+  return [response];
+};
 
-        console.log({ assetsResponse });
+// Main fetch function
+const fetchBalances = React.useCallback(async () => {
+  if (!address || status !== "connected" || !chainId || !walletProvider) {
+    console.log("Required conditions not met");
+    return;
+  }
+
+  const chainIdAsHex = convertChainIdToHex(parseInt(chainId.toString()));
+  const request: WalletAssetRequest = {
+    account: address,
+    chainFilter: [chainIdAsHex]
+  };
+
+  try {
+    setIsLoading(true);
+    
+    const assetsResponse = await (walletProviderType === "WALLET_CONNECT" 
+      ? getWalletConnectAssets(walletProvider, request, chainIdAsHex, projectId!)
+      : getEmbeddedWalletAssets(walletProvider, request, chainIdAsHex, address)
+    );
+
+    const assetsObject = assetsResponse.find((item) => chainIdAsHex in item);
+    if (assetsObject) {
+      const chainAssets = assetsObject[chainIdAsHex];
+      if (chainAssets?.length > 0) {
+        const tokenBalances = processAssetsToBalances(chainAssets);
+        setBalances(tokenBalances);
       }
-
-      // Common processing for both wallet types
-      const assetsObject = assetsResponse.find((item) => chainIdAsHex in item);
-
-      if (assetsObject) {
-        const chainAssets = assetsObject[chainIdAsHex];
-        if (chainAssets && chainAssets.length > 0) {
-          const tokenBalances = chainAssets.map((asset) => ({
-            symbol: asset.metadata.symbol,
-            balance: formatBalance(
-              BigInt(asset.balance),
-              asset.metadata.decimals,
-            ),
-            address: asset.address as Hex,
-          }));
-
-          setBalances(tokenBalances);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching assets:", error);
-    } finally {
-      setIsLoading(false);
     }
-  }, [address, status, walletProvider, walletProviderType]);
+  } catch (error) {
+    console.error("Error fetching assets:", error);
+  } finally {
+    setIsLoading(false);
+  }
+}, [address, status, chainId, walletProvider, walletProviderType]);
 
   const getBalanceBySymbol = React.useCallback(
     (symbol: string) => {
