@@ -2,13 +2,61 @@ import { config } from "@/config";
 import { tokenAddresses } from "@/consts/tokens";
 import { Network, Token } from "@/data/EIP155Data";
 import { toast } from "sonner";
-import { erc20Abi, Hex } from "viem";
+import { erc20Abi, Hex, PublicClient } from "viem";
 import { getAccount, getWalletClient, getPublicClient } from "wagmi/actions";
 import { useState } from "react";
 import { TransactionToast } from "@/components/TransactionToast";
 
+type TransactionStatus = 'waiting-approval' | 'pending' | 'success' | 'error';
+
 export default function useGiftDonut() {
   const [isPending, setIsPending] = useState(false);
+
+  const updateToast = (
+    toastId: ReturnType<typeof toast>, 
+    status: TransactionStatus, 
+    { elapsedTime, hash, networkName }: { 
+      elapsedTime?: number;
+      hash?: string;
+      networkName?: string;
+    } = {}
+  ) => {
+    toast(
+      <TransactionToast 
+        status={status}
+        elapsedTime={elapsedTime}
+        hash={hash}
+        networkName={networkName}
+      />,
+      { id: toastId }
+    );
+  };
+
+  const validateTransaction = async (network: Network) => {
+    const client = await getWalletClient(config, { chainId: network.chainId });
+    const publicClient = getPublicClient(config);
+    if (!publicClient) throw new Error("Failed to get public client");
+
+    const account = getAccount(config);
+    const connectedChainId = account.chain?.id;
+    
+    if (!connectedChainId) throw new Error("Chain undefined");
+    if (connectedChainId !== network.chainId) {
+      throw new Error("Please switch chain, connected chain does not match network");
+    }
+
+    return { client, publicClient };
+  };
+
+  const getTokenContract = (token: Token, chainId: number) => {
+    const tokenChainMapping = tokenAddresses[token.name];
+    if (!tokenChainMapping) throw new Error("Token not supported");
+
+    const contract = tokenChainMapping[chainId];
+    if (!contract) throw new Error("Can't send on specified chain");
+
+    return contract;
+  };
 
   const giftDonutAsync = async (
     to: Hex,
@@ -18,54 +66,26 @@ export default function useGiftDonut() {
   ) => {
     setIsPending(true);
     const startTime = Date.now();
-    const toastId = toast(
-      <TransactionToast status="waiting-approval" />
-    );
+    const toastId = toast(<TransactionToast status="waiting-approval" />);
+    let updateInterval: ReturnType<typeof setInterval>;
 
     try {
-      const client = await getWalletClient(config, {
-        chainId: network.chainId,
-      });
-      const publicClient = getPublicClient(config);
-      if (!publicClient) {
-        throw new Error("Failed to get public client");
-      }
-      const account = getAccount(config);
-      const connectedChainId = account.chain?.id;
+      // Validate chain and get clients
+      const { client, publicClient } = await validateTransaction(network);
+      const chainId = getAccount(config).chain?.id!;
       
-      if (!connectedChainId) {
-        throw new Error("Chain undefined");
-      }
-
-      if (connectedChainId !== network.chainId) {
-        throw new Error("Please switch chain, connected chain does not match network");
-      }
-      
-      const tokenName = token.name;
-      const tokenChainMapping = tokenAddresses[tokenName];
-      if (!tokenChainMapping) {
-        throw new Error("Token not supported");
-      }
-
-      const contract = tokenChainMapping[connectedChainId];
-      if (!contract) {
-        throw new Error("Can't send on specified chain");
-      }
-      
+      // Get token contract
+      const contract = getTokenContract(token, chainId);
       const tokenAmount = donutCount * 1 * 10 ** 6;
 
-      // Set up an interval to update the elapsed time
-      const updateInterval = setInterval(() => {
-        const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-        toast(
-          <TransactionToast 
-            status="waiting-approval" 
-            elapsedTime={elapsedSeconds} 
-          />, 
-          { id: toastId }
-        );
+      // Start tracking elapsed time
+      updateInterval = setInterval(() => {
+        updateToast(toastId, 'waiting-approval', {
+          elapsedTime: Math.floor((Date.now() - startTime) / 1000)
+        });
       }, 1000);
 
+      // Send transaction
       const tx = await client.writeContract({
         abi: erc20Abi,
         address: contract,
@@ -73,43 +93,30 @@ export default function useGiftDonut() {
         args: [to, BigInt(tokenAmount)],
       });
 
+      // Update to pending status
+      updateToast(toastId, 'pending', { hash: tx, networkName: network.name });
+
+      // Wait for transaction
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
       clearInterval(updateInterval);
 
-      // Start watching the transaction
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
+      // Update final status
       const finalElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-
-      if (receipt.status === 'success') {
-        toast(
-          <TransactionToast 
-            status="success" 
-            elapsedTime={finalElapsedSeconds}
-            hash={tx}
-            networkName={network.name}
-          />, 
-          { id: toastId }
-        );
-      } else {
-        toast(
-          <TransactionToast 
-            status="error" 
-            elapsedTime={finalElapsedSeconds}
-          />, 
-          { id: toastId }
-        );
-      }
+      const finalStatus = receipt.status === 'success' ? 'success' : 'error';
+      
+      updateToast(toastId, finalStatus, {
+        elapsedTime: finalElapsedSeconds,
+        hash: tx,
+        networkName: network.name
+      });
 
       return tx;
     } catch (e) {
+      clearInterval(updateInterval!);
       const finalElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      
       if (e instanceof Error) {
-        toast(
-          <TransactionToast 
-            status="error" 
-            elapsedTime={finalElapsedSeconds}
-          />, 
-          { id: toastId }
-        );
+        updateToast(toastId, 'error', { elapsedTime: finalElapsedSeconds });
       }
       console.error(e);
     } finally {
