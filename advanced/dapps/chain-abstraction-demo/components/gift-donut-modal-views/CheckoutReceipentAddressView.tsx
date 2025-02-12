@@ -38,27 +38,31 @@ function GiftDonutForm({
   const [recipientAddress, setRecipientAddress] = React.useState(
     recipient || "",
   );
-  const { giftDonutAsync } = useGiftDonut();
+  const { giftDonutAsync, isPending } = useGiftDonut();
 
   const setRecipient = (address: string) => {
     setRecipientAddress(address);
     giftDonutModalManager.setRecipient(address);
   };
 
-  const handleCheckout = () => {
-    try{
+  const handleCheckout = async () => {
+    try {
       const to = recipientAddress as `0x${string}`;
       const token = giftDonutModalManager.getToken();
       const network = giftDonutModalManager.getNetwork();
       if(!network) {
         throw new Error("Network not selected");
       }
-      onClose()
-      giftDonutAsync(to, donutCount, token, network);
-    }catch(e){
-      console.error(e)
-      if(e instanceof Error){
-        toast.error(e.message)
+      
+      // Start the transaction before closing the modal
+      const giftPromise = giftDonutAsync(to, donutCount, token, network);
+      onClose(); // Close modal after initiating transaction
+      await giftPromise; // Wait for transaction to complete
+      
+    } catch(e) {
+      console.error(e);
+      if(e instanceof Error) {
+        toast.error(e.message);
       }
     }
   };
