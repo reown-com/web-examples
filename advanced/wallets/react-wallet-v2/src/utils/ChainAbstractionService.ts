@@ -5,12 +5,11 @@ export interface Transaction {
   from: string
   to: string
   value: string
-  gas: string
-  gasPrice: string
   data: string
   nonce: string
   maxFeePerGas: string
   maxPriorityFeePerGas: string
+  gasLimit: string
   chainId: string
 }
 
