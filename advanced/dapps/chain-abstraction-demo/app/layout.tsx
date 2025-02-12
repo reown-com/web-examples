@@ -41,7 +41,7 @@ export default function RootLayout({
             <div className="flex justify-center min-h-screen">{children}</div>
           </ThemeProvider>
         </AppKitProvider>
-        <Toaster />
+        <Toaster expand={true} />
       </body>
     </html>
   );
