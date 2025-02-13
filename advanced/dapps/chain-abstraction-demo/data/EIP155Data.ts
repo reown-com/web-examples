@@ -1,4 +1,9 @@
-import { AppKitNetwork, arbitrum, base, optimism } from "@reown/appkit/networks";
+import {
+  AppKitNetwork,
+  arbitrum,
+  base,
+  optimism,
+} from "@reown/appkit/networks";
 
 export interface Network {
   name: string;
@@ -18,19 +23,19 @@ export const supportedNetworks: Network[] = [
     name: arbitrum.name,
     icon: "/chain-logos/arbitrum.png",
     chainId: arbitrum.id,
-    chain:arbitrum
+    chain: arbitrum,
   },
   {
     name: base.name,
     icon: "/chain-logos/base.webp",
     chainId: base.id,
-    chain:base
+    chain: base,
   },
   {
     name: optimism.name,
     icon: "/chain-logos/eip155-10.png",
     chainId: optimism.id,
-    chain:optimism
+    chain: optimism,
   },
 ];
 

@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@reown/appkit": "^1.5.0",
-    "@reown/appkit-adapter-solana": "^1.5.0",
-    "@reown/appkit-adapter-wagmi": "^1.5.0",
+    "@reown/appkit": "1.6.8",
+    "@reown/appkit-adapter-solana": "1.6.8",
+    "@reown/appkit-adapter-wagmi": "1.6.8",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@tanstack/react-query": "^5.56.2",
     "react": "^18.3.1",

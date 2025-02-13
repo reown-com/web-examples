@@ -44,7 +44,7 @@ function NetworkList({ className }: React.ComponentProps<"form">) {
 
   const { switchNetwork, caipNetwork } = useAppKitNetwork();
   const [network, setNetwork] = React.useState<Network | undefined>(
-    selectedNetwork
+    selectedNetwork,
   );
 
   const setSelectedNetwork = (network: Network) => {
@@ -53,7 +53,7 @@ function NetworkList({ className }: React.ComponentProps<"form">) {
     if (caipNetwork?.id !== network.chainId) {
       switchNetwork(network.chain);
       toast.info(
-        "Switching Network from " + caipNetwork?.name + " to " + network.name
+        "Switching Network from " + caipNetwork?.name + " to " + network.name,
       );
     }
   };
