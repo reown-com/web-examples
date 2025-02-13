@@ -22,6 +22,6 @@ export interface WalletGetAssetsRPCResponse {
 export type WalletGetAssetsRPCRequest = {
   account: string;
   chainFilter?: Hex[];
-  assetFilter?: Record<Hex, (Hex|'native')[]>;
-  assetTypeFilter?: ('NATIVE'|'ERC20')[];
+  assetFilter?: Record<Hex, (Hex | "native")[]>;
+  assetTypeFilter?: ("NATIVE" | "ERC20")[];
 };

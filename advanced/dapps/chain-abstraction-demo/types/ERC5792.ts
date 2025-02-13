@@ -1,4 +1,3 @@
-
 interface WalletCapability {
   wallet_getAssets?: string;
 }

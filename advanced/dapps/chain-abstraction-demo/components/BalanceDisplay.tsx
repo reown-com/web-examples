@@ -1,4 +1,4 @@
-import {  type TokenBalance } from "@/utils/BalanceFetcherUtil";
+import { type TokenBalance } from "@/utils/BalanceFetcherUtil";
 
 interface BalanceDisplayProps {
   balances: TokenBalance[];

@@ -16,7 +16,8 @@ export function ConnectWalletButton() {
       <Button
         type="button"
         style={{
-          background: "var(--foreground-foreground-secondary, hsla(0, 0%, 16%, 1))",
+          background:
+            "var(--foreground-foreground-secondary, hsla(0, 0%, 16%, 1))",
         }}
         className="w-full text-primary rounded-full"
         size="lg"
@@ -30,15 +31,16 @@ export function ConnectWalletButton() {
     <Button
       type="button"
       style={{
-        background: "var(--foreground-foreground-secondary, hsla(0, 0%, 16%, 1))",
+        background:
+          "var(--foreground-foreground-secondary, hsla(0, 0%, 16%, 1))",
       }}
       className="w-full text-primary rounded-full"
       size="lg"
       onClick={() => open({ view: "Connect" })}
       disabled={status === "connecting" || status === "reconnecting"}
     >
-      {status === "connecting" || status === "reconnecting" 
-        ? "Connecting..." 
+      {status === "connecting" || status === "reconnecting"
+        ? "Connecting..."
         : "Connect Wallet"}
     </Button>
   );

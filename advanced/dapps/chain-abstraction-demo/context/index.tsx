@@ -23,16 +23,9 @@ const modal = createAppKit({
   },
 });
 
-function AppKitProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
-
+function AppKitProvider({ children }: { children: ReactNode }) {
   return (
-    <WagmiProvider
-      config={wagmiAdapter.wagmiConfig}
-    >
+    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         <WalletAssetsProvider>{children}</WalletAssetsProvider>
       </QueryClientProvider>

@@ -21,7 +21,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -31,7 +30,7 @@ export default function RootLayout({
           inter.className,
         )}
       >
-        <AppKitProvider >
+        <AppKitProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
