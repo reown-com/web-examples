@@ -4,15 +4,10 @@ import UniversalProvider from "@walletconnect/universal-provider";
 import { RpcRequest } from "ox";
 import { projectId } from "@/config";
 import { convertChainIdToHex, formatBalance } from "@/utils/FormatterUtil";
-import { fetchFallbackBalances } from "@/utils/BalanceFetcherUtil";
+import { fetchFallbackBalances, type TokenBalance } from "@/utils/BalanceFetcherUtil";
 import { Asset, WalletGetAssetsRPCRequest, WalletGetAssetsRPCResponse } from "@/types/ERC7811";
 import { Capabilities } from "@/types/ERC5792";
-export interface TokenBalance {
-  symbol: string
-  balance: string
-  address: `0x${string}`
-  chainId: number
-}
+
 interface WalletAssetsContextType {
   balances: TokenBalance[];
   isLoading: boolean;

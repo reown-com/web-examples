@@ -1,4 +1,4 @@
-import { TokenBalance } from "@/context/WalletAssetsProvider";
+import {  type TokenBalance } from "@/utils/BalanceFetcherUtil";
 
 interface BalanceDisplayProps {
   balances: TokenBalance[];
