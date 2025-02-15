@@ -6,6 +6,9 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import GiftDonutModal from "./GiftDonutModal";
 import { GiftDonutModalViews } from "./gift-donut-modal-views";
+import { useWalletGetAssets } from "@/context/WalletAssetsProvider";
+import { useAppKitNetwork } from "@reown/appkit/react";
+import { supportedNetworks } from "@/data/EIP155Data";
 
 type GiftDonutModalTriggerProps = {
   views?: Record<string, React.FC<GiftDonutModalViewProps>>;
@@ -33,9 +36,11 @@ export const GiftDonutModalTrigger: React.FC<GiftDonutModalTriggerProps> = ({
   buttonProps = {},
 }) => {
   const [isViewsRegistered, setIsViewsRegistered] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { fetchBalances } = useWalletGetAssets();
+  const { caipNetwork } = useAppKitNetwork();
 
   useEffect(() => {
-    // Register views
     Object.entries(views).forEach(([key, component]) =>
       giftDonutModalManager.registerView(key, {
         component,
@@ -52,22 +57,45 @@ export const GiftDonutModalTrigger: React.FC<GiftDonutModalTriggerProps> = ({
     };
   }, [views]);
 
+  const handleOpenModal = async () => {
+    if (!isViewsRegistered) {
+      console.error("Views not yet registered");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Set initial network based on current CAIP network
+      if (caipNetwork?.id) {
+        const currentNetwork = supportedNetworks.find(
+          (net) => net.chainId === caipNetwork.id,
+        );
+        if (currentNetwork) {
+          giftDonutModalManager.setNetwork(currentNetwork);
+        }
+      }
+
+      const balances = await fetchBalances();
+      giftDonutModalManager.setBalances(balances);
+    } catch (error) {
+      console.error("Failed to fetch balances:", error);
+    } finally {
+      setIsLoading(false);
+      giftDonutModalManager.open(initialView);
+    }
+  };
+
   return (
     <>
       <Button
-        onClick={() => {
-          if (isViewsRegistered) {
-            giftDonutModalManager.open(initialView);
-          } else {
-            console.error("Views not yet registered");
-          }
-        }}
+        onClick={handleOpenModal}
         variant={variant}
         className={className}
-        disabled={disabled}
+        disabled={disabled || isLoading}
         {...buttonProps}
       >
-        {triggerText}
+        {isLoading ? "Loading..." : triggerText}
       </Button>
       <GiftDonutModal />
     </>

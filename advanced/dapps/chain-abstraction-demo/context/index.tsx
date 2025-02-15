@@ -6,7 +6,6 @@ import { createAppKit } from "@reown/appkit/react";
 import { arbitrum, base, optimism } from "@reown/appkit/networks";
 import React, { type ReactNode } from "react";
 import { WagmiProvider } from "wagmi";
-import { WalletAssetsProvider } from "./WalletAssetsProvider";
 
 const queryClient = new QueryClient();
 
@@ -26,9 +25,7 @@ const modal = createAppKit({
 function AppKitProvider({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <WalletAssetsProvider>{children}</WalletAssetsProvider>
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </WagmiProvider>
   );
 }

@@ -1,4 +1,4 @@
-import { Network, supportedTokens, Token } from "@/data/EIP155Data";
+import { supportedTokens, Token } from "@/data/EIP155Data";
 import { Separator } from "../ui/separator";
 import React from "react";
 import Image from "next/image";
@@ -11,7 +11,7 @@ import {
 } from "@/controllers/GiftDonutModalManager";
 import { Button } from "../ui/button";
 
-function PayWithkView({ onViewChange, onClose }: GiftDonutModalViewProps) {
+function PayWithView({ onViewChange, onClose }: GiftDonutModalViewProps) {
   return (
     <div className={cn("flex flex-col items-start gap-4 text-primary")}>
       <div className="grid grid-cols-3 items-center w-full">
@@ -37,6 +37,7 @@ function PayWithkView({ onViewChange, onClose }: GiftDonutModalViewProps) {
 function TokenList({ className }: React.ComponentProps<"form">) {
   const selectedToken = giftDonutModalManager.getToken();
   const [token, setToken] = React.useState<Token | undefined>(selectedToken);
+
   const setSelectedToken = (token: Token) => {
     setToken(token);
     giftDonutModalManager.setToken(token);
@@ -45,7 +46,7 @@ function TokenList({ className }: React.ComponentProps<"form">) {
   return (
     <div className={cn("flex flex-col items-start gap-4", className)}>
       {supportedTokens.map((tokenItem, index) => (
-        <div key={index} className="flex items-center flex-col gap-4 w-full">
+        <div key={index} className="w-full">
           <TokenItem
             token={tokenItem}
             selected={token?.address === tokenItem.address}
@@ -67,8 +68,18 @@ function TokenItem({
   selected: boolean;
   onClick: () => void;
 }) {
+  const balance = giftDonutModalManager.getBalanceBySymbol(token.name);
+  const formattedBalance = parseFloat(balance).toFixed(4);
+
   return (
-    <div className="flex w-full items-center gap-2" onClick={onClick}>
+    <button
+      className={cn(
+        "w-full p-3 rounded-lg transition-colors",
+        "hover:bg-primary-foreground/50",
+        "flex items-center gap-3",
+      )}
+      onClick={onClick}
+    >
       <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center">
         <Image
           src={token.icon}
@@ -79,11 +90,16 @@ function TokenItem({
         />
       </div>
       <div className="flex flex-1 items-center justify-between">
-        <Label>{token.name}</Label>
-        <div>{selected && <CheckIcon color="green" />}</div>
+        <div className="flex flex-col items-start gap-0.5">
+          <Label className="font-medium">{token.name}</Label>
+          <span className="text-xs text-muted-foreground">
+            Balance: ${formattedBalance}
+          </span>
+        </div>
+        {selected && <CheckIcon className="h-5 w-5 text-green-500" />}
       </div>
-    </div>
+    </button>
   );
 }
 
-export default PayWithkView;
+export default PayWithView;

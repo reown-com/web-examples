@@ -1,7 +1,7 @@
 import { usdcTokenAddresses, usdtTokenAddresses } from "@/consts/tokens";
 import { createPublicClient, erc20Abi, Hex, http, PublicClient } from "viem";
-import { ChainUtils } from "@/utils/ChainUtils";
 import { formatBalance } from "@/utils/FormatterUtil";
+import { getChain } from "@/utils/NetworksUtil";
 
 interface TokenConfig {
   symbol: string;
@@ -48,7 +48,11 @@ async function fetchTokenBalance({
     return null;
   }
 }
-
+function getTransport({ chainId }: { chainId: number }) {
+  return http(
+    `https://rpc.walletconnect.org/v1/?chainId=eip155:${chainId}&projectId=${process.env["NEXT_PUBLIC_PROJECT_ID"]}`,
+  );
+}
 export async function fetchFallbackBalances(
   userAddress: Hex,
   currentChainIdAsHex: Hex,
@@ -56,7 +60,7 @@ export async function fetchFallbackBalances(
   const currentChainId = parseInt(currentChainIdAsHex.slice(2), 16);
 
   try {
-    const chain = ChainUtils.getChainConfig(currentChainId);
+    const chain = getChain(currentChainId);
     if (!chain) {
       console.error(`Chain not found for ID: ${currentChainId}`);
 
@@ -66,7 +70,7 @@ export async function fetchFallbackBalances(
     // Create public client for current chain
     const publicClient = createPublicClient({
       chain,
-      transport: http(),
+      transport: getTransport({ chainId: chain.id }),
     }) as PublicClient;
 
     const balances: TokenBalance[] = [];

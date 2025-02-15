@@ -6,6 +6,7 @@ import {
   supportedTokens,
   Token,
 } from "@/data/EIP155Data";
+import { TokenBalance } from "@/utils/BalanceFetcherUtil";
 import React from "react";
 import { proxy } from "valtio";
 
@@ -25,6 +26,7 @@ export type GiftDonutState = {
   network?: Network;
   token: Token;
   recipient?: string;
+  balances: TokenBalance[];
 };
 
 export type GiftDonutModalStateType = {
@@ -45,6 +47,7 @@ class GiftDonutModalManager {
       state: {
         token: supportedTokens[0],
         donutCount: 0,
+        balances: [],
       },
     });
   }
@@ -128,6 +131,26 @@ class GiftDonutModalManager {
 
   getDonutCount(): number {
     return this.state.state.donutCount;
+  }
+
+  setBalances(balances: TokenBalance[]): void {
+    this.state.state.balances = balances;
+  }
+
+  getBalances(): TokenBalance[] {
+    return this.state.state.balances;
+  }
+
+  getBalanceBySymbol(symbol: string): string {
+    const balance = this.state.state.balances.find((b) => b.symbol === symbol);
+    return balance?.balance || "0.00";
+  }
+
+  getBalanceByAddress(address: `0x${string}`): string {
+    const balance = this.state.state.balances.find(
+      (b) => b.address === address,
+    );
+    return balance?.balance || "0.00";
   }
 }
 
