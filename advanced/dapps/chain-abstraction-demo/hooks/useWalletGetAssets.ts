@@ -17,17 +17,6 @@ import {
 } from "@/types/ERC7811";
 import { Capabilities } from "@/types/ERC5792";
 
-interface WalletAssetsContextType {
-  balances: TokenBalance[];
-  isLoading: boolean;
-  refetch: () => Promise<void>;
-  getBalanceBySymbol: (symbol: string) => string;
-  getBalanceByAddress: (address: `0x${string}`) => string;
-}
-const WalletAssetsContext = React.createContext<
-  WalletAssetsContextType | undefined
->(undefined);
-
 async function getAssetDiscoveryCapabilities({
   provider,
   chainIdAsHex,
