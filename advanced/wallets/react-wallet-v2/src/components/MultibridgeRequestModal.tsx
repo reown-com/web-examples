@@ -11,290 +11,115 @@ import {
   getAssetByContractAddress,
   getErc20TokenBalance
 } from '@/utils/MultibridgeUtil'
-import { getWallet } from '@/utils/EIP155WalletUtil'
+import { getWallet, getWalletByAddress } from '@/utils/EIP155WalletUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
-import { ChainAbstractionService, Transaction } from '@/utils/ChainAbstractionService'
-import { providers } from 'ethers'
-import { formatJsonRpcError } from '@json-rpc-tools/utils'
+import { ChainAbstractionService } from '@/utils/ChainAbstractionService'
+import { ethers, providers } from 'ethers'
+import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { ChainAbstractionTypes } from '@reown/walletkit'
-import { Hex } from 'viem'
+import { createWalletClient, Hex, http, recoverAddress, recoverMessageAddress } from 'viem'
 import BridgeBadge from './BridgeBadge'
+import { mnemonicToAccount, privateKeyToAccount } from 'viem/accounts'
+import { mainnet } from 'viem/chains'
 
 interface IProps {
   onReject: () => void
-  transactions?: Transaction[]
-  initialTransaction: Transaction
-  orchestrationId: string
   rejectLoader?: LoaderProps
-  fundings: ChainAbstractionTypes.FundingFrom[]
-  initialTransactionMetadata: ChainAbstractionTypes.InitialTransactionMetadata
+  bridgeDetails: ChainAbstractionTypes.UiFields
 }
 
-export default function MultibridgeRequestModal({
-  transactions,
-  initialTransaction,
-  orchestrationId,
-  onReject,
-  rejectLoader,
-  fundings,
-  initialTransactionMetadata
-}: IProps) {
+export default function MultibridgeRequestModal({ onReject, rejectLoader, bridgeDetails }: IProps) {
   const [isLoadingApprove, setIsLoadingApprove] = useState<boolean>(false)
-
-  const [bridgingTransactions, setBridgingTransactions] = useState<Transaction[]>([])
   const [tokenBalances, setTokenBalances] = useState<Record<string, string>>({})
-  const [totalFee, setTotalFee] = useState<string>('')
-  const [transaction, setTransaction] = useState<Transaction | null>(initialTransaction)
-  console.log('transactions', transactions)
-  // const bridgingTransactions = transactions
+  const transaction = bridgeDetails.initial.transaction
+  console.log('bridgeDetails', bridgeDetails)
+  const bridgingTransactions = bridgeDetails.route.map(route => route)
+  const orchestrationId = bridgeDetails.routeResponse.orchestrationId
+  const totalFee = bridgeDetails.localTotal.formattedAlt
+  const initialTransactionMetadata = bridgeDetails.routeResponse.metadata.initialTransaction
+  const fundingFrom = bridgeDetails.routeResponse.metadata.fundingFrom
+  console.log('transactions', bridgingTransactions)
 
-  const eip155ChainsFundsSourcedFrom = bridgingTransactions
-    ? new Set(bridgingTransactions.map(transaction => transaction.chainId))
-    : new Set<TEIP155Chain>()
-
-  const eip155ChainFundsDestination = initialTransaction?.chainId
+  const eip155ChainFundsDestination = transaction?.chainId
 
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
 
-  const topic = requestEvent?.topic
   const params = requestEvent?.params
 
   const request = params?.request
 
-  useMemo(async () => {
-    if (!orchestrationId) {
-      return null
-    }
-    const details = await walletkit.getFulfilmentDetails({ fulfilmentId: orchestrationId })
-    // const details = {
-    //   routeDetails: [
-    //     {
-    //       transaction: {
-    //         chainId: 'eip155:8453',
-    //         from: '0x13a2ff792037aa2cd77fe1f4b522921ac59a9c52',
-    //         to: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
-    //         value: '0x0',
-    //         input:
-    //           '0x095ea7b30000000000000000000000003a23f943181408eac424116af7b7790c94cb97a50000000000000000000000000000000000000000000000000000000000225928',
-    //         gasLimit: '0x1b760',
-    //         nonce: '0x17',
-    //         maxFeePerGas: '0xd5d732',
-    //         maxPriorityFeePerGas: '0xf4240'
-    //       },
-    //       transactionFee: {
-    //         fee: {
-    //           symbol: 'ETH',
-    //           amount: '0x171c8892672',
-    //           unit: 18,
-    //           formatted: '0.000001588207363698 ETH',
-    //           formatted_alt: '<$0.01'
-    //         },
-    //         localFee: {
-    //           symbol: 'USD',
-    //           amount: '0x6b62af154a82c7301f20',
-    //           unit: 26,
-    //           formatted: '0.00507113610658132270260000 USD',
-    //           formatted_alt: '$0.01'
-    //         }
-    //       }
-    //     },
-    //     {
-    //       transaction: {
-    //         chainId: 'eip155:8453',
-    //         from: '0x13a2ff792037aa2cd77fe1f4b522921ac59a9c52',
-    //         to: '0x3a23f943181408eac424116af7b7790c94cb97a5',
-    //         value: '0x0',
-    //         input:
-    //           '0x0000019b792ebcb90000000000000000000000000000000000000000000000000000000000225928000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000001e00000000000000000000000000000000000000000000000000000000000001c2f0000000000000000000000000000000000000000000000000000000000001b3b000000000000000000000000000000000000000000000000000000000000000200000000000000000000000013a2ff792037aa2cd77fe1f4b522921ac59a9c5200000000000000000000000013a2ff792037aa2cd77fe1f4b522921ac59a9c520000000000000000000000000000000000000000000000000000000000000002000000000000000000000000833589fcd6edb6e08f4c7c32d4f71b54bda02913000000000000000000000000af88d065e77c8cc2239327c5edb3a432268e583100000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000223cf9000000000000000000000000000000000000000000000000000000000000a4b1000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000679b390b00000000000000000000000000000000000000000000000000000000679b8d11d00dfeeddeadbeef765753be7f7a64d5509974b0d678e1e3149b02f4',
-    //         gasLimit: '0x1a584',
-    //         nonce: '0x18',
-    //         maxFeePerGas: '0xd5d732',
-    //         maxPriorityFeePerGas: '0xf4240'
-    //       },
-    //       transactionFee: {
-    //         fee: {
-    //           symbol: 'ETH',
-    //           amount: '0x166e7abc8ce',
-    //           unit: 18,
-    //           formatted: '0.000001541485086926 ETH',
-    //           formatted_alt: '<$0.01'
-    //         },
-    //         localFee: {
-    //           symbol: 'USD',
-    //           amount: '0x6839f4c8807ec111d4e0',
-    //           unit: 26,
-    //           formatted: '0.00492195217119867036620000 USD',
-    //           formatted_alt: '<$0.01'
-    //         }
-    //       }
-    //     }
-    //   ],
-    //   initialTransactionDetails: {
-    //     transaction: {
-    //       chainId: 'eip155:42161',
-    //       from: '0x13a2ff792037aa2cd77fe1f4b522921ac59a9c52',
-    //       to: '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
-    //       value: '0x0',
-    //       input:
-    //         '0xa9059cbb00000000000000000000000013a2ff792037aa2cd77fe1f4b522921ac59a9c5200000000000000000000000000000000000000000000000000000000003d0900',
-    //       gasLimit: '0x1913a',
-    //       nonce: '0x4b',
-    //       maxFeePerGas: '0x1312d01',
-    //       maxPriorityFeePerGas: '0x1'
-    //     },
-    //     transactionFee: {
-    //       fee: {
-    //         symbol: 'ETH',
-    //         amount: '0x1de4ca2c33a',
-    //         unit: 18,
-    //         formatted: '0.000002054280102714 ETH',
-    //         formatted_alt: '<$0.01'
-    //       },
-    //       localFee: {
-    //         symbol: 'USD',
-    //         amount: '0x8ad02fd36877a3207d80',
-    //         unit: 26,
-    //         formatted: '0.00655526943616345542000000 USD',
-    //         formatted_alt: '$0.01'
-    //       }
-    //     }
-    //   },
-    //   bridgeDetails: [
-    //     {
-    //       fee: {
-    //         symbol: 'USDC',
-    //         amount: '0xb729d',
-    //         unit: 6,
-    //         formatted: '0.750237 USDC',
-    //         formatted_alt: '$0.75'
-    //       },
-    //       localFee: {
-    //         symbol: 'USD',
-    //         amount: '0x444cf6c826fb',
-    //         unit: 14,
-    //         formatted: '0.75097348515579 USD',
-    //         formattedAlt: '$0.75'
-    //       }
-    //     }
-    //   ],
-    //   totalFee: {
-    //     symbol: 'USD',
-    //     amount: '0x3f7ce83f5225a6a9992180',
-    //     unit: 26,
-    //     formatted: '0.76752184286973344848880000 USD',
-    //     formattedAlt: '$0.77'
-    //   }
-    // }
-    console.log('details', details)
-    setTotalFee(details.totalFee.formattedAlt)
-    setTransaction({
-      ...details.initialTransactionDetails.transaction,
-      data: details.initialTransactionDetails.transaction.input
+  const bridgeFunds = async (
+    bridgeSignedTransactions: string[],
+    initialSignedTransaction: string
+  ) => {
+    return await walletkit.chainAbstraction.execute({
+      orchestrationId,
+      bridgeSignedTransactions,
+      initialSignedTransaction
     })
-    setBridgingTransactions(
-      details.routeDetails.map(route => ({
-        ...route.transaction,
-        data: route.transaction.input
-      }))
-    )
-  }, [orchestrationId])
-
-  const bridgeFunds = useCallback(async (): Promise<void> => {
-    if (!bridgingTransactions) {
-      throw new Error('bridgingTransactions are unavailable')
-    }
-
-    const wallet = await getWallet(params)
-    console.log(
-      'Bridge funds from',
-      eip155ChainsFundsSourcedFrom,
-      'to',
-      eip155ChainFundsDestination
-    )
-
-    for (const transaction of bridgingTransactions) {
-      console.log('Bridging transaction', transaction)
-      const chainId = transaction.chainId
-      const chainProvider = new providers.JsonRpcProvider(
-        EIP155_CHAINS[chainId as TEIP155Chain].rpc
-      )
-      const chainConnectedWallet = await wallet.connect(chainProvider)
-      const walletAddress = wallet.getAddress()
-      console.log('Connected wallet address', chainConnectedWallet)
-      const txResponse = await chainConnectedWallet.sendTransaction({
-        from: walletAddress,
-        to: transaction.to,
-        value: transaction.value,
-        data: transaction.data,
-        nonce: transaction.nonce,
-        maxFeePerGas: transaction.maxFeePerGas,
-        maxPriorityFeePerGas: transaction.maxPriorityFeePerGas,
-        gasLimit: transaction.gasLimit
-      })
-      const txHash = typeof txResponse === 'string' ? txResponse : txResponse?.hash
-      const txReceipt = await txResponse.wait()
-      console.log('Transaction receipt', txReceipt)
-      const txStatus = txReceipt.status
-      console.log(
-        `Transaction broadcasted on chain ${chainId} , ${{ txHash }}, status: ${txStatus}`
-      )
-    }
-  }, [bridgingTransactions, orchestrationId, onReject, params])
-
-  const fetchTokenBalance = async (chainId: string, tokenAddress: string) => {
-    const tokenBalance = await getErc20TokenBalance(
-      tokenAddress as Hex,
-      Number(chainId.split(':')[1]),
-      initialTransaction?.from as Hex
-    )
-    console.log('Token balance', tokenBalance)
-    setTokenBalances(prevState => ({
-      ...prevState,
-      [tokenAddress]: tokenBalance
-    }))
   }
 
   useEffect(() => {
-    console.log('Initial transaction', initialTransaction?.chainId)
-    if (initialTransactionMetadata) {
-      console.log('Fetching token balance for', initialTransaction.to)
-      fetchTokenBalance(initialTransaction.chainId, initialTransactionMetadata.tokenContract)
+    console.log('Initial transaction', initialTransactionMetadata)
+    const fetchTokenBalance = async (tokenAddress: string) => {
+      const tokenBalance = await getErc20TokenBalance(
+        tokenAddress as Hex,
+        Number(transaction.chainId.split(':')[1]),
+        transaction?.from as Hex
+      )
+      console.log('Token balance', tokenBalance)
+      setTokenBalances(prevState => ({
+        ...prevState,
+        [tokenAddress]: tokenBalance
+      }))
     }
-  }, [initialTransactionMetadata])
+    fetchTokenBalance(initialTransactionMetadata.tokenContract)
+  }, [])
 
   const onApprove = useCallback(async (): Promise<void> => {
-    if (requestEvent && topic) {
+    if (requestEvent) {
+      const topic = requestEvent.topic
+      const id = requestEvent.id
       setIsLoadingApprove(true)
       try {
-        performance.mark('startInititalTransactionSend')
-        await bridgeFunds()
-        const response = await approveEIP155Request({
-          ...requestEvent,
-          params: {
-            ...requestEvent.params,
-            request: {
-              ...requestEvent.params.request,
-              params: {
-                ...transaction
-              }
-            }
-          }
-        })
-        performance.mark('endInititalTransactionSend')
-        console.log(
-          `Initial transaction send: ${
-            performance.measure(
-              'initial-tx-send',
-              'startInititalTransactionSend',
-              'endInititalTransactionSend'
-            ).duration
-          } ms`
-        )
+        console.log('Approving request', transaction)
+        const loadedWallet = getWalletByAddress(transaction.from)
+        const account = mnemonicToAccount(loadedWallet.getMnemonic())
+        console.log('Account', account)
 
-        await walletkit.respondSessionRequest({ topic, response })
+        console.log('Connected wallet', account)
+        const bridgeSignedTransactions = []
+        for (const route of bridgeDetails.route) {
+          const message = route.transactionHashToSign
+          const signature = await account.sign({ hash: message })
+          bridgeSignedTransactions.push(signature)
+          console.log('Signed bridge transaction', {
+            message,
+            signature,
+            address: account.address
+          })
+        }
+
+        const message = bridgeDetails.initial.transactionHashToSign
+        const initialSignedTransaction = await account.sign({
+          hash: message
+        })
+
+        console.log('Signed initial transaction', {
+          message,
+          signature: initialSignedTransaction,
+          address: account.address
+        })
+        const result = await bridgeFunds(bridgeSignedTransactions, initialSignedTransaction)
+
+        await walletkit.respondSessionRequest({
+          topic,
+          response: formatJsonRpcResult(id, result.initialTxnHash)
+        })
+        ModalStore.close()
       } catch (e) {
         const { id } = requestEvent
         const errorMessage = (e as Error).message || 'Error bridging funds'
@@ -308,9 +133,8 @@ export default function MultibridgeRequestModal({
       } finally {
         setIsLoadingApprove(false)
       }
-      ModalStore.close()
     }
-  }, [bridgeFunds, requestEvent, topic])
+  }, [bridgeDetails, bridgeFunds])
 
   if (!request || !requestSession || !bridgingTransactions || bridgingTransactions.length === 0) {
     return <Text>Request not found</Text>
@@ -401,7 +225,7 @@ export default function MultibridgeRequestModal({
                   {initialTransactionMetadata.symbol}
                 </Col>
               </Row>
-              {fundings?.map((funding, i) => {
+              {fundingFrom?.map((funding, i) => {
                 return (
                   <Row align="center" key={i}>
                     <Col>

@@ -1,6 +1,7 @@
 import EIP155Lib from '@/lib/EIP155Lib'
 import { smartAccountWallets } from './SmartAccountUtil'
 import { getWalletAddressFromParams } from './HelperUtil'
+import { ethers } from 'ethers'
 
 export let wallet1: EIP155Lib
 export let wallet2: EIP155Lib
@@ -62,6 +63,13 @@ export async function replaceEip155Mnemonic(mnemonicOrPrivateKey: string) {
     console.error('Failed to replace mnemonic: ', error)
     throw new Error('Invalid mnemonic or private key')
   }
+}
+
+export const getWalletByAddress = (address: string) => {
+  const checksumAddress = ethers.utils.getAddress(address)
+  const wallet = eip155Wallets[checksumAddress]
+  console.log('getWalletByAddress', { checksumAddress, wallet, eip155Wallets })
+  return wallet
 }
 
 /**
