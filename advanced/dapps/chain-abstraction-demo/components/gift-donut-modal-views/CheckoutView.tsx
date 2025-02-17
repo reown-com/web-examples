@@ -75,7 +75,6 @@ function GiftDonutForm({
                 variant="link"
                 size="sm"
                 onClick={() => setDonutCount(maxDonutPurchasable)}
-                disabled={count === maxDonutPurchasable}
                 className="text-xs h-auto p-0 text-secondary hover:text-primary"
               >
                 Max: {maxDonutPurchasable}
