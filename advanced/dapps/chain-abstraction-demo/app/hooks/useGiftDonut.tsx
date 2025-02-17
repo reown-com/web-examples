@@ -7,28 +7,32 @@ import { getAccount, getWalletClient, getPublicClient } from "wagmi/actions";
 import { useState } from "react";
 import { TransactionToast } from "@/components/TransactionToast";
 
-type TransactionStatus = 'waiting-approval' | 'pending' | 'success' | 'error';
+type TransactionStatus = "waiting-approval" | "pending" | "success" | "error";
 
 export default function useGiftDonut() {
   const [isPending, setIsPending] = useState(false);
 
   const updateToast = (
-    toastId: ReturnType<typeof toast>, 
-    status: TransactionStatus, 
-    { elapsedTime, hash, networkName }: { 
+    toastId: ReturnType<typeof toast>,
+    status: TransactionStatus,
+    {
+      elapsedTime,
+      hash,
+      networkName,
+    }: {
       elapsedTime?: number;
       hash?: string;
       networkName?: string;
-    } = {}
+    } = {},
   ) => {
     toast(
-      <TransactionToast 
+      <TransactionToast
         status={status}
         elapsedTime={elapsedTime}
         hash={hash}
         networkName={networkName}
       />,
-      { id: toastId }
+      { id: toastId },
     );
   };
 
@@ -39,10 +43,12 @@ export default function useGiftDonut() {
 
     const account = getAccount(config);
     const connectedChainId = account.chain?.id;
-    
+
     if (!connectedChainId) throw new Error("Chain undefined");
     if (connectedChainId !== network.chainId) {
-      throw new Error("Please switch chain, connected chain does not match network");
+      throw new Error(
+        "Please switch chain, connected chain does not match network",
+      );
     }
 
     return { client, publicClient };
@@ -73,15 +79,15 @@ export default function useGiftDonut() {
       // Validate chain and get clients
       const { client, publicClient } = await validateTransaction(network);
       const chainId = getAccount(config).chain?.id!;
-      
+
       // Get token contract
       const contract = getTokenContract(token, chainId);
       const tokenAmount = donutCount * 1 * 10 ** 6;
 
       // Start tracking elapsed time
       updateInterval = setInterval(() => {
-        updateToast(toastId, 'waiting-approval', {
-          elapsedTime: Math.floor((Date.now() - startTime) / 1000)
+        updateToast(toastId, "waiting-approval", {
+          elapsedTime: Math.floor((Date.now() - startTime) / 1000),
         });
       }, 1000);
 
@@ -94,29 +100,31 @@ export default function useGiftDonut() {
       });
 
       // Update to pending status
-      updateToast(toastId, 'pending', { hash: tx, networkName: network.name });
+      updateToast(toastId, "pending", { hash: tx, networkName: network.name });
 
       // Wait for transaction
-      const receipt = await publicClient.waitForTransactionReceipt({ hash: tx });
+      const receipt = await publicClient.waitForTransactionReceipt({
+        hash: tx,
+      });
       clearInterval(updateInterval);
 
       // Update final status
       const finalElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-      const finalStatus = receipt.status === 'success' ? 'success' : 'error';
-      
+      const finalStatus = receipt.status === "success" ? "success" : "error";
+
       updateToast(toastId, finalStatus, {
         elapsedTime: finalElapsedSeconds,
         hash: tx,
-        networkName: network.name
+        networkName: network.name,
       });
 
       return tx;
     } catch (e) {
       clearInterval(updateInterval!);
       const finalElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
-      
+
       if (e instanceof Error) {
-        updateToast(toastId, 'error', { elapsedTime: finalElapsedSeconds });
+        updateToast(toastId, "error", { elapsedTime: finalElapsedSeconds });
       }
       console.error(e);
     } finally {

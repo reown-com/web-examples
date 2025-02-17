@@ -1,4 +1,3 @@
-import { cookieStorage, createStorage, type Storage } from "@wagmi/core";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { arbitrum, optimism, base } from "@reown/appkit/networks";
 
@@ -10,12 +9,7 @@ if (!projectId) {
 
 export const networks = [base, optimism, arbitrum];
 
-const storage = createStorage({
-  storage: cookieStorage as Storage,
-});
-
 export const wagmiAdapter = new WagmiAdapter({
-  storage,
   ssr: true,
   projectId,
   networks,

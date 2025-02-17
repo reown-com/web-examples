@@ -9,6 +9,12 @@ import { cn } from "@/lib/utils";
 import { ArrowRight, ChevronRight, X } from "lucide-react";
 import CoinSVG from "../assets/CoinSVG";
 import NetworkSVG from "../assets/NetworkSVG";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 function CheckoutView({ onViewChange, onClose }: GiftDonutModalViewProps) {
   return (
@@ -33,12 +39,18 @@ function GiftDonutForm({
 
   const selectedToken = giftDonutModalManager.getToken();
   const selectedNetwork = giftDonutModalManager.getNetwork();
+  const tokenBalance = giftDonutModalManager.getBalanceBySymbol(
+    selectedToken.name,
+  );
+  const maxDonutPurchasable = Math.trunc(parseFloat(tokenBalance) / 1.0);
 
-  const setDonutCount = (count: number) => {
-    if (count < 0) return;
-    setCount(count);
-    giftDonutModalManager.setDonutCount(count);
+  const setDonutCount = (newCount: number) => {
+    if (newCount < 0) return;
+    if (newCount > maxDonutPurchasable) return;
+    setCount(newCount);
+    giftDonutModalManager.setDonutCount(newCount);
   };
+
   return (
     <div className={cn("flex flex-col items-start gap-4", className)}>
       <div className="grid grid-cols-3 items-center w-full">
@@ -56,24 +68,37 @@ function GiftDonutForm({
         <div className="flex flex-col gap-2 w-full h-full">
           <p className="text-primary font-bold">Donut #1</p>
           <div className="flex flex-col">
-            <p className="text-secondary">Price</p>
-            <div className="flex justify-between">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-secondary">Price</p>
+              <Button
+                variant="link"
+                size="sm"
+                onClick={() => setDonutCount(maxDonutPurchasable)}
+                disabled={count >= maxDonutPurchasable}
+                className="text-xs h-auto p-0 text-secondary hover:text-primary"
+              >
+                Max: {maxDonutPurchasable}
+              </Button>
+            </div>
+            <div className="flex items-center justify-between">
               <p className="text-primary font-bold">$1.00</p>
-              <div className="text-primary">
+              <div className="flex items-center text-primary">
                 <Button
                   variant="outline"
                   onClick={() => setDonutCount(count - 1)}
                   style={{ backgroundColor: "var(--tertiary-foreground)" }}
-                  className="mr-2 rounded-full "
+                  className="h-8 w-8 rounded-full p-0"
+                  disabled={count <= 0}
                 >
                   -
                 </Button>
-                {count}
+                <div className="w-8 text-center">{count}</div>
                 <Button
                   variant="outline"
                   onClick={() => setDonutCount(count + 1)}
                   style={{ backgroundColor: "var(--tertiary-foreground)" }}
-                  className="ml-2 rounded-full "
+                  className="h-8 w-8 rounded-full p-0"
+                  disabled={count >= maxDonutPurchasable}
                 >
                   +
                 </Button>
@@ -157,7 +182,7 @@ function GiftDonutForm({
       <div className="flex justify-between w-full items-center">
         <p className="text-secondary">Total</p>
         <p className="text-md font-bold text-primary">
-          ${(count * 1.00).toFixed(2)}
+          ${(count * 1.0).toFixed(2)}
         </p>
       </div>
       <div className="flex gap-2 w-full">

@@ -13,7 +13,7 @@ export const usdtTokenAddresses: Record<number, Hex> = {
 
 export const tokenAddresses: Record<string, Record<string, Hex>> = {
   USDC: usdcTokenAddresses,
-  USDT: usdtTokenAddresses
+  USDT: usdtTokenAddresses,
 };
 
 export const getSupportedNetworks = (token: string): number[] => {

@@ -50,23 +50,22 @@ function GiftDonutForm({
       const to = recipientAddress as `0x${string}`;
       const token = giftDonutModalManager.getToken();
       const network = giftDonutModalManager.getNetwork();
-      if(!network) {
+      if (!network) {
         throw new Error("Network not selected");
       }
-      
+
       // Start the transaction before closing the modal
       const giftPromise = giftDonutAsync(to, donutCount, token, network);
       onClose(); // Close modal after initiating transaction
       await giftPromise; // Wait for transaction to complete
-      
-    } catch(e) {
+    } catch (e) {
       console.error(e);
-      if(e instanceof Error) {
+      if (e instanceof Error) {
         toast.error(e.message);
       }
     }
   };
-  
+
   return (
     <div
       className={cn("flex flex-col items-start gap-4 text-primary", className)}
@@ -119,7 +118,7 @@ function GiftDonutForm({
           <p className="text-xl text-secondary">Total</p>
           <div className="flex flex-col">
             <p className="text-xl font-bold">
-              ${(donutCount * 1.00).toFixed(2)}
+              ${(donutCount * 1.0).toFixed(2)}
             </p>
             <p className="flex justify-end text-xs text-secondary">(+fee)</p>
           </div>
