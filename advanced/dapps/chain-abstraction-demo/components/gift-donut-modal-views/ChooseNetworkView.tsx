@@ -38,14 +38,29 @@ function ChooseNetworkView({ onViewChange, onClose }: GiftDonutModalViewProps) {
 }
 
 function NetworkList({ className }: React.ComponentProps<"form">) {
-  const selectedNetwork = giftDonutModalManager.getNetwork();
   const selectedToken = giftDonutModalManager.getToken();
   const tokenSupportedNetworks = getSupportedNetworks(selectedToken.name);
-
   const { switchNetwork, caipNetwork } = useAppKitNetwork();
-  const [network, setNetwork] = React.useState<Network | undefined>(
-    selectedNetwork
-  );
+
+  // Initialize network state based on caipNetwork
+  const [network, setNetwork] = React.useState<Network | undefined>(() => {
+    const currentChainId = caipNetwork?.id;
+    if (!currentChainId) return undefined;
+
+    // Find the matching network from supported networks
+    const matchingNetwork = supportedNetworks.find(
+      (net) =>
+        net.chainId === currentChainId &&
+        tokenSupportedNetworks.includes(net.chainId),
+    );
+
+    // If found, set it in the modal manager
+    if (matchingNetwork) {
+      giftDonutModalManager.setNetwork(matchingNetwork);
+    }
+
+    return matchingNetwork;
+  });
 
   const setSelectedNetwork = (network: Network) => {
     setNetwork(network);
@@ -53,25 +68,29 @@ function NetworkList({ className }: React.ComponentProps<"form">) {
     if (caipNetwork?.id !== network.chainId) {
       switchNetwork(network.chain);
       toast.info(
-        "Switching Network from " + caipNetwork?.name + " to " + network.name
+        `Switching Network from ${caipNetwork?.name || "current network"} to ${network.name}`,
       );
     }
   };
 
+  // Filter supported networks
+  const filteredNetworks = supportedNetworks.filter((network) =>
+    tokenSupportedNetworks.includes(network.chainId),
+  );
+
   return (
     <div className={cn("flex flex-col items-start gap-4", className)}>
-      {supportedNetworks
-        .filter((network) => tokenSupportedNetworks.includes(network.chainId))
-        .map((networkItem, index) => (
-          <div key={index} className="flex items-center flex-col gap-4 w-full">
-            <NetworkItem
-              network={networkItem}
-              selected={network?.chainId === networkItem.chainId}
-              onClick={() => setSelectedNetwork(networkItem)}
-            />
-            {supportedNetworks.length - 1 !== index && <Separator />}
-          </div>
-        ))}
+      {filteredNetworks.map((networkItem, index) => (
+        <div key={networkItem.chainId} className="w-full">
+          <NetworkItem
+            network={networkItem}
+            selected={network?.chainId === networkItem.chainId}
+            onClick={() => setSelectedNetwork(networkItem)}
+            isCurrentNetwork={caipNetwork?.id === networkItem.chainId}
+          />
+          {index < filteredNetworks.length - 1 && <Separator />}
+        </div>
+      ))}
     </div>
   );
 }
@@ -80,14 +99,20 @@ function NetworkItem({
   network,
   selected,
   onClick,
+  isCurrentNetwork,
 }: {
   network: Network;
   selected: boolean;
   onClick: () => void;
+  isCurrentNetwork: boolean;
 }) {
   return (
-    <div
-      className="flex w-full items-center gap-2 cursor-pointer"
+    <button
+      className={cn(
+        "w-full p-3 rounded-lg transition-colors",
+        "hover:bg-primary-foreground/50",
+        "flex items-center gap-3",
+      )}
       onClick={onClick}
     >
       <div className="w-10 h-10 rounded-full flex items-center justify-center">
@@ -100,10 +125,17 @@ function NetworkItem({
         />
       </div>
       <div className="flex flex-1 items-center justify-between">
-        <Label>{network.name}</Label>
-        <div>{selected && <CheckIcon color="green" />}</div>
+        <div className="flex flex-col items-start">
+          <Label className="font-medium">{network.name}</Label>
+          {isCurrentNetwork && (
+            <span className="text-xs text-muted-foreground">
+              Current Network
+            </span>
+          )}
+        </div>
+        {selected && <CheckIcon className="h-5 w-5 text-green-500" />}
       </div>
-    </div>
+    </button>
   );
 }
 

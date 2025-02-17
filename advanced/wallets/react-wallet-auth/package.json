@@ -7,6 +7,9 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "engines": {
+    "node": "22.x"
+  },
   "dependencies": {
     "@cosmjs/amino": "0.32.3",
     "@cosmjs/encoding": "0.32.3",

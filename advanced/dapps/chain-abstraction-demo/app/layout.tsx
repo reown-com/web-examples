@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import AppKitProvider from "@/context";
-import { headers } from "next/headers";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -22,7 +21,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookies = headers().get("cookie");
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -32,7 +30,7 @@ export default function RootLayout({
           inter.className,
         )}
       >
-        <AppKitProvider cookies={cookies}>
+        <AppKitProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
