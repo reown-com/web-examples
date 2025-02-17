@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import GiftDonutModal from "./GiftDonutModal";
 import { GiftDonutModalViews } from "./gift-donut-modal-views";
-import { useWalletGetAssets } from "@/context/WalletAssetsProvider";
+import { useWalletGetAssets } from "@/hooks/useWalletGetAssets";
 import { useAppKitNetwork } from "@reown/appkit/react";
 import { supportedNetworks } from "@/data/EIP155Data";
 
