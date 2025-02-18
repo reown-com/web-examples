@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,8 +16,9 @@ import { useTicTacToeContext } from "@/context/TicTacToeContextProvider";
 import { useTicTacToeActions } from "@/hooks/useTicTacToeActions";
 import { useAppKitAccount } from "@reown/appkit/react";
 
-export default function TicTacToe() {
-  const [isLoading, setIsLoading] = React.useState(false);
+// This component contains all your hooks and JSX.
+function TicTacToeInner() {
+  const [isLoading, setIsLoading] = useState(false);
   const { smartSession, clearSmartSession } = useTicTacToeContext();
   const { startGame } = useTicTacToeActions();
   const { status, address } = useAppKitAccount();
@@ -68,7 +69,7 @@ export default function TicTacToe() {
         <h1 className="text-3xl font-bold mb-4 text-gray-800 dark:text-gray-200">
           TicTacToe Game
         </h1>
-        <Card  className="w-full bg-gradient-to-br from-purple-100 to-indigo-100 shadow-lg mb-4 items-center justify-center  ">
+        <Card className="w-full bg-gradient-to-br from-purple-100 to-indigo-100 shadow-lg mb-4 items-center justify-center">
           <CardContent className="p-4 ">
             <p className="text-sm text-gray-700 mb-2">
               When connecting, please use your Email Wallet with:
@@ -164,4 +165,15 @@ export default function TicTacToe() {
       {grantedPermissions && gameStarted ? <GameBoard /> : <GameIntroCard />}
     </main>
   );
+}
+
+// The outer component only handles the mounting check.
+export default function TicTacToe() {
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) return null;
+  return <TicTacToeInner />;
 }
