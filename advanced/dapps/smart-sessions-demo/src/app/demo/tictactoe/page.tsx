@@ -26,8 +26,12 @@ createAppKit({
   defaultNetwork: baseSepolia,
   projectId: ConstantsUtil.ProjectId,
   features: {
+    email: true,
+    socials: [],
+    emailShowWallets: false,
     analytics: true,
   },
+  allWallets: "HIDE",
   themeMode: "light",
   termsConditionsUrl: "https://reown.com/terms-of-service",
   privacyPolicyUrl: "https://reown.com/privacy-policy",
