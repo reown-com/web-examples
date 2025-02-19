@@ -112,10 +112,10 @@ function TicTacToeInner() {
         </CardHeader>
         <CardContent className="p-4">
           <p className="text-base text-gray-700 leading-relaxed">
-            Players take turns placing their marks in empty squares. The first to
-            align three marks in a row—vertically, horizontally, or diagonally—wins.
-            If all squares are filled and no one has three in a row, the game ends in
-            a tie.
+            Players take turns placing their marks in empty squares. The first
+            to align three marks in a row—vertically, horizontally, or
+            diagonally—wins. If all squares are filled and no one has three in a
+            row, the game ends in a tie.
           </p>
         </CardContent>
         <CardFooter className="p-4 justify-center">
