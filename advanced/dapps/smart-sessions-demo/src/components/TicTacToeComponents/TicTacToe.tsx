@@ -101,6 +101,9 @@ function TicTacToeInner() {
 
   const GameIntroCard = () => (
     <div className="w-full max-w-md mx-auto mb-12">
+      <div className="flex w-full mb-4 items-center justify-center">
+        <w3m-button />
+      </div>
       <Card className="w-full bg-gradient-to-br from-purple-100 to-indigo-100 shadow-lg">
         <CardHeader className="p-4">
           <CardTitle className="text-center text-xl sm:text-2xl md:text-3xl font-bold text-indigo-800">
