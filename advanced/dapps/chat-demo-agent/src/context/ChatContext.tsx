@@ -83,7 +83,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dispatch({ type: 'ADD_MESSAGE', payload: botResponse });
     } catch (error) {
       const errorMessage = createMessage(
-        `Error: ${error instanceof Error ? error.message : 'Some error occurred'}`,
+        `Error: ${error instanceof Error ? error.message : 'Unable to process the request'}`,
         'system',
         'error'
       );

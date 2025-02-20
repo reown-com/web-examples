@@ -10,7 +10,7 @@ const MAX_MESSAGE_LENGTH = 300;
 /**
  * Maximum allowed number of messages in history to prevent memory issues
  */
-const MAX_HISTORY_LENGTH = 6;
+const MAX_HISTORY_LENGTH = 20;
 
 /**
  * Type guard to validate the structure and content of message history

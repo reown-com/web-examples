@@ -49,7 +49,7 @@ function DCAForm() {
   const [isLoading, setLoading] = React.useState(false);
   const isSupported = useMemo(
     () => isSmartSessionSupported(),
-    [status, address]
+    [status, address],
   );
 
   const isWalletConnecting =
@@ -67,7 +67,7 @@ function DCAForm() {
 
       const intervalInMilliseconds = calculateInterval(
         strategyWithTimestamp.investmentInterval,
-        strategyWithTimestamp.intervalUnit
+        strategyWithTimestamp.intervalUnit,
       );
 
       const expirationTime =
@@ -79,7 +79,7 @@ function DCAForm() {
           strategy={strategyWithTimestamp}
           key={Date.now()}
         />,
-        { duration: expirationTime - strategyWithTimestamp.createdTimestamp }
+        { duration: expirationTime - strategyWithTimestamp.createdTimestamp },
       );
     } catch (e) {
       toast("Error", {
