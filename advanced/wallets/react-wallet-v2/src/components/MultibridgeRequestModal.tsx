@@ -87,7 +87,8 @@ export default function MultibridgeRequestModal({ onReject, rejectLoader, bridge
       try {
         console.log('Approving request', transaction)
         const loadedWallet = getWalletByAddress(transaction.from)
-        const account = mnemonicToAccount(loadedWallet.getMnemonic())
+        const account = privateKeyToAccount(loadedWallet.getPrivateKey() as Hex)
+        // const account = mnemonicToAccount(loadedWallet.getMnemonic())
         console.log('Account', account)
 
         console.log('Connected wallet', account)
