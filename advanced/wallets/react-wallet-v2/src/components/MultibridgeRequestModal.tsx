@@ -4,24 +4,20 @@ import { LoaderProps } from '@/components/ModalFooter'
 import RequestModal from './RequestModal'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
-import { approveEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import {
   convertTokenBalance,
   decodeErc20Transaction,
   getAssetByContractAddress,
   getErc20TokenBalance
 } from '@/utils/MultibridgeUtil'
-import { getWallet, getWalletByAddress } from '@/utils/EIP155WalletUtil'
+import { getWalletByAddress } from '@/utils/EIP155WalletUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
-import { ChainAbstractionService } from '@/utils/ChainAbstractionService'
-import { ethers, providers } from 'ethers'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { ChainAbstractionTypes } from '@reown/walletkit'
-import { createWalletClient, Hex, http, recoverAddress, recoverMessageAddress } from 'viem'
+import { Hex } from 'viem'
 import BridgeBadge from './BridgeBadge'
-import { mnemonicToAccount, privateKeyToAccount } from 'viem/accounts'
-import { mainnet } from 'viem/chains'
+import { privateKeyToAccount } from 'viem/accounts'
 
 interface IProps {
   onReject: () => void
