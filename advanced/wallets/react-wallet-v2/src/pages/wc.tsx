@@ -35,12 +35,11 @@ export default function DeepLinkPairingPage() {
   }, [state.view])
 
   useEffect(() => {
-    if (requestId) {
-      ModalStore.open('LoadingModal', { loadingMessage })
-    }
-
-    if (uri) {
-      ModalStore.open('LoadingModal', { loadingMessage })
+    if (uri || requestId) {
+      ModalStore.open('LoadingModal', { loadingMessage }, () => {
+        console.log('Modal closed')
+        window.close()
+      })
     }
   }, [uri, requestId, loadingMessage])
 
