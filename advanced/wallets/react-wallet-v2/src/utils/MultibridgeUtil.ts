@@ -1,7 +1,7 @@
 import { createPublicClient, decodeFunctionData, erc20Abi, getContract, Hex, http } from 'viem'
 import { arbitrum, base, optimism } from 'viem/chains'
 import { getChainById } from './ChainUtil'
-import { providers } from 'ethers'
+import { ethers, providers } from 'ethers'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 
 const BASE_URL = 'https://api.socket.tech/v2'
@@ -13,11 +13,17 @@ export const supportedAssets: Record<string, Record<number, Hex>> = {
     [base.id]: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
     [optimism.id]: '0x0b2c639c533813f4aa9d7837caf62653d097ff85',
     [arbitrum.id]: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+  },
+  USDT: {
+    [base.id]: '0xfde4c96c8593536e31f229ea8f37b2ada2699bb2',
+    [optimism.id]: '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',
+    [arbitrum.id]: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9'
   }
 } as const
 
 const assetDecimals: Record<string, number> = {
-  USDC: 6
+  USDC: 6,
+  USDT: 6
 }
 
 export const supportedChains = [base, optimism, arbitrum] as const
@@ -44,13 +50,15 @@ export function getAssetByContractAddress(address: Hex): string {
       }
     }
   }
-  throw new Error('Asset not found for the given contract address')
+  console.error('Asset not found for the given contract address')
+  return ''
 }
 
-export function convertTokenBalance(asset: string, amount: number): number {
+export function convertTokenBalance(asset: string, amount: number): number | undefined {
   const decimals = assetDecimals[asset]
   if (!decimals) {
-    throw new Error('Asset not supported')
+    console.error('Asset not supported')
+    return
   }
   const balance = amount / 10 ** decimals
   return balance
@@ -61,7 +69,7 @@ export async function getErc20TokenBalance(
   chainId: number,
   account: Hex,
   convert: boolean = true
-): Promise<number> {
+): Promise<string> {
   const publicClient = createPublicClient({
     chain: getChainById(chainId),
     transport: http()
@@ -73,11 +81,12 @@ export async function getErc20TokenBalance(
   })
   const result = await contract.read.balanceOf([account])
   if (!convert) {
-    return Number(result)
+    return result.toString()
   }
   const decimals = await contract.read.decimals()
-  const balance = BigInt(result) / BigInt(10 ** decimals)
-  return Number(balance)
+  console.log('result', result, decimals)
+  const balance = Number(result) / Number(10 ** decimals)
+  return balance.toFixed(2)
 }
 
 type Erc20Transfer = {

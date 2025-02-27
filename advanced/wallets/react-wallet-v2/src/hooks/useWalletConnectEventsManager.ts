@@ -41,6 +41,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    *****************************************************************************/
   const onSessionRequest = useCallback(
     async (requestEvent: SignClientTypes.EventArguments['session_request']) => {
+      console.log('session_request', JSON.parse(JSON.stringify(requestEvent)))
       const { topic, params, verifyContext, id } = requestEvent
       const { request } = params
       const requestSession = walletkit.engine.signClient.session.get(topic)
@@ -181,6 +182,33 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         refreshSessionsList()
       })
       walletkit.on('session_authenticate', onSessionAuthenticate)
+
+      onSessionRequest({
+        id: 1738225968028357,
+        topic: '67132090c8b0fd3c2362b7dea4be21ebc6b0b14b6b27e82eb358bfc6f96c4533',
+        params: {
+          request: {
+            method: 'eth_sendTransaction',
+            params: [
+              {
+                data: '0xa9059cbb00000000000000000000000013a2ff792037aa2cd77fe1f4b522921ac59a9c5200000000000000000000000000000000000000000000000000000000003d0900',
+                from: '0x13A2Ff792037AA2cd77fE1f4B522921ac59a9C52',
+                to: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+              }
+            ],
+            expiryTimestamp: 1738226268
+          },
+          chainId: 'eip155:42161'
+        },
+        verifyContext: {
+          verified: {
+            verifyUrl: 'https://verify.walletconnect.org',
+            validation: 'VALID',
+            origin: 'https://appkit-lab.reown.com',
+            isScam: false
+          }
+        }
+      })
       // load sessions on init
       refreshSessionsList()
     }
