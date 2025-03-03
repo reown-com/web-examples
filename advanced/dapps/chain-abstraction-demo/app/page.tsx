@@ -25,7 +25,7 @@ export default function Home() {
         <div className="flex flex-col gap-5">
           <div className="flex flex-col text-left">
             <p className=" font-bold text-primary">Donut #1</p>
-            <p className=" text-secondary">Lorem ipsum dolor sit...</p>
+            <p className=" text-secondary">Gift Donut lets you send virtual donuts to friends using stable coins for a fun.</p>
           </div>
           <div className="flex justify-between items-center w-full">
             <div className="flex flex-col text-left">
