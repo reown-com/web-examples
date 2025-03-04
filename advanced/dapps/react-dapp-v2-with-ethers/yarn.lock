@@ -3161,10 +3161,10 @@
     "@walletconnect/logger" "2.1.2"
     events "3.3.0"
 
-"@walletconnect/universal-provider@2.19.0-canary-mw-1":
-  version "2.19.0-canary-mw-1"
-  resolved "https://registry.yarnpkg.com/@walletconnect/universal-provider/-/universal-provider-2.19.0-canary-mw-1.tgz#258b6df6aa7911eccfa9f9ea23dcf6094a8db740"
-  integrity sha512-aSxxOFkggzjDMSGE8vmlXjaq6EzaIaktp6BEuuU8QBbmkmeFlT1ZRBF+COAHpfrPmrdB3+iooUQ1nZLYByOdZw==
+"@walletconnect/universal-provider@2.19.0-canary-mw-2":
+  version "2.19.0-canary-mw-2"
+  resolved "https://registry.yarnpkg.com/@walletconnect/universal-provider/-/universal-provider-2.19.0-canary-mw-2.tgz#8a20856959ea78d424e74e7d804c2676ff31618f"
+  integrity sha512-7pAT0lbvu08gBjbwxuvpdr13VHc7ojkYQ4Sd/hJ4BqeQ5YU+/j1x65CEnjoMPtZ0Zg9IhESIG0RWeWE5B7qo7Q==
   dependencies:
     "@walletconnect/events" "1.0.1"
     "@walletconnect/jsonrpc-http-connection" "1.0.8"
