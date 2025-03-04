@@ -15,8 +15,8 @@ import TicTacToeBoard from "./TicTacToeBoard";
 import { useTicTacToeContext } from "@/context/TicTacToeContextProvider";
 import { useTicTacToeActions } from "@/hooks/useTicTacToeActions";
 import { useAppKitAccount } from "@reown/appkit/react";
-import { useBalance } from 'wagmi';
-import { parseUnits } from 'viem';
+import { useBalance } from "wagmi";
+import { parseUnits } from "viem";
 // This component contains all your hooks and JSX.
 function TicTacToeInner() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,10 +24,11 @@ function TicTacToeInner() {
   const { startGame } = useTicTacToeActions();
   const { status, address, embeddedWalletInfo } = useAppKitAccount();
   const balance = useBalance({ address: address as `0x${string}` });
-  const { accountType, user } = embeddedWalletInfo ?? {}
-  const isSmartAccount = accountType === 'smartAccount';
-  const isDisabled = !balance.data || balance.data.value < parseUnits('0.0005', 18); 
-  const isEmailAllowed = user?.email?.includes('+smart-sessions@');
+  const { accountType, user } = embeddedWalletInfo ?? {};
+  const isSmartAccount = accountType === "smartAccount";
+  const isDisabled =
+    !balance.data || balance.data.value < parseUnits("0.0005", 18);
+  const isEmailAllowed = user?.email?.includes("+smart-sessions@");
 
   const isWalletConnected = status === "connected" || address !== undefined;
   const isWalletConnecting = status
@@ -77,7 +78,9 @@ function TicTacToeInner() {
         </h1>
         <Card className="w-full bg-gradient-to-br from-purple-100 to-indigo-100 shadow-lg mb-4">
           <CardHeader className="pb-0">
-            <CardTitle className="text-lg text-indigo-800">Connect Your Wallet</CardTitle>
+            <CardTitle className="text-lg text-indigo-800">
+              Connect Your Wallet
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="bg-indigo-50/70 p-3 rounded-md border border-indigo-100 mb-3">
@@ -125,19 +128,23 @@ function TicTacToeInner() {
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-md space-y-2">
               {!isEmailAllowed && (
                 <p className="text-amber-700 font-medium">
-                  Email format required: <span className="font-mono text-amber-600">youremail+smart-sessions@domain.com</span>
+                  Email format required:{" "}
+                  <span className="font-mono text-amber-600">
+                    youremail+smart-sessions@domain.com
+                  </span>
                 </p>
               )}
-              
+
               {isEmailAllowed && !isSmartAccount && (
                 <p className="text-amber-700 font-medium">
                   Please switch to a Smart Account to use this feature.
                 </p>
               )}
-              
+
               {isEmailAllowed && isSmartAccount && isDisabled && (
                 <p className="text-red-600 font-medium">
-                  Insufficient balance. You need at least 0.0005 ETH for account deployment.
+                  Insufficient balance. You need at least 0.0005 ETH for account
+                  deployment.
                 </p>
               )}
             </div>
@@ -148,8 +155,8 @@ function TicTacToeInner() {
             <p className="text-base text-gray-700 leading-relaxed">
               Players take turns placing their marks in empty squares. The first
               to align three marks in a row—vertically, horizontally, or
-              diagonally—wins. If all squares are filled and no one has three in a
-              row, the game ends in a tie.
+              diagonally—wins. If all squares are filled and no one has three in
+              a row, the game ends in a tie.
             </p>
           </div>
         </CardContent>
@@ -157,7 +164,9 @@ function TicTacToeInner() {
           <div className="flex items-center justify-center">
             <Button
               onClick={onStartGame}
-              disabled={isLoading || !isSmartAccount || isDisabled || !isEmailAllowed}
+              disabled={
+                isLoading || !isSmartAccount || isDisabled || !isEmailAllowed
+              }
               className="w-full max-w-xs bg-indigo-700 hover:bg-indigo-600 text-white transition-all"
             >
               {isLoading ? (
@@ -165,10 +174,14 @@ function TicTacToeInner() {
                   <Loader2 className="animate-spin h-4 w-4" />
                   <span>Starting...</span>
                 </div>
+              ) : !isEmailAllowed ? (
+                "Email Format Required"
+              ) : !isSmartAccount ? (
+                "Smart Account Required"
+              ) : isDisabled ? (
+                "Insufficient ETH"
               ) : (
-                !isEmailAllowed ? 'Email Format Required' :
-                !isSmartAccount ? 'Smart Account Required' :
-                isDisabled ? 'Insufficient ETH' : 'Start New Game'
+                "Start New Game"
               )}
             </Button>
           </div>
