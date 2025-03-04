@@ -7,15 +7,23 @@ import Header from './Header';
 import MessageInput from './MessageInput';
 import ChatHeader from './ChatHeader';
 import ConnectionScreen from './ConnectionScreen';
+import { useBalance } from 'wagmi';
+import { parseUnits } from 'viem';
 
 const ChatInterface = () => {
   const { state, startChat, sendMessage } = useChat();
-  const { address, isConnected, status } = useAppKitAccount();
+  const { address, isConnected, status, embeddedWalletInfo } = useAppKitAccount();
   const { chainId } = useAppKitNetwork();
+  const { accountType, user } = embeddedWalletInfo ?? {}
+  const balance = useBalance({ address: address as `0x${string}` });
   const { open } = useAppKit();
   const { messages, isLoading } = state;
   const { grantedPermissions } = state;
   const permissionAddress = grantedPermissions?.address;
+
+  const isSmartAccount = accountType === 'smartAccount';
+  const isDisabled = !balance.data || balance.data.value < parseUnits('0.0005', 18); 
+  const isEmailAllowed = user?.email?.includes('+smart-sessions@');
 
   // First check if there's a granted permissions address
   // If yes, show chat screen regardless of other conditions
@@ -44,7 +52,16 @@ const ChatInterface = () => {
         <Header />
         <div className="h-full flex items-center justify-center px-4 sm:px-6 md:px-8">
           <div className="flex flex-col gap-6 text-center max-w-xs sm:max-w-md">
-            
+            {!isEmailAllowed && (
+              <div className="bg-red-500 text-white p-2 rounded">
+                Please use an email format: youremail+smart-sessions@domain.com
+              </div>
+            )}
+            {isEmailAllowed && !isSmartAccount && (
+              <div className="bg-red-500 text-white p-2 rounded">
+                Please switch to a Smart Account to use this feature.
+              </div>
+            )}
             {/* Main Description */}
             <div className="bg-zinc-800/50 p-4 rounded-lg">
               <h2 className="text-sm sm:text-base md:text-lg text-white mb-4">
@@ -76,19 +93,22 @@ const ChatInterface = () => {
                 <div className="flex gap-3">
                   <span className="text-blue-400">4.</span>
                   <p className="text-sm sm:text-base text-zinc-400">
-                    Please ensure you have sufficient ETH in your wallet for account deployment
+                    Please ensure you have atleast <span className="text-white">0.0005 ETH</span> in your wallet for account deployment
                   </p>
                 </div>
               </div>
             </div>
 
             {/* Action Button */}
-            <Button 
-              onClick={() => startChat(Number(chainId), address as `0x${string}`)}
-              className="px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base text-white bg-blue-400 hover:bg-blue-400/50"
-            >
-              Start New Chat
-            </Button>
+            {isSmartAccount && isEmailAllowed && (
+              <Button 
+                disabled={isDisabled}
+                onClick={() => startChat(Number(chainId), address as `0x${string}`)}
+                className="px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base text-white bg-blue-400 hover:bg-blue-400/50"
+              >
+                {isDisabled ? 'Insufficient ETH to Start Chat' : 'Start New Chat'}
+              </Button>
+            )}
           </div>
         </div>
       </div>
