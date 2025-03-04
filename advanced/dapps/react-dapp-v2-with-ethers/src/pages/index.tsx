@@ -1,8 +1,7 @@
 import type { NextPage } from "next";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as encoding from "@walletconnect/encoding";
 import { BigNumber, utils } from "ethers";
-import { TypedDataField } from "@ethersproject/abstract-signer";
 import { Transaction } from "@ethereumjs/tx";
 
 import Banner from "./../components/Banner";
@@ -33,8 +32,10 @@ import {
   SLayout,
   SToggleContainer,
 } from "./../components/app";
-import { useWalletConnectClient } from "./../contexts/ClientContext";
+import { ISessionData, useWalletConnectClient } from "./../contexts/ClientContext";
 import { RELAYER_SDK_VERSION as version } from "@walletconnect/core";
+import Button from "../components/Button";
+import styled from "styled-components";
 
 interface IFormattedRpcResponse {
   method: string;
@@ -43,10 +44,19 @@ interface IFormattedRpcResponse {
   result: string;
 }
 
+const SessionSwitchButton = styled(Button as any)`
+  border-radius: 8px;
+  height: 44px;
+  width: 100%;
+  margin: 12px 0;
+  background-color: ${({ color }) => `${color}`};
+`;
+
 const Home: NextPage = () => {
   const [isTestnet, setIsTestnet] = useState(getLocalStorageTestnetFlag());
   const [isRpcRequestPending, setIsRpcRequestPending] = useState(false);
   const [rpcResult, setRpcResult] = useState<IFormattedRpcResponse | null>();
+  const [currentSession, setCurrentSession] = useState<ISessionData>();
 
   const [modal, setModal] = useState("");
 
@@ -57,16 +67,12 @@ const Home: NextPage = () => {
   // Initialize the WalletConnect client.
   const {
     client,
-    session,
+    sessionsData,
     disconnect,
-    chain,
-    accounts,
-    balances,
     chainData,
     isFetchingBalances,
     isInitializing,
     connect,
-    web3Provider,
   } = useWalletConnectClient();
 
   const verifyEip155MessageSignature = (message: string, signature: string, address: string) =>
@@ -77,13 +83,13 @@ const Home: NextPage = () => {
       throw new Error("WalletConnect Client is not initialized");
     }
 
-    if (typeof session === "undefined") {
+    if (typeof currentSession?.session === "undefined") {
       throw new Error("Session is not connected");
     }
 
     try {
       setIsRpcRequestPending(true);
-      await client.ping({ topic: session.topic });
+      await client.ping({ topic: currentSession.session.topic });
       setRpcResult({
         address: "",
         method: "ping",
@@ -103,13 +109,13 @@ const Home: NextPage = () => {
   };
 
   const testSendTransaction: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
+    if (!currentSession?.web3Provider) {
       throw new Error("web3Provider not connected");
     }
 
-    const { chainId } = await web3Provider.getNetwork();
-    const [address] = await web3Provider.listAccounts();
-    const balance = await web3Provider.getBalance(address);
+    const { chainId } = await currentSession.web3Provider.getNetwork();
+    const [address] = await currentSession.web3Provider.listAccounts();
+    const balance = await currentSession.web3Provider.getBalance(address);
 
     const tx = await formatTestTransaction("eip155:" + chainId + ":" + address);
 
@@ -122,7 +128,7 @@ const Home: NextPage = () => {
       };
     }
 
-    const txHash = await web3Provider.send("eth_sendTransaction", [tx]);
+    const txHash = await currentSession.web3Provider.send("eth_sendTransaction", [tx]);
 
     return {
       method: "eth_sendTransaction",
@@ -133,15 +139,15 @@ const Home: NextPage = () => {
   };
 
   const testSignTransaction: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
+    if (!currentSession?.web3Provider) {
       throw new Error("web3Provider not connected");
     }
 
-    const { chainId } = await web3Provider.getNetwork();
-    const [address] = await web3Provider.listAccounts();
+    const { chainId } = await currentSession.web3Provider.getNetwork();
+    const [address] = await currentSession.web3Provider.listAccounts();
 
     const tx = await formatTestTransaction("eip155:" + chainId + ":" + address);
-    const signedTx = await web3Provider.send("eth_signTransaction", [tx]);
+    const signedTx = await currentSession.web3Provider.send("eth_signTransaction", [tx]);
     const valid = Transaction.fromSerializedTx(signedTx as any).verifySignature();
 
     return {
@@ -153,16 +159,16 @@ const Home: NextPage = () => {
   };
 
   const testSignMessage: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
+    if (!currentSession?.web3Provider) {
       throw new Error("web3Provider not connected");
     }
 
     const msg = "hello world";
     const hexMsg = encoding.utf8ToHex(msg, true);
-    const [address] = await web3Provider.listAccounts();
-    const signature = await web3Provider.send("personal_sign", [hexMsg, address]);
-    const hashMsg = hashPersonalMessage(msg)
-    const valid = await verifySignature(address, signature, hashMsg, web3Provider);
+    const [address] = await currentSession.web3Provider.listAccounts();
+    const signature = await currentSession.web3Provider.send("personal_sign", [hexMsg, address]);
+    const hashMsg = hashPersonalMessage(msg);
+    const valid = await verifySignature(address, signature, hashMsg, currentSession.web3Provider);
     return {
       method: "personal_sign",
       address,
@@ -172,13 +178,13 @@ const Home: NextPage = () => {
   };
 
   const testEthSign: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
+    if (!currentSession?.web3Provider) {
       throw new Error("web3Provider not connected");
     }
     const msg = "hello world";
     const hexMsg = encoding.utf8ToHex(msg, true);
-    const [address] = await web3Provider.listAccounts();
-    const signature = await web3Provider.send("eth_sign", [address, hexMsg]);
+    const [address] = await currentSession.web3Provider.listAccounts();
+    const signature = await currentSession.web3Provider.send("eth_sign", [address, hexMsg]);
     const valid = verifyEip155MessageSignature(msg, signature, address);
     return {
       method: "eth_sign (standard)",
@@ -189,27 +195,27 @@ const Home: NextPage = () => {
   };
 
   const testSignTypedData: () => Promise<IFormattedRpcResponse> = async () => {
-    if (!web3Provider) {
+    if (!currentSession?.web3Provider) {
       throw new Error("web3Provider not connected");
     }
 
     const message = JSON.stringify(eip712.example);
 
-    const [address] = await web3Provider.listAccounts();
+    const [address] = await currentSession.web3Provider.listAccounts();
 
     // eth_signTypedData params
     const params = [address, message];
 
     // send message
-    const signature = await web3Provider.send("eth_signTypedData", params);
+    const signature = await currentSession.web3Provider.send("eth_signTypedData", params);
 
     const hashedTypedData = hashTypedDataMessage(message);
     const valid = await verifySignature(
-          address,
-          signature,
-          hashedTypedData,
-          web3Provider
-        );
+      address,
+      signature,
+      hashedTypedData,
+      currentSession.web3Provider,
+    );
     return {
       method: "eth_signTypedData",
       address,
@@ -254,6 +260,15 @@ const Home: NextPage = () => {
     }
   };
 
+  useEffect(() => {
+    if (sessionsData) {
+      console.log(sessionsData);
+
+      const sessionData = sessionsData[Object.keys(sessionsData)[0]];
+      setCurrentSession(sessionData);
+    }
+  }, [sessionsData]);
+
   // Toggle between displaying testnet or mainnet chains as selection options.
   const toggleTestnets = () => {
     const nextIsTestnetState = !isTestnet;
@@ -275,50 +290,99 @@ const Home: NextPage = () => {
 
   const renderContent = () => {
     const chainOptions = isTestnet ? DEFAULT_TEST_CHAINS : DEFAULT_MAIN_CHAINS;
-    return !accounts.length && !Object.keys(balances).length ? (
-      <SLanding center>
-        <Banner />
-        <h6>
-          <span>{`Using v${version || "2.0.0-beta"}`}</span>
-        </h6>
-        <SButtonContainer>
-          <h6>Select an Ethereum chain:</h6>
-          <SToggleContainer>
-            <p>Testnets Only?</p>
-            <Toggle active={isTestnet} onClick={toggleTestnets} />
-          </SToggleContainer>
-          {chainOptions.map(chainId => (
-            <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={connect} />
-          ))}
-        </SButtonContainer>
-      </SLanding>
+    console.log("currentSession", currentSession?.session.topic);
+    return !currentSession ? (
+      <>
+        <Header />
+        <SLanding center>
+          <Banner />
+          <h6>
+            <span>{`Using v${version || "2.0.0-beta"}`}</span>
+          </h6>
+          <SButtonContainer>
+            <h6>Select an Ethereum chain:</h6>
+            <SToggleContainer>
+              <p>Testnets Only?</p>
+              <Toggle active={isTestnet} onClick={toggleTestnets} />
+            </SToggleContainer>
+            {chainOptions.map(chainId => (
+              <Blockchain key={chainId} chainId={chainId} chainData={chainData} onClick={connect} />
+            ))}
+          </SButtonContainer>
+        </SLanding>
+      </>
     ) : (
-      <SAccountsContainer>
-        <h3>Account</h3>
-        <SAccounts>
-          {accounts.map(account => {
-            return (
-              <Blockchain
-                key={account}
-                active={true}
-                chainData={chainData}
-                fetching={isFetchingBalances}
-                address={account}
-                chainId={chain}
-                balances={balances}
-                actions={getBlockchainActions(chain)}
-              />
-            );
-          })}
-        </SAccounts>
-      </SAccountsContainer>
+      <>
+        <Header
+          ping={onPing}
+          disconnect={() => disconnect(currentSession?.session.topic!)}
+          session={currentSession?.session}
+        />
+        <div
+          style={{
+            display: "flex",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              minWidth: "200px",
+              padding: "10px",
+              marginTop: "70px",
+            }}
+          >
+            <SessionSwitchButton color={"#4CAF50"} onClick={() => connect("eip155:1")}>
+              Connect New Session
+            </SessionSwitchButton>
+            <br />
+            <label>Connected Sessions</label>
+            {Object.values(sessionsData || {}).map((sessionData, index) => {
+              return (
+                <SessionSwitchButton
+                  key={sessionData.session.topic}
+                  color={"#2196F3"}
+                  onClick={() => {
+                    console.log("clicked", sessionData.session.topic);
+                    setCurrentSession(sessionData);
+                  }}
+                >
+                  {sessionData.session.peer.metadata.name}{" "}
+                  {currentSession?.session.topic === sessionData.session.topic ? "(Current)" : ""}
+                  <br />
+                  <span style={{ fontSize: "10px" }}>{sessionData.session.topic}</span>
+                </SessionSwitchButton>
+              );
+            })}
+          </div>
+          <SAccountsContainer>
+            <h3>Account</h3>
+            <SAccounts>
+              {currentSession?.accounts.map(account => {
+                return (
+                  <Blockchain
+                    key={account}
+                    active={true}
+                    chainData={chainData}
+                    fetching={isFetchingBalances}
+                    address={account}
+                    chainId={currentSession?.chain}
+                    balances={currentSession?.balances}
+                    actions={getBlockchainActions(currentSession?.chain)}
+                  />
+                );
+              })}
+            </SAccounts>
+          </SAccountsContainer>
+        </div>
+      </>
     );
   };
 
   return (
     <SLayout>
       <Column maxWidth={1000} spanHeight>
-        <Header ping={onPing} disconnect={disconnect} session={session} />
         <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
       </Column>
       <Modal show={!!modal} closeModal={closeModal}>
