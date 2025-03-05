@@ -285,10 +285,21 @@ export default function SessionProposalModal() {
   const namespaces = useMemo(() => {
     try {
       // the builder throws an exception if required namespaces are not supported
-      return buildApprovedNamespaces({
+      const approvedNamespaces = buildApprovedNamespaces({
         proposal: proposal.params,
         supportedNamespaces
       })
+      // add wallet_checkout to the eip155 namespace
+      const updatedNamespaces = {
+        ...approvedNamespaces,
+        eip155: {
+          ...approvedNamespaces.eip155,
+          methods: [...approvedNamespaces.eip155.methods, 'wallet_checkout']
+        }
+      }
+
+      console.log('updatedNamespaces', updatedNamespaces)
+      return updatedNamespaces
     } catch (e) {
       console.error('Error building approved namespaces', e)
     }
