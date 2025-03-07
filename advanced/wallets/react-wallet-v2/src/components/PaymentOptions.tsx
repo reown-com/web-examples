@@ -12,10 +12,10 @@ interface PaymentOptionsProps {
 
 // Style variables
 const styles = {
-  dropdownContainer: { 
+  dropdownContainer: {
     position: 'relative' as const
   },
-  dropdownButton: { 
+  dropdownButton: {
     padding: '8px 16px',
     background: '$accents0',
     border: '1px solid $border',
@@ -27,26 +27,26 @@ const styles = {
       transform: 'translateY(-2px)'
     }
   },
-  cardBody: { 
-    overflow: 'visible' as const, 
-    display: 'flex' as const, 
-    justifyContent: 'space-between' as const, 
-    alignItems: 'center' as const, 
-    padding: '4px 0' 
+  cardBody: {
+    overflow: 'visible' as const,
+    display: 'flex' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    padding: '4px 0'
   },
-  contentWrapper: { 
-    display: 'flex' as const, 
-    alignItems: 'center' as const, 
-    width: '100%' 
+  contentWrapper: {
+    display: 'flex' as const,
+    alignItems: 'center' as const,
+    width: '100%'
   },
-  chevronContainer: { 
-    marginLeft: 'auto' 
+  chevronContainer: {
+    marginLeft: 'auto'
   },
-  dropdownMenu: { 
-    position: 'absolute' as const, 
-    top: 'calc(100% + 8px)', 
-    left: 0, 
-    right: 0, 
+  dropdownMenu: {
+    position: 'absolute' as const,
+    top: 'calc(100% + 8px)',
+    left: 0,
+    right: 0,
     zIndex: 1000,
     padding: '4px 8px',
     boxShadow: '0 4px 14px 0 rgba(0, 0, 0, 0.3)',
@@ -54,17 +54,17 @@ const styles = {
     overflow: 'auto' as const,
     backgroundColor: '#2a2a2a'
   },
-  emptyState: { 
-    backgroundColor: '#f7f8f9', 
-    padding: '16px', 
-    borderRadius: '14px', 
+  emptyState: {
+    backgroundColor: '#f7f8f9',
+    padding: '16px',
+    borderRadius: '14px',
     textAlign: 'center' as const
   },
-  avatarWrapper: { 
-    position: 'relative' as const, 
-    marginRight: '12px' 
+  avatarWrapper: {
+    position: 'relative' as const,
+    marginRight: '12px'
   },
-  chainIconWrapper: { 
+  chainIconWrapper: {
     position: 'absolute' as const,
     right: '-6px',
     bottom: '-6px',
@@ -80,7 +80,7 @@ const styles = {
     alignItems: 'center' as const,
     justifyContent: 'center' as const
   },
-  checkmark: { 
+  checkmark: {
     position: 'absolute' as const,
     right: '10px',
     top: '50%',
@@ -99,57 +99,62 @@ const styles = {
     objectFit: 'cover' as const,
     borderRadius: '50%'
   }
-};
+}
 
 // Simple hook to detect clicks outside an element
 const useClickAway = (onClickAway: () => void) => {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
-        onClickAway();
+        onClickAway()
       }
-    };
+    }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside)
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [onClickAway]);
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [onClickAway])
 
-  return ref;
-};
+  return ref
+}
 
 export default function CustomPaymentDropdown({ payments, onSelectPayment }: PaymentOptionsProps) {
-  const [selectedIndex, setSelectedIndex] = useState(payments.length > 0 ? 0 : -1);
-  const [isOpen, setIsOpen] = useState(false);
-  const { formatRecipient } = WalletCheckoutUtil;
+  const [selectedIndex, setSelectedIndex] = useState(payments.length > 0 ? 0 : -1)
+  const [isOpen, setIsOpen] = useState(false)
+  const { formatRecipient } = WalletCheckoutUtil
 
   // Reference to detect clicks outside dropdown
   const dropdownRef = useClickAway(() => {
-    setIsOpen(false);
-  });
+    setIsOpen(false)
+  })
 
   // Set the initial payment option when component loads or when payments change
   useEffect(() => {
     if (payments.length > 0 && selectedIndex === -1) {
-      setSelectedIndex(0);
+      setSelectedIndex(0)
     }
-    
-    if (payments.length > 0 && selectedIndex >= 0 && selectedIndex < payments.length && onSelectPayment) {
-      onSelectPayment(payments[selectedIndex]);
+
+    if (
+      payments.length > 0 &&
+      selectedIndex >= 0 &&
+      selectedIndex < payments.length &&
+      onSelectPayment
+    ) {
+      onSelectPayment(payments[selectedIndex])
     }
-  }, [payments, selectedIndex, onSelectPayment]);
+  }, [payments, selectedIndex, onSelectPayment])
 
   const handleSelect = (index: number) => {
-    setSelectedIndex(index);
-    setIsOpen(false);
-    
+    setSelectedIndex(index)
+    setIsOpen(false)
+
     if (onSelectPayment && index >= 0 && index < payments.length) {
-      onSelectPayment(payments[index]);
+      onSelectPayment(payments[index])
     }
-  };
+  }
 
   // Get style for dropdown item
   const getDropdownItemStyle = (isSelected: boolean, isLast: boolean) => ({
@@ -163,20 +168,20 @@ export default function CustomPaymentDropdown({ payments, onSelectPayment }: Pay
     paddingBottom: '8px',
     marginTop: '8px',
     transition: 'all 0.2s ease'
-  });
+  })
 
   // Handle hover effects
   const handleMouseOver = (e: React.MouseEvent<HTMLDivElement>, isSelected: boolean) => {
     if (!isSelected) {
-      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
     }
-  };
+  }
 
   const handleMouseOut = (e: React.MouseEvent<HTMLDivElement>, isSelected: boolean) => {
     if (!isSelected) {
-      e.currentTarget.style.backgroundColor = 'transparent';
+      e.currentTarget.style.backgroundColor = 'transparent'
     }
-  };
+  }
 
   // Render payment option
   const renderPaymentOption = (payment: DetailedPaymentOption) => (
@@ -202,116 +207,116 @@ export default function CustomPaymentDropdown({ payments, onSelectPayment }: Pay
         )}
         {payment.chainMetadata.chainIcon && (
           <div style={styles.chainIconWrapper}>
-            <Image 
-              src={payment.chainMetadata.chainIcon} 
-              width={14} 
-              height={14} 
+            <Image
+              src={payment.chainMetadata.chainIcon}
+              width={14}
+              height={14}
               style={styles.chainImage}
               alt={payment.chainMetadata.chainName}
             />
           </div>
         )}
       </div>
-      
+
       <Grid.Container direction="column" css={{ margin: 0, padding: 0 }}>
         <Text size={12} css={{ color: '#aaaaaa', lineHeight: 1.2 }}>
           To: {formatRecipient(payment.recipient!)}
         </Text>
         <Text b size={14} css={{ lineHeight: 1.2, color: 'white' }}>
-          {formatUnits(BigInt(payment.amount), payment.assetMetadata.assetDecimals).toString()} {payment.assetMetadata.assetSymbol}
-         {'  '}
-         <span style={{color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px'}}>
-         (${payment.assetMetadata.assetValue})
-         </span>
+          {formatUnits(BigInt(payment.amount), payment.assetMetadata.assetDecimals).toString()}{' '}
+          {payment.assetMetadata.assetSymbol}
+          {'  '}
+          <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px' }}>
+            (${payment.assetMetadata.assetValue})
+          </span>
         </Text>
       </Grid.Container>
     </Row>
-  );
+  )
 
   // Render chevron icon
   const renderChevron = () => (
-    <svg 
-      width="16" 
-      height="16" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ 
+      style={{
         transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
         transition: 'transform 0.2s ease'
       }}
     >
       <polyline points="6 9 12 15 18 9"></polyline>
     </svg>
-  );
+  )
 
   // Render checkmark icon
   const renderCheckmark = () => (
     <div style={styles.checkmark}>
-      <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="14" 
-        height="14" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="3" 
-        strokeLinecap="round" 
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
         strokeLinejoin="round"
       >
         <polyline points="20 6 9 17 4 12"></polyline>
       </svg>
     </div>
-  );
+  )
 
   return (
     <>
       <Row justify="space-between" align="center">
-        <Text h5 css={{ color: '$text', fontWeight: '600' }}>Payment Option</Text>
+        <Text h5 css={{ color: '$text', fontWeight: '600' }}>
+          Payment Option
+        </Text>
       </Row>
       <Spacer y={0.5} />
-      
+
       <Container css={{ padding: '0' }}>
         {payments.length > 0 ? (
           <div ref={dropdownRef} style={styles.dropdownContainer}>
             {/* Dropdown Button */}
-            <Card 
-              onClick={() => setIsOpen(!isOpen)} 
-              css={styles.dropdownButton}
-            >
+            <Card onClick={() => setIsOpen(!isOpen)} css={styles.dropdownButton}>
               <Card.Body css={styles.cardBody}>
                 <div style={styles.contentWrapper}>
-                  {selectedIndex >= 0 && selectedIndex < payments.length && renderPaymentOption(payments[selectedIndex])}
-                
-                  <div style={styles.chevronContainer}>
-                    {renderChevron()}
-                  </div>
+                  {selectedIndex >= 0 &&
+                    selectedIndex < payments.length &&
+                    renderPaymentOption(payments[selectedIndex])}
+
+                  <div style={styles.chevronContainer}>{renderChevron()}</div>
                 </div>
               </Card.Body>
             </Card>
-            
+
             {/* Dropdown Menu */}
             {isOpen && (
               <Card css={styles.dropdownMenu}>
                 {payments.map((payment, idx) => {
-                  const isSelected = selectedIndex === idx;
-                  const isLastItem = idx === payments.length - 1;
-                  
+                  const isSelected = selectedIndex === idx
+                  const isLastItem = idx === payments.length - 1
+
                   return (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       onClick={() => handleSelect(idx)}
                       style={getDropdownItemStyle(isSelected, isLastItem)}
-                      onMouseOver={(e) => handleMouseOver(e, isSelected)}
-                      onMouseOut={(e) => handleMouseOut(e, isSelected)}
+                      onMouseOver={e => handleMouseOver(e, isSelected)}
+                      onMouseOut={e => handleMouseOut(e, isSelected)}
                     >
                       {renderPaymentOption(payment)}
                       {isSelected && renderCheckmark()}
                     </div>
-                  );
+                  )
                 })}
               </Card>
             )}
@@ -319,9 +324,7 @@ export default function CustomPaymentDropdown({ payments, onSelectPayment }: Pay
         ) : (
           <Card css={styles.emptyState}>
             <Card.Body>
-              <Text css={{ color: '$accents7' }}>
-                No payment options available
-              </Text>
+              <Text css={{ color: '$accents7' }}>No payment options available</Text>
             </Card.Body>
           </Card>
         )}

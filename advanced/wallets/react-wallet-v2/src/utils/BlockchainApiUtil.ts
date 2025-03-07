@@ -1,6 +1,5 @@
 // -- Types ----------------------------------------------------------------------
 
-
 interface RequestArguments {
   path: string
   headers?: HeadersInit

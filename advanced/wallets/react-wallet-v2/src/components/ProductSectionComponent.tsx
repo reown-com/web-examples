@@ -1,7 +1,6 @@
 import { Fragment } from 'react'
 import { Card, Col, Row, Image, Text } from '@nextui-org/react'
 
-
 interface ProductMetadata {
   name: string
   description?: string
@@ -12,7 +11,6 @@ interface ProductMetadata {
 interface ProductCardProps {
   product: ProductMetadata
 }
-
 
 function ProductCard({ product }: ProductCardProps) {
   return (
@@ -31,23 +29,25 @@ function ProductCard({ product }: ProductCardProps) {
             </Col>
           )}
           <Col style={{ paddingLeft: product.imageUrl ? '16px' : 0 }}>
-            <Text h4 style={{ marginBottom: 0 }}>{product.name}</Text>
+            <Text h4 style={{ marginBottom: 0 }}>
+              {product.name}
+            </Text>
             {product.description && (
-              <Text style={{ color: '#8c8c8c' }} size="small">{product.description}</Text>
+              <Text style={{ color: '#8c8c8c' }} size="small">
+                {product.description}
+              </Text>
             )}
             {product.price && (
-              <Text size="medium" b >
+              <Text size="medium" b>
                 Price: {product.price}
               </Text>
             )}
           </Col>
-          
         </Row>
       </Card.Body>
     </Card>
   )
 }
-
 
 interface ProductsSectionProps {
   products?: ProductMetadata[]

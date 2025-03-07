@@ -91,7 +91,6 @@ export const WalletGetAssetsCtrl = {
     }
     return headers
   },
-  
 
   isBalanceExpired(address: string): boolean {
     const addressData = state.addressBalances[address]

@@ -97,10 +97,10 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
         case 'wallet_checkout':
           const address = SettingsStore.state.eip155Address
-          try{
+          try {
             WalletCheckoutUtil.validateCheckoutRequest(request.params[0])
-          }catch(error){
-            if(error instanceof CheckoutError){
+          } catch (error) {
+            if (error instanceof CheckoutError) {
               return await walletkit.respondSessionRequest({
                 topic,
                 response: formatJsonRpcError(id, error.message)
