@@ -1,4 +1,4 @@
-import { supportedTokens, Token } from "@/data/EIP155Data";
+import { supportedTokens, Token, isTokenSupportedOnNetwork } from "@/data/EIP155Data";
 import { Separator } from "../ui/separator";
 import React from "react";
 import Image from "next/image";
@@ -29,30 +29,59 @@ function PayWithView({ onViewChange, onClose }: GiftDonutModalViewProps) {
           </Button>
         </div>
       </div>
-      <TokenList className="w-full" />
+      
+      <TokenList className="w-full" onViewChange={onViewChange} />
     </div>
   );
 }
 
-function TokenList({ className }: React.ComponentProps<"form">) {
+function TokenList({ 
+  className, 
+  onViewChange 
+}: React.ComponentProps<"form"> & { onViewChange: (viewKey: string) => void }) {
   const selectedToken = giftDonutModalManager.getToken();
+  const selectedNetwork = giftDonutModalManager.getNetwork();
   const [token, setToken] = React.useState<Token | undefined>(selectedToken);
+  
+  // Filter tokens based on network compatibility
+  const availableTokens = React.useMemo(() => {
+    if (!selectedNetwork) {
+      return supportedTokens; // If no network selected, show all tokens
+    }
+    
+    // Filter tokens to only those supported on the selected network
+    return supportedTokens.filter(token => 
+      isTokenSupportedOnNetwork(token, selectedNetwork.chainId)
+    );
+  }, [selectedNetwork]);
 
   const setSelectedToken = (token: Token) => {
     setToken(token);
     giftDonutModalManager.setToken(token);
   };
 
+  // If no tokens are available for the selected network, show a message
+  if (availableTokens.length === 0 && selectedNetwork) {
+    return (
+      <div className={cn("flex flex-col items-center text-center gap-4 p-4", className)}>
+        <p className="text-primary">No supported tokens found for {selectedNetwork.name}.</p>
+        <Button onClick={() => onViewChange("ChooseNetwork")}>
+          Choose Another Network
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex flex-col items-start gap-4", className)}>
-      {supportedTokens.map((tokenItem, index) => (
+      {availableTokens.map((tokenItem, index) => (
         <div key={index} className="w-full">
           <TokenItem
             token={tokenItem}
             selected={token?.address === tokenItem.address}
             onClick={() => setSelectedToken(tokenItem)}
           />
-          {supportedTokens.length - 1 !== index && <Separator />}
+          {availableTokens.length - 1 !== index && <Separator />}
         </div>
       ))}
     </div>
