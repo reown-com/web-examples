@@ -101,6 +101,31 @@ export default function SessionCheckoutModal() {
     if (!requestEvent || !topic) return
     try {
       setIsLoadingApprove(true)
+      
+      // Check if the request has expired
+      if (checkoutRequest.expiry) {
+        const currentTime = Math.floor(Date.now() / 1000) // Current time in seconds
+        if (currentTime > checkoutRequest.expiry) {
+          // Request has expired, send error response
+          const expiryError = new CheckoutError(
+            CheckoutErrorCode.CHECKOUT_EXPIRED,
+          )
+          
+          await walletkit.respondSessionRequest({
+            topic,
+            response: WalletCheckoutUtil.formatCheckoutErrorResponse(
+              requestEvent.id,
+              expiryError
+            )
+          })
+          
+          styledToast('Checkout request has expired', 'error')
+          ModalStore.close()
+          setIsLoadingApprove(false)
+          return
+        }
+      }
+      
       if (selectedPayment) {
         const { amount, asset, assetMetadata, chainMetadata, contractInteraction, recipient } =
           selectedPayment
