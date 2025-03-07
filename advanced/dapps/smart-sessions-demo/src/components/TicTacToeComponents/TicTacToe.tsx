@@ -85,7 +85,7 @@ function TicTacToeInner() {
           <CardContent className="p-4">
             <div className="bg-indigo-50/70 p-3 rounded-md border border-indigo-100 mb-3">
               <p className="text-sm text-gray-700 mb-2 font-medium">
-                Please use your Email Wallet with:
+                Please use your email wallet with:
               </p>
               <p className="font-mono text-sm bg-white p-2 rounded border border-gray-200">
                 youremail
@@ -128,7 +128,7 @@ function TicTacToeInner() {
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-md space-y-2">
               {!isEmailAllowed && (
                 <p className="text-amber-700 font-medium">
-                  Email format required:{" "}
+                  Not connected with the proper email wallet:{" "}
                   <span className="font-mono text-amber-600">
                     youremail+smart-sessions@domain.com
                   </span>
@@ -137,14 +137,13 @@ function TicTacToeInner() {
 
               {isEmailAllowed && !isSmartAccount && (
                 <p className="text-amber-700 font-medium">
-                  Please switch to a Smart Account to use this feature.
+                  Please use a smart account to get started.
                 </p>
               )}
 
               {isEmailAllowed && isSmartAccount && isDisabled && (
                 <p className="text-red-600 font-medium">
-                  Insufficient balance. You need at least 0.0005 ETH for account
-                  deployment.
+                  Insufficient balance. Need at least 0.0005 ETH to get started.
                 </p>
               )}
             </div>

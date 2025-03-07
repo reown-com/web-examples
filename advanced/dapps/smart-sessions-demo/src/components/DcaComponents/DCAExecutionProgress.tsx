@@ -5,13 +5,17 @@ import { Progress } from "@/components/ui/progress";
 import { DCAFormSchemaType } from "@/schema/DCAFormSchema";
 import { useDcaApplicationContext } from "@/context/DcaApplicationContextProvider";
 import { calculateInterval } from "@/utils/DCAUtils";
-// import { toast } from "sonner";
+import { toast } from "sonner";
+
+interface DCAExecutionProgressProps {
+  strategy: DCAFormSchemaType;
+  toastId?: string | number;
+}
 
 export function DCAExecutionProgress({
   strategy,
-}: {
-  strategy: DCAFormSchemaType;
-}) {
+  toastId,
+}: DCAExecutionProgressProps) {
   const [progress, setProgress] = React.useState(0);
   const { smartSession, clearSmartSession } = useDcaApplicationContext();
   const totalOrders = strategy.numberOfOrders;
@@ -119,6 +123,10 @@ export function DCAExecutionProgress({
   // Check if smartSession is undefined when the component mounts
   React.useEffect(() => {
     if (!smartSession) {
+     // Also dismiss the toast when the session disappears
+      if (toastId) {
+        toast.dismiss(toastId);
+      }
       setShouldClose(true);
     }
   }, [smartSession]);
@@ -136,6 +144,10 @@ export function DCAExecutionProgress({
 
         // Signal that the component should close after a brief display period
         const closeTimer = setTimeout(() => {
+          // Explicitly dismiss the toast using its ID
+          if (toastId) {
+            toast.dismiss(toastId);
+          }
           setShouldClose(true);
         }, 2000); // Show success message for 2 seconds before closing
 

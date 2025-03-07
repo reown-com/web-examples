@@ -93,6 +93,7 @@ function DCAForm({ isSupported, hasInsufficientEth }: DCAFormProps) {
       toast(
         <DCAExecutionProgress
           strategy={strategyWithTimestamp}
+          toastId={uniqueToastId}
           key={Date.now()}
         />,
         {
@@ -158,7 +159,7 @@ function DCAForm({ isSupported, hasInsufficientEth }: DCAFormProps) {
             ) : hasInsufficientEth ? (
               "Insufficient ETH"
             ) : hasActiveStrategy ? (
-              "Strategy in Progress..."
+              "Executing Strategy..."
             ) : (
               "Create"
             )}
