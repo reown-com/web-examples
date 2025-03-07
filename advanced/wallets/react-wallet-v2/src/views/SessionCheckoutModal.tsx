@@ -1,5 +1,5 @@
 import { Button, Divider, Modal, Text, Spacer, Row, Container, Loading } from '@nextui-org/react'
-import { Fragment, useCallback, useState, useEffect } from 'react'
+import { Fragment, useCallback, useState, useEffect, useMemo } from 'react'
 
 import ModalStore from '@/store/ModalStore'
 import { walletkit } from '@/utils/WalletConnectUtil'
@@ -22,6 +22,7 @@ import { providers } from 'ethers'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import WalletCheckoutPaymentHandler from '@/utils/WalletCheckoutPaymentHandler'
 import LoadingModal from './LoadingModal'
+import { useCheckoutRequest } from '@/hooks/useCheckoutRequest'
 
 // Custom styles for the modal
 const modalStyles = {
@@ -59,8 +60,6 @@ const modalStyles = {
 }
 
 export default function SessionCheckoutModal() {
-  const [isReadyToRender, setIsReadyToRender] = useState(false)
-  const [feasiblePayments, setFeasiblePayments] = useState<DetailedPaymentOption[]>([])
   const [isLoadingReject, setIsLoadingReject] = useState(false)
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [selectedPayment, setSelectedPayment] = useState<DetailedPaymentOption | null>(null)
@@ -69,28 +68,50 @@ export default function SessionCheckoutModal() {
   const requestSession = ModalStore.state.data?.requestSession
 
   const topic = requestEvent?.topic
-  const chainId = requestEvent?.params?.chainId
   const request = requestEvent?.params?.request
-  // Parse the request
-  const { params, method } = request || {}
-  const checkoutRequest = params[0] || ({} as CheckoutRequest)
+  const checkoutRequest = useMemo(() => 
+    request?.params?.[0] || {} as CheckoutRequest, 
+    [request]
+  )
+
+  // Use our custom hook to fetch payments
+  const address = SettingsStore.state.eip155Address
+  const { isLoading, error, feasiblePayments } = useCheckoutRequest(request, address)
+
+  // Handle API errors during preparation
+  useEffect(() => {
+    if (error && requestEvent && topic) {
+      walletkit.respondSessionRequest({
+        topic,
+        response: WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent.id, error)
+      }).finally(() => {
+        ModalStore.close()
+      })
+    }
+  }, [error, requestEvent, topic])
 
   // Handle reject action
   const onReject = useCallback(async () => {
-    if (requestEvent && topic) {
+    if (!requestEvent || !topic) return
+    
+    try {
       setIsLoadingReject(true)
-      const rejection = new CheckoutError(CheckoutErrorCode.USER_REJECTED)
-      const response = WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent.id, rejection)
-      try {
-        await walletkit.respondSessionRequest({
-          topic,
-          response
-        })
-      } catch (e) {
-        setIsLoadingReject(false)
-        styledToast((e as Error).message, 'error')
-        return
-      }
+      
+      const rejection = new CheckoutError(
+        CheckoutErrorCode.USER_REJECTED, 
+        "User rejected payment"
+      )
+      
+      const response = WalletCheckoutUtil.response.formatError(
+        requestEvent.id, 
+        rejection
+      )
+      
+      await walletkit.respondSessionRequest({ topic, response })
+      styledToast('Payment rejected', 'info')
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       setIsLoadingReject(false)
       ModalStore.close()
     }
@@ -98,157 +119,85 @@ export default function SessionCheckoutModal() {
 
   // Handle approve action
   const onApprove = useCallback(async () => {
-    if (!requestEvent || !topic) return
+    if (!requestEvent || !topic || !selectedPayment) return
+    
     try {
       setIsLoadingApprove(true)
       
-      // Check if the request has expired
-      if (checkoutRequest.expiry) {
-        const currentTime = Math.floor(Date.now() / 1000) // Current time in seconds
-        if (currentTime > checkoutRequest.expiry) {
-          // Request has expired, send error response
-          const expiryError = new CheckoutError(
-            CheckoutErrorCode.CHECKOUT_EXPIRED,
-          )
-          
-          await walletkit.respondSessionRequest({
-            topic,
-            response: WalletCheckoutUtil.formatCheckoutErrorResponse(
-              requestEvent.id,
-              expiryError
-            )
-          })
-          
-          styledToast('Checkout request has expired', 'error')
-          ModalStore.close()
-          setIsLoadingApprove(false)
-          return
-        }
+      // Validate the request before processing
+      WalletCheckoutPaymentHandler.validateCheckoutExpiry(checkoutRequest)
+      
+      const wallet = eip155Wallets[address]
+      
+      if (!(wallet instanceof EIP155Lib)) {
+        throw new Error("Wallet not available")
       }
       
-      if (selectedPayment) {
-        const { amount, asset, assetMetadata, chainMetadata, contractInteraction, recipient } =
-          selectedPayment
-        if (!contractInteraction && recipient) {
-          console.log('Direct payment', params)
-          const address = SettingsStore.state.eip155Address
-          console.log('address', address)
-          const wallet = eip155Wallets[address]
-          const { chainId } = chainMetadata
-          if (wallet instanceof EIP155Lib) {
-            console.log({ chainId })
-            const provider = new providers.JsonRpcProvider(
-              EIP155_CHAINS[`eip155:${chainId}` as TEIP155Chain].rpc
-            )
-            const connectedWallet = wallet.connect(provider)
-            const txHash = await WalletCheckoutPaymentHandler.handleDirectPayment(
-              connectedWallet,
-              selectedPayment
-            )
-            console.log('txHash', txHash)
-            styledToast('Payment approved successfully', 'success')
-            await walletkit.respondSessionRequest({
-              topic,
-              response: WalletCheckoutUtil.formatCheckoutSuccessResponse<CheckoutResult>(
-                requestEvent.id,
-                {
-                  orderId: checkoutRequest.orderId,
-                  txid: txHash,
-                  amount: amount,
-                  asset: asset,
-                  recipient: recipient
-                }
-              )
-            })
-            ModalStore.close()
+      // Set up the provider
+      const { chainMetadata } = selectedPayment
+      const { chainId } = chainMetadata
+      const provider = new providers.JsonRpcProvider(
+        EIP155_CHAINS[`eip155:${chainId}` as TEIP155Chain].rpc
+      )
+      const connectedWallet = wallet.connect(provider)
+      
+      // Process the payment using the unified method
+      const result = await WalletCheckoutPaymentHandler.processPayment(
+        connectedWallet, 
+        selectedPayment
+      )
+      
+      // Handle the result
+      if (result.success) {
+        const response = WalletCheckoutUtil.formatCheckoutSuccessResponse<CheckoutResult>(
+          requestEvent.id,
+          {
+            orderId: checkoutRequest.orderId,
+            txid: result.txHash,
+            amount: selectedPayment.amount,
+            asset: selectedPayment.asset,
+            recipient: selectedPayment.recipient
           }
-        }
-        if (contractInteraction && !recipient) {
-          console.log(`Contract interaction`)
-          const address = SettingsStore.state.eip155Address
-          console.log('address', address)
-          const wallet = eip155Wallets[address]
-          const { chainId } = chainMetadata
-          if (wallet instanceof EIP155Lib) {
-            console.log({ chainId })
-            const provider = new providers.JsonRpcProvider(
-              EIP155_CHAINS[`eip155:${chainId}` as TEIP155Chain].rpc
-            )
-            const connectedWallet = wallet.connect(provider)
-            const txHash = await WalletCheckoutPaymentHandler.handleContractPayment(
-              connectedWallet,
-              selectedPayment
-            )
-            console.log('txHash', txHash)
-            styledToast('Payment approved successfully', 'success')
-            await walletkit.respondSessionRequest({
-              topic,
-              response: WalletCheckoutUtil.formatCheckoutSuccessResponse<CheckoutResult>(
-                requestEvent.id,
-                {
-                  orderId: checkoutRequest.orderId,
-                  txid: txHash,
-                  amount: amount,
-                  asset: asset,
-                  recipient: recipient
-                }
-              )
-            })
-            ModalStore.close()
-          }
-        }
+        )
+        
+        await walletkit.respondSessionRequest({ topic, response })
+        styledToast('Payment approved successfully', 'success')
+      } else if (result.error) {
+        const response = WalletCheckoutUtil.formatCheckoutErrorResponse(
+          requestEvent.id,
+          result.error
+        )
+        
+        await walletkit.respondSessionRequest({ topic, response })
+        styledToast(result.error.message, 'error')
       }
     } catch (e) {
-      ModalStore.close()
-      await walletkit.respondSessionRequest({
-        topic,
-        response: WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent?.id, e as Error)
-      })
-      setIsLoadingApprove(false)
+      // Handle any unexpected errors
+      console.error("Error processing payment:", e)
+      const response = WalletCheckoutUtil.response.formatError(
+        requestEvent.id,
+        e instanceof CheckoutError ? e : new Error((e as Error).message)
+      )
+      
+      await walletkit.respondSessionRequest({ topic, response })
       styledToast((e as Error).message, 'error')
     } finally {
       setIsLoadingApprove(false)
+      ModalStore.close()
     }
-  }, [checkoutRequest.orderId, params, requestEvent, selectedPayment, topic])
+  }, [checkoutRequest, requestEvent, selectedPayment, topic, address])
 
+  // Handle payment selection
   const onSelectPayment = useCallback((payment: DetailedPaymentOption) => {
     setSelectedPayment(payment)
   }, [])
 
-  useEffect(() => {
-    const fetchCheckoutRequest = async () => {
-      if (request && requestSession) {
-        try {
-          const address = SettingsStore.state.eip155Address
-          const { feasiblePayments } = await WalletCheckoutUtil.prepareCheckoutRequest(
-            address,
-            request.params[0]
-          )
-          setFeasiblePayments(feasiblePayments)
-          setIsReadyToRender(true)
-        } catch (error) {
-          console.error('Error preparing checkout request:', error)
-
-          // Use the custom error formatter for wallet_checkout
-          if (requestEvent && topic) {
-            await walletkit.respondSessionRequest({
-              topic,
-              response: WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent.id, error)
-            })
-          }
-
-          ModalStore.close()
-        }
-      }
-    }
-    fetchCheckoutRequest()
-  }, [request, requestEvent, requestSession, topic])
-
-  if (!isReadyToRender) {
+  // Show loading modal while preparing request
+  if (isLoading) {
     return <LoadingModal />
   }
 
-  return isReadyToRender ? (
+  return (
     <Fragment>
       <Modal.Header>
         <Text h3>Checkout</Text>
@@ -293,7 +242,5 @@ export default function SessionCheckoutModal() {
         </Row>
       </Container>
     </Fragment>
-  ) : (
-    <Text>Missing request data</Text>
   )
 }

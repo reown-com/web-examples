@@ -15,6 +15,7 @@ import {
 import { formatUnits, hexToNumber, parseUnits } from 'viem'
 import TransactionSimulatorUtil from './TransactionSimulatorUtil'
 import SettingsStore from '@/store/SettingsStore'
+import { useState, useEffect } from 'react'
 
 // Define Zod schemas for validation
 const ProductMetadataSchema = z.object({
@@ -661,49 +662,138 @@ const WalletCheckoutUtil = {
       isUserHaveAtleastOneMatchingAssets
     }
   },
-  /**
-   * Create a JSON-RPC success response for wallet_checkout
-   * @param id - Request ID
-   * @param result - The result to format
-   * @returns Formatted JSON-RPC success response
-   */
-  formatCheckoutSuccessResponse<T>(
-    id: number,
-    result: T
-  ): { jsonrpc: string; id: number; result: T } {
-    return {
-      jsonrpc: '2.0',
-      id,
-      result
-    }
-  },
-  /**
-   * Create a JSON-RPC error response for wallet_checkout errors
-   * @param id - Request ID
-   * @param error - The error to format (CheckoutError or other error)
-   * @returns Formatted JSON-RPC error response
-   */
-  formatCheckoutErrorResponse(
-    id: number,
-    error: Error | CheckoutError | unknown
-  ): { jsonrpc: string; id: number; error: { code: number; message: string; data?: any } } {
-    const code =
-      error instanceof CheckoutError ? error.code : CheckoutErrorCode.INVALID_CHECKOUT_REQUEST
+  // Response formatting methods
+  response: {
+    /**
+     * Format a successful checkout response
+     * 
+     * @param id - The request ID
+     * @param result - The successful result data
+     * @returns Formatted JSON-RPC success response
+     */
+    formatSuccess<T>(
+      id: number,
+      result: T
+    ): { jsonrpc: string; id: number ; result: T } {
+      return {
+        jsonrpc: '2.0',
+        id,
+        result
+      }
+    },
 
-    const message = error instanceof Error ? error.message : 'Unknown error'
-
-    const data = error instanceof CheckoutError ? error.data : undefined
-
-    return {
-      jsonrpc: '2.0',
-      id,
-      error: {
-        code,
-        message,
-        data
+    /**
+     * Format an error checkout response
+     * 
+     * @param id - The request ID
+     * @param error - The error to format
+     * @returns Formatted JSON-RPC error response
+     */
+    formatError(
+      id: number,
+      error: Error | CheckoutError | unknown
+    ): { jsonrpc: string; id: number; error: { code: number; message: string; data?: any } } {
+      // Default error code for unknown errors
+      let code = CheckoutErrorCode.INVALID_CHECKOUT_REQUEST
+      let message = "Unknown error"
+      let data = undefined
+      
+      // Handle different error types
+      if (error instanceof CheckoutError) {
+        code = error.code
+        message = error.message
+        data = error.data
+      } else if (error instanceof Error) {
+        message = error.message
+      } else if (typeof error === 'string') {
+        message = error
+      }
+      
+      return {
+        jsonrpc: '2.0',
+        id,
+        error: { 
+          code, 
+          message, 
+          data 
+        }
       }
     }
+  },
+  // Add these methods directly to the object
+  formatCheckoutSuccessResponse<T>(id: number | string, result: T) {
+    return {
+      jsonrpc: '2.0',
+      id: typeof id === 'string' ? parseInt(id) : id,
+      result
+    };
+  },
+  
+  formatCheckoutErrorResponse(id: number | string, error: Error | CheckoutError | unknown) {
+    // Default error code for unknown errors
+    let code = CheckoutErrorCode.INVALID_CHECKOUT_REQUEST;
+    let message = "Unknown error";
+    let data = undefined;
+    
+    // Handle different error types
+    if (error instanceof CheckoutError) {
+      code = error.code;
+      message = error.message;
+      data = error.data;
+    } else if (error instanceof Error) {
+      message = error.message;
+    } else if (typeof error === 'string') {
+      message = error;
+    }
+    
+    return {
+      jsonrpc: '2.0',
+      id: typeof id === 'string' ? parseInt(id) : id,
+      error: { 
+        code, 
+        message, 
+        data 
+      }
+    };
   }
 }
 
 export default WalletCheckoutUtil
+
+/**
+ * React hook to prepare a checkout request
+ * @param request - The checkout request from the dApp
+ * @param address - User's wallet address
+ * @returns Object with loading state, error, and feasible payments
+ */
+export function useCheckoutRequestPreparation(request: any, address: string) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [feasiblePayments, setFeasiblePayments] = useState<DetailedPaymentOption[]>([]);
+
+  useEffect(() => {
+    async function prepareRequest() {
+      if (!request?.params?.[0] || !address) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const { feasiblePayments } = await WalletCheckoutUtil.prepareCheckoutRequest(
+          address, 
+          request.params[0]
+        );
+        setFeasiblePayments(feasiblePayments);
+      } catch (err) {
+        console.error("Error preparing checkout request:", err);
+        setError(err instanceof Error ? err : new Error('Failed to prepare checkout request'));
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    prepareRequest();
+  }, [request, address]);
+
+  return { isLoading, error, feasiblePayments };
+}

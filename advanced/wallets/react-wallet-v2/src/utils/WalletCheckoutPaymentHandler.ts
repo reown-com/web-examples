@@ -1,17 +1,23 @@
 import { encodeFunctionData } from 'viem'
-import { erc721Abi } from 'viem'
+import { erc721Abi, erc20Abi } from 'viem'
 
 import {
   PaymentOption,
   DetailedPaymentOption,
   CheckoutResult,
   CheckoutErrorMessages,
-  CheckoutErrorCode
+  CheckoutErrorCode,
+  CheckoutError
 } from '@/types/wallet_checkout'
-import { erc20Abi } from 'viem'
 import { Wallet } from 'ethers'
 import { walletkit } from './WalletConnectUtil'
 import { formatJsonRpcError } from '@json-rpc-tools/utils'
+
+export interface PaymentResult {
+  success: boolean;
+  txHash: string;
+  error?: CheckoutError;
+}
 
 const WalletCheckoutPaymentHandler = {
   handleRequest: async (request: any) => {},
@@ -105,6 +111,85 @@ const WalletCheckoutPaymentHandler = {
     } catch (error) {
       console.error('Error handling contractpayment', error)
       throw new Error(CheckoutErrorMessages[CheckoutErrorCode.CONTRACT_INTERACTION_FAILED])
+    }
+  },
+  validateCheckoutExpiry(checkoutRequest: any): void {
+    if (checkoutRequest.expiry) {
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (currentTime > checkoutRequest.expiry) {
+        throw new CheckoutError(
+          CheckoutErrorCode.CHECKOUT_EXPIRED,
+          "Checkout request has expired"
+        );
+      }
+    }
+  },
+  processDirectPayment: async (wallet: Wallet, payment: DetailedPaymentOption): Promise<PaymentResult> => {
+    try {
+      const txHash = await WalletCheckoutPaymentHandler.handleDirectPayment(wallet, payment);
+      return { success: true, txHash };
+    } catch (error) {
+      console.error('Direct payment processing error:', error);
+      return { 
+        success: false, 
+        txHash: '0x',
+        error: new CheckoutError(
+          CheckoutErrorCode.DIRECT_PAYMENT_ERROR,
+          error instanceof Error ? error.message : "Payment failed"
+        )
+      };
+    }
+  },
+  processContractPayment: async (wallet: Wallet, payment: DetailedPaymentOption): Promise<PaymentResult> => {
+    try {
+      const txHash = await WalletCheckoutPaymentHandler.handleContractPayment(wallet, payment);
+      return { success: true, txHash };
+    } catch (error) {
+      console.error('Contract payment processing error:', error);
+      return { 
+        success: false, 
+        txHash: '0x',
+        error: new CheckoutError(
+          CheckoutErrorCode.CONTRACT_INTERACTION_FAILED,
+          error instanceof Error ? error.message : "Contract interaction failed"
+        )
+      };
+    }
+  },
+  processPayment: async (wallet: Wallet, payment: DetailedPaymentOption): Promise<PaymentResult> => {
+    try {
+      const { contractInteraction, recipient } = payment;
+      
+      // Choose the right handler based on payment type
+      if (!contractInteraction && recipient) {
+        return await WalletCheckoutPaymentHandler.processDirectPayment(wallet, payment);
+      } else if (contractInteraction && !recipient) {
+        return await WalletCheckoutPaymentHandler.processContractPayment(wallet, payment);
+      } else {
+        throw new CheckoutError(
+          CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
+          "Payment must have either recipient or contractInteraction, not both or neither"
+        );
+      }
+    } catch (error) {
+      // If it's already a CheckoutError, pass it through
+      if (error instanceof CheckoutError) {
+        return {
+          success: false,
+          txHash: '0x',
+          error
+        };
+      }
+      
+      // Otherwise create a general payment error
+      return {
+        success: false,
+        txHash: '0x',
+        error: new CheckoutError(
+          CheckoutErrorCode.DIRECT_PAYMENT_ERROR,
+          error instanceof Error ? error.message : "Unknown payment error"
+        )
+      };
     }
   }
 }
