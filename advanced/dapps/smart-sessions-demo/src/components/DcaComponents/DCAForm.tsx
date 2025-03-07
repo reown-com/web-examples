@@ -1,9 +1,8 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useForm, Control, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { dcaFormSchema, DCAFormSchemaType } from "@/schema/DCAFormSchema";
 import { useDCA } from "@/hooks/useDCA";
-import { useAppKitAccount } from "@reown/appkit/react";
 import { toast } from "sonner";
 import {
   Card,
@@ -13,22 +12,25 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { DCAExecutionProgress } from "@/components/DcaComponents/DCAExecutionProgress";
-import { ArrowUpDown, Loader2 } from "lucide-react";
-import { calculateInterval } from "@/utils/DCAUtils";
+import { ArrowUpDown, Loader2, RefreshCw } from "lucide-react";
 import AssetAllocationField from "./AssetAllocationField";
 import AssetToBuyField from "./AssetToBuyField";
 import InvestmentIntervalField from "./InvestmentIntervalField";
 import NumberOfOrdersField from "./NumberOfOrdersField";
-import { isSmartSessionSupported } from "@reown/appkit-experimental/smart-session";
+import { useDcaApplicationContext } from "@/context/DcaApplicationContextProvider";
 
 export interface FieldProps {
   control: Control<DCAFormSchemaType>;
   errors: FieldErrors<DCAFormSchemaType>;
 }
 
-function DCAForm() {
+interface DCAFormProps {
+  isSupported: boolean;
+  hasInsufficientEth?: boolean;
+}
+
+function DCAForm({ isSupported, hasInsufficientEth }: DCAFormProps) {
   const {
     control,
     handleSubmit,
@@ -44,16 +46,35 @@ function DCAForm() {
       numberOfOrders: 0,
     },
   });
-  const { address, status } = useAppKitAccount();
+
   const { createNewDCAStrategy } = useDCA();
   const [isLoading, setLoading] = React.useState(false);
-  const isSupported = useMemo(
-    () => isSmartSessionSupported(),
-    [status, address],
-  );
+  const { smartSession, clearSmartSession } = useDcaApplicationContext();
 
-  const isWalletConnecting =
-    status === "connecting" || status === "reconnecting";
+  // Check if there's an active strategy running
+  const hasActiveStrategy = !!smartSession;
+
+  // Store active toast IDs
+  const [activeToastIds, setActiveToastIds] = React.useState<
+    (string | number)[]
+  >([]);
+
+  // Effect to clean up toasts and reset loading state if smartSession becomes undefined
+  React.useEffect(() => {
+    if (!smartSession) {
+      // Reset loading state to ensure button text updates
+      setLoading(false);
+
+      // Dismiss all active DCA execution toasts
+      if (activeToastIds.length > 0) {
+        activeToastIds.forEach((id) => {
+          toast.dismiss(id);
+        });
+        // Clear the list
+        setActiveToastIds([]);
+      }
+    }
+  }, [smartSession, activeToastIds]);
 
   async function onSubmit(data: DCAFormSchemaType) {
     try {
@@ -65,22 +86,24 @@ function DCAForm() {
 
       await createNewDCAStrategy(strategyWithTimestamp);
 
-      const intervalInMilliseconds = calculateInterval(
-        strategyWithTimestamp.investmentInterval,
-        strategyWithTimestamp.intervalUnit,
-      );
+      // Generate a unique ID for this toast before creating it
+      const uniqueToastId = `dca-toast-${Date.now()}`;
 
-      const expirationTime =
-        strategyWithTimestamp.createdTimestamp +
-        intervalInMilliseconds * strategyWithTimestamp.numberOfOrders;
-
+      // Create toast with the predetermined ID
       toast(
         <DCAExecutionProgress
           strategy={strategyWithTimestamp}
+          toastId={uniqueToastId}
           key={Date.now()}
         />,
-        { duration: expirationTime - strategyWithTimestamp.createdTimestamp },
+        {
+          id: uniqueToastId,
+          duration: Infinity,
+        },
       );
+
+      // Store the toast ID
+      setActiveToastIds((prev) => [...prev, uniqueToastId]);
     } catch (e) {
       toast("Error", {
         description: (e as Error)?.message || "Error creating DCA strategy",
@@ -89,6 +112,20 @@ function DCAForm() {
       setLoading(false);
     }
   }
+
+  // Handle clearing the smart session
+  const handleClearStrategy = () => {
+    if (clearSmartSession) {
+      // Set loading to false to update button state immediately
+      setLoading(false);
+      clearSmartSession();
+      toast.success("Strategy cleared successfully");
+    }
+  };
+
+  // Check if the Create button should be shown
+  const canCreateStrategy =
+    isSupported && !hasInsufficientEth && !hasActiveStrategy;
 
   return (
     <Card>
@@ -105,29 +142,40 @@ function DCAForm() {
           <InvestmentIntervalField control={control} errors={errors} />
           <NumberOfOrdersField control={control} errors={errors} />
         </CardContent>
-        <CardFooter>
-          {isWalletConnecting ? (
-            <Button className="w-full bg-blue-500 hover:bg-blue-700" disabled>
-              Reconnecting Wallet...
-            </Button>
-          ) : status !== "connected" && !address ? (
-            <ConnectWalletButton />
-          ) : !isSupported ? (
-            <Button className="w-full bg-blue-500 hover:bg-blue-700" disabled>
-              Unsupported Wallet
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              className="w-full bg-blue-500 hover:bg-blue-700"
-            >
-              {isLoading ? (
+        <CardFooter className="flex flex-col gap-2">
+          {/* Always show Create button, but disable it when conditions aren't met */}
+          <Button
+            type="submit"
+            className="w-full bg-blue-500 hover:bg-blue-700"
+            disabled={!canCreateStrategy || isLoading}
+          >
+            {isLoading ? (
+              <>
+                Creating Strategy
                 <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-              ) : (
-                "Create"
-              )}
-            </Button>
-          )}
+              </>
+            ) : !isSupported ? (
+              "Unsupported Wallet"
+            ) : hasInsufficientEth ? (
+              "Insufficient ETH"
+            ) : hasActiveStrategy ? (
+              "Executing Strategy..."
+            ) : (
+              "Create"
+            )}
+          </Button>
+
+          {/* Clear strategy button - always visible but conditionally enabled */}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2"
+            onClick={handleClearStrategy}
+            disabled={!hasActiveStrategy}
+          >
+            <RefreshCw className="h-4 w-4" />
+            Clear Strategy
+          </Button>
         </CardFooter>
       </form>
     </Card>
