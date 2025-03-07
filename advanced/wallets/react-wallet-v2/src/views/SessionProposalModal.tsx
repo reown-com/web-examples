@@ -1,7 +1,7 @@
 import { Col, Grid, Row, Text, styled } from '@nextui-org/react'
 import { useCallback, useMemo, useState } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
-import { SignClientTypes } from '@walletconnect/types'
+import { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import DoneIcon from '@mui/icons-material/Done'
 import CloseIcon from '@mui/icons-material/Close'
 import ModalStore from '@/store/ModalStore'
@@ -296,7 +296,7 @@ export default function SessionProposalModal() {
           ...approvedNamespaces.eip155,
           methods: [...approvedNamespaces.eip155.methods, 'wallet_checkout']
         }
-      }
+      } as SessionTypes.Namespaces
 
       console.log('updatedNamespaces', updatedNamespaces)
       return updatedNamespaces
