@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccounts from './useSmartAccounts'
 import { createOrRestoreBip122Wallet } from '@/utils/Bip122WalletUtil'
+import { WalletGetAssetsCtrl } from '@/store/WalletGetAssetCtrl'
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
@@ -45,7 +46,10 @@ export default function useInitialization() {
       SettingsStore.setTezosAddress(tezosAddresses[0])
       SettingsStore.setKadenaAddress(kadenaAddresses[0])
       SettingsStore.setbip122Address(bip122Addresses[0])
-      await createWalletKit(relayerRegionURL)
+      await Promise.all([
+        createWalletKit(relayerRegionURL),
+        WalletGetAssetsCtrl.getBalance(eip155Addresses[0])
+      ])
       setInitialized(true)
     } catch (err: unknown) {
       console.error('Initialization failed', err)
