@@ -3,11 +3,10 @@ import { Fragment, useCallback, useState, useEffect } from 'react'
 
 import ModalStore from '@/store/ModalStore'
 import { walletkit } from '@/utils/WalletConnectUtil'
-import { rejectEIP5792Request } from '@/utils/EIP5792RequestHandlerUtils'
 import { styledToast } from '@/utils/HelperUtil'
 import OrderInfoCard from '@/components/OrderInfoCard'
 import ProductsSection from '@/components/ProductSectionComponent'
-import { CheckoutRequest, Hex, DetailedPaymentOption, CheckoutResult, CheckoutErrorCode, CheckoutErrorMessages } from '@/types/wallet_checkout'
+import { CheckoutRequest, Hex, DetailedPaymentOption, CheckoutResult } from '@/types/wallet_checkout'
 import PaymentOptions from '@/components/PaymentOptions'
 import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
 import SettingsStore from '@/store/SettingsStore'
@@ -18,6 +17,7 @@ import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import WalletCheckoutPaymentHandler from '@/utils/WalletCheckoutPaymentHandler'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { getSdkError } from '@walletconnect/utils'
+import LoadingModal from './LoadingModal'
 
 // Custom styles for the modal
 const modalStyles = {
@@ -94,8 +94,8 @@ export default function SessionCheckoutModal() {
 
   // Handle approve action
   const onApprove = useCallback(async () => {
+    if (!requestEvent || !topic) return
     try {
-      if (!requestEvent || !topic) return
         setIsLoadingApprove(true);
         if (selectedPayment) {
         const {amount,asset,assetMetadata,chainMetadata,contractInteraction,recipient} = selectedPayment;
@@ -152,8 +152,14 @@ export default function SessionCheckoutModal() {
         }
       }
     } catch (e) {
+      ModalStore.close();
+      await walletkit.respondSessionRequest({
+        topic,
+        response: formatJsonRpcError(requestEvent?.id, (e as Error).message)
+      })
       setIsLoadingApprove(false);
       styledToast((e as Error).message, 'error');
+
     } finally {
       setIsLoadingApprove(false);
     }
@@ -177,7 +183,7 @@ export default function SessionCheckoutModal() {
   }, [request, requestSession]);
 
   if(!isReadyToRender){
-    return<Loading type='spinner' />
+    return<LoadingModal />
   }
   
 

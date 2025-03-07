@@ -156,7 +156,9 @@ export enum CheckoutErrorCode {
   /** Method not found (wallet doesn't support wallet_checkout) */
   METHOD_NOT_FOUND = -32601,
   /** Invalid checkout request */
-  INVALID_CHECKOUT_REQUEST = 4500
+  INVALID_CHECKOUT_REQUEST = 4500,
+  /** Direct payment failed */
+  DIRECT_PAYMENT_ERROR = 4600
 }
 
 /**
@@ -171,7 +173,8 @@ export const CheckoutErrorMessages: Record<CheckoutErrorCode, string> = {
   [CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA]: "Invalid contract interaction data",
   [CheckoutErrorCode.CONTRACT_INTERACTION_FAILED]: "Contract interaction failed",
   [CheckoutErrorCode.METHOD_NOT_FOUND]: "Method not found",
-  [CheckoutErrorCode.INVALID_CHECKOUT_REQUEST]: "Invalid checkout request"
+  [CheckoutErrorCode.INVALID_CHECKOUT_REQUEST]: "Invalid checkout request",
+  [CheckoutErrorCode.DIRECT_PAYMENT_ERROR]: "Direct payment failed"
 };
 
 /**
@@ -221,7 +224,7 @@ export function createCheckoutError(
   customMessage?: string, 
   data?: any
 ): CheckoutError {
-  return new CheckoutError(code, customMessage, data);
+   return new CheckoutError(code, customMessage, data);
 }
 
 

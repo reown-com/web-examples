@@ -1,9 +1,11 @@
 import { encodeFunctionData } from "viem"
 import { erc721Abi } from "viem";
 
-import { PaymentOption, DetailedPaymentOption } from "@/types/wallet_checkout"
+import { PaymentOption, DetailedPaymentOption, CheckoutResult, CheckoutErrorMessages, CheckoutErrorCode } from "@/types/wallet_checkout"
 import { erc20Abi } from "viem";
 import { Wallet } from "ethers";
+import { walletkit } from "./WalletConnectUtil";
+import { formatJsonRpcError } from "@json-rpc-tools/utils";
 
 const WalletCheckoutPaymentHandler = {
   handleRequest: async (request: any) => {
@@ -11,14 +13,26 @@ const WalletCheckoutPaymentHandler = {
   },
 
   handleDirectPayment: async (wallet: Wallet, payment: DetailedPaymentOption) => {
-    const {asset,amount,recipient, assetMetadata} = payment;
-    const {assetNamespace} = assetMetadata;
-    const assetAddress = asset.split(':')[2] as `0x${string}`;
+    try { 
+      const {asset,amount,recipient, assetMetadata} = payment;
+      const {assetNamespace} = assetMetadata;
+      const assetAddress = asset.split(':')[2];
+      const recipientAddress = recipient!.split(':')[2] as `0x${string}`;
+      const accountAddress = wallet.address as `0x${string}`;
+      // Handle ETH transfers
+    if(assetNamespace === 'slip44' && assetAddress === '60'){
+      const tx = await wallet.sendTransaction({
+        to: recipientAddress,
+        value: BigInt(amount),
+      })
+      return tx.hash
+    }
+    // Handle ERC20 transfers
     if(assetNamespace === 'erc20'){
       const calldata = encodeFunctionData({
         abi: erc20Abi,
         functionName: 'transfer',
-        args: [recipient!.split(':')[2] as `0x${string}`, BigInt(amount)]
+        args: [recipientAddress, BigInt(amount)]
       })
       const tx = await wallet.sendTransaction({
         to: assetAddress,
@@ -27,11 +41,12 @@ const WalletCheckoutPaymentHandler = {
       })
       return tx.hash
     }
+    // Handle ERC721 transfers
     if(assetNamespace === 'erc721'){
       const calldata = encodeFunctionData({
         abi: erc721Abi,
         functionName: 'safeTransferFrom',
-        args: [payment.recipient!.split(':')[2] as `0x${string}`, payment.recipient!.split(':')[2] as `0x${string}`, BigInt(payment.amount)]
+        args: [accountAddress, recipientAddress, BigInt(amount)]
       })
       const tx = await wallet.sendTransaction({
         to: assetAddress,
@@ -41,10 +56,15 @@ const WalletCheckoutPaymentHandler = {
       return tx.hash
     }
     return '0x'
+    } catch (error) {
+      console.error('Error handling directpayment', error);
+      throw new Error(CheckoutErrorMessages[CheckoutErrorCode.DIRECT_PAYMENT_ERROR])
+    }
   },
   handleContractPayment: async (wallet: Wallet, payment: DetailedPaymentOption) => {
-    const { contractInteraction } = payment;
-    
+    try {
+      const { contractInteraction } = payment;
+      
     if (contractInteraction && Array.isArray(contractInteraction.data)) {
       let lastTxHash = '0x';
       
@@ -60,7 +80,7 @@ const WalletCheckoutPaymentHandler = {
         lastTxHash = tx.hash;
       }
       
-      return lastTxHash;
+        return lastTxHash;
     }
     
     console.log('contractInteraction single call', contractInteraction);
@@ -74,6 +94,11 @@ const WalletCheckoutPaymentHandler = {
     }
    
     return '0x';
+  }
+  catch (error) {
+    console.error('Error handling contractpayment', error);
+    throw new Error(CheckoutErrorMessages[CheckoutErrorCode.CONTRACT_INTERACTION_FAILED])
+  }
   }
 }
 
