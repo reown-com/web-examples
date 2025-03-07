@@ -96,16 +96,13 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         }
 
         case 'wallet_checkout':
-          const address = SettingsStore.state.eip155Address
           try {
             WalletCheckoutUtil.validateCheckoutRequest(request.params[0])
           } catch (error) {
-            if (error instanceof CheckoutError) {
-              return await walletkit.respondSessionRequest({
-                topic,
-                response: formatJsonRpcError(id, error.message)
-              })
-            }
+            return await walletkit.respondSessionRequest({
+              topic,
+              response: WalletCheckoutUtil.formatCheckoutErrorResponse(id, error)
+            })
           }
           return ModalStore.open('SessionCheckoutModal', { requestEvent, requestSession })
 

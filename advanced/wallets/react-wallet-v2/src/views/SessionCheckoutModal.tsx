@@ -8,10 +8,10 @@ import OrderInfoCard from '@/components/OrderInfoCard'
 import ProductsSection from '@/components/ProductSectionComponent'
 import {
   CheckoutRequest,
-  Hex,
   DetailedPaymentOption,
   CheckoutResult,
-  CheckoutError
+  CheckoutError,
+  CheckoutErrorCode
 } from '@/types/wallet_checkout'
 import PaymentOptions from '@/components/PaymentOptions'
 import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
@@ -21,8 +21,6 @@ import EIP155Lib from '@/lib/EIP155Lib'
 import { providers } from 'ethers'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import WalletCheckoutPaymentHandler from '@/utils/WalletCheckoutPaymentHandler'
-import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
-import { getSdkError } from '@walletconnect/utils'
 import LoadingModal from './LoadingModal'
 
 // Custom styles for the modal
@@ -81,8 +79,8 @@ export default function SessionCheckoutModal() {
   const onReject = useCallback(async () => {
     if (requestEvent && topic) {
       setIsLoadingReject(true)
-      const response = formatJsonRpcError(requestEvent.id, getSdkError('USER_REJECTED').message)
-      console.log({ response })
+      const rejection = new CheckoutError(CheckoutErrorCode.USER_REJECTED)
+      const response = WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent.id, rejection)
       try {
         await walletkit.respondSessionRequest({
           topic,
@@ -126,13 +124,16 @@ export default function SessionCheckoutModal() {
             styledToast('Payment approved successfully', 'success')
             await walletkit.respondSessionRequest({
               topic,
-              response: formatJsonRpcResult<CheckoutResult>(requestEvent.id, {
-                orderId: checkoutRequest.orderId,
-                txid: txHash,
-                amount: amount,
-                asset: asset,
-                recipient: recipient
-              })
+              response: WalletCheckoutUtil.formatCheckoutSuccessResponse<CheckoutResult>(
+                requestEvent.id,
+                {
+                  orderId: checkoutRequest.orderId,
+                  txid: txHash,
+                  amount: amount,
+                  asset: asset,
+                  recipient: recipient
+                }
+              )
             })
             ModalStore.close()
           }
@@ -157,12 +158,16 @@ export default function SessionCheckoutModal() {
             styledToast('Payment approved successfully', 'success')
             await walletkit.respondSessionRequest({
               topic,
-              response: formatJsonRpcResult<CheckoutResult>(requestEvent.id, {
-                orderId: checkoutRequest.orderId,
-                txid: txHash,
-                amount: amount,
-                asset: asset
-              })
+              response: WalletCheckoutUtil.formatCheckoutSuccessResponse<CheckoutResult>(
+                requestEvent.id,
+                {
+                  orderId: checkoutRequest.orderId,
+                  txid: txHash,
+                  amount: amount,
+                  asset: asset,
+                  recipient: recipient
+                }
+              )
             })
             ModalStore.close()
           }
@@ -172,7 +177,7 @@ export default function SessionCheckoutModal() {
       ModalStore.close()
       await walletkit.respondSessionRequest({
         topic,
-        response: formatJsonRpcError(requestEvent?.id, (e as Error).message)
+        response: WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent?.id, e as Error)
       })
       setIsLoadingApprove(false)
       styledToast((e as Error).message, 'error')
@@ -198,22 +203,15 @@ export default function SessionCheckoutModal() {
           setIsReadyToRender(true)
         } catch (error) {
           console.error('Error preparing checkout request:', error)
+
+          // Use the custom error formatter for wallet_checkout
           if (requestEvent && topic) {
-            let errorResponse
-            if (error instanceof CheckoutError) {
-              errorResponse = formatJsonRpcError(requestEvent.id, error.message)
-            } else {
-              errorResponse = formatJsonRpcError(
-                requestEvent.id,
-                error instanceof Error ? error.message : 'Failed to process checkout request'
-              )
-            }
             await walletkit.respondSessionRequest({
               topic,
-              response: errorResponse
+              response: WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent.id, error)
             })
           }
-          // Close the modal
+
           ModalStore.close()
         }
       }

@@ -9,7 +9,8 @@ import {
   CheckoutErrorCode,
   CheckoutErrorMessages,
   createCheckoutError,
-  Hex
+  Hex,
+  CheckoutError
 } from '@/types/wallet_checkout'
 import { formatUnits, hexToNumber, parseUnits } from 'viem'
 import TransactionSimulatorUtil from './TransactionSimulatorUtil'
@@ -330,6 +331,16 @@ const WalletCheckoutUtil = {
    */
   validateCheckoutRequest(checkoutRequest: CheckoutRequest): void {
     try {
+      // Check for request expiry
+      if (checkoutRequest.expiry) {
+        const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+        if (currentTime > checkoutRequest.expiry) {
+          throw createCheckoutError(
+            CheckoutErrorCode.CHECKOUT_EXPIRED,
+          );
+        }
+      }
+      
       // Use Zod to validate the checkout request structure
       CheckoutRequestSchema.parse(checkoutRequest)
 
@@ -648,6 +659,49 @@ const WalletCheckoutUtil = {
     return {
       feasibleContractPayments: validPayments,
       isUserHaveAtleastOneMatchingAssets
+    }
+  },
+  /**
+   * Create a JSON-RPC success response for wallet_checkout
+   * @param id - Request ID
+   * @param result - The result to format
+   * @returns Formatted JSON-RPC success response
+   */
+  formatCheckoutSuccessResponse<T>(
+    id: number,
+    result: T
+  ): { jsonrpc: string; id: number; result: T } {
+    return {
+      jsonrpc: '2.0',
+      id,
+      result
+    }
+  },
+  /**
+   * Create a JSON-RPC error response for wallet_checkout errors
+   * @param id - Request ID
+   * @param error - The error to format (CheckoutError or other error)
+   * @returns Formatted JSON-RPC error response
+   */
+  formatCheckoutErrorResponse(
+    id: number,
+    error: Error | CheckoutError | unknown
+  ): { jsonrpc: string; id: number; error: { code: number; message: string; data?: any } } {
+    const code =
+      error instanceof CheckoutError ? error.code : CheckoutErrorCode.INVALID_CHECKOUT_REQUEST
+
+    const message = error instanceof Error ? error.message : 'Unknown error'
+
+    const data = error instanceof CheckoutError ? error.data : undefined
+
+    return {
+      jsonrpc: '2.0',
+      id,
+      error: {
+        code,
+        message,
+        data
+      }
     }
   }
 }
