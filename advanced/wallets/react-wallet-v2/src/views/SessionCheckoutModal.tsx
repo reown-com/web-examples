@@ -10,7 +10,8 @@ import {
   CheckoutRequest,
   Hex,
   DetailedPaymentOption,
-  CheckoutResult
+  CheckoutResult,
+  CheckoutError
 } from '@/types/wallet_checkout'
 import PaymentOptions from '@/components/PaymentOptions'
 import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
@@ -187,17 +188,38 @@ export default function SessionCheckoutModal() {
   useEffect(() => {
     const fetchCheckoutRequest = async () => {
       if (request && requestSession) {
-        const address = SettingsStore.state.eip155Address
-        const { feasiblePayments } = await WalletCheckoutUtil.prepareCheckoutRequest(
-          address,
-          request.params[0]
-        )
-        setFeasiblePayments(feasiblePayments)
-        setIsReadyToRender(true)
+        try {
+          const address = SettingsStore.state.eip155Address
+          const { feasiblePayments } = await WalletCheckoutUtil.prepareCheckoutRequest(
+            address,
+            request.params[0]
+          )
+          setFeasiblePayments(feasiblePayments)
+          setIsReadyToRender(true)
+        } catch (error) {
+          console.error('Error preparing checkout request:', error)
+          if (requestEvent && topic) {
+            let errorResponse
+            if (error instanceof CheckoutError) {
+              errorResponse = formatJsonRpcError(requestEvent.id, error.message)
+            } else {
+              errorResponse = formatJsonRpcError(
+                requestEvent.id,
+                error instanceof Error ? error.message : 'Failed to process checkout request'
+              )
+            }
+            await walletkit.respondSessionRequest({
+              topic,
+              response: errorResponse
+            })
+          }
+          // Close the modal
+          ModalStore.close()
+        }
       }
     }
     fetchCheckoutRequest()
-  }, [request, requestSession])
+  }, [request, requestEvent, requestSession, topic])
 
   if (!isReadyToRender) {
     return <LoadingModal />
