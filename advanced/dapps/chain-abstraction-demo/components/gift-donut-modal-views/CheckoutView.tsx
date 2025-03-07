@@ -41,6 +41,14 @@ function GiftDonutForm({
   const selectedNetwork = giftDonutModalManager.getNetwork();
   const tokenBalance = giftDonutModalManager.getBalanceBySymbol(selectedToken.name);
   const maxDonutPurchasable = Math.trunc(parseFloat(tokenBalance) / 1.0);
+  
+  // If there's a selected network but the token is not compatible, automatically redirect
+  React.useEffect(() => {
+    if (selectedNetwork && !giftDonutModalManager.isTokenNetworkCompatible()) {
+      // We need to change the network since this token isn't supported here
+      onViewChange("ChooseNetwork");
+    }
+  }, [selectedToken, selectedNetwork, onViewChange]);
 
   // Allow any count >= 0.
   const setDonutCount = (newCount: number) => {
@@ -219,16 +227,24 @@ function GiftDonutForm({
           style={{
             background: "var(--foreground-foreground-accent-primary-010, rgba(9, 136, 240, 0.1))",
           }}
-          onClick={() => onViewChange("CheckoutReceipentAddress")}
+          onClick={() => {
+            // If token and network are incompatible, redirect to network selection
+            if (!giftDonutModalManager.isTokenNetworkCompatible()) {
+              onViewChange("ChooseNetwork");
+            } else {
+              onViewChange("CheckoutReceipentAddress");
+            }
+          }}
           type="button"
           variant="secondary"
           className="flex flex-1 gap-1"
+          disabled={!giftDonutModalManager.isTokenNetworkCompatible()}
         >
           <p
             className="flex items-center"
             style={{ color: "var(--text-text-accent-primary, rgba(9, 136, 240, 1))" }}
           >
-            Next <ArrowRight className="w-4 h-4" />
+            {!giftDonutModalManager.isTokenNetworkCompatible() ? "Choose Network" : "Next"} <ArrowRight className="w-4 h-4" />
           </p>
         </Button>
       </div>

@@ -5,6 +5,7 @@ import {
   supportedNetworks,
   supportedTokens,
   Token,
+  isTokenSupportedOnNetwork,
 } from "@/data/EIP155Data";
 import { TokenBalance } from "@/utils/BalanceFetcherUtil";
 import React from "react";
@@ -27,6 +28,7 @@ export type GiftDonutState = {
   token: Token;
   recipient?: string;
   balances: TokenBalance[];
+  tokenNetworkCompatible: boolean;
 };
 
 export type GiftDonutModalStateType = {
@@ -48,6 +50,7 @@ class GiftDonutModalManager {
         token: supportedTokens[0],
         donutCount: 0,
         balances: [],
+        tokenNetworkCompatible: true,
       },
     });
   }
@@ -103,10 +106,33 @@ class GiftDonutModalManager {
   setToken(token: Token): void {
     this.state.state.donutCount = 0; // Reset donut count when changing token
     this.state.state.token = token;
+    
+    // Check compatibility with current network
+    if (this.state.state.network) {
+      this.checkTokenNetworkCompatibility();
+    }
   }
 
   setNetwork(network: Network): void {
     this.state.state.network = network;
+    
+    // Check compatibility with current token
+    this.checkTokenNetworkCompatibility();
+  }
+
+  checkTokenNetworkCompatibility(): void {
+    const { token, network } = this.state.state;
+    if (!network) {
+      // No network selected yet, so we can't check compatibility
+      this.state.state.tokenNetworkCompatible = false;
+      return;
+    }
+    
+    this.state.state.tokenNetworkCompatible = isTokenSupportedOnNetwork(token, network.chainId);
+  }
+
+  isTokenNetworkCompatible(): boolean {
+    return this.state.state.tokenNetworkCompatible;
   }
 
   setRecipient(recipientAddress: string): void {
