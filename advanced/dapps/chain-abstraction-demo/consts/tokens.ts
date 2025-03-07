@@ -11,9 +11,16 @@ export const usdtTokenAddresses: Record<number, Hex> = {
   // 8453: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2", // Base - No liqiduty
 };
 
+export const usdsTokenAddresses: Record<number, Hex> = {
+  42161: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1", // Arbitrum
+  10: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1", // Optimism
+ // 8453: "0x765277EebeCA2e3191253714C6647D5225Bf721F", // Base - Not supported
+};
+
 export const tokenAddresses: Record<string, Record<string, Hex>> = {
   USDC: usdcTokenAddresses,
   USDT: usdtTokenAddresses,
+  USDS: usdsTokenAddresses,
 };
 
 export const getSupportedNetworks = (token: string): number[] => {
