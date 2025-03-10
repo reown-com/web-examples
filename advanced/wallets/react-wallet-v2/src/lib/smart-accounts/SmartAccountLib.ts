@@ -326,6 +326,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const userOpWithStubData: UserOperation<'v0.7'> = {
       ...userOpPreStubData,
       ...paymasterStubData,
+      verificationGasLimit: paymasterStubData.paymasterVerificationGasLimit,
       signature: '0x'
     }
 
