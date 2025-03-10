@@ -1,4 +1,8 @@
-import { handleGetAssets, WalletGetAssetsRequest, WalletGetAssetsResponse } from '@/data/EIP7811Data'
+import {
+  handleGetAssets,
+  WalletGetAssetsRequest,
+  WalletGetAssetsResponse
+} from '@/data/EIP7811Data'
 import {
   ErrorResponse,
   GetCallsStatusParams,
@@ -34,7 +38,11 @@ type JsonRpcResponse<T> = {
   }
 }
 
-type SupportedMethods = 'wallet_prepareCalls' | 'wallet_sendPreparedCalls' | 'wallet_getCallsStatus' | 'wallet_getAssets'
+type SupportedMethods =
+  | 'wallet_prepareCalls'
+  | 'wallet_sendPreparedCalls'
+  | 'wallet_getCallsStatus'
+  | 'wallet_getAssets'
 const ERROR_CODES = {
   INVALID_REQUEST: -32600,
   METHOD_NOT_FOUND: -32601,
@@ -146,7 +154,12 @@ export default async function handler(
   const jsonRpcRequest: JsonRpcRequest = req.body
   const { id, method, params } = jsonRpcRequest
   if (
-    !['wallet_prepareCalls', 'wallet_sendPreparedCalls', 'wallet_getCallsStatus', 'wallet_getAssets'].includes(method)
+    ![
+      'wallet_prepareCalls',
+      'wallet_sendPreparedCalls',
+      'wallet_getCallsStatus',
+      'wallet_getAssets'
+    ].includes(method)
   ) {
     return res
       .status(200)
@@ -161,7 +174,11 @@ export default async function handler(
   }
 
   try {
-    let response: PrepareCallsReturnValue | SendPreparedCallsReturnValue | GetCallsStatusReturnValue | WalletGetAssetsResponse
+    let response:
+      | PrepareCallsReturnValue
+      | SendPreparedCallsReturnValue
+      | GetCallsStatusReturnValue
+      | WalletGetAssetsResponse
 
     switch (method as SupportedMethods) {
       case 'wallet_prepareCalls':
@@ -189,7 +206,7 @@ export default async function handler(
         })
 
       case 'wallet_getAssets':
-        console.log("wallet_getAssets call received")
+        console.log('wallet_getAssets call received')
         response = await handleGetAssets(projectId, params as WalletGetAssetsRequest[])
         return res.status(200).json({
           jsonrpc: '2.0',

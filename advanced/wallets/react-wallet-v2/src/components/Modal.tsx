@@ -13,6 +13,7 @@ import SessionSignKadenaModal from '@/views/SessionSignKadenaModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
 import SessionSendCallsModal from '@/views/SessionSendCallsModal'
+import SessionCheckoutModal from '@/views/SessionCheckoutModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
 import { useCallback, useMemo } from 'react'
@@ -74,6 +75,8 @@ export default function Modal() {
         return <SessionGetBip122AddressesModal />
       case 'SessionSendTransactionBip122Modal':
         return <SessionSendTransactionBip122Modal />
+      case 'SessionCheckoutModal':
+        return <SessionCheckoutModal />
       default:
         return null
     }
