@@ -20,8 +20,6 @@ export interface PaymentResult {
 }
 
 const WalletCheckoutPaymentHandler = {
-  handleRequest: async (request: any) => {},
-
   handleDirectPayment: async (wallet: Wallet, payment: DetailedPaymentOption) => {
     try {
       const { asset, amount, recipient, assetMetadata } = payment
