@@ -35,7 +35,6 @@
     "@solana/web3.js": "1.89.2",
     "@taquito/signer": "^15.1.0",
     "@taquito/taquito": "^15.1.0",
-    "@tenderly/sdk": "^0.3.0",
     "@types/semver": "^7.5.8",
     "@zerodev/ecdsa-validator": "5.3.0",
     "@zerodev/presets": "5.3.0",

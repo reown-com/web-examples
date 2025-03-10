@@ -1,26 +1,6 @@
-import { Network, Tenderly } from '@tenderly/sdk'
 import { providers } from 'ethers'
 
 const TransactionSimulatorUtil = {
-  state: {
-    clients: {} as Record<number, Tenderly>
-  },
-  getTenderlyClient: (chainId: number) => {
-    const accountSlug = process.env.NEXT_PUBLIC_TENDERLY_ACCOUNT_SLUG || ''
-    const projectSlug = process.env.NEXT_PUBLIC_TENDERLY_PROJECT_SLUG || ''
-    const apiKey = process.env.NEXT_PUBLIC_TENDERLY_API_KEY || ''
-    console.log(accountSlug, projectSlug, apiKey)
-    if (!TransactionSimulatorUtil.state.clients[chainId]) {
-      TransactionSimulatorUtil.state.clients[chainId] = new Tenderly({
-        accountName: accountSlug,
-        projectName: projectSlug,
-        accessKey: apiKey,
-        network: chainId as Network
-      })
-    }
-    return TransactionSimulatorUtil.state.clients[chainId]
-  },
-
   simulateAndCheckERC20Transfer: async (
     chainId: string,
     fromWalletAddress: string,
@@ -40,18 +20,7 @@ const TransactionSimulatorUtil = {
       'latest'
     ])
 
-    // const chainIdNumber = parseInt(chainId)
-    // const client = TransactionSimulatorUtil.getTenderlyClient(chainIdNumber)
-    // const simulations = await client.simulator.simulateBundle({
-    //   transactions: calls.map(call => ({
-    //     from: fromWalletAddress,
-    //     to: call.to,
-    //     value: call.value,
-    //     input:call.data,
-    //   } as any)),
-    //   blockNumber: 27240854,
-    // });
-    // return simulations
+    return result
   }
 }
 

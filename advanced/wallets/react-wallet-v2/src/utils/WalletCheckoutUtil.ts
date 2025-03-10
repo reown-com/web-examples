@@ -334,14 +334,12 @@ const WalletCheckoutUtil = {
     try {
       // Check for request expiry
       if (checkoutRequest.expiry) {
-        const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+        const currentTime = Math.floor(Date.now() / 1000) // Current time in seconds
         if (currentTime > checkoutRequest.expiry) {
-          throw createCheckoutError(
-            CheckoutErrorCode.CHECKOUT_EXPIRED,
-          );
+          throw createCheckoutError(CheckoutErrorCode.CHECKOUT_EXPIRED)
         }
       }
-      
+
       // Use Zod to validate the checkout request structure
       CheckoutRequestSchema.parse(checkoutRequest)
 
@@ -666,15 +664,12 @@ const WalletCheckoutUtil = {
   response: {
     /**
      * Format a successful checkout response
-     * 
+     *
      * @param id - The request ID
      * @param result - The successful result data
      * @returns Formatted JSON-RPC success response
      */
-    formatSuccess<T>(
-      id: number,
-      result: T
-    ): { jsonrpc: string; id: number ; result: T } {
+    formatSuccess<T>(id: number, result: T): { jsonrpc: string; id: number; result: T } {
       return {
         jsonrpc: '2.0',
         id,
@@ -684,7 +679,7 @@ const WalletCheckoutUtil = {
 
     /**
      * Format an error checkout response
-     * 
+     *
      * @param id - The request ID
      * @param error - The error to format
      * @returns Formatted JSON-RPC error response
@@ -695,9 +690,9 @@ const WalletCheckoutUtil = {
     ): { jsonrpc: string; id: number; error: { code: number; message: string; data?: any } } {
       // Default error code for unknown errors
       let code = CheckoutErrorCode.INVALID_CHECKOUT_REQUEST
-      let message = "Unknown error"
+      let message = 'Unknown error'
       let data = undefined
-      
+
       // Handle different error types
       if (error instanceof CheckoutError) {
         code = error.code
@@ -708,14 +703,14 @@ const WalletCheckoutUtil = {
       } else if (typeof error === 'string') {
         message = error
       }
-      
+
       return {
         jsonrpc: '2.0',
         id,
-        error: { 
-          code, 
-          message, 
-          data 
+        error: {
+          code,
+          message,
+          data
         }
       }
     }
@@ -726,35 +721,35 @@ const WalletCheckoutUtil = {
       jsonrpc: '2.0',
       id: typeof id === 'string' ? parseInt(id) : id,
       result
-    };
+    }
   },
-  
+
   formatCheckoutErrorResponse(id: number | string, error: Error | CheckoutError | unknown) {
     // Default error code for unknown errors
-    let code = CheckoutErrorCode.INVALID_CHECKOUT_REQUEST;
-    let message = "Unknown error";
-    let data = undefined;
-    
+    let code = CheckoutErrorCode.INVALID_CHECKOUT_REQUEST
+    let message = 'Unknown error'
+    let data = undefined
+
     // Handle different error types
     if (error instanceof CheckoutError) {
-      code = error.code;
-      message = error.message;
-      data = error.data;
+      code = error.code
+      message = error.message
+      data = error.data
     } else if (error instanceof Error) {
-      message = error.message;
+      message = error.message
     } else if (typeof error === 'string') {
-      message = error;
+      message = error
     }
-    
+
     return {
       jsonrpc: '2.0',
       id: typeof id === 'string' ? parseInt(id) : id,
-      error: { 
-        code, 
-        message, 
-        data 
+      error: {
+        code,
+        message,
+        data
       }
-    };
+    }
   }
 }
 
@@ -767,33 +762,33 @@ export default WalletCheckoutUtil
  * @returns Object with loading state, error, and feasible payments
  */
 export function useCheckoutRequestPreparation(request: any, address: string) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [feasiblePayments, setFeasiblePayments] = useState<DetailedPaymentOption[]>([]);
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+  const [feasiblePayments, setFeasiblePayments] = useState<DetailedPaymentOption[]>([])
 
   useEffect(() => {
     async function prepareRequest() {
       if (!request?.params?.[0] || !address) {
-        setIsLoading(false);
-        return;
+        setIsLoading(false)
+        return
       }
 
       try {
         const { feasiblePayments } = await WalletCheckoutUtil.prepareCheckoutRequest(
-          address, 
+          address,
           request.params[0]
-        );
-        setFeasiblePayments(feasiblePayments);
+        )
+        setFeasiblePayments(feasiblePayments)
       } catch (err) {
-        console.error("Error preparing checkout request:", err);
-        setError(err instanceof Error ? err : new Error('Failed to prepare checkout request'));
+        console.error('Error preparing checkout request:', err)
+        setError(err instanceof Error ? err : new Error('Failed to prepare checkout request'))
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
 
-    prepareRequest();
-  }, [request, address]);
+    prepareRequest()
+  }, [request, address])
 
-  return { isLoading, error, feasiblePayments };
+  return { isLoading, error, feasiblePayments }
 }

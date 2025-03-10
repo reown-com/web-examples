@@ -69,10 +69,7 @@ export default function SessionCheckoutModal() {
 
   const topic = requestEvent?.topic
   const request = requestEvent?.params?.request
-  const checkoutRequest = useMemo(() => 
-    request?.params?.[0] || {} as CheckoutRequest, 
-    [request]
-  )
+  const checkoutRequest = useMemo(() => request?.params?.[0] || ({} as CheckoutRequest), [request])
 
   // Use our custom hook to fetch payments
   const address = SettingsStore.state.eip155Address
@@ -81,32 +78,28 @@ export default function SessionCheckoutModal() {
   // Handle API errors during preparation
   useEffect(() => {
     if (error && requestEvent && topic) {
-      walletkit.respondSessionRequest({
-        topic,
-        response: WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent.id, error)
-      }).finally(() => {
-        ModalStore.close()
-      })
+      walletkit
+        .respondSessionRequest({
+          topic,
+          response: WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent.id, error)
+        })
+        .finally(() => {
+          ModalStore.close()
+        })
     }
   }, [error, requestEvent, topic])
 
   // Handle reject action
   const onReject = useCallback(async () => {
     if (!requestEvent || !topic) return
-    
+
     try {
       setIsLoadingReject(true)
-      
-      const rejection = new CheckoutError(
-        CheckoutErrorCode.USER_REJECTED, 
-        "User rejected payment"
-      )
-      
-      const response = WalletCheckoutUtil.response.formatError(
-        requestEvent.id, 
-        rejection
-      )
-      
+
+      const rejection = new CheckoutError(CheckoutErrorCode.USER_REJECTED, 'User rejected payment')
+
+      const response = WalletCheckoutUtil.response.formatError(requestEvent.id, rejection)
+
       await walletkit.respondSessionRequest({ topic, response })
       styledToast('Payment rejected', 'info')
     } catch (e) {
@@ -120,19 +113,19 @@ export default function SessionCheckoutModal() {
   // Handle approve action
   const onApprove = useCallback(async () => {
     if (!requestEvent || !topic || !selectedPayment) return
-    
+
     try {
       setIsLoadingApprove(true)
-      
+
       // Validate the request before processing
       WalletCheckoutPaymentHandler.validateCheckoutExpiry(checkoutRequest)
-      
+
       const wallet = eip155Wallets[address]
-      
+
       if (!(wallet instanceof EIP155Lib)) {
-        throw new Error("Wallet not available")
+        throw new Error('Wallet not available')
       }
-      
+
       // Set up the provider
       const { chainMetadata } = selectedPayment
       const { chainId } = chainMetadata
@@ -140,13 +133,13 @@ export default function SessionCheckoutModal() {
         EIP155_CHAINS[`eip155:${chainId}` as TEIP155Chain].rpc
       )
       const connectedWallet = wallet.connect(provider)
-      
+
       // Process the payment using the unified method
       const result = await WalletCheckoutPaymentHandler.processPayment(
-        connectedWallet, 
+        connectedWallet,
         selectedPayment
       )
-      
+
       // Handle the result
       if (result.success) {
         const response = WalletCheckoutUtil.formatCheckoutSuccessResponse<CheckoutResult>(
@@ -159,7 +152,7 @@ export default function SessionCheckoutModal() {
             recipient: selectedPayment.recipient
           }
         )
-        
+
         await walletkit.respondSessionRequest({ topic, response })
         styledToast('Payment approved successfully', 'success')
       } else if (result.error) {
@@ -167,18 +160,18 @@ export default function SessionCheckoutModal() {
           requestEvent.id,
           result.error
         )
-        
+
         await walletkit.respondSessionRequest({ topic, response })
         styledToast(result.error.message, 'error')
       }
     } catch (e) {
       // Handle any unexpected errors
-      console.error("Error processing payment:", e)
+      console.error('Error processing payment:', e)
       const response = WalletCheckoutUtil.response.formatError(
         requestEvent.id,
         e instanceof CheckoutError ? e : new Error((e as Error).message)
       )
-      
+
       await walletkit.respondSessionRequest({ topic, response })
       styledToast((e as Error).message, 'error')
     } finally {

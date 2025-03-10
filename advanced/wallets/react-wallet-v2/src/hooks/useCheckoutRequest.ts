@@ -4,7 +4,7 @@ import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
 
 /**
  * Custom hook to prepare checkout requests
- * 
+ *
  * @param request - The request object from the dApp
  * @param address - User's wallet address
  * @returns Object with loading state, error, and feasible payments
@@ -23,12 +23,12 @@ export function useCheckoutRequest(request: any, address: string) {
 
       try {
         const { feasiblePayments } = await WalletCheckoutUtil.prepareCheckoutRequest(
-          address, 
+          address,
           request.params[0]
         )
         setFeasiblePayments(feasiblePayments)
       } catch (err) {
-        console.error("Error preparing checkout request:", err)
+        console.error('Error preparing checkout request:', err)
         setError(err instanceof Error ? err : new Error('Failed to prepare checkout request'))
       } finally {
         setIsLoading(false)
@@ -39,4 +39,4 @@ export function useCheckoutRequest(request: any, address: string) {
   }, [request, address])
 
   return { isLoading, error, feasiblePayments }
-} 
+}
