@@ -6,12 +6,10 @@ import { ConnectWalletButton } from "@/components/ConnectWalletButton";
 import { useAppKitAccount } from "@reown/appkit/react";
 import Navbar from "@/components/Navbar";
 import { GiftDonutModalTrigger } from "@/components/GiftDonutModalTrigger";
-import { useWalletCheckout } from "@/hooks/useWalletCheckout";
-import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { status, address } = useAppKitAccount();
-  const { isWalletCheckoutSupported } = useWalletCheckout();
+
   return (
     <div className="sm:w-1/2 flex flex-col sm:mx-10">
       <Navbar />
@@ -35,17 +33,13 @@ export default function Home() {
               <p className=" font-bold text-primary">$1.00</p>
             </div>
             {status === "connected" || address ? (
-              isWalletCheckoutSupported ? (
-                <Button>Checkout</Button>
-              ) : (
                 <div>
                   <GiftDonutModalTrigger
                     triggerText="Gift Donut"
                     initialView="Checkout"
                     className="bg-blue-500 hover:bg-blue-700 text-invert"
                   />
-                </div>
-              )
+              </div>
             ) : (
               <div>
                 <ConnectWalletButton />
