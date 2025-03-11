@@ -30,16 +30,6 @@ export const BlockchainApiUtil = {
     return response.json() as T
   },
 
-  async getBlob({ headers, ...args }: RequestArguments) {
-    const url = this.createUrl(args)
-    const response = await fetch(url, { method: 'GET', headers })
-
-    if (response.status !== 200) {
-      return undefined
-    }
-
-    return response.blob()
-  },
 
   createUrl({ path, params, chainId }: RequestArguments & { chainId?: string }) {
     const projectId = new URLSearchParams(location.search).get('projectId')
