@@ -16,6 +16,7 @@ import {
   WalletGetAssetsRPCResponse,
 } from "@/types/ERC7811";
 import { Capabilities } from "@/types/ERC5792";
+import { Hex } from "viem";
 
 async function getAssetDiscoveryCapabilities({
   provider,
@@ -35,12 +36,14 @@ async function getAssetDiscoveryCapabilities({
   try {
     // For WalletConnect, also check CAIP-25
     if (walletProviderType === 'WALLET_CONNECT') {
-      const scopedProperties = JSON.parse(
-        //@ts-expect-error - currently scopedProperties is not types
-        provider.session?.scopedProperties || '{}'
-      )
-      const eip155Capabilities = scopedProperties?.eip155
-      const walletService = eip155Capabilities?.walletService
+      const eip155Capabilities =
+       //@ts-expect-error - currently scopedProperties is not types
+        typeof provider.session?.scopedProperties?.['eip155'] === 'string'
+         //@ts-expect-error - currently scopedProperties is not types
+          ? JSON.parse(provider.session.scopedProperties['eip155'])
+          : {}
+
+      const walletService = eip155Capabilities?.walletService || []
 
       // Handle case where walletService is undefined or not an array
       if (!Array.isArray(walletService)) {
@@ -98,44 +101,44 @@ function processAssetsToBalances(
 
 async function getAssetsViaWalletService(
   request: WalletGetAssetsRPCRequest,
-  walletServiceUrl: string,
-): Promise<Record<`0x${string}`, Asset[]>[]> {
-  const projectId = process.env["NEXT_PUBLIC_PROJECT_ID"];
+  walletServiceUrl: string
+): Promise<Record<Hex, Asset[]>> {
+  const projectId = process.env['NEXT_PUBLIC_PROJECT_ID']
   if (!projectId) {
-    throw new Error("NEXT_PUBLIC_PROJECT_ID is not set");
+    throw new Error('NEXT_PUBLIC_PROJECT_ID is not set')
   }
 
   const rpcRequest = {
-    jsonrpc: "2.0",
+    jsonrpc: '2.0',
     id: Math.floor(Math.random() * 1000000),
-    method: "wallet_getAssets",
-    params: [request],
-  };
+    method: 'wallet_getAssets',
+    params: request
+  }
 
-  const url = new URL(walletServiceUrl);
-  url.searchParams.set("projectId", projectId);
+  const url = new URL(walletServiceUrl)
+  url.searchParams.set('projectId', projectId)
 
   const response = await fetch(url.toString(), {
     body: JSON.stringify(rpcRequest),
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  });
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  })
 
-  const { result } = (await response.json()) as WalletGetAssetsRPCResponse;
+  const { result } = (await response.json()) as WalletGetAssetsRPCResponse
 
-  return result;
+  return result
 }
 
 async function getAssetsViaProvider(
   provider: UniversalProvider,
   request: WalletGetAssetsRPCRequest,
-): Promise<Record<`0x${string}`, Asset[]>[]> {
+): Promise<Record<`0x${string}`, Asset[]>> {
   const response: Record<`0x${string}`, Asset[]> = await provider.request({
     method: "wallet_getAssets",
     params: [request],
   });
 
-  return [response];
+  return response;
 }
 
 export const useWalletGetAssets = () => {
@@ -169,7 +172,7 @@ export const useWalletGetAssets = () => {
         walletProviderType,
       });
 
-      let assetsResponse: Record<`0x${string}`, Asset[]>[] = [];
+      let assetsResponse: Record<`0x${string}`, Asset[]> = {};
 
       if (capabilities.hasAssetDiscovery) {
         if (
@@ -187,17 +190,10 @@ export const useWalletGetAssets = () => {
           assetsResponse = await getAssetsViaProvider(walletProvider, request);
         }
 
-        const assetsObject = assetsResponse.find(
-          (item) => chainIdAsHex in item,
-        );
-        if (assetsObject) {
-          const chainAssets = assetsObject[chainIdAsHex];
-          if (chainAssets && chainAssets.length > 0) {
-            return processAssetsToBalances(
-              chainAssets,
-              parseInt(chainIdAsHex.slice(2), 16),
-            );
-          }
+
+        const chainAssets = assetsResponse[chainIdAsHex]
+        if (chainAssets && chainAssets.length > 0) {
+          return processAssetsToBalances(chainAssets, parseInt(chainIdAsHex.slice(2), 16))
         }
       }
 
