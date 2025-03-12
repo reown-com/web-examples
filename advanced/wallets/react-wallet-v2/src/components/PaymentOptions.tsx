@@ -220,7 +220,7 @@ export default function CustomPaymentDropdown({ payments, onSelectPayment }: Pay
 
       <Grid.Container direction="column" css={{ margin: 0, padding: 0 }}>
         <Text size={12} css={{ color: '#aaaaaa', lineHeight: 1.2 }}>
-          To: {formatRecipient(payment.recipient!)}
+          {payment.recipient! ? `To: ${formatRecipient(payment.recipient!)}` : ''}
         </Text>
         <Text b size={14} css={{ lineHeight: 1.2, color: 'white' }}>
           {formatUnits(BigInt(payment.amount), payment.assetMetadata.assetDecimals).toString()}{' '}
