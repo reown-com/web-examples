@@ -12,10 +12,13 @@ import {
   Hex,
   CheckoutError
 } from '@/types/wallet_checkout'
-import { formatUnits, hexToNumber, parseUnits } from 'viem'
+import { createPublicClient, erc20Abi, hexToNumber, http, getContract } from 'viem'
 import TransactionSimulatorUtil from './TransactionSimulatorUtil'
 import SettingsStore from '@/store/SettingsStore'
 import { useState, useEffect } from 'react'
+import { getTokenData } from '@/data/tokenUtil'
+import { getChainById } from './ChainUtil'
+import { EIP155_CHAINS } from '@/data/EIP155Data'
 
 // Define Zod schemas for validation
 const ProductMetadataSchema = z.object({
@@ -409,22 +412,22 @@ const WalletCheckoutUtil = {
       const { acceptedPayments } = checkoutRequest
 
       // Get account balance
-      const balance = await WalletGetAssetsCtrl.getBalance(account)
-      if (!balance || !balance.balances) {
-        throw createCheckoutError(CheckoutErrorCode.NO_MATCHING_ASSETS)
-      }
+      // const balance = await WalletGetAssetsCtrl.getBalance(account)
+      // if (!balance || !balance.balances) {
+      //   throw createCheckoutError(CheckoutErrorCode.NO_MATCHING_ASSETS)
+      // }
 
       // Separate payments for processing
       const { directPayments, contractPayments } = this.separatePayments(acceptedPayments)
 
       // Process direct payments
       const { feasibleDirectPayments, isUserHaveAtleastOneMatchingAssets } =
-        this.processFeasibleDirectPayments(directPayments, balance)
+        await this.processFeasibleDirectPayments(directPayments)
       // Process contract payments
       const {
         feasibleContractPayments,
         isUserHaveAtleastOneMatchingAssets: validContractPayments
-      } = await this.processFeasibleContractPayments(contractPayments, balance)
+      } = await this.processFeasibleContractPayments(contractPayments)
 
       // This return error if user have no matching assets
       if (!isUserHaveAtleastOneMatchingAssets && !validContractPayments) {
@@ -465,103 +468,100 @@ const WalletCheckoutUtil = {
    * @param balance - User's balance information
    * @returns Array of detailed payment options that are feasible
    */
-  processFeasibleDirectPayments(
+  async processFeasibleDirectPayments(
     directPayments: PaymentOption[],
-    balance: { balances: Balance[] }
-  ): {
-    feasibleDirectPayments: DetailedPaymentOption[]
-    isUserHaveAtleastOneMatchingAssets: boolean
-  } {
-    let isUserHaveAtleastOneMatchingAssets = false
-    const feasibleDirectPayments = directPayments
-      .map(payment => {
-        try {
-          // Parse the asset details
-          const { chainId, assetAddress, chainNamespace, assetNamespace } = this.getAssetDetails(
-            payment.asset
-          )
-          console.log(chainId, assetAddress, chainNamespace, assetNamespace)
-          // Find matching asset in user's balance
-          const assetBalance = balance.balances.find(b => {
-            if (assetNamespace === 'slip44') {
-              return (
-                b.chainId.toLowerCase() === `${chainNamespace}:${chainId}`.toLowerCase() &&
-                b.address === undefined &&
-                b.symbol === 'ETH' &&
-                assetAddress === '60'
-              )
-            } else {
-              return (
-                b.chainId.toLowerCase() === `${chainNamespace}:${chainId}`.toLowerCase() &&
-                b.address?.toLowerCase() ===
-                  `${chainNamespace}:${chainId}:${assetAddress}`.toLowerCase()
-              )
-            }
-          })
-
-          // Skip if asset not found in balance
-          if (!assetBalance) return null
-          isUserHaveAtleastOneMatchingAssets = true
-          // Convert payment amount and balance to comparable formats
-          const paymentAmount = hexToNumber(payment.amount)
-          const assetBalanceAmount = parseUnits(
-            assetBalance.quantity.numeric,
-            parseInt(assetBalance.quantity.decimals)
-          )
-
-          // Skip if insufficient balance
-          if (assetBalanceAmount < BigInt(paymentAmount)) return null
-
-          // Get chain data for additional metadata
-          const chainData = getChainData(`${chainNamespace}:${chainId}`)
-
-          // Return detailed payment option with metadata
-          return {
-            ...payment,
-            assetMetadata: {
-              assetIcon: assetBalance.iconUrl || '',
-              assetName: assetBalance.name || '',
-              assetSymbol: assetBalance.symbol || '',
-              assetNamespace: assetNamespace,
-              assetValue: (
-                assetBalance.price *
-                parseFloat(
-                  formatUnits(BigInt(paymentAmount), parseInt(assetBalance.quantity.decimals))
-                )
-              ).toFixed(3),
-              assetDecimals: parseInt(assetBalance.quantity.decimals)
-            },
-            chainMetadata: {
-              chainId: chainId,
-              chainName: chainData?.name || '',
-              chainNamespace: chainNamespace,
-              chainIcon: chainData?.logo || ''
-            }
-          }
-        } catch (error) {
-          console.error('Error processing payment option:', error)
-          return null
+  ): Promise<{
+    feasibleDirectPayments: DetailedPaymentOption[];
+    isUserHaveAtleastOneMatchingAssets: boolean;
+  }> {
+    let isUserHaveAtleastOneMatchingAssets = false;
+    const account = SettingsStore.state.eip155Address;
+    // Use Promise.all to handle async operations in map
+    const paymentPromises = directPayments.map(async payment => {
+      try {
+        // Parse the asset details
+        const { chainId, assetAddress, chainNamespace, assetNamespace } = this.getAssetDetails(
+          payment.asset
+        );
+        let assetDetails = {balance: BigInt(0), decimals: 18, symbol: '', name: ''};
+        // Handle ERC20 tokens
+        if(assetNamespace === 'erc20') {
+          assetDetails = await getErc20TokenDetails(
+            assetAddress as `0x${string}`, 
+            Number(chainId), 
+            account as `0x${string}`
+          );
+          
         }
-      })
-      .filter((asset): asset is DetailedPaymentOption => asset !== null)
+        // Handle native tokens (ETH, etc.)
+        else if(assetNamespace === 'slip44') {
+          assetDetails = await getNativeAssetDetails(Number(chainId), account as `0x${string}`);
+        }
+          // Check if user has any balance
+          if(assetDetails.balance > BigInt(0)) {
+            isUserHaveAtleastOneMatchingAssets = true;
+            
+            // Convert payment amount to comparable format
+            const paymentAmount = hexToNumber(payment.amount);
+            
+            // Skip if insufficient balance
+            if (assetDetails.balance < BigInt(paymentAmount)) return null;
+            
+            // Get chain data for additional metadata
+            const chainData = getChainData(`${chainNamespace}:${chainId}`);
+            const tokenDetails = getTokenData(assetDetails.symbol);
+            
+            return {
+              ...payment,
+              assetMetadata: {
+                assetIcon: tokenDetails?.icon || '',
+                assetName: assetDetails.name,
+                assetSymbol: assetDetails.symbol,
+                assetNamespace: assetNamespace,
+                assetDecimals: assetDetails.decimals
+              },
+              chainMetadata: {
+                chainId: chainId,
+                chainName: chainData?.name || '',
+                chainNamespace: chainNamespace,
+                chainIcon: chainData?.logo || ''
+              }
+            };
+          }
+        
+        return null;
+      } catch (error) {
+        console.error('Error processing payment option:', error);
+        return null;
+      }
+    });
+    
+    // Resolve all promises
+    const paymentResults = await Promise.all(paymentPromises);
+    
+    // Filter out null values
+    const feasibleDirectPayments = paymentResults.filter(
+      (payment): payment is DetailedPaymentOption => payment !== null
+    );
+    
     return {
       feasibleDirectPayments,
       isUserHaveAtleastOneMatchingAssets
-    }
+    };
   },
 
   async processFeasibleContractPayments(
     contractPayments: PaymentOption[],
-    balance: { balances: Balance[] }
   ): Promise<{
     feasibleContractPayments: DetailedPaymentOption[]
     isUserHaveAtleastOneMatchingAssets: boolean
   }> {
     let isUserHaveAtleastOneMatchingAssets = false
+    const account = SettingsStore.state.eip155Address
     const feasibleContractPayments = await Promise.all(
       contractPayments.map(async payment => {
         try {
-          const address = SettingsStore.state.eip155Address
+          
           const { asset, contractInteraction } = payment
           const { chainId, assetAddress, chainNamespace, assetNamespace } =
             this.getAssetDetails(asset)
@@ -572,77 +572,69 @@ const WalletCheckoutUtil = {
             if (Array.isArray(contractInteraction.data)) {
               simulationResult = await TransactionSimulatorUtil.simulateAndCheckERC20Transfer(
                 chainId,
-                address,
+                account as `0x${string}`,
                 contractInteraction.data as { to: string; value: string; data: string }[]
               )
             } else {
               simulationResult = await TransactionSimulatorUtil.simulateAndCheckERC20Transfer(
                 chainId,
-                address,
+                account as `0x${string}`,
                 [contractInteraction.data as { to: string; value: string; data: string }]
               )
             }
           }
 
-          // Find matching asset in user's balance
-          const assetBalance = balance.balances.find(b => {
-            if (assetNamespace === 'slip44') {
-              return (
-                b.chainId.toLowerCase() === `${chainNamespace}:${chainId}`.toLowerCase() &&
-                b.address === undefined &&
-                b.symbol === 'ETH' &&
-                assetAddress === '60'
-              )
-            } else {
-              return (
-                b.chainId.toLowerCase() === `${chainNamespace}:${chainId}`.toLowerCase() &&
-                b.address?.toLowerCase() ===
-                  `${chainNamespace}:${chainId}:${assetAddress}`.toLowerCase()
-              )
-            }
-          })
-
-          // Skip if asset not found in balance
-          if (!assetBalance) return null
-
-          isUserHaveAtleastOneMatchingAssets = true
-
-          // Convert payment amount and balance to comparable formats
-          const paymentAmount = hexToNumber(payment.amount)
-          const assetBalanceAmount = parseUnits(
-            assetBalance.quantity.numeric,
-            parseInt(assetBalance.quantity.decimals)
-          )
-
-          // Skip if insufficient balance
-          if (assetBalanceAmount < BigInt(paymentAmount)) return null
-
-          // Get chain data for additional metadata
-          const chainData = getChainData(`${chainNamespace}:${chainId}`)
-
-          // Return detailed payment option with metadata
-          return {
-            ...payment,
-            assetMetadata: {
-              assetIcon: assetBalance.iconUrl || '',
-              assetName: assetBalance.name || '',
-              assetSymbol: assetBalance.symbol || '',
-              assetNamespace: assetNamespace,
-              assetValue: (
-                assetBalance.price *
-                parseFloat(
-                  formatUnits(BigInt(paymentAmount), parseInt(assetBalance.quantity.decimals))
-                )
-              ).toFixed(3),
-              assetDecimals: parseInt(assetBalance.quantity.decimals)
-            },
-            chainMetadata: {
-              chainId: chainId,
-              chainName: chainData?.name || '',
-              chainNamespace: chainNamespace,
-              chainIcon: chainData?.logo || ''
-            }
+          let assetDetails = {balance: BigInt(0), decimals: 0, symbol: '', name: ''};
+        // Handle ERC20 tokens
+        if(assetNamespace === 'erc20') {
+          assetDetails = await getErc20TokenDetails(
+            assetAddress as `0x${string}`, 
+            Number(chainId), 
+            account as `0x${string}`
+          );
+          const gasAssetDetails = await getNativeAssetDetails(Number(chainId), account as `0x${string}`);
+          // if user have not gas fee to cover the payment, return null
+          if(gasAssetDetails.balance < BigInt(0)) {
+            return null;
           }
+        }
+        // Handle native tokens (ETH, etc.)
+        else if(assetNamespace === 'slip44') {
+          assetDetails = await getNativeAssetDetails(Number(chainId), account as `0x${string}`);
+        }
+          // Check if user has any balance
+          if(assetDetails.balance > BigInt(0)) {
+            isUserHaveAtleastOneMatchingAssets = true;
+            
+            // Convert payment amount to comparable format
+            const paymentAmount = hexToNumber(payment.amount);
+            
+            // Skip if insufficient balance
+            if (assetDetails.balance < BigInt(paymentAmount)) return null;
+            
+            // Get chain data for additional metadata
+            const chainData = getChainData(`${chainNamespace}:${chainId}`);
+            const tokenDetails = getTokenData(assetDetails.symbol);
+            
+            return {
+              ...payment,
+              assetMetadata: {
+                assetIcon: tokenDetails?.icon || '/token-logos/token-placeholder.svg',
+                assetName: assetDetails.name,
+                assetSymbol: assetDetails.symbol,
+                assetNamespace: assetNamespace,
+                assetDecimals: assetDetails.decimals
+              },
+              chainMetadata: {
+                chainId: chainId,
+                chainName: chainData?.name || '',
+                chainNamespace: chainNamespace,
+                chainIcon: chainData?.logo || '/chain-logos/chain-placeholder.svg'
+              }
+            };
+          }
+        
+        return null;
         } catch (error) {
           console.error('Error processing payment option:', error)
           return null // Return null on error to be filtered out
@@ -791,4 +783,47 @@ export function useCheckoutRequestPreparation(request: any, address: string) {
   }, [request, address])
 
   return { isLoading, error, feasiblePayments }
+}
+
+export async function getNativeAssetDetails( chainId: number, account: `0x${string}`): Promise<{balance: bigint, decimals: number, symbol: string, name: string}> {
+  const publicClient = createPublicClient({
+    chain: getChainById(chainId),
+    transport: http(EIP155_CHAINS[`eip155:${chainId}`].rpc)
+  })
+  const balance = await publicClient.getBalance({
+    address: account
+  })
+  return {
+    balance: balance,
+    decimals: 18,
+    symbol: 'ETH',
+    name: 'Ethereum',
+  }
+}
+
+
+export async function getErc20TokenDetails(
+  tokenAddress: Hex,
+  chainId: number,
+  account: Hex,
+): Promise<{balance: bigint, decimals: number, symbol: string, name: string}> {
+  const publicClient = createPublicClient({
+    chain: getChainById(chainId),
+    transport: http(EIP155_CHAINS[`eip155:${chainId}`].rpc)
+  })
+  const contract = getContract({
+    address: tokenAddress,
+    abi: erc20Abi,
+    client: publicClient
+  })
+
+  const [balance, decimals, symbol, name] = await Promise.all([
+    contract.read.balanceOf([account]),
+    contract.read.decimals(),
+    contract.read.symbol(),
+    contract.read.name()
+  ])
+
+
+  return {balance: balance, decimals: decimals, symbol: symbol, name: name}
 }
