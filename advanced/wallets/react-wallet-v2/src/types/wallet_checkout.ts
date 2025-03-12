@@ -30,7 +30,7 @@ export type ContractInteraction = {
   /** The type of contract interaction (e.g. "evm-calls", "solana-instruction") */
   type: string
   /** Data required for the specific contract interaction type */
-  data: Record<string, any> | Record<string, any>[]
+  data: any
 }
 
 /**
@@ -50,32 +50,6 @@ export type EvmContractInteraction = {
     /** Contract call data */
     data: Hex
   }[]
-}
-
-/**
- * Solana-specific contract interaction
- * @property type - Must be "solana-instruction"
- * @property data - Solana instruction data
- */
-export type SolanaContractInteraction = {
-  /** Must be "solana-instruction" */
-  type: 'solana-instruction'
-  /** Solana instruction data */
-  data: {
-    /** Program ID */
-    programId: string
-    /** Accounts involved in the instruction */
-    accounts: {
-      /** Account public key */
-      pubkey: string
-      /** Whether the account needs to sign the transaction */
-      isSigner: boolean
-      /** Whether the account's data will be modified */
-      isWritable: boolean
-    }[]
-    /** Base64-encoded instruction data */
-    data: string
-  }
 }
 
 /**
