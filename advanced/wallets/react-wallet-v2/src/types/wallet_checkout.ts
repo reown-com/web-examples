@@ -233,7 +233,6 @@ export type DetailedPaymentOption = PaymentOption & {
     assetSymbol: string
     assetNamespace: string
     assetDecimals: number
-    assetValue: string
   }
   chainMetadata: {
     chainId: string

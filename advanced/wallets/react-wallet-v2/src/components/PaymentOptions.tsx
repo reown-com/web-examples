@@ -225,10 +225,6 @@ export default function CustomPaymentDropdown({ payments, onSelectPayment }: Pay
         <Text b size={14} css={{ lineHeight: 1.2, color: 'white' }}>
           {formatUnits(BigInt(payment.amount), payment.assetMetadata.assetDecimals).toString()}{' '}
           {payment.assetMetadata.assetSymbol}
-          {'  '}
-          <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px' }}>
-            (${payment.assetMetadata.assetValue})
-          </span>
         </Text>
       </Grid.Container>
     </Row>
