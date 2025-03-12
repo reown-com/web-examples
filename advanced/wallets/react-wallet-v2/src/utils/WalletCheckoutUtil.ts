@@ -1,18 +1,16 @@
 import { z } from 'zod'
 import { getChainData } from '@/data/chainsUtil'
-import { Balance, WalletGetAssetsCtrl } from '@/store/WalletGetAssetCtrl'
 import {
   type PaymentOption,
   type ContractInteraction,
   type DetailedPaymentOption,
   type CheckoutRequest,
   CheckoutErrorCode,
-  CheckoutErrorMessages,
   createCheckoutError,
   Hex,
   CheckoutError
 } from '@/types/wallet_checkout'
-import { createPublicClient, erc20Abi, hexToNumber, http, getContract } from 'viem'
+import { createPublicClient, erc20Abi, hexToNumber, http, getContract, encodeFunctionData } from 'viem'
 import TransactionSimulatorUtil from './TransactionSimulatorUtil'
 import SettingsStore from '@/store/SettingsStore'
 import { useState, useEffect } from 'react'
@@ -372,7 +370,16 @@ const WalletCheckoutUtil = {
 
         // For contract payments, additional validation
         if (payment.contractInteraction) {
-          // Specific contract interaction validations
+         // check if contract interaction type is supported
+         if(payment.contractInteraction.type !== 'evm-calls') {
+          throw createCheckoutError(CheckoutErrorCode.UNSUPPORTED_CONTRACT_INTERACTION)
+         }
+
+         // check if contract interaction data is valid
+         if(!payment.contractInteraction.data || typeof payment.contractInteraction.data !== 'object' || !Array.isArray(payment.contractInteraction.data)) {
+          throw createCheckoutError(CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA)
+         }
+         
         }
       }
     } catch (error) {
@@ -410,12 +417,6 @@ const WalletCheckoutUtil = {
     this.validateCheckoutRequest(checkoutRequest)
     try {
       const { acceptedPayments } = checkoutRequest
-
-      // Get account balance
-      // const balance = await WalletGetAssetsCtrl.getBalance(account)
-      // if (!balance || !balance.balances) {
-      //   throw createCheckoutError(CheckoutErrorCode.NO_MATCHING_ASSETS)
-      // }
 
       // Separate payments for processing
       const { directPayments, contractPayments } = this.separatePayments(acceptedPayments)
@@ -479,6 +480,10 @@ const WalletCheckoutUtil = {
     // Use Promise.all to handle async operations in map
     const paymentPromises = directPayments.map(async payment => {
       try {
+        const recipientAddress = payment.recipient?.split(':')[2]
+        if(!recipientAddress) {
+          return null
+        }
         // Parse the asset details
         const { chainId, assetAddress, chainNamespace, assetNamespace } = this.getAssetDetails(
           payment.asset
@@ -486,12 +491,33 @@ const WalletCheckoutUtil = {
         let assetDetails = {balance: BigInt(0), decimals: 18, symbol: '', name: ''};
         // Handle ERC20 tokens
         if(assetNamespace === 'erc20') {
+                     
+          await TransactionSimulatorUtil.simulateAndCheckERC20Transfer(
+            chainId,
+            account as `0x${string}`,
+            [{
+              to: assetAddress as `0x${string}`,
+              value: '0x0',
+              data: encodeFunctionData({
+                abi: erc20Abi,
+                functionName: 'transfer',
+                args: [recipientAddress as `0x${string}`, BigInt(payment.amount)]
+              })
+            }]
+          )
+           
+
           assetDetails = await getErc20TokenDetails(
             assetAddress as `0x${string}`, 
             Number(chainId), 
             account as `0x${string}`
           );
+          const gasAssetDetails = await getNativeAssetDetails(Number(chainId), account as `0x${string}`);
           
+          // if user have not gas fee to cover the payment, return null
+          if(gasAssetDetails.balance <= BigInt(0)) {
+            return null;
+          }
         }
         // Handle native tokens (ETH, etc.)
         else if(assetNamespace === 'slip44') {
@@ -568,19 +594,14 @@ const WalletCheckoutUtil = {
 
           // Verify contract interaction data and simulate transaction if available
           if (contractInteraction?.data) {
-            let simulationResult
             if (Array.isArray(contractInteraction.data)) {
-              simulationResult = await TransactionSimulatorUtil.simulateAndCheckERC20Transfer(
+              await TransactionSimulatorUtil.simulateAndCheckERC20Transfer(
                 chainId,
                 account as `0x${string}`,
                 contractInteraction.data as { to: string; value: string; data: string }[]
               )
-            } else {
-              simulationResult = await TransactionSimulatorUtil.simulateAndCheckERC20Transfer(
-                chainId,
-                account as `0x${string}`,
-                [contractInteraction.data as { to: string; value: string; data: string }]
-              )
+            } else{
+              throw createCheckoutError(CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA)
             }
           }
 
@@ -594,7 +615,7 @@ const WalletCheckoutUtil = {
           );
           const gasAssetDetails = await getNativeAssetDetails(Number(chainId), account as `0x${string}`);
           // if user have not gas fee to cover the payment, return null
-          if(gasAssetDetails.balance < BigInt(0)) {
+          if(gasAssetDetails.balance <= BigInt(0)) {
             return null;
           }
         }
