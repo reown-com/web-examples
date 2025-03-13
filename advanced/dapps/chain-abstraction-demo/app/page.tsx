@@ -33,12 +33,12 @@ export default function Home() {
               <p className=" font-bold text-primary">$1.00</p>
             </div>
             {status === "connected" || address ? (
-                <div>
-                  <GiftDonutModalTrigger
-                    triggerText="Gift Donut"
-                    initialView="Checkout"
-                    className="bg-blue-500 hover:bg-blue-700 text-invert"
-                  />
+              <div>
+                <GiftDonutModalTrigger
+                  triggerText="Gift Donut"
+                  initialView="Checkout"
+                  className="bg-blue-500 hover:bg-blue-700 text-invert"
+                />
               </div>
             ) : (
               <div>
