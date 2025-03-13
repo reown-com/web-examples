@@ -49,11 +49,11 @@ function ProductCard({ product }: ProductCardProps) {
   )
 }
 
-interface ProductsSectionProps {
+interface ProductsProps {
   products?: ProductMetadata[]
 }
 
-export default function ProductsSection({ products }: ProductsSectionProps) {
+export default function Products({ products }: ProductsProps) {
   if (!products || products.length === 0) {
     return null
   }

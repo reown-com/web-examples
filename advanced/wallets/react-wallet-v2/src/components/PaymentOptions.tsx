@@ -3,7 +3,7 @@ import { Text, Row, Spacer, Container, Card, Avatar, Grid } from '@nextui-org/re
 import { DetailedPaymentOption } from '@/types/wallet_checkout'
 import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
 import Image from 'next/image'
-import { formatUnits, parseUnits } from 'viem'
+import { formatUnits } from 'viem'
 
 interface PaymentOptionsProps {
   payments: DetailedPaymentOption[]

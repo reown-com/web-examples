@@ -45,7 +45,6 @@ export default function useInitialization() {
       SettingsStore.setTezosAddress(tezosAddresses[0])
       SettingsStore.setKadenaAddress(kadenaAddresses[0])
       SettingsStore.setbip122Address(bip122Addresses[0])
-
       await createWalletKit(relayerRegionURL)
       setInitialized(true)
     } catch (err: unknown) {

@@ -13,9 +13,6 @@ module.exports = {
     })
     return config
   },
-  images: {
-    domains: ['s2.coinmarketcap.com']
-  },
   async headers() {
     return [
       {

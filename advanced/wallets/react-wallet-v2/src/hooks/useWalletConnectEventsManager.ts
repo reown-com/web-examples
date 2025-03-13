@@ -22,7 +22,7 @@ import { BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { refreshSessionsList } from '@/pages/wc'
 import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
-import { CheckoutError } from '@/types/wallet_checkout'
+import WalletCheckoutCtrl from '@/store/WalletCheckoutCtrl'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -97,7 +97,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
         case 'wallet_checkout':
           try {
-            WalletCheckoutUtil.validateCheckoutRequest(request.params[0])
+            await WalletCheckoutCtrl.actions.prepareFeasiblePayments(request.params[0])
           } catch (error) {
             return await walletkit.respondSessionRequest({
               topic,

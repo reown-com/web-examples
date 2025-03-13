@@ -1,11 +1,11 @@
 import { Button, Divider, Modal, Text, Spacer, Row, Container, Loading } from '@nextui-org/react'
-import { Fragment, useCallback, useState, useEffect, useMemo } from 'react'
+import { Fragment, useCallback, useState, useMemo } from 'react'
 
 import ModalStore from '@/store/ModalStore'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import OrderInfoCard from '@/components/OrderInfoCard'
-import ProductsSection from '@/components/ProductSectionComponent'
+import Products from '@/components/Products'
 import {
   CheckoutRequest,
   DetailedPaymentOption,
@@ -21,9 +21,7 @@ import EIP155Lib from '@/lib/EIP155Lib'
 import { providers } from 'ethers'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import WalletCheckoutPaymentHandler from '@/utils/WalletCheckoutPaymentHandler'
-import LoadingModal from './LoadingModal'
-import { useCheckoutRequest } from '@/hooks/useCheckoutRequest'
-
+import WalletCheckoutCtrl from '@/store/WalletCheckoutCtrl'
 // Custom styles for the modal
 const modalStyles = {
   modal: {
@@ -73,21 +71,7 @@ export default function SessionCheckoutModal() {
 
   // Use our custom hook to fetch payments
   const address = SettingsStore.state.eip155Address
-  const { isLoading, error, feasiblePayments } = useCheckoutRequest(request, address)
-
-  // Handle API errors during preparation
-  useEffect(() => {
-    if (error && requestEvent && topic) {
-      walletkit
-        .respondSessionRequest({
-          topic,
-          response: WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent.id, error)
-        })
-        .finally(() => {
-          ModalStore.close()
-        })
-    }
-  }, [error, requestEvent, topic])
+  const feasiblePayments = WalletCheckoutCtrl.state.feasiblePayments
 
   // Handle reject action
   const onReject = useCallback(async () => {
@@ -185,11 +169,6 @@ export default function SessionCheckoutModal() {
     setSelectedPayment(payment)
   }, [])
 
-  // Show loading modal while preparing request
-  if (isLoading) {
-    return <LoadingModal />
-  }
-
   return (
     <Fragment>
       <Modal.Header>
@@ -199,7 +178,7 @@ export default function SessionCheckoutModal() {
       <Modal.Body css={modalStyles.modalBody}>
         <Container css={{ padding: 0 }}>
           {/* Products */}
-          <ProductsSection products={checkoutRequest.products} />
+          <Products products={checkoutRequest.products} />
           <Divider y={2} />
 
           {/* Payment Options */}
