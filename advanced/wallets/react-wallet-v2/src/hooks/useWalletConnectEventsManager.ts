@@ -21,6 +21,8 @@ import { getWallet } from '@/utils/EIP155WalletUtil'
 import { BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { refreshSessionsList } from '@/pages/wc'
+import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
+import WalletCheckoutCtrl from '@/store/WalletCheckoutCtrl'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -92,6 +94,17 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           }
           return ModalStore.open('SessionSendCallsModal', { requestEvent, requestSession })
         }
+
+        case 'wallet_checkout':
+          try {
+            await WalletCheckoutCtrl.actions.prepareFeasiblePayments(request.params[0])
+          } catch (error) {
+            return await walletkit.respondSessionRequest({
+              topic,
+              response: WalletCheckoutUtil.formatCheckoutErrorResponse(id, error)
+            })
+          }
+          return ModalStore.open('SessionCheckoutModal', { requestEvent, requestSession })
 
         case COSMOS_SIGNING_METHODS.COSMOS_SIGN_DIRECT:
         case COSMOS_SIGNING_METHODS.COSMOS_SIGN_AMINO:

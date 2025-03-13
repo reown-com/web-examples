@@ -17,7 +17,9 @@ export type EIP155Chain = {
   namespace: string
   smartAccountEnabled?: boolean
 }
-
+const blockchainApiRpc = (chainId: number) => {
+  return `https://rpc.walletconnect.org/v1?chainId=eip155:${chainId}&projectId=${process.env.NEXT_PUBLIC_PROJECT_ID}`
+}
 /**
  * Chains
  */
@@ -27,7 +29,7 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     name: 'Ethereum',
     logo: '/chain-logos/eip155-1.png',
     rgb: '99, 125, 234',
-    rpc: 'https://cloudflare-eth.com/',
+    rpc: blockchainApiRpc(1),
     namespace: 'eip155'
   },
   'eip155:43114': {
@@ -35,7 +37,7 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     name: 'Avalanche C-Chain',
     logo: '/chain-logos/eip155-43113.png',
     rgb: '232, 65, 66',
-    rpc: 'https://api.avax.network/ext/bc/C/rpc',
+    rpc: blockchainApiRpc(43114),
     namespace: 'eip155'
   },
   'eip155:137': {
@@ -43,7 +45,7 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     name: 'Polygon',
     logo: '/chain-logos/eip155-137.png',
     rgb: '130, 71, 229',
-    rpc: 'https://polygon-rpc.com/',
+    rpc: blockchainApiRpc(137),
     namespace: 'eip155'
   },
   'eip155:10': {
@@ -51,7 +53,7 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     name: 'Optimism',
     logo: '/chain-logos/eip155-10.png',
     rgb: '235, 0, 25',
-    rpc: 'https://mainnet.optimism.io',
+    rpc: blockchainApiRpc(10),
     namespace: 'eip155'
   },
   'eip155:324': {
@@ -59,7 +61,7 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     name: 'zkSync Era',
     logo: '/chain-logos/eip155-324.svg',
     rgb: '242, 242, 242',
-    rpc: 'https://mainnet.era.zksync.io/',
+    rpc: blockchainApiRpc(324),
     namespace: 'eip155'
   },
   'eip155:8453': {
@@ -67,7 +69,7 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     name: 'Base',
     logo: '/chain-logos/base.webp',
     rgb: '22, 83, 241',
-    rpc: 'https://mainnet.base.org',
+    rpc: blockchainApiRpc(8453),
     namespace: 'eip155'
   },
   'eip155:42161': {
@@ -75,7 +77,7 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     name: 'Arbitrum',
     logo: '/chain-logos/arbitrum.webp',
     rgb: '27, 74, 220',
-    rpc: 'https://arb1.arbitrum.io/rpc	',
+    rpc: blockchainApiRpc(42161),
     namespace: 'eip155'
   }
 }
@@ -86,7 +88,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     name: 'Ethereum Goerli',
     logo: '/chain-logos/eip155-1.png',
     rgb: '99, 125, 234',
-    rpc: 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    rpc: blockchainApiRpc(5),
     namespace: 'eip155',
     smartAccountEnabled: true
   },
@@ -95,7 +97,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     name: 'Ethereum Sepolia',
     logo: '/chain-logos/eip155-1.png',
     rgb: '99, 125, 234',
-    rpc: 'https://rpc2.sepolia.org',
+    rpc: blockchainApiRpc(11155111),
     namespace: 'eip155',
     smartAccountEnabled: true
   },
@@ -104,7 +106,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     name: 'Avalanche Fuji',
     logo: '/chain-logos/eip155-43113.png',
     rgb: '232, 65, 66',
-    rpc: 'https://api.avax-test.network/ext/bc/C/rpc',
+    rpc: blockchainApiRpc(43113),
     namespace: 'eip155'
   },
   'eip155:80001': {
@@ -112,7 +114,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     name: 'Polygon Mumbai',
     logo: '/chain-logos/eip155-137.png',
     rgb: '130, 71, 229',
-    rpc: 'https://matic-mumbai.chainstacklabs.com',
+    rpc: blockchainApiRpc(80001),
     namespace: 'eip155',
     smartAccountEnabled: true
   },
@@ -121,7 +123,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     name: 'Optimism Goerli',
     logo: '/chain-logos/eip155-10.png',
     rgb: '235, 0, 25',
-    rpc: 'https://goerli.optimism.io',
+    rpc: blockchainApiRpc(420),
     namespace: 'eip155'
   },
   'eip155:11155420': {
@@ -129,7 +131,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     name: 'Optimism Sepolia',
     logo: '/chain-logos/eip155-10.png',
     rgb: '235, 0, 25',
-    rpc: 'https://sepolia.optimism.io	',
+    rpc: blockchainApiRpc(11155420),
     namespace: 'eip155'
   },
   'eip155:280': {
@@ -137,7 +139,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     name: 'zkSync Era Testnet',
     logo: '/chain-logos/eip155-324.svg',
     rgb: '242, 242, 242',
-    rpc: 'https://testnet.era.zksync.dev/',
+    rpc: blockchainApiRpc(280),
     namespace: 'eip155'
   },
   'eip155:84532': {
@@ -145,7 +147,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     name: 'Base Sepolia',
     logo: '/chain-logos/base.webp',
     rgb: '22, 83, 241',
-    rpc: 'https://sepolia.base.org',
+    rpc: blockchainApiRpc(84532),
     namespace: 'eip155',
     smartAccountEnabled: true
   }
