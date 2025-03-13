@@ -4,6 +4,9 @@ import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfil
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  build: {
+    target: 'esnext', // Change this to 'esnext' or a more recent version
+  },
   plugins: [react()],
   optimizeDeps: {
     esbuildOptions: {
