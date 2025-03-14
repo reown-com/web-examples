@@ -1,4 +1,9 @@
-import { AppKitNetwork, arbitrum, base, optimism } from "@reown/appkit/networks";
+import {
+  AppKitNetwork,
+  arbitrum,
+  base,
+  optimism,
+} from "@reown/appkit/networks";
 
 export interface Network {
   name: string;
@@ -11,6 +16,7 @@ export interface Token {
   name: string;
   icon: string;
   address: string;
+  supportedChainIds: number[];
 }
 
 export const supportedNetworks: Network[] = [
@@ -18,19 +24,19 @@ export const supportedNetworks: Network[] = [
     name: arbitrum.name,
     icon: "/chain-logos/arbitrum.png",
     chainId: arbitrum.id,
-    chain:arbitrum
+    chain: arbitrum,
   },
   {
     name: base.name,
     icon: "/chain-logos/base.webp",
     chainId: base.id,
-    chain:base
+    chain: base,
   },
   {
     name: optimism.name,
     icon: "/chain-logos/eip155-10.png",
     chainId: optimism.id,
-    chain:optimism
+    chain: optimism,
   },
 ];
 
@@ -39,10 +45,25 @@ export const supportedTokens: Token[] = [
     name: "USDC",
     icon: "/token-images/USDC.png",
     address: "0x1",
+    supportedChainIds: [arbitrum.id, base.id, optimism.id],
   },
   {
     name: "USDT",
     icon: "/token-images/USDT.png",
     address: "0x2",
+    supportedChainIds: [arbitrum.id, optimism.id],
+  },
+  {
+    name: "USDS",
+    icon: "/token-images/USDS(DAI).png",
+    address: "0x3",
+    supportedChainIds: [base.id],
   },
 ];
+
+export function isTokenSupportedOnNetwork(
+  token: Token,
+  networkChainId: number
+): boolean {
+  return token.supportedChainIds.includes(networkChainId);
+}

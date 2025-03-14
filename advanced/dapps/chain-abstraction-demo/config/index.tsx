@@ -1,4 +1,3 @@
-import { cookieStorage, createStorage, http } from "@wagmi/core";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { arbitrum, optimism, base } from "@reown/appkit/networks";
 
@@ -11,9 +10,6 @@ if (!projectId) {
 export const networks = [base, optimism, arbitrum];
 
 export const wagmiAdapter = new WagmiAdapter({
-  storage: createStorage({
-    storage: cookieStorage,
-  }),
   ssr: true,
   projectId,
   networks,
@@ -22,8 +18,8 @@ export const wagmiAdapter = new WagmiAdapter({
 export const metadata = {
   name: "Chain Abstraction Demo",
   description: "A demo of Chain Abstraction",
-  url: "https://web3modal.com", // origin must match your domain & subdomain
-  icons: ["https://avatars.githubusercontent.com/u/37784886"],
+  url: "https://ca-demo.reown.com", // origin must match your domain & subdomain
+  icons: ["https://ca-demo.reown.com/donut.png"],
 };
 
 export const config = wagmiAdapter.wagmiConfig;

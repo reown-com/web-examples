@@ -27,6 +27,9 @@ createAppKit({
   projectId: ConstantsUtil.ProjectId,
   features: {
     analytics: true,
+    email: true,
+    socials: [],
+    emailShowWallets: false,
   },
   themeMode: "light",
   termsConditionsUrl: "https://reown.com/terms-of-service",

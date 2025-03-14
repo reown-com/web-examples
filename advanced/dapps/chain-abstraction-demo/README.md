@@ -1,8 +1,31 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Chain Abstraction Demo
 
-## Getting Started
+This application demonstrates chain abstraction functionality using Reown's AppKit, allowing users to send stablecoins across multiple networks seamlessly.
 
-First, run the development server:
+![Chain Abstraction Flow Diagram](./chain-abstraction-flow.png)
+
+## Setup and Installation
+
+### Step 1: Configure Environment Variables
+
+1. Locate the `.env.example` file in the project root
+2. Copy it to create a new file named `.env`
+3. Get your Project ID from [Reown Cloud](https://cloud.reown.com/)
+4. Add your Project ID to the `.env` file:
+
+### Step 2: Install Dependencies
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+### Step 3: Start the Development Server
 
 ```bash
 npm run dev
@@ -22,15 +45,9 @@ This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-opti
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+To learn more about Reown, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [Reown Website](https://reown.com/)
+- [Reown Documentation](https://docs.reown.com/)
+- [Reown Cloud](https://cloud.reown.com/)
+- [Reown AppKit](https://demo.reown.com/)

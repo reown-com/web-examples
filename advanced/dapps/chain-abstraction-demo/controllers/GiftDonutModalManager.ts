@@ -5,7 +5,9 @@ import {
   supportedNetworks,
   supportedTokens,
   Token,
+  isTokenSupportedOnNetwork,
 } from "@/data/EIP155Data";
+import { TokenBalance } from "@/utils/BalanceFetcherUtil";
 import React from "react";
 import { proxy } from "valtio";
 
@@ -25,6 +27,8 @@ export type GiftDonutState = {
   network?: Network;
   token: Token;
   recipient?: string;
+  balances: TokenBalance[];
+  tokenNetworkCompatible: boolean;
 };
 
 export type GiftDonutModalStateType = {
@@ -44,7 +48,9 @@ class GiftDonutModalManager {
       views: {},
       state: {
         token: supportedTokens[0],
-        donutCount: 1,
+        donutCount: 0,
+        balances: [],
+        tokenNetworkCompatible: true,
       },
     });
   }
@@ -98,11 +104,35 @@ class GiftDonutModalManager {
   }
 
   setToken(token: Token): void {
+    this.state.state.donutCount = 0; // Reset donut count when changing token
     this.state.state.token = token;
+    
+    // Check compatibility with current network
+    if (this.state.state.network) {
+      this.checkTokenNetworkCompatibility();
+    }
   }
 
   setNetwork(network: Network): void {
     this.state.state.network = network;
+    
+    // Check compatibility with current token
+    this.checkTokenNetworkCompatibility();
+  }
+
+  checkTokenNetworkCompatibility(): void {
+    const { token, network } = this.state.state;
+    if (!network) {
+      // No network selected yet, so we can't check compatibility
+      this.state.state.tokenNetworkCompatible = false;
+      return;
+    }
+    
+    this.state.state.tokenNetworkCompatible = isTokenSupportedOnNetwork(token, network.chainId);
+  }
+
+  isTokenNetworkCompatible(): boolean {
+    return this.state.state.tokenNetworkCompatible;
   }
 
   setRecipient(recipientAddress: string): void {
@@ -127,6 +157,26 @@ class GiftDonutModalManager {
 
   getDonutCount(): number {
     return this.state.state.donutCount;
+  }
+
+  setBalances(balances: TokenBalance[]): void {
+    this.state.state.balances = balances;
+  }
+
+  getBalances(): TokenBalance[] {
+    return this.state.state.balances;
+  }
+
+  getBalanceBySymbol(symbol: string): string {
+    const balance = this.state.state.balances.find((b) => b.symbol === symbol);
+    return balance?.balance || "0.00";
+  }
+
+  getBalanceByAddress(address: `0x${string}`): string {
+    const balance = this.state.state.balances.find(
+      (b) => b.address === address,
+    );
+    return balance?.balance || "0.00";
   }
 }
 
