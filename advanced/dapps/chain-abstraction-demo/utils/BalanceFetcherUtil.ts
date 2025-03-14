@@ -1,4 +1,4 @@
-import { usdcTokenAddresses, usdtTokenAddresses } from "@/consts/tokens";
+import { usdcTokenAddresses, usdtTokenAddresses, usdsTokenAddresses } from "@/consts/tokens";
 import { createPublicClient, erc20Abi, Hex, http, PublicClient } from "viem";
 import { formatBalance } from "@/utils/FormatterUtil";
 import { getChain } from "@/utils/NetworksUtil";
@@ -111,6 +111,16 @@ export async function fetchFallbackBalances(
         symbol: "USDT",
         decimals: 6,
         address: usdtAddress,
+      });
+    }
+
+    // Add USDS if supported
+    const usdsAddress = usdsTokenAddresses[currentChainId];
+    if (usdsAddress) {
+      supportedTokens.push({
+        symbol: "USDS",
+        decimals: 18,
+        address: usdsAddress,
       });
     }
 
