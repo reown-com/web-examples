@@ -57,10 +57,13 @@ export const supportedTokens: Token[] = [
     name: "USDS",
     icon: "/token-images/USDS(DAI).png",
     address: "0x3",
-    supportedChainIds: [arbitrum.id, optimism.id],
+    supportedChainIds: [base.id],
   },
 ];
 
-export function isTokenSupportedOnNetwork(token: Token, networkChainId: number): boolean {
+export function isTokenSupportedOnNetwork(
+  token: Token,
+  networkChainId: number
+): boolean {
   return token.supportedChainIds.includes(networkChainId);
 }

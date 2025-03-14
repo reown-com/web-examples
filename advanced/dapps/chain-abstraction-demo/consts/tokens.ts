@@ -12,9 +12,9 @@ export const usdtTokenAddresses: Record<number, Hex> = {
 };
 
 export const usdsTokenAddresses: Record<number, Hex> = {
-  42161: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1", // Arbitrum
-  10: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1", // Optimism
- // 8453: "0x765277EebeCA2e3191253714C6647D5225Bf721F", // Base - Not supported
+  // 42161: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1", // Arbitrum - Not supported
+  // 10: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1", // Optimism - Not supported
+  8453: "0x820c137fa70c8691f0e44dc420a5e53c168921dc", // Base
 };
 
 export const tokenAddresses: Record<string, Record<string, Hex>> = {
