@@ -2,7 +2,7 @@
 
 This application demonstrates chain abstraction functionality using Reown's AppKit, allowing users to send stablecoins across multiple networks seamlessly.
 
-![Chain Abstraction Flow Diagram](./path-to-your-image.png)
+![Chain Abstraction Flow Diagram](./chain-abstraction-flow.png)
 
 ## Setup and Installation
 
