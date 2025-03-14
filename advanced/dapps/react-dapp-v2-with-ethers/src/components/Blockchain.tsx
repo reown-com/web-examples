@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, FC } from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 
 import Asset from "./Asset";
 import Button from "./Button";
@@ -18,6 +18,9 @@ import { fonts } from "../styles";
 
 interface AccountStyleProps {
   rgb: string;
+  children?: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
 }
 
 const SAccount = styled.div<AccountStyleProps>`
@@ -67,7 +70,11 @@ const SFullWidthContainer = styled.div`
   flex-wrap: wrap;
 `;
 
-const SAction = styled(Button as any)`
+interface ActionProps {
+  rgb: string;
+}
+
+const SAction = styled(Button)<ActionProps>`
   border-radius: 8px;
   font-size: ${fonts.size.medium};
   height: 44px;

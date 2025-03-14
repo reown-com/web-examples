@@ -1,5 +1,5 @@
 import * as React from "react";
-import styled from "styled-components";
+import { styled, keyframes } from "styled-components";
 import Loader from "./Loader";
 import { colors, fonts, shadows, transitions } from "../styles";
 
