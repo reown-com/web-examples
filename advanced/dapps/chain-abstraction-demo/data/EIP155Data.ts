@@ -17,6 +17,7 @@ export interface Token {
   icon: string;
   address: string;
   supportedChainIds: number[];
+  decimals: number;
 }
 
 export const supportedNetworks: Network[] = [
@@ -46,18 +47,21 @@ export const supportedTokens: Token[] = [
     icon: "/token-images/USDC.png",
     address: "0x1",
     supportedChainIds: [arbitrum.id, base.id, optimism.id],
+    decimals: 6
   },
   {
     name: "USDT",
     icon: "/token-images/USDT.png",
     address: "0x2",
     supportedChainIds: [arbitrum.id, optimism.id],
+    decimals: 6
   },
   {
     name: "USDS",
     icon: "/token-images/USDS(DAI).png",
     address: "0x3",
     supportedChainIds: [base.id],
+    decimals: 18
   },
 ];
 
