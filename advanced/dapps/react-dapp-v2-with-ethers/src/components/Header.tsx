@@ -48,9 +48,9 @@ const SActiveSession = styled(SActiveAccount as any)`
 `;
 
 interface HeaderProps {
-  ping: () => Promise<void>;
-  disconnect: () => Promise<void>;
-  session: SessionTypes.Struct | undefined;
+  ping?: () => Promise<void>;
+  disconnect?: () => Promise<void>;
+  session?: SessionTypes.Struct | undefined;
 }
 
 const Header = (props: HeaderProps) => {
