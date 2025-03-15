@@ -1,12 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import { colors, transitions } from "../styles";
 
-const SLightbox = styled.div<{
+interface LightboxProps {
   show: boolean;
   offset: number;
   opacity?: number;
-}>`
+  children?: React.ReactNode;
+  ref?: React.RefObject<HTMLDivElement>;
+}
+
+const SLightbox = styled.div<LightboxProps>`
   transition: opacity 0.1s ease-in-out;
   text-align: center;
   position: absolute;
@@ -42,7 +46,11 @@ const SModalContainer = styled.div`
   justify-content: center;
 `;
 
-const SHitbox = styled.div`
+interface HitboxProps {
+  onClick?: () => void;
+}
+
+const SHitbox = styled.div<HitboxProps>`
   position: absolute;
   top: 0;
   left: 0;
