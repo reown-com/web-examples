@@ -1,7 +1,7 @@
 import { Col, Grid, Row, Text, styled } from '@nextui-org/react'
 import { useCallback, useMemo, useState } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
-import { SignClientTypes } from '@walletconnect/types'
+import { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import DoneIcon from '@mui/icons-material/Done'
 import CloseIcon from '@mui/icons-material/Close'
 import ModalStore from '@/store/ModalStore'
@@ -285,10 +285,21 @@ export default function SessionProposalModal() {
   const namespaces = useMemo(() => {
     try {
       // the builder throws an exception if required namespaces are not supported
-      return buildApprovedNamespaces({
+      const approvedNamespaces = buildApprovedNamespaces({
         proposal: proposal.params,
         supportedNamespaces
       })
+      // add wallet_checkout to the eip155 namespace
+      const updatedNamespaces = {
+        ...approvedNamespaces,
+        eip155: {
+          ...approvedNamespaces.eip155,
+          methods: [...approvedNamespaces.eip155.methods, 'wallet_checkout']
+        }
+      } as SessionTypes.Namespaces
+
+      console.log('updatedNamespaces', updatedNamespaces)
+      return updatedNamespaces
     } catch (e) {
       console.error('Error building approved namespaces', e)
     }
