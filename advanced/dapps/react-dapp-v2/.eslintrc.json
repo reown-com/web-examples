@@ -1,0 +1,15 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "no-trailing-spaces": 1,
+    "@next/next/no-img-element": "off"
+  },
+  "overrides": [
+		{
+			"extends": ["plugin:package-json/recommended"],
+			"files": ["package.json"],
+			"parser": "jsonc-eslint-parser",
+			"plugins": ["package-json"]
+		}
+	]
+}

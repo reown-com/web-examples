@@ -7,6 +7,7 @@
     ":semanticCommits",
     ":semanticCommitScope(deps)"
   ],
+  "rebaseWhen": "conflicted",
   "packageRules": [
     {
       "matchPackagePatterns": [
@@ -48,6 +49,15 @@
       "matchPackagePatterns": ["*"],
       "schedule": ["every weekend"],
       "matchDepTypes": ["dependencies"]
+    },
+    {
+      "matchPackagePatterns": ["*"],
+      "matchDepTypes": ["devDependencies"],
+      "enabled": false
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ]
 }

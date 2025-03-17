@@ -1,0 +1,50 @@
+name: PR Checks
+
+concurrency:
+  # Support push/pr as event types with different behaviors each:
+  # 1. push: queue up builds
+  # 2. pr: only allow one run per PR
+  group: ${{ github.workflow }}-${{ github.event.type }}${{ github.event.pull_request.number }}
+  # If there is already a workflow running for the same pull request, cancel it
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_TEAM_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.UI_TEST_WALLET_V2_VERCEL_PROJECT_ID }}
+
+on:
+  pull_request:
+    paths:
+      - "advanced/wallets/react-wallet-v2/**"
+      - "advanced/dapps/react-dapp-v2/**"
+
+jobs:
+  code_style:
+    name: "Code Style"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        style-command:
+          - lint
+          - prettier
+        project:
+          - dapps/react-dapp-v2
+          - wallets/react-wallet-v2
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup-node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: install
+        working-directory: advanced/${{ matrix.project }}
+        run: yarn install --immutable --immutable-cache --check-cache
+      - name: check
+        working-directory: advanced/${{ matrix.project }}
+        run: yarn ${{ matrix.style-command }}
+
+  ui-test:
+    name: "UI Tests"
+    uses: ./.github/workflows/ui_tests.yml
+    secrets: inherit
