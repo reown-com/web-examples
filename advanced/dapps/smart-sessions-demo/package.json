@@ -20,13 +20,13 @@
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
     "@radix-ui/react-tooltip": "^1.1.2",
-    "@wagmi/connectors": "5.1.9",
-    "@wagmi/core": "2.13.4",
     "@reown/appkit": "1.6.8",
-    "@reown/appkit-experimental": "1.6.8",
     "@reown/appkit-adapter-wagmi": "1.6.8",
+    "@reown/appkit-experimental": "1.6.8",
     "@shadcn/ui": "^0.0.4",
     "@tanstack/react-query": "5.24.8",
+    "@wagmi/connectors": "5.1.9",
+    "@wagmi/core": "2.13.4",
     "autoprefixer": "10.4.18",
     "axios": "1.8.2",
     "bs58": "^6.0.0",
@@ -64,5 +64,17 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "typescript-eslint": "^8.2.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "elliptic@>=4.0.0 <=6.5.6": ">=6.5.7",
+      "elliptic@>=2.0.0 <=6.5.6": ">=6.5.7",
+      "elliptic@>=5.2.1 <=6.5.6": ">=6.5.7",
+      "elliptic@<6.6.0": ">=6.6.0",
+      "elliptic@<6.5.6": ">=6.5.6",
+      "@coinbase/wallet-sdk@>=4.0 <4.3.0": ">=4.3.0",
+      "elliptic@<=6.6.0": ">=6.6.1",
+      "@babel/runtime@<7.26.10": ">=7.26.10"
+    }
   }
 }
