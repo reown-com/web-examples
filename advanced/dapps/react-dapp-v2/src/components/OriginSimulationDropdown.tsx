@@ -1,13 +1,19 @@
 import * as React from "react";
 import { ORIGIN_OPTIONS } from "../constants/default";
-import styled from "styled-components";
+import { styled } from "styled-components";
 
 interface OriginSimulationProps {
   origin: string;
   show: boolean;
 }
 
-const SelectContainer = styled.select`
+interface SelectContainerProps {
+  value?: string;
+  onChange?: (e: any) => void;
+  children?: React.ReactNode;
+}
+
+const SelectContainer = styled.select<SelectContainerProps>`
   width: 150px;
   background: transparent;
   color: black;
@@ -22,7 +28,13 @@ const SelectContainer = styled.select`
   margin: 5px;
 `;
 
-const SelectOption = styled.option`
+interface SelectOptionProps {
+  value?: string;
+  selected?: boolean;
+  children?: React.ReactNode;
+}
+
+const SelectOption = styled.option<SelectOptionProps>`
   font-size: "1.25em";
 `;
 
@@ -37,7 +49,7 @@ const OriginSimulationDropdown = (props: OriginSimulationProps) => {
     setSelectedOrigin(
       localStorage.getItem("wallet_connect_dapp_origin") || props.origin
     );
-  }, [show]);
+  }, [show, props.origin]);
 
   const setOrigin = React.useCallback((origin: string) => {
     localStorage.setItem("wallet_connect_dapp_origin", origin);

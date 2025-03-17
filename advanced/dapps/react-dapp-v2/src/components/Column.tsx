@@ -1,11 +1,12 @@
 import * as React from "react";
 import * as PropTypes from "prop-types";
-import styled from "styled-components";
+import { styled } from "styled-components";
 
 interface ColumnStyleProps {
   spanHeight: boolean;
   maxWidth: number;
   center: boolean;
+  children?: React.ReactNode;
 }
 
 interface ColumnProps extends ColumnStyleProps {
