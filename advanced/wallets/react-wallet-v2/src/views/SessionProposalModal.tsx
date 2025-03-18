@@ -293,15 +293,6 @@ export default function SessionProposalModal() {
         supportedNamespaces
       })
 
-      // Add wallet_checkout to eip155 namespace only if it exists
-      if (approvedNamespaces.eip155) {
-        approvedNamespaces.eip155 = {
-          ...approvedNamespaces.eip155,
-          methods: [...approvedNamespaces.eip155.methods, WALLET_CHECKOUT_METHOD]
-        }
-      }
-
-      console.log('updatedNamespaces', approvedNamespaces)
       return approvedNamespaces
     } catch (e) {
       console.error('Error building approved namespaces', e)
