@@ -16,7 +16,7 @@ import { nearAddresses } from '@/utils/NearWalletUtil'
 import { kadenaAddresses } from '@/utils/KadenaWalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
-import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS, WALLET_CHECKOUT_METHOD } from '@/data/EIP155Data'
 import { COSMOS_MAINNET_CHAINS, COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { KADENA_CHAINS, KADENA_SIGNING_METHODS } from '@/data/KadenaData'
 import { MULTIVERSX_CHAINS, MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
@@ -123,7 +123,7 @@ export default function SessionProposalModal() {
         methods: eip155Methods
           .concat(eip5792Methods)
           .concat(eip7715Methods)
-          .concat(['wallet_checkout']),
+          .concat([WALLET_CHECKOUT_METHOD]),
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains
           .map(chain =>
@@ -297,7 +297,7 @@ export default function SessionProposalModal() {
       if (approvedNamespaces.eip155) {
         approvedNamespaces.eip155 = {
           ...approvedNamespaces.eip155,
-          methods: [...approvedNamespaces.eip155.methods, 'wallet_checkout']
+          methods: [...approvedNamespaces.eip155.methods, WALLET_CHECKOUT_METHOD]
         }
       }
 

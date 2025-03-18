@@ -168,3 +168,4 @@ export const EIP155_SIGNING_METHODS = {
   ETH_SEND_RAW_TRANSACTION: 'eth_sendRawTransaction',
   ETH_SEND_TRANSACTION: 'eth_sendTransaction'
 }
+export const WALLET_CHECKOUT_METHOD = 'wallet_checkout'
