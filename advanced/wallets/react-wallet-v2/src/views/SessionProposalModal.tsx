@@ -120,7 +120,9 @@ export default function SessionProposalModal() {
     return {
       eip155: {
         chains: eip155Chains,
-        methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
+        methods: eip155Methods
+          .concat(eip5792Methods)
+          .concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains
           .map(chain =>
@@ -289,17 +291,8 @@ export default function SessionProposalModal() {
         proposal: proposal.params,
         supportedNamespaces
       })
-      // add wallet_checkout to the eip155 namespace
-      const updatedNamespaces = {
-        ...approvedNamespaces,
-        eip155: {
-          ...approvedNamespaces.eip155,
-          methods: [...approvedNamespaces.eip155.methods, 'wallet_checkout']
-        }
-      } as SessionTypes.Namespaces
 
-      console.log('updatedNamespaces', updatedNamespaces)
-      return updatedNamespaces
+      return approvedNamespaces
     } catch (e) {
       console.error('Error building approved namespaces', e)
     }
