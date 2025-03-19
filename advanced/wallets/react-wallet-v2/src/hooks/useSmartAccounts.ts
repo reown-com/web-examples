@@ -6,6 +6,7 @@ import {
   createOrRestoreSafeSmartAccount,
   smartAccountWallets
 } from '@/utils/SmartAccountUtil'
+import { styledToast } from '@/utils/HelperUtil'
 
 import { useSnapshot } from 'valtio'
 
@@ -19,19 +20,52 @@ export default function useSmartAccounts() {
 
   const initializeSmartAccounts = async (privateKey: string) => {
     if (smartAccountEnabled) {
-      if (kernelSmartAccountEnabled) {
-        const { kernelSmartAccountAddress } = await createOrRestoreKernelSmartAccount(privateKey)
-        SettingsStore.setKernelSmartAccountAddress(kernelSmartAccountAddress)
-      }
-      if (safeSmartAccountEnabled) {
-        const { safeSmartAccountAddress } = await createOrRestoreSafeSmartAccount(privateKey)
-        SettingsStore.setSafeSmartAccountAddress(safeSmartAccountAddress)
-      }
-      if (biconomySmartAccountEnabled) {
-        const { biconomySmartAccountAddress } = await createOrRestoreBiconomySmartAccount(
-          privateKey
-        )
-        SettingsStore.setBiconomySmartAccountAddress(biconomySmartAccountAddress)
+      try {
+        const promises = [];
+        
+        if (kernelSmartAccountEnabled) {
+          promises.push(
+            (async () => {
+              try {
+                const address = await createOrRestoreKernelSmartAccount(privateKey);
+                SettingsStore.setKernelSmartAccountAddress(address);
+              } catch (error) {
+                styledToast('Kernel smart account initialization failed', 'warning');
+              }
+            })()
+          );
+        }
+        
+        if (safeSmartAccountEnabled) {
+          promises.push(
+            (async () => {
+              try {
+                const address = await createOrRestoreSafeSmartAccount(privateKey);
+                SettingsStore.setSafeSmartAccountAddress(address);
+              } catch (error) {
+                styledToast('Safe smart account initialization failed', 'warning');
+              }
+            })()
+          );
+        }
+        
+        if (biconomySmartAccountEnabled) {
+          promises.push(
+            (async () => {
+              try {
+                const address = await createOrRestoreBiconomySmartAccount(privateKey);
+                SettingsStore.setBiconomySmartAccountAddress(address);
+              } catch (error) {
+                styledToast('Biconomy smart account initialization failed', 'warning');
+              }
+            })()
+          );
+        }
+        
+        await Promise.all(promises);
+      } catch (error) {
+        console.error('Error initializing smart accounts:', error);
+        styledToast('Error initializing smart accounts', 'error');
       }
     }
   }

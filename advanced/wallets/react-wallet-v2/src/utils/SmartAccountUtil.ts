@@ -89,21 +89,24 @@ export function isAllowedKernelChain(chainId: number): boolean {
   return kernelAllowedChains.some(chain => chain.id == chainId)
 }
 
-export async function createOrRestoreKernelSmartAccount(privateKey: string) {
-  const lib = new KernelSmartAccountLib({
-    privateKey,
-    chain: sepolia,
-    sponsored: true,
-    entryPointVersion: 6
-  })
-  await lib.init()
-  const address = lib.getAddress()
-  const key = `${sepolia.id}:${address}`
-  if (!smartAccountWallets[key]) {
-    smartAccountWallets[key] = lib
-  }
-  return {
-    kernelSmartAccountAddress: address
+export async function createOrRestoreKernelSmartAccount(privateKey: string): Promise<string> {
+  try {
+    const lib = new KernelSmartAccountLib({
+      privateKey,
+      chain: sepolia,
+      sponsored: true,
+      entryPointVersion: 6
+    })
+    await lib.init()
+    const address = lib.getAddress()
+    const key = `${sepolia.id}:${address}`
+    if (!smartAccountWallets[key]) {
+      smartAccountWallets[key] = lib
+    }
+    return address
+  } catch (error) {
+    console.error('Error creating/restoring Kernel Smart Account:', error)
+    throw error
   }
 }
 
@@ -123,42 +126,46 @@ const initializeSafeSmartAccountLib = async (chain: Chain, privateKey: string) =
     return lib
   } catch (error) {
     console.error(`Error initializing SafeSmartAccountLib for chain ${chain}:`, error)
-    return null // or throw error if you want to stop the entire process
+    return null
   }
 }
-export async function createOrRestoreSafeSmartAccount(privateKey: string) {
-  if (safeAllowedChains.length === 0) {
-    throw new Error('No allowed chains for SafeSmartAccount')
-  }
 
-  const libs = await Promise.all(
-    safeAllowedChains.map(chain => initializeSafeSmartAccountLib(chain, privateKey))
-  ).then(results => results.filter((lib): lib is NonNullable<typeof lib> => lib !== null))
-
-  if (libs.length === 0) {
-    throw new Error('No safe smart account initialized')
-  }
-
-  libs.forEach(lib => {
-    const address = lib.getAddress()
-    const key = `${lib.chain.id}:${address}`
-    if (!smartAccountWallets[key]) {
-      smartAccountWallets[key] = lib
+export async function createOrRestoreSafeSmartAccount(privateKey: string): Promise<string> {
+  try {
+    if (safeAllowedChains.length === 0) {
+      throw new Error('No allowed chains for SafeSmartAccount')
     }
-  })
 
-  const safeSmartAccountAddress: string = libs[0].getAddress()
+    const libs = await Promise.all(
+      safeAllowedChains.map(chain => initializeSafeSmartAccountLib(chain, privateKey))
+    ).then(results => results.filter((lib): lib is NonNullable<typeof lib> => lib !== null))
 
-  return {
-    safeSmartAccountAddress
+    if (libs.length === 0) {
+      throw new Error('No safe smart account could be initialized')
+    }
+
+    libs.forEach(lib => {
+      const address = lib.getAddress()
+      const key = `${lib.chain.id}:${address}`
+      if (!smartAccountWallets[key]) {
+        smartAccountWallets[key] = lib
+      }
+    })
+
+    return libs[0].getAddress()
+  } catch (error) {
+    console.error('Error creating/restoring Safe Smart Account:', error)
+    throw error
   }
 }
+
 export function removeSmartAccount(address: string) {
   const key = `${sepolia.id}:${address}`
   if (smartAccountWallets[key]) {
     delete smartAccountWallets[key]
   }
 }
+
 export function removeSmartAccounts(addresses: string[]) {
   addresses.forEach(address => {
     if (smartAccountWallets[address]) {
@@ -167,16 +174,19 @@ export function removeSmartAccounts(addresses: string[]) {
   })
 }
 
-export async function createOrRestoreBiconomySmartAccount(privateKey: string) {
-  const lib = new BiconomySmartAccountLib({ privateKey, chain: sepolia, sponsored: true })
-  await lib.init()
-  const address = lib.getAddress()
-  const key = `${sepolia.id}:${address}`
-  if (!smartAccountWallets[key]) {
-    smartAccountWallets[key] = lib
-  }
-  return {
-    biconomySmartAccountAddress: address
+export async function createOrRestoreBiconomySmartAccount(privateKey: string): Promise<string> {
+  try {
+    const lib = new BiconomySmartAccountLib({ privateKey, chain: sepolia, sponsored: true })
+    await lib.init()
+    const address = lib.getAddress()
+    const key = `${sepolia.id}:${address}`
+    if (!smartAccountWallets[key]) {
+      smartAccountWallets[key] = lib
+    }
+    return address
+  } catch (error) {
+    console.error('Error creating/restoring Biconomy Smart Account:', error)
+    throw error
   }
 }
 
