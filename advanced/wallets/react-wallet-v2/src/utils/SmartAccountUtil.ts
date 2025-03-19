@@ -6,6 +6,7 @@ import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLi
 import { baseSepolia, sepolia } from 'viem/chains'
 import { SafeSmartAccountLib } from '@/lib/smart-accounts/SafeSmartAccountLib'
 import { SmartAccountLib } from '@/lib/smart-accounts/SmartAccountLib'
+import { getChainData } from '@/data/chainsUtil'
 
 // Entrypoints [I think this is constant but JIC]
 export const ENTRYPOINT_ADDRESSES: Record<Chain['name'], Hex> = {
@@ -32,14 +33,6 @@ export const USDC_ADDRESSES: Record<Chain['name'], Hex> = {
   'Base Sepolia': '0x07865c6e87b9f70255377e024ace6630c1eaa37f' //Dummy
 }
 
-// RPC URLs
-export const RPC_URLS: Record<ViemChain['name'], string> = {
-  Sepolia: 'https://rpc.ankr.com/eth_sepolia',
-  'Polygon Mumbai': 'https://mumbai.rpc.thirdweb.com',
-  Goerli: 'https://ethereum-goerli.publicnode.com',
-  'Base Sepolia': 'https://sepolia.base.org'
-}
-
 // Pimlico RPC names
 export const PIMLICO_NETWORK_NAMES: Record<ViemChain['name'], string> = {
   Sepolia: 'sepolia',
@@ -48,9 +41,16 @@ export const PIMLICO_NETWORK_NAMES: Record<ViemChain['name'], string> = {
   'Base Sepolia': 'base-sepolia'
 }
 
-export const publicRPCUrl = ({ chain }: UrlConfig) => {
-  return RPC_URLS[chain?.name]
-}
+// Get RPC URL from chain data
+export const getRpcUrl = (chainId: number): string => {
+  const chainData = getChainData(`eip155:${chainId}`);
+  if (chainData && 'rpc' in chainData && typeof chainData.rpc === 'string') {
+    return chainData.rpc;
+  }
+  
+  console.error(`No RPC URL found for chain ID ${chainId}`);
+  return '';
+};
 
 export function supportedAddressPriority(
   namespaces: SessionTypes.Namespaces,
@@ -195,7 +195,11 @@ export type UrlConfig = {
 }
 
 export const publicClientUrl = ({ chain }: UrlConfig) => {
-  return process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL || publicRPCUrl({ chain })
+  if (process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL) {
+    return process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL;
+  }
+  
+  return getRpcUrl(chain.id);
 }
 
 export const paymasterUrl = ({ chain }: UrlConfig) => {
