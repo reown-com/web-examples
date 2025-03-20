@@ -42,6 +42,7 @@
     "@zerodev/session-key": "5.4.0",
     "@zerodev/weighted-ecdsa-validator": "5.3.0",
     "bip32": "^4.0.0",
+    "bip39": "^3.1.0",
     "bitcoinjs-lib": "^6.1.5",
     "bitcoinjs-message": "^2.2.0",
     "borsh": "^1.0.0",
@@ -69,13 +70,13 @@
   "devDependencies": {
     "@types/node": "17.0.35",
     "@types/react": "17.0.2",
+    "@walletconnect/types": "2.19.1",
     "eslint": "8.15.0",
     "eslint-config-next": "12.1.6",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-package-json": "^0.13.1",
     "jsonc-eslint-parser": "^2.4.0",
     "prettier": "2.6.2",
-    "typescript": "5.2.2",
-    "@walletconnect/types": "2.19.1"
+    "typescript": "5.2.2"
   }
 }
