@@ -10,6 +10,12 @@ import { styledToast } from '@/utils/HelperUtil'
 
 import { useSnapshot } from 'valtio'
 
+// Constants from SettingsStore for consistency
+const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
+const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
+const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
+const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
+
 export default function useSmartAccounts() {
   const {
     smartAccountEnabled,
@@ -30,6 +36,8 @@ export default function useSmartAccounts() {
                 const address = await createOrRestoreKernelSmartAccount(privateKey);
                 SettingsStore.setKernelSmartAccountAddress(address);
               } catch (error) {
+                SettingsStore.state.kernelSmartAccountEnabled = false;
+                localStorage.removeItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY);
                 styledToast('Kernel smart account initialization failed', 'warning');
               }
             })()
@@ -43,6 +51,8 @@ export default function useSmartAccounts() {
                 const address = await createOrRestoreSafeSmartAccount(privateKey);
                 SettingsStore.setSafeSmartAccountAddress(address);
               } catch (error) {
+                SettingsStore.state.safeSmartAccountEnabled = false;
+                localStorage.removeItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY);
                 styledToast('Safe smart account initialization failed', 'warning');
               }
             })()
@@ -56,6 +66,8 @@ export default function useSmartAccounts() {
                 const address = await createOrRestoreBiconomySmartAccount(privateKey);
                 SettingsStore.setBiconomySmartAccountAddress(address);
               } catch (error) {
+                SettingsStore.state.biconomySmartAccountEnabled = false;
+                localStorage.removeItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY);
                 styledToast('Biconomy smart account initialization failed', 'warning');
               }
             })()
