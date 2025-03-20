@@ -139,14 +139,11 @@ export default function SessionCheckoutModal() {
 
         await walletkit.respondSessionRequest({ topic, response })
         styledToast('Payment approved successfully', 'success')
-      } 
+      }
     } catch (error) {
       // Handle any unexpected errors
       console.error('Error processing payment:', error)
-      const response = WalletCheckoutUtil.formatCheckoutErrorResponse(
-        requestEvent.id,
-        error
-      )
+      const response = WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent.id, error)
 
       await walletkit.respondSessionRequest({ topic, response })
       styledToast((error as Error).message, 'error')

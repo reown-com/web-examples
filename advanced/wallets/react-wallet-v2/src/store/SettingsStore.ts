@@ -11,10 +11,10 @@ import { styledToast } from '@/utils/HelperUtil'
 
 const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
 const CA_ENABLED_KEY = 'CHAIN_ABSTRACTION'
-const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
-const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
-const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
-const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
+export const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
+export const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
+export const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
+export const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
 const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
 
 /**
@@ -213,72 +213,72 @@ const SettingsStore = {
   },
 
   async toggleKernelSmartAccountsEnabled() {
-    state.kernelSmartAccountEnabled = !state.kernelSmartAccountEnabled;
-    
+    state.kernelSmartAccountEnabled = !state.kernelSmartAccountEnabled
+
     if (state.kernelSmartAccountEnabled) {
       try {
-        const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet();
+        const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
         const address = await createOrRestoreKernelSmartAccount(
           eip155Wallets[eip155Addresses[0]].getPrivateKey()
-        );
-        SettingsStore.setKernelSmartAccountAddress(address);
-        localStorage.setItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY, 'YES');
+        )
+        SettingsStore.setKernelSmartAccountAddress(address)
+        localStorage.setItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
       } catch (error) {
-        state.kernelSmartAccountEnabled = false;
-        styledToast('Failed to initialize Kernel smart account', 'error');
+        state.kernelSmartAccountEnabled = false
+        styledToast('Failed to initialize Kernel smart account', 'error')
       }
     } else {
-      removeSmartAccount(SettingsStore.state.kernelSmartAccountAddress);
-      SettingsStore.setKernelSmartAccountAddress('');
-      state.moduleManagementEnabled = false;
-      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY);
-      localStorage.removeItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY);
+      removeSmartAccount(SettingsStore.state.kernelSmartAccountAddress)
+      SettingsStore.setKernelSmartAccountAddress('')
+      state.moduleManagementEnabled = false
+      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
+      localStorage.removeItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY)
     }
   },
 
   async toggleSafeSmartAccountsEnabled() {
-    state.safeSmartAccountEnabled = !state.safeSmartAccountEnabled;
-    
+    state.safeSmartAccountEnabled = !state.safeSmartAccountEnabled
+
     if (state.safeSmartAccountEnabled) {
       try {
-        const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet();
+        const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
         const address = await createOrRestoreSafeSmartAccount(
           eip155Wallets[eip155Addresses[0]].getPrivateKey()
-        );
-        SettingsStore.setSafeSmartAccountAddress(address);
-        localStorage.setItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY, 'YES');
+        )
+        SettingsStore.setSafeSmartAccountAddress(address)
+        localStorage.setItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
       } catch (error) {
-        state.safeSmartAccountEnabled = false;
-        styledToast('Failed to initialize Safe smart account', 'error');
+        state.safeSmartAccountEnabled = false
+        styledToast('Failed to initialize Safe smart account', 'error')
       }
     } else {
-      removeSmartAccount(SettingsStore.state.safeSmartAccountAddress);
-      SettingsStore.setSafeSmartAccountAddress('');
-      state.moduleManagementEnabled = false;
-      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY);
-      localStorage.removeItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY);
+      removeSmartAccount(SettingsStore.state.safeSmartAccountAddress)
+      SettingsStore.setSafeSmartAccountAddress('')
+      state.moduleManagementEnabled = false
+      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
+      localStorage.removeItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY)
     }
   },
 
   async toggleBiconomySmartAccountsEnabled() {
-    state.biconomySmartAccountEnabled = !state.biconomySmartAccountEnabled;
-    
+    state.biconomySmartAccountEnabled = !state.biconomySmartAccountEnabled
+
     if (state.biconomySmartAccountEnabled) {
       try {
-        const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet();
+        const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
         const address = await createOrRestoreBiconomySmartAccount(
           eip155Wallets[eip155Addresses[0]].getPrivateKey()
-        );
-        SettingsStore.setBiconomySmartAccountAddress(address);
-        localStorage.setItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY, 'YES');
+        )
+        SettingsStore.setBiconomySmartAccountAddress(address)
+        localStorage.setItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
       } catch (error) {
-        state.biconomySmartAccountEnabled = false;
-        styledToast('Failed to initialize Biconomy smart account', 'error');
+        state.biconomySmartAccountEnabled = false
+        styledToast('Failed to initialize Biconomy smart account', 'error')
       }
     } else {
-      removeSmartAccount(SettingsStore.state.biconomySmartAccountAddress);
-      SettingsStore.setBiconomySmartAccountAddress('');
-      localStorage.removeItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY);
+      removeSmartAccount(SettingsStore.state.biconomySmartAccountAddress)
+      SettingsStore.setBiconomySmartAccountAddress('')
+      localStorage.removeItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY)
     }
   }
 }

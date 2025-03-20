@@ -43,14 +43,14 @@ export const PIMLICO_NETWORK_NAMES: Record<ViemChain['name'], string> = {
 
 // Get RPC URL from chain data
 export const getRpcUrl = (chainId: number): string => {
-  const chainData = getChainData(`eip155:${chainId}`);
+  const chainData = getChainData(`eip155:${chainId}`)
   if (chainData && 'rpc' in chainData && typeof chainData.rpc === 'string') {
-    return chainData.rpc;
+    return chainData.rpc
   }
-  
-  console.error(`No RPC URL found for chain ID ${chainId}`);
-  return '';
-};
+
+  console.error(`No RPC URL found for chain ID ${chainId}`)
+  return ''
+}
 
 export function supportedAddressPriority(
   namespaces: SessionTypes.Namespaces,
@@ -196,10 +196,10 @@ export type UrlConfig = {
 
 export const publicClientUrl = ({ chain }: UrlConfig) => {
   if (process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL) {
-    return process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL;
+    return process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL
   }
-  
-  return getRpcUrl(chain.id);
+
+  return getRpcUrl(chain.id)
 }
 
 export const paymasterUrl = ({ chain }: UrlConfig) => {

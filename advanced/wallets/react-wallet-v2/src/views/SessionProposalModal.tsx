@@ -120,9 +120,7 @@ export default function SessionProposalModal() {
     return {
       eip155: {
         chains: eip155Chains,
-        methods: eip155Methods
-          .concat(eip5792Methods)
-          .concat(eip7715Methods),
+        methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
         events: ['accountsChanged', 'chainChanged'],
         accounts: eip155Chains
           .map(chain =>
