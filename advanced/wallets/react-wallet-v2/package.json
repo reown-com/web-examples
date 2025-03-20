@@ -75,6 +75,7 @@
     "eslint-plugin-package-json": "^0.13.1",
     "jsonc-eslint-parser": "^2.4.0",
     "prettier": "2.6.2",
-    "typescript": "5.2.2"
+    "typescript": "5.2.2",
+    "@walletconnect/types": "2.19.1"
   }
 }
