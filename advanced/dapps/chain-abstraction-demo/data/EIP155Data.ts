@@ -13,10 +13,12 @@ export interface Network {
 }
 
 export interface Token {
+  id: string; // Unique identifier for the token
+  type: "erc20" | "native" // caip-19 asset namespace
   name: string;
   icon: string;
-  address: string;
   supportedChainIds: number[];
+  decimals: number;
 }
 
 export const supportedNetworks: Network[] = [
@@ -42,23 +44,37 @@ export const supportedNetworks: Network[] = [
 
 export const supportedTokens: Token[] = [
   {
+    id: "USDC",
+    type: "erc20",
     name: "USDC",
     icon: "/token-images/USDC.png",
-    address: "0x1",
     supportedChainIds: [arbitrum.id, base.id, optimism.id],
+    decimals: 6,
   },
   {
+    id: "USDT",
+    type: "erc20",
     name: "USDT",
     icon: "/token-images/USDT.png",
-    address: "0x2",
     supportedChainIds: [arbitrum.id, optimism.id],
+    decimals: 6,
   },
   {
+    id: "USDS",
+    type: "erc20",
     name: "USDS",
     icon: "/token-images/USDS(DAI).png",
-    address: "0x3",
     supportedChainIds: [base.id],
+    decimals: 18,
   },
+  {
+    id: "ETH",
+    type: "native",
+    name: "ETH",
+    icon: "/token-images/ETH.png",
+    supportedChainIds: [arbitrum.id, base.id, optimism.id],
+    decimals: 18,
+  }
 ];
 
 export function isTokenSupportedOnNetwork(

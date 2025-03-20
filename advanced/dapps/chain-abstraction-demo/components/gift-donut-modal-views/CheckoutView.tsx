@@ -238,7 +238,7 @@ function GiftDonutForm({
           type="button"
           variant="secondary"
           className="flex flex-1 gap-1"
-          disabled={!giftDonutModalManager.isTokenNetworkCompatible()}
+          disabled={!giftDonutModalManager.isTokenNetworkCompatible() || count === 0}
         >
           <p
             className="flex items-center"

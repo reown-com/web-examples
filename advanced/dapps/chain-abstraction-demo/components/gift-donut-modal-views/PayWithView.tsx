@@ -78,7 +78,7 @@ function TokenList({
         <div key={index} className="w-full">
           <TokenItem
             token={tokenItem}
-            selected={token?.address === tokenItem.address}
+            selected={token?.id === tokenItem.id}
             onClick={() => setSelectedToken(tokenItem)}
           />
           {availableTokens.length - 1 !== index && <Separator />}
