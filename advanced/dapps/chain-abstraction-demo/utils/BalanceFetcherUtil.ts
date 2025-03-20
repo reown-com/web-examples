@@ -1,4 +1,5 @@
-import { usdcTokenAddresses, usdtTokenAddresses } from "@/consts/tokens";
+import { supportedTokens } from "@/data/EIP155Data";
+import { tokenAddresses } from "@/consts/tokens";
 import { createPublicClient, erc20Abi, Hex, http, PublicClient } from "viem";
 import { formatBalance } from "@/utils/FormatterUtil";
 import { getChain } from "@/utils/NetworksUtil";
@@ -25,7 +26,11 @@ async function fetchTokenBalance({
 }: {
   publicClient: PublicClient;
   userAddress: Hex;
-  tokenConfig: TokenConfig;
+  tokenConfig: {
+    symbol: string;
+    decimals: number;
+    address: Hex;
+  };
   chainId: number;
 }): Promise<TokenBalance | null> {
   try {
@@ -44,15 +49,16 @@ async function fetchTokenBalance({
     };
   } catch (error) {
     console.error(`Error fetching ${tokenConfig.symbol} balance:`, error);
-
     return null;
   }
 }
+
 function getTransport({ chainId }: { chainId: number }) {
   return http(
     `https://rpc.walletconnect.org/v1/?chainId=eip155:${chainId}&projectId=${process.env["NEXT_PUBLIC_PROJECT_ID"]}`,
   );
 }
+
 export async function fetchFallbackBalances(
   userAddress: Hex,
   currentChainIdAsHex: Hex,
@@ -63,7 +69,6 @@ export async function fetchFallbackBalances(
     const chain = getChain(currentChainId);
     if (!chain) {
       console.error(`Chain not found for ID: ${currentChainId}`);
-
       return [];
     }
 
@@ -74,60 +79,56 @@ export async function fetchFallbackBalances(
     }) as PublicClient;
 
     const balances: TokenBalance[] = [];
+    const tokenBalancePromises: Promise<TokenBalance | null>[] = [];
 
-    // Fetch native token balance
-    try {
-      const nativeBalance = await publicClient.getBalance({
-        address: userAddress,
-      });
+    // Filter tokens supported on the current chain
+    const tokensForChain = supportedTokens.filter(token => 
+      token.supportedChainIds.includes(currentChainId)
+    );
 
-      balances.push({
-        symbol: chain.nativeCurrency.symbol,
-        balance: formatBalance(nativeBalance, chain.nativeCurrency.decimals),
-        address: "0x" as Hex,
-        chainId: currentChainId,
-      });
-    } catch (error) {
-      console.error(`Error fetching native balance:`, error);
+    const nativeTokens = tokensForChain.filter(token => token.type === "native");
+    for (const nativeToken of nativeTokens) {
+      try {
+        const nativeBalance = await publicClient.getBalance({
+          address: userAddress,
+        });
+
+        balances.push({
+          symbol: nativeToken.name,
+          balance: formatBalance(nativeBalance, nativeToken.decimals),
+          address: "0x" as Hex,
+          chainId: currentChainId,
+        });
+      } catch (error) {
+        console.error(`Error fetching native ${nativeToken.name} balance:`, error);
+      }
     }
 
-    // Get supported tokens for current chain
-    const supportedTokens: TokenConfig[] = [];
+    const erc20Tokens = tokensForChain.filter(token => token.type === "erc20");
+    for (const erc20Token of erc20Tokens) {
+      const tokenAddressMap = tokenAddresses[erc20Token.id];
+      if (!tokenAddressMap) continue;
 
-    // Add USDC if supported
-    const usdcAddress = usdcTokenAddresses[currentChainId];
-    if (usdcAddress) {
-      supportedTokens.push({
-        symbol: "USDC",
-        decimals: 6,
-        address: usdcAddress,
-      });
-    }
+      const tokenAddress = tokenAddressMap[currentChainId];
+      if (!tokenAddress) continue;
 
-    // Add USDT if supported
-    const usdtAddress = usdtTokenAddresses[currentChainId];
-    if (usdtAddress) {
-      supportedTokens.push({
-        symbol: "USDT",
-        decimals: 6,
-        address: usdtAddress,
-      });
-    }
-
-    // Fetch token balances
-    const tokenResults = await Promise.all(
-      supportedTokens.map((token) =>
+      tokenBalancePromises.push(
         fetchTokenBalance({
           publicClient,
           userAddress,
-          tokenConfig: token,
+          tokenConfig: {
+            symbol: erc20Token.name,
+            decimals: erc20Token.decimals,
+            address: tokenAddress,
+          },
           chainId: currentChainId,
-        }),
-      ),
-    );
+        })
+      );
+    }
 
-    // Add successful token balances
-    tokenResults.forEach((result) => {
+    const tokenResults = await Promise.all(tokenBalancePromises);
+    
+    tokenResults.forEach(result => {
       if (result) {
         balances.push(result);
       }
@@ -136,7 +137,6 @@ export async function fetchFallbackBalances(
     return balances;
   } catch (error) {
     console.error("Error in fetchFallbackBalances:", error);
-
     return [];
   }
 }

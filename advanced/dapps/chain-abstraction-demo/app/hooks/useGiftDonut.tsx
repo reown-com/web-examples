@@ -2,12 +2,14 @@ import { config } from "@/config";
 import { tokenAddresses } from "@/consts/tokens";
 import { Network, Token } from "@/data/EIP155Data";
 import { toast } from "sonner";
-import { erc20Abi, Hex, PublicClient } from "viem";
+import { erc20Abi, Hex, parseEther, PublicClient } from "viem";
 import { getAccount, getWalletClient, getPublicClient } from "wagmi/actions";
 import { useState } from "react";
 import { TransactionToast } from "@/components/TransactionToast";
 
 type TransactionStatus = "waiting-approval" | "pending" | "success" | "error";
+
+const ETH_USD_RATE = 0.0005; // 1 USD = 0.0005 ETH
 
 export default function useGiftDonut() {
   const [isPending, setIsPending] = useState(false);
@@ -36,7 +38,7 @@ export default function useGiftDonut() {
     );
   };
 
-  const validateTransaction = async (network: Network) => {
+  const getClients = async (network: Network) => {
     const client = await getWalletClient(config, { chainId: network.chainId });
     const publicClient = getPublicClient(config);
     if (!publicClient) throw new Error("Failed to get public client");
@@ -64,6 +66,12 @@ export default function useGiftDonut() {
     return contract;
   };
 
+  const convertDonutCountToEth = (donutCount: number) => {
+    // consider 1 donut = 1 USD, 1 USD = 0.0005 ETH
+    return donutCount * ETH_USD_RATE;
+  }
+
+
   const giftDonutAsync = async (
     to: Hex,
     donutCount: number,
@@ -77,12 +85,8 @@ export default function useGiftDonut() {
 
     try {
       // Validate chain and get clients
-      const { client, publicClient } = await validateTransaction(network);
+      const { client, publicClient } = await getClients(network);
       const chainId = getAccount(config).chain?.id!;
-
-      // Get token contract
-      const contract = getTokenContract(token, chainId);
-      const tokenAmount = donutCount * 1 * 10 ** 6;
 
       // Start tracking elapsed time
       updateInterval = setInterval(() => {
@@ -91,13 +95,28 @@ export default function useGiftDonut() {
         });
       }, 1000);
 
-      // Send transaction
-      const tx = await client.writeContract({
-        abi: erc20Abi,
-        address: contract,
-        functionName: "transfer",
-        args: [to, BigInt(tokenAmount)],
-      });
+
+      let tx: Hex;
+      if (token.name === "ETH") {
+        // Calculate ETH amount using the conversion rate
+        const ethAmount = convertDonutCountToEth(donutCount);
+        tx = await client.sendTransaction({
+          to,
+          value: parseEther(ethAmount.toString()),
+          chainId,
+        });
+      } else {
+      // Get token contract
+        const contract = getTokenContract(token, chainId);
+        const tokenAmount = donutCount * 10 ** token.decimals;
+        // Send transaction
+        tx = await client.writeContract({
+          abi: erc20Abi,
+          address: contract,
+          functionName: "transfer",
+          args: [to, BigInt(tokenAmount)],
+          });
+      }
 
       // Update to pending status
       updateToast(toastId, "pending", { hash: tx, networkName: network.name });
