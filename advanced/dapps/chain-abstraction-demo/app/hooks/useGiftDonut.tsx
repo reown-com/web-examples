@@ -82,8 +82,9 @@ export default function useGiftDonut() {
 
       // Get token contract
       const contract = getTokenContract(token, chainId);
-      const tokenAmount = donutCount * 1 * 10 ** 6;
-
+      
+      // Calculate token amount using token's decimals
+      const tokenAmount = donutCount * 10 ** token.decimals;
       // Start tracking elapsed time
       updateInterval = setInterval(() => {
         updateToast(toastId, "waiting-approval", {
