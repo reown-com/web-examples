@@ -7,9 +7,8 @@ import { getSolanaTokenData, getTokenData } from '@/data/tokenUtil'
 import { getChainById } from './ChainUtil'
 import { EIP155_CHAINS } from '@/data/EIP155Data'
 import { Connection, PublicKey } from '@solana/web3.js'
-import SolanaRpcUtil from './SolanaRpcUtil'
-import { Metaplex } from '@metaplex-foundation/js';
-
+import { SOLANA_TEST_CHAINS } from '@/data/SolanaData'
+import { SOLANA_MAINNET_CHAINS } from '@/data/SolanaData'
 /**
  * Interface for token details
  */
@@ -422,11 +421,11 @@ export class PaymentValidationUtils {
       
       if (assetNamespace === 'slip44' && assetAddress === '501') {
         // Native SOL
-        tokenDetails = await this.getSolNativeAssetDetails(account, chainId)
+        tokenDetails = await this.getSolNativeAssetDetails(account, `${chainNamespace}:${chainId}`)
       } 
       else if (assetNamespace === 'token') {
         // SPL token
-        tokenDetails = await this.getSplTokenDetails(assetAddress, account, chainId, payment.asset)
+        tokenDetails = await this.getSplTokenDetails(assetAddress, account, `${chainNamespace}:${chainId}`, payment.asset)
       } 
       else {
         return { validatedPayment: null, hasMatchingAsset: false }
@@ -525,11 +524,11 @@ export class PaymentValidationUtils {
       
       if (assetNamespace === 'slip44' && assetAddress === '501') {
         // Native SOL
-        tokenDetails = await this.getSolNativeAssetDetails(account, chainId)
+        tokenDetails = await this.getSolNativeAssetDetails(account, `${chainNamespace}:${chainId}`)
       } 
       else if (assetNamespace === 'token') {
         // SPL token
-        tokenDetails = await this.getSplTokenDetails(assetAddress, account, chainId, payment.asset)
+        tokenDetails = await this.getSplTokenDetails(assetAddress, account, `${chainNamespace}:${chainId}`, payment.asset)
       } 
       else {
         return { validatedPayment: null, hasMatchingAsset: false }
@@ -673,19 +672,6 @@ export class PaymentValidationUtils {
     }
   }
 
-  /**
-   * Gets the Solana RPC URL for a specific chain ID
-   * @param chainId Solana chain ID
-   * @returns RPC URL or undefined if not found
-   */
-  private static getSolanaRpcUrl(chainId: string): string | undefined {
-    try {
-      return SolanaRpcUtil.getSolanaRpcUrl(chainId);
-    } catch (error) {
-      console.warn('Error getting Solana RPC URL:', error);
-      return undefined;
-    }
-  }
 
   /**
    * Gets details for a Solana native asset (SOL)
@@ -699,14 +685,14 @@ export class PaymentValidationUtils {
   ): Promise<TokenDetails> {
     try {
       // Get the RPC URL for the chain
-      const rpcUrl = this.getSolanaRpcUrl(chainId);
-      
-      if (!rpcUrl) {
-        throw new Error(`No RPC URL found for Solana chain ID: ${chainId}`);
+      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc;
+
+      if (!rpc) {
+        throw new Error('There is no RPC URL for the provided chain')
       }
       
       // Connect to Solana
-      const connection = new Connection(rpcUrl, 'confirmed');
+      const connection = new Connection(rpc, 'confirmed');
       const publicKey = new PublicKey(account);
       
       // Get SOL balance
@@ -746,14 +732,14 @@ private static async getSplTokenDetails(
 ): Promise<TokenDetails> {
   try {
     // Get the RPC URL for the chain
-    const rpcUrl = this.getSolanaRpcUrl(chainId);
-    
-    if (!rpcUrl) {
-      throw new Error(`No RPC URL found for Solana chain ID: ${chainId}`);
+    const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc;
+
+    if (!rpc) {
+      throw new Error('There is no RPC URL for the provided chain');
     }
     
     // Connect to Solana
-    const connection = new Connection(rpcUrl, 'confirmed');
+    const connection = new Connection(rpc, 'confirmed');
     const publicKey = new PublicKey(account);
     const mintAddress = new PublicKey(tokenAddress);
     
