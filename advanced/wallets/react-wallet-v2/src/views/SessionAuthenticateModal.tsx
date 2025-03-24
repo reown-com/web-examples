@@ -27,7 +27,7 @@ export default function SessionAuthenticateModal() {
   const address = eip155Addresses[account]
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const getMessageToSign = useCallback((authPayload, iss) => {
+  const getMessageToSign = useCallback((authPayload: any, iss: string) => {
     const message = walletkit.engine.signClient.formatAuthMessage({
       request: authPayload,
       iss
