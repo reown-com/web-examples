@@ -3,11 +3,12 @@ import { type PaymentOption, type DetailedPaymentOption, Hex } from '@/types/wal
 import { createPublicClient, erc20Abi, http, getContract, encodeFunctionData } from 'viem'
 import TransactionSimulatorUtil from './TransactionSimulatorUtil'
 import SettingsStore from '@/store/SettingsStore'
-import { getTokenData } from '@/data/tokenUtil'
+import { getSolanaTokenData, getTokenData } from '@/data/tokenUtil'
 import { getChainById } from './ChainUtil'
 import { EIP155_CHAINS } from '@/data/EIP155Data'
 import { Connection, PublicKey } from '@solana/web3.js'
 import SolanaRpcUtil from './SolanaRpcUtil'
+import { Metaplex } from '@metaplex-foundation/js';
 
 /**
  * Interface for token details
@@ -425,7 +426,7 @@ export class PaymentValidationUtils {
       } 
       else if (assetNamespace === 'token') {
         // SPL token
-        tokenDetails = await this.getSplTokenDetails(assetAddress, account, chainId)
+        tokenDetails = await this.getSplTokenDetails(assetAddress, account, chainId, payment.asset)
       } 
       else {
         return { validatedPayment: null, hasMatchingAsset: false }
@@ -528,7 +529,7 @@ export class PaymentValidationUtils {
       } 
       else if (assetNamespace === 'token') {
         // SPL token
-        tokenDetails = await this.getSplTokenDetails(assetAddress, account, chainId)
+        tokenDetails = await this.getSplTokenDetails(assetAddress, account, chainId, payment.asset)
       } 
       else {
         return { validatedPayment: null, hasMatchingAsset: false }
@@ -694,7 +695,7 @@ export class PaymentValidationUtils {
    */
   private static async getSolNativeAssetDetails(
     account: string,
-    chainId: string = '998' // Default to mainnet
+    chainId: string
   ): Promise<TokenDetails> {
     try {
       // Get the RPC URL for the chain
@@ -710,10 +711,10 @@ export class PaymentValidationUtils {
       
       // Get SOL balance
       const balance = await connection.getBalance(publicKey);
-      
+      console.log('Solana balance', balance)
       return {
         balance: BigInt(balance),
-        decimals: 9, // SOL has 9 decimals
+        decimals: 9, 
         symbol: 'SOL',
         name: 'Solana'
       };
@@ -730,33 +731,42 @@ export class PaymentValidationUtils {
     }
   }
 
-  /**
-   * Gets details for an SPL token
-   *
-   * @param tokenAddress - Token mint address
-   * @param account - Account address
-   * @returns Token details including metadata
-   */
-  private static async getSplTokenDetails(
-    tokenAddress: string,
-    account: string,
-    chainId: string = '998' // Default to mainnet
-  ): Promise<TokenDetails> {
+/**
+ * Gets details for a fungible SPL token with known token mapping
+ *
+ * @param tokenAddress - Token mint address
+ * @param account - Account address
+ * @returns Token details including balance and metadata
+ */
+private static async getSplTokenDetails(
+  tokenAddress: string,
+  account: string,
+  chainId: string,
+  caip19AssetAddress: string
+): Promise<TokenDetails> {
+  try {
+    // Get the RPC URL for the chain
+    const rpcUrl = this.getSolanaRpcUrl(chainId);
+    
+    if (!rpcUrl) {
+      throw new Error(`No RPC URL found for Solana chain ID: ${chainId}`);
+    }
+    
+    // Connect to Solana
+    const connection = new Connection(rpcUrl, 'confirmed');
+    const publicKey = new PublicKey(account);
+    const mintAddress = new PublicKey(tokenAddress);
+    
     try {
-      // Get the RPC URL for the chain
-      const rpcUrl = this.getSolanaRpcUrl(chainId);
+      // Check if this is a known token
+      const token = getSolanaTokenData(caip19AssetAddress);
       
-      if (!rpcUrl) {
-        throw new Error(`No RPC URL found for Solana chain ID: ${chainId}`);
-      }
-      
-      // Connect to Solana
-      const connection = new Connection(rpcUrl, 'confirmed');
-      const publicKey = new PublicKey(account);
-      const mintAddress = new PublicKey(tokenAddress);
+      // Get token balance
+      let balance = BigInt(0);
+      let decimals = token?.decimals || 6; // Use known token decimals or default
       
       try {
-        // Find the associated token account
+        // Find the associated token account(s)
         const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
           publicKey,
           { mint: mintAddress }
@@ -764,60 +774,38 @@ export class PaymentValidationUtils {
         
         // If token account exists, get balance
         if (tokenAccounts.value.length > 0) {
-          const accountInfo = tokenAccounts.value[0].account;
-          const parsedData = accountInfo.data.parsed.info;
+          const tokenAccountPubkey = tokenAccounts.value[0].pubkey;
+          const tokenBalance = await connection.getTokenAccountBalance(tokenAccountPubkey);
+          balance = BigInt(tokenBalance.value.amount);
           
-          // Get token metadata if available
-          let name = 'SPL Token';
-          let symbol = tokenAddress.slice(0, 4).toUpperCase();
-          let decimals = parsedData.tokenAmount.decimals;
-          
-          try {
-            // Try to get token metadata (this is a simplified approach)
-            // In a production app, you might want to use the Metaplex or Token Registry
-            const tokenInfo = await connection.getParsedAccountInfo(mintAddress);
-            if (tokenInfo.value) {
-              const parsedTokenInfo = (tokenInfo.value.data as any).parsed?.info;
-              if (parsedTokenInfo) {
-                name = parsedTokenInfo.name || name;
-                symbol = parsedTokenInfo.symbol || symbol;
-                decimals = parsedTokenInfo.decimals || decimals;
-              }
-            }
-          } catch (metadataError) {
-            console.warn('Error getting token metadata:', metadataError);
+          // Update decimals from on-chain data if not a known token
+          if (!token) {
+            decimals = tokenBalance.value.decimals;
           }
-          
-          return {
-            balance: BigInt(parsedData.tokenAmount.amount),
-            decimals,
-            symbol,
-            name
-          };
-        } else {
-          // User has no tokens of this type
-          return {
-            balance: BigInt(0),
-            decimals: 6, // Default for most SPL tokens
-            symbol: tokenAddress.slice(0, 4).toUpperCase(),
-            name: 'SPL Token'
-          };
+        } else if (!token) {
+          // If no token accounts and not a known token, try to get decimals from mint
+          const mintInfo = await connection.getParsedAccountInfo(mintAddress);
+          if (mintInfo.value) {
+            const parsedMintInfo = (mintInfo.value.data as any).parsed?.info;
+            decimals = parsedMintInfo?.decimals || decimals;
+          }
         }
-      } catch (tokenError) {
-        console.warn('Error getting token account:', tokenError);
-        
-        // Return default values for token that user doesn't have
-        return {
-          balance: BigInt(0),
-          decimals: 6,
-          symbol: tokenAddress.slice(0, 4).toUpperCase(),
-          name: 'SPL Token'
-        };
+      } catch (balanceError) {
+        console.warn('Error getting token balance:', balanceError);
+        // Continue with zero balance
       }
-    } catch (error) {
-      console.error('Error getting SPL token details:', error);
       
-      // Return default values in case of error
+      // Return with known metadata or fallback to generic
+      return {
+        balance,
+        decimals,
+        symbol: token?.symbol || tokenAddress.slice(0, 4).toUpperCase(),
+        name: token?.name || `SPL Token (${tokenAddress.slice(0, 8)}...)`,
+      };
+    } catch (tokenError) {
+      console.warn('Error getting token details:', tokenError);
+      
+      // Return default values
       return {
         balance: BigInt(0),
         decimals: 6,
@@ -825,7 +813,20 @@ export class PaymentValidationUtils {
         name: 'SPL Token'
       };
     }
+  } catch (error) {
+    console.error('Error getting SPL token details:', error);
+    
+    // Return default values in case of error
+    return {
+      balance: BigInt(0),
+      decimals: 6,
+      symbol: tokenAddress.slice(0, 4).toUpperCase(),
+      name: 'SPL Token'
+    };
   }
+}
+
+
 
   /**
    * Finds and validates all feasible direct payment options
