@@ -79,8 +79,8 @@ export class PaymentValidationUtils {
    * @returns Whether the namespace is supported
    */
   private static isSupportedAssetNamespace(assetNamespace: string): boolean {
-    // Support ERC20 tokens, native tokens, and SPL tokens
-    return ['erc20', 'slip44', 'spl'].includes(assetNamespace)
+    // Support ERC20 tokens, native tokens, and solana token
+    return ['erc20', 'slip44', 'token'].includes(assetNamespace)
   }
 
   /**
@@ -423,7 +423,7 @@ export class PaymentValidationUtils {
         // Native SOL
         tokenDetails = await this.getSolNativeAssetDetails(account, chainId)
       } 
-      else if (assetNamespace === 'spl') {
+      else if (assetNamespace === 'token') {
         // SPL token
         tokenDetails = await this.getSplTokenDetails(assetAddress, account, chainId)
       } 
@@ -526,7 +526,7 @@ export class PaymentValidationUtils {
         // Native SOL
         tokenDetails = await this.getSolNativeAssetDetails(account, chainId)
       } 
-      else if (assetNamespace === 'spl') {
+      else if (assetNamespace === 'token') {
         // SPL token
         tokenDetails = await this.getSplTokenDetails(assetAddress, account, chainId)
       } 

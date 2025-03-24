@@ -125,7 +125,7 @@ function validateSolanaAsset(asset: string, ctx: z.RefinementCtx) {
   }
   
   // Check supported Solana asset namespaces
-  if (assetType[0] !== 'slip44' && assetType[0] !== 'spl') {
+  if (assetType[0] !== 'slip44' && assetType[0] !== 'token') {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: `Unsupported Solana asset namespace: ${assetType[0]}`
