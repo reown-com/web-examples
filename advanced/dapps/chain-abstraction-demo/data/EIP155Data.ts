@@ -14,7 +14,7 @@ export interface Network {
 
 export interface Token {
   id: string; // Unique identifier for the token
-  type: "erc20" | "native" // caip-19 asset namespace
+  type: "erc20" | "native" 
   name: string;
   icon: string;
   supportedChainIds: number[];
