@@ -29,7 +29,7 @@ const ALL_TOKENS: EIP155Token[] = [
     name: 'SOL',
     icon: '/token-logos/SOL.png',
     symbol: 'SOL',
-    decimals: 9,
+    decimals: 9
   }
 ]
 
@@ -37,14 +37,15 @@ export function getTokenData(tokenSymbol: string) {
   return Object.values(ALL_TOKENS).find(token => token.symbol === tokenSymbol)
 }
 
-
 const SOLANA_KNOWN_TOKENS = [
   {
     name: 'USDC',
     icon: '/token-logos/USDC.png',
     symbol: 'USDC',
     decimals: 6,
-    assetAddress:['solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1/token:4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU']
+    assetAddress: [
+      'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1/token:4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'
+    ]
   }
 ]
 

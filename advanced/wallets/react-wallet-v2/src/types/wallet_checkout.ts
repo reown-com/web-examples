@@ -58,16 +58,17 @@ export type EvmContractInteraction = {
  * @property data - Array of Solana instruction data objects
  */
 export type SolanaContractInteraction = {
-  type: "solana-instruction";
+  type: 'solana-instruction'
   data: {
-    programId: string;       // Program ID
-    accounts: {              // Accounts involved in the instruction
-      pubkey: string;
-      isSigner: boolean;
-      isWritable: boolean;
-    }[];
-    data: string;            // Base64-encoded instruction data
-  };
+    programId: string // Program ID
+    accounts: {
+      // Accounts involved in the instruction
+      pubkey: string
+      isSigner: boolean
+      isWritable: boolean
+    }[]
+    data: string // Base64-encoded instruction data
+  }
 }
 
 /**

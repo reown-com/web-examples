@@ -113,10 +113,9 @@ export default function SessionCheckoutModal() {
         EIP155_CHAINS[`eip155:${chainId}` as TEIP155Chain].rpc
       )
       return wallet.connect(provider)
-    } 
-    else if (chainNamespace === 'solana') {
+    } else if (chainNamespace === 'solana') {
       const wallet = solanaWallets[solanaAddress]
-      console.log({solanaWallet: wallet})
+      console.log({ solanaWallet: wallet })
       if (!wallet) {
         throw new Error('Solana wallet not available')
       }
@@ -157,14 +156,11 @@ export default function SessionCheckoutModal() {
 
         await walletkit.respondSessionRequest({ topic, response })
         styledToast('Payment approved successfully', 'success')
-      } 
+      }
     } catch (error) {
       // Handle any unexpected errors
       console.error('Error processing payment:', error)
-      const response = WalletCheckoutUtil.formatCheckoutErrorResponse(
-        requestEvent.id,
-        error
-      )
+      const response = WalletCheckoutUtil.formatCheckoutErrorResponse(requestEvent.id, error)
 
       await walletkit.respondSessionRequest({ topic, response })
       styledToast((error as Error).message, 'error')

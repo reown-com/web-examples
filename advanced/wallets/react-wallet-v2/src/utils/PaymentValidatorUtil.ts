@@ -386,7 +386,7 @@ export class PaymentValidationUtils {
     }
   }
 
-    /**
+  /**
    * Validates a single direct payment option for Solana and creates a detailed version if valid
    *
    * @param payment - Payment option to validate
@@ -418,22 +418,25 @@ export class PaymentValidationUtils {
 
       // Get token details based on asset namespace
       let tokenDetails: TokenDetails
-      
+
       if (assetNamespace === 'slip44' && assetAddress === '501') {
         // Native SOL
         tokenDetails = await this.getSolNativeAssetDetails(account, `${chainNamespace}:${chainId}`)
-      } 
-      else if (assetNamespace === 'token') {
+      } else if (assetNamespace === 'token') {
         // SPL token
-        tokenDetails = await this.getSplTokenDetails(assetAddress, account, `${chainNamespace}:${chainId}`, payment.asset)
-      } 
-      else {
+        tokenDetails = await this.getSplTokenDetails(
+          assetAddress,
+          account,
+          `${chainNamespace}:${chainId}`,
+          payment.asset
+        )
+      } else {
         return { validatedPayment: null, hasMatchingAsset: false }
       }
 
       // Check if user has the asset (balance > 0)
       const hasMatchingAsset = tokenDetails.balance > BigInt(0)
-      
+
       if (!hasMatchingAsset) {
         return { validatedPayment: null, hasMatchingAsset }
       }
@@ -456,7 +459,7 @@ export class PaymentValidationUtils {
 
   /**
    * Validates a single direct payment option and creates a detailed version if valid
-   * 
+   *
    * @param payment - Payment option to validate
    * @param evmAccount - EVM account address (if available)
    * @param solanaAccount - Solana account address (if available)
@@ -473,15 +476,14 @@ export class PaymentValidationUtils {
     try {
       // Parse asset details to determine chain
       const { chainNamespace } = PaymentValidationUtils.getAssetDetails(payment.asset)
-      
+
       // Delegate to chain-specific methods
       if (chainNamespace === 'eip155' && evmAccount) {
         return await this.getDetailedDirectPaymentOptionEVM(payment, evmAccount)
-      } 
-      else if (chainNamespace === 'solana' && solanaAccount) {
+      } else if (chainNamespace === 'solana' && solanaAccount) {
         return await this.getDetailedDirectPaymentOptionSolana(payment, solanaAccount)
       }
-      
+
       return { validatedPayment: null, hasMatchingAsset: false }
     } catch (error) {
       console.error('Error getting detailed payment option:', error)
@@ -521,16 +523,19 @@ export class PaymentValidationUtils {
 
       // Get token details based on asset namespace
       let tokenDetails: TokenDetails
-      
+
       if (assetNamespace === 'slip44' && assetAddress === '501') {
         // Native SOL
         tokenDetails = await this.getSolNativeAssetDetails(account, `${chainNamespace}:${chainId}`)
-      } 
-      else if (assetNamespace === 'token') {
+      } else if (assetNamespace === 'token') {
         // SPL token
-        tokenDetails = await this.getSplTokenDetails(assetAddress, account, `${chainNamespace}:${chainId}`, payment.asset)
-      } 
-      else {
+        tokenDetails = await this.getSplTokenDetails(
+          assetAddress,
+          account,
+          `${chainNamespace}:${chainId}`,
+          payment.asset
+        )
+      } else {
         return { validatedPayment: null, hasMatchingAsset: false }
       }
 
@@ -555,8 +560,7 @@ export class PaymentValidationUtils {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
   }
-  
-  
+
   /**
    * Validates a contract payment option and creates a detailed version if valid
    *
@@ -636,10 +640,9 @@ export class PaymentValidationUtils {
     }
   }
 
-
   /**
    * Validates a contract payment option and creates a detailed version if valid
-   * 
+   *
    * @param payment - Payment option to validate
    * @param evmAccount - EVM account address (if available)
    * @param solanaAccount - Solana account address (if available)
@@ -656,22 +659,20 @@ export class PaymentValidationUtils {
     try {
       // Parse asset details to determine chain
       const { chainNamespace } = PaymentValidationUtils.getAssetDetails(payment.asset)
-      
+
       // Delegate to chain-specific methods
       if (chainNamespace === 'eip155' && evmAccount) {
         return await this.getDetailedContractPaymentOptionEVM(payment, evmAccount)
-      } 
-      else if (chainNamespace === 'solana' && solanaAccount) {
+      } else if (chainNamespace === 'solana' && solanaAccount) {
         return await this.getDetailedContractPaymentOptionSolana(payment, solanaAccount)
       }
-      
+
       return { validatedPayment: null, hasMatchingAsset: false }
     } catch (error) {
       console.error('Error getting detailed contract payment option:', error)
       return { validatedPayment: null, hasMatchingAsset: false }
     }
   }
-
 
   /**
    * Gets details for a Solana native asset (SOL)
@@ -685,134 +686,131 @@ export class PaymentValidationUtils {
   ): Promise<TokenDetails> {
     try {
       // Get the RPC URL for the chain
-      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc;
+      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
 
       if (!rpc) {
         throw new Error('There is no RPC URL for the provided chain')
       }
-      
+
       // Connect to Solana
-      const connection = new Connection(rpc, 'confirmed');
-      const publicKey = new PublicKey(account);
-      
+      const connection = new Connection(rpc, 'confirmed')
+      const publicKey = new PublicKey(account)
+
       // Get SOL balance
-      const balance = await connection.getBalance(publicKey);
+      const balance = await connection.getBalance(publicKey)
       console.log('Solana balance', balance)
       return {
         balance: BigInt(balance),
-        decimals: 9, 
+        decimals: 9,
         symbol: 'SOL',
         name: 'Solana'
-      };
+      }
     } catch (error) {
-      console.error('Error getting SOL balance:', error);
-      
+      console.error('Error getting SOL balance:', error)
+
       // Return default values in case of error
       return {
         balance: BigInt(0),
         decimals: 9,
         symbol: 'SOL',
         name: 'Solana'
-      };
+      }
     }
   }
 
-/**
- * Gets details for a fungible SPL token with known token mapping
- *
- * @param tokenAddress - Token mint address
- * @param account - Account address
- * @returns Token details including balance and metadata
- */
-private static async getSplTokenDetails(
-  tokenAddress: string,
-  account: string,
-  chainId: string,
-  caip19AssetAddress: string
-): Promise<TokenDetails> {
-  try {
-    // Get the RPC URL for the chain
-    const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc;
-
-    if (!rpc) {
-      throw new Error('There is no RPC URL for the provided chain');
-    }
-    
-    // Connect to Solana
-    const connection = new Connection(rpc, 'confirmed');
-    const publicKey = new PublicKey(account);
-    const mintAddress = new PublicKey(tokenAddress);
-    
+  /**
+   * Gets details for a fungible SPL token with known token mapping
+   *
+   * @param tokenAddress - Token mint address
+   * @param account - Account address
+   * @returns Token details including balance and metadata
+   */
+  private static async getSplTokenDetails(
+    tokenAddress: string,
+    account: string,
+    chainId: string,
+    caip19AssetAddress: string
+  ): Promise<TokenDetails> {
     try {
-      // Check if this is a known token
-      const token = getSolanaTokenData(caip19AssetAddress);
-      
-      // Get token balance
-      let balance = BigInt(0);
-      let decimals = token?.decimals || 6; // Use known token decimals or default
-      
-      try {
-        // Find the associated token account(s)
-        const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
-          publicKey,
-          { mint: mintAddress }
-        );
-        
-        // If token account exists, get balance
-        if (tokenAccounts.value.length > 0) {
-          const tokenAccountPubkey = tokenAccounts.value[0].pubkey;
-          const tokenBalance = await connection.getTokenAccountBalance(tokenAccountPubkey);
-          balance = BigInt(tokenBalance.value.amount);
-          
-          // Update decimals from on-chain data if not a known token
-          if (!token) {
-            decimals = tokenBalance.value.decimals;
-          }
-        } else if (!token) {
-          // If no token accounts and not a known token, try to get decimals from mint
-          const mintInfo = await connection.getParsedAccountInfo(mintAddress);
-          if (mintInfo.value) {
-            const parsedMintInfo = (mintInfo.value.data as any).parsed?.info;
-            decimals = parsedMintInfo?.decimals || decimals;
-          }
-        }
-      } catch (balanceError) {
-        console.warn('Error getting token balance:', balanceError);
-        // Continue with zero balance
+      // Get the RPC URL for the chain
+      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+
+      if (!rpc) {
+        throw new Error('There is no RPC URL for the provided chain')
       }
-      
-      // Return with known metadata or fallback to generic
-      return {
-        balance,
-        decimals,
-        symbol: token?.symbol || tokenAddress.slice(0, 4).toUpperCase(),
-        name: token?.name || `SPL Token (${tokenAddress.slice(0, 8)}...)`,
-      };
-    } catch (tokenError) {
-      console.warn('Error getting token details:', tokenError);
-      
-      // Return default values
+
+      // Connect to Solana
+      const connection = new Connection(rpc, 'confirmed')
+      const publicKey = new PublicKey(account)
+      const mintAddress = new PublicKey(tokenAddress)
+
+      try {
+        // Check if this is a known token
+        const token = getSolanaTokenData(caip19AssetAddress)
+
+        // Get token balance
+        let balance = BigInt(0)
+        let decimals = token?.decimals || 6 // Use known token decimals or default
+
+        try {
+          // Find the associated token account(s)
+          const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
+            mint: mintAddress
+          })
+
+          // If token account exists, get balance
+          if (tokenAccounts.value.length > 0) {
+            const tokenAccountPubkey = tokenAccounts.value[0].pubkey
+            const tokenBalance = await connection.getTokenAccountBalance(tokenAccountPubkey)
+            balance = BigInt(tokenBalance.value.amount)
+
+            // Update decimals from on-chain data if not a known token
+            if (!token) {
+              decimals = tokenBalance.value.decimals
+            }
+          } else if (!token) {
+            // If no token accounts and not a known token, try to get decimals from mint
+            const mintInfo = await connection.getParsedAccountInfo(mintAddress)
+            if (mintInfo.value) {
+              const parsedMintInfo = (mintInfo.value.data as any).parsed?.info
+              decimals = parsedMintInfo?.decimals || decimals
+            }
+          }
+        } catch (balanceError) {
+          console.warn('Error getting token balance:', balanceError)
+          // Continue with zero balance
+        }
+
+        // Return with known metadata or fallback to generic
+        return {
+          balance,
+          decimals,
+          symbol: token?.symbol || tokenAddress.slice(0, 4).toUpperCase(),
+          name: token?.name || `SPL Token (${tokenAddress.slice(0, 8)}...)`
+        }
+      } catch (tokenError) {
+        console.warn('Error getting token details:', tokenError)
+
+        // Return default values
+        return {
+          balance: BigInt(0),
+          decimals: 6,
+          symbol: tokenAddress.slice(0, 4).toUpperCase(),
+          name: 'SPL Token'
+        }
+      }
+    } catch (error) {
+      console.error('Error getting SPL token details:', error)
+
+      // Return default values in case of error
       return {
         balance: BigInt(0),
         decimals: 6,
         symbol: tokenAddress.slice(0, 4).toUpperCase(),
         name: 'SPL Token'
-      };
+      }
     }
-  } catch (error) {
-    console.error('Error getting SPL token details:', error);
-    
-    // Return default values in case of error
-    return {
-      balance: BigInt(0),
-      decimals: 6,
-      symbol: tokenAddress.slice(0, 4).toUpperCase(),
-      name: 'SPL Token'
-    };
   }
-}
-
-
 
   /**
    * Finds and validates all feasible direct payment options

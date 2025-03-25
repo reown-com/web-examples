@@ -11,7 +11,6 @@ import { CheckoutRequestSchema } from '@/schema/WalletCheckoutSchema'
 import { PaymentValidationUtils } from './PaymentValidatorUtil'
 
 const WalletCheckoutUtil = {
-
   /**
    * Format the recipient address for display
    * Shortens the address with ellipsis for better display

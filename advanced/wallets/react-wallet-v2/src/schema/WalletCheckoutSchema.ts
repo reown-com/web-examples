@@ -1,4 +1,9 @@
-import { CheckoutErrorCode, ContractInteraction, createCheckoutError, SolanaContractInteraction } from '@/types/wallet_checkout'
+import {
+  CheckoutErrorCode,
+  ContractInteraction,
+  createCheckoutError,
+  SolanaContractInteraction
+} from '@/types/wallet_checkout'
 import { z } from 'zod'
 
 // ======== Helper Validation Functions ========
@@ -45,12 +50,12 @@ export function isValidCAIP10AccountId(accountId: string): boolean {
 export function isValidSolanaInstruction(instruction: SolanaContractInteraction['data']): boolean {
   try {
     if (!instruction || typeof instruction !== 'object') return false
-    
+
     // Check for required properties
     if (!instruction.programId || typeof instruction.programId !== 'string') return false
     if (!instruction.accounts || !Array.isArray(instruction.accounts)) return false
     if (!instruction.data || typeof instruction.data !== 'string') return false
-    
+
     // Validate each account
     for (const account of instruction.accounts) {
       if (!account || typeof account !== 'object') return false
@@ -58,7 +63,7 @@ export function isValidSolanaInstruction(instruction: SolanaContractInteraction[
       if (typeof account.isSigner !== 'boolean') return false
       if (typeof account.isWritable !== 'boolean') return false
     }
-    
+
     return true
   } catch (e) {
     return false
@@ -68,12 +73,12 @@ export function isValidSolanaInstruction(instruction: SolanaContractInteraction[
 /**
  * Checks if an EVM call is valid
  */
-export function isValidEvmCall(call: {to: string, data: string, value?: string}): boolean {
-  if (!call.to || typeof call.to !== 'string') return false;
-  if (!call.data || typeof call.data !== 'string') return false;
+export function isValidEvmCall(call: { to: string; data: string; value?: string }): boolean {
+  if (!call.to || typeof call.to !== 'string') return false
+  if (!call.data || typeof call.data !== 'string') return false
   // Check value only if it's provided
-  if (call.value !== undefined && (typeof call.value !== 'string' || !call.value)) return false;
-  return true;
+  if (call.value !== undefined && (typeof call.value !== 'string' || !call.value)) return false
+  return true
 }
 
 /**
@@ -106,46 +111,46 @@ export function matchingChainIds(assetId: string, accountId: string): boolean {
  */
 function validateSolanaAsset(asset: string, ctx: z.RefinementCtx) {
   const assetParts = asset.split('/')
-  if (assetParts.length !== 2) return;
+  if (assetParts.length !== 2) return
 
   const chainParts = assetParts[0].split(':')
-  if (chainParts[0] !== 'solana') return;
-  
+  if (chainParts[0] !== 'solana') return
+
   // For Solana assets, validate asset namespace and reference
   const assetType = assetParts[1].split(':')
   if (assetType.length !== 2) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: `Invalid Solana asset format: ${asset}`
-    });
+    })
     throw createCheckoutError(
       CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
       `Invalid Solana asset format: ${asset}`
-    );
+    )
   }
-  
+
   // Check supported Solana asset namespaces
   if (assetType[0] !== 'slip44' && assetType[0] !== 'token') {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: `Unsupported Solana asset namespace: ${assetType[0]}`
-    });
+    })
     throw createCheckoutError(
       CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
       `Unsupported Solana asset namespace: ${assetType[0]}`
-    );
+    )
   }
-  
+
   // For slip44, validate the coin type is 501 for SOL
   if (assetType[0] === 'slip44' && assetType[1] !== '501') {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: `Invalid Solana slip44 asset reference: ${assetType[1]}`
-    });
+    })
     throw createCheckoutError(
       CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
       `Invalid Solana slip44 asset reference: ${assetType[1]}`
-    );
+    )
   }
 }
 
@@ -154,46 +159,46 @@ function validateSolanaAsset(asset: string, ctx: z.RefinementCtx) {
  */
 function validateEvmAsset(asset: string, ctx: z.RefinementCtx) {
   const assetParts = asset.split('/')
-  if (assetParts.length !== 2) return;
+  if (assetParts.length !== 2) return
 
   const chainParts = assetParts[0].split(':')
-  if (chainParts[0] !== 'eip155') return;
-  
+  if (chainParts[0] !== 'eip155') return
+
   // For EVM assets, validate asset namespace and reference
   const assetType = assetParts[1].split(':')
   if (assetType.length !== 2) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: `Invalid EVM asset format: ${asset}`
-    });
+    })
     throw createCheckoutError(
       CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
       `Invalid EVM asset format: ${asset}`
-    );
+    )
   }
-  
+
   // Check supported EVM asset namespaces
   if (assetType[0] !== 'slip44' && assetType[0] !== 'erc20') {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: `Unsupported EVM asset namespace: ${assetType[0]}`
-    });
+    })
     throw createCheckoutError(
       CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
       `Unsupported EVM asset namespace: ${assetType[0]}`
-    );
+    )
   }
-  
+
   // For slip44, validate the coin type is 60 for ETH
   if (assetType[0] === 'slip44' && assetType[1] !== '60') {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: `Invalid EVM slip44 asset reference: ${assetType[1]}`
-    });
+    })
     throw createCheckoutError(
       CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
       `Invalid EVM slip44 asset reference: ${assetType[1]}`
-    );
+    )
   }
 }
 
@@ -202,18 +207,18 @@ function validateEvmAsset(asset: string, ctx: z.RefinementCtx) {
  */
 function validateAssetFormat(asset: string, ctx: z.RefinementCtx) {
   const assetParts = asset.split('/')
-  if (assetParts.length !== 2) return;
+  if (assetParts.length !== 2) return
 
   const chainParts = assetParts[0].split(':')
-  
+
   // Validate based on chain namespace
   switch (chainParts[0]) {
     case 'solana':
-      validateSolanaAsset(asset, ctx);
-      break;
+      validateSolanaAsset(asset, ctx)
+      break
     case 'eip155':
-      validateEvmAsset(asset, ctx);
-      break;
+      validateEvmAsset(asset, ctx)
+      break
   }
 }
 
@@ -240,42 +245,48 @@ export const SolanaInstructionDataSchema = z.object({
 
 // ======== Contract Interaction Schemas ========
 
-const EvmCallSchema = z.object({
-  to: z.string().min(1),
-  data: z.string().min(1),
-  value: z.string().optional()
-}).refine(isValidEvmCall, {
-  message: 'Invalid EVM call data'
-});
+const EvmCallSchema = z
+  .object({
+    to: z.string().min(1),
+    data: z.string().min(1),
+    value: z.string().optional()
+  })
+  .refine(isValidEvmCall, {
+    message: 'Invalid EVM call data'
+  })
 
-const SolanaInstructionSchema = z.object({
-  programId: z.string().min(1),
-  accounts: z.array(SolanaAccountSchema).min(1),
-  data: z.string().min(1)
-}).refine(isValidSolanaInstruction, {
-  message: 'Invalid Solana instruction data'
-});
+const SolanaInstructionSchema = z
+  .object({
+    programId: z.string().min(1),
+    accounts: z.array(SolanaAccountSchema).min(1),
+    data: z.string().min(1)
+  })
+  .refine(isValidSolanaInstruction, {
+    message: 'Invalid Solana instruction data'
+  })
 
-export const ContractInteractionSchema = z.object({
-  type: z.string().min(1, 'Contract interaction type is required'),
-  data: z.any()
-}).superRefine((interaction, ctx) => {
-  // Check if interaction type is supported
-  if (interaction.type !== 'evm-calls' && interaction.type !== 'solana-instruction') {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Unsupported contract interaction type'
-    });
-    throw createCheckoutError(CheckoutErrorCode.UNSUPPORTED_CONTRACT_INTERACTION);
-  }
+export const ContractInteractionSchema = z
+  .object({
+    type: z.string().min(1, 'Contract interaction type is required'),
+    data: z.any()
+  })
+  .superRefine((interaction, ctx) => {
+    // Check if interaction type is supported
+    if (interaction.type !== 'evm-calls' && interaction.type !== 'solana-instruction') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Unsupported contract interaction type'
+      })
+      throw createCheckoutError(CheckoutErrorCode.UNSUPPORTED_CONTRACT_INTERACTION)
+    }
 
-  // Validate based on interaction type
-  if (interaction.type === 'evm-calls') {
-    validateEvmCalls(interaction, ctx);
-  } else if (interaction.type === 'solana-instruction') {
-    validateSolanaInstruction(interaction, ctx);
-  }
-});
+    // Validate based on interaction type
+    if (interaction.type === 'evm-calls') {
+      validateEvmCalls(interaction, ctx)
+    } else if (interaction.type === 'solana-instruction') {
+      validateSolanaInstruction(interaction, ctx)
+    }
+  })
 
 // Extracted validation functions for cleaner code
 function validateEvmCalls(interaction: any, ctx: z.RefinementCtx) {
@@ -283,16 +294,16 @@ function validateEvmCalls(interaction: any, ctx: z.RefinementCtx) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'Invalid EVM calls data structure'
-    });
-    throw createCheckoutError(CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA);
+    })
+    throw createCheckoutError(CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA)
   }
-  
+
   // Validate each EVM call
   for (const call of interaction.data) {
     try {
-      EvmCallSchema.parse(call);
+      EvmCallSchema.parse(call)
     } catch (e) {
-      throw createCheckoutError(CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA);
+      throw createCheckoutError(CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA)
     }
   }
 }
@@ -302,24 +313,25 @@ function validateSolanaInstruction(interaction: any, ctx: z.RefinementCtx) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'Invalid Solana instruction data structure'
-    });
-    throw createCheckoutError(CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA);
+    })
+    throw createCheckoutError(CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA)
   }
-  
+
   try {
-    SolanaInstructionSchema.parse(interaction.data);
+    SolanaInstructionSchema.parse(interaction.data)
   } catch (e) {
-    throw createCheckoutError(CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA);
+    throw createCheckoutError(CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA)
   }
 }
 
 // ======== Payment Schema Definitions ========
 
 // Asset validation schema with chain-specific checks
-const AssetSchema = z.string()
+const AssetSchema = z
+  .string()
   .min(1, 'Asset is required')
   .refine(isValidCAIP19AssetId, 'Invalid CAIP-19 asset')
-  .superRefine(validateAssetFormat);
+  .superRefine(validateAssetFormat)
 
 export const PaymentOptionSchema = z
   .object({
@@ -337,7 +349,7 @@ export const PaymentOptionSchema = z
   .refine(data => {
     if (!data.recipient) return true
     return matchingChainIds(data.asset, data.recipient)
-  }, 'Asset and recipient must be on the same chain');
+  }, 'Asset and recipient must be on the same chain')
 
 // ======== Checkout Request Schema ========
 
@@ -346,4 +358,4 @@ export const CheckoutRequestSchema = z.object({
   acceptedPayments: z.array(PaymentOptionSchema).min(1, 'At least one payment option is required'),
   products: z.array(ProductMetadataSchema).optional(),
   expiry: z.number().int().optional()
-});
+})
