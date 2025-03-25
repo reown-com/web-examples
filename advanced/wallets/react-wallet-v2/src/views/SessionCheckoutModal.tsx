@@ -22,6 +22,8 @@ import { providers } from 'ethers'
 import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import WalletCheckoutPaymentHandler from '@/utils/WalletCheckoutPaymentHandler'
 import WalletCheckoutCtrl from '@/store/WalletCheckoutCtrl'
+import { solanaWallets } from '@/utils/SolanaWalletUtil'
+
 // Custom styles for the modal
 const modalStyles = {
   modal: {
@@ -70,7 +72,8 @@ export default function SessionCheckoutModal() {
   const checkoutRequest = useMemo(() => request?.params?.[0] || ({} as CheckoutRequest), [request])
 
   // Use our custom hook to fetch payments
-  const address = SettingsStore.state.eip155Address
+  const eip155Address = SettingsStore.state.eip155Address
+  const solanaAddress = SettingsStore.state.solanaAddress
   const feasiblePayments = WalletCheckoutCtrl.state.feasiblePayments
 
   // Handle reject action
@@ -94,6 +97,35 @@ export default function SessionCheckoutModal() {
     }
   }, [requestEvent, topic])
 
+  // Get the appropriate wallet based on the selected payment's chain namespace
+  const getWalletForPayment = (payment: DetailedPaymentOption) => {
+    const { chainMetadata } = payment
+    const { chainNamespace, chainId } = chainMetadata
+
+    if (chainNamespace === 'eip155') {
+      const wallet = eip155Wallets[eip155Address]
+      if (!(wallet instanceof EIP155Lib)) {
+        throw new Error('EVM wallet not available')
+      }
+
+      // Set up the provider
+      const provider = new providers.JsonRpcProvider(
+        EIP155_CHAINS[`eip155:${chainId}` as TEIP155Chain].rpc
+      )
+      return wallet.connect(provider)
+    } 
+    else if (chainNamespace === 'solana') {
+      const wallet = solanaWallets[solanaAddress]
+      console.log({solanaWallet: wallet})
+      if (!wallet) {
+        throw new Error('Solana wallet not available')
+      }
+      return wallet
+    }
+
+    throw new Error(`Unsupported chain namespace: ${chainNamespace}`)
+  }
+
   // Handle approve action
   const onApprove = useCallback(async () => {
     if (!requestEvent || !topic || !selectedPayment) return
@@ -104,25 +136,11 @@ export default function SessionCheckoutModal() {
       // Validate the request before processing
       WalletCheckoutPaymentHandler.validateCheckoutExpiry(checkoutRequest)
 
-      const wallet = eip155Wallets[address]
-
-      if (!(wallet instanceof EIP155Lib)) {
-        throw new Error('Wallet not available')
-      }
-
-      // Set up the provider
-      const { chainMetadata } = selectedPayment
-      const { chainId } = chainMetadata
-      const provider = new providers.JsonRpcProvider(
-        EIP155_CHAINS[`eip155:${chainId}` as TEIP155Chain].rpc
-      )
-      const connectedWallet = wallet.connect(provider)
+      // Get the wallet for this payment
+      const wallet = getWalletForPayment(selectedPayment)
 
       // Process the payment using the unified method
-      const result = await WalletCheckoutPaymentHandler.processPayment(
-        connectedWallet,
-        selectedPayment
-      )
+      const result = await WalletCheckoutPaymentHandler.processPayment(wallet, selectedPayment)
 
       // Handle the result
       if (result.txHash) {
@@ -154,7 +172,7 @@ export default function SessionCheckoutModal() {
       setIsLoadingApprove(false)
       ModalStore.close()
     }
-  }, [checkoutRequest, requestEvent, selectedPayment, topic, address])
+  }, [checkoutRequest, requestEvent, selectedPayment, topic])
 
   // Handle payment selection
   const onSelectPayment = useCallback((payment: DetailedPaymentOption) => {
