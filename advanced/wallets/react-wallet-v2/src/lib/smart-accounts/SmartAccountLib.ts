@@ -211,6 +211,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     if (!this.client?.account) {
       throw new Error('Client not initialized')
     }
+    console.log('Sending transaction from smart account', { type: this.type, to, value, data })
     const txResult = await this.client.sendTransaction({
       to,
       value: BigInt(value),

@@ -1,6 +1,7 @@
 import EIP155Lib from '@/lib/EIP155Lib'
 import { smartAccountWallets } from './SmartAccountUtil'
 import { getWalletAddressFromParams } from './HelperUtil'
+import { ethers } from 'ethers'
 
 export let wallet1: EIP155Lib
 export let wallet2: EIP155Lib
@@ -18,7 +19,11 @@ export function createOrRestoreEIP155Wallet() {
   const mnemonic2 = localStorage.getItem('EIP155_MNEMONIC_2')
 
   if (mnemonic1 && mnemonic2) {
-    wallet1 = EIP155Lib.init({ mnemonic: mnemonic1 })
+    if (mnemonic1.includes(' ')) {
+      wallet1 = EIP155Lib.init({ mnemonic: mnemonic1 })
+    } else {
+      wallet1 = EIP155Lib.init({ privateKey: mnemonic1 })
+    }
     wallet2 = EIP155Lib.init({ mnemonic: mnemonic2 })
   } else {
     wallet1 = EIP155Lib.init({})
@@ -42,6 +47,29 @@ export function createOrRestoreEIP155Wallet() {
     eip155Wallets,
     eip155Addresses
   }
+}
+
+export async function replaceEip155Mnemonic(mnemonicOrPrivateKey: string) {
+  try {
+    let wallet
+    if (mnemonicOrPrivateKey.includes(' ')) {
+      wallet = EIP155Lib.init({ mnemonic: mnemonicOrPrivateKey })
+    } else {
+      wallet = EIP155Lib.init({ privateKey: mnemonicOrPrivateKey })
+    }
+    localStorage.setItem('EIP155_MNEMONIC_1', wallet.getMnemonic())
+    location.reload()
+  } catch (error) {
+    console.error('Failed to replace mnemonic: ', error)
+    throw new Error('Invalid mnemonic or private key')
+  }
+}
+
+export const getWalletByAddress = (address: string) => {
+  const checksumAddress = ethers.utils.getAddress(address)
+  const wallet = eip155Wallets[checksumAddress]
+  console.log('getWalletByAddress', { checksumAddress, wallet, eip155Wallets })
+  return wallet
 }
 
 /**
