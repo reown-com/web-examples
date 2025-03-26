@@ -30,7 +30,7 @@
     "@polkadot/keyring": "^10.1.2",
     "@polkadot/types": "^9.3.3",
     "@reown/appkit-experimental": "1.6.8",
-    "@reown/walletkit": "1.2.2",
+    "@reown/walletkit": "1.2.3-rc-0",
     "@walletconnect/core": "2.19.2-rc-0",
     "@walletconnect/utils": "2.19.2-rc-0",
     "@walletconnect/sign-client": "2.19.2-rc-0",
@@ -81,10 +81,5 @@
     "jsonc-eslint-parser": "^2.4.0",
     "prettier": "2.6.2",
     "typescript": "5.2.2"
-  },
-  "overrides": {
-    "@walletconnect/core": "2.19.2-rc-0",
-    "@walletconnect/utils": "2.19.2-rc-0",
-    "@walletconnect/sign-client": "2.19.2-rc-0"
   }
 }
