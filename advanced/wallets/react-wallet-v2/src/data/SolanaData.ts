@@ -63,5 +63,6 @@ export const SOLANA_SIGNING_METHODS = {
   SOLANA_SIGN_TRANSACTION: 'solana_signTransaction',
   SOLANA_SIGN_MESSAGE: 'solana_signMessage',
   SOLANA_SIGN_AND_SEND_TRANSACTION: 'solana_signAndSendTransaction',
-  SOLANA_SIGN_ALL_TRANSACTIONS: 'solana_signAllTransactions'
+  SOLANA_SIGN_ALL_TRANSACTIONS: 'solana_signAllTransactions',
+  SOLANA_WALLET_CHECKOUT: 'wallet_checkout'
 }
