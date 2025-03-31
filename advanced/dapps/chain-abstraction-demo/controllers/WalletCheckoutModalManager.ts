@@ -44,7 +44,7 @@ export type WalletCheckoutState = {
   supportChains: typeof supportChains;
   checkoutResult?: CheckoutResult;
   isLoading: boolean;
-  error?: Error;
+  error?: Error | unknown;
 };
 
 export type WalletCheckoutModalStateType = {
@@ -239,12 +239,12 @@ class WalletCheckoutModalManager {
     return this.state.state.isLoading;
   }
 
-  setError(error?: Error): void {
+  setError(error?: Error | unknown): void {
     this.state.state.error = error;
     this.notifySubscribers();
   }
 
-  getError(): Error | undefined {
+  getError(): Error | unknown {
     return this.state.state.error;
   }
 
@@ -300,7 +300,11 @@ class WalletCheckoutModalManager {
       
       this.setCheckoutResult(result as CheckoutResult);
     } catch (err) {
-      this.setError(err instanceof Error ? err : new Error('Unknown error occurred'));
+      console.error('Checkout failed:', err);
+      
+      // Set the error in our state, handling different error types
+      this.setError(err);
+      
       // Switch to error view if available
       if (this.state.views['error']) {
         this.switchView('error');

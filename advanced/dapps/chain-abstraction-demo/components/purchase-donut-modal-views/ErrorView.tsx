@@ -1,22 +1,69 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useSnapshot } from "valtio";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, X, ArrowRight } from "lucide-react";
 import { walletCheckoutManager, WalletCheckoutModalViewProps } from "@/controllers/WalletCheckoutModalManager";
+import { CheckoutErrorCode } from "@/types/wallet_checkout";
 
 // Error View
 export const ErrorView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, onViewChange }) => {
   const snap = useSnapshot(walletCheckoutManager.getState());
   const { error } = snap.state;
   
+  // Log the error to console for debugging
+  useEffect(() => {
+    if (error) {
+      console.error("Checkout error details:", error);
+    }
+  }, [error]);
+  
+  // Determine the error message to display
+  const getErrorMessage = () => {
+    // If there's an error object with code and message properties (CheckoutError)
+    if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
+      const typedError = error as { code: number; message: string };
+      
+      // Handle known error codes with user-friendly messages
+      switch (typedError.code) {
+        case CheckoutErrorCode.USER_REJECTED:
+          return "You cancelled the transaction.";
+        case CheckoutErrorCode.NO_MATCHING_ASSETS:
+          return "You don't have any of the required assets for this payment.";
+        case CheckoutErrorCode.CHECKOUT_EXPIRED:
+          return "This payment request has expired. Please try again.";
+        case CheckoutErrorCode.INSUFFICIENT_FUNDS:
+          return "You don't have enough funds to complete this payment.";
+        case CheckoutErrorCode.METHOD_NOT_FOUND:
+          return "Your wallet doesn't support this payment method.";
+        default:
+          return typedError.message || "Transaction failed.";
+      }
+    }
+    
+    // If there's an error object with a message property
+    if (error && typeof error === 'object' && 'message' in error) {
+      return (error as { message: string }).message;
+    }
+    
+    // If error is a string, return it directly
+    if (typeof error === 'string') {
+      return error;
+    }
+    
+    // Default error message
+    return "The transaction could not be completed. Please try again.";
+  };
+
+  const errorMessage = getErrorMessage();
+  
   return (
     <div className="flex flex-col items-start gap-4">
       {/* Header */}
       <div className="grid grid-cols-3 items-center w-full">
         <div className="col-start-2 col-end-3 text-center">
-          <h1 className="text-primary">Transaction Error</h1>
+          <h1 className="text-primary">Checkout Error</h1>
         </div>
         <div className="col-start-3 flex justify-end">
           <Button variant="ghost" onClick={onClose}>
@@ -27,8 +74,8 @@ export const ErrorView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, onV
       
       {/* Error Message Card */}
       <div className="w-full bg-primary-foreground p-4 rounded-3xl">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col text-center gap-3">
+          <div className="flex flex-col items-center gap-2">
             <div className="icon-container bg-red-100">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
@@ -36,7 +83,7 @@ export const ErrorView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, onV
           </div>
           
           <div className="mt-2 text-primary">
-            <p>{error?.message || "An unknown error occurred"}</p>
+            <p>{errorMessage}</p>
           </div>
         </div>
       </div>
