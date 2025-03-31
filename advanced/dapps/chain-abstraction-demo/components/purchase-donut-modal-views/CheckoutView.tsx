@@ -63,22 +63,7 @@ export const CheckoutView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, 
             <div className="flex items-center justify-between">
               <p className="text-primary font-bold">Quantity</p>
               <div className="flex items-center text-primary">
-                <Button
-                  variant="outline"
-                  onClick={() => walletCheckoutManager.setItemCount(Math.max(1, itemCount - 1))}
-                  className="rounded-button"
-                  disabled={itemCount <= 1}
-                >
-                  -
-                </Button>
                 <div className="w-8 text-center">{itemCount}</div>
-                <Button
-                  variant="outline"
-                  onClick={() => walletCheckoutManager.setItemCount(itemCount + 1)}
-                  className="rounded-button"
-                >
-                  +
-                </Button>
               </div>
             </div>
           </div>
