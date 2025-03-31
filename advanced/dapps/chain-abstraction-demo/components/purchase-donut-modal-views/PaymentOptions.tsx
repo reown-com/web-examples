@@ -11,7 +11,7 @@ import { PaymentOptionsView } from "./PaymentOptionsView";
 
 // Simplified component that doesn't need to receive props
 export const PaymentOptions: React.FC = () => {
-  const { getPaymentsOptions } = useWalletCheckout();
+  const { getPreConfiguredPaymentsOptions } = useWalletCheckout();
   const snap = useSnapshot(walletCheckoutManager.getState());
   
   // Get available assets and selected assets from the manager state
@@ -30,7 +30,7 @@ export const PaymentOptions: React.FC = () => {
   useEffect(() => {
     const fetchPaymentOptions = async () => {
       try {
-        const options = await getPaymentsOptions();
+        const options = await getPreConfiguredPaymentsOptions();
         
         // Filter available assets based on payment options
         const availableAssetIds = options.map(option => option.asset);
@@ -56,7 +56,7 @@ export const PaymentOptions: React.FC = () => {
     };
     
     fetchPaymentOptions();
-  }, [getPaymentsOptions]);
+  }, [getPreConfiguredPaymentsOptions]);
 
   // Open the payment options modal view
   const openPaymentOptionsModal = () => {

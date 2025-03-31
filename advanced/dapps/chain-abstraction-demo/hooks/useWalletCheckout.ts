@@ -120,7 +120,7 @@ export function useWalletCheckout() {
     []
   )
 
-  const getPaymentsOptions = useCallback(async () => {
+  const getPreConfiguredPaymentsOptions = useCallback(async () => {
     return [...(await getEvmPaymentsOptions()), ...(await getSolanaPaymentsOptions())]
   }, [getEvmPaymentsOptions, getSolanaPaymentsOptions])
 
@@ -139,6 +139,6 @@ export function useWalletCheckout() {
 
   return {
     isWalletCheckoutSupported,
-    getPaymentsOptions
+    getPreConfiguredPaymentsOptions
   }
 }
