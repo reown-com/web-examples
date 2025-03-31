@@ -4,6 +4,7 @@ import { proxy } from "valtio";
 import { PaymentOption, CheckoutRequest, CheckoutResult } from "@/types/wallet_checkout";
 import UniversalProvider from '@walletconnect/universal-provider';
 import React from "react";
+import { SupportedAsset, supportChains } from "@/data/CheckoutPaymentAssets";
 
 // Type definitions
 export type WalletCheckoutModalView = {
@@ -16,6 +17,17 @@ export type WalletCheckoutModalViewProps = {
   onViewChange: (viewKey: string) => void;
 };
 
+export type AssetSelectionResult = {
+  selectedAssetIds: string[];
+};
+
+export type PaymentOptionsModalData = {
+  availableAssets: SupportedAsset[];
+  selectedAssets: SupportedAsset[];
+  onAssetToggled?: (result: AssetSelectionResult) => void;
+  previousView?: string;
+};
+
 export type WalletCheckoutState = {
   orderId?: string;
   product: {
@@ -26,6 +38,10 @@ export type WalletCheckoutState = {
   };
   itemCount: number;
   paymentOptions: PaymentOption[];
+  allPaymentOptions: PaymentOption[]; // Store all available payment options
+  availableAssets: SupportedAsset[]; // Store all available assets for payment
+  paymentOptionsModalData?: PaymentOptionsModalData;
+  supportChains: typeof supportChains;
   checkoutResult?: CheckoutResult;
   isLoading: boolean;
   error?: Error;
@@ -59,6 +75,9 @@ class WalletCheckoutModalManager {
           price: '$0.1'
         },
         paymentOptions: [],
+        allPaymentOptions: [], // Initialize empty array
+        availableAssets: [],   // Initialize empty array
+        supportChains: supportChains,
         isLoading: false
       },
     });
@@ -145,9 +164,55 @@ class WalletCheckoutModalManager {
     return this.state.state.paymentOptions;
   }
 
+  // New method to store all available payment options
+  setAllPaymentOptions(options: PaymentOption[]): void {
+    this.state.state.allPaymentOptions = options;
+    this.notifySubscribers();
+  }
+
+  getAllPaymentOptions(): PaymentOption[] {
+    return this.state.state.allPaymentOptions;
+  }
+
+  // New method to store available assets for payment
+  setAvailableAssets(assets: SupportedAsset[]): void {
+    this.state.state.availableAssets = assets;
+    this.notifySubscribers();
+  }
+
+  getAvailableAssets(): SupportedAsset[] {
+    return this.state.state.availableAssets;
+  }
+
+  // New method to set payment options modal data
+  setPaymentOptionsModalData(data: PaymentOptionsModalData): void {
+    this.state.state.paymentOptionsModalData = data;
+    this.notifySubscribers();
+  }
+
+  // Method to set multiple selected payment assets
+  setSelectedPaymentAssets(assetIds: string[]): void {
+    // Filter allPaymentOptions to only include the selected assets
+    const selectedOptions = this.state.state.allPaymentOptions.filter(option => 
+      assetIds.includes(option.asset)
+    );
+    
+    if (selectedOptions.length > 0) {
+      this.setPaymentOptions(selectedOptions);
+    }
+    
+    this.notifySubscribers();
+  }
+
+  // Method to get the selected payment assets
+  getSelectedPaymentAssets(): string[] {
+    return this.state.state.paymentOptions.map(option => option.asset);
+  }
+
   getAdjustedPaymentOptions(): PaymentOption[] {
     const { itemCount, paymentOptions } = this.state.state;
     
+    // Return all options with adjusted amounts
     return paymentOptions.map(payment => {
       // Skip if amount is not present
       if (!payment.amount) {
@@ -251,6 +316,7 @@ class WalletCheckoutModalManager {
     this.state.state.checkoutResult = undefined;
     this.state.state.error = undefined;
     this.state.state.isLoading = false;
+    // Don't reset paymentOptions to maintain user preference
     this.notifySubscribers();
   }
   

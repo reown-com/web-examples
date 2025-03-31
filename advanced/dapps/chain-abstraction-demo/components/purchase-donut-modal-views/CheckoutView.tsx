@@ -3,11 +3,12 @@
 import React from "react";
 import { useSnapshot } from "valtio";
 import { Button } from "@/components/ui/button";
-import { Loader2, X, ArrowRight } from "lucide-react";
+import { Loader2, X, ArrowRight, Wallet2 } from "lucide-react";
 import { useWalletCheckout } from "@/hooks/useWalletCheckout";
 import { WalletCheckoutModalViewProps } from "@/controllers/WalletCheckoutModalManager";
 import { walletCheckoutManager } from "@/controllers/WalletCheckoutModalManager";
 import Image from "next/image";
+import { PaymentOptions } from "@/components/purchase-donut-modal-views/PaymentOptions";
 
 // Checkout View
 export const CheckoutView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, onViewChange }) => {
@@ -18,9 +19,12 @@ export const CheckoutView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, 
     await walletCheckoutManager.executeCheckout();
   };
   
-  const { product, itemCount, isLoading } = snap.state;
+  const { product, itemCount, isLoading, paymentOptions } = snap.state;
   const priceValue = parseFloat(product.price.replace('$', ''));
   const totalPrice = (priceValue * itemCount).toFixed(2);
+  
+  // Simplified to just check if we have any payment options selected
+  const hasSelectedPaymentOptions = paymentOptions.length > 0;
   
   return (
     <div className="flex flex-col items-start gap-4">
@@ -83,20 +87,17 @@ export const CheckoutView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, 
         </div>
       </div>
       
-      {/* Payment Details Section */}
+      {/* Payment Details Section with PaymentOptions component */}
       <div className="flex items-center flex-col gap-2 w-full text-primary">
         <div className="flex w-full items-center gap-2">
           <div className="icon-container">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 10H21M7 15H8M12 15H13M6 19H18C19.6569 19 21 17.6569 21 16V8C21 6.34315 19.6569 5 18 5H6C4.34315 5 3 6.34315 3 8V16C3 17.6569 4.34315 19 6 19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <Wallet2 className="w-4 h-4" />
           </div>
           <div className="flex flex-1 items-center justify-between">
             <p>Payment Options</p>
             <div className="flex gap-4 items-center justify-between">
-              <div className="payment-option-badge">
-                {/* <p>Credit Card</p> */}
-              </div>
+              {/* The PaymentOptions component now directly interacts with the walletCheckoutManager */}
+              <PaymentOptions />
             </div>
           </div>
         </div>
@@ -123,7 +124,7 @@ export const CheckoutView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, 
           onClick={handleCheckout}
           type="button"
           className="flex flex-1 gap-1 accent-button"
-          disabled={isLoading || !isWalletCheckoutSupported}
+          disabled={isLoading || !isWalletCheckoutSupported || !hasSelectedPaymentOptions}
         >
           <p className="flex items-center accent-text">
             {isLoading ? (

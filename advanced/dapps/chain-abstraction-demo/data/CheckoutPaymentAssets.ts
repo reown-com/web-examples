@@ -59,7 +59,7 @@ export const supportedPaymentsAsset: SupportedAsset[] = [
     name: 'SOL',
     symbol: 'SOL',
     decimals: 9,
-    chainId: '501',
+    chainId: 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
     chainName: 'Solana Devnet',
     isNative: true,
     logoUrl: '/chain-logos/SOL.png'
@@ -75,4 +75,10 @@ export const supportChains = [{
   id: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
   name: 'Solana Devnet',
   logoUrl: '/chain-logos/SOL.png'
-}]
+},
+{
+  id: 'eip155:11155420',
+  name: 'Optimism Sepolia',
+  logoUrl: '/chain-logos/eip155-10.png'
+}
+]
