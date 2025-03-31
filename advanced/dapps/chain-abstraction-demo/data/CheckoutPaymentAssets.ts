@@ -65,3 +65,14 @@ export const supportedPaymentsAsset: SupportedAsset[] = [
     logoUrl: '/chain-logos/SOL.png'
   }
 ]
+
+
+export const supportChains = [{
+  id: 'eip155:84532',
+  name: 'Base Sepolia',
+  logoUrl: '/chain-logos/base.webp'
+}, {
+  id: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+  name: 'Solana Devnet',
+  logoUrl: '/chain-logos/SOL.png'
+}]
