@@ -97,9 +97,11 @@ const PurchaseDonutButton = () => {
           errorToastShown.current = false;
         }
       } 
-      // Check for error
+        // Check for error
       else if (state.state.error) {
-        const errorMessage = state.state.error.message || 'An error occurred during checkout';
+        const errorMessage = typeof state.state.error === 'object' && state.state.error !== null && 'message' in state.state.error
+          ? state.state.error.message as string
+          : 'An error occurred during checkout';
         
         // Only show toast if this is a new error and toast hasn't been shown
         if (!errorToastShown.current || lastError.current !== errorMessage) {
