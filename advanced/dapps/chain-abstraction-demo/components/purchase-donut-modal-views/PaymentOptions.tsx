@@ -7,21 +7,17 @@ import { Plus } from "lucide-react";
 import { walletCheckoutManager } from "@/controllers/WalletCheckoutModalManager";
 import { useSnapshot } from "valtio";
 import { supportedPaymentsAsset, supportChains } from "@/data/CheckoutPaymentAssets";
-import { PaymentOptionsView } from "./PaymentOptionsView";
 
-// Simplified component that doesn't need to receive props
 export const PaymentOptions: React.FC = () => {
   const { getPreConfiguredPaymentsOptions } = useWalletCheckout();
   const snap = useSnapshot(walletCheckoutManager.getState());
   
-  // Get available assets and selected assets from the manager state
   const availableAssets = snap.state.availableAssets || [];
   const selectedAssetIds = snap.state.paymentOptions.map(option => option.asset);
   const selectedAssets = availableAssets.filter(asset => 
     selectedAssetIds.includes(asset.id)
   );
 
-  // Find the chain logo URL for an asset
   const getChainLogoUrl = (chainId: string): string => {
     const chain = supportChains.find(chain => chain.id.includes(chainId));
     return chain?.logoUrl || '/chain-logos/chain-placeholder.png';
@@ -38,7 +34,6 @@ export const PaymentOptions: React.FC = () => {
           asset => availableAssetIds.includes(asset.id)
         );
         
-        // Update wallet checkout manager with all data
         walletCheckoutManager.setAvailableAssets(filteredAssets);
         
         // If there are no payment options set yet, initialize with the first available option
@@ -48,7 +43,6 @@ export const PaymentOptions: React.FC = () => {
           walletCheckoutManager.setPaymentOptions(defaultOption);
         }
         
-        // Ensure the manager has the full list of options to choose from
         walletCheckoutManager.setAllPaymentOptions(options);
       } catch (error) {
         console.error("Error fetching payment options:", error);
@@ -58,17 +52,7 @@ export const PaymentOptions: React.FC = () => {
     fetchPaymentOptions();
   }, [getPreConfiguredPaymentsOptions]);
 
-  // Open the payment options modal view
   const openPaymentOptionsModal = () => {
-    // Register the PaymentOptionsModalView if not already registered
-    if (!snap.views['paymentOptions']) {
-      walletCheckoutManager.registerView('paymentOptions', {
-        component: PaymentOptionsView,
-        title: 'Select Payment Options'
-      });
-    }
-    
-    // Navigate to the payment options view
     walletCheckoutManager.switchView('paymentOptions');
   };
 
@@ -114,7 +98,7 @@ export const PaymentOptions: React.FC = () => {
         </button>
       )}
       
-      {/* Edit button to open modal for adding more payment options */}
+      {/* Plus button to open modal for adding more payment options */}
       <button
         onClick={openPaymentOptionsModal}
         className="payment-option-badge h-8 w-8 flex items-center justify-center transition-all hover:ring-2 hover:ring-text-text-accent-primary"
