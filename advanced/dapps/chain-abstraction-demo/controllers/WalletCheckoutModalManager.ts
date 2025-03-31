@@ -38,8 +38,8 @@ export type WalletCheckoutState = {
   };
   itemCount: number;
   paymentOptions: PaymentOption[];
-  allPaymentOptions: PaymentOption[]; // Store all available payment options
-  availableAssets: SupportedAsset[]; // Store all available assets for payment
+  allPaymentOptions: PaymentOption[];   
+  availableAssets: SupportedAsset[];  
   paymentOptionsModalData?: PaymentOptionsModalData;
   supportChains: typeof supportChains;
   checkoutResult?: CheckoutResult;
@@ -58,7 +58,6 @@ class WalletCheckoutModalManager {
   private state: WalletCheckoutModalStateType;
   private subscribers: Array<(state: WalletCheckoutModalStateType) => void> = [];
   private debounceTimeout: NodeJS.Timeout | null = null;
-  // Store the wallet provider for reuse
   private walletProvider?: UniversalProvider;
 
   constructor() {
@@ -72,11 +71,11 @@ class WalletCheckoutModalManager {
           name: 'Chocolate sprinkle Delight',
           description: 'Donut with extra chocolate sprinkles on top',
           imageUrl: 'https://ca-demo.reown.com/donut.png',
-          price: '$0.1'
+          price: '$1.00'
         },
         paymentOptions: [],
-        allPaymentOptions: [], // Initialize empty array
-        availableAssets: [],   // Initialize empty array
+        allPaymentOptions: [],  
+        availableAssets: [],    
         supportChains: supportChains,
         isLoading: false
       },
@@ -114,7 +113,6 @@ class WalletCheckoutModalManager {
   close(): void {
     this.state.isOpen = false;
     this.state.currentView = "";
-    // Reset transaction-specific state when modal is closed
     this.resetTransactionState();
     this.notifySubscribers();
   }
@@ -131,7 +129,7 @@ class WalletCheckoutModalManager {
   registerView(key: string, view: WalletCheckoutModalView): void {
     if (this.state.views[key]) {
       console.warn(`A view with key "${key}" is already registered.`);
-      return; // Prevent overwriting existing views
+      return;
     }
     this.state.views[key] = view;
     this.notifySubscribers();
@@ -174,7 +172,6 @@ class WalletCheckoutModalManager {
     return this.state.state.allPaymentOptions;
   }
 
-  // New method to store available assets for payment
   setAvailableAssets(assets: SupportedAsset[]): void {
     this.state.state.availableAssets = assets;
     this.notifySubscribers();
@@ -184,15 +181,12 @@ class WalletCheckoutModalManager {
     return this.state.state.availableAssets;
   }
 
-  // New method to set payment options modal data
   setPaymentOptionsModalData(data: PaymentOptionsModalData): void {
     this.state.state.paymentOptionsModalData = data;
     this.notifySubscribers();
   }
 
-  // Method to set multiple selected payment assets
   setSelectedPaymentAssets(assetIds: string[]): void {
-    // Filter allPaymentOptions to only include the selected assets
     const selectedOptions = this.state.state.allPaymentOptions.filter(option => 
       assetIds.includes(option.asset)
     );
@@ -264,7 +258,7 @@ class WalletCheckoutModalManager {
     const orderId = crypto.randomUUID();
     this.state.state.orderId = orderId;
     
-    const expiry = Math.floor(Date.now() / 1000) + 60 * 60; // 1 hour expiry
+    const expiry = Math.floor(Date.now() / 1000) + 60 * 30; // 30 min expiry
     
     return {
       orderId,
@@ -276,11 +270,10 @@ class WalletCheckoutModalManager {
 
   // Execute the wallet checkout
   async executeCheckout(walletProvider?: UniversalProvider): Promise<void> {
-    // Use the provided wallet provider or the stored one
     const provider = walletProvider || this.walletProvider;
     
     if (!provider) {
-      this.setError(new Error('No wallet provider available'));
+      this.setError(new Error('No supported wallet provider available'));
       if (this.state.views['error']) {
         this.switchView('error');
       }
@@ -302,10 +295,8 @@ class WalletCheckoutModalManager {
     } catch (err) {
       console.error('Checkout failed:', err);
       
-      // Set the error in our state, handling different error types
       this.setError(err);
       
-      // Switch to error view if available
       if (this.state.views['error']) {
         this.switchView('error');
       }
@@ -314,7 +305,6 @@ class WalletCheckoutModalManager {
     }
   }
 
-  // Reset transaction-specific state
   resetTransactionState(): void {
     this.state.state.orderId = undefined;
     this.state.state.checkoutResult = undefined;
@@ -336,20 +326,17 @@ class WalletCheckoutModalManager {
   
   // Update the notifySubscribers method to use debouncing
   private notifySubscribers(): void {
-    // Clear any existing timeout
     if (this.debounceTimeout) {
       clearTimeout(this.debounceTimeout);
     }
     
-    // Set a new timeout to delay the notification
     this.debounceTimeout = setTimeout(() => {
       for (const callback of this.subscribers) {
         callback(this.state);
       }
       this.debounceTimeout = null;
-    }, 50); // Small delay to batch updates
+    }, 50); 
   }
 }
 
-// Singleton instance
 export const walletCheckoutManager = new WalletCheckoutModalManager();

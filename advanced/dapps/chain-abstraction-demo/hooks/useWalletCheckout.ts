@@ -23,14 +23,14 @@ export function useWalletCheckout() {
         {
           asset:
             'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1/token:4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-          amount: '0x186A0',
+          amount: '0xF4240',
           // Karandeep's devnet wallet
           recipient:
             'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1:2eudG2xaKDpyBJVMUMSAvSvhTWDnHJn9cCAoJeP9BZzz'
         },
         {
           asset: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1/slip44:501',
-          amount: '0x186A0',
+          amount: '0xF4240',
           // Karandeep's devnet wallet
           recipient:
             'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1:2eudG2xaKDpyBJVMUMSAvSvhTWDnHJn9cCAoJeP9BZzz'
@@ -38,7 +38,7 @@ export function useWalletCheckout() {
         // ,{
         //   asset:
         //     'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1/token:4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-        //   amount: '0x186A0',
+        //   amount: '0xF4240',
         //   // Karandeep's devnet wallet
         //   contractInteraction: await createTokenTransferSolanaInstruction({
         //     sourceAddress: solanaAddress,
@@ -61,16 +61,16 @@ export function useWalletCheckout() {
         {
           recipient: `eip155:84532:${vitalikEthAddress}`,
           asset: 'eip155:84532/erc20:0x036CbD53842c5426634e7929541eC2318f3dCF7e',
-          amount: '0x186A0' as `0x${string}`
+          amount: '0xF4240' as `0x${string}`
         },
         {
           recipient: `eip155:84532:${vitalikEthAddress}`,
           asset: 'eip155:84532/slip44:60',
-          amount: toHex(parseEther('0.00005'))
+          amount: toHex(parseEther('0.0005'))
         },
         {
           asset: 'eip155:11155420/erc20:0x5fd84259d66Cd46123540766Be93DFE6D43130D7',
-          amount: '0x186A0' as `0x${string}`,
+          amount: '0xF4240' as `0x${string}`,
           contractInteraction: {
             type: 'evm-calls',
             data: [
@@ -79,7 +79,7 @@ export function useWalletCheckout() {
                 data: encodeFunctionData({
                   abi: erc20Abi,
                   functionName: 'transfer',
-                  args: [vitalikEthAddress as `0x${string}`, BigInt(100000)]
+                  args: [vitalikEthAddress as `0x${string}`, BigInt(1000000)]
                 }),
                 value: '0x0'
               }
