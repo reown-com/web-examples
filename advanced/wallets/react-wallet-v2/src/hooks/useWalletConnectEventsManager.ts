@@ -95,7 +95,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           return ModalStore.open('SessionSendCallsModal', { requestEvent, requestSession })
         }
 
-        case 'wallet_checkout':
+        case EIP155_SIGNING_METHODS.WALLET_CHECKOUT:
           try {
             await WalletCheckoutCtrl.actions.prepareFeasiblePayments(request.params[0])
           } catch (error) {
