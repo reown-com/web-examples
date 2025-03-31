@@ -27,7 +27,7 @@ export const CheckoutView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, 
       {/* Header */}
       <div className="grid grid-cols-3 items-center w-full">
         <div className="col-start-2 col-end-3 text-center">
-          <h1 className="text-primary">Purchase Checkout</h1>
+          <h1 className="text-primary">Checkout</h1>
         </div>
         <div className="col-start-3 flex justify-end">
           <Button variant="ghost" onClick={onClose}>
@@ -92,10 +92,10 @@ export const CheckoutView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, 
             </svg>
           </div>
           <div className="flex flex-1 items-center justify-between">
-            <p>Payment Method</p>
+            <p>Payment Options</p>
             <div className="flex gap-4 items-center justify-between">
               <div className="payment-option-badge">
-                <p>Credit Card</p>
+                {/* <p>Credit Card</p> */}
               </div>
             </div>
           </div>
