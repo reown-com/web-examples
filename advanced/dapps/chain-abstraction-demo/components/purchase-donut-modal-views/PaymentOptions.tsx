@@ -24,7 +24,7 @@ export const PaymentOptions: React.FC = () => {
   // Find the chain logo URL for an asset
   const getChainLogoUrl = (chainId: string): string => {
     const chain = supportChains.find(chain => chain.id.includes(chainId));
-    return chain?.logoUrl || '';
+    return chain?.logoUrl || '/chain-logos/chain-placeholder.png';
   };
 
   useEffect(() => {
@@ -82,7 +82,7 @@ export const PaymentOptions: React.FC = () => {
         >
           <div className="relative">
             <Image 
-              src={asset.logoUrl} 
+              src={asset.logoUrl || '/token-images/token-placeholder.png'} 
               alt={asset.name} 
               width={24} 
               height={24}
@@ -90,7 +90,7 @@ export const PaymentOptions: React.FC = () => {
             />
             <div className="absolute -bottom-1 -right-1">
               <Image 
-                src={getChainLogoUrl(asset.chainId) || '/chain-logos/chain-placeholder.svg'} 
+                src={getChainLogoUrl(asset.chainId)} 
                 alt={asset.chainName} 
                 width={14} 
                 height={14}
