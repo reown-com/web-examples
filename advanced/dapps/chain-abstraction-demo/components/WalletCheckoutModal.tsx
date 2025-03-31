@@ -2,11 +2,10 @@
 
 import React from "react";
 import { useSnapshot } from "valtio";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { walletCheckoutManager } from "../controllers/WalletCheckoutModalManager";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
-// Base Modal Wrapper
 export const WalletCheckoutModal: React.FC = () => {
   const snap = useSnapshot(walletCheckoutManager.getState());
   

@@ -10,7 +10,6 @@ import { walletCheckoutManager } from "@/controllers/WalletCheckoutModalManager"
 import Image from "next/image";
 import { PaymentOptions } from "@/components/purchase-donut-modal-views/PaymentOptions";
 
-// Checkout View
 export const CheckoutView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, onViewChange }) => {
   const { isWalletCheckoutSupported } = useWalletCheckout();
   const snap = useSnapshot(walletCheckoutManager.getState());
@@ -23,7 +22,6 @@ export const CheckoutView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, 
   const priceValue = parseFloat(product.price.replace('$', ''));
   const totalPrice = (priceValue * itemCount).toFixed(2);
   
-  // Simplified to just check if we have any payment options selected
   const hasSelectedPaymentOptions = paymentOptions.length > 0;
   
   return (
@@ -96,7 +94,6 @@ export const CheckoutView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, 
           <div className="flex flex-1 items-center justify-between">
             <p>Payment Options</p>
             <div className="flex gap-4 items-center justify-between">
-              {/* The PaymentOptions component now directly interacts with the walletCheckoutManager */}
               <PaymentOptions />
             </div>
           </div>
