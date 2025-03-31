@@ -1,5 +1,3 @@
-/* eslint-disable no-shadow */
-/* eslint-disable no-console */
 import * as React from 'react'
 import { useCallback, useEffect } from 'react'
 
@@ -36,19 +34,19 @@ export function useWalletCheckout() {
           // Karandeep's devnet wallet
           recipient:
             'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1:2eudG2xaKDpyBJVMUMSAvSvhTWDnHJn9cCAoJeP9BZzz'
-        },
-        {
-          asset:
-            'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1/token:4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-          amount: '0x186A0',
-          // Karandeep's devnet wallet
-          contractInteraction: await createTokenTransferSolanaInstruction({
-            sourceAddress: solanaAddress,
-            destinationAddress: '2eudG2xaKDpyBJVMUMSAvSvhTWDnHJn9cCAoJeP9BZzz',
-            tokenMintAddress: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-            amount: 2
-          })
         }
+        // ,{
+        //   asset:
+        //     'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1/token:4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
+        //   amount: '0x186A0',
+        //   // Karandeep's devnet wallet
+        //   contractInteraction: await createTokenTransferSolanaInstruction({
+        //     sourceAddress: solanaAddress,
+        //     destinationAddress: '2eudG2xaKDpyBJVMUMSAvSvhTWDnHJn9cCAoJeP9BZzz',
+        //     tokenMintAddress: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
+        //     amount: 2
+        //   })
+        // }
       ]
 
       return paymentOptions
@@ -71,18 +69,13 @@ export function useWalletCheckout() {
           amount: toHex(parseEther('0.00005'))
         },
         {
-          recipient: `eip155:11155420:${vitalikEthAddress}`,
           asset: 'eip155:11155420/erc20:0x5fd84259d66Cd46123540766Be93DFE6D43130D7',
-          amount: '0x186A0' as `0x${string}`
-        },
-        {
-          asset: 'eip155:84532/erc20:0x036CbD53842c5426634e7929541eC2318f3dCF7e',
           amount: '0x186A0' as `0x${string}`,
           contractInteraction: {
             type: 'evm-calls',
             data: [
               {
-                to: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+                to: '0x5fd84259d66Cd46123540766Be93DFE6D43130D7',
                 data: encodeFunctionData({
                   abi: erc20Abi,
                   functionName: 'transfer',
