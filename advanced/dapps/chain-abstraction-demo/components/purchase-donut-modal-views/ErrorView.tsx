@@ -12,13 +12,6 @@ export const ErrorView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, onV
   const snap = useSnapshot(walletCheckoutManager.getState());
   const { error } = snap.state;
   
-  // Log the error to console for debugging
-  useEffect(() => {
-    if (error) {
-      console.error("Checkout error details:", error);
-    }
-  }, [error]);
-  
   // Determine the error message to display
   const getErrorMessage = () => {
     // If there's an error object with code and message properties (CheckoutError)
@@ -37,6 +30,12 @@ export const ErrorView: React.FC<WalletCheckoutModalViewProps> = ({ onClose, onV
           return "You don't have enough funds to complete this payment.";
         case CheckoutErrorCode.METHOD_NOT_FOUND:
           return "Your wallet doesn't support this payment method.";
+        case CheckoutErrorCode.UNSUPPORTED_CONTRACT_INTERACTION:
+          return "This payment method is not supported for this contract.";
+        case CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA:
+          return "The contract interaction data is invalid.";
+        case CheckoutErrorCode.CONTRACT_INTERACTION_FAILED:
+          return "The contract interaction failed.";
         default:
           return typedError.message || "Transaction failed.";
       }
