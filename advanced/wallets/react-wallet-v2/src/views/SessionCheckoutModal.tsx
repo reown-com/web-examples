@@ -185,13 +185,11 @@ export default function SessionCheckoutModal() {
         <Container css={{ padding: 0 }}>
           {/* Products */}
           <Products products={checkoutRequest.products} />
-          <Divider y={2} />
 
           {/* Payment Options */}
           <PaymentOptions payments={feasiblePayments} onSelectPayment={onSelectPayment} />
-          <Divider y={2} />
           {/* Order Information */}
-          <OrderInfoCard orderId={checkoutRequest.orderId} expiry={checkoutRequest.expiry} />
+          <OrderInfoCard orderId={checkoutRequest.orderId} expiry={checkoutRequest.expiry} selectedPayment={selectedPayment} />
 
           <Spacer y={5} />
         </Container>

@@ -1,10 +1,14 @@
+import { DetailedPaymentOption } from '@/types/wallet_checkout';
 import { Col, Row, Text } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
+import OrderDetailIcon from './PaymentCheckout/visual/OrderDetailIcon';
+import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil';
 
 /**
  * Types
  */
 interface IProps {
+  selectedPayment: DetailedPaymentOption | null;
   orderId: string
   expiry?: number
 }
@@ -36,7 +40,7 @@ const calculateTimeRemaining = (expiryTimestamp?: number) => {
 /**
  * Component
  */
-export default function OrderInfoCard({ orderId, expiry }: IProps) {
+export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IProps) {
   const [timeRemaining, setTimeRemaining] = useState(calculateTimeRemaining(expiry))
 
   // Update countdown every second
@@ -89,15 +93,36 @@ export default function OrderInfoCard({ orderId, expiry }: IProps) {
   }
 
   return (
-    <Row>
-      <Col>
-        <Text h5>Order Details</Text>
-        <Text color="$gray400" size={'small'}>
-          Order ID: {orderId}
+    <Col css={{display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
+      <OrderDetailIcon />
+      <Col css={{display: "flex", flexDirection: "column", gap: "12px" }}>
+       <Row align="center" justify='space-between'>
+        <Text color="$gray400" >
+          Merchant 
         </Text>
+        <Text >
+          Donut Seller
+        </Text>
+       </Row>
+      {selectedPayment && selectedPayment.recipient && <Row align="center" justify='space-between'>
+        <Text color="$gray400" >
+          Address 
+        </Text>
+        <Text >
+          { WalletCheckoutUtil.formatRecipient(selectedPayment.recipient)}
+        </Text>
+      </Row>}
+      <Row align="center" justify='space-between'>
+        <Text color="$gray400" >
+          Order ID
+        </Text>
+        <Text size={'small'}>
+          {orderId}
+        </Text>
+      </Row>
         {timeRemaining ? (
-          <Row align="center" css={{ gap: '8px' }}>
-            <Text color={timeRemaining.isExpired ? '$error' : '$gray400'} size={'small'}>
+          <Row align="center" justify='space-between'>
+            <Text color={timeRemaining.isExpired ? '$error' : '$gray400'}>
               {timeRemaining.isExpired ? 'Expired' : 'Expires in: '}
             </Text>
             {!timeRemaining.isExpired && (
@@ -119,6 +144,6 @@ export default function OrderInfoCard({ orderId, expiry }: IProps) {
           </Text>
         )}
       </Col>
-    </Row>
+    </Col>
   )
 }
