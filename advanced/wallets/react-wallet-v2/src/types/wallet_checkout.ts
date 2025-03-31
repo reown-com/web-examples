@@ -226,6 +226,7 @@ export type DetailedPaymentOption = PaymentOption & {
     assetSymbol: string
     assetNamespace: string
     assetDecimals: number
+    assetBalance: bigint
   }
   chainMetadata: {
     chainId: string

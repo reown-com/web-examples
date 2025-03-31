@@ -301,7 +301,8 @@ export class PaymentValidationUtils {
         assetName: tokenDetails.name,
         assetSymbol: tokenDetails.symbol,
         assetNamespace: assetNamespace,
-        assetDecimals: tokenDetails.decimals
+        assetDecimals: tokenDetails.decimals,
+        assetBalance: tokenDetails.balance
       },
       chainMetadata: {
         chainId: chainId,

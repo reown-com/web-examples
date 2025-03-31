@@ -41,6 +41,24 @@ const calculateTimeRemaining = (expiryTimestamp?: number) => {
  * Component
  */
 export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IProps) {
+  const styles = {
+    iconWrapper: {
+      width: '40px',
+      height: '40px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    circleIconBg: {
+      display: 'flex',
+      backgroundColor: '#333',
+      height: '32px',
+      width: '32px',
+      borderRadius: '50%',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+  }
   const [timeRemaining, setTimeRemaining] = useState(calculateTimeRemaining(expiry))
 
   // Update countdown every second
@@ -94,8 +112,12 @@ export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IPro
 
   return (
     <Col css={{display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
-      <OrderDetailIcon />
-      <Col css={{display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div style={styles.iconWrapper}>  
+        <div style={styles.circleIconBg}>
+            <OrderDetailIcon />
+        </div>
+      </div>
+      <Col css={{display: "flex", flexDirection: "column", gap: "12px" , paddingLeft: "4px"}}>
        <Row align="center" justify='space-between'>
         <Text color="$gray400" >
           Merchant 

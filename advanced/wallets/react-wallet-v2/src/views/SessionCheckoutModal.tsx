@@ -1,4 +1,4 @@
-import { Button, Divider, Modal, Text, Spacer, Row, Container, Loading } from '@nextui-org/react'
+import { Button, Modal, Text, Spacer, Row, Container, Loading } from '@nextui-org/react'
 import { Fragment, useCallback, useState, useMemo } from 'react'
 
 import ModalStore from '@/store/ModalStore'
@@ -177,8 +177,8 @@ export default function SessionCheckoutModal() {
 
   return (
     <Fragment>
-      <Modal.Header>
-        <Text h3>Checkout</Text>
+      <Modal.Header justify='flex-start'>
+        <Text h4 >Checkout</Text>
       </Modal.Header>
 
       <Modal.Body css={modalStyles.modalBody}>

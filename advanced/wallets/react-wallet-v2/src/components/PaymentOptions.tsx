@@ -40,6 +40,24 @@ const SelectedPaymentDetails = ({ selectedPayment }: SelectedPaymentDetailsProps
   if (!selectedPayment) {
     return null;
   }
+  const styles = {
+    iconWrapper: {
+      width: '40px',
+      height: '40px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    circleIconBg: {
+      display: 'flex',
+      backgroundColor: '#333',
+      height: '32px',
+      width: '32px',
+      borderRadius: '50%',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+  }
 
   return (
     <Card css={{ 
@@ -51,31 +69,42 @@ const SelectedPaymentDetails = ({ selectedPayment }: SelectedPaymentDetailsProps
       <Card.Body css={{ padding: '12px 0' }}>
         <Row align="center" css={{ marginBottom: '12px' }}>
           <Row align="center" css={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <WalletIcon />
+            <div style={styles.iconWrapper}>  
+              <div style={styles.circleIconBg}>
+                <WalletIcon />
+              </div>
+            </div>
             <Text css={{ color: '#aaa', fontSize: '14px' }}>Balance</Text>
           </Row>
           <Col span={8} css={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',}}>
             <Text css={{ color: '#fff', fontSize: '14px', justifyContent: 'flex-end' }}>
-              {formatUnits(BigInt(selectedPayment.amount), selectedPayment.assetMetadata.assetDecimals).toString()}{' '} {selectedPayment.assetMetadata.assetSymbol} 
+              {parseFloat(formatUnits(selectedPayment.assetMetadata.assetBalance, selectedPayment.assetMetadata.assetDecimals)).toFixed(6)}{' '} {selectedPayment.assetMetadata.assetSymbol} 
             </Text>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Text css={{ color: '#aaa', fontSize: '14px' }}>
+              <Text css={{ color: '#aaa', fontSize: '14px', whiteSpace: 'nowrap' }}>
                 on {selectedPayment.chainMetadata.chainName}
               </Text>
-              <Image 
-                src={selectedPayment.chainMetadata.chainIcon} 
-                width={16} 
-                height={16} 
-                alt={selectedPayment.chainMetadata.chainName} 
-                style={{ borderRadius: '50%', marginLeft: '4px' }}
-              />
+              <div style={{ alignItems: 'center', display: 'flex', width: '16px', height: '16px' }}>
+                <Image 
+                  src={selectedPayment.chainMetadata.chainIcon} 
+                  width={16} 
+                  height={16} 
+                  alt={selectedPayment.chainMetadata.chainName} 
+                  style={{ borderRadius: '50%', marginLeft: '4px' }}
+                />
+              </div>
+              
             </div>
           </Col>
         </Row>
 
         <Row align="center" justify="space-between" css={{ marginBottom: '12px' }}>
           <Row align="center" css={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <GiftIcon />
+          <div style={styles.iconWrapper}>  
+              <div style={styles.circleIconBg}>
+                <GiftIcon />
+              </div>
+            </div>
             <Text css={{ color: '#aaa', fontSize: '14px' }}>Send</Text>
           </Row>
           <Col span={8} css={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',}}>
@@ -83,16 +112,18 @@ const SelectedPaymentDetails = ({ selectedPayment }: SelectedPaymentDetailsProps
               {formatUnits(BigInt(selectedPayment.amount), selectedPayment.assetMetadata.assetDecimals).toString()}{' '} {selectedPayment.assetMetadata.assetSymbol} 
             </Text>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Text css={{ color: '#aaa', fontSize: '14px' }}>
+              <Text css={{ color: '#aaa', fontSize: '14px', whiteSpace: 'nowrap' }}>
                 on {selectedPayment.chainMetadata.chainName}
               </Text>
-              <Image 
-                src={selectedPayment.chainMetadata.chainIcon} 
-                width={16} 
-                height={16} 
-                alt={selectedPayment.chainMetadata.chainName} 
-                style={{ borderRadius: '50%', marginLeft: '4px' }}
-              />
+              <div style={{ alignItems: 'center', display: 'flex', width: '16px', height: '16px' }}>
+                <Image 
+                  src={selectedPayment.chainMetadata.chainIcon} 
+                  width={16} 
+                  height={16} 
+                  alt={selectedPayment.chainMetadata.chainName} 
+                  style={{ borderRadius: '50%', marginLeft: '4px' }}
+                />
+              </div>
             </div>
           </Col>
         </Row>
