@@ -6,7 +6,7 @@ import { useWalletCheckout } from "@/hooks/useWalletCheckout";
 import { Plus } from "lucide-react";
 import { walletCheckoutManager } from "@/controllers/WalletCheckoutModalManager";
 import { useSnapshot } from "valtio";
-import { supportedPaymentsAsset, supportChains } from "@/data/CheckoutPaymentAssets";
+import { supportedPaymentsAsset, getChainLogoUrl } from "@/data/CheckoutPaymentAssets";
 
 export const PaymentOptions: React.FC = () => {
   const { getPreConfiguredPaymentsOptions } = useWalletCheckout();
@@ -17,11 +17,6 @@ export const PaymentOptions: React.FC = () => {
   const selectedAssets = availableAssets.filter(asset => 
     selectedAssetIds.includes(asset.id)
   );
-
-  const getChainLogoUrl = (chainId: string): string => {
-    const chain = supportChains.find(chain => chain.id.includes(chainId));
-    return chain?.logoUrl || '/chain-logos/chain-placeholder.png';
-  };
 
   useEffect(() => {
     const fetchPaymentOptions = async () => {

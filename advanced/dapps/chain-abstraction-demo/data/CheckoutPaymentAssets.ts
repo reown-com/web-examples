@@ -82,3 +82,8 @@ export const supportChains = [{
   logoUrl: '/chain-logos/eip155-10.png'
 }
 ]
+
+export const getChainLogoUrl = (chainId: string): string => {
+  const chain = supportChains.find(chain => chain.id.includes(chainId));
+  return chain?.logoUrl || '/chain-logos/chain-placeholder.png';
+};

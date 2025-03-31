@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { X, Plus, Check, ChevronLeft } from "lucide-react";
-import { SupportedAsset } from "@/data/CheckoutPaymentAssets";
+import { X, Check, ChevronLeft } from "lucide-react";
+import { getChainLogoUrl, SupportedAsset } from "@/data/CheckoutPaymentAssets";
 import { walletCheckoutManager, WalletCheckoutModalViewProps } from "@/controllers/WalletCheckoutModalManager";
 import { useSnapshot } from "valtio";
 import { cn } from "@/lib/utils";
@@ -17,14 +17,7 @@ export const PaymentOptionsView: React.FC<WalletCheckoutModalViewProps> = ({
   const availableAssets = snap.state.availableAssets || [];
   const selectedAssetIds = snap.state.paymentOptions.map(option => option.asset);
   
-  // Local state for managing temporary selection changes
   const [localSelectedAssetIds, setLocalSelectedAssetIds] = useState<string[]>([...selectedAssetIds]);
-
-  // Find the chain logo URL for an asset
-  const getChainLogoUrl = (chainId: string): string => {
-    const chain = snap.state.supportChains?.find(chain => chain.id.includes(chainId));
-    return chain?.logoUrl || '';
-  };
 
   // Handle local toggling without updating the parent state immediately
   const handleLocalToggle = (asset: SupportedAsset) => {
@@ -54,7 +47,6 @@ export const PaymentOptionsView: React.FC<WalletCheckoutModalViewProps> = ({
 
   // When going back, simply navigate without applying changes
   const handleBack = () => {
-    // Navigate back to checkout view without saving changes
     onViewChange('checkout');
   };
 
@@ -69,7 +61,6 @@ export const PaymentOptionsView: React.FC<WalletCheckoutModalViewProps> = ({
 
   return (
     <div className={cn("flex flex-col items-start gap-4 text-primary")}>
-      {/* Header with back button */}
       <div className="grid grid-cols-3 items-center w-full">
         <div className="flex justify-start">
           <Button variant="ghost" onClick={handleBack}>
