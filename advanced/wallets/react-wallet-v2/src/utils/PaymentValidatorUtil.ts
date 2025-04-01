@@ -258,9 +258,9 @@ export class PaymentValidationUtils {
     contractInteraction: any,
     chainId: string,
     account: string
-  ): Promise<boolean> {
+  ): Promise<number | null> {
     if (!contractInteraction?.data) {
-      return false
+      return null
     }
 
     if (Array.isArray(contractInteraction.data)) {
@@ -272,7 +272,7 @@ export class PaymentValidationUtils {
       return simulateEvmTransaction
     }
     // If data is not an array, it's an invalid format
-    return false
+    return null
   }
   private static async simulateSolanaContractInteraction(params: {
     contractInteraction: SolanaContractInteraction
@@ -283,7 +283,7 @@ export class PaymentValidationUtils {
       const { contractInteraction, account, chainId } = params
       const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
       if (!rpc) {
-        return false
+        return null
       }
 
       const connection = new Connection(rpc, 'confirmed')
@@ -313,9 +313,10 @@ export class PaymentValidationUtils {
         transaction,
         feePayer: publicKey
       })
+      console.log({ simulationResult })
       return simulationResult
     } catch (e) {
-      return false
+      return null
     }
   }
   private static async simulateSolanaNativeTransfer(params: {
@@ -328,7 +329,7 @@ export class PaymentValidationUtils {
       const { account, recipientAddress, amount, chainId } = params
       const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
       if (!rpc) {
-        return false
+        return null
       }
 
       const connection = new Connection(rpc, 'confirmed')
@@ -347,9 +348,10 @@ export class PaymentValidationUtils {
         transaction,
         feePayer: publicKey
       })
+      console.log({ simulationResult })
       return simulationResult
     } catch (e) {
-      return false
+      return null
     }
   }
   private static async simulateSolanaTokenTransfer(params: {
@@ -363,7 +365,7 @@ export class PaymentValidationUtils {
       const { account, recipientAddress, amount, tokenAddress, chainId } = params
       const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
       if (!rpc) {
-        return false
+        return null
       }
 
       const connection = new Connection(rpc, 'confirmed')
@@ -375,7 +377,7 @@ export class PaymentValidationUtils {
 
       const fromTokenAccount = await connection.getAccountInfo(fromTokenAccountAddress)
       if (!fromTokenAccount) {
-        return false
+        return null
       }
 
       const toTokenAccountAddress = await getAssociatedTokenAddress(mintAddress, toPubkey)
@@ -411,9 +413,10 @@ export class PaymentValidationUtils {
         transaction,
         feePayer: fromPubkey
       })
+      console.log({ simulationResult })
       return simulationResult
     } catch (e) {
-      return false
+      return null
     }
   }
 
@@ -422,7 +425,12 @@ export class PaymentValidationUtils {
     tokenDetails: TokenDetails,
     assetNamespace: string,
     chainId: string,
-    chainNamespace: string
+    chainNamespace: string,
+    gasDetails:{
+      gasFee: number
+      decimals: number
+      feeSymbol: string
+    }
   ): DetailedPaymentOption {
     const chainData = getChainData(`${chainNamespace}:${chainId}`)
     const tokenMetadata = getTokenData(tokenDetails.symbol)
@@ -442,6 +450,11 @@ export class PaymentValidationUtils {
         chainName: chainData?.name || '',
         chainNamespace: chainNamespace,
         chainIcon: chainData?.logo || PaymentValidationUtils.PLACEHOLDER_CHAIN_ICON
+      },
+      fee: {
+        gasFee: gasDetails.gasFee,
+        decimals: gasDetails.decimals,
+        feeSymbol: gasDetails.feeSymbol
       }
     }
   }
@@ -512,7 +525,7 @@ export class PaymentValidationUtils {
   }> {
     const account = SettingsStore.state.solanaAddress
     let tokenDetails: TokenDetails | undefined
-    let simulationResult: boolean | undefined
+    let simulationResult: number | null
 
     if (assetNamespace === 'slip44' && assetAddress === '501') {
       simulationResult = await this.simulateSolanaNativeTransfer({
@@ -538,7 +551,7 @@ export class PaymentValidationUtils {
     } else {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
-
+    console.log({ simulationResult })
     // Check if token details were assigned
     if (!tokenDetails) {
       return { validatedPayment: null, hasMatchingAsset: false }
@@ -558,7 +571,12 @@ export class PaymentValidationUtils {
           tokenDetails,
           assetNamespace,
           chainId,
-          'solana'
+          'solana',
+          {
+            gasFee: simulationResult,
+            decimals: 9,
+            feeSymbol: 'SOL'
+          }
         )
       : null
 
@@ -577,7 +595,7 @@ export class PaymentValidationUtils {
   }> {
     const account = SettingsStore.state.eip155Address as `0x${string}`
     let tokenDetails: TokenDetails | undefined
-    let simulationResult: boolean | undefined
+    let simulationResult: number | null
 
     if (assetNamespace === 'erc20') {
       simulationResult = await PaymentValidationUtils.simulateEvmContractInteraction(
@@ -622,7 +640,7 @@ export class PaymentValidationUtils {
     } else {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
-
+    console.log({ simulationResult })
     // Check if token details were assigned
     if (!tokenDetails || simulationResult === undefined) {
       return { validatedPayment: null, hasMatchingAsset: false }
@@ -642,7 +660,12 @@ export class PaymentValidationUtils {
           tokenDetails,
           assetNamespace,
           chainId,
-          'eip155'
+          'eip155',
+          {
+            gasFee: simulationResult,
+            decimals: 18,
+            feeSymbol: 'ETH'
+          }
         )
       : null
 
@@ -715,18 +738,18 @@ export class PaymentValidationUtils {
   }> {
     const account = SettingsStore.state.solanaAddress
     let tokenDetails: TokenDetails | undefined
-    let isValid = false
+    let simulationResult = null
 
     if (contractInteraction.type !== 'solana-instruction') {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
 
-    isValid = await this.simulateSolanaContractInteraction({
+    simulationResult = await this.simulateSolanaContractInteraction({
       contractInteraction: contractInteraction as SolanaContractInteraction,
       account,
       chainId: `solana:${chainId}`
     })
-    if (!isValid) {
+    if (!simulationResult) {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
 
@@ -744,7 +767,7 @@ export class PaymentValidationUtils {
     } else {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
-
+    console.log({ simulationResult })
     // Check if token details were assigned
     if (!tokenDetails) {
       return { validatedPayment: null, hasMatchingAsset: false }
@@ -754,13 +777,18 @@ export class PaymentValidationUtils {
     const hasMatchingAsset = tokenDetails.balance > BigInt(0)
 
     // Create detailed payment option with metadata
-    const detailedPayment = isValid
+    const detailedPayment = simulationResult
       ? PaymentValidationUtils.createDetailedPaymentOption(
           payment,
           tokenDetails,
           assetNamespace,
           chainId,
-          'solana'
+          'solana',
+          {
+            gasFee: simulationResult,
+            decimals: 9,
+            feeSymbol: 'SOL'
+          }
         )
       : null
     return { validatedPayment: detailedPayment, hasMatchingAsset }
@@ -778,19 +806,19 @@ export class PaymentValidationUtils {
   }> {
     const account = SettingsStore.state.eip155Address as `0x${string}`
     let tokenDetails: TokenDetails | undefined
-    let isValid = false
+    let simulationResult = null
 
     if (contractInteraction.type !== 'evm-calls') {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
 
-    isValid = await PaymentValidationUtils.simulateEvmContractInteraction(
+    simulationResult = await PaymentValidationUtils.simulateEvmContractInteraction(
       contractInteraction,
       chainId,
       account
     )
-
-    if (!isValid) {
+    console.log({ simulationResult })
+    if (!simulationResult) {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
 
@@ -819,13 +847,18 @@ export class PaymentValidationUtils {
     const hasMatchingAsset = tokenDetails.balance > BigInt(0)
 
     // Create detailed payment option with metadata
-    const detailedPayment = isValid
+    const detailedPayment = simulationResult
       ? PaymentValidationUtils.createDetailedPaymentOption(
           payment,
           tokenDetails,
           assetNamespace,
           chainId,
-          'eip155'
+          'eip155',
+          {
+            gasFee: simulationResult,
+            decimals: 18,
+            feeSymbol: 'ETH'
+          }
         )
       : null
     return { validatedPayment: detailedPayment, hasMatchingAsset }

@@ -234,4 +234,9 @@ export type DetailedPaymentOption = PaymentOption & {
     chainNamespace: string
     chainIcon: string
   }
+  fee:{
+    gasFee: number
+    decimals: number
+    feeSymbol: string
+  }
 }

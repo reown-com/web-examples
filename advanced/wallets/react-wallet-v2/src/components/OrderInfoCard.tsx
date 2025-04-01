@@ -3,6 +3,7 @@ import { Col, Row, Text } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
 import OrderDetailIcon from './PaymentCheckout/visual/OrderDetailIcon';
 import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil';
+import { formatUnits } from 'viem';
 
 /**
  * Types
@@ -109,7 +110,7 @@ export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IPro
     // If more than 1 hour, show hours and minutes
     return parts.join(' ')
   }
-
+  
   return (
     <Col css={{display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
       <div style={styles.iconWrapper}>  
@@ -118,6 +119,15 @@ export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IPro
         </div>
       </div>
       <Col css={{display: "flex", flexDirection: "column", gap: "12px" , paddingLeft: "4px"}}>
+      {selectedPayment &&  selectedPayment.fee && <Row align="center" justify='space-between'>
+        <Text color="$gray400" >
+          Estimated Gas Fee
+        </Text>
+        <Text >
+          ~{Number(formatUnits(BigInt(selectedPayment.fee.gasFee), selectedPayment.fee.decimals)).toFixed(6)} {selectedPayment.fee.feeSymbol}
+        </Text>
+        </Row>
+        }
       {selectedPayment && selectedPayment.recipient && <Row align="center" justify='space-between'>
         <Text color="$gray400" >
           Address 
