@@ -64,45 +64,9 @@ const WalletCheckoutUtil = {
   },
 
   /**
-   * Separates the accepted payments into direct payments and contract payments
-   * following the CAIP standard requirements
-   *
-   * @param acceptedPayments - Array of payment options
-   * @returns An object containing arrays of direct payments and contract payments
-   */
-  separatePayments(acceptedPayments: PaymentOption[]) {
-    const directPayments: PaymentOption[] = []
-    const contractPayments: PaymentOption[] = []
-
-    acceptedPayments.forEach(payment => {
-      if (!payment) {
-        return
-      }
-
-      const { recipient, contractInteraction } = payment
-      const hasRecipient = typeof recipient === 'string' && recipient.trim() !== ''
-      const hasContractInteraction = contractInteraction !== undefined
-
-      // Direct payment: recipient is present and contractInteraction is absent
-      if (hasRecipient && !hasContractInteraction) {
-        directPayments.push(payment)
-      }
-      // Contract interaction: contractInteraction is present and recipient is absent
-      else if (hasContractInteraction && !hasRecipient) {
-        contractPayments.push(payment)
-      }
-    })
-
-    return {
-      directPayments,
-      contractPayments
-    }
-  },
-  /**
    * Prepares a checkout request by validating it and checking if the user has sufficient balances
    * for at least one payment option.
    *
-   * @param account - User's account address
    * @param checkoutRequest - The checkout request to prepare
    * @returns A promise that resolves to an object with feasible payments
    * @throws CheckoutError if validation or preparation fails
@@ -110,51 +74,24 @@ const WalletCheckoutUtil = {
   async getFeasiblePayments(checkoutRequest: CheckoutRequest): Promise<{
     feasiblePayments: DetailedPaymentOption[]
   }> {
-    // Validate the checkout request (will throw if invalid)
     this.validateCheckoutRequest(checkoutRequest)
-    try {
-      const { acceptedPayments } = checkoutRequest
+    const { acceptedPayments } = checkoutRequest
 
-      // Separate payments for processing
-      const { directPayments, contractPayments } = this.separatePayments(acceptedPayments)
+    // find feasible direct payments
+    const { feasiblePayments, isUserHaveAtleastOneMatchingAssets } =
+      await PaymentValidationUtils.findFeasiblePayments(acceptedPayments)
 
-      // find feasible direct payments
-      const { feasibleDirectPayments, isUserHaveAtleastOneMatchingAssets } =
-        await PaymentValidationUtils.findFeasibleDirectPayments(directPayments)
-      // find feasible contract payments
-      const {
-        feasibleContractPayments,
-        isUserHaveAtleastOneMatchingAssets: validContractPayments
-      } = await PaymentValidationUtils.findFeasibleContractPayments(contractPayments)
-      // This return error if user have no matching assets
-      if (!isUserHaveAtleastOneMatchingAssets && !validContractPayments) {
-        throw createCheckoutError(CheckoutErrorCode.NO_MATCHING_ASSETS)
-      }
-
-      // Combine all feasible payments
-      const feasiblePayments: DetailedPaymentOption[] = [
-        ...feasibleDirectPayments,
-        ...feasibleContractPayments
-      ]
-
-      // This return error if user have atleast one matching assets but no feasible payments
-      if (feasiblePayments.length === 0) {
-        throw createCheckoutError(CheckoutErrorCode.INSUFFICIENT_FUNDS)
-      }
-
-      return { feasiblePayments }
-    } catch (error) {
-      // If it's already a CheckoutError, rethrow it
-      if (error && typeof error === 'object' && 'code' in error) {
-        throw error
-      }
-
-      // Otherwise wrap it in a CheckoutError
-      throw createCheckoutError(
-        CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
-        `Unexpected error: ${error instanceof Error ? error.message : String(error)}`
-      )
+    // This return error if user have no matching assets
+    if (!isUserHaveAtleastOneMatchingAssets && !feasiblePayments) {
+      throw createCheckoutError(CheckoutErrorCode.NO_MATCHING_ASSETS)
     }
+
+    // This return error if user have atleast one matching assets but no feasible payments
+    if (feasiblePayments.length === 0) {
+      throw createCheckoutError(CheckoutErrorCode.INSUFFICIENT_FUNDS)
+    }
+
+    return { feasiblePayments }
   },
 
   // Add these methods directly to the object
