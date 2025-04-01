@@ -1,3 +1,5 @@
+import { blockchainApiRpc } from '@/data/EIP155Data'
+import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import { createPublicClient, http } from 'viem'
 
 const TransactionSimulatorUtil = {
@@ -10,23 +12,24 @@ const TransactionSimulatorUtil = {
    * @param calls - Array of transaction details to simulate
    * @returns Boolean indicating if all transactions would be valid
    */
-  canTransactionSucceed: async (
+  simulateEvmTransaction: async (
     chainId: string,
     fromWalletAddress: string,
     calls: { to: string; value: string; data?: string }[]
   ) => {
-    const projectId = process.env.NEXT_PUBLIC_PROJECT_ID || ''
-
-    const client = createPublicClient({
-      transport: http(
-        `https://rpc.walletconnect.org/v1?chainId=eip155:${chainId}&projectId=${projectId}`
-      )
-    })
+    if (!calls || calls.length === 0) {
+      console.warn('No transaction calls provided for simulation')
+      return false
+    }
 
     try {
-      // Process all calls in parallel
+      const client = createPublicClient({
+        transport: http(blockchainApiRpc(Number(chainId)))
+      })
+
+      // Process all calls in parallel with individual error handling
       const results = await Promise.all(
-        calls.map(async call => {
+        calls.map(async (call, index) => {
           try {
             // Get current fee estimates
             const { maxFeePerGas, maxPriorityFeePerGas } = await client.estimateFeesPerGas()
@@ -46,8 +49,8 @@ const TransactionSimulatorUtil = {
             return true
           } catch (error) {
             // Gas estimation failed - transaction would not succeed
-            console.error(
-              `Transaction simulation failed: ${
+            console.warn(
+              `Transaction #${index + 1} simulation failed for address ${call.to}: ${
                 error instanceof Error ? error.message : 'Unknown error'
               }`
             )
@@ -59,12 +62,46 @@ const TransactionSimulatorUtil = {
       // Return true only if all transactions would succeed
       return results.every(success => success)
     } catch (error) {
-      // Handle any unexpected errors
       console.error(
-        `Error in transaction simulation: ${
+        `Overall transaction simulation process failed: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`
       )
+      return false
+    }
+  },
+
+  /**
+   * Simulates a Solana transaction
+   *
+   * @param connection - Solana connection
+   * @param transaction - Transaction to simulate
+   * @param feePayer - Fee payer's public key
+   * @returns Object with simulation success status and error details if applicable
+   * @throws CheckoutError if there's a critical simulation error that should block the transaction
+   */
+  async simulateSolanaTransaction(param: {
+    connection: Connection
+    transaction: Transaction
+    feePayer: PublicKey
+  }): Promise<boolean> {
+    try {
+      const { connection, transaction, feePayer } = param
+      // Set recent blockhash for the transaction
+      transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+      transaction.feePayer = feePayer
+
+      // Simulate the transaction
+      const simulation = await connection.simulateTransaction(transaction)
+
+      // Check simulation results
+      if (simulation.value.err) {
+        console.warn('Solana simulation error:', simulation.value.err)
+        return false
+      }
+
+      return true
+    } catch (error) {
       return false
     }
   }

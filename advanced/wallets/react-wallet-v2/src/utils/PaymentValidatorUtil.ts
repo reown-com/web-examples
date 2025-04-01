@@ -1,14 +1,28 @@
 import { getChainData } from '@/data/chainsUtil'
-import { type PaymentOption, type DetailedPaymentOption, Hex } from '@/types/wallet_checkout'
+import {
+  type PaymentOption,
+  type DetailedPaymentOption,
+  Hex,
+  SolanaContractInteraction
+} from '@/types/wallet_checkout'
 import { createPublicClient, erc20Abi, http, getContract, encodeFunctionData } from 'viem'
 import TransactionSimulatorUtil from './TransactionSimulatorUtil'
 import SettingsStore from '@/store/SettingsStore'
 import { getSolanaTokenData, getTokenData } from '@/data/tokenUtil'
 import { getChainById } from './ChainUtil'
-import { EIP155_CHAINS } from '@/data/EIP155Data'
-import { Connection, PublicKey } from '@solana/web3.js'
+import { blockchainApiRpc } from '@/data/EIP155Data'
+import {
+  Connection,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+  TransactionInstruction
+} from '@solana/web3.js'
 import { SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { SOLANA_MAINNET_CHAINS } from '@/data/SolanaData'
+import { createTransferInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { createAssociatedTokenAccountInstruction } from '@solana/spl-token'
+import { getAssociatedTokenAddress } from '@solana/spl-token'
 /**
  * Interface for token details
  */
@@ -24,8 +38,8 @@ interface TokenDetails {
  */
 export class PaymentValidationUtils {
   // Constants for fallback asset paths
-  private static readonly PLACEHOLDER_TOKEN_ICON = '/token-logos/token-placeholder.svg'
-  private static readonly PLACEHOLDER_CHAIN_ICON = '/chain-logos/chain-placeholder.svg'
+  private static readonly PLACEHOLDER_TOKEN_ICON = '/token-logos/token-placeholder.png'
+  private static readonly PLACEHOLDER_CHAIN_ICON = '/chain-logos/chain-placeholder.png'
 
   /**
    * Parses and validates a CAIP-19 asset ID
@@ -83,20 +97,15 @@ export class PaymentValidationUtils {
     return ['erc20', 'slip44', 'token'].includes(assetNamespace)
   }
 
-  /**
-   * Gets details for a native blockchain asset (like ETH)
-   *
-   * @param chainId - Chain ID number
-   * @param account - Account address
-   * @returns Native asset details including balance and metadata
-   */
+  // methods to get token details
+
   private static async getNativeAssetDetails(
     chainId: number,
     account: `0x${string}`
   ): Promise<TokenDetails> {
     const publicClient = createPublicClient({
       chain: getChainById(chainId),
-      transport: http(EIP155_CHAINS[`eip155:${chainId}`].rpc)
+      transport: http(blockchainApiRpc(Number(chainId)))
     })
 
     const balance = await publicClient.getBalance({
@@ -111,14 +120,6 @@ export class PaymentValidationUtils {
     }
   }
 
-  /**
-   * Gets details for an ERC20 token
-   *
-   * @param tokenAddress - Token contract address
-   * @param chainId - Chain ID number
-   * @param account - Account address
-   * @returns Token details including balance and metadata
-   */
   private static async getErc20TokenDetails(
     tokenAddress: Hex,
     chainId: number,
@@ -126,7 +127,7 @@ export class PaymentValidationUtils {
   ): Promise<TokenDetails> {
     const publicClient = createPublicClient({
       chain: getChainById(chainId),
-      transport: http(EIP155_CHAINS[`eip155:${chainId}`].rpc)
+      transport: http(blockchainApiRpc(Number(chainId)))
     })
 
     const contract = getContract({
@@ -150,15 +151,110 @@ export class PaymentValidationUtils {
     }
   }
 
-  /**
-   * Validates a contract interaction to ensure it can be executed successfully
-   *
-   * @param contractInteraction - The contract interaction data
-   * @param chainId - Chain ID
-   * @param account - User account address
-   * @returns Whether the contract interaction can succeed
-   */
-  private static async simulateContractInteraction(
+  private static async getSolNativeAssetDetails(
+    account: string,
+    chainId: string
+  ): Promise<TokenDetails> {
+    const defaultTokenDetails: TokenDetails = {
+      balance: BigInt(0),
+      decimals: 9,
+      symbol: 'SOL',
+      name: 'Solana'
+    }
+
+    try {
+      // Get the RPC URL for the chain
+      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+
+      if (!rpc) {
+        return defaultTokenDetails
+      }
+
+      // Connect to Solana
+      const connection = new Connection(rpc, 'confirmed')
+      const publicKey = new PublicKey(account)
+
+      const balance = await connection.getBalance(publicKey)
+      return {
+        ...defaultTokenDetails,
+        balance: BigInt(balance)
+      }
+    } catch (error) {
+      console.error('Error getting SOL balance:', error)
+      return defaultTokenDetails
+    }
+  }
+
+  private static async getSplTokenDetails(
+    tokenAddress: string,
+    account: string,
+    chainId: string,
+    caip19AssetAddress: string
+  ): Promise<TokenDetails> {
+    const defaultTokenDetails: TokenDetails = {
+      balance: BigInt(0),
+      decimals: 6,
+      symbol: 'UNK',
+      name: 'Unknown Token'
+    }
+
+    try {
+      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+
+      if (!rpc) {
+        return defaultTokenDetails
+      }
+
+      // Connect to Solana
+      const connection = new Connection(rpc, 'confirmed')
+      const publicKey = new PublicKey(account)
+      const mintAddress = new PublicKey(tokenAddress)
+
+      const token = getSolanaTokenData(caip19AssetAddress)
+
+      // Get token balance
+      let balance = BigInt(0)
+      let decimals = token?.decimals || 0 // Use known token decimals or default
+
+      // Find the associated token account(s)
+      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
+        mint: mintAddress
+      })
+
+      // If token account exists, get balance
+      if (tokenAccounts.value.length > 0) {
+        const tokenAccountPubkey = tokenAccounts.value[0].pubkey
+        const tokenBalance = await connection.getTokenAccountBalance(tokenAccountPubkey)
+        balance = BigInt(tokenBalance.value.amount)
+
+        // Update decimals from on-chain data if not a known token
+        if (!token) {
+          decimals = tokenBalance.value.decimals
+        }
+      } else if (!token) {
+        // If no token accounts and not a known token, try to get decimals from mint
+        const mintInfo = await connection.getParsedAccountInfo(mintAddress)
+        if (mintInfo.value) {
+          const parsedMintInfo = (mintInfo.value.data as any).parsed?.info
+          decimals = parsedMintInfo?.decimals || decimals
+        }
+      }
+
+      // Return with known metadata or fallback to generic
+      return {
+        balance,
+        decimals,
+        symbol: token?.symbol || tokenAddress.slice(0, 4).toUpperCase(),
+        name: token?.name || `SPL Token (${tokenAddress.slice(0, 8)}...)`
+      }
+    } catch (error) {
+      // Return default values in case of error
+      return defaultTokenDetails
+    }
+  }
+
+  // methods to simulate payments
+  private static async simulateEvmContractInteraction(
     contractInteraction: any,
     chainId: string,
     account: string
@@ -167,123 +263,160 @@ export class PaymentValidationUtils {
       return false
     }
 
+    if (Array.isArray(contractInteraction.data)) {
+      const simulateEvmTransaction = await TransactionSimulatorUtil.simulateEvmTransaction(
+        chainId,
+        account as `0x${string}`,
+        contractInteraction.data as { to: string; value: string; data: string }[]
+      )
+      return simulateEvmTransaction
+    }
+    // If data is not an array, it's an invalid format
+    return false
+  }
+  private static async simulateSolanaContractInteraction(params: {
+    contractInteraction: SolanaContractInteraction
+    account: string
+    chainId: string
+  }) {
     try {
-      if (Array.isArray(contractInteraction.data)) {
-        const canTransactionSucceed = await TransactionSimulatorUtil.canTransactionSucceed(
-          chainId,
-          account as `0x${string}`,
-          contractInteraction.data as { to: string; value: string; data: string }[]
-        )
-        return canTransactionSucceed
-      } else {
-        // If data is not an array, it's an invalid format
+      const { contractInteraction, account, chainId } = params
+      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+      if (!rpc) {
         return false
       }
-    } catch (error) {
-      console.error('Error validating contract interaction:', error)
+
+      const connection = new Connection(rpc, 'confirmed')
+      const publicKey = new PublicKey(account)
+      // Create a new transaction
+      const transaction = new Transaction()
+
+      const instruction = contractInteraction.data
+      const accountMetas = instruction.accounts.map(acc => ({
+        pubkey: new PublicKey(acc.pubkey),
+        isSigner: acc.isSigner,
+        isWritable: acc.isWritable
+      }))
+
+      // Create the instruction
+      const txInstruction = new TransactionInstruction({
+        programId: new PublicKey(instruction.programId),
+        keys: accountMetas,
+        data: Buffer.from(instruction.data, 'base64')
+      })
+
+      // Add to transaction
+      transaction.add(txInstruction)
+
+      const simulationResult = await TransactionSimulatorUtil.simulateSolanaTransaction({
+        connection,
+        transaction,
+        feePayer: publicKey
+      })
+      return simulationResult
+    } catch (e) {
+      return false
+    }
+  }
+  private static async simulateSolanaNativeTransfer(params: {
+    account: string
+    recipientAddress: string
+    amount: string
+    chainId: string
+  }) {
+    try {
+      const { account, recipientAddress, amount, chainId } = params
+      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+      if (!rpc) {
+        return false
+      }
+
+      const connection = new Connection(rpc, 'confirmed')
+      const publicKey = new PublicKey(account)
+
+      const transaction = new Transaction()
+      transaction.add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: new PublicKey(recipientAddress),
+          lamports: BigInt(amount)
+        })
+      )
+      const simulationResult = await TransactionSimulatorUtil.simulateSolanaTransaction({
+        connection,
+        transaction,
+        feePayer: publicKey
+      })
+      return simulationResult
+    } catch (e) {
+      return false
+    }
+  }
+  private static async simulateSolanaTokenTransfer(params: {
+    account: string
+    recipientAddress: string
+    amount: bigint
+    tokenAddress: string
+    chainId: string
+  }) {
+    try {
+      const { account, recipientAddress, amount, tokenAddress, chainId } = params
+      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+      if (!rpc) {
+        return false
+      }
+
+      const connection = new Connection(rpc, 'confirmed')
+      const fromPubkey = new PublicKey(account)
+      const mintAddress = new PublicKey(tokenAddress)
+      const toPubkey = new PublicKey(recipientAddress)
+
+      const fromTokenAccountAddress = await getAssociatedTokenAddress(mintAddress, fromPubkey)
+
+      const fromTokenAccount = await connection.getAccountInfo(fromTokenAccountAddress)
+      if (!fromTokenAccount) {
+        return false
+      }
+
+      const toTokenAccountAddress = await getAssociatedTokenAddress(mintAddress, toPubkey)
+      const recipientTokenAccount = await connection.getAccountInfo(toTokenAccountAddress)
+
+      // Create transaction
+      const transaction = new Transaction()
+
+      // Add instruction to create recipient token account if needed
+      if (!recipientTokenAccount) {
+        const createAccountInstruction = createAssociatedTokenAccountInstruction(
+          fromPubkey,
+          toTokenAccountAddress,
+          toPubkey,
+          mintAddress
+        )
+        transaction.add(createAccountInstruction)
+      }
+
+      // Add transfer instruction
+      const transferInstruction = createTransferInstruction(
+        fromTokenAccountAddress,
+        toTokenAccountAddress,
+        fromPubkey,
+        amount,
+        [],
+        TOKEN_PROGRAM_ID
+      )
+      transaction.add(transferInstruction)
+
+      const simulationResult = await TransactionSimulatorUtil.simulateSolanaTransaction({
+        connection,
+        transaction,
+        feePayer: fromPubkey
+      })
+      return simulationResult
+    } catch (e) {
       return false
     }
   }
 
-  /**
-   * Validates an ERC20 token payment and retrieves token details
-   *
-   * @param assetAddress - Token contract address
-   * @param chainId - Chain ID
-   * @param senderAccount - Sender's account address
-   * @param recipientAddress - Recipient's address
-   * @param amount - Payment amount in hex
-   * @returns Object containing token details and validation status
-   */
-  private static async simulateAndGetErc20PaymentDetails(
-    assetAddress: string,
-    chainId: string,
-    senderAccount: string,
-    recipientAddress: string,
-    amount: string
-  ): Promise<{ tokenDetails: TokenDetails; isValid: boolean }> {
-    // Get token details
-    const tokenDetails = await PaymentValidationUtils.getErc20TokenDetails(
-      assetAddress as `0x${string}`,
-      Number(chainId),
-      senderAccount as `0x${string}`
-    )
-
-    // Check if transaction can succeed
-    const canTransactionSucceed = await TransactionSimulatorUtil.canTransactionSucceed(
-      chainId,
-      senderAccount as `0x${string}`,
-      [
-        {
-          to: assetAddress as `0x${string}`,
-          value: '0x0',
-          data: encodeFunctionData({
-            abi: erc20Abi,
-            functionName: 'transfer',
-            args: [recipientAddress as `0x${string}`, BigInt(amount)]
-          })
-        }
-      ]
-    )
-
-    return {
-      tokenDetails,
-      isValid: canTransactionSucceed
-    }
-  }
-
-  /**
-   * Validates a native token payment and retrieves token details
-   *
-   * @param chainId - Chain ID
-   * @param senderAccount - Sender's account address
-   * @param recipientAddress - Recipient's address
-   * @param amount - Payment amount in hex
-   * @returns Object containing token details and validation status
-   */
-  private static async simulateAndGetNativeTokenPaymentDetails(
-    chainId: string,
-    senderAccount: string,
-    recipientAddress: string,
-    amount: string
-  ): Promise<{ tokenDetails: TokenDetails; isValid: boolean }> {
-    // Check if transaction can succeed
-    const canTransactionSucceed = await TransactionSimulatorUtil.canTransactionSucceed(
-      chainId,
-      senderAccount as `0x${string}`,
-      [
-        {
-          to: recipientAddress as `0x${string}`,
-          value: amount,
-          data: '0x'
-        }
-      ]
-    )
-
-    // Get native token details
-    const tokenDetails = canTransactionSucceed
-      ? await PaymentValidationUtils.getNativeAssetDetails(
-          Number(chainId),
-          senderAccount as `0x${string}`
-        )
-      : { decimals: 18, symbol: 'ETH', name: 'Ethereum', balance: BigInt(0) }
-
-    return {
-      tokenDetails,
-      isValid: canTransactionSucceed
-    }
-  }
-
-  /**
-   * Creates a detailed payment option with all necessary metadata
-   *
-   * @param payment - Original payment option
-   * @param tokenDetails - Token details
-   * @param assetNamespace - Asset namespace
-   * @param chainId - Chain ID
-   * @param chainNamespace - Chain namespace
-   * @returns Detailed payment option
-   */
   private static createDetailedPaymentOption(
     payment: PaymentOption,
     tokenDetails: TokenDetails,
@@ -313,17 +446,7 @@ export class PaymentValidationUtils {
     }
   }
 
-  /**
-   * Validates a single direct payment option and creates a detailed version if valid
-   *
-   * @param payment - Payment option to validate
-   * @param account - User account address
-   * @returns Object containing the validated payment (or null) and asset availability flag
-   */
-  private static async getDetailedDirectPaymentOptionEVM(
-    payment: PaymentOption,
-    account: string
-  ): Promise<{
+  private static async getDetailedDirectPaymentOption(payment: PaymentOption): Promise<{
     validatedPayment: DetailedPaymentOption | null
     hasMatchingAsset: boolean
   }> {
@@ -343,236 +466,190 @@ export class PaymentValidationUtils {
         return { validatedPayment: null, hasMatchingAsset: false }
       }
 
-      let validationResult
+      let result
 
-      // Validate based on asset type
-      if (assetNamespace === 'erc20') {
-        validationResult = await PaymentValidationUtils.simulateAndGetErc20PaymentDetails(
-          assetAddress,
-          chainId,
-          account,
-          recipientAddress,
-          payment.amount
-        )
-      } else {
-        // slip44 - native token
-        validationResult = await PaymentValidationUtils.simulateAndGetNativeTokenPaymentDetails(
-          chainId,
-          account,
-          recipientAddress,
-          payment.amount
-        )
+      switch (chainNamespace) {
+        case 'solana':
+          result = await this.processSolanaDirectPayment(
+            payment,
+            recipientAddress,
+            chainId,
+            assetAddress,
+            assetNamespace
+          )
+          break
+
+        case 'eip155':
+          result = await this.processEvmDirectPayment(
+            payment,
+            recipientAddress,
+            chainId,
+            assetAddress,
+            assetNamespace
+          )
+          break
+
+        default:
+          return { validatedPayment: null, hasMatchingAsset: false }
       }
 
-      // Check if user has the asset (balance > 0)
-      const hasMatchingAsset = validationResult.tokenDetails.balance > BigInt(0)
-
-      if (!validationResult.isValid) {
-        return { validatedPayment: null, hasMatchingAsset }
-      }
-
-      // Create detailed payment option with metadata
-      const detailedPayment = PaymentValidationUtils.createDetailedPaymentOption(
-        payment,
-        validationResult.tokenDetails,
-        assetNamespace,
-        chainId,
-        chainNamespace
-      )
-
-      return { validatedPayment: detailedPayment, hasMatchingAsset: true }
+      return result
     } catch (error) {
       console.error('Error validating payment option:', error)
       return { validatedPayment: null, hasMatchingAsset: false }
     }
   }
 
-  /**
-   * Validates a single direct payment option for Solana and creates a detailed version if valid
-   *
-   * @param payment - Payment option to validate
-   * @param account - Solana account address
-   * @returns Object containing the validated payment (or null) and asset availability flag
-   */
-  private static async getDetailedDirectPaymentOptionSolana(
+  private static async processSolanaDirectPayment(
     payment: PaymentOption,
-    account: string
+    recipientAddress: string,
+    chainId: string,
+    assetAddress: string,
+    assetNamespace: string
   ): Promise<{
     validatedPayment: DetailedPaymentOption | null
     hasMatchingAsset: boolean
   }> {
-    try {
-      // Extract recipient address
-      const recipientAddress = PaymentValidationUtils.extractAddressFromCAIP10(payment.recipient)
-      if (!recipientAddress) {
-        return { validatedPayment: null, hasMatchingAsset: false }
-      }
+    const account = SettingsStore.state.solanaAddress
+    let tokenDetails: TokenDetails | undefined
+    let simulationResult: boolean | undefined
 
-      // Parse asset details
-      const { chainId, assetAddress, chainNamespace, assetNamespace } =
-        PaymentValidationUtils.getAssetDetails(payment.asset)
+    if (assetNamespace === 'slip44' && assetAddress === '501') {
+      simulationResult = await this.simulateSolanaNativeTransfer({
+        account,
+        recipientAddress: recipientAddress,
+        amount: payment.amount,
+        chainId: `solana:${chainId}`
+      })
+      tokenDetails = simulationResult
+        ? await this.getSolNativeAssetDetails(account, `solana:${chainId}`)
+        : undefined
+    } else if (assetNamespace === 'token') {
+      simulationResult = await this.simulateSolanaTokenTransfer({
+        account,
+        recipientAddress: recipientAddress,
+        amount: BigInt(payment.amount),
+        tokenAddress: assetAddress,
+        chainId: `solana:${chainId}`
+      })
+      tokenDetails = simulationResult
+        ? await this.getSplTokenDetails(assetAddress, account, `solana:${chainId}`, payment.asset)
+        : undefined
+    } else {
+      return { validatedPayment: null, hasMatchingAsset: false }
+    }
 
-      // Check if asset namespace is supported
-      if (!PaymentValidationUtils.isSupportedAssetNamespace(assetNamespace)) {
-        return { validatedPayment: null, hasMatchingAsset: false }
-      }
+    // Check if token details were assigned
+    if (!tokenDetails) {
+      return { validatedPayment: null, hasMatchingAsset: false }
+    }
 
-      // Get token details based on asset namespace
-      let tokenDetails: TokenDetails
+    // Check if user has the asset (balance > 0)
+    const hasMatchingAsset = tokenDetails.balance > BigInt(0)
+    console.log({ tokenDetails })
+    if (!hasMatchingAsset) {
+      return { validatedPayment: null, hasMatchingAsset }
+    }
 
-      if (assetNamespace === 'slip44' && assetAddress === '501') {
-        // Native SOL
-        tokenDetails = await this.getSolNativeAssetDetails(account, `${chainNamespace}:${chainId}`)
-      } else if (assetNamespace === 'token') {
-        // SPL token
-        tokenDetails = await this.getSplTokenDetails(
-          assetAddress,
-          account,
-          `${chainNamespace}:${chainId}`,
-          payment.asset
+    // Create detailed payment option with metadata
+    const detailedPayment = simulationResult
+      ? PaymentValidationUtils.createDetailedPaymentOption(
+          payment,
+          tokenDetails,
+          assetNamespace,
+          chainId,
+          'solana'
         )
-      } else {
-        return { validatedPayment: null, hasMatchingAsset: false }
-      }
+      : null
 
-      // Check if user has the asset (balance > 0)
-      const hasMatchingAsset = tokenDetails.balance > BigInt(0)
+    return { validatedPayment: detailedPayment, hasMatchingAsset: true }
+  }
 
-      if (!hasMatchingAsset) {
-        return { validatedPayment: null, hasMatchingAsset }
-      }
+  private static async processEvmDirectPayment(
+    payment: PaymentOption,
+    recipientAddress: string,
+    chainId: string,
+    assetAddress: string,
+    assetNamespace: string
+  ): Promise<{
+    validatedPayment: DetailedPaymentOption | null
+    hasMatchingAsset: boolean
+  }> {
+    const account = SettingsStore.state.eip155Address as `0x${string}`
+    let tokenDetails: TokenDetails | undefined
+    let simulationResult: boolean | undefined
 
-      // Create detailed payment option with metadata
-      const detailedPayment = PaymentValidationUtils.createDetailedPaymentOption(
-        payment,
-        tokenDetails,
-        assetNamespace,
+    if (assetNamespace === 'erc20') {
+      simulationResult = await PaymentValidationUtils.simulateEvmContractInteraction(
+        {
+          data: [
+            {
+              to: assetAddress as `0x${string}`,
+              value: '0x0',
+              data: encodeFunctionData({
+                abi: erc20Abi,
+                functionName: 'transfer',
+                args: [recipientAddress as `0x${string}`, BigInt(payment.amount)]
+              })
+            }
+          ]
+        },
         chainId,
-        chainNamespace
+        account
       )
-
-      return { validatedPayment: detailedPayment, hasMatchingAsset: true }
-    } catch (error) {
-      console.error('Error validating Solana payment option:', error)
+      tokenDetails = await PaymentValidationUtils.getErc20TokenDetails(
+        assetAddress as `0x${string}`,
+        Number(chainId),
+        account as `0x${string}`
+      )
+    } else if (assetNamespace === 'slip44' && assetAddress === '60') {
+      // slip44:60 - native ETH token
+      simulationResult = await TransactionSimulatorUtil.simulateEvmTransaction(
+        chainId,
+        account as `0x${string}`,
+        [
+          {
+            to: recipientAddress as `0x${string}`,
+            value: payment.amount,
+            data: '0x'
+          }
+        ]
+      )
+      tokenDetails = await PaymentValidationUtils.getNativeAssetDetails(
+        Number(chainId),
+        account as `0x${string}`
+      )
+    } else {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
-  }
 
-  /**
-   * Validates a single direct payment option and creates a detailed version if valid
-   *
-   * @param payment - Payment option to validate
-   * @param evmAccount - EVM account address (if available)
-   * @param solanaAccount - Solana account address (if available)
-   * @returns Object containing the validated payment (or null) and asset availability flag
-   */
-  private static async getDetailedDirectPaymentOption(
-    payment: PaymentOption,
-    evmAccount?: string,
-    solanaAccount?: string
-  ): Promise<{
-    validatedPayment: DetailedPaymentOption | null
-    hasMatchingAsset: boolean
-  }> {
-    try {
-      // Parse asset details to determine chain
-      const { chainNamespace } = PaymentValidationUtils.getAssetDetails(payment.asset)
-
-      // Delegate to chain-specific methods
-      if (chainNamespace === 'eip155' && evmAccount) {
-        return await this.getDetailedDirectPaymentOptionEVM(payment, evmAccount)
-      } else if (chainNamespace === 'solana' && solanaAccount) {
-        return await this.getDetailedDirectPaymentOptionSolana(payment, solanaAccount)
-      }
-
-      return { validatedPayment: null, hasMatchingAsset: false }
-    } catch (error) {
-      console.error('Error getting detailed payment option:', error)
+    // Check if token details were assigned
+    if (!tokenDetails || simulationResult === undefined) {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
-  }
 
-  /**
-   * Validates a contract payment option for Solana and creates a detailed version if valid
-   *
-   * @param payment - Payment option to validate
-   * @param account - Solana account address
-   * @returns Object containing the validated payment (or null) and asset availability flag
-   */
-  private static async getDetailedContractPaymentOptionSolana(
-    payment: PaymentOption,
-    account: string
-  ): Promise<{
-    validatedPayment: DetailedPaymentOption | null
-    hasMatchingAsset: boolean
-  }> {
-    try {
-      const { asset, contractInteraction } = payment
+    // Check if user has the asset (balance > 0)
+    const hasMatchingAsset = tokenDetails.balance > BigInt(0)
+    console.log({ tokenDetails })
+    if (!hasMatchingAsset) {
+      return { validatedPayment: null, hasMatchingAsset }
+    }
 
-      if (!contractInteraction || contractInteraction.type !== 'solana-instruction') {
-        return { validatedPayment: null, hasMatchingAsset: false }
-      }
-
-      // Parse asset details
-      const { chainId, assetAddress, chainNamespace, assetNamespace } =
-        PaymentValidationUtils.getAssetDetails(asset)
-
-      // Check if asset namespace is supported
-      if (!PaymentValidationUtils.isSupportedAssetNamespace(assetNamespace)) {
-        return { validatedPayment: null, hasMatchingAsset: false }
-      }
-
-      // Get token details based on asset namespace
-      let tokenDetails: TokenDetails
-
-      if (assetNamespace === 'slip44' && assetAddress === '501') {
-        // Native SOL
-        tokenDetails = await this.getSolNativeAssetDetails(account, `${chainNamespace}:${chainId}`)
-      } else if (assetNamespace === 'token') {
-        // SPL token
-        tokenDetails = await this.getSplTokenDetails(
-          assetAddress,
-          account,
-          `${chainNamespace}:${chainId}`,
-          payment.asset
+    // Create detailed payment option with metadata
+    const detailedPayment = simulationResult
+      ? PaymentValidationUtils.createDetailedPaymentOption(
+          payment,
+          tokenDetails,
+          assetNamespace,
+          chainId,
+          'eip155'
         )
-      } else {
-        return { validatedPayment: null, hasMatchingAsset: false }
-      }
+      : null
 
-      // Check if user has the asset (balance > 0)
-      const hasMatchingAsset = tokenDetails.balance > BigInt(0)
-
-      // For demonstration, we'll assume all Solana contract interactions are feasible
-      // In a production app, you would validate the instructions using simulation
-
-      // Create detailed payment option with metadata
-      const detailedPayment = PaymentValidationUtils.createDetailedPaymentOption(
-        payment,
-        tokenDetails,
-        assetNamespace,
-        chainId,
-        chainNamespace
-      )
-
-      return { validatedPayment: detailedPayment, hasMatchingAsset }
-    } catch (error) {
-      console.error('Error validating Solana contract payment option:', error)
-      return { validatedPayment: null, hasMatchingAsset: false }
-    }
+    return { validatedPayment: detailedPayment, hasMatchingAsset: true }
   }
 
-  /**
-   * Validates a contract payment option and creates a detailed version if valid
-   *
-   * @param payment - Payment option to validate
-   * @param account - User account address
-   * @returns Object containing the validated payment (or null) and asset availability flag
-   */
-  private static async getDetailedContractPaymentOptionEVM(
-    payment: PaymentOption,
-    account: string
-  ): Promise<{
+  private static async getDetailedContractPaymentOption(payment: PaymentOption): Promise<{
     validatedPayment: DetailedPaymentOption | null
     hasMatchingAsset: boolean
   }> {
@@ -587,255 +664,195 @@ export class PaymentValidationUtils {
       const { chainId, assetAddress, chainNamespace, assetNamespace } =
         PaymentValidationUtils.getAssetDetails(asset)
 
-      // Validate contract interaction
-      const isContractValid = await PaymentValidationUtils.simulateContractInteraction(
-        contractInteraction,
-        chainId,
-        account
-      )
-
-      if (!isContractValid) {
-        return { validatedPayment: null, hasMatchingAsset: false }
-      }
-
       // Check if asset namespace is supported
       if (!PaymentValidationUtils.isSupportedAssetNamespace(assetNamespace)) {
         return { validatedPayment: null, hasMatchingAsset: false }
       }
 
-      // Get asset details based on asset namespace
-      let tokenDetails: TokenDetails
-      if (assetNamespace === 'erc20') {
-        tokenDetails = await PaymentValidationUtils.getErc20TokenDetails(
-          assetAddress as `0x${string}`,
-          Number(chainId),
-          account as `0x${string}`
-        )
-      } else {
-        // must be slip44 since we already checked supported namespaces
-        tokenDetails = await PaymentValidationUtils.getNativeAssetDetails(
-          Number(chainId),
-          account as `0x${string}`
-        )
+      let result
+
+      switch (chainNamespace) {
+        case 'solana':
+          result = await this.processSolanaContractPayment(
+            payment,
+            chainId,
+            assetAddress,
+            assetNamespace,
+            contractInteraction
+          )
+          break
+
+        case 'eip155':
+          result = await this.processEvmContractPayment(
+            payment,
+            chainId,
+            assetAddress,
+            assetNamespace,
+            contractInteraction
+          )
+          break
+
+        default:
+          return { validatedPayment: null, hasMatchingAsset: false }
       }
 
-      // Check if user has the asset (balance > 0)
-      const hasMatchingAsset = tokenDetails.balance > BigInt(0)
-
-      // Create detailed payment option with metadata (reusing the common method)
-      const detailedPayment = PaymentValidationUtils.createDetailedPaymentOption(
-        payment,
-        tokenDetails,
-        assetNamespace,
-        chainId,
-        chainNamespace
-      )
-
-      return {
-        validatedPayment: detailedPayment,
-        hasMatchingAsset
-      }
+      return result
     } catch (error) {
       console.error('Error validating contract payment option:', error)
       return { validatedPayment: null, hasMatchingAsset: false }
     }
   }
 
-  /**
-   * Validates a contract payment option and creates a detailed version if valid
-   *
-   * @param payment - Payment option to validate
-   * @param evmAccount - EVM account address (if available)
-   * @param solanaAccount - Solana account address (if available)
-   * @returns Object containing the validated payment (or null) and asset availability flag
-   */
-  private static async getDetailedContractPaymentOption(
+  private static async processSolanaContractPayment(
     payment: PaymentOption,
-    evmAccount?: string,
-    solanaAccount?: string
+    chainId: string,
+    assetAddress: string,
+    assetNamespace: string,
+    contractInteraction: any
   ): Promise<{
     validatedPayment: DetailedPaymentOption | null
     hasMatchingAsset: boolean
   }> {
-    try {
-      // Parse asset details to determine chain
-      const { chainNamespace } = PaymentValidationUtils.getAssetDetails(payment.asset)
+    const account = SettingsStore.state.solanaAddress
+    let tokenDetails: TokenDetails | undefined
+    let isValid = false
 
-      // Delegate to chain-specific methods
-      if (chainNamespace === 'eip155' && evmAccount) {
-        return await this.getDetailedContractPaymentOptionEVM(payment, evmAccount)
-      } else if (chainNamespace === 'solana' && solanaAccount) {
-        return await this.getDetailedContractPaymentOptionSolana(payment, solanaAccount)
-      }
-
-      return { validatedPayment: null, hasMatchingAsset: false }
-    } catch (error) {
-      console.error('Error getting detailed contract payment option:', error)
+    if (contractInteraction.type !== 'solana-instruction') {
       return { validatedPayment: null, hasMatchingAsset: false }
     }
-  }
 
-  /**
-   * Gets details for a Solana native asset (SOL)
-   *
-   * @param account - Solana account address
-   * @returns SOL asset details including metadata
-   */
-  private static async getSolNativeAssetDetails(
-    account: string,
-    chainId: string
-  ): Promise<TokenDetails> {
-    try {
-      // Get the RPC URL for the chain
-      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
-
-      if (!rpc) {
-        throw new Error('There is no RPC URL for the provided chain')
-      }
-
-      // Connect to Solana
-      const connection = new Connection(rpc, 'confirmed')
-      const publicKey = new PublicKey(account)
-
-      // Get SOL balance
-      const balance = await connection.getBalance(publicKey)
-      console.log('Solana balance', balance)
-      return {
-        balance: BigInt(balance),
-        decimals: 9,
-        symbol: 'SOL',
-        name: 'Solana'
-      }
-    } catch (error) {
-      console.error('Error getting SOL balance:', error)
-
-      // Return default values in case of error
-      return {
-        balance: BigInt(0),
-        decimals: 9,
-        symbol: 'SOL',
-        name: 'Solana'
-      }
+    isValid = await this.simulateSolanaContractInteraction({
+      contractInteraction: contractInteraction as SolanaContractInteraction,
+      account,
+      chainId: `solana:${chainId}`
+    })
+    if (!isValid) {
+      return { validatedPayment: null, hasMatchingAsset: false }
     }
+
+    if (assetNamespace === 'slip44' && assetAddress === '501') {
+      // Native SOL
+      tokenDetails = await this.getSolNativeAssetDetails(account, `solana:${chainId}`)
+    } else if (assetNamespace === 'token') {
+      // SPL token
+      tokenDetails = await this.getSplTokenDetails(
+        assetAddress,
+        account,
+        `solana:${chainId}`,
+        payment.asset
+      )
+    } else {
+      return { validatedPayment: null, hasMatchingAsset: false }
+    }
+
+    // Check if token details were assigned
+    if (!tokenDetails) {
+      return { validatedPayment: null, hasMatchingAsset: false }
+    }
+
+    // Check if user has the asset (balance > 0)
+    const hasMatchingAsset = tokenDetails.balance > BigInt(0)
+
+    // Create detailed payment option with metadata
+    const detailedPayment = isValid
+      ? PaymentValidationUtils.createDetailedPaymentOption(
+          payment,
+          tokenDetails,
+          assetNamespace,
+          chainId,
+          'solana'
+        )
+      : null
+    return { validatedPayment: detailedPayment, hasMatchingAsset }
   }
 
-  /**
-   * Gets details for a fungible SPL token with known token mapping
-   *
-   * @param tokenAddress - Token mint address
-   * @param account - Account address
-   * @returns Token details including balance and metadata
-   */
-  private static async getSplTokenDetails(
-    tokenAddress: string,
-    account: string,
+  private static async processEvmContractPayment(
+    payment: PaymentOption,
     chainId: string,
-    caip19AssetAddress: string
-  ): Promise<TokenDetails> {
-    try {
-      // Get the RPC URL for the chain
-      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+    assetAddress: string,
+    assetNamespace: string,
+    contractInteraction: any
+  ): Promise<{
+    validatedPayment: DetailedPaymentOption | null
+    hasMatchingAsset: boolean
+  }> {
+    const account = SettingsStore.state.eip155Address as `0x${string}`
+    let tokenDetails: TokenDetails | undefined
+    let isValid = false
 
-      if (!rpc) {
-        throw new Error('There is no RPC URL for the provided chain')
-      }
-
-      // Connect to Solana
-      const connection = new Connection(rpc, 'confirmed')
-      const publicKey = new PublicKey(account)
-      const mintAddress = new PublicKey(tokenAddress)
-
-      try {
-        // Check if this is a known token
-        const token = getSolanaTokenData(caip19AssetAddress)
-
-        // Get token balance
-        let balance = BigInt(0)
-        let decimals = token?.decimals || 6 // Use known token decimals or default
-
-        try {
-          // Find the associated token account(s)
-          const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
-            mint: mintAddress
-          })
-
-          // If token account exists, get balance
-          if (tokenAccounts.value.length > 0) {
-            const tokenAccountPubkey = tokenAccounts.value[0].pubkey
-            const tokenBalance = await connection.getTokenAccountBalance(tokenAccountPubkey)
-            balance = BigInt(tokenBalance.value.amount)
-
-            // Update decimals from on-chain data if not a known token
-            if (!token) {
-              decimals = tokenBalance.value.decimals
-            }
-          } else if (!token) {
-            // If no token accounts and not a known token, try to get decimals from mint
-            const mintInfo = await connection.getParsedAccountInfo(mintAddress)
-            if (mintInfo.value) {
-              const parsedMintInfo = (mintInfo.value.data as any).parsed?.info
-              decimals = parsedMintInfo?.decimals || decimals
-            }
-          }
-        } catch (balanceError) {
-          console.warn('Error getting token balance:', balanceError)
-          // Continue with zero balance
-        }
-
-        // Return with known metadata or fallback to generic
-        return {
-          balance,
-          decimals,
-          symbol: token?.symbol || tokenAddress.slice(0, 4).toUpperCase(),
-          name: token?.name || `SPL Token (${tokenAddress.slice(0, 8)}...)`
-        }
-      } catch (tokenError) {
-        console.warn('Error getting token details:', tokenError)
-
-        // Return default values
-        return {
-          balance: BigInt(0),
-          decimals: 6,
-          symbol: tokenAddress.slice(0, 4).toUpperCase(),
-          name: 'SPL Token'
-        }
-      }
-    } catch (error) {
-      console.error('Error getting SPL token details:', error)
-
-      // Return default values in case of error
-      return {
-        balance: BigInt(0),
-        decimals: 6,
-        symbol: tokenAddress.slice(0, 4).toUpperCase(),
-        name: 'SPL Token'
-      }
+    if (contractInteraction.type !== 'evm-calls') {
+      return { validatedPayment: null, hasMatchingAsset: false }
     }
+
+    isValid = await PaymentValidationUtils.simulateEvmContractInteraction(
+      contractInteraction,
+      chainId,
+      account
+    )
+
+    if (!isValid) {
+      return { validatedPayment: null, hasMatchingAsset: false }
+    }
+
+    if (assetNamespace === 'erc20') {
+      tokenDetails = await PaymentValidationUtils.getErc20TokenDetails(
+        assetAddress as `0x${string}`,
+        Number(chainId),
+        account as `0x${string}`
+      )
+    } else if (assetNamespace === 'slip44') {
+      // must be slip44 since we already checked supported namespaces
+      tokenDetails = await PaymentValidationUtils.getNativeAssetDetails(
+        Number(chainId),
+        account as `0x${string}`
+      )
+    } else {
+      return { validatedPayment: null, hasMatchingAsset: false }
+    }
+
+    // Check if token details were assigned
+    if (!tokenDetails) {
+      return { validatedPayment: null, hasMatchingAsset: false }
+    }
+
+    // Check if user has the asset (balance > 0)
+    const hasMatchingAsset = tokenDetails.balance > BigInt(0)
+
+    // Create detailed payment option with metadata
+    const detailedPayment = isValid
+      ? PaymentValidationUtils.createDetailedPaymentOption(
+          payment,
+          tokenDetails,
+          assetNamespace,
+          chainId,
+          'eip155'
+        )
+      : null
+    return { validatedPayment: detailedPayment, hasMatchingAsset }
   }
 
-  /**
-   * Finds and validates all feasible direct payment options
-   *
-   * @param directPayments - Array of direct payment options
-   * @returns Object containing feasible payments and asset availability flag
-   */
-  static async findFeasibleDirectPayments(directPayments: PaymentOption[]): Promise<{
-    feasibleDirectPayments: DetailedPaymentOption[]
+  static async findFeasiblePayments(payments: PaymentOption[]): Promise<{
+    feasiblePayments: DetailedPaymentOption[]
     isUserHaveAtleastOneMatchingAssets: boolean
   }> {
     let isUserHaveAtleastOneMatchingAssets = false
-    const evmAccount = SettingsStore.state.eip155Address as `0x${string}`
-    const solanaAccount = SettingsStore.state.solanaAddress
 
-    // Validate each payment option
     const results = await Promise.all(
-      directPayments.map(payment =>
-        PaymentValidationUtils.getDetailedDirectPaymentOption(payment, evmAccount, solanaAccount)
-      )
+      payments.map(async payment => {
+        if (payment.recipient && !payment.contractInteraction) {
+          // Direct payment
+          return await this.getDetailedDirectPaymentOption(payment)
+        } else if (payment.contractInteraction) {
+          return await this.getDetailedContractPaymentOption(payment)
+        } else {
+          console.warn('Invalid payment: missing both recipient and contractInteraction')
+          return { validatedPayment: null, hasMatchingAsset: false }
+        }
+      })
     )
 
     // Collect results
-    const feasibleDirectPayments: DetailedPaymentOption[] = []
+    const feasiblePayments: DetailedPaymentOption[] = []
 
     for (const result of results) {
       if (result.hasMatchingAsset) {
@@ -843,51 +860,12 @@ export class PaymentValidationUtils {
       }
 
       if (result.validatedPayment) {
-        feasibleDirectPayments.push(result.validatedPayment)
+        feasiblePayments.push(result.validatedPayment)
       }
     }
 
     return {
-      feasibleDirectPayments,
-      isUserHaveAtleastOneMatchingAssets
-    }
-  }
-
-  /**
-   * Finds and validates all feasible contract payment options
-   *
-   * @param contractPayments - Array of contract payment options
-   * @returns Object containing feasible payments and asset availability flag
-   */
-  static async findFeasibleContractPayments(contractPayments: PaymentOption[]): Promise<{
-    feasibleContractPayments: DetailedPaymentOption[]
-    isUserHaveAtleastOneMatchingAssets: boolean
-  }> {
-    let isUserHaveAtleastOneMatchingAssets = false
-    const evmAccount = SettingsStore.state.eip155Address as `0x${string}`
-    const solanaAccount = SettingsStore.state.solanaAddress
-
-    const results = await Promise.all(
-      contractPayments.map(payment =>
-        PaymentValidationUtils.getDetailedContractPaymentOption(payment, evmAccount, solanaAccount)
-      )
-    )
-
-    // Collect results
-    const feasibleContractPayments: DetailedPaymentOption[] = []
-
-    for (const result of results) {
-      if (result.hasMatchingAsset) {
-        isUserHaveAtleastOneMatchingAssets = true
-      }
-
-      if (result.validatedPayment) {
-        feasibleContractPayments.push(result.validatedPayment)
-      }
-    }
-
-    return {
-      feasibleContractPayments,
+      feasiblePayments,
       isUserHaveAtleastOneMatchingAssets
     }
   }
