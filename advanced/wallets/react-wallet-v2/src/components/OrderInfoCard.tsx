@@ -118,14 +118,6 @@ export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IPro
         </div>
       </div>
       <Col css={{display: "flex", flexDirection: "column", gap: "12px" , paddingLeft: "4px"}}>
-       <Row align="center" justify='space-between'>
-        <Text color="$gray400" >
-          Merchant 
-        </Text>
-        <Text >
-          Donut Seller
-        </Text>
-       </Row>
       {selectedPayment && selectedPayment.recipient && <Row align="center" justify='space-between'>
         <Text color="$gray400" >
           Address 

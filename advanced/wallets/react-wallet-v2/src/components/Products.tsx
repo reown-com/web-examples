@@ -32,11 +32,6 @@ function ProductCard({ product }: ProductCardProps) {
             <Text style={{fontSize: '18px' }}>
               {product.name}
             </Text>
-            {/* {product.description && (
-              <Text style={{ color: '#8c8c8c', fontSize: '12px' }}>
-                {product.description}
-              </Text>
-            )} */}
             <Row justify="space-between">
             {product.price && (
               <Row>
@@ -46,14 +41,6 @@ function ProductCard({ product }: ProductCardProps) {
                 <span style={{ fontSize: '14px' }}>{product.price}</span>
               </Row>
             )}
-            { 
-              <Row>
-                <Text b style={{ color: '#8c8c8c', fontSize: '14px' }}>
-                  {'Qty. '}
-                </Text>
-                <span style={{ fontSize: '14px' }}>1</span>
-              </Row>
-            }
             </Row>
             
           </Col>
@@ -74,7 +61,6 @@ export default function Products({ products }: ProductsProps) {
 
   return (
     <Fragment>
-      {/* <Text h5>Products</Text> */}
       {products.map((product, idx) => (
         <ProductCard key={idx} product={product} />
       ))}

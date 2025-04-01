@@ -59,6 +59,8 @@ const SelectedPaymentDetails = ({ selectedPayment }: SelectedPaymentDetailsProps
     },
   }
 
+  const formattedBalance = formatUnits(selectedPayment.assetMetadata.assetBalance, selectedPayment.assetMetadata.assetDecimals)
+
   return (
     <Card css={{ 
       backgroundColor: '#222', 
@@ -78,7 +80,7 @@ const SelectedPaymentDetails = ({ selectedPayment }: SelectedPaymentDetailsProps
           </Row>
           <Col span={8} css={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',}}>
             <Text css={{ color: '#fff', fontSize: '14px', justifyContent: 'flex-end' }}>
-              {parseFloat(formatUnits(selectedPayment.assetMetadata.assetBalance, selectedPayment.assetMetadata.assetDecimals)).toFixed(6)}{' '} {selectedPayment.assetMetadata.assetSymbol} 
+              {formattedBalance.length > 4 ? parseFloat(formattedBalance).toFixed(3) : formattedBalance}{' '} {selectedPayment.assetMetadata.assetSymbol} 
             </Text>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Text css={{ color: '#aaa', fontSize: '14px', whiteSpace: 'nowrap' }}>
@@ -205,18 +207,14 @@ const getFilteredNetworks = (networksWithTokens: NetworkWithTokens[], selectedTo
 };
 
 export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
-  // Extract all token and network data with relationship information
   const allTokensWithNetworks = extractTokensWithNetworks(payments);
   const allNetworksWithTokens = extractNetworksWithTokens(payments);
   
-  // Initialize references to prevent re-renders
   const initializedRef = useRef(false);
   
-  // State for selected indices
   const [selectedTokenIndex, setSelectedTokenIndex] = useState<number>(0);
   const [selectedNetworkIndex, setSelectedNetworkIndex] = useState<number>(0);
   
-  // State for currently selected token and network (by value, not index)
   const [selectedToken, setSelectedToken] = useState<TokenWithNetworks | null>(
     allTokensWithNetworks.length > 0 ? allTokensWithNetworks[0] : null
   );
@@ -224,27 +222,21 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
     allNetworksWithTokens.length > 0 ? allNetworksWithTokens[0] : null
   );
   
-  // State for filtered lists
   const [filteredTokens, setFilteredTokens] = useState<TokenWithNetworks[]>(allTokensWithNetworks);
   const [filteredNetworks, setFilteredNetworks] = useState<NetworkWithTokens[]>(allNetworksWithTokens);
   
-  // State to track which dropdown was last changed
   const [lastChanged, setLastChanged] = useState<'token' | 'network' | null>(null);
 
-  // State to track the selected payment option
   const [selectedPayment, setSelectedPayment] = useState<DetailedPaymentOption | null>(null);
 
-  // Memoize the filtered tokens calculation to avoid recalculations
   const getFilteredTokensForNetwork = useCallback((networkId: string | undefined) => {
     return getFilteredTokens(allTokensWithNetworks, networkId);
   }, [allTokensWithNetworks]);
   
-  // Memoize the filtered networks calculation to avoid recalculations
   const getFilteredNetworksForToken = useCallback((tokenSymbol: string | undefined) => {
     return getFilteredNetworks(allNetworksWithTokens, tokenSymbol);
   }, [allNetworksWithTokens]);
 
-  // Update filtered tokens when network changes - with memoization to prevent infinite renders
   useEffect(() => {
     if (lastChanged === 'network' && selectedNetwork) {
       const newFilteredTokens = getFilteredTokensForNetwork(selectedNetwork.chainId);
@@ -284,7 +276,6 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
     selectedTokenIndex
   ]);
 
-  // Update filtered networks when token changes - with memoization to prevent infinite renders
   useEffect(() => {
     if (lastChanged === 'token' && selectedToken) {
       const newFilteredNetworks = getFilteredNetworksForToken(selectedToken.assetSymbol);
@@ -314,7 +305,6 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
         }
       }
     }
-    // We include all deps but use memoized functions to prevent excessive recalculations
   }, [
     selectedToken, 
     lastChanged, 
@@ -324,24 +314,20 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
     selectedNetworkIndex
   ]);
 
-  // Handler for token selection
   const handleSelectToken = (index: number) => {
     setSelectedTokenIndex(index);
     setSelectedToken(filteredTokens[index]);
     setLastChanged('token');
   };
 
-  // Handler for network selection
   const handleSelectNetwork = (index: number) => {
     setSelectedNetworkIndex(index);
     setSelectedNetwork(filteredNetworks[index]);
     setLastChanged('network');
   };
 
-  // Find and notify the selected payment option, with memo to prevent unnecessary updates
   useEffect(() => {
     if (selectedToken && selectedNetwork && onSelectPayment) {
-      // Find the matching payment option
       const payment = payments.find(payment => 
         payment.assetMetadata.assetSymbol === selectedToken.assetSymbol && 
         payment.chainMetadata.chainId === selectedNetwork.chainId
@@ -359,12 +345,10 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
     payments
   ]);
 
-  // Initialize state on first load only
   useEffect(() => {
     if (!initializedRef.current && allTokensWithNetworks.length > 0 && allNetworksWithTokens.length > 0) {
       initializedRef.current = true;
       
-      // Initial values
       const initialToken = allTokensWithNetworks[0];
       const initialNetwork = allNetworksWithTokens[0];
       
@@ -373,7 +357,6 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
       setFilteredTokens(allTokensWithNetworks);
       setFilteredNetworks(allNetworksWithTokens);
       
-      // Initial selected payment
       if (payments.length > 0) {
         const initialPayment = payments.find(payment => 
           payment.assetMetadata.assetSymbol === initialToken.assetSymbol && 
@@ -393,7 +376,6 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
         }
       }
     }
-    // We intentionally use an empty dependency array with useRef to ensure this only runs once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
