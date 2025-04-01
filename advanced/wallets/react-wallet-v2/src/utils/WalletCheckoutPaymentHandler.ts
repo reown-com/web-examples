@@ -1,8 +1,16 @@
 import { encodeFunctionData } from 'viem'
 import { erc20Abi } from 'viem'
+import { Connection, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
+import { Buffer } from 'buffer'
 
-import { DetailedPaymentOption, CheckoutErrorCode, CheckoutError } from '@/types/wallet_checkout'
-import { Wallet } from 'ethers'
+import {
+  DetailedPaymentOption,
+  CheckoutErrorCode,
+  CheckoutError,
+  SolanaContractInteraction
+} from '@/types/wallet_checkout'
+import { SOLANA_MAINNET_CHAINS } from '@/data/SolanaData'
+import { SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 
 export interface PaymentResult {
   txHash: string
@@ -22,12 +30,120 @@ const WalletCheckoutPaymentHandler = {
   },
 
   /**
+   * Process a Solana contract interaction
+   */
+  async processSolanaContractInteraction(
+    wallet: any,
+    contractInteraction: SolanaContractInteraction,
+    chainId: string
+  ): Promise<PaymentResult> {
+    const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+
+    if (!rpc) {
+      throw new Error(`There is no RPC URL for the provided chain ${chainId}`)
+    }
+    const connection = new Connection(rpc)
+
+    // Create a new transaction
+    const transaction = new Transaction()
+
+    const instruction = contractInteraction.data
+    const accountMetas = instruction.accounts.map(acc => ({
+      pubkey: new PublicKey(acc.pubkey),
+      isSigner: acc.isSigner,
+      isWritable: acc.isWritable
+    }))
+
+    // Create the instruction
+    const txInstruction = new TransactionInstruction({
+      programId: new PublicKey(instruction.programId),
+      keys: accountMetas,
+      data: Buffer.from(instruction.data, 'base64')
+    })
+
+    // Add to transaction
+    transaction.add(txInstruction)
+
+    // Set the wallet's public key as feePayer
+    const walletAddress = await wallet.getAddress()
+    const publicKey = new PublicKey(walletAddress)
+    transaction.feePayer = publicKey
+
+    // Get recent blockhash from the connection
+    const { blockhash } = await connection.getLatestBlockhash('confirmed')
+    transaction.recentBlockhash = blockhash
+
+    const txHash = await connection.sendRawTransaction(transaction.serialize())
+    await connection.confirmTransaction(txHash, 'confirmed')
+
+    return { txHash }
+  },
+  /**
    * Process any payment type and handle errors
    */
-  async processPayment(wallet: Wallet, payment: DetailedPaymentOption): Promise<PaymentResult> {
+  async processPayment(wallet: any, payment: DetailedPaymentOption): Promise<PaymentResult> {
     try {
-      const { contractInteraction, recipient } = payment
+      const { contractInteraction, recipient, asset, chainMetadata } = payment
+      const { chainNamespace, chainId } = chainMetadata
 
+      // ------ Process Solana payments ------
+      if (chainNamespace === 'solana') {
+        // Check if wallet supports Solana operations
+        if (!wallet.getAddress || !wallet.signAndSendTransaction) {
+          throw new CheckoutError(
+            CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
+            'Solana payment requires a compatible wallet'
+          )
+        }
+        // Contract interaction payment
+        if (
+          contractInteraction &&
+          !recipient &&
+          contractInteraction.type === 'solana-instruction'
+        ) {
+          return await this.processSolanaContractInteraction(
+            wallet,
+            contractInteraction as SolanaContractInteraction,
+            `${chainNamespace}:${chainId}`
+          )
+        }
+        // Direct payment (with recipient)
+        if (recipient && !contractInteraction) {
+          const recipientAddress = recipient.split(':')[2]
+          const assetParts = asset.split('/')
+          const assetNamespace = assetParts[1]?.split(':')[0]
+          const assetReference = assetParts[1]?.split(':')[1]
+
+          // Handle SOL transfers (slip44:501)
+          if (assetNamespace === 'slip44' && assetReference === '501') {
+            const txHash = await wallet.sendSol(
+              recipientAddress,
+              `${chainNamespace}:${chainId}`,
+              BigInt(payment.amount)
+            )
+            return { txHash }
+          }
+
+          // Handle SPL token transfers (token:<mint-address>)
+          if (assetNamespace === 'token') {
+            const txHash = await wallet.sendSplToken(
+              assetReference,
+              recipientAddress,
+              `${chainNamespace}:${chainId}`,
+              BigInt(payment.amount)
+            )
+            return { txHash }
+          }
+        }
+      }
+
+      // Ensure wallet is an EVM wallet
+      if (!wallet.sendTransaction) {
+        throw new CheckoutError(
+          CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
+          'EVM payment requires an EVM wallet'
+        )
+      }
       // Direct payment (with recipient)
       if (recipient && !contractInteraction) {
         const { asset, amount, assetMetadata } = payment
@@ -58,37 +174,32 @@ const WalletCheckoutPaymentHandler = {
           })
           return { txHash: tx.hash }
         }
-
-        throw new CheckoutError(CheckoutErrorCode.INVALID_CHECKOUT_REQUEST)
       }
       // Contract interaction payment
-      else if (contractInteraction && !recipient) {
-        // Handle array of calls
-        if (Array.isArray(contractInteraction.data) && contractInteraction.type === 'evm-calls') {
-          let lastTxHash = '0x'
+      if (
+        contractInteraction &&
+        !recipient &&
+        Array.isArray(contractInteraction.data) &&
+        contractInteraction.type === 'evm-calls'
+      ) {
+        let lastTxHash = '0x'
 
-          for (const call of contractInteraction.data) {
-            console.log('Processing contract call:', call)
-            const tx = await wallet.sendTransaction({
-              to: call.to,
-              value: call.value,
-              data: call.data
-            })
-            console.log('Transaction sent:', tx)
-            lastTxHash = tx.hash
-          }
-
-          return { txHash: lastTxHash }
+        for (const call of contractInteraction.data) {
+          console.log('Processing contract call:', call)
+          const tx = await wallet.sendTransaction({
+            to: call.to,
+            value: call.value,
+            data: call.data
+          })
+          console.log('Transaction sent:', tx)
+          lastTxHash = tx.hash
         }
 
-        throw new CheckoutError(CheckoutErrorCode.UNSUPPORTED_CONTRACT_INTERACTION)
+        return { txHash: lastTxHash }
       }
 
       // Neither or both are present
-      throw new CheckoutError(
-        CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
-        'Payment must have either recipient or contractInteraction, not both or neither'
-      )
+      throw new CheckoutError(CheckoutErrorCode.INVALID_CHECKOUT_REQUEST)
     } catch (error) {
       console.error('Payment processing error:', error)
 

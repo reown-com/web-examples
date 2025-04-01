@@ -53,6 +53,25 @@ export type EvmContractInteraction = {
 }
 
 /**
+ * Solana-specific contract interaction
+ * @property type - Must be "solana-instruction"
+ * @property data - Array of Solana instruction data objects
+ */
+export type SolanaContractInteraction = {
+  type: 'solana-instruction'
+  data: {
+    programId: string // Program ID
+    accounts: {
+      // Accounts involved in the instruction
+      pubkey: string
+      isSigner: boolean
+      isWritable: boolean
+    }[]
+    data: string // Base64-encoded instruction data
+  }
+}
+
+/**
  * A payment option for the checkout
  * @property asset - CAIP-19 asset identifier
  * @property amount - Hex-encoded amount of the asset to transfer
