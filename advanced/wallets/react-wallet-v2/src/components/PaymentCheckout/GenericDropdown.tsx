@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Text,  Card } from '@nextui-org/react'
+import { Text, Card } from '@nextui-org/react'
 
 // Simple hook to detect clicks outside an element
 const useClickAway = (onClickAway: () => void) => {
@@ -28,7 +28,7 @@ const styles = {
   dropdownButton: {
     padding: '8px 16px',
     background: '$accents0',
-    cursor: 'pointer',
+    cursor: 'pointer'
   },
   cardBody: {
     overflow: 'visible' as const,
@@ -71,27 +71,27 @@ const styles = {
     justifyContent: 'center' as const,
     color: 'white',
     boxShadow: '0 2px 8px rgba(23, 201, 100, 0.5)'
-  },
+  }
 }
 
 // Generic dropdown component
-export default function GenericDropdown({ 
-  items, 
-  selectedIndex, 
-  setSelectedIndex, 
-  renderItem, 
-  placeholder = "Select an option",
-  emptyMessage = "No options available"
+export default function GenericDropdown({
+  items,
+  selectedIndex,
+  setSelectedIndex,
+  renderItem,
+  placeholder = 'Select an option',
+  emptyMessage = 'No options available'
 }: {
-  items: any[],
-  selectedIndex: number,
-  setSelectedIndex: (index: number) => void,
-  renderItem: (item: any) => React.ReactNode,
-  placeholder?: string,
+  items: any[]
+  selectedIndex: number
+  setSelectedIndex: (index: number) => void
+  renderItem: (item: any) => React.ReactNode
+  placeholder?: string
   emptyMessage?: string
 }) {
   const [isOpen, setIsOpen] = useState(false)
-  
+
   // Reference to detect clicks outside dropdown
   const dropdownRef = useClickAway(() => {
     setIsOpen(false)
@@ -208,9 +208,7 @@ export default function GenericDropdown({
               )
             })
           ) : (
-            <Text css={{ color: '$accents7', padding: '8px 4px' }}>
-              {emptyMessage}
-            </Text>
+            <Text css={{ color: '$accents7', padding: '8px 4px' }}>{emptyMessage}</Text>
           )}
         </Card>
       )}

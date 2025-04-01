@@ -6,35 +6,35 @@ const styles = {
   avatarWrapper: {
     position: 'relative' as const,
     marginRight: '12px'
-  },
+  }
 }
 
 // Define types for the enhanced token and network data
 interface TokenWithNetworks {
-  assetSymbol: string;
-  assetIcon: string;
-  assetName: string;
-  assetDecimals: number;
-  assetNamespace: string;
-  networks: string[];
+  assetSymbol: string
+  assetIcon: string
+  assetName: string
+  assetDecimals: number
+  assetNamespace: string
+  networks: string[]
 }
 
 // Token Dropdown Component
 interface TokenDropdownProps {
-  allTokens: TokenWithNetworks[];
-  filteredTokens: TokenWithNetworks[];
-  selectedTokenIndex: number;
-  onSelectToken: (index: number) => void;
+  allTokens: TokenWithNetworks[]
+  filteredTokens: TokenWithNetworks[]
+  selectedTokenIndex: number
+  onSelectToken: (index: number) => void
 }
 
-export default function TokenDropdown({ 
-  allTokens, 
-  filteredTokens, 
-  selectedTokenIndex, 
-  onSelectToken 
+export default function TokenDropdown({
+  allTokens,
+  filteredTokens,
+  selectedTokenIndex,
+  onSelectToken
 }: TokenDropdownProps) {
   const renderToken = (token: TokenWithNetworks) => (
-    <Row align="center" css={{ width: '100%', }}>
+    <Row align="center" css={{ width: '100%' }}>
       <div style={styles.avatarWrapper}>
         {token.assetIcon ? (
           <Avatar
@@ -62,7 +62,7 @@ export default function TokenDropdown({
         </Text>
       </Grid.Container>
     </Row>
-  );
+  )
 
   return (
     <div style={{ width: '100%' }}>
@@ -75,5 +75,5 @@ export default function TokenDropdown({
         emptyMessage="No tokens available"
       />
     </div>
-  );
-};
+  )
+}

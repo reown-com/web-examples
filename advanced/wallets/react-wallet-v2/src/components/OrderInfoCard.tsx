@@ -1,15 +1,15 @@
-import { DetailedPaymentOption } from '@/types/wallet_checkout';
+import { DetailedPaymentOption } from '@/types/wallet_checkout'
 import { Col, Row, Text } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
-import OrderDetailIcon from './PaymentCheckout/visual/OrderDetailIcon';
-import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil';
-import { formatUnits } from 'viem';
+import OrderDetailIcon from './PaymentCheckout/visual/OrderDetailIcon'
+import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
+import { formatUnits } from 'viem'
 
 /**
  * Types
  */
 interface IProps {
-  selectedPayment: DetailedPaymentOption | null;
+  selectedPayment: DetailedPaymentOption | null
   orderId: string
   expiry?: number
 }
@@ -58,7 +58,7 @@ export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IPro
       borderRadius: '50%',
       alignItems: 'center',
       justifyContent: 'center'
-    },
+    }
   }
   const [timeRemaining, setTimeRemaining] = useState(calculateTimeRemaining(expiry))
 
@@ -110,42 +110,39 @@ export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IPro
     // If more than 1 hour, show hours and minutes
     return parts.join(' ')
   }
-  
+
   return (
-    <Col css={{display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
-      <div style={styles.iconWrapper}>  
+    <Col css={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+      <div style={styles.iconWrapper}>
         <div style={styles.circleIconBg}>
-            <OrderDetailIcon />
+          <OrderDetailIcon />
         </div>
       </div>
-      <Col css={{display: "flex", flexDirection: "column", gap: "12px" , paddingLeft: "4px"}}>
-      {selectedPayment &&  selectedPayment.fee && <Row align="center" justify='space-between'>
-        <Text color="$gray400" >
-          Estimated Gas Fee
-        </Text>
-        <Text >
-          ~{Number(formatUnits(BigInt(selectedPayment.fee.gasFee), selectedPayment.fee.decimals)).toFixed(6)} {selectedPayment.fee.feeSymbol}
-        </Text>
+      <Col css={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '4px' }}>
+        {selectedPayment && selectedPayment.fee && (
+          <Row align="center" justify="space-between">
+            <Text color="$gray400">Estimated Gas Fee</Text>
+            <Text>
+              ~
+              {Number(
+                formatUnits(BigInt(selectedPayment.fee.gasFee), selectedPayment.fee.decimals)
+              ).toFixed(6)}{' '}
+              {selectedPayment.fee.feeSymbol}
+            </Text>
+          </Row>
+        )}
+        {selectedPayment && selectedPayment.recipient && (
+          <Row align="center" justify="space-between">
+            <Text color="$gray400">Address</Text>
+            <Text>{WalletCheckoutUtil.formatRecipient(selectedPayment.recipient)}</Text>
+          </Row>
+        )}
+        <Row align="center" justify="space-between">
+          <Text color="$gray400">Order ID</Text>
+          <Text size={'small'}>{orderId}</Text>
         </Row>
-        }
-      {selectedPayment && selectedPayment.recipient && <Row align="center" justify='space-between'>
-        <Text color="$gray400" >
-          Address 
-        </Text>
-        <Text >
-          { WalletCheckoutUtil.formatRecipient(selectedPayment.recipient)}
-        </Text>
-      </Row>}
-      <Row align="center" justify='space-between'>
-        <Text color="$gray400" >
-          Order ID
-        </Text>
-        <Text size={'small'}>
-          {orderId}
-        </Text>
-      </Row>
         {timeRemaining ? (
-          <Row align="center" justify='space-between'>
+          <Row align="center" justify="space-between">
             <Text color={timeRemaining.isExpired ? '$error' : '$gray400'}>
               {timeRemaining.isExpired ? 'Expired' : 'Expires in: '}
             </Text>

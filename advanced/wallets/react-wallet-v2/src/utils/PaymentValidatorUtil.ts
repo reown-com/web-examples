@@ -426,7 +426,7 @@ export class PaymentValidationUtils {
     assetNamespace: string,
     chainId: string,
     chainNamespace: string,
-    gasDetails:{
+    gasDetails: {
       gasFee: number
       decimals: number
       feeSymbol: string

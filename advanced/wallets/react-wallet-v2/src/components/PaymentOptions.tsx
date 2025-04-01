@@ -15,30 +15,30 @@ interface PayWithProps {
 
 // Define types for the enhanced token and network data
 interface TokenWithNetworks {
-  assetSymbol: string;
-  assetIcon: string;
-  assetName: string;
-  assetDecimals: number;
-  assetNamespace: string;
-  networks: string[];
+  assetSymbol: string
+  assetIcon: string
+  assetName: string
+  assetDecimals: number
+  assetNamespace: string
+  networks: string[]
 }
 
 interface NetworkWithTokens {
-  chainId: string;
-  chainName: string;
-  chainNamespace: string;
-  chainIcon: string;
-  tokens: string[];
+  chainId: string
+  chainName: string
+  chainNamespace: string
+  chainIcon: string
+  tokens: string[]
 }
 
 // Selected Payment Details Component
 interface SelectedPaymentDetailsProps {
-  selectedPayment: DetailedPaymentOption | null;
+  selectedPayment: DetailedPaymentOption | null
 }
 
 const SelectedPaymentDetails = ({ selectedPayment }: SelectedPaymentDetailsProps) => {
   if (!selectedPayment) {
-    return null;
+    return null
   }
   const styles = {
     iconWrapper: {
@@ -56,91 +56,101 @@ const SelectedPaymentDetails = ({ selectedPayment }: SelectedPaymentDetailsProps
       borderRadius: '50%',
       alignItems: 'center',
       justifyContent: 'center'
-    },
+    }
   }
 
-  const formattedBalance = formatUnits(selectedPayment.assetMetadata.assetBalance, selectedPayment.assetMetadata.assetDecimals)
+  const formattedBalance = formatUnits(
+    selectedPayment.assetMetadata.assetBalance,
+    selectedPayment.assetMetadata.assetDecimals
+  )
 
   return (
-    <Card css={{ 
-      backgroundColor: '#222', 
-      borderRadius: '12px',
-      padding: '12px',
-      marginTop: '16px'
-    }}>
+    <Card
+      css={{
+        backgroundColor: '#222',
+        borderRadius: '12px',
+        padding: '12px',
+        marginTop: '16px'
+      }}
+    >
       <Card.Body css={{ padding: '12px 0' }}>
         <Row align="center" css={{ marginBottom: '12px' }}>
           <Row align="center" css={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={styles.iconWrapper}>  
+            <div style={styles.iconWrapper}>
               <div style={styles.circleIconBg}>
                 <WalletIcon />
               </div>
             </div>
             <Text css={{ color: '#aaa', fontSize: '14px' }}>Balance</Text>
           </Row>
-          <Col span={8} css={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',}}>
+          <Col span={8} css={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
             <Text css={{ color: '#fff', fontSize: '14px', justifyContent: 'flex-end' }}>
-              {formattedBalance.length > 4 ? parseFloat(formattedBalance).toFixed(3) : formattedBalance}{' '} {selectedPayment.assetMetadata.assetSymbol} 
+              {formattedBalance.length > 4
+                ? parseFloat(formattedBalance).toFixed(3)
+                : formattedBalance}{' '}
+              {selectedPayment.assetMetadata.assetSymbol}
             </Text>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Text css={{ color: '#aaa', fontSize: '14px', whiteSpace: 'nowrap' }}>
                 on {selectedPayment.chainMetadata.chainName}
               </Text>
               <div style={{ alignItems: 'center', display: 'flex', width: '16px', height: '16px' }}>
-                <Image 
-                  src={selectedPayment.chainMetadata.chainIcon} 
-                  width={16} 
-                  height={16} 
-                  alt={selectedPayment.chainMetadata.chainName} 
+                <Image
+                  src={selectedPayment.chainMetadata.chainIcon}
+                  width={16}
+                  height={16}
+                  alt={selectedPayment.chainMetadata.chainName}
                   style={{ borderRadius: '50%', marginLeft: '4px' }}
                 />
               </div>
-              
             </div>
           </Col>
         </Row>
 
         <Row align="center" justify="space-between" css={{ marginBottom: '12px' }}>
           <Row align="center" css={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={styles.iconWrapper}>  
+            <div style={styles.iconWrapper}>
               <div style={styles.circleIconBg}>
                 <GiftIcon />
               </div>
             </div>
             <Text css={{ color: '#aaa', fontSize: '14px' }}>Send</Text>
           </Row>
-          <Col span={8} css={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end',}}>
+          <Col span={8} css={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
             <Text css={{ color: '#fff', fontSize: '14px', justifyContent: 'flex-end' }}>
-              {formatUnits(BigInt(selectedPayment.amount), selectedPayment.assetMetadata.assetDecimals).toString()}{' '} {selectedPayment.assetMetadata.assetSymbol} 
+              {formatUnits(
+                BigInt(selectedPayment.amount),
+                selectedPayment.assetMetadata.assetDecimals
+              ).toString()}{' '}
+              {selectedPayment.assetMetadata.assetSymbol}
             </Text>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Text css={{ color: '#aaa', fontSize: '14px', whiteSpace: 'nowrap' }}>
                 on {selectedPayment.chainMetadata.chainName}
               </Text>
               <div style={{ alignItems: 'center', display: 'flex', width: '16px', height: '16px' }}>
-                <Image 
-                  src={selectedPayment.chainMetadata.chainIcon} 
-                  width={16} 
-                  height={16} 
-                  alt={selectedPayment.chainMetadata.chainName} 
+                <Image
+                  src={selectedPayment.chainMetadata.chainIcon}
+                  width={16}
+                  height={16}
+                  alt={selectedPayment.chainMetadata.chainName}
                   style={{ borderRadius: '50%', marginLeft: '4px' }}
                 />
               </div>
             </div>
           </Col>
         </Row>
-        
       </Card.Body>
     </Card>
-  );
-};
+  )
+}
 
 // Modified to extract tokens with network info
 const extractTokensWithNetworks = (payments: DetailedPaymentOption[]): TokenWithNetworks[] => {
-  const tokenMap = new Map();
-  
+  const tokenMap = new Map()
+
   payments.forEach(payment => {
-    const tokenKey = payment.assetMetadata.assetSymbol;
+    const tokenKey = payment.assetMetadata.assetSymbol
     if (!tokenMap.has(tokenKey)) {
       tokenMap.set(tokenKey, {
         assetSymbol: payment.assetMetadata.assetSymbol,
@@ -149,26 +159,26 @@ const extractTokensWithNetworks = (payments: DetailedPaymentOption[]): TokenWith
         assetDecimals: payment.assetMetadata.assetDecimals,
         assetNamespace: payment.assetMetadata.assetNamespace,
         networks: new Set([payment.chainMetadata.chainId])
-      });
+      })
     } else {
       // Add network to existing token's networks
-      tokenMap.get(tokenKey).networks.add(payment.chainMetadata.chainId);
+      tokenMap.get(tokenKey).networks.add(payment.chainMetadata.chainId)
     }
-  });
-  
+  })
+
   // Convert sets to arrays for easier handling
   return Array.from(tokenMap.values()).map(token => ({
     ...token,
     networks: Array.from(token.networks)
-  }));
-};
+  }))
+}
 
 // Modified to extract networks with token info
 const extractNetworksWithTokens = (payments: DetailedPaymentOption[]): NetworkWithTokens[] => {
-  const networkMap = new Map();
-  
+  const networkMap = new Map()
+
   payments.forEach(payment => {
-    const networkKey = payment.chainMetadata.chainId;
+    const networkKey = payment.chainMetadata.chainId
     if (!networkMap.has(networkKey)) {
       networkMap.set(networkKey, {
         chainId: payment.chainMetadata.chainId,
@@ -176,216 +186,226 @@ const extractNetworksWithTokens = (payments: DetailedPaymentOption[]): NetworkWi
         chainNamespace: payment.chainMetadata.chainNamespace,
         chainIcon: payment.chainMetadata.chainIcon,
         tokens: new Set([payment.assetMetadata.assetSymbol])
-      });
+      })
     } else {
       // Add token to existing network's tokens
-      networkMap.get(networkKey).tokens.add(payment.assetMetadata.assetSymbol);
+      networkMap.get(networkKey).tokens.add(payment.assetMetadata.assetSymbol)
     }
-  });
-  
+  })
+
   // Convert sets to arrays for easier handling
   return Array.from(networkMap.values()).map(network => ({
     ...network,
     tokens: Array.from(network.tokens)
-  }));
-};
+  }))
+}
 
 // Get filtered tokens based on selected network
-const getFilteredTokens = (tokensWithNetworks: TokenWithNetworks[], selectedNetworkId?: string): TokenWithNetworks[] => {
-  if (!selectedNetworkId) return tokensWithNetworks;
-  return tokensWithNetworks.filter(token => 
-    token.networks.includes(selectedNetworkId)
-  );
-};
+const getFilteredTokens = (
+  tokensWithNetworks: TokenWithNetworks[],
+  selectedNetworkId?: string
+): TokenWithNetworks[] => {
+  if (!selectedNetworkId) return tokensWithNetworks
+  return tokensWithNetworks.filter(token => token.networks.includes(selectedNetworkId))
+}
 
 // Get filtered networks based on selected token
-const getFilteredNetworks = (networksWithTokens: NetworkWithTokens[], selectedTokenSymbol?: string): NetworkWithTokens[] => {
-  if (!selectedTokenSymbol) return networksWithTokens;
-  return networksWithTokens.filter(network => 
-    network.tokens.includes(selectedTokenSymbol)
-  );
-};
+const getFilteredNetworks = (
+  networksWithTokens: NetworkWithTokens[],
+  selectedTokenSymbol?: string
+): NetworkWithTokens[] => {
+  if (!selectedTokenSymbol) return networksWithTokens
+  return networksWithTokens.filter(network => network.tokens.includes(selectedTokenSymbol))
+}
 
 export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
-  const allTokensWithNetworks = extractTokensWithNetworks(payments);
-  const allNetworksWithTokens = extractNetworksWithTokens(payments);
-  
-  const initializedRef = useRef(false);
-  
-  const [selectedTokenIndex, setSelectedTokenIndex] = useState<number>(0);
-  const [selectedNetworkIndex, setSelectedNetworkIndex] = useState<number>(0);
-  
+  const allTokensWithNetworks = extractTokensWithNetworks(payments)
+  const allNetworksWithTokens = extractNetworksWithTokens(payments)
+
+  const initializedRef = useRef(false)
+
+  const [selectedTokenIndex, setSelectedTokenIndex] = useState<number>(0)
+  const [selectedNetworkIndex, setSelectedNetworkIndex] = useState<number>(0)
+
   const [selectedToken, setSelectedToken] = useState<TokenWithNetworks | null>(
     allTokensWithNetworks.length > 0 ? allTokensWithNetworks[0] : null
-  );
+  )
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkWithTokens | null>(
     allNetworksWithTokens.length > 0 ? allNetworksWithTokens[0] : null
-  );
-  
-  const [filteredTokens, setFilteredTokens] = useState<TokenWithNetworks[]>(allTokensWithNetworks);
-  const [filteredNetworks, setFilteredNetworks] = useState<NetworkWithTokens[]>(allNetworksWithTokens);
-  
-  const [lastChanged, setLastChanged] = useState<'token' | 'network' | null>(null);
+  )
 
-  const [selectedPayment, setSelectedPayment] = useState<DetailedPaymentOption | null>(null);
+  const [filteredTokens, setFilteredTokens] = useState<TokenWithNetworks[]>(allTokensWithNetworks)
+  const [filteredNetworks, setFilteredNetworks] =
+    useState<NetworkWithTokens[]>(allNetworksWithTokens)
 
-  const getFilteredTokensForNetwork = useCallback((networkId: string | undefined) => {
-    return getFilteredTokens(allTokensWithNetworks, networkId);
-  }, [allTokensWithNetworks]);
-  
-  const getFilteredNetworksForToken = useCallback((tokenSymbol: string | undefined) => {
-    return getFilteredNetworks(allNetworksWithTokens, tokenSymbol);
-  }, [allNetworksWithTokens]);
+  const [lastChanged, setLastChanged] = useState<'token' | 'network' | null>(null)
+
+  const [selectedPayment, setSelectedPayment] = useState<DetailedPaymentOption | null>(null)
+
+  const getFilteredTokensForNetwork = useCallback(
+    (networkId: string | undefined) => {
+      return getFilteredTokens(allTokensWithNetworks, networkId)
+    },
+    [allTokensWithNetworks]
+  )
+
+  const getFilteredNetworksForToken = useCallback(
+    (tokenSymbol: string | undefined) => {
+      return getFilteredNetworks(allNetworksWithTokens, tokenSymbol)
+    },
+    [allNetworksWithTokens]
+  )
 
   useEffect(() => {
     if (lastChanged === 'network' && selectedNetwork) {
-      const newFilteredTokens = getFilteredTokensForNetwork(selectedNetwork.chainId);
-      
+      const newFilteredTokens = getFilteredTokensForNetwork(selectedNetwork.chainId)
+
       // Only update if the filtered tokens actually changed
       if (JSON.stringify(newFilteredTokens) !== JSON.stringify(filteredTokens)) {
-        setFilteredTokens(newFilteredTokens);
-        
+        setFilteredTokens(newFilteredTokens)
+
         // If current token is not available in this network, select the first available
         if (newFilteredTokens.length > 0) {
-          const currentTokenIsValid = selectedToken && newFilteredTokens.some(t => 
-            t.assetSymbol === selectedToken.assetSymbol
-          );
-          
+          const currentTokenIsValid =
+            selectedToken &&
+            newFilteredTokens.some(t => t.assetSymbol === selectedToken.assetSymbol)
+
           if (!currentTokenIsValid) {
-            setSelectedToken(newFilteredTokens[0]);
-            setSelectedTokenIndex(0);
+            setSelectedToken(newFilteredTokens[0])
+            setSelectedTokenIndex(0)
           } else if (selectedToken) {
             // Update the token index to match the new filtered list
-            const newIndex = newFilteredTokens.findIndex(t => 
-              t.assetSymbol === selectedToken.assetSymbol
-            );
+            const newIndex = newFilteredTokens.findIndex(
+              t => t.assetSymbol === selectedToken.assetSymbol
+            )
             if (newIndex !== -1 && newIndex !== selectedTokenIndex) {
-              setSelectedTokenIndex(newIndex);
+              setSelectedTokenIndex(newIndex)
             }
           }
         }
       }
     }
-    
   }, [
-    selectedNetwork, 
-    lastChanged, 
-    selectedToken, 
-    getFilteredTokensForNetwork, 
-    filteredTokens, 
+    selectedNetwork,
+    lastChanged,
+    selectedToken,
+    getFilteredTokensForNetwork,
+    filteredTokens,
     selectedTokenIndex
-  ]);
+  ])
 
   useEffect(() => {
     if (lastChanged === 'token' && selectedToken) {
-      const newFilteredNetworks = getFilteredNetworksForToken(selectedToken.assetSymbol);
-      
+      const newFilteredNetworks = getFilteredNetworksForToken(selectedToken.assetSymbol)
+
       // Only update if the filtered networks actually changed
       if (JSON.stringify(newFilteredNetworks) !== JSON.stringify(filteredNetworks)) {
-        setFilteredNetworks(newFilteredNetworks);
-        
+        setFilteredNetworks(newFilteredNetworks)
+
         // If current network is not available for this token, select the first available
         if (newFilteredNetworks.length > 0) {
-          const currentNetworkIsValid = selectedNetwork && newFilteredNetworks.some(n => 
-            n.chainId === selectedNetwork.chainId
-          );
-          
+          const currentNetworkIsValid =
+            selectedNetwork && newFilteredNetworks.some(n => n.chainId === selectedNetwork.chainId)
+
           if (!currentNetworkIsValid) {
-            setSelectedNetwork(newFilteredNetworks[0]);
-            setSelectedNetworkIndex(0);
+            setSelectedNetwork(newFilteredNetworks[0])
+            setSelectedNetworkIndex(0)
           } else if (selectedNetwork) {
             // Update the network index to match the new filtered list
-            const newIndex = newFilteredNetworks.findIndex(n => 
-              n.chainId === selectedNetwork.chainId
-            );
+            const newIndex = newFilteredNetworks.findIndex(
+              n => n.chainId === selectedNetwork.chainId
+            )
             if (newIndex !== -1 && newIndex !== selectedNetworkIndex) {
-              setSelectedNetworkIndex(newIndex);
+              setSelectedNetworkIndex(newIndex)
             }
           }
         }
       }
     }
   }, [
-    selectedToken, 
-    lastChanged, 
-    selectedNetwork, 
-    getFilteredNetworksForToken, 
-    filteredNetworks, 
+    selectedToken,
+    lastChanged,
+    selectedNetwork,
+    getFilteredNetworksForToken,
+    filteredNetworks,
     selectedNetworkIndex
-  ]);
+  ])
 
   const handleSelectToken = (index: number) => {
-    setSelectedTokenIndex(index);
-    setSelectedToken(filteredTokens[index]);
-    setLastChanged('token');
-  };
+    setSelectedTokenIndex(index)
+    setSelectedToken(filteredTokens[index])
+    setLastChanged('token')
+  }
 
   const handleSelectNetwork = (index: number) => {
-    setSelectedNetworkIndex(index);
-    setSelectedNetwork(filteredNetworks[index]);
-    setLastChanged('network');
-  };
+    setSelectedNetworkIndex(index)
+    setSelectedNetwork(filteredNetworks[index])
+    setLastChanged('network')
+  }
 
   useEffect(() => {
     if (selectedToken && selectedNetwork && onSelectPayment) {
-      const payment = payments.find(payment => 
-        payment.assetMetadata.assetSymbol === selectedToken.assetSymbol && 
-        payment.chainMetadata.chainId === selectedNetwork.chainId
-      );
-      
+      const payment = payments.find(
+        payment =>
+          payment.assetMetadata.assetSymbol === selectedToken.assetSymbol &&
+          payment.chainMetadata.chainId === selectedNetwork.chainId
+      )
+
       if (payment) {
-        setSelectedPayment(payment);
-        onSelectPayment(payment);
+        setSelectedPayment(payment)
+        onSelectPayment(payment)
       }
     }
-  }, [
-    selectedToken,    
-    selectedNetwork, 
-    onSelectPayment,
-    payments
-  ]);
+  }, [selectedToken, selectedNetwork, onSelectPayment, payments])
 
   useEffect(() => {
-    if (!initializedRef.current && allTokensWithNetworks.length > 0 && allNetworksWithTokens.length > 0) {
-      initializedRef.current = true;
-      
-      const initialToken = allTokensWithNetworks[0];
-      const initialNetwork = allNetworksWithTokens[0];
-      
-      setSelectedToken(initialToken);
-      setSelectedNetwork(initialNetwork);
-      setFilteredTokens(allTokensWithNetworks);
-      setFilteredNetworks(allNetworksWithTokens);
-      
+    if (
+      !initializedRef.current &&
+      allTokensWithNetworks.length > 0 &&
+      allNetworksWithTokens.length > 0
+    ) {
+      initializedRef.current = true
+
+      const initialToken = allTokensWithNetworks[0]
+      const initialNetwork = allNetworksWithTokens[0]
+
+      setSelectedToken(initialToken)
+      setSelectedNetwork(initialNetwork)
+      setFilteredTokens(allTokensWithNetworks)
+      setFilteredNetworks(allNetworksWithTokens)
+
       if (payments.length > 0) {
-        const initialPayment = payments.find(payment => 
-          payment.assetMetadata.assetSymbol === initialToken.assetSymbol && 
-          payment.chainMetadata.chainId === initialNetwork.chainId
-        );
-        
+        const initialPayment = payments.find(
+          payment =>
+            payment.assetMetadata.assetSymbol === initialToken.assetSymbol &&
+            payment.chainMetadata.chainId === initialNetwork.chainId
+        )
+
         if (initialPayment) {
-          setSelectedPayment(initialPayment);
+          setSelectedPayment(initialPayment)
           if (onSelectPayment) {
-            onSelectPayment(initialPayment);
+            onSelectPayment(initialPayment)
           }
         } else if (payments[0]) {
-          setSelectedPayment(payments[0]);
+          setSelectedPayment(payments[0])
           if (onSelectPayment) {
-            onSelectPayment(payments[0]);
+            onSelectPayment(payments[0])
           }
         }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [])
 
   return (
     <>
       <Container css={{ backgroundColor: '#2A2A2A', borderRadius: '12px', padding: '16px' }}>
         <Col css={{ marginBottom: '16px' }}>
-          <Text css={{ color: '$text', fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>Pay with</Text>
+          <Text css={{ color: '$text', fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>
+            Pay with
+          </Text>
           <Row justify="space-between" align="center" css={{ width: '100%' }}>
-            <TokenDropdown 
+            <TokenDropdown
               allTokens={allTokensWithNetworks}
               filteredTokens={filteredTokens}
               selectedTokenIndex={selectedTokenIndex}
@@ -394,9 +414,11 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
           </Row>
         </Col>
         <Col>
-          <Text css={{ color: '$text', fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>Network</Text>
+          <Text css={{ color: '$text', fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>
+            Network
+          </Text>
           <Row justify="space-between" align="center" css={{ width: '100%' }}>
-            <NetworkDropdown 
+            <NetworkDropdown
               allNetworks={allNetworksWithTokens}
               filteredNetworks={filteredNetworks}
               selectedNetworkIndex={selectedNetworkIndex}
@@ -404,9 +426,9 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
             />
           </Row>
         </Col>
-        
+
         <Spacer y={1} />
-        
+
         {/* Display Selected Payment Option Details */}
         <SelectedPaymentDetails selectedPayment={selectedPayment} />
       </Container>

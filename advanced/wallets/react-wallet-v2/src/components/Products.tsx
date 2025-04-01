@@ -16,7 +16,7 @@ function ProductCard({ product }: ProductCardProps) {
   return (
     <Card style={{ marginBottom: '16px' }}>
       <Card.Body style={{ padding: '8px' }}>
-        <Row style={{ alignItems: 'center', height:'72px' }}>
+        <Row style={{ alignItems: 'center', height: '72px' }}>
           {product.imageUrl && (
             <Col style={{ width: 'auto' }}>
               <Image
@@ -29,20 +29,17 @@ function ProductCard({ product }: ProductCardProps) {
             </Col>
           )}
           <Col style={{ paddingLeft: product.imageUrl ? '16px' : 0 }}>
-            <Text style={{fontSize: '18px' }}>
-              {product.name}
-            </Text>
+            <Text style={{ fontSize: '18px' }}>{product.name}</Text>
             <Row justify="space-between">
-            {product.price && (
-              <Row>
-                <Text b style={{ color: '#8c8c8c', fontSize: '14px' }}>
-                  {'Price '}
-                </Text>
-                <span style={{ fontSize: '14px' }}>{product.price}</span>
-              </Row>
-            )}
+              {product.price && (
+                <Row>
+                  <Text b style={{ color: '#8c8c8c', fontSize: '14px' }}>
+                    {'Price '}
+                  </Text>
+                  <span style={{ fontSize: '14px' }}>{product.price}</span>
+                </Row>
+              )}
             </Row>
-            
           </Col>
         </Row>
       </Card.Body>

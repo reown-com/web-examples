@@ -15,26 +15,26 @@ const styles = {
 }
 
 interface NetworkWithTokens {
-  chainId: string;
-  chainName: string;
-  chainNamespace: string;
-  chainIcon: string;
-  tokens: string[];
+  chainId: string
+  chainName: string
+  chainNamespace: string
+  chainIcon: string
+  tokens: string[]
 }
 
 // Network Dropdown Component
 interface NetworkDropdownProps {
-  allNetworks: NetworkWithTokens[];
-  filteredNetworks: NetworkWithTokens[];
-  selectedNetworkIndex: number;
-  onSelectNetwork: (index: number) => void;
+  allNetworks: NetworkWithTokens[]
+  filteredNetworks: NetworkWithTokens[]
+  selectedNetworkIndex: number
+  onSelectNetwork: (index: number) => void
 }
 
-export default function NetworkDropdown({ 
-  allNetworks, 
-  filteredNetworks, 
-  selectedNetworkIndex, 
-  onSelectNetwork 
+export default function NetworkDropdown({
+  allNetworks,
+  filteredNetworks,
+  selectedNetworkIndex,
+  onSelectNetwork
 }: NetworkDropdownProps) {
   const renderNetwork = (network: NetworkWithTokens) => (
     <Row align="center" css={{ width: '100%' }}>
@@ -56,7 +56,7 @@ export default function NetworkDropdown({
         </Text>
       </Grid.Container>
     </Row>
-  );
+  )
 
   return (
     <div style={{ width: '100%' }}>
@@ -69,5 +69,5 @@ export default function NetworkDropdown({
         emptyMessage="No networks available"
       />
     </div>
-  );
-};
+  )
+}

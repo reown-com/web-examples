@@ -177,8 +177,8 @@ export default function SessionCheckoutModal() {
 
   return (
     <Fragment>
-      <Modal.Header justify='flex-start'>
-        <Text h4 >Checkout</Text>
+      <Modal.Header justify="flex-start">
+        <Text h4>Checkout</Text>
       </Modal.Header>
 
       <Modal.Body css={modalStyles.modalBody}>
@@ -189,7 +189,11 @@ export default function SessionCheckoutModal() {
           {/* Payment Options */}
           <PaymentOptions payments={feasiblePayments} onSelectPayment={onSelectPayment} />
           {/* Order Information */}
-          <OrderInfoCard orderId={checkoutRequest.orderId} expiry={checkoutRequest.expiry} selectedPayment={selectedPayment} />
+          <OrderInfoCard
+            orderId={checkoutRequest.orderId}
+            expiry={checkoutRequest.expiry}
+            selectedPayment={selectedPayment}
+          />
 
           <Spacer y={5} />
         </Container>
