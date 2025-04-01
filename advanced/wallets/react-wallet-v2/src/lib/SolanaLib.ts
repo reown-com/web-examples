@@ -135,45 +135,40 @@ export default class SolanaLib {
    */
   public async sendSol(recipientAddress: string, chainId: string, amount: bigint): Promise<string> {
     console.log({ chainId })
-    try {
-      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+    const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
 
-      if (!rpc) {
-        throw new Error('There is no RPC URL for the provided chain')
-      }
-
-      const connection = new Connection(rpc, 'confirmed')
-      const fromPubkey = this.keypair.publicKey
-      const toPubkey = new PublicKey(recipientAddress)
-
-      // Create a simple SOL transfer transaction
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports: amount
-        })
-      )
-
-      // Get recent blockhash
-      const { blockhash } = await connection.getLatestBlockhash('confirmed')
-      transaction.recentBlockhash = blockhash
-      transaction.feePayer = fromPubkey
-
-      // Sign the transaction
-      transaction.sign(this.keypair)
-
-      // Send and confirm the transaction
-      const signature = await connection.sendRawTransaction(transaction.serialize())
-
-      // Wait for confirmation
-      await connection.confirmTransaction(signature, 'confirmed')
-
-      return signature
-    } catch (error) {
-      console.error('Error sending SOL:', error)
-      throw error
+    if (!rpc) {
+      throw new Error('There is no RPC URL for the provided chain')
     }
+
+    const connection = new Connection(rpc, 'confirmed')
+    const fromPubkey = this.keypair.publicKey
+    const toPubkey = new PublicKey(recipientAddress)
+
+    // Create a simple SOL transfer transaction
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey,
+        toPubkey,
+        lamports: amount
+      })
+    )
+
+    // Get recent blockhash
+    const { blockhash } = await connection.getLatestBlockhash('confirmed')
+    transaction.recentBlockhash = blockhash
+    transaction.feePayer = fromPubkey
+
+    // Sign the transaction
+    transaction.sign(this.keypair)
+
+    // Send and confirm the transaction
+    const signature = await connection.sendRawTransaction(transaction.serialize())
+
+    // Wait for confirmation
+    await connection.confirmTransaction(signature, 'confirmed')
+
+    return signature
   }
 
   /**
@@ -189,110 +184,65 @@ export default class SolanaLib {
     chainId: string,
     amount: bigint
   ): Promise<string> {
-    try {
-      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+    const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
 
-      if (!rpc) {
-        throw new Error('There is no RPC URL for the provided chain')
-      }
-
-      const connection = new Connection(rpc, 'confirmed')
-      const fromWallet = this.keypair
-      const fromPubkey = fromWallet.publicKey
-      const toPubkey = new PublicKey(recipientAddress)
-      const mint = new PublicKey(tokenAddress)
-
-      // Get sender's token account (create if it doesn't exist)
-      const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
-        connection,
-        fromWallet,
-        mint,
-        fromPubkey
-      )
-
-      // Check if recipient has a token account WITHOUT creating one
-      const associatedTokenAddress = await getAssociatedTokenAddress(mint, toPubkey)
-
-      const recipientTokenAccount = await connection.getAccountInfo(associatedTokenAddress)
-
-      if (!recipientTokenAccount) {
-        throw new Error(
-          `Recipient ${recipientAddress} doesn't have a token account for this SPL token. Transaction cannot proceed.`
-        )
-      }
-
-      // Create transfer instruction to existing account
-      const transferInstruction = createTransferInstruction(
-        fromTokenAccount.address,
-        associatedTokenAddress,
-        fromPubkey,
-        amount,
-        [],
-        TOKEN_PROGRAM_ID
-      )
-
-      // Create transaction and add the transfer instruction
-      const transaction = new Transaction().add(transferInstruction)
-
-      // Get recent blockhash
-      const { blockhash } = await connection.getLatestBlockhash('confirmed')
-      transaction.recentBlockhash = blockhash
-      transaction.feePayer = fromPubkey
-
-      // Sign the transaction
-      transaction.sign(fromWallet)
-
-      // Send and confirm the transaction
-      const signature = await connection.sendRawTransaction(transaction.serialize())
-
-      // Wait for confirmation
-      await connection.confirmTransaction(signature, 'confirmed')
-
-      return signature
-    } catch (error) {
-      console.error('Error sending SPL token:', error)
-      throw error
+    if (!rpc) {
+      throw new Error('There is no RPC URL for the provided chain')
     }
-  }
 
-  /**
-   * Send a raw transaction (for contract interactions)
-   * @param transaction The transaction to sign and send
-   * @returns The transaction signature
-   */
-  public async sendRawTransaction(transaction: Transaction, chainId: string): Promise<string> {
-    try {
-      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+    const connection = new Connection(rpc, 'confirmed')
+    const fromWallet = this.keypair
+    const fromPubkey = fromWallet.publicKey
+    const toPubkey = new PublicKey(recipientAddress)
+    const mint = new PublicKey(tokenAddress)
 
-      if (!rpc) {
-        throw new Error('There is no RPC URL for the provided chain')
-      }
+    // Get sender's token account (create if it doesn't exist)
+    const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      fromWallet,
+      mint,
+      fromPubkey
+    )
 
-      const connection = new Connection(rpc, 'confirmed')
+    // Check if recipient has a token account WITHOUT creating one
+    const associatedTokenAddress = await getAssociatedTokenAddress(mint, toPubkey)
 
-      // Set fee payer if not already set
-      if (!transaction.feePayer) {
-        transaction.feePayer = this.keypair.publicKey
-      }
+    const recipientTokenAccount = await connection.getAccountInfo(associatedTokenAddress)
 
-      // Get recent blockhash if not already set
-      if (!transaction.recentBlockhash) {
-        const { blockhash } = await connection.getLatestBlockhash('confirmed')
-        transaction.recentBlockhash = blockhash
-      }
-
-      // Sign transaction
-      transaction.sign(this.keypair)
-
-      // Send and confirm transaction
-      const signature = await connection.sendRawTransaction(transaction.serialize())
-      await connection.confirmTransaction(signature, 'confirmed')
-
-      return signature
-    } catch (error) {
-      console.error('Error signing and sending transaction:', error)
-      throw error
+    if (!recipientTokenAccount) {
+      throw new Error(
+        `Recipient ${recipientAddress} doesn't have a token account for this SPL token. Transaction cannot proceed.`
+      )
     }
+
+    // Create transfer instruction to existing account
+    const transferInstruction = createTransferInstruction(
+      fromTokenAccount.address,
+      associatedTokenAddress,
+      fromPubkey,
+      amount,
+      [],
+      TOKEN_PROGRAM_ID
+    )
+
+    // Create transaction and add the transfer instruction
+    const transaction = new Transaction().add(transferInstruction)
+
+    // Get recent blockhash
+    const { blockhash } = await connection.getLatestBlockhash('confirmed')
+    transaction.recentBlockhash = blockhash
+    transaction.feePayer = fromPubkey
+
+    // Sign the transaction
+    transaction.sign(fromWallet)
+
+    // Send and confirm the transaction
+    const signature = await connection.sendRawTransaction(transaction.serialize())
+
+    // Wait for confirmation
+    await connection.confirmTransaction(signature, 'confirmed')
+
+    return signature
   }
 }
 
