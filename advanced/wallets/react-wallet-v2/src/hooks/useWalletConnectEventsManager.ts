@@ -101,14 +101,14 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           try {
             await WalletCheckoutCtrl.actions.prepareFeasiblePayments(request.params[0])
           } catch (error) {
-             // If it's not a CheckoutError, create one
+            // If it's not a CheckoutError, create one
             if (!(error && typeof error === 'object' && 'code' in error)) {
               error = createCheckoutError(
                 CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
                 `Unexpected error: ${error instanceof Error ? error.message : String(error)}`
               )
             }
-            
+
             return await walletkit.respondSessionRequest({
               topic,
               response: WalletCheckoutUtil.formatCheckoutErrorResponse(id, error)

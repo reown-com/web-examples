@@ -37,46 +37,46 @@ const WalletCheckoutPaymentHandler = {
     contractInteraction: SolanaContractInteraction,
     chainId: string
   ): Promise<PaymentResult> {
-      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
+    const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
 
-      if (!rpc) {
-        throw new Error(`There is no RPC URL for the provided chain ${chainId}`)
-      }
-      const connection = new Connection(rpc)
+    if (!rpc) {
+      throw new Error(`There is no RPC URL for the provided chain ${chainId}`)
+    }
+    const connection = new Connection(rpc)
 
-      // Create a new transaction
-      const transaction = new Transaction()
+    // Create a new transaction
+    const transaction = new Transaction()
 
-      const instruction = contractInteraction.data
-      const accountMetas = instruction.accounts.map(acc => ({
-        pubkey: new PublicKey(acc.pubkey),
-        isSigner: acc.isSigner,
-        isWritable: acc.isWritable
-      }))
+    const instruction = contractInteraction.data
+    const accountMetas = instruction.accounts.map(acc => ({
+      pubkey: new PublicKey(acc.pubkey),
+      isSigner: acc.isSigner,
+      isWritable: acc.isWritable
+    }))
 
-      // Create the instruction
-      const txInstruction = new TransactionInstruction({
-        programId: new PublicKey(instruction.programId),
-        keys: accountMetas,
-        data: Buffer.from(instruction.data, 'base64')
-      })
+    // Create the instruction
+    const txInstruction = new TransactionInstruction({
+      programId: new PublicKey(instruction.programId),
+      keys: accountMetas,
+      data: Buffer.from(instruction.data, 'base64')
+    })
 
-      // Add to transaction
-      transaction.add(txInstruction)
+    // Add to transaction
+    transaction.add(txInstruction)
 
-      // Set the wallet's public key as feePayer
-      const walletAddress = await wallet.getAddress()
-      const publicKey = new PublicKey(walletAddress)
-      transaction.feePayer = publicKey
+    // Set the wallet's public key as feePayer
+    const walletAddress = await wallet.getAddress()
+    const publicKey = new PublicKey(walletAddress)
+    transaction.feePayer = publicKey
 
-      // Get recent blockhash from the connection
-      const { blockhash } = await connection.getLatestBlockhash('confirmed')
-      transaction.recentBlockhash = blockhash
+    // Get recent blockhash from the connection
+    const { blockhash } = await connection.getLatestBlockhash('confirmed')
+    transaction.recentBlockhash = blockhash
 
-      const txHash = await connection.sendRawTransaction(transaction.serialize())
-      await connection.confirmTransaction(txHash, 'confirmed')
+    const txHash = await connection.sendRawTransaction(transaction.serialize())
+    await connection.confirmTransaction(txHash, 'confirmed')
 
-      return { txHash }
+    return { txHash }
   },
   /**
    * Process any payment type and handle errors
@@ -96,7 +96,11 @@ const WalletCheckoutPaymentHandler = {
           )
         }
         // Contract interaction payment
-        if (contractInteraction && !recipient && contractInteraction.type === 'solana-instruction') {
+        if (
+          contractInteraction &&
+          !recipient &&
+          contractInteraction.type === 'solana-instruction'
+        ) {
           return await this.processSolanaContractInteraction(
             wallet,
             contractInteraction as SolanaContractInteraction,
@@ -112,7 +116,11 @@ const WalletCheckoutPaymentHandler = {
 
           // Handle SOL transfers (slip44:501)
           if (assetNamespace === 'slip44' && assetReference === '501') {
-            const txHash = await wallet.sendSol(recipientAddress, `${chainNamespace}:${chainId}`, BigInt(payment.amount))
+            const txHash = await wallet.sendSol(
+              recipientAddress,
+              `${chainNamespace}:${chainId}`,
+              BigInt(payment.amount)
+            )
             return { txHash }
           }
 
@@ -128,7 +136,7 @@ const WalletCheckoutPaymentHandler = {
           }
         }
       }
-      
+
       // Ensure wallet is an EVM wallet
       if (!wallet.sendTransaction) {
         throw new CheckoutError(
@@ -168,7 +176,12 @@ const WalletCheckoutPaymentHandler = {
         }
       }
       // Contract interaction payment
-      if (contractInteraction && !recipient && Array.isArray(contractInteraction.data) && contractInteraction.type === 'evm-calls') {
+      if (
+        contractInteraction &&
+        !recipient &&
+        Array.isArray(contractInteraction.data) &&
+        contractInteraction.type === 'evm-calls'
+      ) {
         let lastTxHash = '0x'
 
         for (const call of contractInteraction.data) {
@@ -186,7 +199,7 @@ const WalletCheckoutPaymentHandler = {
       }
 
       // Neither or both are present
-      throw new CheckoutError( CheckoutErrorCode.INVALID_CHECKOUT_REQUEST)
+      throw new CheckoutError(CheckoutErrorCode.INVALID_CHECKOUT_REQUEST)
     } catch (error) {
       console.error('Payment processing error:', error)
 

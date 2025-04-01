@@ -1,5 +1,5 @@
-import { blockchainApiRpc } from '@/data/EIP155Data';
-import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { blockchainApiRpc } from '@/data/EIP155Data'
+import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import { createPublicClient, http } from 'viem'
 
 const TransactionSimulatorUtil = {
@@ -24,7 +24,7 @@ const TransactionSimulatorUtil = {
 
     try {
       const client = createPublicClient({
-        transport: http(blockchainApiRpc(Number(chainId))),
+        transport: http(blockchainApiRpc(Number(chainId)))
       })
 
       // Process all calls in parallel with individual error handling
@@ -71,22 +71,22 @@ const TransactionSimulatorUtil = {
     }
   },
 
-   /**
+  /**
    * Simulates a Solana transaction
-   * 
+   *
    * @param connection - Solana connection
    * @param transaction - Transaction to simulate
    * @param feePayer - Fee payer's public key
    * @returns Object with simulation success status and error details if applicable
    * @throws CheckoutError if there's a critical simulation error that should block the transaction
    */
-   async simulateSolanaTransaction(param:{
-    connection: Connection,
-    transaction: Transaction,
-    feePayer: PublicKey}
-  ): Promise<boolean> {
+  async simulateSolanaTransaction(param: {
+    connection: Connection
+    transaction: Transaction
+    feePayer: PublicKey
+  }): Promise<boolean> {
     try {
-      const {connection, transaction, feePayer} = param
+      const { connection, transaction, feePayer } = param
       // Set recent blockhash for the transaction
       transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
       transaction.feePayer = feePayer
@@ -104,7 +104,7 @@ const TransactionSimulatorUtil = {
     } catch (error) {
       return false
     }
-  },
+  }
 }
 
 export default TransactionSimulatorUtil
