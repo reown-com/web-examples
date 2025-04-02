@@ -1,4 +1,5 @@
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
+import { SolanaAdapter } from "@reown/appkit-adapter-solana";
 import { arbitrum, optimism, base } from "@reown/appkit/networks";
 
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
@@ -14,6 +15,8 @@ export const wagmiAdapter = new WagmiAdapter({
   projectId,
   networks,
 });
+
+export const solanaAdapter = new SolanaAdapter()
 
 export const metadata = {
   name: "Chain Abstraction Demo",
