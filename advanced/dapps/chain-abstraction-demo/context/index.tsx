@@ -3,7 +3,7 @@
 import { wagmiAdapter, projectId, metadata, solanaAdapter } from "@/config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createAppKit } from "@reown/appkit/react";
-import { arbitrum, base, optimism, solanaDevnet, baseSepolia } from "@reown/appkit/networks";
+import { arbitrum, base, optimism, solanaDevnet, baseSepolia, optimismSepolia } from "@reown/appkit/networks";
 import React, { type ReactNode } from "react";
 import { WagmiProvider } from "wagmi";
 
@@ -14,7 +14,7 @@ if (!projectId) throw new Error("Project ID is not defined");
 const modal = createAppKit({
   adapters: [solanaAdapter, wagmiAdapter],
   projectId,
-  networks: [base, optimism, arbitrum, solanaDevnet, baseSepolia],
+  networks: [base, optimism, arbitrum, solanaDevnet, baseSepolia, optimismSepolia],
   defaultNetwork: arbitrum,
   metadata: metadata,
   features: {
@@ -46,7 +46,6 @@ const modal = createAppKit({
         'wallet_getPermissions',
         'wallet_requestPermissions',
         'wallet_scanQRCode',
-        //EIP-7811
         'wallet_getAssets',
         'wallet_checkout',
       ]
