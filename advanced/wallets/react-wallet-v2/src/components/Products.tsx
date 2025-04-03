@@ -14,7 +14,7 @@ interface ProductCardProps {
 
 function ProductCard({ product }: ProductCardProps) {
   return (
-    <Card style={{ marginBottom: '16px' }}>
+    <Card style={{ marginBottom: '16px', backgroundColor: '#2A2A2A' }}>
       <Card.Body style={{ padding: '8px' }}>
         <Row style={{ alignItems: 'center', height: '72px' }}>
           {product.imageUrl && (

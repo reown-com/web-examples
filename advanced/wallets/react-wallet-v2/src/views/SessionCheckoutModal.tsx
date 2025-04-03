@@ -36,7 +36,7 @@ const modalStyles = {
     flexDirection: 'column' as const
   },
   modalBody: {
-    paddingBottom: 0,
+    padding: 0,
     flex: '1 1 auto',
     overflowY: 'auto' as const
   },
@@ -175,28 +175,32 @@ export default function SessionCheckoutModal() {
     setSelectedPayment(payment)
   }, [])
 
+  // Ensure request and wallet are defined
+  if (!requestEvent || !requestSession) {
+    return <Text>Missing request data</Text>
+  }
+
   return (
     <Fragment>
-      <Modal.Header justify="flex-start">
-        <Text h4>Checkout</Text>
-      </Modal.Header>
-
       <Modal.Body css={modalStyles.modalBody}>
-        <Container css={{ padding: 0 }}>
+        <Container css={{ padding: 8, paddingTop: 12, backgroundColor: '#2A2A2A',  borderRadius: '0 0 40px 40px' }}>
+          <Text h4 css={{paddingLeft: '8px'}}>Checkout</Text>
           {/* Products */}
           <Products products={checkoutRequest.products} />
 
           {/* Payment Options */}
           <PaymentOptions payments={feasiblePayments} onSelectPayment={onSelectPayment} />
-          {/* Order Information */}
-          <OrderInfoCard
+        </Container>
+        <Container>
+           <OrderInfoCard
             orderId={checkoutRequest.orderId}
             expiry={checkoutRequest.expiry}
             selectedPayment={selectedPayment}
+            metadata={requestSession.peer.metadata}
           />
-
-          <Spacer y={5} />
         </Container>
+         
+        
       </Modal.Body>
 
       <Container css={modalStyles.footer}>

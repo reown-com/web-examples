@@ -1,9 +1,14 @@
 import { DetailedPaymentOption } from '@/types/wallet_checkout'
-import { Col, Row, Text } from '@nextui-org/react'
+import { Avatar, Col, Link, Row, styled, StyledLink, Text } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
+import { CoreTypes } from '@walletconnect/types'
 import OrderDetailIcon from './PaymentCheckout/visual/OrderDetailIcon'
 import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
 import { formatUnits } from 'viem'
+import { useSnapshot } from 'valtio'
+import SettingsStore from '@/store/SettingsStore'
+import BadgeCheckIcon from './PaymentCheckout/visual/BadgeCheckIcon'
+import BadgeAlertIcon from './PaymentCheckout/visual/BadgeAlertIcon'
 
 /**
  * Types
@@ -11,6 +16,7 @@ import { formatUnits } from 'viem'
 interface IProps {
   selectedPayment: DetailedPaymentOption | null
   orderId: string
+  metadata: CoreTypes.Metadata
   expiry?: number
 }
 
@@ -38,10 +44,7 @@ const calculateTimeRemaining = (expiryTimestamp?: number) => {
   return { hours, minutes, seconds, isExpired: false }
 }
 
-/**
- * Component
- */
-export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IProps) {
+export default function OrderInfoCard({ orderId, expiry, selectedPayment, metadata }: IProps) {
   const styles = {
     iconWrapper: {
       width: '40px',
@@ -61,7 +64,10 @@ export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IPro
     }
   }
   const [timeRemaining, setTimeRemaining] = useState(calculateTimeRemaining(expiry))
-
+  const { currentRequestVerifyContext } = useSnapshot(SettingsStore.state)
+  const validation = currentRequestVerifyContext?.verified.validation
+  const { icons, name, url } = metadata
+  const isVerified = validation == 'VALID'
   // Update countdown every second
   useEffect(() => {
     if (!expiry) return
@@ -119,6 +125,24 @@ export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IPro
         </div>
       </div>
       <Col css={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '4px' }}>
+      <Row align="center" justify="space-between">
+        <Text color="$gray400">Merchant</Text>
+        <Text css={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {isVerified ? (
+            <BadgeCheckIcon color="green" size={16} />
+          ) : (
+            <BadgeAlertIcon color="#F5A623" size={16} />
+          )}
+          {name || 'Unknown'}
+        </Text>
+      </Row>
+      
+        {selectedPayment && selectedPayment.recipient && (
+          <Row align="center" justify="space-between">
+            <Text color="$gray400">Address</Text>
+            <Text>{WalletCheckoutUtil.formatRecipient(selectedPayment.recipient)}</Text>
+          </Row>
+        )}
         {selectedPayment && selectedPayment.fee && (
           <Row align="center" justify="space-between">
             <Text color="$gray400">Estimated Gas Fee</Text>
@@ -129,12 +153,6 @@ export default function OrderInfoCard({ orderId, expiry, selectedPayment }: IPro
               ).toFixed(6)}{' '}
               {selectedPayment.fee.feeSymbol}
             </Text>
-          </Row>
-        )}
-        {selectedPayment && selectedPayment.recipient && (
-          <Row align="center" justify="space-between">
-            <Text color="$gray400">Address</Text>
-            <Text>{WalletCheckoutUtil.formatRecipient(selectedPayment.recipient)}</Text>
           </Row>
         )}
         <Row align="center" justify="space-between">

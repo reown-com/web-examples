@@ -3,10 +3,7 @@ import { Text, Row, Container, Col, Card, Divider, Spacer } from '@nextui-org/re
 import { DetailedPaymentOption } from '@/types/wallet_checkout'
 import TokenDropdown from './PaymentCheckout/TokenDropdown'
 import NetworkDropdown from './PaymentCheckout/NetworkDropdown'
-import Image from 'next/image'
-import { formatUnits } from 'viem'
-import { GiftIcon } from './PaymentCheckout/visual/GiftIcon'
-import WalletIcon from './PaymentCheckout/visual/WalletIcon'
+import SelectedPaymentDetails from './PaymentCheckout/SelectedPaymentDetails'
 
 interface PayWithProps {
   payments: DetailedPaymentOption[]
@@ -29,120 +26,6 @@ interface NetworkWithTokens {
   chainNamespace: string
   chainIcon: string
   tokens: string[]
-}
-
-// Selected Payment Details Component
-interface SelectedPaymentDetailsProps {
-  selectedPayment: DetailedPaymentOption | null
-}
-
-const SelectedPaymentDetails = ({ selectedPayment }: SelectedPaymentDetailsProps) => {
-  if (!selectedPayment) {
-    return null
-  }
-  const styles = {
-    iconWrapper: {
-      width: '40px',
-      height: '40px',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center'
-    },
-    circleIconBg: {
-      display: 'flex',
-      backgroundColor: '#333',
-      height: '32px',
-      width: '32px',
-      borderRadius: '50%',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }
-  }
-
-  const formattedBalance = formatUnits(
-    selectedPayment.assetMetadata.assetBalance,
-    selectedPayment.assetMetadata.assetDecimals
-  )
-
-  return (
-    <Card
-      css={{
-        backgroundColor: '#222',
-        borderRadius: '12px',
-        padding: '12px',
-        marginTop: '16px'
-      }}
-    >
-      <Card.Body css={{ padding: '12px 0' }}>
-        <Row align="center" css={{ marginBottom: '12px' }}>
-          <Row align="center" css={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={styles.iconWrapper}>
-              <div style={styles.circleIconBg}>
-                <WalletIcon />
-              </div>
-            </div>
-            <Text css={{ color: '#aaa', fontSize: '14px' }}>Balance</Text>
-          </Row>
-          <Col span={8} css={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-            <Text css={{ color: '#fff', fontSize: '14px', justifyContent: 'flex-end' }}>
-              {formattedBalance.length > 4
-                ? parseFloat(formattedBalance).toFixed(3)
-                : formattedBalance}{' '}
-              {selectedPayment.assetMetadata.assetSymbol}
-            </Text>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Text css={{ color: '#aaa', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                on {selectedPayment.chainMetadata.chainName}
-              </Text>
-              <div style={{ alignItems: 'center', display: 'flex', width: '16px', height: '16px' }}>
-                <Image
-                  src={selectedPayment.chainMetadata.chainIcon}
-                  width={16}
-                  height={16}
-                  alt={selectedPayment.chainMetadata.chainName}
-                  style={{ borderRadius: '50%', marginLeft: '4px' }}
-                />
-              </div>
-            </div>
-          </Col>
-        </Row>
-
-        <Row align="center" justify="space-between" css={{ marginBottom: '12px' }}>
-          <Row align="center" css={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={styles.iconWrapper}>
-              <div style={styles.circleIconBg}>
-                <GiftIcon />
-              </div>
-            </div>
-            <Text css={{ color: '#aaa', fontSize: '14px' }}>Send</Text>
-          </Row>
-          <Col span={8} css={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-            <Text css={{ color: '#fff', fontSize: '14px', justifyContent: 'flex-end' }}>
-              {formatUnits(
-                BigInt(selectedPayment.amount),
-                selectedPayment.assetMetadata.assetDecimals
-              ).toString()}{' '}
-              {selectedPayment.assetMetadata.assetSymbol}
-            </Text>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Text css={{ color: '#aaa', fontSize: '14px', whiteSpace: 'nowrap' }}>
-                on {selectedPayment.chainMetadata.chainName}
-              </Text>
-              <div style={{ alignItems: 'center', display: 'flex', width: '16px', height: '16px' }}>
-                <Image
-                  src={selectedPayment.chainMetadata.chainIcon}
-                  width={16}
-                  height={16}
-                  alt={selectedPayment.chainMetadata.chainName}
-                  style={{ borderRadius: '50%', marginLeft: '4px' }}
-                />
-              </div>
-            </div>
-          </Col>
-        </Row>
-      </Card.Body>
-    </Card>
-  )
 }
 
 // Modified to extract tokens with network info
@@ -399,7 +282,7 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
 
   return (
     <>
-      <Container css={{ backgroundColor: '#2A2A2A', borderRadius: '12px', padding: '16px' }}>
+      <Container css={{ borderRadius: '32px', padding: '16px', backgroundColor: 'var(--nextui-colors-accents1)' }}>
         <Col css={{ marginBottom: '16px' }}>
           <Text css={{ color: '$text', fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>
             Pay with
