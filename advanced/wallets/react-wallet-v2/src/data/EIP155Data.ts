@@ -17,7 +17,7 @@ export type EIP155Chain = {
   namespace: string
   smartAccountEnabled?: boolean
 }
-const blockchainApiRpc = (chainId: number) => {
+export const blockchainApiRpc = (chainId: number) => {
   return `https://rpc.walletconnect.org/v1?chainId=eip155:${chainId}&projectId=${process.env.NEXT_PUBLIC_PROJECT_ID}`
 }
 /**
