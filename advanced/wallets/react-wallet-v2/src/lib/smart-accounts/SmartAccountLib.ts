@@ -7,7 +7,8 @@ import {
   createClient,
   HttpTransport,
   Address,
-  Chain
+  Chain,
+  fromHex
 } from 'viem'
 import { EIP155Wallet } from '../EIP155Lib'
 import { JsonRpcProvider } from '@ethersproject/providers'
@@ -326,7 +327,13 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     const userOpWithStubData: UserOperation<'v0.7'> = {
       ...userOpPreStubData,
       ...paymasterStubData,
-      verificationGasLimit: paymasterStubData.paymasterVerificationGasLimit ?? 0n,
+      verificationGasLimit: paymasterStubData.paymasterVerificationGasLimit ? 
+        (
+          typeof paymasterStubData.paymasterVerificationGasLimit === 'string' ? 
+            fromHex(paymasterStubData.paymasterVerificationGasLimit, 'bigint') * 2n :
+            paymasterStubData.paymasterVerificationGasLimit * 2n
+
+        ) : 100_000n,
       signature: '0x'
     }
 
