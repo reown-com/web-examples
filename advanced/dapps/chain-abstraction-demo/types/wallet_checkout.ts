@@ -30,7 +30,7 @@ export type ContractInteraction = {
   /** The type of contract interaction (e.g. "evm-calls", "solana-instruction") */
   type: string
   /** Data required for the specific contract interaction type */
-  data: any
+  data: Record<string, any>
 }
 
 /**
@@ -55,19 +55,26 @@ export type EvmContractInteraction = {
 /**
  * Solana-specific contract interaction
  * @property type - Must be "solana-instruction"
- * @property data - Array of Solana instruction data objects
+ * @property data - Solana instruction data
  */
 export type SolanaContractInteraction = {
+  /** Must be "solana-instruction" */
   type: 'solana-instruction'
+  /** Solana instruction data */
   data: {
-    programId: string // Program ID
+    /** Program ID */
+    programId: string
+    /** Accounts involved in the instruction */
     accounts: {
-      // Accounts involved in the instruction
+      /** Account public key */
       pubkey: string
+      /** Whether the account needs to sign the transaction */
       isSigner: boolean
+      /** Whether the account's data will be modified */
       isWritable: boolean
     }[]
-    data: string // Base64-encoded instruction data
+    /** Base64-encoded instruction data */
+    data: string
   }
 }
 
@@ -131,6 +138,7 @@ export type CheckoutResult = {
 /**
  * Error codes for wallet_checkout method
  */
+// eslint-disable-next-line no-shadow
 export enum CheckoutErrorCode {
   /** User rejected the payment */
   USER_REJECTED = 4001,
@@ -147,96 +155,73 @@ export enum CheckoutErrorCode {
   /** Contract interaction failed during execution */
   CONTRACT_INTERACTION_FAILED = 4402,
   /** Method not found (wallet doesn't support wallet_checkout) */
-  METHOD_NOT_FOUND = -32601,
-  /** Invalid checkout request */
-  INVALID_CHECKOUT_REQUEST = 4500,
-  /** Direct payment failed */
-  DIRECT_PAYMENT_ERROR = 4600
+  METHOD_NOT_FOUND = -32601
 }
 
 /**
- * Standard error messages for checkout error codes
+ * Checkout error response
+ * @property code - Error code indicating the type of error
+ * @property message - Description of the error
+ * @property data - Optional additional data about the error
  */
-export const CheckoutErrorMessages: Record<CheckoutErrorCode, string> = {
-  [CheckoutErrorCode.USER_REJECTED]: 'User rejected payment',
-  [CheckoutErrorCode.NO_MATCHING_ASSETS]: 'No matching assets available',
-  [CheckoutErrorCode.CHECKOUT_EXPIRED]: 'Checkout expired',
-  [CheckoutErrorCode.INSUFFICIENT_FUNDS]: 'Insufficient funds',
-  [CheckoutErrorCode.UNSUPPORTED_CONTRACT_INTERACTION]: 'Unsupported contract interaction',
-  [CheckoutErrorCode.INVALID_CONTRACT_INTERACTION_DATA]: 'Invalid contract interaction data',
-  [CheckoutErrorCode.CONTRACT_INTERACTION_FAILED]: 'Contract interaction failed',
-  [CheckoutErrorCode.METHOD_NOT_FOUND]: 'Method not found',
-  [CheckoutErrorCode.INVALID_CHECKOUT_REQUEST]: 'Invalid checkout request',
-  [CheckoutErrorCode.DIRECT_PAYMENT_ERROR]: 'Direct payment failed'
-}
-
-/**
- * Checkout error class
- * @extends Error
- */
-export class CheckoutError extends Error {
+export type CheckoutError = {
   /** Error code indicating the type of error */
   code: CheckoutErrorCode
   /** Description of the error */
   message: string
   /** Optional additional data about the error */
   data?: any
-
-  constructor(code: CheckoutErrorCode, message?: string, data?: any) {
-    super(message)
-    this.code = code
-    this.data = data
-    this.message = message || getErrorMessage(code)
-  }
-}
-
-export type CheckoutErrorResponse = {
-  code: number
-  message: string
 }
 
 /**
- * Get a standard error message for a checkout error code
- * @param code - The error code
- * @returns The standard error message for the code
+ * JSON-RPC request for wallet_checkout method
+ * @property method - Must be "wallet_checkout"
+ * @property params - Array containing the CheckoutRequest object
+ * @property id - Request identifier
+ * @property jsonrpc - JSON-RPC version, must be "2.0"
  */
-export function getErrorMessage(code: CheckoutErrorCode): string {
-  return CheckoutErrorMessages[code] || 'Unknown error'
+export type WalletCheckoutRequest = {
+  /** Must be "wallet_checkout" */
+  method: 'wallet_checkout'
+  /** Array containing the CheckoutRequest object */
+  params: [CheckoutRequest]
+  /** Request identifier */
+  id: number | string
+  /** JSON-RPC version, must be "2.0" */
+  jsonrpc: '2.0'
 }
 
 /**
- * Create a checkout error with the standard message for the error code
- * @param code - The error code
- * @param customMessage - Optional custom message to override the standard one
- * @param data - Optional additional error data
- * @returns A checkout error object
+ * JSON-RPC successful response for wallet_checkout method
+ * @property result - The checkout result
+ * @property id - Matching request identifier
+ * @property jsonrpc - JSON-RPC version, must be "2.0"
  */
-export function createCheckoutError(
-  code: CheckoutErrorCode,
-  customMessage?: string,
-  data?: any
-): CheckoutError {
-  return new CheckoutError(code, customMessage, data)
+export type WalletCheckoutSuccessResponse = {
+  /** The checkout result */
+  result: CheckoutResult
+  /** Matching request identifier */
+  id: number | string
+  /** JSON-RPC version, must be "2.0" */
+  jsonrpc: '2.0'
 }
 
-export type DetailedPaymentOption = PaymentOption & {
-  assetMetadata: {
-    assetIcon: string
-    assetName: string
-    assetSymbol: string
-    assetNamespace: string
-    assetDecimals: number
-    assetBalance: bigint
-  }
-  chainMetadata: {
-    chainId: string
-    chainName: string
-    chainNamespace: string
-    chainIcon: string
-  }
-  fee: {
-    gasFee: number
-    decimals: number
-    feeSymbol: string
-  }
+/**
+ * JSON-RPC error response for wallet_checkout method
+ * @property error - The error details
+ * @property id - Matching request identifier
+ * @property jsonrpc - JSON-RPC version, must be "2.0"
+ */
+export type WalletCheckoutErrorResponse = {
+  /** The error details */
+  error: CheckoutError
+  /** Matching request identifier */
+  id: number | string
+  /** JSON-RPC version, must be "2.0" */
+  jsonrpc: '2.0'
 }
+
+/**
+ * JSON-RPC response for wallet_checkout method (success or error)
+ */
+export type WalletCheckoutResponse = WalletCheckoutSuccessResponse | WalletCheckoutErrorResponse

@@ -94,8 +94,7 @@ function GiftDonutForm({
                 <Button
                   variant="outline"
                   onClick={() => setDonutCount(count - 1)}
-                  style={{ backgroundColor: "var(--tertiary-foreground)" }}
-                  className="h-8 w-8 rounded-full p-0"
+                  className="rounded-button"
                   disabled={count <= 0}
                 >
                   -
@@ -104,33 +103,25 @@ function GiftDonutForm({
                 <Button
                   variant="outline"
                   onClick={() => setDonutCount(count + 1)}
-                  style={{ backgroundColor: "var(--tertiary-foreground)" }}
-                  className="h-8 w-8 rounded-full p-0"
+                  className="rounded-button"
                 >
                   +
                 </Button>
               </div>
             </div>
-            {/* Removed inline error message block */}
           </div>
         </div>
       </div>
       <div className="flex items-center flex-col gap-2 w-full text-primary">
         <div className="flex w-full items-center gap-2">
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center"
-            style={{
-              background: "var(--foreground-foreground-secondary, rgba(42, 42, 42, 1))",
-            }}
-          >
+          <div className="icon-container">
             <CoinSVG />
           </div>
           <div className="flex flex-1 items-center justify-between">
             <p>Pay with</p>
             <div className="flex gap-4 items-center justify-between cursor-pointer">
               <div
-                className="flex gap-1 p-1 rounded-full text-sm items-center"
-                style={{ backgroundColor: "var(--tertiary-foreground)" }}
+                className="payment-option-badge"
                 onClick={() => onViewChange("PayWith")}
               >
                 {selectedToken && (
@@ -151,20 +142,14 @@ function GiftDonutForm({
           </div>
         </div>
         <div className="flex w-full items-center gap-2">
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center"
-            style={{
-              background: "var(--foreground-foreground-secondary, rgba(42, 42, 42, 1))",
-            }}
-          >
+          <div className="icon-container">
             <NetworkSVG />
           </div>
           <div className="flex flex-1 items-center justify-between">
             <p>Choose Network</p>
             <div className="flex gap-4 items-center justify-between cursor-pointer">
               <div
-                className="flex gap-1 p-1 rounded-full text-sm items-center"
-                style={{ backgroundColor: "var(--tertiary-foreground)" }}
+                className="payment-option-badge"
                 onClick={() => onViewChange("ChooseNetwork")}
               >
                 {selectedNetwork && (
@@ -216,17 +201,14 @@ function GiftDonutForm({
         <button
           onClick={onClose}
           type="button"
-          style={{
-            border: "1px solid var(--border-border-secondary, rgba(79, 79, 79, 1))",
-          }}
-          className="flex flex-1 text-primary items-center justify-center border-secondary rounded-lg"
+          className="flex flex-1 text-primary items-center justify-center border border-border-secondary rounded-lg"
         >
           Cancel
         </button>
         <Button
-          style={{
-            background: "var(--foreground-foreground-accent-primary-010, rgba(9, 136, 240, 0.1))",
-          }}
+         style={{
+          background: "var(--foreground-foreground-accent-primary-010, rgba(9, 136, 240, 0.1))",
+        }}
           onClick={() => {
             // If token and network are incompatible, redirect to network selection
             if (!giftDonutModalManager.isTokenNetworkCompatible()) {
