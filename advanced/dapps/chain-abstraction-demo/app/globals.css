@@ -34,6 +34,7 @@
     --primary-foreground: 0 0% 98%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
+    --tertiary-foreground: rgba(244, 244, 244, 1);
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
     --accent: 240 4.8% 95.9%;
@@ -49,18 +50,27 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    
+    /* Custom variables from component */
+    --foreground-foreground-secondary: rgba(230, 230, 230, 1);
+    --foreground-foreground-accent-primary-010: rgba(9, 136, 240, 0.1);
+    --text-text-accent-primary: rgba(9, 136, 240, 1);
+    --border-border-secondary: rgba(200, 200, 200, 1);
   }
+  
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 13%;
+    --foreground: 0 0% 15%;
+    --invert: 0 0% 13%;
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 15%;
+    --secondary: 0 0% 60%;
     --secondary-foreground: 0 0% 98%;
+    --tertiary-foreground: rgba(54, 54, 54, 1);
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
     --accent: 240 3.7% 15.9%;
@@ -69,12 +79,18 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --ring: 207, 93%, 49%, 0.2;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    
+    /* Custom variables from component */
+    --foreground-foreground-secondary: rgba(42, 42, 42, 1);
+    --foreground-foreground-accent-primary-010: rgba(9, 136, 240, 0.1);
+    --text-text-accent-primary: rgba(9, 136, 240, 1);
+    --border-border-secondary: rgba(79, 79, 79, 1);
   }
 }
 
@@ -84,5 +100,31 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Additional utility classes for common patterns in the component */
+@layer components {
+  .rounded-button {
+    @apply h-8 w-8 rounded-full p-0;
+    background-color: var(--tertiary-foreground);
+  }
+  
+  .payment-option-badge {
+    @apply flex gap-1 p-1 rounded-full text-sm items-center;
+    background-color: var(--tertiary-foreground);
+  }
+  
+  .icon-container {
+    @apply w-10 h-10 rounded-full flex items-center justify-center;
+    background-color: var(--foreground-foreground-secondary);
+  }
+  
+  .accent-button {
+    background: var(--foreground-foreground-accent-primary-010);
+  }
+  
+  .accent-text {
+    color: var(--text-text-accent-primary);
   }
 }

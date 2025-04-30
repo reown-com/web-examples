@@ -1,28 +1,28 @@
-import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
+import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
+import { SolanaAdapter } from "@reown/appkit-adapter-solana";
+import { arbitrum, optimism, base } from "@reown/appkit/networks";
 
-import { cookieStorage, createStorage } from "wagmi";
-import { arbitrum, base, optimism } from "wagmi/chains";
-
-// Get projectId from https://cloud.walletconnect.com
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID;
 
-if (!projectId) throw new Error("Project ID is not defined");
+if (!projectId) {
+  throw new Error("Project ID is not defined");
+}
+
+export const networks = [base, optimism, arbitrum];
+
+export const wagmiAdapter = new WagmiAdapter({
+  ssr: true,
+  projectId,
+  networks,
+});
+
+export const solanaAdapter = new SolanaAdapter()
 
 export const metadata = {
-  name: "AppKit",
-  description: "AppKit Example",
-  url: "https://web3modal.com", // origin must match your domain & subdomain
-  icons: ["https://avatars.githubusercontent.com/u/37784886"],
+  name: "Chain Abstraction Demo",
+  description: "A demo of Chain Abstraction",
+  url: "https://ca-demo.reown.com", // origin must match your domain & subdomain
+  icons: ["https://ca-demo.reown.com/donut.png"],
 };
 
-// Create wagmiConfig
-const chains = [base, optimism, arbitrum] as const;
-export const config = defaultWagmiConfig({
-  chains,
-  projectId,
-  metadata,
-  ssr: true,
-  storage: createStorage({
-    storage: cookieStorage,
-  }),
-});
+export const config = wagmiAdapter.wagmiConfig;

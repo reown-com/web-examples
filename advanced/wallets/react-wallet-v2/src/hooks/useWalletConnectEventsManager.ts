@@ -1,4 +1,3 @@
-import { Web3WalletTypes } from '@walletconnect/web3wallet'
 import { COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
 import { EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
 import { EIP5792_METHODS } from '@/data/EIP5792Data'
@@ -8,7 +7,7 @@ import { MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
 import { TRON_SIGNING_METHODS } from '@/data/TronData'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import { SignClientTypes } from '@walletconnect/types'
 import { useCallback, useEffect, useMemo } from 'react'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
@@ -19,8 +18,13 @@ import { formatJsonRpcError } from '@json-rpc-tools/utils'
 import { approveEIP5792Request } from '@/utils/EIP5792RequestHandlerUtils'
 import EIP155Lib from '@/lib/EIP155Lib'
 import { getWallet } from '@/utils/EIP155WalletUtil'
+import { BIP122_SIGNING_METHODS } from '@/data/Bip122Data'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { refreshSessionsList } from '@/pages/wc'
+import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
+import WalletCheckoutCtrl from '@/store/WalletCheckoutCtrl'
+import { CheckoutErrorCode } from '@/types/wallet_checkout'
+import { createCheckoutError } from '@/types/wallet_checkout'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -35,12 +39,6 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     },
     []
   )
-  /******************************************************************************
-   * 2. Open Auth modal for confirmation / rejection
-   *****************************************************************************/
-  const onAuthRequest = useCallback((request: Web3WalletTypes.AuthRequest) => {
-    ModalStore.open('AuthRequestModal', { request })
-  }, [])
 
   /******************************************************************************
    * 3. Open request handling modal based on method that was used
@@ -49,7 +47,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
     async (requestEvent: SignClientTypes.EventArguments['session_request']) => {
       const { topic, params, verifyContext, id } = requestEvent
       const { request } = params
-      const requestSession = web3wallet.engine.signClient.session.get(topic)
+      const requestSession = walletkit.engine.signClient.session.get(topic)
       // set the verify context so it can be displayed in the projectInfoCard
       SettingsStore.setCurrentRequestVerifyContext(verifyContext)
       switch (request.method) {
@@ -72,13 +70,13 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
         case EIP5792_METHODS.WALLET_GET_CAPABILITIES:
         case EIP5792_METHODS.WALLET_GET_CALLS_STATUS:
-          return await web3wallet.respondSessionRequest({
+          return await walletkit.respondSessionRequest({
             topic,
             response: await approveEIP5792Request(requestEvent)
           })
 
         case EIP5792_METHODS.WALLET_SHOW_CALLS_STATUS:
-          return await web3wallet.respondSessionRequest({
+          return await walletkit.respondSessionRequest({
             topic,
             response: formatJsonRpcError(id, "Wallet currently don't show call status.")
           })
@@ -91,13 +89,32 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
              * if EOA, we can submit call one by one, but need to have a data structure
              * to return bundle id, for all the calls,
              */
-            return await web3wallet.respondSessionRequest({
+            return await walletkit.respondSessionRequest({
               topic,
               response: formatJsonRpcError(id, "Wallet currently don't support batch call for EOA")
             })
           }
           return ModalStore.open('SessionSendCallsModal', { requestEvent, requestSession })
         }
+
+        case EIP155_SIGNING_METHODS.WALLET_CHECKOUT:
+          try {
+            await WalletCheckoutCtrl.actions.prepareFeasiblePayments(request.params[0])
+          } catch (error) {
+            // If it's not a CheckoutError, create one
+            if (!(error && typeof error === 'object' && 'code' in error)) {
+              error = createCheckoutError(
+                CheckoutErrorCode.INVALID_CHECKOUT_REQUEST,
+                `Unexpected error: ${error instanceof Error ? error.message : String(error)}`
+              )
+            }
+
+            return await walletkit.respondSessionRequest({
+              topic,
+              response: WalletCheckoutUtil.formatCheckoutErrorResponse(id, error)
+            })
+          }
+          return ModalStore.open('SessionCheckoutModal', { requestEvent, requestSession })
 
         case COSMOS_SIGNING_METHODS.COSMOS_SIGN_DIRECT:
         case COSMOS_SIGNING_METHODS.COSMOS_SIGN_AMINO:
@@ -106,6 +123,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE:
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_TRANSACTION:
         case SOLANA_SIGNING_METHODS.SOLANA_SIGN_AND_SEND_TRANSACTION:
+        case SOLANA_SIGNING_METHODS.SOLANA_SIGN_ALL_TRANSACTIONS:
           return ModalStore.open('SessionSignSolanaModal', { requestEvent, requestSession })
 
         case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_MESSAGE:
@@ -130,7 +148,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           return ModalStore.open('SessionSignMultiversxModal', { requestEvent, requestSession })
 
         case NEAR_SIGNING_METHODS.NEAR_GET_ACCOUNTS:
-          return web3wallet.respondSessionRequest({
+          return walletkit.respondSessionRequest({
             topic,
             response: await approveNearRequest(requestEvent)
           })
@@ -146,6 +164,16 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case KADENA_SIGNING_METHODS.KADENA_SIGN:
         case KADENA_SIGNING_METHODS.KADENA_QUICKSIGN:
           return ModalStore.open('SessionSignKadenaModal', { requestEvent, requestSession })
+        case BIP122_SIGNING_METHODS.BIP122_SIGN_MESSAGE:
+          return ModalStore.open('SessionSignBip122Modal', { requestEvent, requestSession })
+        case BIP122_SIGNING_METHODS.BIP122_GET_ACCOUNT_ADDRESSES:
+          return ModalStore.open('SessionGetBip122AddressesModal', { requestEvent, requestSession })
+        case BIP122_SIGNING_METHODS.BIP122_SIGN_PSBT:
+        case BIP122_SIGNING_METHODS.BIP122_SEND_TRANSACTION:
+          return ModalStore.open('SessionSendTransactionBip122Modal', {
+            requestEvent,
+            requestSession
+          })
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }
@@ -165,21 +193,19 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    * Set up WalletConnect event listeners
    *****************************************************************************/
   useEffect(() => {
-    if (initialized && web3wallet) {
+    if (initialized && walletkit) {
       //sign
-      web3wallet.on('session_proposal', onSessionProposal)
-      web3wallet.on('session_request', onSessionRequest)
-      // auth
-      web3wallet.on('auth_request', onAuthRequest)
+      walletkit.on('session_proposal', onSessionProposal)
+      walletkit.on('session_request', onSessionRequest)
       // TODOs
-      web3wallet.engine.signClient.events.on('session_ping', data => console.log('ping', data))
-      web3wallet.on('session_delete', data => {
+      walletkit.engine.signClient.events.on('session_ping', data => console.log('ping', data))
+      walletkit.on('session_delete', data => {
         console.log('session_delete event received', data)
         refreshSessionsList()
       })
-      web3wallet.on('session_authenticate', onSessionAuthenticate)
+      walletkit.on('session_authenticate', onSessionAuthenticate)
       // load sessions on init
       refreshSessionsList()
     }
-  }, [initialized, onAuthRequest, onSessionAuthenticate, onSessionProposal, onSessionRequest])
+  }, [initialized, onSessionAuthenticate, onSessionProposal, onSessionRequest])
 }

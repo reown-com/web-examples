@@ -13,13 +13,16 @@ import SessionSignKadenaModal from '@/views/SessionSignKadenaModal'
 import SessionSignTypedDataModal from '@/views/SessionSignTypedDataModal'
 import SessionUnsuportedMethodModal from '@/views/SessionUnsuportedMethodModal'
 import SessionSendCallsModal from '@/views/SessionSendCallsModal'
+import SessionCheckoutModal from '@/views/SessionCheckoutModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
 import { useCallback, useMemo } from 'react'
-import AuthRequestModal from '@/views/AuthRequestModal'
 import LoadingModal from '@/views/LoadingModal'
 import SessionAuthenticateModal from '@/views/SessionAuthenticateModal'
+import SessionSignBip122Modal from '@/views/SessionSignBip122Modal'
+import SessionSendTransactionBip122Modal from '@/views/SessionSendTransactionBip122Modal'
 import SessionGrantPermissionsModal from '@/views/SessionGrantPermissionsModal'
+import SessionGetBip122AddressesModal from '@/views/SessionGetBip122AddressesModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -62,12 +65,18 @@ export default function Modal() {
         return <SessionSignTezosModal />
       case 'SessionSignKadenaModal':
         return <SessionSignKadenaModal />
-      case 'AuthRequestModal':
-        return <AuthRequestModal />
       case 'LoadingModal':
         return <LoadingModal />
       case 'SessionAuthenticateModal':
         return <SessionAuthenticateModal />
+      case 'SessionSignBip122Modal':
+        return <SessionSignBip122Modal />
+      case 'SessionGetBip122AddressesModal':
+        return <SessionGetBip122AddressesModal />
+      case 'SessionSendTransactionBip122Modal':
+        return <SessionSendTransactionBip122Modal />
+      case 'SessionCheckoutModal':
+        return <SessionCheckoutModal />
       default:
         return null
     }

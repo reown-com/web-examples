@@ -15,6 +15,7 @@ import { Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccounts from '@/hooks/useSmartAccounts'
+import { BIP122_CHAINS } from '@/data/Bip122Data'
 import { useRouter } from 'next/router'
 import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCard'
 
@@ -30,6 +31,7 @@ export default function HomePage() {
     tronAddress,
     tezosAddress,
     kadenaAddress,
+    bip122Address,
     smartAccountEnabled,
     chainAbstractionEnabled
   } = useSnapshot(SettingsStore.state)
@@ -128,6 +130,17 @@ export default function HomePage() {
           logo={logo}
           rgb={rgb}
           address={kadenaAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
+      ))}
+      {Object.entries(BIP122_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={bip122Address}
           chainId={caip10}
           data-testid={'chain-card-' + caip10.toString()}
         />

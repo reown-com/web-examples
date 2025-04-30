@@ -49,6 +49,7 @@ interface IContext {
   setChains: any;
   setRelayerRegion: any;
   origin: string;
+  setAccounts: any;
 }
 
 /**
@@ -63,6 +64,16 @@ const web3Modal = new Web3Modal({
   projectId: DEFAULT_PROJECT_ID,
   themeMode: "light",
   walletConnectVersion: 2,
+  mobileWallets: [
+    {
+      id: "bifrost",
+      name: "Bifrost Wallet",
+      links: {
+        native: "bifrostwallet://",
+        universal: "https://bifrostwallet.com",
+      },
+    },
+  ],
 });
 
 /**
@@ -106,7 +117,6 @@ export function ClientContextProvider({
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
           const assets = await apiGetAccountBalance(address, chainId);
-
           return { account, assets: [assets] };
         })
       );
@@ -122,6 +132,11 @@ export function ClientContextProvider({
       setIsFetchingBalances(false);
     }
   };
+
+  useMemo(() => {
+    if (!accounts.length) return;
+    getAccountBalances(accounts);
+  }, [accounts]);
 
   const onSessionConnected = useCallback(
     async (_session: SessionTypes.Struct) => {
@@ -147,26 +162,17 @@ export function ClientContextProvider({
       }
       console.log("connect, pairing topic is:", pairing?.topic);
       try {
-        const requiredNamespaces = getRequiredNamespaces(chains);
-        console.log(
-          "requiredNamespaces config for connect:",
-          requiredNamespaces
-        );
-        const optionalNamespaces = getOptionalNamespaces(chains);
-        console.log(
-          "optionalNamespaces config for connect:",
-          optionalNamespaces
-        );
+        const namespacesToRequest = getRequiredNamespaces(chains);
         const { uri, approval } = await client.connect({
           pairingTopic: pairing?.topic,
-          requiredNamespaces,
-          optionalNamespaces,
+          requiredNamespaces: {},
+          optionalNamespaces: namespacesToRequest,
         });
 
         // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
         if (uri) {
           // Create a flat array of all requested chains across namespaces.
-          const standaloneChains = Object.values(requiredNamespaces)
+          const standaloneChains = Object.values(namespacesToRequest)
             .map((namespace) => namespace.chains)
             .flat() as string[];
 
@@ -291,8 +297,18 @@ export function ClientContextProvider({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
+        metadata: {
+          name: "React App",
+          description: "App to test WalletConnect network",
+          url: claimedOrigin,
+          icons: [],
+        },
       });
-
+      if (claimedOrigin === "unknown") {
+        //@ts-expect-error - private property
+        _client.core.verify.verifyUrlV3 = "0xdeafbeef";
+        console.log("verify", _client.core.verify);
+      }
       setClient(_client);
       setOrigin(_client.metadata.url);
       console.log("metadata url:", _client.metadata);
@@ -317,6 +333,7 @@ export function ClientContextProvider({
   useEffect(() => {
     const claimedOrigin =
       localStorage.getItem("wallet_connect_dapp_origin") || origin;
+    console.log("claimedOrigin:", claimedOrigin);
     let interval: NodeJS.Timer;
     // simulates `UNKNOWN` validation by removing the verify iframe thus preventing POST message
     if (claimedOrigin === "unknown") {
@@ -375,6 +392,7 @@ export function ClientContextProvider({
       setChains,
       setRelayerRegion,
       origin,
+      setAccounts,
     }),
     [
       pairings,
@@ -392,6 +410,7 @@ export function ClientContextProvider({
       setChains,
       setRelayerRegion,
       origin,
+      setAccounts,
     ]
   );
 

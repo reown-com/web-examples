@@ -1,12 +1,12 @@
-import { smartSessionAddress } from '@biconomy/permission-context-builder'
 import { ModuleType } from '@rhinestone/module-sdk'
 //Note: ES6 syntax dont work for this package
 const {
+  SMART_SESSIONS_ADDRESS,
   MULTI_FACTOR_VALIDATOR_ADDRESS,
   OWNABLE_VALIDATOR_ADDRESS,
   WEBAUTHN_VALIDATOR_ADDRESS,
-  SCHEDULED_ORDERS_EXECUTER_ADDRESS,
-  SCHEDULED_TRANSFERS_EXECUTER_ADDRESS
+  SCHEDULED_ORDERS_EXECUTOR_ADDRESS,
+  SCHEDULED_TRANSFERS_EXECUTOR_ADDRESS
 } = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 
 export type ModuleView =
@@ -31,7 +31,7 @@ export const supportedModules: Module[] = [
     name: 'Permission Validator',
     type: 'validator',
     url: '/permission-validator',
-    moduleAddress: smartSessionAddress,
+    moduleAddress: SMART_SESSIONS_ADDRESS,
     description: `The Permission Validator module is a module that allows DApp to request permissions from a wallet in order to execute transactions on users's behalf that is scoped with permissions`,
     moduleData: '0x'
   },
@@ -65,7 +65,7 @@ export const supportedModules: Module[] = [
     name: 'Schedule Orders Executor',
     type: 'executor',
     url: 'schedule-orders-executor',
-    moduleAddress: SCHEDULED_ORDERS_EXECUTER_ADDRESS,
+    moduleAddress: SCHEDULED_ORDERS_EXECUTOR_ADDRESS,
     description: `The Scheduled Orders module allows users to schedule swaps to be executed at a later time, with an optional recurring schedule. This module is an executor that is installed on an account and can be triggered by an automation service at the pre-specified time(s).`,
     moduleData: ''
   },
@@ -73,7 +73,7 @@ export const supportedModules: Module[] = [
     name: 'Schedule Transfers Executor',
     type: 'executor',
     url: '/schedule-transfers-executor',
-    moduleAddress: SCHEDULED_TRANSFERS_EXECUTER_ADDRESS,
+    moduleAddress: SCHEDULED_TRANSFERS_EXECUTOR_ADDRESS,
     description: `The Scheduled Transfers module allows users to schedule token transfers to occur at a future time, with an optional recurring schedule. It is an executor that is installed on an account and can be triggered by an automation service at the pre-specified time(s).`,
     moduleData: ''
   }

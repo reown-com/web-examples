@@ -109,7 +109,7 @@ export async function getERC7579OwnableValidatorOwners({
   }
 }
 
-export async function getPublicClient(chain: Chain) {
+export function getPublicClient(chain: Chain) {
   return createPublicClient({
     transport: http(),
     chain: chain
@@ -135,7 +135,11 @@ export async function isERC7579ModuleInstalled(
   })
   const erc7579Module: Module = {
     module: moduleAddress,
-    type: moduleType
+    type: moduleType,
+    initData: '0x',
+    deInitData: '0x',
+    additionalContext: '0x',
+    address: moduleAddress
   }
   return await isModuleInstalled({
     client: publicClient, // The client object of type PublicClient from viem

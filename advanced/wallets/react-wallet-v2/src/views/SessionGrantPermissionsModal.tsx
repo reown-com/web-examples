@@ -5,13 +5,16 @@ import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
 import { styledToast } from '@/utils/HelperUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 import PermissionDetailsCard from '@/components/PermissionDetailsCard'
-import { approveEIP7715Request, rejectEIP7715Request } from '@/utils/EIP7715RequestHandlerUtils'
+import {
+  approveEIP7715Request,
+  createErrorResponse,
+  rejectEIP7715Request
+} from '@/utils/EIP7715RequestHandlerUtils'
 import { GrantPermissionsParameters } from 'viem/experimental'
-// import { GrantPermissionsRequestParams } from '@/data/EIP7715Data'
 
 export default function SessionGrantPermissionsModal() {
   // Get request and wallet data from store
@@ -39,17 +42,21 @@ export default function SessionGrantPermissionsModal() {
       setIsLoadingApprove(true)
       const response = await approveEIP7715Request(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
       } catch (e) {
-        setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
-        return
+        const response = createErrorResponse(requestEvent, (e as Error).message)
+        await walletkit.respondSessionRequest({
+          topic,
+          response
+        })
+      } finally {
+        setIsLoadingApprove(false)
+        ModalStore.close()
       }
-      setIsLoadingApprove(false)
-      ModalStore.close()
     }
   }, [requestEvent, topic])
 
@@ -59,7 +66,7 @@ export default function SessionGrantPermissionsModal() {
       setIsLoadingReject(true)
       const response = rejectEIP7715Request(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

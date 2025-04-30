@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as PropTypes from "prop-types";
-import styled, { keyframes } from "styled-components";
+import { styled, keyframes } from "styled-components";
 import { colors } from "../styles";
 
 const load = keyframes`
@@ -23,6 +23,8 @@ const load = keyframes`
 
 interface LoaderStyleProps {
   size: number;
+  children?: React.ReactNode;
+  viewBox?: string;
 }
 
 interface LoaderProps extends LoaderStyleProps {

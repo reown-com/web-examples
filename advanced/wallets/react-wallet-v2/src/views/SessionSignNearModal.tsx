@@ -7,7 +7,7 @@ import RequestDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import ModalStore from '@/store/ModalStore'
 import { approveNearRequest, rejectNearRequest } from '@/utils/NearRequestHandlerUtil'
-import { web3wallet } from '@/utils/WalletConnectUtil'
+import { walletkit } from '@/utils/WalletConnectUtil'
 import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { styledToast } from '@/utils/HelperUtil'
 import RequestModal from '../components/RequestModal'
@@ -144,19 +144,18 @@ export default function SessionSignNearModal() {
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
-    if (requestEvent) {
-      setIsLoadingApprove(true)
-      const response = await approveNearRequest(requestEvent)
-      try {
-        await web3wallet.respondSessionRequest({
+    try {
+      if (requestEvent) {
+        setIsLoadingApprove(true)
+        const response = await approveNearRequest(requestEvent)
+        await walletkit.respondSessionRequest({
           topic,
           response
         })
-      } catch (e) {
-        setIsLoadingApprove(false)
-        styledToast((e as Error).message, 'error')
-        return
       }
+    } catch (e) {
+      styledToast((e as Error).message, 'error')
+    } finally {
       setIsLoadingApprove(false)
       ModalStore.close()
     }
@@ -168,7 +167,7 @@ export default function SessionSignNearModal() {
       setIsLoadingReject(true)
       const response = rejectNearRequest(requestEvent)
       try {
-        await web3wallet.respondSessionRequest({
+        await walletkit.respondSessionRequest({
           topic,
           response
         })

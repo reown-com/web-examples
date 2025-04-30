@@ -1,17 +1,14 @@
 import type { Metadata } from "next";
-import { Inter as FontSans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { cookieToInitialState } from "wagmi";
-import { config } from "@/config";
 import AppKitProvider from "@/context";
-import { Toaster } from "@/components/ui/toaster";
-import { headers } from "next/headers";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
-const fontSans = FontSans({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -24,29 +21,25 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const initialState = cookieToInitialState(config, headers().get("cookie"));
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased pt-12 pb-24 mt-12 overflow-y-auto",
-          fontSans.variable
+          "min-h-screen bg-background font-sans antialiased overflow-y-auto",
+          inter.className,
         )}
       >
-        <AppKitProvider initialState={initialState}>
+        <AppKitProvider>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
             disableTransitionOnChange
           >
-            <div className="flex items-center justify-center min-h-screen">
-              {children}
-            </div>
+            <div className="flex justify-center min-h-screen">{children}</div>
           </ThemeProvider>
         </AppKitProvider>
-        <Toaster />
+        <Toaster expand={true} />
       </body>
     </html>
   );
