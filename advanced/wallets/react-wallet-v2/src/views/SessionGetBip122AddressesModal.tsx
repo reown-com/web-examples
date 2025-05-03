@@ -9,6 +9,7 @@ import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 import { approveBip122Request, rejectBip122Request } from '@/utils/Bip122RequestHandlerUtil'
 import { bip122Wallet } from '@/utils/Bip122WalletUtil'
+import { IBip122ChainId } from '@/data/Bip122Data'
 
 export default function SessionGetBip122AddressesModal() {
   // Get request and wallet data from store
@@ -26,7 +27,8 @@ export default function SessionGetBip122AddressesModal() {
   const { request, chainId } = params
   const account = request.params.account
   const intentions = request.params.intentions
-  const addresses = bip122Wallet.getAddresses(intentions)
+  const addresses = bip122Wallet.getAddresses(chainId as IBip122ChainId, intentions)
+
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
     if (requestEvent) {
@@ -65,6 +67,11 @@ export default function SessionGetBip122AddressesModal() {
       ModalStore.close()
     }
   }, [requestEvent, topic])
+
+  if (!addresses || addresses.size === 0) {
+    onReject()
+    return <Text>No addresses found</Text>
+  }
 
   return (
     <RequestModal
