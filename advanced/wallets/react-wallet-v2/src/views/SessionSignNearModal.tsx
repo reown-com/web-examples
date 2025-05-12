@@ -30,7 +30,9 @@ export default function SessionSignNearModal() {
   const { request, chainId } = params
 
   const formatTransaction = (transaction: Uint8Array) => {
-    const tx = transactions.Transaction.decode(Buffer.from(transaction))
+    // @ts-ignore
+    const txValue = transaction?.type === 'Buffer' ? transaction : Object.values(transaction)
+    const tx = transactions.Transaction.decode(Buffer.from(txValue))
 
     return {
       signerId: tx.signerId,
@@ -49,7 +51,7 @@ export default function SessionSignNearModal() {
               type: 'DeployContract',
               params: {
                 ...action.deployContract,
-                args: Buffer.from(action.deployContract.code).toString()
+                args: Buffer.from(action.deployContract!.code).toString()
               }
             }
           }
@@ -58,7 +60,7 @@ export default function SessionSignNearModal() {
               type: 'FunctionCall',
               params: {
                 ...action.functionCall,
-                args: JSON.parse(Buffer.from(action.functionCall.args).toString())
+                args: JSON.parse(Buffer.from(action.functionCall!.args).toString())
               }
             }
           }
@@ -73,7 +75,7 @@ export default function SessionSignNearModal() {
               type: 'Stake',
               params: {
                 ...action.stake,
-                publicKey: action.stake.publicKey.toString()
+                publicKey: action.stake!.publicKey.toString()
               }
             }
           }
@@ -82,7 +84,7 @@ export default function SessionSignNearModal() {
               type: 'AddKey',
               params: {
                 ...action.addKey,
-                publicKey: action.addKey.publicKey.toString()
+                publicKey: action.addKey!.publicKey.toString()
               }
             }
           }
@@ -91,7 +93,7 @@ export default function SessionSignNearModal() {
               type: 'DeleteKey',
               params: {
                 ...action.deleteKey,
-                publicKey: action.deleteKey.publicKey.toString()
+                publicKey: action.deleteKey!.publicKey.toString()
               }
             }
           }

@@ -138,7 +138,7 @@ export class NearWallet {
     const randomNumber = Math.floor(
       Math.random() * (99999999999999 - 10000000000000) + 10000000000000
     )
-    const accountId = `dev-${Date.now()}-${randomNumber}`
+    const accountId = `dev-${Date.now()}-${randomNumber}.testnet`
     const publicKey = keyPair.getPublicKey().toString()
 
     fetch(`https://helper.testnet.near.org/account`, {
@@ -204,7 +204,9 @@ export class NearWallet {
     chainId,
     transactions
   }: CreateTransactionsParams): Promise<Array<nearTransactions.Transaction>> {
-    const provider = new providers.JsonRpcProvider(NEAR_TEST_CHAINS[chainId as TNearChain].rpc)
+    const provider = new providers.JsonRpcProvider({
+      url: NEAR_TEST_CHAINS[chainId as TNearChain].rpc
+    })
     const txs: Array<nearTransactions.Transaction> = []
 
     const [block, accounts] = await Promise.all([
@@ -227,12 +229,14 @@ export class NearWallet {
         public_key: account.publicKey
       })
 
+      const nonce = BigInt(accessKey.nonce) + BigInt(i) + 1n
+
       txs.push(
         nearTransactions.createTransaction(
           transaction.signerId,
           utils.PublicKey.from(account.publicKey),
           transaction.receiverId,
-          accessKey.nonce + i + 1,
+          nonce,
           transaction.actions,
           utils.serialize.base_decode(block.header.hash)
         )
@@ -368,7 +372,9 @@ export class NearWallet {
     topic,
     transaction
   }: SignAndSendTransactionParams): Promise<providers.FinalExecutionOutcome> {
-    const provider = new providers.JsonRpcProvider(NEAR_TEST_CHAINS[chainId as TNearChain].rpc)
+    const provider = new providers.JsonRpcProvider({
+      url: NEAR_TEST_CHAINS[chainId as TNearChain].rpc
+    })
     const [signedTx] = await this.signTransactions({
       chainId,
       topic,
@@ -383,7 +389,9 @@ export class NearWallet {
     topic,
     transactions
   }: SignAndSendTransactionsParams): Promise<Array<providers.FinalExecutionOutcome>> {
-    const provider = new providers.JsonRpcProvider(NEAR_TEST_CHAINS[chainId as TNearChain].rpc)
+    const provider = new providers.JsonRpcProvider({
+      url: NEAR_TEST_CHAINS[chainId as TNearChain].rpc
+    })
     const signedTxs = await this.signTransactions({ chainId, topic, transactions })
     const results: Array<providers.FinalExecutionOutcome> = []
 
