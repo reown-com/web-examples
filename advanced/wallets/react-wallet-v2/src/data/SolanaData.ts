@@ -23,6 +23,30 @@ export const SOLANA_MAINNET_CHAINS = {
     rgb: '30, 240, 166',
     rpc: 'https://api.mainnet-beta.solana.com',
     namespace: 'solana'
+  },
+  'solana:EAQLJCV2mh23BsK2P9oYpV5CHVLDNHTx': {
+    chainId: 'EAQLJCV2mh23BsK2P9oYpV5CHVLDNHTx',
+    name: 'Eclipse',
+    logo: '/chain-logos/eclipse.png',
+    rgb: '162, 254, 160',
+    rpc: 'https://eclipse.helius-rpc.com',
+    namespace: 'solana'
+  },
+  'solana:CX4huckiV9QNAkKNVKi5Tj8nxzBive5k': {
+    chainId: 'CX4huckiV9QNAkKNVKi5Tj8nxzBive5k',
+    name: 'Eclipse Testnet',
+    logo: '/chain-logos/eclipse.png',
+    rgb: '162, 254, 160',
+    rpc: 'https://testnet.dev2.eclipsenetwork.xyz',
+    namespace: 'solana'
+  },
+  'solana:8axJLKAqQU9oyULRunGrZTLDEXhn17VW': {
+    chainId: '8axJLKAqQU9oyULRunGrZTLDEXhn17VW',
+    name: 'Eclipse Devnet',
+    logo: '/chain-logos/eclipse.png',
+    rgb: '162, 254, 160',
+    rpc: 'https://staging-rpc.dev2.eclipsenetwork.xyz',
+    namespace: 'solana'
   }
 }
 
