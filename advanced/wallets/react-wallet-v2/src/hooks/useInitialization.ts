@@ -14,6 +14,8 @@ import { useSnapshot } from 'valtio'
 import useSmartAccounts from './useSmartAccounts'
 import { createOrRestoreBip122Wallet } from '@/utils/Bip122WalletUtil'
 
+// guard against multiple calls to createWalletKit while the wallet is initializing
+let startedInit = false
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
   const prevRelayerURLValue = useRef<string>('')
@@ -22,6 +24,9 @@ export default function useInitialization() {
   const { initializeSmartAccounts } = useSmartAccounts()
 
   const onInitialize = useCallback(async () => {
+    if (startedInit) return
+
+    startedInit = true
     try {
       const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
       const { cosmosAddresses } = await createOrRestoreCosmosWallet()
@@ -50,6 +55,8 @@ export default function useInitialization() {
     } catch (err: unknown) {
       console.error('Initialization failed', err)
       alert(err)
+    } finally {
+      startedInit = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [relayerRegionURL])
