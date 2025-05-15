@@ -43,10 +43,8 @@ export default function SessionCard({ logo, name, url, topic }: IProps) {
             <Text h5 css={{ marginLeft: '$9' }} data-testid={`session-text`}>
               {name}
             </Text>
-            <Link href={url} css={{ marginLeft: '$9' }}>
-              <a data-testid={`session-link`}>
-                {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
-              </a>
+            <Link href={url} css={{ marginLeft: '$9' }} data-testid={`session-link`}>
+              {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
             </Link>
           </div>
 
