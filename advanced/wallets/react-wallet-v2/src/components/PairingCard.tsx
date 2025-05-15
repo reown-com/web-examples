@@ -40,10 +40,8 @@ export default function PairingCard({ logo, name, url, topic, onDelete }: IProps
           <Text h5 css={{ marginLeft: '$9' }} data-testid={'pairing-text-' + topic}>
             {name}
           </Text>
-          <Link href={url} css={{ marginLeft: '$9' }}>
-            <a data-testid={'pairing-text-' + topic}>
-              {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
-            </a>
+          <Link href={url} css={{ marginLeft: '$9' }} data-testid={'pairing-text-' + topic}>
+            {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
           </Link>
         </div>
         <Tooltip content="Delete" placement="left">
