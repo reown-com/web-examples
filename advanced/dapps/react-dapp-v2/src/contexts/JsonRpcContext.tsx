@@ -4,6 +4,7 @@ import * as encoding from "@walletconnect/encoding";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import { recoverTransaction } from "@celo/wallet-base";
 import * as bitcoin from "bitcoinjs-lib";
+import { ApiPromise, WsProvider } from "@polkadot/api";
 
 import {
   formatDirectSignDoc,
@@ -84,6 +85,7 @@ import {
 } from "../helpers/bip122";
 import { getAddressFromAccount } from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
+import { PolkadotChainData } from "../chains/polkadot";
 
 /**
  * Types
@@ -966,18 +968,28 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
+        // Initialize API
+
+        const [namespace, reference] = chainId.split(":");
+        const targetChainData = chainData[namespace][reference];
+        const wsProvider = new WsProvider(targetChainData.rpc);
+        const api = await ApiPromise.create({ provider: wsProvider });
+
+        const call = api.tx.balances.transfer(address, 1000000000000); // 1 DOT
+
+        const runtime = await api.rpc.state.getRuntimeVersion();
+        const blockHash = await api.rpc.chain.getBlockHash();
+        const blockNumber = await api.rpc.chain.getHeader();
+
         const transactionPayload = {
-          specVersion: "0x00002468",
-          transactionVersion: "0x0000000e",
+          specVersion: runtime.specVersion.toHex(),
+          transactionVersion: runtime.transactionVersion.toHex(),
           address: `${address}`,
-          blockHash:
-            "0x554d682a74099d05e8b7852d19c93b527b5fae1e9e1969f6e1b82a2f09a14cc9",
-          blockNumber: "0x00cb539c",
+          blockHash: blockHash.toHex(),
+          blockNumber: blockNumber.number.toHex(),
           era: "0xc501",
-          genesisHash:
-            "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
-          method:
-            "0x0001784920616d207369676e696e672074686973207472616e73616374696f6e21",
+          genesisHash: api.genesisHash.toHex(),
+          method: call.method.toHex(),
           nonce: "0x00000000",
           signedExtensions: [
             "CheckNonZeroSender",
@@ -990,7 +1002,7 @@ export function JsonRpcContextProvider({
             "ChargeTransactionPayment",
           ],
           tip: "0x00000000000000000000000000000000",
-          version: 4,
+          version: api.extrinsicVersion
         };
 
         const result = await client!.request<{
@@ -1007,6 +1019,17 @@ export function JsonRpcContextProvider({
             },
           },
         });
+
+        // result = { signature: '0x...' }
+        const extrinsic = api.createType('Extrinsic', call);
+        extrinsic.addSignature(address, `0x${result.signature.replaceAll('0x', '')}`, {
+          ...transactionPayload,
+          specVersion: api.runtimeVersion.specVersion,
+          transactionVersion: api.runtimeVersion.transactionVersion,
+        });
+
+        const txHash = api.registry.hash(extrinsic.toU8a()).toHex();
+        console.log('Transaction hash:', txHash);
 
         return {
           method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
