@@ -6,7 +6,7 @@ export async function createWalletKit(relayerRegionURL: string) {
   const core = new Core({
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
     relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL,
-    logger: 'warn'
+    logger: 'trace'
   })
   walletkit = await WalletKit.init({
     core,
