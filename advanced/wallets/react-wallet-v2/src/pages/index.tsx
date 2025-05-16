@@ -18,6 +18,7 @@ import useSmartAccounts from '@/hooks/useSmartAccounts'
 import { BIP122_CHAINS } from '@/data/Bip122Data'
 import { useRouter } from 'next/router'
 import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCard'
+import WalletBalanceCard from '@/components/WalletBalanceCard'
 
 export default function HomePage() {
   const {
@@ -42,6 +43,7 @@ export default function HomePage() {
       <PageHeader title="Accounts">
         <AccountPicker data-testid="account-picker" />
       </PageHeader>
+      <WalletBalanceCard />
       {chainAbstractionEnabled ? <ChainAbstractionBalanceCard /> : null}
       <Text h4 css={{ marginBottom: '$5' }}>
         Mainnets
