@@ -30,9 +30,16 @@ const Column = (props: ColumnProps) => {
   return (
     <SColumn
       {...props}
-      spanHeight={spanHeight}
-      maxWidth={maxWidth}
-      center={center}
+      style={{
+        width: maxWidth ? `${maxWidth}px` : "100%",
+        height: spanHeight ? "100%" : "auto",
+        margin: "0 auto",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: center === undefined || center ? "center" : "flex-start",
+        justifyContent:
+          center === undefined || center ? "center" : "flex-start",
+      }}
     >
       {children}
     </SColumn>

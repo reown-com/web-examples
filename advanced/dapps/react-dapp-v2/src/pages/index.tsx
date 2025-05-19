@@ -25,6 +25,7 @@ import {
   GetCapabilitiesResult,
   DEFAULT_BIP122_METHODS,
   DEFAULT_EIP7715_METHODS,
+  DEFAULT_SUI_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -96,6 +97,7 @@ const Home: NextPage = () => {
     tezosRpc,
     kadenaRpc,
     bip122Rpc,
+    suiRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -516,6 +518,36 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getSuiActions = (): AccountAction[] => {
+    const onSendTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await suiRpc.testSendSuiTransaction(chainId, address);
+    };
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await suiRpc.testSignSuiTransaction(chainId, address);
+    };
+    const onSignPersonalMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await suiRpc.testSignSuiPersonalMessage(chainId, address);
+    };
+
+    return [
+      {
+        method: DEFAULT_SUI_METHODS.SUI_SIGN_AND_EXECUTE_TRANSACTION,
+        callback: onSendTransaction,
+      },
+      {
+        method: DEFAULT_SUI_METHODS.SUI_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
+      {
+        method: DEFAULT_SUI_METHODS.SUI_SIGN_PERSONAL_MESSAGE,
+        callback: onSignPersonalMessage,
+      },
+    ];
+  };
+
   const getBlockchainActions = (account: string) => {
     const [namespace, chainId, address] = account.split(":");
     switch (namespace) {
@@ -539,6 +571,8 @@ const Home: NextPage = () => {
         return getKadenaActions();
       case "bip122":
         return getBip122Actions();
+      case "sui":
+        return getSuiActions();
       default:
         break;
     }

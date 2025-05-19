@@ -10,6 +10,7 @@ import * as tron from "./tron";
 import * as tezos from "./tezos";
 import * as kadena from "./kadena";
 import * as bip122 from "./bip122";
+import * as sui from "./sui";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -36,6 +37,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return tezos.getChainMetadata(chainId);
     case "bip122":
       return bip122.getChainMetadata(chainId);
+    case "sui":
+      return sui.getChainMetadata(chainId);
     default:
       throw new Error(`No metadata handler for namespace ${namespace}`);
   }

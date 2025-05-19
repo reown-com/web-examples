@@ -25,6 +25,7 @@ import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
 import WalletCheckoutCtrl from '@/store/WalletCheckoutCtrl'
 import { CheckoutErrorCode } from '@/types/wallet_checkout'
 import { createCheckoutError } from '@/types/wallet_checkout'
+import { SUI_SIGNING_METHODS } from '@/data/SuiData'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -171,6 +172,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case BIP122_SIGNING_METHODS.BIP122_SIGN_PSBT:
         case BIP122_SIGNING_METHODS.BIP122_SEND_TRANSACTION:
           return ModalStore.open('SessionSendTransactionBip122Modal', {
+            requestEvent,
+            requestSession
+          })
+        case SUI_SIGNING_METHODS.SUI_SIGN_PERSONAL_MESSAGE:
+          return ModalStore.open('SessionSignSuiPersonalMessageModal', {
             requestEvent,
             requestSession
           })

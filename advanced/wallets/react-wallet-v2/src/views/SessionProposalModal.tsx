@@ -45,6 +45,8 @@ import {
 } from '@/data/Bip122Data'
 import { EIP7715_METHOD } from '@/data/EIP7715Data'
 import { useRouter } from 'next/router'
+import { SUI_CHAINS, SUI_EVENTS, SUI_SIGNING_METHODS } from '@/data/SuiData'
+import { suiAddresses } from '@/utils/SuiWalletUtil'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -116,6 +118,11 @@ export default function SessionProposalModal() {
     const bip122Chains = Object.keys(BIP122_CHAINS)
     const bip122Methods = Object.values(BIP122_SIGNING_METHODS)
     const bip122Events = Object.values(BIP122_EVENTS)
+
+    // sui
+    const suiChains = Object.keys(SUI_CHAINS)
+    const suiMethods = Object.values(SUI_SIGNING_METHODS)
+    const suiEvents = Object.values(SUI_EVENTS)
 
     return {
       eip155: {
@@ -199,6 +206,12 @@ export default function SessionProposalModal() {
         methods: bip122Methods,
         events: bip122Events,
         accounts: bip122Addresses
+      },
+      sui: {
+        chains: suiChains,
+        methods: suiMethods,
+        events: suiEvents,
+        accounts: suiChains.map(chain => suiAddresses.map(address => `${chain}:${address}`)).flat()
       }
     }
   }, [addressesToApprove])
@@ -279,6 +292,8 @@ export default function SessionProposalModal() {
         return tronAddresses[0]
       case 'bip122':
         return bip122Addresses[0]
+      case 'sui':
+        return suiAddresses[0]
     }
   }, [])
 

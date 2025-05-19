@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccounts from './useSmartAccounts'
 import { createOrRestoreBip122Wallet } from '@/utils/Bip122WalletUtil'
+import { createOrRestoreSuiWallet } from '@/utils/SuiWalletUtil'
 
 // guard against multiple calls to createWalletKit while the wallet is initializing
 let startedInit = false
@@ -38,6 +39,7 @@ export default function useInitialization() {
       const { tezosAddresses } = await createOrRestoreTezosWallet()
       const { kadenaAddresses } = await createOrRestoreKadenaWallet()
       const { bip122Addresses } = await createOrRestoreBip122Wallet()
+      const { suiAddresses } = await createOrRestoreSuiWallet()
       await initializeSmartAccounts(eip155Wallets[eip155Addresses[0]].getPrivateKey())
 
       SettingsStore.setEIP155Address(eip155Addresses[0])
@@ -50,6 +52,7 @@ export default function useInitialization() {
       SettingsStore.setTezosAddress(tezosAddresses[0])
       SettingsStore.setKadenaAddress(kadenaAddresses[0])
       SettingsStore.setbip122Address(bip122Addresses[0])
+      SettingsStore.setSuiAddress(suiAddresses[0])
       await createWalletKit(relayerRegionURL)
       setInitialized(true)
     } catch (err: unknown) {
