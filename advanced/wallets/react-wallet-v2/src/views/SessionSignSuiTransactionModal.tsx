@@ -10,7 +10,7 @@ import RequestModal from '../components/RequestModal'
 import { suiAddresses } from '@/utils/SuiWalletUtil'
 import { approveSuiRequest, rejectSuiRequest } from '@/utils/SuiRequestHandlerUtil'
 
-export default function SessionSignSuiPersonalMessageModal() {
+export default function SessionSignSuiTransactionModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
@@ -27,8 +27,8 @@ export default function SessionSignSuiPersonalMessageModal() {
   const { request, chainId } = params
 
   // Get message, convert it to UTF8 string if it is valid hex
-  const message = request.params?.message
-    ? Buffer.from(request.params.message, 'base64').toString('utf8')
+  const transaction = request.params?.transaction
+    ? Buffer.from(request.params.transaction, 'base64').toString('utf8')
     : ''
 
   // Handle approve action (logic varies based on request method)
@@ -72,7 +72,7 @@ export default function SessionSignSuiPersonalMessageModal() {
 
   return (
     <RequestModal
-      intention="request a signature"
+      intention="sign a transaction"
       metadata={requestSession.peer.metadata}
       onApprove={onApprove}
       onReject={onReject}
@@ -101,9 +101,9 @@ export default function SessionSignSuiPersonalMessageModal() {
       <Divider y={1} />
       <Row>
         <Col>
-          <Text h5>Message</Text>
+          <Text h5>Transaction details</Text>
           <Text color="$gray400" data-testid="request-message-text">
-            {message}
+            <code>{transaction}</code>
           </Text>
         </Col>
       </Row>

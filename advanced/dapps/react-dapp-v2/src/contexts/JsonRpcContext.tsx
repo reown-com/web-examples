@@ -4,7 +4,11 @@ import * as encoding from "@walletconnect/encoding";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import { recoverTransaction } from "@celo/wallet-base";
 import * as bitcoin from "bitcoinjs-lib";
-import { verifyPersonalMessageSignature } from "@mysten/sui/verify";
+import {
+  verifyPersonalMessageSignature,
+  verifyTransactionSignature,
+} from "@mysten/sui/verify";
+import { Transaction as SuiTransaction } from "@mysten/sui/transactions";
 
 import {
   formatDirectSignDoc,
@@ -38,6 +42,7 @@ import {
   formatTestTransaction,
   getLocalStorageTestnetFlag,
   getProviderUrl,
+  getSuiClient,
   hashPersonalMessage,
   hashTypedDataMessage,
   verifySignature,
@@ -86,6 +91,7 @@ import {
 } from "../helpers/bip122";
 import { getAddressFromAccount } from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
+import { SuiClient } from "@mysten/sui/client";
 
 /**
  * Types
@@ -1903,12 +1909,18 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_SUI_METHODS.SUI_SIGN_AND_EXECUTE_TRANSACTION;
+
+        const tx = new SuiTransaction();
+        const [coin] = tx.splitCoins(tx.gas, [100]); // 0.001 SUI
+        tx.setSender(address);
+        tx.transferObjects([coin], address);
+
+        const serialized = await tx.toJSON();
         const req = {
-          account: address,
-          recipientAddress: address,
-          amount: 1000000000000000000,
+          transaction: Buffer.from(serialized).toString("base64"),
         };
-        const result = await client!.request<{ txid: string }>({
+
+        const result = await client!.request<{ digest: string }>({
           topic: session!.topic,
           chainId: chainId,
           request: {
@@ -1916,11 +1928,12 @@ export function JsonRpcContextProvider({
             params: req,
           },
         });
+        console.log("result", result);
         return {
           method,
           address: address,
           valid: true,
-          result: result?.txid,
+          result: result?.digest,
         };
       }
     ),
@@ -1930,10 +1943,22 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_SUI_METHODS.SUI_SIGN_TRANSACTION;
+
+        const tx = new SuiTransaction();
+
+        const [coin] = tx.splitCoins(tx.gas, [100]); // 0.001 SUI
+
+        tx.setSender(address);
+
+        tx.transferObjects([coin], address);
+
+        const serialized = await tx.toJSON();
+        console.log("serialized", serialized);
         const req = {
-          account: address,
+          transaction: Buffer.from(serialized).toString("base64"),
         };
-        const result = await client!.request<{ txid: string }>({
+
+        const result = await client!.request<{ signature: string }>({
           topic: session!.topic,
           chainId: chainId,
           request: {
@@ -1941,11 +1966,28 @@ export function JsonRpcContextProvider({
             params: req,
           },
         });
+        console.log("result", result);
+
+        const suiClient = await getSuiClient(chainId);
+
+        const txBytes = await tx.build({ client: suiClient });
+
+        const decodedSignature = Buffer.from(
+          result.signature,
+          "base64"
+        ).toString();
+        const isValid = await verifyTransactionSignature(
+          txBytes,
+          decodedSignature
+        );
+
+        console.log("isValid", isValid);
+
         return {
           method,
           address: address,
           valid: true,
-          result: result?.txid,
+          result: result?.signature,
         };
       }
     ),
@@ -1980,6 +2022,7 @@ export function JsonRpcContextProvider({
             Buffer.from(result.signature, "base64").toString(),
             { address }
           );
+
           console.log("publicKey", publicKey.toSuiAddress(), address);
           return {
             method,

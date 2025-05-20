@@ -29,9 +29,11 @@ export async function approveSuiRequest(requestEvent: RequestEventArgs) {
       }
     case SUI_SIGNING_METHODS.SUI_SIGN_TRANSACTION:
       try {
-        const transaction = getSignParamsMessage(request.params)
-        const signedTransaction = {}
-        return formatJsonRpcResult(id, signedTransaction)
+        const result = await wallet.signTransaction({
+          transaction: request.params.transaction,
+          chainId
+        })
+        return formatJsonRpcResult(id, result)
       } catch (error: any) {
         console.error(error)
         alert(error.message)
@@ -39,9 +41,11 @@ export async function approveSuiRequest(requestEvent: RequestEventArgs) {
       }
     case SUI_SIGNING_METHODS.SUI_SIGN_AND_EXECUTE_TRANSACTION:
       try {
-        const message = getSignParamsMessage(request.params)
-        const signedMessage = await wallet.signMessage({ message })
-        return formatJsonRpcResult(id, signedMessage)
+        const result = await wallet.signAndExecuteTransaction({
+          transaction: request.params.transaction,
+          chainId
+        })
+        return formatJsonRpcResult(id, result)
       } catch (error: any) {
         console.error(error)
         alert(error.message)

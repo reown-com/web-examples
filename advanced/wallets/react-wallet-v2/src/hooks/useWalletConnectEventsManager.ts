@@ -180,6 +180,16 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
             requestEvent,
             requestSession
           })
+        case SUI_SIGNING_METHODS.SUI_SIGN_TRANSACTION:
+          return ModalStore.open('SessionSignSuiTransactionModal', {
+            requestEvent,
+            requestSession
+          })
+        case SUI_SIGNING_METHODS.SUI_SIGN_AND_EXECUTE_TRANSACTION:
+          return ModalStore.open('SessionSignSuiAndExecuteTransactionModal', {
+            requestEvent,
+            requestSession
+          })
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }

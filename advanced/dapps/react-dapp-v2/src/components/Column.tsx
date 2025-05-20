@@ -27,23 +27,7 @@ const SColumn = styled.div<ColumnStyleProps>`
 
 const Column = (props: ColumnProps) => {
   const { children, spanHeight, maxWidth, center } = props;
-  return (
-    <SColumn
-      {...props}
-      style={{
-        width: maxWidth ? `${maxWidth}px` : "100%",
-        height: spanHeight ? "100%" : "auto",
-        margin: "0 auto",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: center === undefined || center ? "center" : "flex-start",
-        justifyContent:
-          center === undefined || center ? "center" : "flex-start",
-      }}
-    >
-      {children}
-    </SColumn>
-  );
+  return <SColumn {...props}>{children}</SColumn>;
 };
 
 Column.propTypes = {
