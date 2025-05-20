@@ -766,6 +766,8 @@ export function JsonRpcContextProvider({
           signDoc: stringifySignDocValues(signDoc),
         };
 
+        console.log("cosmos_signDirect params", params);
+
         // send message
         const result = await client!.request<{ signature: string }>({
           topic: session!.topic,
@@ -776,6 +778,7 @@ export function JsonRpcContextProvider({
           },
         });
 
+        console.log("cosmos_signDirect result", result);
         const targetChainData = chainData[namespace][reference];
 
         if (typeof targetChainData === "undefined") {
@@ -815,6 +818,8 @@ export function JsonRpcContextProvider({
         // cosmos_signAmino params
         const params = { signerAddress: address, signDoc };
 
+        console.log("cosmos_signAmino params", params);
+
         // send message
         const result = await client!.request<{ signature: string }>({
           topic: session!.topic,
@@ -824,6 +829,8 @@ export function JsonRpcContextProvider({
             params,
           },
         });
+
+        console.log("cosmos_signAmino result", result);
 
         const targetChainData = chainData[namespace][reference];
 
