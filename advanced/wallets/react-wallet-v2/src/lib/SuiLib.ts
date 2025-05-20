@@ -62,16 +62,15 @@ export default class SuiLib {
 
     const signature = await this.keypair.signPersonalMessage(messageToSign)
 
-    const base64Signature = Buffer.from(signature.signature).toString('base64')
     // Output
-    console.log('Signature (base64):', base64Signature)
+    console.log('Signature:', signature)
     console.log('Public Key:', this.keypair.getPublicKey().toBase64())
 
     const verified = await verifyPersonalMessageSignature(messageToSign, signature.signature)
     console.log('Verified:', verified, verified.equals(this.keypair.getPublicKey()))
 
     return {
-      signature: base64Signature,
+      signature: signature.signature,
       publicKey: this.keypair.getPublicKey().toBase64()
     }
   }
@@ -82,9 +81,8 @@ export default class SuiLib {
     console.log('tx', tx)
     const signature = await tx.sign({ signer: this.keypair, client })
     console.log('signature', signature)
-    const base64Signature = Buffer.from(signature.signature).toString('base64')
     return {
-      signature: base64Signature
+      signature: signature.signature
     }
   }
 

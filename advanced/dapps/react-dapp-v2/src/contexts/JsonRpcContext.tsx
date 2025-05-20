@@ -1918,8 +1918,9 @@ export function JsonRpcContextProvider({
         const serialized = await tx.toJSON();
         const req = {
           transaction: Buffer.from(serialized).toString("base64"),
+          address,
         };
-
+        console.log("req", req, serialized);
         const result = await client!.request<{ digest: string }>({
           topic: session!.topic,
           chainId: chainId,
@@ -1953,11 +1954,11 @@ export function JsonRpcContextProvider({
         tx.transferObjects([coin], address);
 
         const serialized = await tx.toJSON();
-        console.log("serialized", serialized);
         const req = {
           transaction: Buffer.from(serialized).toString("base64"),
+          address,
         };
-
+        console.log("req", req, serialized);
         const result = await client!.request<{ signature: string }>({
           topic: session!.topic,
           chainId: chainId,
@@ -1972,13 +1973,9 @@ export function JsonRpcContextProvider({
 
         const txBytes = await tx.build({ client: suiClient });
 
-        const decodedSignature = Buffer.from(
-          result.signature,
-          "base64"
-        ).toString();
         const isValid = await verifyTransactionSignature(
           txBytes,
-          decodedSignature
+          result.signature
         );
 
         console.log("isValid", isValid);
@@ -2003,6 +2000,7 @@ export function JsonRpcContextProvider({
             "This is a message to be signed for SUI"
           ).toString("base64"),
         };
+        console.log("req", req);
         const result = await client!.request<{
           signature: string;
           publicKey: string;
@@ -2015,11 +2013,15 @@ export function JsonRpcContextProvider({
           },
         });
 
-        console.log("result", result);
+        console.log(
+          "result",
+          result,
+          Buffer.from(result.signature, "base64").toString("hex")
+        );
         try {
           const publicKey = await verifyPersonalMessageSignature(
             new TextEncoder().encode(req.message),
-            Buffer.from(result.signature, "base64").toString(),
+            result.signature,
             { address }
           );
 
