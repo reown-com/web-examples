@@ -197,29 +197,29 @@ export function JsonRpcContextProvider({
         address: string
       ) => Promise<IFormattedRpcResponse>
     ) =>
-    async (chainId: string, address: string) => {
-      if (typeof client === "undefined") {
-        throw new Error("WalletConnect is not initialized");
-      }
-      if (typeof session === "undefined") {
-        throw new Error("Session is not connected");
-      }
+      async (chainId: string, address: string) => {
+        if (typeof client === "undefined") {
+          throw new Error("WalletConnect is not initialized");
+        }
+        if (typeof session === "undefined") {
+          throw new Error("Session is not connected");
+        }
 
-      try {
-        setPending(true);
-        const result = await rpcRequest(chainId, address);
-        setResult(result);
-      } catch (err: any) {
-        console.error("RPC request failed: ", err);
-        setResult({
-          address,
-          valid: false,
-          result: err?.message ?? err,
-        });
-      } finally {
-        setPending(false);
-      }
-    };
+        try {
+          setPending(true);
+          const result = await rpcRequest(chainId, address);
+          setResult(result);
+        } catch (err: any) {
+          console.error("RPC request failed: ", err);
+          setResult({
+            address,
+            valid: false,
+            result: err?.message ?? err,
+          });
+        } finally {
+          setPending(false);
+        }
+      };
 
   const _verifyEip155MessageSignature = (
     message: string,
@@ -885,11 +885,11 @@ export function JsonRpcContextProvider({
                   ...key,
                   pubkey: key.pubkey.toBase58(),
                 })),
-                data: bs58.encode(instruction.data),
+                data: bs58.encode(new Uint8Array(instruction.data)),
               })),
               partialSignatures: transaction.signatures.map((sign) => ({
                 pubkey: sign.publicKey.toBase58(),
-                signature: bs58.encode(sign.signature!),
+                signature: bs58.encode(new Uint8Array(sign.signature!)),
               })),
               transaction: transaction
                 .serialize({ verifySignatures: false })
@@ -1587,9 +1587,8 @@ export function JsonRpcContextProvider({
         }
 
         const pactCommand = new PactCommand();
-        pactCommand.code = `(coin.transfer "${
-          kadenaAccount.account
-        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        pactCommand.code = `(coin.transfer "${kadenaAccount.account
+          }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
 
         pactCommand
           .setMeta(
@@ -1640,9 +1639,8 @@ export function JsonRpcContextProvider({
         }
 
         const pactCommand = new PactCommand();
-        pactCommand.code = `(coin.transfer "${
-          kadenaAccount.account
-        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        pactCommand.code = `(coin.transfer "${kadenaAccount.account
+          }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
 
         pactCommand
           .setMeta(
@@ -1872,7 +1870,7 @@ export function JsonRpcContextProvider({
         };
         const addresses =
           session?.sessionProperties?.[
-            `bip122_${DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES}`
+          `bip122_${DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES}`
           ];
         let result;
         if (addresses) {
