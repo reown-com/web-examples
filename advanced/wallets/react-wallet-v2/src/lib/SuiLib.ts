@@ -81,7 +81,10 @@ export default class SuiLib {
     console.log('tx', tx)
     const signature = await tx.sign({ signer: this.keypair, client })
     console.log('signature', signature)
+    const transactionBytes = Buffer.from(await tx.build({ client })).toString('base64')
+    console.log('transactionBytes', transactionBytes)
     return {
+      transactionBytes,
       signature: signature.signature
     }
   }
