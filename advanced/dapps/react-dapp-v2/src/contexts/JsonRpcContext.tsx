@@ -769,7 +769,9 @@ export function JsonRpcContextProvider({
         console.log("cosmos_signDirect params", params);
 
         // send message
-        const result = await client!.request<{ signature: string }>({
+        const result = await client!.request<{
+          signature: { signature: string };
+        }>({
           topic: session!.topic,
           chainId,
           request: {
@@ -787,7 +789,7 @@ export function JsonRpcContextProvider({
 
         const valid = await verifyDirectSignature(
           address,
-          result.signature,
+          result.signature.signature,
           signDoc
         );
 
@@ -796,7 +798,7 @@ export function JsonRpcContextProvider({
           method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
           address,
           valid,
-          result: result.signature,
+          result: result.signature.signature,
         };
       }
     ),
@@ -821,7 +823,9 @@ export function JsonRpcContextProvider({
         console.log("cosmos_signAmino params", params);
 
         // send message
-        const result = await client!.request<{ signature: string }>({
+        const result = await client!.request<{
+          signature: { signature: string };
+        }>({
           topic: session!.topic,
           chainId,
           request: {
@@ -840,7 +844,7 @@ export function JsonRpcContextProvider({
 
         const valid = await verifyAminoSignature(
           address,
-          result.signature,
+          result.signature.signature,
           signDoc
         );
 
@@ -849,7 +853,7 @@ export function JsonRpcContextProvider({
           method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
           address,
           valid,
-          result: result.signature,
+          result: result.signature.signature,
         };
       }
     ),

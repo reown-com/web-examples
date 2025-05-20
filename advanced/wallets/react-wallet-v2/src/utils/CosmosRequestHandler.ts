@@ -19,14 +19,14 @@ export async function approveCosmosRequest(
         request.params.signerAddress,
         parseSignDocValues(request.params.signDoc)
       )
-      return formatJsonRpcResult(id, signedDirect.signature)
+      return formatJsonRpcResult(id, signedDirect)
 
     case COSMOS_SIGNING_METHODS.COSMOS_SIGN_AMINO:
       const signedAmino = await wallet.signAmino(
         request.params.signerAddress,
         request.params.signDoc
       )
-      return formatJsonRpcResult(id, signedAmino.signature)
+      return formatJsonRpcResult(id, signedAmino)
 
     default:
       throw new Error(getSdkError('INVALID_METHOD').message)
