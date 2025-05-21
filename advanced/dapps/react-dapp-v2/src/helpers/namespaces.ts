@@ -114,7 +114,7 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
 
 export const getRequiredNamespaces = (
   chains: string[]
-): ProposalTypes.RequiredNamespaces => {
+): ProposalTypes.OptionalNamespaces => {
   const selectedNamespaces = getNamespacesFromChains(chains);
   console.log("selected required namespaces:", selectedNamespaces);
 

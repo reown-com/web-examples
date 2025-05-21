@@ -1,6 +1,13 @@
-import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import { Web3Modal } from "@web3modal/standalone";
+import { AppKit, CaipNetwork, CaipNetworkId } from "@reown/appkit";
+// @ts-expect-error - our "moduleResolution" doesn't like this
+import { createAppKit } from "@reown/appkit/core";
+import { defineChain } from "@reown/appkit/networks";
+import {
+  IUniversalProvider,
+  NamespaceConfig,
+  UniversalProvider,
+} from "@walletconnect/universal-provider";
 import { RELAYER_EVENTS } from "@walletconnect/core";
 import toast from "react-hot-toast";
 
@@ -18,21 +25,19 @@ import {
 
 import { getAppMetadata, getSdkError } from "@walletconnect/utils";
 import {
-  DEFAULT_APP_METADATA,
   DEFAULT_LOGGER,
   DEFAULT_PROJECT_ID,
   DEFAULT_RELAY_URL,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
-import {
-  getOptionalNamespaces,
-  getRequiredNamespaces,
-} from "../helpers/namespaces";
+import { getRequiredNamespaces } from "../helpers/namespaces";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 
 /**
  * Types
  */
+
+type Client = IUniversalProvider["client"];
 interface IContext {
   client: Client | undefined;
   session: SessionTypes.Struct | undefined;
@@ -57,25 +62,8 @@ interface IContext {
  */
 export const ClientContext = createContext<IContext>({} as IContext);
 
-/**
- * Web3Modal Config
- */
-const web3Modal = new Web3Modal({
-  projectId: DEFAULT_PROJECT_ID,
-  themeMode: "light",
-  walletConnectVersion: 2,
-  mobileWallets: [
-    {
-      id: "bifrost",
-      name: "Bifrost Wallet",
-      links: {
-        native: "bifrostwallet://",
-        universal: "https://bifrostwallet.com",
-      },
-    },
-  ],
-});
-
+let creatingClient: boolean = false;
+let appkit: AppKit | undefined;
 /**
  * Provider
  */
@@ -85,6 +73,7 @@ export function ClientContextProvider({
   children: ReactNode | ReactNode[];
 }) {
   const [client, setClient] = useState<Client>();
+  const [provider, setProvider] = useState<IUniversalProvider>();
   const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
   const [session, setSession] = useState<SessionTypes.Struct>();
 
@@ -155,31 +144,54 @@ export function ClientContextProvider({
     []
   );
 
+  const mapCaipIdToAppKitCaipNetwork = (caipId: CaipNetworkId): CaipNetwork => {
+    const [namespace, chainId] = caipId.split(":");
+    const chain = defineChain({
+      id: chainId,
+      caipNetworkId: caipId,
+      chainNamespace: namespace as CaipNetwork["chainNamespace"],
+      name: "",
+      nativeCurrency: {
+        name: "",
+        symbol: "",
+        decimals: 8,
+      },
+      rpcUrls: {
+        default: { http: ["https://rpc.walletconnect.org/v1"] },
+      },
+    });
+
+    return chain as CaipNetwork;
+  };
+
   const connect = useCallback(
     async (pairing: any) => {
-      if (typeof client === "undefined") {
+      if (typeof provider === "undefined" || typeof client === "undefined") {
         throw new Error("WalletConnect is not initialized");
       }
       console.log("connect, pairing topic is:", pairing?.topic);
       try {
         const namespacesToRequest = getRequiredNamespaces(chains);
-        const { uri, approval } = await client.connect({
-          pairingTopic: pairing?.topic,
-          requiredNamespaces: {},
-          optionalNamespaces: namespacesToRequest,
+
+        appkit?.open();
+
+        appkit?.subscribeState((state: { open: boolean }) => {
+          // the modal was closed so reject the promise
+          if (!state.open && !provider.session) {
+            throw new Error("Connection request reset. Please try again.");
+          }
         });
 
-        // Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
-        if (uri) {
-          // Create a flat array of all requested chains across namespaces.
-          const standaloneChains = Object.values(namespacesToRequest)
-            .map((namespace) => namespace.chains)
-            .flat() as string[];
+        provider.namespaces = undefined;
+        const session = await provider.connect({
+          pairingTopic: pairing?.topic,
+          optionalNamespaces: namespacesToRequest as NamespaceConfig,
+        });
 
-          web3Modal.openModal({ uri, standaloneChains });
+        if (!session) {
+          throw new Error("Session is not connected");
         }
 
-        const session = await approval();
         console.log("Established session:", session);
         await onSessionConnected(session);
         // Update known pairings after session is connected.
@@ -192,10 +204,10 @@ export function ClientContextProvider({
         throw e;
       } finally {
         // close modal in case it was open
-        web3Modal.closeModal();
+        appkit?.close();
       }
     },
-    [chains, client, onSessionConnected]
+    [chains, client, onSessionConnected, provider]
   );
 
   const disconnect = useCallback(async () => {
@@ -288,12 +300,43 @@ export function ClientContextProvider({
     }
   }, []);
 
+  const createModal = useCallback((provider: IUniversalProvider) => {
+    if (appkit) return;
+    const networks = ["eip155:1"].map((caipId) =>
+      mapCaipIdToAppKitCaipNetwork(caipId as CaipNetworkId)
+    );
+    appkit = createAppKit({
+      projectId: DEFAULT_PROJECT_ID,
+      themeMode: "dark",
+      manualWCControl: true,
+      universalProvider: provider,
+      networks: [networks[0], ...networks],
+      metadata: {
+        name: "React App",
+        description: "App to test WalletConnect network",
+        url: location.origin,
+        icons: [],
+      },
+      showWallets: true,
+      enableEIP6963: false, // Disable 6963 by default
+      enableInjected: false, // Disable injected by default
+      enableCoinbase: true, // Default to true
+      enableWalletConnect: true, // Default to true,
+      features: {
+        email: false,
+        socials: false,
+      },
+    });
+  }, []);
+
   const createClient = useCallback(async () => {
     try {
+      if (creatingClient) return;
+      creatingClient = true;
       setIsInitializing(true);
       const claimedOrigin =
         localStorage.getItem("wallet_connect_dapp_origin") || origin;
-      const _client = await Client.init({
+      const provider = await UniversalProvider.init({
         logger: DEFAULT_LOGGER,
         relayUrl: relayerRegion,
         projectId: DEFAULT_PROJECT_ID,
@@ -304,11 +347,17 @@ export function ClientContextProvider({
           icons: [],
         },
       });
+
+      createModal(provider);
+
+      const _client = provider.client;
+
       if (claimedOrigin === "unknown") {
         //@ts-expect-error - private property
         _client.core.verify.verifyUrlV3 = "0xdeafbeef";
         console.log("verify", _client.core.verify);
       }
+      setProvider(provider);
       setClient(_client);
       setOrigin(_client.metadata.url);
       console.log("metadata url:", _client.metadata);
@@ -320,14 +369,16 @@ export function ClientContextProvider({
     } catch (err) {
       throw err;
     } finally {
+      creatingClient = false;
       setIsInitializing(false);
     }
   }, [
-    _checkPersistedState,
-    _subscribeToEvents,
-    _logClientId,
-    relayerRegion,
     origin,
+    relayerRegion,
+    createModal,
+    _subscribeToEvents,
+    _checkPersistedState,
+    _logClientId,
   ]);
 
   useEffect(() => {

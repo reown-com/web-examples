@@ -883,11 +883,11 @@ export function JsonRpcContextProvider({
                   ...key,
                   pubkey: key.pubkey.toBase58(),
                 })),
-                data: bs58.encode(instruction.data),
+                data: bs58.encode(new Uint8Array(instruction.data)),
               })),
               partialSignatures: transaction.signatures.map((sign) => ({
                 pubkey: sign.publicKey.toBase58(),
-                signature: bs58.encode(sign.signature!),
+                signature: bs58.encode(new Uint8Array(sign.signature!)),
               })),
               transaction: transaction
                 .serialize({ verifySignatures: false })
