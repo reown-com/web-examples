@@ -4,6 +4,11 @@ import * as encoding from "@walletconnect/encoding";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import { recoverTransaction } from "@celo/wallet-base";
 import * as bitcoin from "bitcoinjs-lib";
+import {
+  verifyPersonalMessageSignature,
+  verifyTransactionSignature,
+} from "@mysten/sui/verify";
+import { Transaction as SuiTransaction } from "@mysten/sui/transactions";
 
 import {
   formatDirectSignDoc,
@@ -37,6 +42,7 @@ import {
   formatTestTransaction,
   getLocalStorageTestnetFlag,
   getProviderUrl,
+  getSuiClient,
   hashPersonalMessage,
   hashTypedDataMessage,
   verifySignature,
@@ -61,6 +67,7 @@ import {
   DEFAULT_EIP7715_METHODS,
   WalletGrantPermissionsParameters,
   WalletGrantPermissionsReturnType,
+  DEFAULT_SUI_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -84,6 +91,7 @@ import {
 } from "../helpers/bip122";
 import { getAddressFromAccount } from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
+import { SuiClient } from "@mysten/sui/client";
 
 /**
  * Types
@@ -155,6 +163,11 @@ interface IContext {
     testSignMessage: TRpcRequestCallback;
     testSendTransaction: TRpcRequestCallback;
     testSignPsbt: TRpcRequestCallback;
+  };
+  suiRpc: {
+    testSendSuiTransaction: TRpcRequestCallback;
+    testSignSuiTransaction: TRpcRequestCallback;
+    testSignSuiPersonalMessage: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -753,8 +766,12 @@ export function JsonRpcContextProvider({
           signDoc: stringifySignDocValues(signDoc),
         };
 
+        console.log("cosmos_signDirect params", params);
+
         // send message
-        const result = await client!.request<{ signature: string }>({
+        const result = await client!.request<{
+          signature: { signature: string };
+        }>({
           topic: session!.topic,
           chainId,
           request: {
@@ -763,6 +780,7 @@ export function JsonRpcContextProvider({
           },
         });
 
+        console.log("cosmos_signDirect result", result);
         const targetChainData = chainData[namespace][reference];
 
         if (typeof targetChainData === "undefined") {
@@ -771,7 +789,7 @@ export function JsonRpcContextProvider({
 
         const valid = await verifyDirectSignature(
           address,
-          result.signature,
+          result.signature.signature,
           signDoc
         );
 
@@ -780,7 +798,7 @@ export function JsonRpcContextProvider({
           method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
           address,
           valid,
-          result: result.signature,
+          result: result.signature.signature,
         };
       }
     ),
@@ -802,8 +820,12 @@ export function JsonRpcContextProvider({
         // cosmos_signAmino params
         const params = { signerAddress: address, signDoc };
 
+        console.log("cosmos_signAmino params", params);
+
         // send message
-        const result = await client!.request<{ signature: string }>({
+        const result = await client!.request<{
+          signature: { signature: string };
+        }>({
           topic: session!.topic,
           chainId,
           request: {
@@ -811,6 +833,8 @@ export function JsonRpcContextProvider({
             params,
           },
         });
+
+        console.log("cosmos_signAmino result", result);
 
         const targetChainData = chainData[namespace][reference];
 
@@ -820,7 +844,7 @@ export function JsonRpcContextProvider({
 
         const valid = await verifyAminoSignature(
           address,
-          result.signature,
+          result.signature.signature,
           signDoc
         );
 
@@ -829,7 +853,7 @@ export function JsonRpcContextProvider({
           method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
           address,
           valid,
-          result: result.signature,
+          result: result.signature.signature,
         };
       }
     ),
@@ -1889,6 +1913,150 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  const suiRpc = {
+    testSendSuiTransaction: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_SUI_METHODS.SUI_SIGN_AND_EXECUTE_TRANSACTION;
+
+        const tx = new SuiTransaction();
+        const [coin] = tx.splitCoins(tx.gas, [100]); // 0.001 SUI
+        tx.setSender(address);
+        tx.transferObjects([coin], address);
+
+        const serialized = await tx.toJSON();
+        const req = {
+          transaction: Buffer.from(serialized).toString("base64"),
+          address,
+        };
+        console.log("req", req, serialized);
+        const result = await client!.request<{ digest: string }>({
+          topic: session!.topic,
+          chainId: chainId,
+          request: {
+            method,
+            params: req,
+          },
+        });
+        console.log("result", result);
+        return {
+          method,
+          address: address,
+          valid: true,
+          result: result?.digest,
+        };
+      }
+    ),
+    testSignSuiTransaction: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_SUI_METHODS.SUI_SIGN_TRANSACTION;
+
+        const tx = new SuiTransaction();
+
+        const [coin] = tx.splitCoins(tx.gas, [100]); // 0.001 SUI
+
+        tx.setSender(address);
+
+        tx.transferObjects([coin], address);
+
+        const serialized = await tx.toJSON();
+        const req = {
+          transaction: Buffer.from(serialized).toString("base64"),
+          address,
+        };
+        console.log("req", req, serialized);
+        const result = await client!.request<{ signature: string }>({
+          topic: session!.topic,
+          chainId: chainId,
+          request: {
+            method,
+            params: req,
+          },
+        });
+        console.log("result", result);
+
+        const suiClient = await getSuiClient(chainId);
+
+        const txBytes = await tx.build({ client: suiClient });
+
+        const isValid = await verifyTransactionSignature(
+          txBytes,
+          result.signature
+        );
+
+        console.log("isValid", isValid);
+
+        return {
+          method,
+          address: address,
+          valid: true,
+          result: result?.signature,
+        };
+      }
+    ),
+    testSignSuiPersonalMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_SUI_METHODS.SUI_SIGN_PERSONAL_MESSAGE;
+        const req = {
+          address: address,
+          message: Buffer.from(
+            "This is a message to be signed for SUI"
+          ).toString("base64"),
+        };
+        console.log("req", req);
+        const result = await client!.request<{
+          signature: string;
+          publicKey: string;
+        }>({
+          topic: session!.topic,
+          chainId: chainId,
+          request: {
+            method,
+            params: req,
+          },
+        });
+
+        console.log(
+          "result",
+          result,
+          Buffer.from(result.signature, "base64").toString("hex")
+        );
+        try {
+          const publicKey = await verifyPersonalMessageSignature(
+            new TextEncoder().encode(req.message),
+            result.signature,
+            { address }
+          );
+
+          console.log("publicKey", publicKey.toSuiAddress(), address);
+          return {
+            method,
+            address: address,
+            valid:
+              publicKey.toSuiAddress().toLowerCase() === address.toLowerCase(),
+            result: result?.signature,
+          };
+        } catch (error) {
+          console.error(error);
+          return {
+            method,
+            address: address,
+            valid: false,
+            result: (error as Error).message,
+          };
+        }
+      }
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -1907,6 +2075,7 @@ export function JsonRpcContextProvider({
         isTestnet,
         setIsTestnet,
         bip122Rpc,
+        suiRpc,
       }}
     >
       {children}

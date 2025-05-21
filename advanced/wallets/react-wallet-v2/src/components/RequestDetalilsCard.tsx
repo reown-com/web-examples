@@ -13,7 +13,7 @@ import { Fragment } from 'react'
  */
 interface IProps {
   chains: string[]
-  protocol: string
+  protocol?: string
 }
 
 /**
@@ -43,16 +43,20 @@ export default function RequestDetailsCard({ chains, protocol }: IProps) {
         </Col>
       </Row>
 
-      <Divider y={2} />
+      {protocol ? (
+        <Fragment>
+          <Divider y={2} />
 
-      <Row>
-        <Col>
-          <Text h5>Relay Protocol</Text>
-          <Text color="$gray400" data-testid="request-detauls-realy-protocol">
-            {protocol}
-          </Text>
-        </Col>
-      </Row>
+          <Row>
+            <Col>
+              <Text h5>Relay Protocol</Text>
+              <Text color="$gray400" data-testid="request-detauls-realy-protocol">
+                {protocol}
+              </Text>
+            </Col>
+          </Row>
+        </Fragment>
+      ) : null}
     </Fragment>
   )
 }
