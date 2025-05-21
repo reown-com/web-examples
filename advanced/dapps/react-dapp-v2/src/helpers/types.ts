@@ -6,6 +6,7 @@ export interface AssetData {
   name: string;
   contractAddress?: string;
   balance?: string;
+  decimals?: number;
 }
 
 export interface ChainData {

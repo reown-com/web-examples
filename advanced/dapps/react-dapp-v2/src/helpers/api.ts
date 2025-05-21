@@ -4,6 +4,7 @@ import { apiGetKadenaAccountBalance } from "./kadena";
 import { AssetData } from "./types";
 import { PactCommand } from "@kadena/client";
 import { apiGetBip122AccountBalance } from "./bip122";
+import { getSuiClient } from "./sui";
 
 export type RpcProvidersByChainId = Record<
   number,
@@ -160,6 +161,10 @@ export async function apiGetAccountBalance(
     return apiGetBip122AccountBalance(address, networkId as string);
   }
 
+  if (namespace === "sui") {
+    return apiGetSuiAccountBalance(address, chainId);
+  }
+
   if (namespace !== "eip155") {
     return { balance: "", symbol: "", name: "" };
   }
@@ -180,6 +185,28 @@ export async function apiGetAccountBalance(
   const balance = parseInt(result, 16).toString();
   return { balance, ...token };
 }
+
+export const apiGetSuiAccountBalance = async (
+  address: string,
+  chainId: string
+): Promise<AssetData> => {
+  const client = await getSuiClient(chainId);
+  if (!client) {
+    console.error(
+      "No sui client found for chainId and no balance can be fetched",
+      chainId
+    );
+    return { balance: "", symbol: "", name: "" };
+  }
+  const balance = await client.getBalance({
+    owner: address,
+  });
+  return {
+    balance: (parseInt(balance.totalBalance) / 10 ** 9).toString(),
+    symbol: "SUI",
+    name: "SUI",
+  };
+};
 
 export const apiGetAccountNonce = async (
   address: string,
