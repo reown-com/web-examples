@@ -85,11 +85,13 @@ export function isMobile(): boolean {
 export function encodePersonalMessage(msg: string): string {
   const data = encoding.utf8ToBuffer(msg);
   const buf = Buffer.concat([
-    Buffer.from(
-      "\u0019Ethereum Signed Message:\n" + data.length.toString(),
-      "utf8"
+    new Uint8Array(
+      Buffer.from(
+        "\u0019Ethereum Signed Message:\n" + data.length.toString(),
+        "utf8"
+      )
     ),
-    data,
+    new Uint8Array(data),
   ]);
   return ethUtil.bufferToHex(buf);
 }
@@ -104,12 +106,16 @@ export function hashPersonalMessage(msg: string): string {
 export function encodeTypedDataMessage(msg: string): string {
   const data = TypedDataUtils.sanitizeData(JSON.parse(msg));
   const buf = Buffer.concat([
-    Buffer.from("1901", "hex"),
-    TypedDataUtils.hashStruct("EIP712Domain", data.domain, data.types),
-    TypedDataUtils.hashStruct(
-      data.primaryType as string,
-      data.message,
-      data.types
+    new Uint8Array(Buffer.from("1901", "hex")),
+    new Uint8Array(
+      TypedDataUtils.hashStruct("EIP712Domain", data.domain, data.types)
+    ),
+    new Uint8Array(
+      TypedDataUtils.hashStruct(
+        data.primaryType as string,
+        data.message,
+        data.types
+      )
     ),
   ]);
   return ethUtil.bufferToHex(buf);
