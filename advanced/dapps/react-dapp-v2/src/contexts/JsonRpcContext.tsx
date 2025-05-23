@@ -969,39 +969,41 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         // Initialize API
-
         const [namespace, reference] = chainId.split(":");
         const targetChainData = chainData[namespace][reference];
         const wsProvider = new WsProvider(targetChainData.rpc);
         const api = await ApiPromise.create({ provider: wsProvider });
 
-        const call = api.tx.balances.transfer(address, 1000000000000); // 1 DOT
+        // Wait for API to be ready
+        await api.isReady;
 
-        const runtime = await api.rpc.state.getRuntimeVersion();
-        const blockHash = await api.rpc.chain.getBlockHash();
-        const blockNumber = await api.rpc.chain.getHeader();
+        // Create transfer transaction
+        const transferAmount = 1000000000000; // 1 DOT
+        const call = api.tx.balances.transferKeepAlive(address, transferAmount);
 
+        // Get the latest block info
+        const [runtime, blockHash, blockNumber] = await Promise.all([
+          api.rpc.state.getRuntimeVersion(),
+          api.rpc.chain.getBlockHash(),
+          api.rpc.chain.getHeader()
+        ]);
+
+        // Get the nonce for the address
+        const nonce = await api.rpc.system.accountNextIndex(address);
+
+        // Create the transaction payload using the API's built-in functionality
         const transactionPayload = {
           specVersion: runtime.specVersion.toHex(),
           transactionVersion: runtime.transactionVersion.toHex(),
-          address: `${address}`,
+          address,
           blockHash: blockHash.toHex(),
           blockNumber: blockNumber.number.toHex(),
-          era: "0xc501",
+          era: api.registry.createType('ExtrinsicEra', { current: blockNumber.number.toNumber(), period: 64 }).toHex(),
           genesisHash: api.genesisHash.toHex(),
           method: call.method.toHex(),
-          nonce: "0x00000000",
-          signedExtensions: [
-            "CheckNonZeroSender",
-            "CheckSpecVersion",
-            "CheckTxVersion",
-            "CheckGenesis",
-            "CheckMortality",
-            "CheckNonce",
-            "CheckWeight",
-            "ChargeTransactionPayment",
-          ],
-          tip: "0x00000000000000000000000000000000",
+          nonce: nonce.toHex(),
+          signedExtensions: api.registry.signedExtensions,
+          tip: api.registry.createType('Compact<Balance>', 0).toHex(),
           version: api.extrinsicVersion
         };
 
