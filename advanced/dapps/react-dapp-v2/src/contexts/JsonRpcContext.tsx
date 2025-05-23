@@ -197,29 +197,29 @@ export function JsonRpcContextProvider({
         address: string
       ) => Promise<IFormattedRpcResponse>
     ) =>
-      async (chainId: string, address: string) => {
-        if (typeof client === "undefined") {
-          throw new Error("WalletConnect is not initialized");
-        }
-        if (typeof session === "undefined") {
-          throw new Error("Session is not connected");
-        }
+    async (chainId: string, address: string) => {
+      if (typeof client === "undefined") {
+        throw new Error("WalletConnect is not initialized");
+      }
+      if (typeof session === "undefined") {
+        throw new Error("Session is not connected");
+      }
 
-        try {
-          setPending(true);
-          const result = await rpcRequest(chainId, address);
-          setResult(result);
-        } catch (err: any) {
-          console.error("RPC request failed: ", err);
-          setResult({
-            address,
-            valid: false,
-            result: err?.message ?? err,
-          });
-        } finally {
-          setPending(false);
-        }
-      };
+      try {
+        setPending(true);
+        const result = await rpcRequest(chainId, address);
+        setResult(result);
+      } catch (err: any) {
+        console.error("RPC request failed: ", err);
+        setResult({
+          address,
+          valid: false,
+          result: err?.message ?? err,
+        });
+      } finally {
+        setPending(false);
+      }
+    };
 
   const _verifyEip155MessageSignature = (
     message: string,
@@ -1022,7 +1022,8 @@ export function JsonRpcContextProvider({
 
         // result = { signature: '0x...' }
         const extrinsic = api.createType('Extrinsic', call);
-        extrinsic.addSignature(address, `0x${result.signature.replaceAll('0x', '')}`, {
+        const normalizedSignature = result.signature.replaceAll('0x', '');
+        extrinsic.addSignature(address, `0x${normalizedSignature}`, {
           ...transactionPayload,
           specVersion: api.runtimeVersion.specVersion,
           transactionVersion: api.runtimeVersion.transactionVersion,
@@ -1587,8 +1588,9 @@ export function JsonRpcContextProvider({
         }
 
         const pactCommand = new PactCommand();
-        pactCommand.code = `(coin.transfer "${kadenaAccount.account
-          }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        pactCommand.code = `(coin.transfer "${
+          kadenaAccount.account
+        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
 
         pactCommand
           .setMeta(
@@ -1639,8 +1641,9 @@ export function JsonRpcContextProvider({
         }
 
         const pactCommand = new PactCommand();
-        pactCommand.code = `(coin.transfer "${kadenaAccount.account
-          }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        pactCommand.code = `(coin.transfer "${
+          kadenaAccount.account
+        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
 
         pactCommand
           .setMeta(
@@ -1870,7 +1873,7 @@ export function JsonRpcContextProvider({
         };
         const addresses =
           session?.sessionProperties?.[
-          `bip122_${DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES}`
+            `bip122_${DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES}`
           ];
         let result;
         if (addresses) {
