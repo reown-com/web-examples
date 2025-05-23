@@ -1033,6 +1033,67 @@ export function JsonRpcContextProvider({
 
         const txHash = api.registry.hash(extrinsic.toU8a()).toHex();
         console.log('Transaction hash:', txHash);
+        
+        // Test transaction hash recreation
+        // Get a known block
+        // const knownBlock = await api.rpc.chain.getBlock('0x598680c4e967f0708e99461525aef1fb432eb702ec8f479e5148cedf8bd831f7');
+        // if (knownBlock) {
+        //   // This is a known transaction hash from Polkadot mainnet on that block
+        //   const knownTxHash = '0x7ed875350c126762c56ddb9428400e6ef4d950e9b66e2e9a16ab361fd4a018e3';
+
+        //   // Get block hash and block number from the block containing the extrinsic
+        //   const blockHash = knownBlock.block.header.hash;
+        //   const blockNumber = knownBlock.block.header.number;
+
+        //   const metadataAt = await api.rpc.state.getMetadata(blockHash.toHex());
+        //   api.registry.setMetadata(metadataAt);
+        //   const signedExtensions = api.registry.signedExtensions;
+
+        //   // Get latest extrinsic in the block, which is the known extrinsic
+        //   const knownExtrinsic = knownBlock.block.extrinsics[knownBlock.block.extrinsics.length - 1];
+        //   // const extrinsicSignature = knownExtrinsic.signature.toHuman();
+        //   // console.log('Extrinsic signature:', extrinsicSignature);
+        //   const extrinsicHash = api.registry.hash(knownExtrinsic.toU8a()).toHex();
+        //   console.log('Hash matches:', extrinsicHash === knownTxHash);
+        //   // console.log('Extrinsic details:', knownExtrinsic.toHuman());
+        //   console.log('Extrinsic JSON:', JSON.stringify(knownExtrinsic.toHuman(), null, 2));
+        //   console.log('Signer public key:', knownExtrinsic.signer.toHex());
+
+        //   // Get the runtime version at that block
+        //   const runtimeAtBlock = await api.rpc.state.getRuntimeVersion(blockHash);
+        //   // Extract original transaction payload
+        //   const originalCall = knownExtrinsic.method;
+
+        //   const originalPayload = {
+        //     'specVersion': runtimeAtBlock.specVersion.toHex(),
+        //     'transactionVersion': runtimeAtBlock.transactionVersion.toHex(),
+        //     'address': knownExtrinsic.signer.toString(),
+        //     'blockHash': blockHash.toHex(),
+        //     'blockNumber': blockNumber.toHex(),
+        //     'era': knownExtrinsic.era.toHex(),
+        //     'genesisHash': api.genesisHash.toHex(), // TODO CHECK THIS
+        //     'method': originalCall.toHex(),
+        //     'nonce': knownExtrinsic.nonce.toHex(),
+        //     'signedExtensions': signedExtensions,
+        //     'tip': knownExtrinsic.tip?.toHex() || '0x00',
+        //     'version': knownExtrinsic.version,
+        //   };
+        //   console.log('Original payload JSON:', JSON.stringify(originalPayload, null, 2));
+
+        //   // Create a new extrinsic from the original payload
+        //   const newExtrinsic = api.createType('Extrinsic', originalCall);
+        //   const cryptoTypePrefix = '01'; // Sr25519
+        //   const rawSig = knownExtrinsic.signature.toHex().replace(/^0x/, '');
+        //   const fullSignature = `${cryptoTypePrefix}${rawSig}`;
+          
+        //   const payload = api.registry.createType('ExtrinsicPayload', originalPayload).toJSON();
+          
+        //   newExtrinsic.addSignature(knownExtrinsic.signer.toString(), `0x${fullSignature}`, payload);
+
+        //   const newTxHash = api.registry.hash(newExtrinsic.toU8a()).toHex();
+        //   console.log('New transaction hash:', newTxHash);
+        //   console.log('Hash matches:', newTxHash === knownTxHash);
+        // }
 
         return {
           method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
