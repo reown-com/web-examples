@@ -9,7 +9,7 @@ export async function approvePolkadotRequest(
   requestEvent: SignClientTypes.EventArguments['session_request']
 ) {
   const { params, id } = requestEvent
-  const { request } = params
+  const { request, chainId } = params
   const address = request.params?.address
   const wallet = getPolkadotWallet(address)
 
@@ -23,7 +23,7 @@ export async function approvePolkadotRequest(
       return formatJsonRpcResult(id, signature)
 
     case POLKADOT_SIGNING_METHODS.POLKADOT_SIGN_TRANSACTION:
-      const signedTx = await wallet?.signTransaction(request.params.transactionPayload)
+      const signedTx = await wallet?.signTransaction(request.params.transactionPayload, chainId)
       return formatJsonRpcResult(id, signedTx)
 
     default:

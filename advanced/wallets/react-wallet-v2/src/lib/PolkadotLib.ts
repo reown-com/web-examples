@@ -3,7 +3,8 @@ import { cryptoWaitReady, mnemonicGenerate } from '@polkadot/util-crypto'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { u8aToHex } from '@polkadot/util'
 import { SignerPayloadJSON } from '@polkadot/types/types'
-import { TypeRegistry } from '@polkadot/types'
+import { WsProvider as PolkadotWsProvider } from '@polkadot/api'
+import { ApiPromise } from '@polkadot/api'
 
 /**
  * Types
@@ -18,12 +19,10 @@ interface IInitArguments {
 export default class PolkadotLib {
   keypair: KeyringPair
   mnemonic: string
-  registry: TypeRegistry
 
   constructor(keypair: KeyringPair, mnemonic: string) {
     this.keypair = keypair
     this.mnemonic = mnemonic
-    this.registry = new TypeRegistry()
   }
 
   static async init({ mnemonic }: IInitArguments) {
@@ -53,13 +52,24 @@ export default class PolkadotLib {
     }
   }
 
-  public async signTransaction(payload: SignerPayloadJSON) {
-    this.registry.setSignedExtensions(payload.signedExtensions)
-    const txPayload = this.registry.createType('ExtrinsicPayload', payload, {
+  public async signTransaction(payload: SignerPayloadJSON, chainId: string) {
+    let rpcUrl = ''
+    if (chainId === 'polkadot:91b171bb158e2d3848fa23a9f1c25182') {
+      rpcUrl = 'wss://rpc.polkadot.io'
+    } else if (chainId === 'polkadot:e143f23803ac50e8f6f8e62695d1ce9e') {
+      rpcUrl = 'wss://westend-rpc.polkadot.io'
+    } else {
+      throw new Error(`Unsupported polkadot chainId: ${chainId}`)
+    }
+    console.log('payload', rpcUrl)
+    const api = await ApiPromise.create({ provider: new PolkadotWsProvider(rpcUrl) })
+    await api.isReady
+    api.registry.setSignedExtensions(payload.signedExtensions)
+    const txPayload = api.registry.createType('ExtrinsicPayload', payload, {
       version: payload.version
     })
-
     const { signature } = txPayload.sign(this.keypair)
+    console.log('signature', signature)
     return { signature }
   }
 }

@@ -65,6 +65,8 @@ import {
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
+import { WsProvider as PolkadotWsProvider } from "@polkadot/api";
+import { ApiPromise } from "@polkadot/api";
 
 import {
   Transaction as MultiversxTransaction,
@@ -966,33 +968,88 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const transactionPayload = {
-          specVersion: "0x00002468",
-          transactionVersion: "0x0000000e",
-          address: `${address}`,
-          blockHash:
-            "0x554d682a74099d05e8b7852d19c93b527b5fae1e9e1969f6e1b82a2f09a14cc9",
-          blockNumber: "0x00cb539c",
-          era: "0xc501",
-          genesisHash:
-            "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
-          method:
-            "0x0001784920616d207369676e696e672074686973207472616e73616374696f6e21",
-          nonce: "0x00000000",
-          signedExtensions: [
-            "CheckNonZeroSender",
-            "CheckSpecVersion",
-            "CheckTxVersion",
-            "CheckGenesis",
-            "CheckMortality",
-            "CheckNonce",
-            "CheckWeight",
-            "ChargeTransactionPayment",
-          ],
-          tip: "0x00000000000000000000000000000000",
-          version: 4,
+        await cryptoWaitReady();
+
+        let rpcUrl = "";
+        if (chainId === "polkadot:91b171bb158e2d3848fa23a9f1c25182") {
+          rpcUrl = "wss://rpc.polkadot.io";
+        } else if (chainId === "polkadot:e143f23803ac50e8f6f8e62695d1ce9e") {
+          rpcUrl = "wss://westend-rpc.polkadot.io";
+        } else {
+          throw new Error(`Unsupported polkadot chainId: ${chainId}`);
+        }
+        console.log("rpcUrl", rpcUrl);
+        const provider = new PolkadotWsProvider(rpcUrl);
+        const api = await ApiPromise.create({ provider });
+
+        // Sender and recipient
+        const senderAddress = address;
+        const recipient = address;
+        const amount = 1_000_000_000_000;
+
+        // Get necessary chain info
+        const [nonce, genesisHash, blockHash, blockHeader] = await Promise.all([
+          api.rpc.system.accountNextIndex(senderAddress),
+          api.genesisHash,
+          api.rpc.chain.getBlockHash(),
+          api.rpc.chain.getHeader(),
+        ]);
+
+        const spec = await api.runtimeVersion;
+        console.log("balance", api.tx.balances);
+
+        // Create the transfer method
+        const method = api.tx.balances.transferAllowDeath(recipient, amount);
+
+        const era = api.createType("ExtrinsicEra", "0x00");
+
+        const unsigned = {
+          address: senderAddress,
+          blockHash: blockHash.toHex(),
+          blockNumber: api
+            .createType("BlockNumber", blockHeader.number)
+            .toHex(),
+          era: era.toHex(),
+          genesisHash: genesisHash.toHex(),
+          method: method.toHex(),
+          nonce: api.createType("Compact<Index>", nonce).toHex(),
+          specVersion: api.createType("u32", spec.specVersion).toHex(),
+          transactionVersion: api
+            .createType("u32", spec.transactionVersion)
+            .toHex(),
+          tip: api.createType("Compact<Balance>", 0).toHex(),
+          signedExtensions: api.registry.signedExtensions,
+          version: method.version,
         };
 
+        // const transactionPayload = {
+        //   specVersion: "0x00002468",
+        //   transactionVersion: "0x0000000e",
+        //   address: `${address}`,
+        //   blockHash:
+        //     "0x554d682a74099d05e8b7852d19c93b527b5fae1e9e1969f6e1b82a2f09a14cc9",
+        //   blockNumber: "0x00cb539c",
+        //   era: "0xc501",
+        //   genesisHash:
+        //     "0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e",
+        //   method:
+        //     "0x0001784920616d207369676e696e672074686973207472616e73616374696f6e21",
+        //   nonce: "0x00000000",
+        //   signedExtensions: [
+        //     "CheckNonZeroSender",
+        //     "CheckSpecVersion",
+        //     "CheckTxVersion",
+        //     "CheckGenesis",
+        //     "CheckMortality",
+        //     "CheckNonce",
+        //     "CheckWeight",
+        //     "ChargeTransactionPayment",
+        //   ],
+        //   tip: "0x00000000000000000000000000000000",
+        //   version: 4,
+        // };
+
+        console.log("unsigned", unsigned);
         const result = await client!.request<{
           payload: string;
           signature: string;
@@ -1003,16 +1060,64 @@ export function JsonRpcContextProvider({
             method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
             params: {
               address,
-              transactionPayload,
+              transactionPayload: unsigned,
             },
           },
         });
+
+        const metadataAtBlock = await api.rpc.state.getMetadata(
+          unsigned.blockHash
+        );
+
+        api.registry.setMetadata(metadataAtBlock);
+        api.registry.setSignedExtensions(unsigned.signedExtensions);
+        const payload = api.registry.createType("ExtrinsicPayload", unsigned, {
+          version: unsigned.version,
+        });
+
+        // Create the signing payload as SCALE-encoded bytes
+        const signingPayloadU8a = payload.toU8a({ method: true });
+
+        // Validate signature
+        const { isValid } = signatureVerify(
+          signingPayloadU8a,
+          result.signature,
+          unsigned.address
+        );
+        console.log("payload", payload);
+
+        let hexHash;
+        if (isValid) {
+          const shouldSubmit = confirm(
+            "Signature is valid, do you want to submit to the network?"
+          );
+          if (shouldSubmit) {
+            const extrinsic = api.createType("Extrinsic", payload.method, {
+              version: unsigned.version,
+            });
+            const signed = extrinsic.addSignature(
+              unsigned.address,
+              result.signature as `0x${string}`,
+              signingPayloadU8a
+            );
+
+            const txHash = await api.rpc.author.submitExtrinsic(signed);
+            console.log(`Submitted with tx hash ${txHash.toHex()}`);
+            hexHash = txHash.toHex();
+          }
+        }
+        console.log("isValid", isValid);
+        await api.disconnect();
+
+        const res = hexHash
+          ? `signature: ${result.signature}, txHash: ${hexHash}`
+          : `signature: ${result.signature}`;
 
         return {
           method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
           address,
           valid: true,
-          result: result.signature,
+          result: res,
         };
       }
     ),
