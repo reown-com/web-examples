@@ -12,6 +12,7 @@ import { NEAR_SIGNING_METHODS } from '@/data/NEARData'
 import { styledToast } from '@/utils/HelperUtil'
 import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
+import { decodeTransaction } from '@/lib/NearLib'
 
 export default function SessionSignNearModal() {
   // Get request and wallet data from store
@@ -29,9 +30,12 @@ export default function SessionSignNearModal() {
   const { topic, params } = requestEvent
   const { request, chainId } = params
 
-  const formatTransaction = (transaction: Uint8Array) => {
-    const tx = transactions.Transaction.decode(Buffer.from(transaction))
-
+  const formatTransaction = (transaction: Object) => {
+    console.log('transaction to format', transaction)
+    // buffer arrays get converted to an object in JSON.stringify
+    // so we need to convert it back to a buffer
+    const tx = decodeTransaction(transaction)
+    console.log('decoded tx', tx)
     return {
       signerId: tx.signerId,
       receiverId: tx.receiverId,
@@ -113,6 +117,28 @@ export default function SessionSignNearModal() {
 
   const formatParams = () => {
     switch (params.request.method) {
+      case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION:
+        return {
+          ...params,
+          request: {
+            ...params.request,
+            params: {
+              ...params.request.params,
+              transaction: formatTransaction(params.request.params.transaction)
+            }
+          }
+        }
+      case NEAR_SIGNING_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS:
+        return {
+          ...params,
+          request: {
+            ...params.request,
+            params: {
+              ...params.request.params,
+              transactions: params.request.params.transactions.map(formatTransaction)
+            }
+          }
+        }
       case NEAR_SIGNING_METHODS.NEAR_SIGN_TRANSACTION:
         return {
           ...params,
@@ -152,6 +178,7 @@ export default function SessionSignNearModal() {
         })
       }
     } catch (e) {
+      console.error(e)
       styledToast((e as Error).message, 'error')
     } finally {
       setIsLoadingApprove(false)

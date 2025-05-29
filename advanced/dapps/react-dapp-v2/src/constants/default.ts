@@ -217,6 +217,8 @@ export enum DEFAULT_NEAR_METHODS {
   NEAR_GET_ACCOUNTS = "near_getAccounts",
   NEAR_SIGN_AND_SEND_TRANSACTION = "near_signAndSendTransaction",
   NEAR_SIGN_AND_SEND_TRANSACTIONS = "near_signAndSendTransactions",
+  NEAR_SIGN_TRANSACTION = "near_signTransaction",
+  NEAR_SIGN_TRANSACTIONS = "near_signTransactions",
 }
 
 export enum DEFAULT_NEAR_EVENTS {}

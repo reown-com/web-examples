@@ -4,6 +4,7 @@ import * as encoding from "@walletconnect/encoding";
 import { Transaction as EthTransaction } from "@ethereumjs/tx";
 import { recoverTransaction } from "@celo/wallet-base";
 import * as bitcoin from "bitcoinjs-lib";
+import * as NearApi from "near-api-js";
 
 import {
   formatDirectSignDoc,
@@ -84,6 +85,7 @@ import {
 } from "../helpers/bip122";
 import { getAddressFromAccount } from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
+import { AccessKeyView } from "near-api-js/lib/providers/provider";
 
 /**
  * Types
@@ -130,6 +132,8 @@ interface IContext {
   nearRpc: {
     testSignAndSendTransaction: TRpcRequestCallback;
     testSignAndSendTransactions: TRpcRequestCallback;
+    testSignTransaction: TRpcRequestCallback;
+    testSignTransactions: TRpcRequestCallback;
   };
   multiversxRpc: {
     testSignMessage: TRpcRequestCallback;
@@ -1061,37 +1065,173 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
+        const accounts = await client!.request<
+          { accountId: string; publicKey: string }[]
+        >({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_NEAR_METHODS.NEAR_GET_ACCOUNTS,
+            params: {},
+          },
+        });
+
+        const account = accounts.find(
+          (account) => account.accountId === address
+        );
+
+        if (!account) {
+          console.error("near accounts", accounts);
+          throw new Error(`Near Account not found for address: ${address}`);
+        }
+
         const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION;
+
+        const provider = new NearApi.providers.JsonRpcProvider({
+          url: "https://rpc.testnet.near.org",
+        });
+
+        const block = await provider.block({ finality: "final" });
+        console.log("block", block);
+
+        const accessKey = await provider.query<AccessKeyView>({
+          request_type: "view_access_key",
+          finality: "final",
+          account_id: address,
+          public_key: account?.publicKey,
+        });
+
+        const nearTransaction = NearApi.transactions.createTransaction(
+          address,
+          NearApi.utils.PublicKey.fromString(account?.publicKey),
+          "0xgancho.testnet",
+          BigInt(accessKey.nonce) + BigInt(1),
+          [
+            NearApi.transactions.transfer(
+              BigInt("1000000000000000000000000") // 0.001 Ⓝ in yoctoNEAR
+            ),
+          ],
+          new Uint8Array(NearApi.utils.serialize.base_decode(block.header.hash))
+        );
+
+        console.log("nearTransaction", nearTransaction);
+
         const result = await client!.request({
           topic: session!.topic,
           chainId,
           request: {
             method,
             params: {
-              transaction: {
-                signerId: address,
-                receiverId: "guest-book.testnet",
-                actions: [
-                  {
-                    type: "FunctionCall",
-                    params: {
-                      methodName: "addMessage",
-                      args: { text: "Hello from Wallet Connect!" },
-                      gas: "30000000000000",
-                      deposit: "0",
-                    },
-                  },
-                ],
-              },
+              transaction: nearTransaction.encode(),
             },
           },
         });
+
+        console.log("result", result);
 
         return {
           method,
           address,
           valid: true,
-          result: JSON.stringify((result as any).transaction),
+          result: JSON.stringify((result as any).transaction.hash),
+        };
+      }
+    ),
+    testSignTransaction: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const accounts = await client!.request<
+          { accountId: string; publicKey: string }[]
+        >({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_NEAR_METHODS.NEAR_GET_ACCOUNTS,
+            params: {},
+          },
+        });
+
+        const account = accounts.find(
+          (account) => account.accountId === address
+        );
+
+        if (!account) {
+          console.error("near accounts", accounts);
+          throw new Error(`Near Account not found for address: ${address}`);
+        }
+
+        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_TRANSACTION;
+
+        const provider = new NearApi.providers.JsonRpcProvider({
+          url: "https://rpc.testnet.near.org",
+        });
+
+        const block = await provider.block({ finality: "final" });
+        console.log("block", block);
+
+        const accessKey = await provider.query<AccessKeyView>({
+          request_type: "view_access_key",
+          finality: "final",
+          account_id: address,
+          public_key: account?.publicKey,
+        });
+
+        const nearTransaction = NearApi.transactions.createTransaction(
+          address,
+          NearApi.utils.PublicKey.fromString(account?.publicKey),
+          "0xgancho.testnet",
+          BigInt(accessKey.nonce) + BigInt(1),
+          [
+            NearApi.transactions.transfer(
+              BigInt("1000000000000000000000000") // 0.001 Ⓝ in yoctoNEAR
+            ),
+          ],
+          new Uint8Array(NearApi.utils.serialize.base_decode(block.header.hash))
+        );
+
+        console.log("nearTransaction", nearTransaction);
+
+        const result = await client!.request<{
+          data: Object;
+          type: string;
+        }>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params: {
+              transaction: nearTransaction.encode(),
+            },
+          },
+        });
+
+        console.log("result", result);
+
+        let buffer = undefined;
+        if (Buffer.isBuffer(result)) {
+          buffer = result;
+        } else if (
+          result &&
+          result.type === "Buffer" &&
+          Array.isArray(result.data)
+        ) {
+          buffer = Buffer.from(result.data);
+        } else {
+          throw new Error("Not a Buffer or recognizable Buffer-like object");
+        }
+
+        const signedTransaction = NearApi.transactions.SignedTransaction.decode(
+          new Uint8Array(buffer)
+        );
+        console.log("signedTransaction", signedTransaction);
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: "see dev console to inspect signedTransaction",
         };
       }
     ),
@@ -1100,56 +1240,168 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
+        const accounts = await client!.request<
+          { accountId: string; publicKey: string }[]
+        >({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_NEAR_METHODS.NEAR_GET_ACCOUNTS,
+            params: {},
+          },
+        });
+
+        const account = accounts.find(
+          (account) => account.accountId === address
+        );
+
+        if (!account) {
+          console.error("near accounts", accounts);
+          throw new Error(`Near Account not found for address: ${address}`);
+        }
+
         const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS;
+
+        const provider = new NearApi.providers.JsonRpcProvider({
+          url: "https://rpc.testnet.near.org",
+        });
+
+        const block = await provider.block({ finality: "final" });
+        console.log("block", block);
+        const accessKey = await provider.query<AccessKeyView>({
+          request_type: "view_access_key",
+          finality: "final",
+          account_id: address,
+          public_key: account?.publicKey,
+        });
+
+        const transactions = [];
+
+        for (let i = 0; i < 2; i++) {
+          const nearTransaction = NearApi.transactions.createTransaction(
+            address,
+            NearApi.utils.PublicKey.fromString(account?.publicKey),
+            "0xgancho.testnet",
+            BigInt(accessKey.nonce) + BigInt(i) + BigInt(1),
+            [
+              NearApi.transactions.transfer(
+                BigInt("1000000000000000000000000") // 0.001 Ⓝ in yoctoNEAR
+              ),
+            ],
+            new Uint8Array(
+              NearApi.utils.serialize.base_decode(block.header.hash)
+            )
+          );
+          console.log(`nearTransaction number: ${i}`, nearTransaction);
+          transactions.push(nearTransaction);
+        }
+
         const result = await client!.request({
           topic: session!.topic,
           chainId,
           request: {
             method,
             params: {
-              transactions: [
-                {
-                  signerId: address,
-                  receiverId: "guest-book.testnet",
-                  actions: [
-                    {
-                      type: "FunctionCall",
-                      params: {
-                        methodName: "addMessage",
-                        args: { text: "Hello from Wallet Connect! (1/2)" },
-                        gas: "30000000000000",
-                        deposit: "0",
-                      },
-                    },
-                  ],
-                },
-                {
-                  signerId: address,
-                  receiverId: "guest-book.testnet",
-                  actions: [
-                    {
-                      type: "FunctionCall",
-                      params: {
-                        methodName: "addMessage",
-                        args: { text: "Hello from Wallet Connect! (2/2)" },
-                        gas: "30000000000000",
-                        deposit: "0",
-                      },
-                    },
-                  ],
-                },
-              ],
+              transactions: transactions.map((transaction) =>
+                transaction.encode()
+              ),
             },
           },
         });
+
+        console.log("signAndSendTransactions result", result);
 
         return {
           method,
           address,
           valid: true,
           result: JSON.stringify(
-            (result as any).map((r: any) => r.transaction)
+            (result as any).map((r: any) => r.transaction.hash)
           ),
+        };
+      }
+    ),
+    testSignTransactions: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const accounts = await client!.request<
+          { accountId: string; publicKey: string }[]
+        >({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_NEAR_METHODS.NEAR_GET_ACCOUNTS,
+            params: {},
+          },
+        });
+
+        const account = accounts.find(
+          (account) => account.accountId === address
+        );
+
+        if (!account) {
+          console.error("near accounts", accounts);
+          throw new Error(`Near Account not found for address: ${address}`);
+        }
+
+        const method = DEFAULT_NEAR_METHODS.NEAR_SIGN_TRANSACTIONS;
+
+        const provider = new NearApi.providers.JsonRpcProvider({
+          url: "https://rpc.testnet.near.org",
+        });
+
+        const block = await provider.block({ finality: "final" });
+        console.log("block", block);
+        const accessKey = await provider.query<AccessKeyView>({
+          request_type: "view_access_key",
+          finality: "final",
+          account_id: address,
+          public_key: account?.publicKey,
+        });
+
+        const transactions = [];
+
+        for (let i = 0; i < 2; i++) {
+          const nearTransaction = NearApi.transactions.createTransaction(
+            address,
+            NearApi.utils.PublicKey.fromString(account?.publicKey),
+            "0xgancho.testnet",
+            BigInt(accessKey.nonce) + BigInt(i) + BigInt(1),
+            [
+              NearApi.transactions.transfer(
+                BigInt("1000000000000000000000000") // 0.001 Ⓝ in yoctoNEAR
+              ),
+            ],
+            new Uint8Array(
+              NearApi.utils.serialize.base_decode(block.header.hash)
+            )
+          );
+          console.log(`nearTransaction number: ${i}`, nearTransaction);
+          transactions.push(nearTransaction);
+        }
+
+        const result = await client!.request({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params: {
+              transactions: transactions.map((transaction) =>
+                transaction.encode()
+              ),
+            },
+          },
+        });
+
+        console.log("signTransactions result", result);
+
+        return {
+          method,
+          address,
+          valid: true,
+          result: "see dev console to inspect signedTransactions",
         };
       }
     ),
