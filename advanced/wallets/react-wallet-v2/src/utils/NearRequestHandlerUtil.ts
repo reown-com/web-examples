@@ -1,11 +1,11 @@
-import { NEAR_SIGNING_METHODS, NEAR_TEST_CHAINS } from '@/data/NEARData'
-import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
-import { nearWallet } from '@/utils/NearWalletUtil'
 import { InMemorySigner, transactions, utils, Connection } from 'near-api-js'
-import { Transaction } from '@near-wallet-selector/core'
-import { createAction } from '@near-wallet-selector/wallet-utils'
+
+import { NEAR_SIGNING_METHODS, NEAR_TEST_CHAINS } from '@/data/NEARData'
+import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
+import { nearWallet } from '@/utils/NearWalletUtil'
+import { decodeTransaction } from '@/lib/NearLib'
 
 export async function approveNearRequest(
   requestEvent: SignClientTypes.EventArguments['session_request']
@@ -52,7 +52,7 @@ export async function approveNearRequest(
         throw new Error('Invalid chain id')
       }
 
-      const accounts = await nearWallet.getAccounts({ topic })
+      const accounts = await nearWallet.getAccounts()
 
       return formatJsonRpcResult(id, accounts)
     }
@@ -63,10 +63,12 @@ export async function approveNearRequest(
         throw new Error('Invalid chain id')
       }
 
+      const transactions = [decodeTransaction(params.request.params.transaction)]
+
       const [signedTx] = await nearWallet.signTransactions({
         chainId,
         topic,
-        transactions: [transactions.Transaction.decode(Buffer.from(request.params.transaction))]
+        transactions
       })
 
       return formatJsonRpcResult(id, signedTx.encode())
@@ -78,22 +80,15 @@ export async function approveNearRequest(
         throw new Error('Invalid chain id')
       }
 
-      const [transaction] = await nearWallet.createTransactions({
-        chainId,
-        transactions: [
-          {
-            ...params.request.params.transaction,
-            actions: params.request.params.transaction.actions.map(createAction)
-          }
-        ]
-      })
+      const transaction = decodeTransaction(params.request.params.transaction)
 
+      console.log('transaction to sign and send', transaction)
       const result = await nearWallet.signAndSendTransaction({
         chainId,
         topic,
         transaction
       })
-
+      console.log('result', result)
       return formatJsonRpcResult(id, result)
     }
     case NEAR_SIGNING_METHODS.NEAR_SIGN_TRANSACTIONS: {
@@ -103,12 +98,12 @@ export async function approveNearRequest(
         throw new Error('Invalid chain id')
       }
 
+      const transactions = params.request.params.transactions.map(decodeTransaction)
+
       const signedTxs = await nearWallet.signTransactions({
         chainId,
         topic,
-        transactions: params.request.params.transactions.map((tx: Uint8Array) => {
-          return transactions.Transaction.decode(Buffer.from(tx))
-        })
+        transactions
       })
 
       return formatJsonRpcResult(
@@ -187,13 +182,7 @@ export async function approveNearRequest(
         throw new Error('Invalid chain id')
       }
 
-      const transactions = await nearWallet.createTransactions({
-        chainId,
-        transactions: params.request.params.transactions.map((transaction: Transaction) => ({
-          ...transaction,
-          actions: transaction.actions.map(createAction)
-        }))
-      })
+      const transactions = params.request.params.transactions.map(decodeTransaction)
 
       const result = await nearWallet.signAndSendTransactions({
         chainId,

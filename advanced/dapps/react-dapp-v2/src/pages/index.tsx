@@ -357,10 +357,29 @@ const Home: NextPage = () => {
       openRequestModal();
       await nearRpc.testSignAndSendTransactions(chainId, address);
     };
+
+    const onSignTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await nearRpc.testSignTransaction(chainId, address);
+    };
+
+    const onSignTransactions = async (chainId: string, address: string) => {
+      openRequestModal();
+      await nearRpc.testSignTransactions(chainId, address);
+    };
+
     return [
+      {
+        method: DEFAULT_NEAR_METHODS.NEAR_SIGN_TRANSACTION,
+        callback: onSignTransaction,
+      },
       {
         method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION,
         callback: onSignAndSendTransaction,
+      },
+      {
+        method: DEFAULT_NEAR_METHODS.NEAR_SIGN_TRANSACTIONS,
+        callback: onSignTransactions,
       },
       {
         method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS,
