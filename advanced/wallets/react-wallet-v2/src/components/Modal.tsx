@@ -23,6 +23,8 @@ import SessionSignBip122Modal from '@/views/SessionSignBip122Modal'
 import SessionSendTransactionBip122Modal from '@/views/SessionSendTransactionBip122Modal'
 import SessionGrantPermissionsModal from '@/views/SessionGrantPermissionsModal'
 import SessionGetBip122AddressesModal from '@/views/SessionGetBip122AddressesModal'
+import SessionSendStacksTransferModal from '@/views/SessionSendStacksTransferModal'
+import SessionSignStacksMessageModal from '@/views/SessionSignStacksMessageModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -77,6 +79,10 @@ export default function Modal() {
         return <SessionSendTransactionBip122Modal />
       case 'SessionCheckoutModal':
         return <SessionCheckoutModal />
+      case 'SessionSendStacksTransferModal':
+        return <SessionSendStacksTransferModal />
+      case 'SessionSignStacksMessageModal':
+        return <SessionSignStacksMessageModal />
       default:
         return null
     }

@@ -25,6 +25,7 @@ import {
   GetCapabilitiesResult,
   DEFAULT_BIP122_METHODS,
   DEFAULT_EIP7715_METHODS,
+  DEFAULT_STACKS_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -96,6 +97,7 @@ const Home: NextPage = () => {
     tezosRpc,
     kadenaRpc,
     bip122Rpc,
+    stacksRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -535,6 +537,27 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getStacksActions = (): AccountAction[] => {
+    const onSendTransfer = async (chainId: string, address: string) => {
+      openRequestModal();
+      await stacksRpc.testSendTransfer(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await stacksRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_STACKS_METHODS.STACKS_SEND_TRANSFER,
+        callback: onSendTransfer,
+      },
+      {
+        method: DEFAULT_STACKS_METHODS.STACKS_SIGN_MESSAGE,
+        callback: onSignMessage,
+      },
+    ];
+  };
+
   const getBlockchainActions = (account: string) => {
     const [namespace, chainId, address] = account.split(":");
     switch (namespace) {
@@ -558,6 +581,8 @@ const Home: NextPage = () => {
         return getKadenaActions();
       case "bip122":
         return getBip122Actions();
+      case "stacks":
+        return getStacksActions();
       default:
         break;
     }

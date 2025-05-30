@@ -62,10 +62,17 @@ import {
   DEFAULT_EIP7715_METHODS,
   WalletGrantPermissionsParameters,
   WalletGrantPermissionsReturnType,
+  DEFAULT_STACKS_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
+
+import {
+  publicKeyFromSignatureRsv,
+  getAddressFromPublicKey,
+} from "@stacks/transactions";
+import { sha256 } from "@noble/hashes/sha2";
 
 import {
   Transaction as MultiversxTransaction,
@@ -159,6 +166,10 @@ interface IContext {
     testSignMessage: TRpcRequestCallback;
     testSendTransaction: TRpcRequestCallback;
     testSignPsbt: TRpcRequestCallback;
+  };
+  stacksRpc: {
+    testSendTransfer: TRpcRequestCallback;
+    testSignMessage: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -2141,6 +2152,93 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  // -------- STACKS RPC METHODS --------
+  const stacksRpc = {
+    testSendTransfer: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_STACKS_METHODS.STACKS_SEND_TRANSFER;
+        const request = {
+          pubkey: address,
+          recipient: address,
+          amount: 10000,
+        };
+        console.log("request", {
+          method,
+          params: request,
+          chainId,
+        });
+
+        const result = await client!.request<{ txId: string }>({
+          topic: session!.topic,
+          chainId: chainId,
+          request: {
+            method,
+            params: request,
+          },
+        });
+
+        console.log("stacks send transfer result", result);
+
+        return {
+          method,
+          address: address,
+          valid: true,
+          result: result.txId,
+        };
+      }
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_STACKS_METHODS.STACKS_SIGN_MESSAGE;
+        const message = "This is a message to be signed for Stacks";
+        const network = chainId === "stacks:1" ? "mainnet" : "testnet";
+        const result = await client!.request<{ signature: string }>({
+          topic: session!.topic,
+          chainId: chainId,
+          request: {
+            method,
+            params: {
+              message,
+              pubkey: address,
+            },
+          },
+        });
+
+        console.log("stacks sign message result", result);
+        const hash = Buffer.from(sha256(message)).toString("hex");
+        const pubKey = publicKeyFromSignatureRsv(hash, result.signature);
+
+        console.log(
+          "isValid",
+          getAddressFromPublicKey(pubKey, network),
+          address
+        );
+
+        if (getAddressFromPublicKey(pubKey, network) !== address) {
+          console.error(
+            `Signing failed, expected address: ${address}, got: ${getAddressFromPublicKey(
+              pubKey,
+              network
+            )}`
+          );
+        }
+
+        return {
+          method,
+          address: address,
+          valid: getAddressFromPublicKey(pubKey, network) === address,
+          result: result.signature,
+        };
+      }
+    ),
+  };
+
   return (
     <JsonRpcContext.Provider
       value={{
@@ -2159,6 +2257,7 @@ export function JsonRpcContextProvider({
         isTestnet,
         setIsTestnet,
         bip122Rpc,
+        stacksRpc,
       }}
     >
       {children}
