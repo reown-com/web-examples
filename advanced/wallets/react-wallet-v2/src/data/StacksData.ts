@@ -27,7 +27,7 @@ export const STACKS_TESTNET = {
     chainId: STACKS_TESTNET_ID,
     name: 'Stacks Testnet',
     logo: '/chain-logos/stacks.png',
-    rgb: '247, 147, 25',
+    rgb: '107, 111, 147',
     rpc: '',
     coinType: '1',
     caip2: STACKS_TESTNET_CAIP2 as IStacksChainId,
