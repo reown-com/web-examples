@@ -2009,9 +2009,7 @@ export function JsonRpcContextProvider({
         const method = DEFAULT_SUI_METHODS.SUI_SIGN_PERSONAL_MESSAGE;
         const req = {
           address: address,
-          message: Buffer.from(
-            "This is a message to be signed for SUI"
-          ).toString("base64"),
+          message: "This is a message to be signed for SUI",
         };
         console.log("req", req);
         const result = await client!.request<{

@@ -26,10 +26,7 @@ export default function SessionSignSuiPersonalMessageModal() {
   const { topic, params } = requestEvent
   const { request, chainId } = params
 
-  // Get message, convert it to UTF8 string if it is valid hex
-  const message = request.params?.message
-    ? Buffer.from(request.params.message, 'base64').toString('utf8')
-    : ''
+  const message = request.params?.message || ''
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
