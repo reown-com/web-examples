@@ -12,6 +12,7 @@ import {
   publicKeyFromSignatureVrs,
   publicKeyFromSignatureRsv
 } from '@stacks/transactions'
+import { networkFromName, StacksNetworks } from '@stacks/network'
 import { STACKS_MAINNET, STACKS_TESTNET, STACKS_TESTNET_CAIP2 } from '@/data/StacksData'
 import { STACKS_MAINNET_CAIP2 } from '@/data/StacksData'
 import { sha256 } from '@noble/hashes/sha2'
@@ -46,8 +47,14 @@ export default class StacksLib implements StacksWallet {
   constructor(wallet: Wallet, mnemonic: string) {
     this.wallet = wallet
     this.addresses = {
-      mainnet: getAddressFromPrivateKey(wallet.accounts[0].stxPrivateKey, 'mainnet'),
-      testnet: getAddressFromPrivateKey(wallet.accounts[0].stxPrivateKey, 'testnet')
+      mainnet: getAddressFromPrivateKey(
+        wallet.accounts[0].stxPrivateKey,
+        networkFromName('mainnet')
+      ),
+      testnet: getAddressFromPrivateKey(
+        wallet.accounts[0].stxPrivateKey,
+        networkFromName('testnet')
+      )
     }
     this.mnemonic = mnemonic
   }
@@ -101,7 +108,7 @@ export default class StacksLib implements StacksWallet {
     const network = request.chainId === STACKS_MAINNET_CAIP2 ? 'mainnet' : 'testnet'
 
     const tx = await makeSTXTokenTransfer({
-      recipient: 'ST319CF5WV77KYR1H3GT0GZ7B8Q4AQPY42ETP1VPF',
+      recipient: request.recipient,
       amount: request.amount,
       senderKey: this.wallet.accounts[0].stxPrivateKey,
       network
@@ -176,20 +183,4 @@ export default class StacksLib implements StacksWallet {
         throw new Error(`Invalid address: ${address}`)
     }
   }
-
-  // signMessage(message: string) {
-  //   return this.wallet.signMessage(message)
-  // }
-
-  // _signTypedData(domain: any, types: any, data: any, _primaryType?: string) {
-  //   return this.wallet._signTypedData(domain, types, data)
-  // }
-
-  // connect(provider: providers.JsonRpcProvider) {
-  //   return this.wallet.connect(provider)
-  // }
-
-  // signTransaction(transaction: providers.TransactionRequest) {
-  //   return this.wallet.signTransaction(transaction)
-  // }
 }

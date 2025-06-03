@@ -2160,9 +2160,16 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_STACKS_METHODS.STACKS_SEND_TRANSFER;
+
+        const recipient = prompt("Enter the recipient address");
+
+        if (!recipient) {
+          throw new Error("Recipient address is required");
+        }
+
         const request = {
           pubkey: address,
-          recipient: address,
+          recipient: recipient?.trim(),
           amount: 10000,
         };
         console.log("request", {

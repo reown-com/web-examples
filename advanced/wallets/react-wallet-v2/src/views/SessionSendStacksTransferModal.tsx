@@ -9,6 +9,7 @@ import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { approveEIP5792Request, rejectEIP5792Request } from '@/utils/EIP5792RequestHandlerUtils'
 import { approveStacksRequest, rejectStacksRequest } from '@/utils/StacksRequestHandlerUtil'
+import { formatJsonRpcError } from '@json-rpc-tools/utils'
 
 export default function SessionSendStacksTransferModal() {
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
@@ -37,6 +38,10 @@ export default function SessionSendStacksTransferModal() {
       }
     } catch (e) {
       console.log('error', e)
+      await walletkit.respondSessionRequest({
+        topic: topic!,
+        response: formatJsonRpcError(requestEvent?.id!, (e as Error).message)
+      })
       styledToast((e as Error).message, 'error')
     } finally {
       setIsLoadingApprove(false)
