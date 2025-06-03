@@ -1972,7 +1972,10 @@ export function JsonRpcContextProvider({
           address,
         };
         console.log("req", req, serialized);
-        const result = await client!.request<{ signature: string }>({
+        const result = await client!.request<{
+          signature: string;
+          transactionBytes: string;
+        }>({
           topic: session!.topic,
           chainId: chainId,
           request: {
@@ -1982,12 +1985,8 @@ export function JsonRpcContextProvider({
         });
         console.log("result", result);
 
-        const suiClient = await getSuiClient(chainId);
-
-        const txBytes = await tx.build({ client: suiClient });
-
         const isValid = await verifyTransactionSignature(
-          txBytes,
+          new Uint8Array(Buffer.from(result.transactionBytes, "base64")),
           result.signature
         );
 
