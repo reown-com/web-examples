@@ -1920,11 +1920,13 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_SUI_METHODS.SUI_SIGN_AND_EXECUTE_TRANSACTION;
-
+        const recipient = prompt(
+          "Enter the recipient address or leave blank to send to yourself"
+        );
         const tx = new SuiTransaction();
         const [coin] = tx.splitCoins(tx.gas, [100]); // 0.001 SUI
         tx.setSender(address);
-        tx.transferObjects([coin], address);
+        tx.transferObjects([coin], recipient?.trim() || address);
 
         const serialized = await tx.toJSON();
         const req = {
