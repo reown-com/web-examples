@@ -20,6 +20,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "tezos:mainnet",
   "kadena:mainnet01",
   "bip122:000000000019d6689c085ae165831e93",
+  "stacks:1",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -40,6 +41,7 @@ export const DEFAULT_TEST_CHAINS = [
   "tezos:testnet",
   "kadena:testnet04",
   "bip122:000000000933ea01ad0ee984209779ba",
+  "stacks:2147483648",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -217,6 +219,8 @@ export enum DEFAULT_NEAR_METHODS {
   NEAR_GET_ACCOUNTS = "near_getAccounts",
   NEAR_SIGN_AND_SEND_TRANSACTION = "near_signAndSendTransaction",
   NEAR_SIGN_AND_SEND_TRANSACTIONS = "near_signAndSendTransactions",
+  NEAR_SIGN_TRANSACTION = "near_signTransaction",
+  NEAR_SIGN_TRANSACTIONS = "near_signTransactions",
 }
 
 export enum DEFAULT_NEAR_EVENTS {}
@@ -255,6 +259,19 @@ export enum DEFAULT_TEZOS_METHODS {
 }
 
 export enum DEFAULT_TEZOS_EVENTS {}
+
+/**
+ * STACKS
+ */
+export enum DEFAULT_STACKS_METHODS {
+  STACKS_SEND_TRANSFER = "stacks_stxTransfer",
+  STACKS_SIGN_MESSAGE = "stacks_signMessage",
+}
+
+export enum DEFAULT_STACKS_EVENTS {
+  STACKS_CHAIN_CHANGED = "stacks_chainChanged",
+  STACKS_ACCOUNTS_CHANGED = "stacks_accountsChanged",
+}
 
 export const DEFAULT_GITHUB_REPO_URL =
   "https://github.com/WalletConnect/web-examples/tree/main/dapps/react-dapp-v2";
