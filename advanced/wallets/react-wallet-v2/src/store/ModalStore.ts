@@ -36,6 +36,8 @@ interface State {
     | 'SessionGetBip122AddressesModal'
     | 'SessionSendTransactionBip122Modal'
     | 'SessionCheckoutModal'
+    | 'SessionSendStacksTransferModal'
+    | 'SessionSignStacksMessageModal'
   data?: ModalData
 }
 

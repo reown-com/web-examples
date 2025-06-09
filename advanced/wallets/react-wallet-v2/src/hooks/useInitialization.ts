@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccounts from './useSmartAccounts'
 import { createOrRestoreBip122Wallet } from '@/utils/Bip122WalletUtil'
+import { createOrRestoreStacksWallet } from '@/utils/StacksWalletUtil'
 
 // guard against multiple calls to createWalletKit while the wallet is initializing
 let startedInit = false
@@ -43,6 +44,7 @@ export default function useInitialization() {
         const { tezosAddresses } = await createOrRestoreTezosWallet()
         const { kadenaAddresses } = await createOrRestoreKadenaWallet()
         const { bip122Addresses } = await createOrRestoreBip122Wallet()
+        const { stacksAddresses } = await createOrRestoreStacksWallet()
         SettingsStore.setCosmosAddress(cosmosAddresses[0])
         SettingsStore.setSolanaAddress(solanaAddresses[0])
         SettingsStore.setPolkadotAddress(polkadotAddresses[0])
@@ -52,6 +54,8 @@ export default function useInitialization() {
         SettingsStore.setTezosAddress(tezosAddresses[0])
         SettingsStore.setKadenaAddress(kadenaAddresses[0])
         SettingsStore.setbip122Address(bip122Addresses[0])
+        SettingsStore.setStacksAddress('mainnet', stacksAddresses[0])
+        SettingsStore.setStacksAddress('testnet', stacksAddresses[1])
       })()
       await createWalletKit(relayerRegionURL)
       setInitialized(true)
