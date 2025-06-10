@@ -26,6 +26,8 @@ import SessionGetBip122AddressesModal from '@/views/SessionGetBip122AddressesMod
 import SessionSignSuiPersonalMessageModal from '@/views/SessionSignSuiPersonalMessageModal'
 import SessionSignSuiTransactionModal from '@/views/SessionSignSuiTransactionModal'
 import SessionSignSuiAndExecuteTransactionModal from '@/views/SessionSignAndExecuteSuiTransactionModal'
+import SessionSendStacksTransferModal from '@/views/SessionSendStacksTransferModal'
+import SessionSignStacksMessageModal from '@/views/SessionSignStacksMessageModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -86,6 +88,10 @@ export default function Modal() {
         return <SessionSignSuiTransactionModal />
       case 'SessionSignSuiAndExecuteTransactionModal':
         return <SessionSignSuiAndExecuteTransactionModal />
+      case 'SessionSendStacksTransferModal':
+        return <SessionSendStacksTransferModal />
+      case 'SessionSignStacksMessageModal':
+        return <SessionSignStacksMessageModal />
       default:
         return null
     }

@@ -19,6 +19,7 @@ import { BIP122_CHAINS } from '@/data/Bip122Data'
 import { useRouter } from 'next/router'
 import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCard'
 import { SUI_MAINNET, SUI_MAINNET_CHAINS, SUI_TESTNET_CHAINS } from '@/data/SuiData'
+import { STACKS_MAINNET, STACKS_TESTNET } from '@/data/StacksData'
 
 export default function HomePage() {
   const {
@@ -34,6 +35,7 @@ export default function HomePage() {
     kadenaAddress,
     bip122Address,
     suiAddress,
+    stacksAddress,
     smartAccountEnabled,
     chainAbstractionEnabled
   } = useSnapshot(SettingsStore.state)
@@ -147,6 +149,7 @@ export default function HomePage() {
           data-testid={'chain-card-' + caip10.toString()}
         />
       ))}
+
       {Object.entries(SUI_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
         <AccountCard
           key={name}
@@ -154,6 +157,18 @@ export default function HomePage() {
           logo={logo}
           rgb={rgb}
           address={suiAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
+      ))}
+
+      {Object.entries(STACKS_MAINNET).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={stacksAddress.mainnet}
           chainId={caip10}
           data-testid={'chain-card-' + caip10.toString()}
         />
@@ -295,6 +310,18 @@ export default function HomePage() {
               logo={logo}
               rgb={rgb}
               address={suiAddress}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
+          ))}
+
+          {Object.entries(STACKS_TESTNET).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={stacksAddress.testnet}
               chainId={caip10}
               data-testid={'chain-card-' + caip10.toString()}
             />

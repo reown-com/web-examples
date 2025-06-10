@@ -3,15 +3,19 @@ import {
   providers,
   keyStores as nearKeyStores,
   transactions as nearTransactions,
-  utils
+  utils,
+  connect,
+  keyStores,
+  KeyPair
 } from 'near-api-js'
+import { parseSeedPhrase } from 'near-seed-phrase'
 import { AccessKeyView } from 'near-api-js/lib/providers/provider'
+import { Schema, serialize } from 'borsh'
 
 import { walletkit } from '@/utils/WalletConnectUtil'
 import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
-import { Schema, serialize } from 'borsh'
 
-const MAX_ACCOUNTS = 2
+const RPC_URL = 'https://rpc.testnet.near.org'
 
 interface Account {
   accountId: string
@@ -120,42 +124,17 @@ export class NearWallet {
   private networkId: string
   private keyStore: nearKeyStores.KeyStore
 
-  static async init(networkId: string) {
-    const keyStore = new nearKeyStores.BrowserLocalStorageKeyStore()
-    const accounts = await keyStore.getAccounts(networkId)
+  static async init(networkId: string, seedPhrase: string) {
+    // Derive keypair from seed phrase
+    const { secretKey, publicKey } = parseSeedPhrase(seedPhrase)
 
-    for (let i = 0; i < Math.max(MAX_ACCOUNTS - accounts.length, 0); i += 1) {
-      const { accountId, keyPair } = await NearWallet.createDevAccount()
+    const keyPair = KeyPair.fromString(secretKey)
 
-      await keyStore.setKey(networkId, accountId, keyPair)
-    }
+    const keyStore = new keyStores.BrowserLocalStorageKeyStore()
+
+    await keyStore.setKey(networkId, '0xgancho.testnet', keyPair)
 
     return new NearWallet(networkId, keyStore)
-  }
-
-  static async createDevAccount() {
-    const keyPair = utils.KeyPair.fromRandom('ed25519')
-    const randomNumber = Math.floor(
-      Math.random() * (99999999999999 - 10000000000000) + 10000000000000
-    )
-    const accountId = `dev-${Date.now()}-${randomNumber}`
-    const publicKey = keyPair.getPublicKey().toString()
-
-    fetch(`https://helper.testnet.near.org/account`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        newAccountId: accountId,
-        newAccountPublicKey: publicKey
-      })
-    }).catch(error => {
-      console.error('Failed to create NEAR dev account: ', error)
-    })
-
-    return {
-      accountId,
-      keyPair
-    }
   }
 
   private constructor(networkId: string, keyStore: nearKeyStores.KeyStore) {
@@ -211,11 +190,11 @@ export class NearWallet {
       provider.block({ finality: 'final' }),
       this.getAllAccounts()
     ])
-
+    console.log('block', block)
     for (let i = 0; i < transactions.length; i += 1) {
       const transaction = transactions[i]
       const account = accounts.find(x => x.accountId === transaction.signerId)
-
+      console.log('account', account)
       if (!account) {
         throw new Error('Invalid signer id')
       }
@@ -226,7 +205,7 @@ export class NearWallet {
         account_id: transaction.signerId,
         public_key: account.publicKey
       })
-
+      console.log('accessKey', accessKey)
       txs.push(
         nearTransactions.createTransaction(
           transaction.signerId,
@@ -234,7 +213,7 @@ export class NearWallet {
           transaction.receiverId,
           accessKey.nonce + i + 1,
           transaction.actions,
-          utils.serialize.base_decode(block.header.hash)
+          new Uint8Array(utils.serialize.base_decode(block.header.hash))
         )
       )
     }
@@ -242,19 +221,8 @@ export class NearWallet {
     return txs
   }
 
-  async getAccounts({ topic }: GetAccountsParams): Promise<Array<Account>> {
-    const session = walletkit.engine.signClient.session.get(topic)
-    return Promise.all(
-      session.namespaces.near.accounts.map(async account => {
-        const accountId = account.split(':')[2]
-        const keyPair = await this.keyStore.getKey(this.networkId, accountId)
-
-        return {
-          accountId,
-          publicKey: keyPair.getPublicKey().toString()
-        }
-      })
-    )
+  async getAccounts(): Promise<Array<Account>> {
+    return this.getAllAccounts()
   }
 
   async signIn({ chainId, topic, permission, accounts }: SignInParams): Promise<Array<Account>> {
@@ -374,7 +342,6 @@ export class NearWallet {
       topic,
       transactions: [transaction]
     })
-
     return provider.sendTransaction(signedTx)
   }
 
@@ -425,5 +392,16 @@ export class NearWallet {
       publicKey: signed.publicKey.toString(),
       signature: Buffer.from(signed.signature).toString('base64')
     }
+  }
+}
+
+// by spec, transactions are encoded as a buffer array
+// but JSON.stringify converts it to an object
+// so we need to account for both cases
+export function decodeTransaction(transaction: Uint8Array | Object) {
+  try {
+    return nearTransactions.Transaction.decode(Buffer.from(transaction as Uint8Array))
+  } catch (error) {
+    return nearTransactions.Transaction.decode(Buffer.from(Object.values(transaction as Object)))
   }
 }
