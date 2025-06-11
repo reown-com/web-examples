@@ -26,12 +26,12 @@
     "@solana/web3.js": "^1.36.0",
     "@stacks/network": "^7.0.2",
     "@stacks/transactions": "^7.0.6",
-    "@walletconnect/core": "^2.19.1",
+    "@walletconnect/core": "^2.21.2",
     "@walletconnect/encoding": "^1.0.1",
     "@walletconnect/jsonrpc-utils": "^1.0.8",
-    "@walletconnect/types": "2.20.1",
-    "@walletconnect/universal-provider": "2.20.1",
-    "@walletconnect/utils": "2.20.1",
+    "@walletconnect/types": "2.21.2",
+    "@walletconnect/universal-provider": "2.21.2",
+    "@walletconnect/utils": "2.21.2",
     "@reown/appkit": "1.7.5",
     "axios": "^1.0.0",
     "@mysten/sui": "^1.29.1",
@@ -111,14 +111,14 @@
       "next@>=9.5.5 <14.2.15": ">=14.2.15",
       "ansi-html@<0.0.8": ">=0.0.8",
       "axios@<1.8.2": ">=1.8.2",
-      "@walletconnect/core@": ">=2.20.2",
+      "@walletconnect/core@": ">=2.21.2",
       "@walletconnect/encoding@": ">=1.0.1",
       "@walletconnect/jsonrpc-utils@": ">=1.0.8",
-      "@walletconnect/types@": ">=2.20.2",
-      "@walletconnect/universal-provider@": ">=2.20.2",
-      "@walletconnect/sign-client@": ">=2.20.2",
-      "@walletconnect/utils@": ">=2.20.2",
-      "@walletconnect/ethereum-provider@": ">=2.20.2"
+      "@walletconnect/types@": ">=2.21.2",
+      "@walletconnect/universal-provider@": ">=2.21.2",
+      "@walletconnect/sign-client@": ">=2.21.2",
+      "@walletconnect/utils@": ">=2.21.2",
+      "@walletconnect/ethereum-provider@": ">=2.21.2"
     }
   }
 }
