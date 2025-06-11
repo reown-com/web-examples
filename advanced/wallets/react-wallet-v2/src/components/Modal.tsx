@@ -23,6 +23,9 @@ import SessionSignBip122Modal from '@/views/SessionSignBip122Modal'
 import SessionSendTransactionBip122Modal from '@/views/SessionSendTransactionBip122Modal'
 import SessionGrantPermissionsModal from '@/views/SessionGrantPermissionsModal'
 import SessionGetBip122AddressesModal from '@/views/SessionGetBip122AddressesModal'
+import SessionSignSuiPersonalMessageModal from '@/views/SessionSignSuiPersonalMessageModal'
+import SessionSignSuiTransactionModal from '@/views/SessionSignSuiTransactionModal'
+import SessionSignSuiAndExecuteTransactionModal from '@/views/SessionSignAndExecuteSuiTransactionModal'
 import SessionSendStacksTransferModal from '@/views/SessionSendStacksTransferModal'
 import SessionSignStacksMessageModal from '@/views/SessionSignStacksMessageModal'
 
@@ -79,6 +82,12 @@ export default function Modal() {
         return <SessionSendTransactionBip122Modal />
       case 'SessionCheckoutModal':
         return <SessionCheckoutModal />
+      case 'SessionSignSuiPersonalMessageModal':
+        return <SessionSignSuiPersonalMessageModal />
+      case 'SessionSignSuiTransactionModal':
+        return <SessionSignSuiTransactionModal />
+      case 'SessionSignSuiAndExecuteTransactionModal':
+        return <SessionSignSuiAndExecuteTransactionModal />
       case 'SessionSendStacksTransferModal':
         return <SessionSendStacksTransferModal />
       case 'SessionSignStacksMessageModal':

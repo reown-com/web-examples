@@ -20,6 +20,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "tezos:mainnet",
   "kadena:mainnet01",
   "bip122:000000000019d6689c085ae165831e93",
+  "sui:mainnet",
   "stacks:1",
 ];
 
@@ -41,6 +42,8 @@ export const DEFAULT_TEST_CHAINS = [
   "tezos:testnet",
   "kadena:testnet04",
   "bip122:000000000933ea01ad0ee984209779ba",
+  "sui:testnet",
+  "sui:devnet",
   "stacks:2147483648",
 ];
 
@@ -302,6 +305,20 @@ export enum DEFAULT_BIP122_METHODS {
 }
 export enum DEFAULT_BIP122_EVENTS {
   BIP122_ADDRESS_CHANGED = "bip122_addressesChanged",
+}
+
+/**
+ * SUI
+ */
+export enum DEFAULT_SUI_METHODS {
+  SUI_SIGN_TRANSACTION = "sui_signTransaction",
+  SUI_SIGN_AND_EXECUTE_TRANSACTION = "sui_signAndExecuteTransaction",
+  SUI_SIGN_PERSONAL_MESSAGE = "sui_signPersonalMessage",
+}
+
+export enum DEFAULT_SUI_EVENTS {
+  SUI_ACCOUNTS_CHANGED = "sui_accountsChanged",
+  SUI_CHAIN_CHANGED = "sui_chainChanged",
 }
 
 export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [

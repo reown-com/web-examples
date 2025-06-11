@@ -109,6 +109,7 @@ const SButton = styled.button<ButtonStyleProps>`
 const Button = (props: ButtonProps) => (
   <SButton
     {...props}
+    onClick={props.onClick}
     type={props.type}
     outline={props.outline}
     color={props.color}

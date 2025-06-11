@@ -13,7 +13,7 @@ const kadenaLogo = getChainMetadata("kadena:testnet04").logo;
 const btcLogo = getChainMetadata(
   "bip122:000000000933ea01ad0ee984209779ba"
 ).logo;
-
+const suiLogo = getChainMetadata("sui:mainnet").logo;
 const SAsset = styled.div`
   width: 100%;
   padding: 20px;
@@ -53,6 +53,8 @@ function getAssetIcon(asset: AssetData): JSX.Element {
       return <Icon src={kadenaLogo} />;
     case "btc":
       return <Icon src={btcLogo} />;
+    case "sui":
+      return <Icon src={suiLogo} />;
     default:
       return <Icon src={"/assets/eth20.svg"} />;
   }
@@ -72,7 +74,7 @@ const Asset = (props: AssetProps) => {
       </SAssetLeft>
       <SAssetRight>
         <SAssetBalance>
-          {fromWad(asset.balance || "0")} {asset.symbol}
+          {fromWad(asset.balance || "0", asset.decimals)} {asset.symbol}
         </SAssetBalance>
       </SAssetRight>
     </SAsset>

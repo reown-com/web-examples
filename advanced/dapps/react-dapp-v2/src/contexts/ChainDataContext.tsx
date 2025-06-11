@@ -17,6 +17,7 @@ import { EIP155ChainData } from "../chains/eip155";
 import { TezosChainData } from "../chains/tezos";
 import { KadenaChainData } from "../chains/kadena";
 import { BtcChainData } from "../chains/bip122";
+import { SuiChainData } from "../chains/sui";
 import { StacksChainData } from "../chains/stacks";
 
 /**
@@ -77,6 +78,9 @@ export function ChainDataContextProvider({
             break;
           case "bip122":
             chains = BtcChainData;
+            break;
+          case "sui":
+            chains = SuiChainData;
             break;
           case "stacks":
             chains = StacksChainData;

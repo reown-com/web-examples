@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import useSmartAccounts from './useSmartAccounts'
 import { createOrRestoreBip122Wallet } from '@/utils/Bip122WalletUtil'
+import { createOrRestoreSuiWallet } from '@/utils/SuiWalletUtil'
 import { createOrRestoreStacksWallet } from '@/utils/StacksWalletUtil'
 
 // guard against multiple calls to createWalletKit while the wallet is initializing
@@ -30,6 +31,7 @@ export default function useInitialization() {
     startedInit = true
     try {
       const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+
       await initializeSmartAccounts(eip155Wallets[eip155Addresses[0]].getPrivateKey())
 
       SettingsStore.setEIP155Address(eip155Addresses[0])
@@ -45,6 +47,7 @@ export default function useInitialization() {
         const { kadenaAddresses } = await createOrRestoreKadenaWallet()
         const { bip122Addresses } = await createOrRestoreBip122Wallet()
         const { stacksAddresses } = await createOrRestoreStacksWallet()
+        const { suiAddresses } = await createOrRestoreSuiWallet()
         SettingsStore.setCosmosAddress(cosmosAddresses[0])
         SettingsStore.setSolanaAddress(solanaAddresses[0])
         SettingsStore.setPolkadotAddress(polkadotAddresses[0])
@@ -56,6 +59,7 @@ export default function useInitialization() {
         SettingsStore.setbip122Address(bip122Addresses[0])
         SettingsStore.setStacksAddress('mainnet', stacksAddresses[0])
         SettingsStore.setStacksAddress('testnet', stacksAddresses[1])
+        SettingsStore.setSuiAddress(suiAddresses[0])
       })()
       await createWalletKit(relayerRegionURL)
       setInitialized(true)

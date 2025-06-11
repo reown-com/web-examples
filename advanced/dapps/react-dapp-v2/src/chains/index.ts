@@ -10,6 +10,7 @@ import * as tron from "./tron";
 import * as tezos from "./tezos";
 import * as kadena from "./kadena";
 import * as bip122 from "./bip122";
+import * as sui from "./sui";
 import * as stacks from "./stacks";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
@@ -37,6 +38,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return tezos.getChainMetadata(chainId);
     case "bip122":
       return bip122.getChainMetadata(chainId);
+    case "sui":
+      return sui.getChainMetadata(chainId);
     case "stacks":
       return stacks.getChainMetadata(chainId);
     default:

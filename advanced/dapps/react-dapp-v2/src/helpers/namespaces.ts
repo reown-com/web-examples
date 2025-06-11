@@ -21,6 +21,8 @@ import {
   DEFAULT_OPTIONAL_METHODS,
   DEFAULT_BIP122_METHODS,
   DEFAULT_BIP122_EVENTS,
+  DEFAULT_SUI_METHODS,
+  DEFAULT_SUI_EVENTS,
   DEFAULT_STACKS_METHODS,
   DEFAULT_STACKS_EVENTS,
 } from "../constants";
@@ -59,6 +61,8 @@ export const getSupportedRequiredMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_KADENA_METHODS);
     case "bip122":
       return Object.values(DEFAULT_BIP122_METHODS);
+    case "sui":
+      return Object.values(DEFAULT_SUI_METHODS);
     case "stacks":
       return Object.values(DEFAULT_STACKS_METHODS);
     default:
@@ -111,6 +115,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_KADENA_EVENTS);
     case "bip122":
       return Object.values(DEFAULT_BIP122_EVENTS);
+    case "sui":
+      return Object.values(DEFAULT_SUI_EVENTS);
     case "stacks":
       return Object.values(DEFAULT_STACKS_EVENTS);
     default:

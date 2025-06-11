@@ -23,7 +23,6 @@
     "@noble/hashes": "^1.8.0",
     "@noble/secp256k1": "^2.2.3",
     "@polkadot/util-crypto": "^10.1.2",
-    "@reown/appkit": "1.7.5",
     "@solana/web3.js": "^1.36.0",
     "@stacks/network": "^7.0.2",
     "@stacks/transactions": "^7.0.6",
@@ -33,7 +32,9 @@
     "@walletconnect/types": "2.20.1",
     "@walletconnect/universal-provider": "2.20.1",
     "@walletconnect/utils": "2.20.1",
+    "@reown/appkit": "1.7.5",
     "axios": "^1.0.0",
+    "@mysten/sui": "^1.29.1",
     "bitcoinjs-lib": "^6.1.5",
     "bitcoinjs-message": "^2.2.0",
     "blockies-ts": "^1.0.0",
@@ -109,7 +110,15 @@
       "semver@>=7.0.0 <7.5.2": ">=7.5.2",
       "next@>=9.5.5 <14.2.15": ">=14.2.15",
       "ansi-html@<0.0.8": ">=0.0.8",
-      "axios@<1.8.2": ">=1.8.2"
+      "axios@<1.8.2": ">=1.8.2",
+      "@walletconnect/core@": ">=2.20.2",
+      "@walletconnect/encoding@": ">=1.0.1",
+      "@walletconnect/jsonrpc-utils@": ">=1.0.8",
+      "@walletconnect/types@": ">=2.20.2",
+      "@walletconnect/universal-provider@": ">=2.20.2",
+      "@walletconnect/sign-client@": ">=2.20.2",
+      "@walletconnect/utils@": ">=2.20.2",
+      "@walletconnect/ethereum-provider@": ">=2.20.2"
     }
   }
 }
