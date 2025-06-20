@@ -2193,7 +2193,7 @@ export function JsonRpcContextProvider({
         const request = {
           sender: address,
           recipient: recipient?.trim(),
-          amount: 10000,
+          amount: "10000",
         };
         console.log("request", {
           method,
