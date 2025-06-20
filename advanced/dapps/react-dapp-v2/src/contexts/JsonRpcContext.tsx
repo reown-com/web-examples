@@ -2201,7 +2201,7 @@ export function JsonRpcContextProvider({
           chainId,
         });
 
-        const result = await client!.request<{ txId: string }>({
+        const result = await client!.request<{ txid: string }>({
           topic: session!.topic,
           chainId: chainId,
           request: {
@@ -2216,7 +2216,7 @@ export function JsonRpcContextProvider({
           method,
           address: address,
           valid: true,
-          result: result.txId,
+          result: result.txid,
         };
       }
     ),
