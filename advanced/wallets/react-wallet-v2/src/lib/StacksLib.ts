@@ -96,14 +96,14 @@ export default class StacksLib implements StacksWallet {
   }
 
   async sendTransfer(request: {
-    pubkey: string
+    sender: string
     recipient: string
     amount: number
     chainId: string
   }) {
     const address = this.getAddress(request.chainId)
-    if (address !== request.pubkey) {
-      throw new Error(`Invalid sender pubkey/address: ${request.pubkey}, expected: ${address}`)
+    if (address !== request.sender) {
+      throw new Error(`Invalid sender pubkey/address: ${request.sender}, expected: ${address}`)
     }
     const network = request.chainId === STACKS_MAINNET_CAIP2 ? 'mainnet' : 'testnet'
 
@@ -132,10 +132,10 @@ export default class StacksLib implements StacksWallet {
     }
   }
 
-  signMessage(request: { message: string; pubkey: string; chainId: string }) {
+  signMessage(request: { message: string; address: string; chainId: string }) {
     const address = this.getAddress(request.chainId)
-    if (address !== request.pubkey) {
-      throw new Error(`Invalid sender pubkey/address: ${request.pubkey}, expected: ${address}`)
+    if (address !== request.address) {
+      throw new Error(`Invalid sender pubkey/address: ${request.address}, expected: ${address}`)
     }
 
     const network = this.getNetworkFromAddress(address)

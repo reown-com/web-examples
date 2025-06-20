@@ -2191,7 +2191,7 @@ export function JsonRpcContextProvider({
         }
 
         const request = {
-          pubkey: address,
+          sender: address,
           recipient: recipient?.trim(),
           amount: 10000,
         };
@@ -2235,7 +2235,7 @@ export function JsonRpcContextProvider({
             method,
             params: {
               message,
-              pubkey: address,
+              address,
             },
           },
         });
