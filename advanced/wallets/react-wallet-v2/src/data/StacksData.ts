@@ -45,8 +45,8 @@ export const STACKS_CHAINS = { ...STACKS_MAINNET, ...STACKS_TESTNET } as Record<
  * Methods
  */
 export const STACKS_SIGNING_METHODS = {
-  STACKS_SEND_TRANSFER: 'stacks_stxTransfer',
-  STACKS_SIGN_MESSAGE: 'stacks_signMessage'
+  STACKS_SEND_TRANSFER: 'stx_transferStx',
+  STACKS_SIGN_MESSAGE: 'stx_signMessage'
 }
 
 /**
@@ -54,6 +54,6 @@ export const STACKS_SIGNING_METHODS = {
  */
 
 export const STACKS_EVENTS = {
-  STACKS_CHAIN_CHANGED: 'stacks_chainChanged',
-  STACKS_ACCOUNTS_CHANGED: 'stacks_accountsChanged'
+  STACKS_CHAIN_CHANGED: 'stx_chainChanged',
+  STACKS_ACCOUNTS_CHANGED: 'stx_accountsChanged'
 }

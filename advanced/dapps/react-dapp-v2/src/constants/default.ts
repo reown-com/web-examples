@@ -267,13 +267,13 @@ export enum DEFAULT_TEZOS_EVENTS {}
  * STACKS
  */
 export enum DEFAULT_STACKS_METHODS {
-  STACKS_SEND_TRANSFER = "stacks_stxTransfer",
-  STACKS_SIGN_MESSAGE = "stacks_signMessage",
+  STACKS_SEND_TRANSFER = "stx_transferStx",
+  STACKS_SIGN_MESSAGE = "stx_signMessage",
 }
 
 export enum DEFAULT_STACKS_EVENTS {
-  STACKS_CHAIN_CHANGED = "stacks_chainChanged",
-  STACKS_ACCOUNTS_CHANGED = "stacks_accountsChanged",
+  STACKS_CHAIN_CHANGED = "stx_chainChanged",
+  STACKS_ACCOUNTS_CHANGED = "stx_accountsChanged",
 }
 
 export const DEFAULT_GITHUB_REPO_URL =
