@@ -31,10 +31,8 @@ export async function approveTronRequest(
 
     case TRON_SIGNING_METHODS.TRON_SIGN_TRANSACTION:
       const signedTransaction = await wallet.signTransaction(request.params.transaction)
-      const resData = {
-        result: signedTransaction
-      }
-      return formatJsonRpcResult(id, resData)
+
+      return formatJsonRpcResult(id, signedTransaction)
 
     default:
       throw new Error(getSdkError('INVALID_METHOD').message)

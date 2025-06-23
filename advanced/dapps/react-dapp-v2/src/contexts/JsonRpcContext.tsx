@@ -1658,7 +1658,7 @@ export function JsonRpcContextProvider({
             address
           );
 
-        const { result } = await client!.request<{ result: any }>({
+        const result = await client!.request<{ signature: any }>({
           chainId,
           topic: session!.topic,
           request: {
@@ -1671,6 +1671,7 @@ export function JsonRpcContextProvider({
             },
           },
         });
+        console.log("tron sign transaction result", result);
 
         return {
           method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
