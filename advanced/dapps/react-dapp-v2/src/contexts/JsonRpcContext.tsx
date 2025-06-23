@@ -2191,9 +2191,9 @@ export function JsonRpcContextProvider({
         }
 
         const request = {
-          pubkey: address,
+          sender: address,
           recipient: recipient?.trim(),
-          amount: 10000,
+          amount: "10000",
         };
         console.log("request", {
           method,
@@ -2201,7 +2201,7 @@ export function JsonRpcContextProvider({
           chainId,
         });
 
-        const result = await client!.request<{ txId: string }>({
+        const result = await client!.request<{ txid: string }>({
           topic: session!.topic,
           chainId: chainId,
           request: {
@@ -2216,7 +2216,7 @@ export function JsonRpcContextProvider({
           method,
           address: address,
           valid: true,
-          result: result.txId,
+          result: result.txid,
         };
       }
     ),
@@ -2235,7 +2235,7 @@ export function JsonRpcContextProvider({
             method,
             params: {
               message,
-              pubkey: address,
+              address,
             },
           },
         });
