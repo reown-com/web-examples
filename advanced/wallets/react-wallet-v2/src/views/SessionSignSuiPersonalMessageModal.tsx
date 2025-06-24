@@ -99,9 +99,12 @@ export default function SessionSignSuiPersonalMessageModal() {
       <Row>
         <Col>
           <Text h5>Message</Text>
-          <Text color="$gray400" data-testid="request-message-text">
+          {/* <Text color="$gray400" data-testid="request-message-text">
             {message}
-          </Text>
+          </Text> */}
+          <code color="$gray400" data-testid="request-message-text">
+            {message}
+          </code>
         </Col>
       </Row>
     </RequestModal>

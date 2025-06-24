@@ -572,7 +572,7 @@ export function JsonRpcContextProvider({
         // check the session.sessionProperties first for capabilities
         const capabilitiesJson = session?.sessionProperties?.["capabilities"];
         const walletCapabilities =
-          capabilitiesJson && JSON.parse(capabilitiesJson);
+          capabilitiesJson && JSON.parse(capabilitiesJson as string);
         let capabilities = walletCapabilities[address] as
           | GetCapabilitiesResult
           | undefined;
@@ -2142,7 +2142,7 @@ export function JsonRpcContextProvider({
         let result;
         if (addresses) {
           console.log("cached addresses", addresses);
-          const parsed = JSON.parse(addresses);
+          const parsed = JSON.parse(addresses as string);
           result = isOrdinal ? parsed.ordinal : parsed.payment;
           console.log("parsed", result);
         } else {

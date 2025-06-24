@@ -9,7 +9,9 @@ import { styledToast } from '@/utils/HelperUtil'
 import { approveSolanaRequest, rejectSolanaRequest } from '@/utils/SolanaRequestHandlerUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
+import { base58 } from 'ethers/lib/utils'
 
 export default function SessionSignSolanaModal() {
   // Get request and wallet data from store
@@ -26,6 +28,17 @@ export default function SessionSignSolanaModal() {
   // Get required request data
   const { topic, params } = requestEvent
   const { request, chainId } = params
+
+  const messageToSign = useMemo(() => {
+    try {
+      if (request.method === SOLANA_SIGNING_METHODS.SOLANA_SIGN_MESSAGE) {
+        return Buffer.from(base58.decode(request.params.message)).toString('utf-8')
+      }
+    } catch (e) {
+      return undefined
+    }
+    return undefined
+  }, [request, params])
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
@@ -77,7 +90,13 @@ export default function SessionSignSolanaModal() {
     >
       <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
       <Divider y={1} />
-      <RequestDataCard data={params} />
+      {messageToSign ? (
+        <code color="$gray400" data-testid="request-message-text">
+          {messageToSign}
+        </code>
+      ) : (
+        <RequestDataCard data={params} />
+      )}
       <Divider y={1} />
       <RequestMethodCard methods={[request.method]} />
     </RequestModal>

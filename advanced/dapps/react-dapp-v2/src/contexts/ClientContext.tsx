@@ -183,10 +183,36 @@ export function ClientContextProvider({
         });
 
         provider.namespaces = undefined;
-        const session = await provider.connect({
-          pairingTopic: pairing?.topic,
-          optionalNamespaces: namespacesToRequest as NamespaceConfig,
+
+        // const client = await SignClient.init({
+        //   projectId: DEFAULT_PROJECT_ID,
+        //   relayUrl: relayerRegion,
+        //   metadata: {
+        //     name: "React App",
+        //     description: "App to test WalletConnect network",
+        //     url: location.origin,
+        //     icons: [],
+        //   },
+        // });
+        console.log("chains", chains);
+        const { uri, response } = await client.authenticate({
+          chains: chains,
+          methods: Object.values(namespacesToRequest)
+            .map((namespace) => namespace.methods)
+            .flat(),
+          uri: location.origin,
+          domain: location.origin,
+          nonce: "1234567890",
         });
+        provider.events.emit("display_uri", uri);
+        console.log("uri", uri);
+        const { session, auths } = await response();
+        console.log("session", session);
+        console.log("auths", auths);
+        // const session = await provider.connect({
+        //   pairingTopic: pairing?.topic,
+        //   optionalNamespaces: namespacesToRequest as NamespaceConfig,
+        // });
 
         if (!session) {
           throw new Error("Session is not connected");
