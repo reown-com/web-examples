@@ -572,7 +572,7 @@ export function JsonRpcContextProvider({
         // check the session.sessionProperties first for capabilities
         const capabilitiesJson = session?.sessionProperties?.["capabilities"];
         const walletCapabilities =
-          capabilitiesJson && JSON.parse(capabilitiesJson);
+          capabilitiesJson && JSON.parse(capabilitiesJson as string);
         let capabilities = walletCapabilities[address] as
           | GetCapabilitiesResult
           | undefined;
@@ -2142,7 +2142,7 @@ export function JsonRpcContextProvider({
         let result;
         if (addresses) {
           console.log("cached addresses", addresses);
-          const parsed = JSON.parse(addresses);
+          const parsed = JSON.parse(addresses as string);
           result = isOrdinal ? parsed.ordinal : parsed.payment;
           console.log("parsed", result);
         } else {
@@ -2285,12 +2285,15 @@ export function JsonRpcContextProvider({
         tx.setSender(address);
         tx.transferObjects([coin], recipient?.trim() || address);
 
-        const serialized = await tx.toJSON();
+        const suiClient = getSuiClient(chainId);
+        const bcsTransaction = await tx.build({ client: suiClient });
+
         const req = {
-          transaction: Buffer.from(serialized).toString("base64"),
+          transaction: Buffer.from(bcsTransaction).toString("base64"),
           address,
         };
-        console.log("req", req, serialized);
+
+        console.log("req", req, Buffer.from(bcsTransaction).toString("base64"));
         const result = await client!.request<{ digest: string }>({
           topic: session!.topic,
           chainId: chainId,
@@ -2323,12 +2326,16 @@ export function JsonRpcContextProvider({
 
         tx.transferObjects([coin], address);
 
-        const serialized = await tx.toJSON();
+        const suiClient = getSuiClient(chainId);
+
+        const bcsTransaction = await tx.build({ client: suiClient });
+
         const req = {
-          transaction: Buffer.from(serialized).toString("base64"),
+          transaction: Buffer.from(bcsTransaction).toString("base64"),
           address,
         };
-        console.log("req", req, serialized);
+
+        console.log("req", req, Buffer.from(bcsTransaction).toString("base64"));
         const result = await client!.request<{
           signature: string;
           transactionBytes: string;
