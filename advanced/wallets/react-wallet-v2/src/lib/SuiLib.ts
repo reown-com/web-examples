@@ -76,7 +76,7 @@ export default class SuiLib {
   }
 
   public async signTransaction({ transaction, chainId }: ISignTransactionArguments) {
-    const tx = Transaction.from(Buffer.from(transaction, 'base64').toString('utf8'))
+    const tx = Transaction.from(transaction)
     const client = this.getSuiClient(chainId)
     console.log('tx', tx)
     const signature = await tx.sign({ signer: this.keypair, client })
@@ -93,7 +93,7 @@ export default class SuiLib {
     transaction,
     chainId
   }: ISignAndExecuteTransactionArguments) {
-    const tx = Transaction.from(Buffer.from(transaction, 'base64').toString('utf8'))
+    const tx = Transaction.from(transaction)
     const client = this.getSuiClient(chainId)
     const executor = new SerialTransactionExecutor({ signer: this.keypair, client })
     const result = await executor.executeTransaction(tx)
@@ -120,5 +120,16 @@ export default class SuiLib {
         throw new Error(`Unknown chainId: ${chainId}`)
     }
     return this.suiClients[chainId]
+  }
+
+  public async getJsonTransactionFromBase64(transaction: string) {
+    try {
+      const tx = Transaction.from(transaction)
+      const jsonTx = await tx.toJSON()
+      return jsonTx
+    } catch (e) {
+      console.error('Error decoding transaction', e)
+      return undefined
+    }
   }
 }

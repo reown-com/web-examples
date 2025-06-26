@@ -237,7 +237,8 @@ const Home: NextPage = () => {
     let availableActions: AccountAction[] = [];
     const chainIdAsHex = `0x${numberToHex(parseInt(chainId))}`;
     const capabilitiesJson = session?.sessionProperties?.["capabilities"];
-    const walletCapabilities = capabilitiesJson && JSON.parse(capabilitiesJson);
+    const walletCapabilities =
+      capabilitiesJson && JSON.parse(capabilitiesJson as string);
     session?.namespaces?.["eip155"].methods.forEach((methodName) => {
       const action: AccountAction | undefined =
         actions[methodName as keyof typeof actions];
