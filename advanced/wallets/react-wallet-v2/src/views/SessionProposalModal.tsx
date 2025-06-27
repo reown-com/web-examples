@@ -1,5 +1,5 @@
 import { Col, Grid, Row, Text, styled } from '@nextui-org/react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import DoneIcon from '@mui/icons-material/Done'
@@ -49,7 +49,7 @@ import { SUI_CHAINS, SUI_EVENTS, SUI_SIGNING_METHODS } from '@/data/SuiData'
 import { suiAddresses } from '@/utils/SuiWalletUtil'
 import { STACKS_CHAINS, STACKS_EVENTS, STACKS_SIGNING_METHODS } from '@/data/StacksData'
 import { stacksAddresses, stacksWallet } from '@/utils/StacksWalletUtil'
-import StacksLib from '@/lib/StacksLib'
+import LoadingModal from './LoadingModal'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -366,12 +366,33 @@ export default function SessionProposalModal() {
         SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }
     } catch (e) {
+      console.log('error', e)
       styledToast((e as Error).message, 'error')
     } finally {
       setIsLoadingApprove(false)
-      ModalStore.close()
+      if (!proposal?.isSiwx) {
+        ModalStore.close()
+      }
     }
   }, [namespaces, proposal, reorderedEip155Accounts])
+
+  useEffect(() => {
+    if (namespaces) {
+      console.log('proposal.isSiwx', proposal.isSiwx)
+
+      if (
+        proposal.isSiwx &&
+        (globalThis as any).autoApprove &&
+        !(globalThis as any)?.sessionApproved
+      ) {
+        ;(globalThis as any).sessionApproved = true
+        console.log('auto approving...')
+        onApprove().finally(() => {
+          ;(globalThis as any).sessionApproved = false
+        })
+      }
+    }
+  }, [namespaces])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -395,7 +416,9 @@ export default function SessionProposalModal() {
   }, [proposal])
   console.log('notSupportedChains', notSupportedChains)
   console.log('supportedChains', supportedChains)
-  return (
+  return proposal?.isSiwx && (globalThis as any).autoApprove ? (
+    <LoadingModal></LoadingModal>
+  ) : (
     <RequestModal
       metadata={proposal.params.proposer.metadata}
       onApprove={onApprove}

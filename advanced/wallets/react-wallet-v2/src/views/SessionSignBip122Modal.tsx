@@ -13,14 +13,15 @@ import { approveBip122Request, rejectBip122Request } from '@/utils/Bip122Request
 export default function SessionSignBip122Modal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
-  const requestSession = ModalStore.state.data?.requestSession
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
 
   // Ensure request and wallet are defined
-  if (!requestEvent || !requestSession) {
+  if (!requestEvent) {
     return <Text>Missing request data</Text>
   }
+
+  const requestSession = walletkit.getActiveSessions()[requestEvent.topic]
 
   const { topic, params } = requestEvent
   const { request, chainId } = params
@@ -32,6 +33,7 @@ export default function SessionSignBip122Modal() {
     if (requestEvent) {
       const response = await approveBip122Request(requestEvent)
       try {
+        console.log('approve bip122 request', topic, requestSession.topic)
         await walletkit.respondSessionRequest({
           topic,
           response

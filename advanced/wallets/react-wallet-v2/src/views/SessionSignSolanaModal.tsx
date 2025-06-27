@@ -16,14 +16,15 @@ import { base58 } from 'ethers/lib/utils'
 export default function SessionSignSolanaModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
-  const requestSession = ModalStore.state.data?.requestSession
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
 
   // Ensure request and wallet are defined
-  if (!requestEvent || !requestSession) {
+  if (!requestEvent) {
     return <Text>Missing request data</Text>
   }
+
+  const requestSession = walletkit.getActiveSessions()[requestEvent.topic]
 
   // Get required request data
   const { topic, params } = requestEvent
@@ -46,6 +47,7 @@ export default function SessionSignSolanaModal() {
       if (requestEvent) {
         setIsLoadingApprove(true)
         const response = await approveSolanaRequest(requestEvent)
+        console.log('approve solana request', topic, requestSession.topic)
         await walletkit.respondSessionRequest({
           topic,
           response
