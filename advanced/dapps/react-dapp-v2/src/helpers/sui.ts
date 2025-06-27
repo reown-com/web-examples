@@ -3,9 +3,9 @@ import { SuiClient } from "@mysten/sui/client";
 // Cache clients
 const clients = new Map<string, SuiClient>();
 
-export async function getSuiClient(chainId: string) {
+export function getSuiClient(chainId: string): SuiClient {
   if (clients.has(chainId)) {
-    return clients.get(chainId);
+    return clients.get(chainId)!;
   }
   let client: SuiClient;
   switch (chainId) {

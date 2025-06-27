@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { Col, Divider, Row, Text } from '@nextui-org/react'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import ModalStore from '@/store/ModalStore'
@@ -8,7 +8,7 @@ import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155Request
 import { styledToast } from '@/utils/HelperUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
-import { suiAddresses } from '@/utils/SuiWalletUtil'
+import { getWallet, suiAddresses } from '@/utils/SuiWalletUtil'
 import { approveSuiRequest, rejectSuiRequest } from '@/utils/SuiRequestHandlerUtil'
 
 export default function SessionSignSuiAndExecuteTransactionModal() {
@@ -17,6 +17,7 @@ export default function SessionSignSuiAndExecuteTransactionModal() {
   const requestSession = ModalStore.state.data?.requestSession
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
+  const [transaction, setTransaction] = useState<string | undefined>(undefined)
 
   // Ensure request and wallet are defined
   if (!requestEvent || !requestSession) {
@@ -27,10 +28,13 @@ export default function SessionSignSuiAndExecuteTransactionModal() {
   const { topic, params } = requestEvent
   const { request, chainId } = params
 
-  // Get message, convert it to UTF8 string if it is valid hex
-  const transaction = request.params?.transaction
-    ? Buffer.from(request.params.transaction, 'base64').toString('utf8')
-    : ''
+  // transaction is a base64 encoded BCS transaction
+  useMemo(async () => {
+    if (transaction) return
+    const wallet = await getWallet()
+    const jsonTx = await wallet.getJsonTransactionFromBase64(request.params.transaction)
+    setTransaction(jsonTx?.toString())
+  }, [request.params, transaction])
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
