@@ -13,14 +13,15 @@ import { approveSuiRequest, rejectSuiRequest } from '@/utils/SuiRequestHandlerUt
 export default function SessionSignSuiPersonalMessageModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
-  const requestSession = ModalStore.state.data?.requestSession
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
 
   // Ensure request and wallet are defined
-  if (!requestEvent || !requestSession) {
+  if (!requestEvent) {
     return <Text>Missing request data</Text>
   }
+
+  const requestSession = walletkit.getActiveSessions()[requestEvent.topic]
 
   // Get required request data
   const { topic, params } = requestEvent
@@ -34,6 +35,7 @@ export default function SessionSignSuiPersonalMessageModal() {
       if (requestEvent) {
         setIsLoadingApprove(true)
         const response = await approveSuiRequest(requestEvent)
+        console.log('approve sui personal message request', topic, requestSession.topic)
         await walletkit.respondSessionRequest({
           topic,
           response
@@ -99,9 +101,12 @@ export default function SessionSignSuiPersonalMessageModal() {
       <Row>
         <Col>
           <Text h5>Message</Text>
-          <Text color="$gray400" data-testid="request-message-text">
+          {/* <Text color="$gray400" data-testid="request-message-text">
             {message}
-          </Text>
+          </Text> */}
+          <code color="$gray400" data-testid="request-message-text">
+            {message}
+          </code>
         </Col>
       </Row>
     </RequestModal>
