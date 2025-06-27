@@ -380,6 +380,10 @@ export default function SessionProposalModal() {
     if (namespaces) {
       console.log('proposal.isSiwx', proposal.isSiwx)
 
+      if (typeof (globalThis as any).autoApprove === 'undefined') {
+        ;(globalThis as any).autoApprove = true
+      }
+
       if (
         proposal.isSiwx &&
         (globalThis as any).autoApprove &&
