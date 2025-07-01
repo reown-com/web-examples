@@ -1,4 +1,4 @@
-import { Col, Grid, Row, Text, styled } from '@nextui-org/react'
+import { Col, Divider, Grid, Row, Text, styled } from '@nextui-org/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
@@ -50,6 +50,7 @@ import { suiAddresses } from '@/utils/SuiWalletUtil'
 import { STACKS_CHAINS, STACKS_EVENTS, STACKS_SIGNING_METHODS } from '@/data/StacksData'
 import { stacksAddresses, stacksWallet } from '@/utils/StacksWalletUtil'
 import LoadingModal from './LoadingModal'
+import { approveMultichainRequest } from '@/utils/MultichainRequestHandler'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -66,6 +67,7 @@ export default function SessionProposalModal() {
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
+  const [pendingRequests, setPendingRequests] = useState<Record<string, any>>({})
   const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
 
   const { query } = useRouter()
@@ -358,10 +360,27 @@ export default function SessionProposalModal() {
           })
         }
         console.log('sessionProperties', sessionProperties)
+
+        const pendingRequestsResults: any = {}
+
+        for (const [id, request] of Object.entries(pendingRequests)) {
+          console.log('pending request', request)
+          const result = await approveMultichainRequest({
+            topic: proposal.params.pairingTopic,
+            id: request.id,
+            params: request,
+            verifyContext: {} as any
+          })
+          console.log('pending request result', result)
+          pendingRequestsResults[id] = result
+        }
+
         await walletkit.approveSession({
           id: proposal.id,
           namespaces,
-          sessionProperties
+          sessionProperties,
+          // @ts-ignore - exists in SignClient types but not in walletkit types
+          pendingRequestsResults
         })
         SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }
@@ -370,31 +389,19 @@ export default function SessionProposalModal() {
       styledToast((e as Error).message, 'error')
     } finally {
       setIsLoadingApprove(false)
-      if (!proposal?.isSiwx) {
-        ModalStore.close()
-      }
+      ModalStore.close()
     }
-  }, [namespaces, proposal, reorderedEip155Accounts])
+  }, [namespaces, proposal, reorderedEip155Accounts, pendingRequests])
 
   useEffect(() => {
     if (namespaces) {
-      console.log('proposal.isSiwx', proposal.isSiwx)
-
-      if (typeof (globalThis as any).autoApprove === 'undefined') {
-        ;(globalThis as any).autoApprove = true
-      }
-
-      if (
-        proposal.isSiwx &&
-        (globalThis as any).autoApprove &&
-        !(globalThis as any)?.sessionApproved
-      ) {
-        ;(globalThis as any).sessionApproved = true
-        console.log('auto approving...')
-        onApprove().finally(() => {
-          ;(globalThis as any).sessionApproved = false
-        })
-      }
+      // @ts-ignore
+      const requests = walletkit.engine.signClient.engine.preparePendingRequests({
+        pendingRequests: proposal?.params?.sessionProperties?.pending_requests as any,
+        namespaces
+      })
+      console.log('prepared pending requests', requests)
+      setPendingRequests(requests)
     }
   }, [namespaces])
 
@@ -420,9 +427,7 @@ export default function SessionProposalModal() {
   }, [proposal])
   console.log('notSupportedChains', notSupportedChains)
   console.log('supportedChains', supportedChains)
-  return proposal?.isSiwx && (globalThis as any).autoApprove ? (
-    <LoadingModal></LoadingModal>
-  ) : (
+  return (
     <RequestModal
       metadata={proposal.params.proposer.metadata}
       onApprove={onApprove}
@@ -471,7 +476,7 @@ export default function SessionProposalModal() {
               )
             })) || <Row>Non available</Row>}
 
-          <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>
+          {smartAccountEnabled && <Row style={{ color: 'GrayText' }}>Smart Accounts</Row>}
           {smartAccountEnabled &&
             namespaces &&
             getAvailableSmartAccountsOnNamespaceChains(namespaces?.eip155?.chains).map(
@@ -504,9 +509,11 @@ export default function SessionProposalModal() {
                 </Row>
               )
             })) || <Row>Non available</Row>}
-          <Row style={{ color: 'GrayText' }} justify="flex-end">
-            Chains
-          </Row>
+          {smartAccountEnabled && namespaces && (
+            <Row style={{ color: 'GrayText' }} justify="flex-end">
+              Chains
+            </Row>
+          )}
           {smartAccountEnabled &&
             namespaces &&
             getAvailableSmartAccountsOnNamespaceChains(namespaces?.eip155?.chains).map(
@@ -522,6 +529,28 @@ export default function SessionProposalModal() {
               }
             )}
         </Grid>
+        <Divider />
+        <Row style={{ color: 'GrayText' }} justify="flex-start">
+          <StyledText h4>Pending Requests ({Object.entries(pendingRequests).length})</StyledText>
+        </Row>
+        {pendingRequests &&
+          Object.entries(pendingRequests).map(([key, value]) => {
+            return (
+              <Row key={key}>
+                <Col>
+                  <Text h5>Method</Text>
+                  <Text color="$gray400" data-testid="request-detauls-realy-protocol">
+                    {value.request.method}
+                  </Text>
+                  <Divider y={1} />
+                  <Text h5>Message</Text>
+                  <code color="$gray400" data-testid="request-message-text">
+                    {value.request.params.message}
+                  </code>
+                </Col>
+              </Row>
+            )
+          })}
       </Grid.Container>
     </RequestModal>
   )
