@@ -183,10 +183,39 @@ export function ClientContextProvider({
         });
 
         provider.namespaces = undefined;
-        const session = await provider.connect({
-          pairingTopic: pairing?.topic,
+
+        // const client = await SignClient.init({
+        //   projectId: DEFAULT_PROJECT_ID,
+        //   relayUrl: relayerRegion,
+        //   metadata: {
+        //     name: "React App",
+        //     description: "App to test WalletConnect network",
+        //     url: location.origin,
+        //     icons: [],
+        //   },
+        // });
+        console.log("chains", chains);
+        const { uri, approval } = await client.connect({
           optionalNamespaces: namespacesToRequest as NamespaceConfig,
+          walletPay: {
+            version: "1.0.0",
+            orderId: "order-123456",
+            acceptedPayments: [
+              {
+                recipient:
+                  "eip155:1:0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
+                asset:
+                  "eip155:1/erc20:0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                amount: "0x5F5E100",
+              },
+            ],
+            expiry: 1709593200,
+          },
         });
+        provider.events.emit("display_uri", uri);
+        console.log("uri", uri);
+        const session = await approval();
+        console.log("session", session);
 
         if (!session) {
           throw new Error("Session is not connected");

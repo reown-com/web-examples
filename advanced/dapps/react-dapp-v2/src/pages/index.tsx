@@ -119,13 +119,8 @@ const Home: NextPage = () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
-    // Suggest existing pairings (if any).
-    if (pairings.length) {
-      openPairingModal();
-    } else {
-      // If no existing pairings are available, trigger `WalletConnectClient.connect`.
-      connect();
-    }
+
+    connect();
   };
 
   const onPing = async () => {
@@ -644,7 +639,7 @@ const Home: NextPage = () => {
         if (typeof client === "undefined") {
           throw new Error("WalletConnect is not initialized");
         }
-        return <PairingModal pairings={pairings} connect={connect} />;
+        return <PairingModal pairings={[]} connect={connect} />;
       case "request":
         return (
           <RequestModal pending={isRpcRequestPending} result={rpcResult} />

@@ -83,11 +83,11 @@
     "typescript": "5.2.2"
   },
   "resolutions": {
-    "@walletconnect/core": "2.21.3",
-    "@walletconnect/utils": "2.21.3",
-    "@walletconnect/types": "2.21.3",
-    "@walletconnect/sign-client": "2.21.3",
-    "@walletconnect/ethereum-provider": "2.21.3",
-    "@walletconnect/universal-provider": "2.21.3"
+    "@walletconnect/core": "2.20.3-canary-1ca-5",
+    "@walletconnect/utils": "2.20.3-canary-1ca-5",
+    "@walletconnect/types": "2.20.3-canary-1ca-5",
+    "@walletconnect/sign-client": "2.20.3-canary-1ca-5",
+    "@walletconnect/ethereum-provider": "2.20.3-canary-1ca-5",
+    "@walletconnect/universal-provider": "2.20.3-canary-1ca-5"
   }
 }
