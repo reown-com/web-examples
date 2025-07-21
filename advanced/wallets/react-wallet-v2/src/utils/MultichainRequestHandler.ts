@@ -5,21 +5,30 @@ import { approveSuiRequest } from './SuiRequestHandlerUtil'
 import { approveSolanaRequest } from './SolanaRequestHandlerUtil'
 import { approveBip122Request } from './Bip122RequestHandlerUtil'
 
-export function approveMultichainRequest(
+export async function approveMultichainRequest(
   requestEvent: SignClientTypes.EventArguments['session_request']
 ) {
   const chainId = requestEvent.params.chainId
   const { namespace } = parseChainId(chainId)
+  let result: any
   switch (namespace) {
     case 'eip155':
-      return approveEIP155Request(requestEvent)
+      result = await approveEIP155Request(requestEvent)
+      break
     case 'sui':
-      return approveSuiRequest(requestEvent)
+      result = await approveSuiRequest(requestEvent)
+      break
     case 'solana':
-      return approveSolanaRequest(requestEvent)
+      result = await approveSolanaRequest(requestEvent)
+      break
     case 'bip122':
-      return approveBip122Request(requestEvent)
+      result = await approveBip122Request(requestEvent)
     default:
       console.log('need to implement multichain request handler for', namespace)
+  }
+
+  return {
+    chainId,
+    result
   }
 }

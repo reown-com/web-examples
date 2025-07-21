@@ -1,7 +1,7 @@
 import { Col, Divider, Grid, Row, Text, styled } from '@nextui-org/react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
-import { SessionTypes, SignClientTypes } from '@walletconnect/types'
+import { EngineTypes, ProposalTypes, SessionTypes, SignClientTypes } from '@walletconnect/types'
 import DoneIcon from '@mui/icons-material/Done'
 import CloseIcon from '@mui/icons-material/Close'
 import ModalStore from '@/store/ModalStore'
@@ -67,7 +67,7 @@ export default function SessionProposalModal() {
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
-  const [pendingRequests, setPendingRequests] = useState<Record<string, any>>({})
+  const [pendingRequests, setPendingRequests] = useState<EngineTypes.PreparedPendingRequest[]>([])
   const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
 
   const { query } = useRouter()
@@ -361,18 +361,27 @@ export default function SessionProposalModal() {
         }
         console.log('sessionProperties', sessionProperties)
 
-        const pendingRequestsResults: any = {}
+        const pendingRequestsResults: ProposalTypes.PendingRequestsResults[] = []
 
-        for (const [id, request] of Object.entries(pendingRequests)) {
-          console.log('pending request', request)
-          const result = await approveMultichainRequest({
-            topic: proposal.params.pairingTopic,
-            id: request.id,
-            params: request,
-            verifyContext: {} as any
-          })
-          console.log('pending request result', result)
-          pendingRequestsResults[id] = result
+        for (const pendingRequest of pendingRequests) {
+          console.log('pending request', pendingRequest)
+          if (pendingRequest.type === 'authentication') {
+            const result = await approveMultichainRequest({
+              topic: proposal.params.pairingTopic,
+              id: pendingRequest.id,
+              params: pendingRequest,
+              verifyContext: {} as any
+            })
+
+            console.log('pending request result', result)
+            pendingRequestsResults.push({
+              // @ts-ignore - exists in SignClient types but not in walletkit types
+              id: pendingRequest.id,
+              result: result.result,
+              address: result.chainId,
+              chainId: result.chainId
+            })
+          }
         }
 
         await walletkit.approveSession({
@@ -393,11 +402,10 @@ export default function SessionProposalModal() {
     }
   }, [namespaces, proposal, reorderedEip155Accounts, pendingRequests])
 
-  useEffect(() => {
-    if (namespaces) {
-      // @ts-ignore
-      const requests = walletkit.engine.signClient.engine.preparePendingRequests({
-        pendingRequests: proposal?.params?.sessionProperties?.pending_requests as any,
+  useMemo(async () => {
+    if (namespaces && proposal?.params?.pendingRequests) {
+      const requests = await walletkit.engine.signClient.preparePendingRequests({
+        pendingRequests: proposal?.params?.pendingRequests,
         namespaces
       })
       console.log('prepared pending requests', requests)
@@ -536,19 +544,22 @@ export default function SessionProposalModal() {
         {pendingRequests &&
           Object.entries(pendingRequests).map(([key, value]) => {
             return (
-              <Row key={key}>
-                <Col>
-                  <Text h5>Method</Text>
-                  <Text color="$gray400" data-testid="request-detauls-realy-protocol">
-                    {value.request.method}
-                  </Text>
-                  <Divider y={1} />
-                  <Text h5>Message</Text>
-                  <code color="$gray400" data-testid="request-message-text">
-                    {value.request.params.message}
-                  </code>
-                </Col>
-              </Row>
+              <div key={key}>
+                <Row>
+                  <Col>
+                    <Text h5>Method</Text>
+                    <Text color="$gray400" data-testid="request-detauls-realy-protocol">
+                      {value.request.method}
+                    </Text>
+                    <Divider y={1} />
+                    <Text h5>Request Params</Text>
+                    <code color="$gray400" data-testid="request-message-text">
+                      {JSON.stringify(value, null, 2)}
+                    </code>
+                  </Col>
+                </Row>
+                <Divider />
+              </div>
             )
           })}
       </Grid.Container>
