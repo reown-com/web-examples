@@ -9,7 +9,6 @@ import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 import { approveSuiRequest, rejectSuiRequest } from '@/utils/SuiRequestHandlerUtil'
 import { wallet1 as suiWallet } from '@/utils/SuiWalletUtil'
-import { ISuiChainId } from '@/data/SuiData'
 
 export default function SessionGetSuiGetAcccountsModal() {
   // Get request and wallet data from store
@@ -30,14 +29,12 @@ export default function SessionGetSuiGetAcccountsModal() {
   const onApprove = useCallback(async () => {
     if (requestEvent) {
       const response = await approveSuiRequest(requestEvent)
-      console.log('>> Sui approve response', response)
       try {
         await walletkit.respondSessionRequest({
           topic,
           response
         })
       } catch (e) {
-        console.log('>> Sui approve error', e)
         setIsLoadingApprove(false)
         styledToast((e as Error).message, 'error')
         return
@@ -81,17 +78,13 @@ export default function SessionGetSuiGetAcccountsModal() {
       approveLoader={{ active: isLoadingApprove }}
       rejectLoader={{ active: isLoadingReject }}
     >
-      {accounts && (
-        <>
-          <Row>
-            <Col>
-              <Text h5>Accounts</Text>
-            </Col>
-          </Row>
-          <Divider y={1} />
-        </>
-      )}
-      <RequestDataCard data={{ [accounts[0].address]: accounts[0].publicKey }} />
+      <Row>
+        <Col>
+          <Text h5>Accounts</Text>
+        </Col>
+      </Row>
+      <Divider y={1} />
+      <RequestDataCard data={Object.fromEntries(accounts.entries())} />
     </RequestModal>
   )
 }
