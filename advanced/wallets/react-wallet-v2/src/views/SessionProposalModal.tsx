@@ -49,6 +49,7 @@ import { SUI_CHAINS, SUI_EVENTS, SUI_SIGNING_METHODS } from '@/data/SuiData'
 import { suiAddresses } from '@/utils/SuiWalletUtil'
 import { STACKS_CHAINS, STACKS_EVENTS, STACKS_SIGNING_METHODS } from '@/data/StacksData'
 import { stacksAddresses, stacksWallet } from '@/utils/StacksWalletUtil'
+import { getWallet as getSuiWallet } from '@/utils/SuiWalletUtil'
 import StacksLib from '@/lib/StacksLib'
 
 const StyledText = styled(Text, {
@@ -357,7 +358,15 @@ export default function SessionProposalModal() {
             )
           })
         }
+
+        if (namespaces.sui) {
+          const suiWallet = await getSuiWallet()
+          const accounts = suiWallet.getAccounts()
+          sessionProperties.sui_getAccounts = JSON.stringify(accounts)
+        }
+
         console.log('sessionProperties', sessionProperties)
+
         await walletkit.approveSession({
           id: proposal.id,
           namespaces,
