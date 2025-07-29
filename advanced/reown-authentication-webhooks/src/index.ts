@@ -14,22 +14,21 @@ app.use(express.json());
 
 // Add POST request handler for the webhook
 app.post('/handler', (req, res) => {
+  // Print the request body
+  const body = req.body as ReownAuthenticationWebhooks.RequestBody;
+  console.log(`New Event Received [${body.uuid}] [${body.event}]`);
+  console.log(body);
+
   // Validate signature of the request
   const signature = req.get('x-webhook-signature'); // Get message signature from header
   if (
     !signature ||
     !isWebhookSignatureValid({ body: JSON.stringify(req.body), signature })
   ) {
-    console.error('Invalid webhook signature');
+    console.error('Error: Invalid webhook signature');
     res.status(401).send('Unauthorized');
     return;
   }
-
-  // Print the request body
-  const body = req.body as ReownAuthenticationWebhooks.RequestBody;
-  console.log(`New Event Received [${body.uuid}] [${body.event}]`);
-  console.log(body);
-  console.log('---');
 
   switch (body.event) {
     case 'ACCOUNT_CREATED':
@@ -38,14 +37,11 @@ app.post('/handler', (req, res) => {
     case 'ACCOUNT_CONNECTED':
       // Add your logic for account connection
       break;
-    case 'ACCOUNT_METADATA_CHANGED':
-      // Add your logic for account metadata change
-      break;
-    case 'ACCOUNT_EMAIL_CHANGED':
-      // Add your logic for account email change
-      break;
     case 'ACCOUNT_DELETED':
       // Add your logic for account deletion
+      break;
+    case 'PROFILE_UPDATED':
+      // Add your logic for profile update
       break;
     default:
       console.error('Unknown event');
@@ -54,6 +50,8 @@ app.post('/handler', (req, res) => {
   }
 
   res.status(200).send('OK');
+
+  console.log('---');
 });
 
 // Start the server

@@ -1,16 +1,11 @@
 export namespace ReownAuthenticationWebhooks {
-  export type EventName =
-    | 'ACCOUNT_CREATED'
-    | 'ACCOUNT_CONNECTED'
-    | 'ACCOUNT_METADATA_CHANGED'
-    | 'ACCOUNT_EMAIL_CHANGED'
-    | 'ACCOUNT_DELETED';
+  export type EventName = RequestBody['event'];
 
   export type RequestBody = {
     uuid: string;
   } & (
     | {
-        event: Omit<EventName, 'ACCOUNT_DELETED'>;
+        event: 'ACCOUNT_CREATED';
         data: {
           accountUuid: string;
           createdAt: string;
@@ -19,17 +14,34 @@ export namespace ReownAuthenticationWebhooks {
           address: string;
           namespace: string;
           chainId: string;
-          profile: {
-            profileUuid: string;
-            metadata: unknown;
-            email: string | null;
-          };
+          profileUuid: string;
+          metadata: unknown;
+          email: string | null;
         };
       }
     | {
-        event: Extract<EventName, 'ACCOUNT_DELETED'>;
+        event: 'ACCOUNT_CONNECTED';
         data: {
           accountUuid: string;
+          lastSignedIn: string;
+          address: string;
+          namespace: string;
+          chainId: string;
+        };
+      }
+    | {
+        event: 'ACCOUNT_DELETED';
+        data: {
+          accountUuid: string;
+        };
+      }
+    | {
+        event: 'PROFILE_UPDATED';
+        data: {
+          profileUuid: string;
+          metadata: unknown;
+          email: string | null;
+          affectedAccounts: string[];
         };
       }
   );
