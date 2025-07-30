@@ -151,11 +151,9 @@ Triggered when a new user account is created through authentication.
   address: string; // Wallet address
   namespace: string; // Chain namespace (e.g., "eip155", "solana")
   chainId: string; // Chain identifier
-  profile: {
-    profileUuid: string; // Unique profile identifier
-    metadata: unknown; // Custom user metadata
-    email: string | null; // User email (if provided)
-  }
+  profileUuid: string; // Unique profile identifier
+  metadata: unknown; // Custom user metadata
+  email: string | null; // User email (if provided)
 }
 ```
 
@@ -163,21 +161,34 @@ Triggered when a new user account is created through authentication.
 
 Triggered when a user connects/signs in to their existing account.
 
-**Data Structure:** Same as `ACCOUNT_CREATED`
+**Data Structure:**
 
-### 3. ACCOUNT_METADATA_CHANGED
+```typescript
+{
+  accountUuid: string; // Unique account identifier
+  lastSignedIn: string; // ISO timestamp of last sign-in
+  address: string; // Wallet address
+  namespace: string; // Chain namespace (e.g., "eip155", "solana")
+  chainId: string; // Chain identifier
+}
+```
 
-Triggered when user metadata is updated.
+### 3. PROFILE_UPDATED
 
-**Data Structure:** Same as `ACCOUNT_CREATED`
+Triggered when user profile information (metadata or email) is updated.
 
-### 4. ACCOUNT_EMAIL_CHANGED
+**Data Structure:**
 
-Triggered when user email is updated.
+```typescript
+{
+  profileUuid: string; // Unique profile identifier
+  metadata: unknown; // Updated user metadata
+  email: string | null; // Updated user email (if provided)
+  affectedAccounts: string[]; // Array of account UUIDs affected by this profile update
+}
+```
 
-**Data Structure:** Same as `ACCOUNT_CREATED`
-
-### 5. ACCOUNT_DELETED
+### 4. ACCOUNT_DELETED
 
 Triggered when a user account is deleted.
 
