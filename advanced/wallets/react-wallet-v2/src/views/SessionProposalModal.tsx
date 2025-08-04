@@ -365,6 +365,11 @@ export default function SessionProposalModal() {
           sessionProperties.sui_getAccounts = JSON.stringify(accounts)
         }
 
+        if (namespaces.stacks) {
+          const accounts = stacksWallet.getAccounts()
+          sessionProperties.stacks_getAccounts = JSON.stringify(accounts)
+        }
+
         console.log('sessionProperties', sessionProperties)
 
         await walletkit.approveSession({
