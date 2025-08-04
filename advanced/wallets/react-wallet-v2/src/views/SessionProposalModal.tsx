@@ -367,7 +367,7 @@ export default function SessionProposalModal() {
 
         if (namespaces.stacks) {
           const accounts = stacksWallet.getAccounts()
-          sessionProperties.stacks_getAccounts = JSON.stringify(accounts)
+          sessionProperties.stacks_getAddresses = JSON.stringify(accounts)
         }
 
         console.log('sessionProperties', sessionProperties)
