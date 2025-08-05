@@ -21,7 +21,7 @@ export async function createOrRestoreStacksWallet() {
     localStorage.setItem('STACKS_MNEMONIC_1', wallet1.getMnemonic())
     console.log('STACKS_MNEMONIC_1', wallet1.getMnemonic())
   }
-  console.log('stacks addresses', wallet1.addresses)
+  console.log('stacks addresses', wallet1.getAddresses())
 
   const addresses = wallet1.getAddresses()
 
