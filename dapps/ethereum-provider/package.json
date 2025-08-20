@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@walletconnect/ethereum-provider": "^2.9.1",
+    "@walletconnect/ethereum-provider": "^2.21.5",
     "@walletconnect/modal": "^2.6.1",
     "ethers": "^5.7.1",
     "react": "^18.2.0",
