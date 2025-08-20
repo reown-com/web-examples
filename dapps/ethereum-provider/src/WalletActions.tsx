@@ -3,6 +3,7 @@ import BalanceComponent from "./components/BalanceComponent";
 import AccountsComponent from "./components/AccountsComponent";
 import RequestAccountsComponent from "./components/RequestAccountsComponent";
 import RefreshComponent from "./components/RefreshComponent";
+import SendRawTransactionComponent from "./components/SendRawTransactionComponent";
 
 interface WalletActionsProps {
   provider: any;
@@ -25,6 +26,10 @@ const WalletActions: React.FC<WalletActionsProps> = ({
       <RequestAccountsComponent
         provider={provider}
         setConnected={setConnected}
+      />
+      <SendRawTransactionComponent
+        provider={provider}
+        ethersWeb3Provider={ethersWeb3Provider}
       />
       <RefreshComponent provider={provider} setConnected={setConnected} />
     </>
