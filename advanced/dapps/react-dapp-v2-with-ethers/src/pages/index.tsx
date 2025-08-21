@@ -161,7 +161,7 @@ const Home: NextPage = () => {
     const hexMsg = encoding.utf8ToHex(msg, true);
     const [address] = await web3Provider.listAccounts();
     const signature = await web3Provider.send("personal_sign", [hexMsg, address]);
-    const hashMsg = hashPersonalMessage(msg)
+    const hashMsg = hashPersonalMessage(msg);
     const valid = await verifySignature(address, signature, hashMsg, web3Provider);
     return {
       method: "personal_sign",
@@ -204,12 +204,7 @@ const Home: NextPage = () => {
     const signature = await web3Provider.send("eth_signTypedData", params);
 
     const hashedTypedData = hashTypedDataMessage(message);
-    const valid = await verifySignature(
-          address,
-          signature,
-          hashedTypedData,
-          web3Provider
-        );
+    const valid = await verifySignature(address, signature, hashedTypedData, web3Provider);
     return {
       method: "eth_signTypedData",
       address,
@@ -244,6 +239,7 @@ const Home: NextPage = () => {
 
   const getBlockchainActions = (chainId: string) => {
     const [namespace] = chainId.split(":");
+    console.log("namespace", namespace);
     switch (namespace) {
       case "eip155":
         return getEthereumActions();

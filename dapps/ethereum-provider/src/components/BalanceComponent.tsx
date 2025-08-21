@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 
 interface BalanceComponentProps {
   provider: any;
-  ethersWeb3Provider: ethers.providers.Web3Provider;
+  ethersWeb3Provider: ethers.BrowserProvider;
 }
 
 const BalanceComponent: React.FC<BalanceComponentProps> = ({
@@ -16,11 +16,11 @@ const BalanceComponent: React.FC<BalanceComponentProps> = ({
   const getBalance = async () => {
     setIsLoading(true);
     try {
-      const balanceFromEthers = await ethersWeb3Provider
-        .getSigner(provider.accounts[0])
-        .getBalance();
-      const remainder = balanceFromEthers.mod(1e14);
-      setBalance(ethers.utils.formatEther(balanceFromEthers.sub(remainder)));
+      const signer = await ethersWeb3Provider.getSigner();
+      const address = await signer.getAddress();
+      const balanceFromEthers = await ethersWeb3Provider.getBalance(address);
+      const remainder = balanceFromEthers % BigInt(1e14);
+      setBalance(ethers.formatEther(balanceFromEthers - remainder));
     } catch (error) {
       console.error("Error fetching balance:", error);
     } finally {

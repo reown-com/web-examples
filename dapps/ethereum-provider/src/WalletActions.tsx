@@ -4,10 +4,13 @@ import AccountsComponent from "./components/AccountsComponent";
 import RequestAccountsComponent from "./components/RequestAccountsComponent";
 import RefreshComponent from "./components/RefreshComponent";
 import SendRawTransactionComponent from "./components/SendRawTransactionComponent";
+import SignTransactionComponent from "./components/SignTransactionComponent";
+import SignTypedDataComponent from "./components/SignTypedDataComponent";
+import { ethers } from "ethers";
 
 interface WalletActionsProps {
   provider: any;
-  ethersWeb3Provider: any;
+  ethersWeb3Provider: ethers.BrowserProvider;
   setConnected: (connected: boolean) => void;
 }
 
@@ -27,7 +30,15 @@ const WalletActions: React.FC<WalletActionsProps> = ({
         provider={provider}
         setConnected={setConnected}
       />
+      <SignTransactionComponent
+        provider={provider}
+        ethersWeb3Provider={ethersWeb3Provider}
+      />
       <SendRawTransactionComponent
+        provider={provider}
+        ethersWeb3Provider={ethersWeb3Provider}
+      />
+      <SignTypedDataComponent
         provider={provider}
         ethersWeb3Provider={ethersWeb3Provider}
       />

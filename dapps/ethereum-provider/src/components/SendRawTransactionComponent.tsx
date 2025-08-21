@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 
 interface SendRawTransactionComponentProps {
   provider: any;
-  ethersWeb3Provider: ethers.providers.Web3Provider;
+  ethersWeb3Provider: ethers.BrowserProvider;
 }
 
 const SendRawTransactionComponent: React.FC<
@@ -13,10 +13,12 @@ const SendRawTransactionComponent: React.FC<
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [latestTransaction, setLatestTransaction] = useState<any>(null);
+  const [signedTransactionInput, setSignedTransactionInput] =
+    useState<string>("");
 
   const getLatestTransaction = async () => {
     try {
-      const signer = ethersWeb3Provider.getSigner();
+      const signer = await ethersWeb3Provider.getSigner();
       const address = await signer.getAddress();
 
       // Get the latest block number
@@ -48,39 +50,20 @@ const SendRawTransactionComponent: React.FC<
   };
 
   const sendRawTransaction = async () => {
+    if (!signedTransactionInput.trim()) {
+      setError("Please enter a signed transaction");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setTransactionHash(null);
 
     try {
-      // Get the signer
-      const signer = ethersWeb3Provider.getSigner();
-
-      // Create a simple transaction (sending 0 ETH to yourself)
-      const address = await signer.getAddress();
-      const nonce = await ethersWeb3Provider.getTransactionCount(address);
-      const gasPrice = await ethersWeb3Provider.getGasPrice();
-
-      // Create transaction object for RPC call (all values must be hex strings)
-      const transaction = {
-        to: address, // Send to yourself as example
-        value: "0x0", // 0 ETH in hex
-        gas: "0x5208", // 21000 gas limit in hex
-        gasPrice: gasPrice.toHexString(),
-        nonce: `0x${nonce.toString(16)}`, // Convert to hex with 0x prefix
-        chainId: "0x1", // Mainnet in hex
-      };
-
-      // Sign the transaction using the provider's eth_signTransaction method
-      const signedTransaction = await provider.request({
-        method: "eth_signTransaction",
-        params: [transaction],
-      });
-
-      // Send the raw transaction
+      // Send the raw transaction using eth_sendRawTransaction
       const txResponse = await provider.request({
         method: "eth_sendRawTransaction",
-        params: [signedTransaction],
+        params: [signedTransactionInput],
       });
 
       setTransactionHash(txResponse as string);
@@ -95,41 +78,131 @@ const SendRawTransactionComponent: React.FC<
     }
   };
 
+  const clearResults = () => {
+    setTransactionHash(null);
+    setError(null);
+    setSignedTransactionInput("");
+  };
+
   return (
-    <div>
-      <button onClick={getLatestTransaction}>Get Latest Transaction</button>
-      <button onClick={sendRawTransaction} disabled={isLoading}>
+    <div
+      style={{
+        border: "1px solid #ccc",
+        padding: "20px",
+        margin: "10px",
+        borderRadius: "8px",
+      }}
+    >
+      <h3>Send Raw Transaction (eth_sendRawTransaction)</h3>
+      <p>
+        This demonstrates the <code>eth_sendRawTransaction</code> method that
+        submits a signed transaction to the network. First sign a transaction
+        using the Sign Transaction component above, then paste the signed
+        transaction here.
+      </p>
+
+      <div style={{ marginBottom: "15px" }}>
+        <label
+          htmlFor="signedTxInput"
+          style={{ display: "block", marginBottom: "5px" }}
+        >
+          <strong>Signed Transaction (hex):</strong>
+        </label>
+        <textarea
+          id="signedTxInput"
+          value={signedTransactionInput}
+          onChange={(e) => setSignedTransactionInput(e.target.value)}
+          placeholder="Paste the signed transaction hex string here..."
+          style={{
+            width: "100%",
+            height: "80px",
+            fontFamily: "monospace",
+            fontSize: "12px",
+            padding: "8px",
+          }}
+        />
+      </div>
+
+      <button
+        onClick={sendRawTransaction}
+        disabled={isLoading || !signedTransactionInput.trim()}
+      >
         {isLoading ? "Sending..." : "Send Raw Transaction"}
       </button>
+
+      <button onClick={clearResults} style={{ marginLeft: "10px" }}>
+        Clear Results
+      </button>
+
+      <button onClick={getLatestTransaction} style={{ marginLeft: "10px" }}>
+        Get Latest Transaction
+      </button>
+
       {latestTransaction && (
-        <div>
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "15px",
+            backgroundColor: "#f5f5f5",
+            borderRadius: "5px",
+          }}
+        >
           <h4>Latest Transaction:</h4>
           <p>Hash: {latestTransaction.hash}</p>
           <p>From: {latestTransaction.from}</p>
           <p>To: {latestTransaction.to}</p>
-          <p>Value: {ethers.utils.formatEther(latestTransaction.value)} ETH</p>
+          <p>Value: {ethers.formatEther(latestTransaction.value)} ETH</p>
           <p>Nonce: {latestTransaction.nonce}</p>
           <p>
-            Gas Price:{" "}
-            {ethers.utils.formatUnits(latestTransaction.gasPrice, "gwei")} Gwei
+            Gas Price: {ethers.formatUnits(latestTransaction.gasPrice, "gwei")}{" "}
+            Gwei
           </p>
         </div>
       )}
+
       {transactionHash && (
-        <p>
-          Transaction Hash:{" "}
-          <a
-            href={`https://etherscan.io/tx/${transactionHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {transactionHash}
-          </a>
-        </p>
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "15px",
+            backgroundColor: "#e8f5e8",
+            borderRadius: "5px",
+          }}
+        >
+          <h4>Transaction Sent Successfully!</h4>
+          <p>
+            Transaction Hash:{" "}
+            <a
+              href={`https://etherscan.io/tx/${transactionHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {transactionHash}
+            </a>
+          </p>
+        </div>
       )}
-      {error && <p style={{ color: "red" }}>Error: {error}</p>}
-      {!transactionHash && !error && (
-        <p>Click 'Send Raw Transaction' to send a signed transaction</p>
+
+      {error && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "15px",
+            backgroundColor: "#ffe6e6",
+            borderRadius: "5px",
+          }}
+        >
+          <h4 style={{ color: "red" }}>Error:</h4>
+          <p style={{ color: "red" }}>{error}</p>
+        </div>
+      )}
+
+      {!transactionHash && !error && !isLoading && (
+        <p style={{ marginTop: "20px", color: "#666" }}>
+          First sign a transaction using the Sign Transaction component above,
+          then paste the signed transaction hex string and click 'Send Raw
+          Transaction'.
+        </p>
       )}
     </div>
   );
