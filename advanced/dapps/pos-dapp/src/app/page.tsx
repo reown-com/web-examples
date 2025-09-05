@@ -49,14 +49,29 @@ type PaymentState =
 let appkit: AppKit | undefined;
 let posClient: IPOSClient | undefined;
 
+// Utility function to validate Ethereum address
+const isValidEthereumAddress = (address: string): boolean => {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+};
+
 export default function Home() {
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
   const [transactionHash, setTransactionHash] = useState("");
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkKey>("base");
   const [amount, setAmount] = useState("1.00");
   const [isInitialized, setIsInitialized] = useState(false);
+  const [merchantAddress, setMerchantAddress] = useState("");
+  const [isSetupComplete, setIsSetupComplete] = useState(false);
+  const [tempMerchantAddress, setTempMerchantAddress] = useState("");
 
   useEffect(() => {
+    // Check for saved merchant address in localStorage
+    const savedMerchantAddress = localStorage.getItem("merchantAddress");
+    if (savedMerchantAddress && isValidEthereumAddress(savedMerchantAddress)) {
+      setMerchantAddress(savedMerchantAddress);
+      setIsSetupComplete(true);
+    }
+
     if (appkit) return;
 
     setPaymentState("connecting");
@@ -209,14 +224,13 @@ export default function Home() {
       return;
     }
 
-    const network = NETWORKS[selectedNetwork];
-    setPaymentState("payment_requesting");
-
-    const recipient = prompt("Enter the recipient address");
-    if (!recipient) {
-      toast.error("No recipient found for the selected network: " + network.id);
+    if (!merchantAddress) {
+      toast.error("Merchant address not configured");
       return;
     }
+
+    const network = NETWORKS[selectedNetwork];
+    setPaymentState("payment_requesting");
 
     const paymentIntents: POSClientTypes.PaymentIntent[] = [
       {
@@ -227,7 +241,7 @@ export default function Home() {
           address: network.usdcAddress,
         },
         amount: amount,
-        recipient: recipient.trim(),
+        recipient: `${network.id}:${merchantAddress.trim()}`,
       },
     ];
 
@@ -238,7 +252,7 @@ export default function Home() {
       toast.error("Failed to initiate payment");
       setPaymentState("payment_failed");
     }
-  }, [posClient, isInitialized, amount, selectedNetwork]);
+  }, [posClient, isInitialized, amount, selectedNetwork, merchantAddress]);
 
   const resetTransaction = () => {
     setPaymentState("idle");
@@ -249,6 +263,33 @@ export default function Home() {
     setPaymentState("idle");
     setTransactionHash("");
     posClient?.restart();
+  };
+
+  const handleSetupMerchant = () => {
+    if (!tempMerchantAddress.trim()) {
+      toast.error("Please enter a merchant address");
+      return;
+    }
+
+    if (!isValidEthereumAddress(tempMerchantAddress.trim())) {
+      toast.error("Please enter a valid Ethereum address (0x...)");
+      return;
+    }
+
+    const address = tempMerchantAddress.trim();
+    setMerchantAddress(address);
+    localStorage.setItem("merchantAddress", address);
+    setIsSetupComplete(true);
+    setTempMerchantAddress("");
+    toast.success("Merchant address configured successfully!", {
+      icon: "✅",
+      duration: 3000,
+    });
+  };
+
+  const handleEditMerchant = () => {
+    setTempMerchantAddress(merchantAddress);
+    setIsSetupComplete(false);
   };
 
   const getStatusMessage = () => {
@@ -268,14 +309,99 @@ export default function Home() {
     }
   };
 
+  // Setup Screen Component
+  if (!isSetupComplete) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
+        <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+          {/* Setup Header */}
+          <div className="bg-blue-600 dark:bg-blue-700 text-white p-6 text-center">
+            <h1 className="text-2xl font-bold">POS Terminal Setup</h1>
+            <p className="text-blue-100 text-sm mt-1">
+              Configure your merchant address to receive payments
+            </p>
+          </div>
+
+          {/* Setup Form */}
+          <div className="p-6 space-y-6">
+            <div className="text-center">
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                🔧 <span className="ml-2">Setup Required</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Merchant Wallet Address
+              </label>
+              <input
+                type="text"
+                value={tempMerchantAddress}
+                onChange={(e) => setTempMerchantAddress(e.target.value)}
+                placeholder="0x1234567890123456789012345678901234567890"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Enter the Ethereum address where you want to receive USDC
+                payments
+              </p>
+            </div>
+
+            <button
+              onClick={handleSetupMerchant}
+              disabled={!tempMerchantAddress.trim()}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg"
+            >
+              Configure Terminal
+            </button>
+          </div>
+        </div>
+
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: "white",
+              color: "black",
+              fontWeight: "500",
+              borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            },
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6">
       <div className="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-blue-600 dark:bg-blue-700 text-white p-6 text-center">
-          <h1 className="text-2xl font-bold">Sample POS Terminal</h1>
-          <p className="text-blue-100 text-sm mt-1">
-            Crypto Payment System via the WalletConnect network
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold">POS Terminal</h1>
+              <p className="text-blue-100 text-xs mt-1">
+                Crypto Payment System via WalletConnect
+              </p>
+            </div>
+            <button
+              onClick={handleEditMerchant}
+              className="text-blue-100 hover:text-white text-xs underline"
+            >
+              Edit Address
+            </button>
+          </div>
+        </div>
+
+        {/* Merchant Address Display */}
+        <div className="p-4 bg-blue-50 dark:bg-blue-900 border-b border-gray-200 dark:border-gray-700">
+          <p className="text-xs text-blue-700 dark:text-blue-300 mb-1">
+            Merchant Address:
+          </p>
+          <p className="text-xs font-mono text-blue-800 dark:text-blue-200 break-all">
+            {merchantAddress}
           </p>
         </div>
 
