@@ -212,11 +212,7 @@ export default function Home() {
     const network = NETWORKS[selectedNetwork];
     setPaymentState("payment_requesting");
 
-    const recipient = posClient.engine.signClient.session
-      .getAll()[0]
-      .namespaces.eip155.accounts.find((account) =>
-        account.includes(`${network.id}:`)
-      );
+    const recipient = prompt("Enter the recipient address");
     if (!recipient) {
       toast.error("No recipient found for the selected network: " + network.id);
       return;
@@ -231,7 +227,7 @@ export default function Home() {
           address: network.usdcAddress,
         },
         amount: amount,
-        recipient: recipient,
+        recipient: recipient.trim(),
       },
     ];
 
