@@ -71,7 +71,8 @@ export const SUI_MAINNET_CHAINS = { ...SUI_MAINNET } as Record<
 export const SUI_SIGNING_METHODS = {
   SUI_SIGN_TRANSACTION: 'sui_signTransaction',
   SUI_SIGN_AND_EXECUTE_TRANSACTION: 'sui_signAndExecuteTransaction',
-  SUI_SIGN_PERSONAL_MESSAGE: 'sui_signPersonalMessage'
+  SUI_SIGN_PERSONAL_MESSAGE: 'sui_signPersonalMessage',
+  SUI_GET_ACCOUNTS: 'sui_getAccounts'
 }
 
 /**

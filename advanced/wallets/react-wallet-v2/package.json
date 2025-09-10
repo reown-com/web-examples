@@ -35,7 +35,8 @@
     "@rhinestone/module-sdk": "0.1.25",
     "@solana/spl-token": "^0.4.13",
     "@solana/web3.js": "1.98.2",
-    "@stacks/wallet-sdk": "^7.0.6",
+    "@stacks/transactions": "7.1.0",
+    "@stacks/wallet-sdk": "7.1.0",
     "@taquito/signer": "^15.1.0",
     "@taquito/taquito": "^15.1.0",
     "@types/semver": "^7.5.8",
@@ -68,7 +69,8 @@
     "tronweb": "^4.4.0",
     "valtio": "1.13.2",
     "viem": "2.17.8",
-    "webauthn-p256": "0.0.2"
+    "webauthn-p256": "0.0.2",
+    "@walletconnect/utils": "2.21.3"
   },
   "devDependencies": {
     "@types/node": "17.0.35",
@@ -80,7 +82,8 @@
     "eslint-plugin-package-json": "^0.13.1",
     "jsonc-eslint-parser": "^2.4.0",
     "prettier": "2.6.2",
-    "typescript": "5.2.2"
+    "typescript": "5.2.2",
+    "@walletconnect/types": "2.21.3"
   },
   "resolutions": {
     "@walletconnect/core": "2.21.8",

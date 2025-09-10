@@ -1,6 +1,6 @@
 import * as bip39 from 'bip39'
 import { mnemonicToSeedSync } from 'bip39'
-import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519'
+import { Ed25519Keypair, Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519'
 import { verifyPersonalMessageSignature } from '@mysten/sui/verify'
 import { derivePath } from 'ed25519-hd-key'
 import { SerialTransactionExecutor, Transaction } from '@mysten/sui/transactions'
@@ -32,8 +32,8 @@ const SUI_PATH = "m/44'/784'/0'/0'/0'"
 export default class SuiLib {
   private keypair: Ed25519Keypair
   private mnemonic: string
-  private address: string
   private suiClients: Record<string, SuiClient> = {}
+  private publicKey: Ed25519PublicKey
 
   constructor(mnemonic?: string) {
     this.mnemonic = mnemonic ? mnemonic : bip39.generateMnemonic()
@@ -41,20 +41,28 @@ export default class SuiLib {
     const { key } = derivePath(SUI_PATH, seed.toString('hex'))
 
     this.keypair = Ed25519Keypair.fromSecretKey(new Uint8Array(key))
-    this.address = this.keypair.getPublicKey().toSuiAddress()
-    console.log('Sui Address:', this.address)
+    this.publicKey = this.keypair.getPublicKey()
+    console.log('Sui Address:', this.publicKey.toSuiAddress())
   }
 
   static async init({ mnemonic }: IInitArguments) {
     return new SuiLib(mnemonic)
   }
 
+  public getPublicKey() {
+    return this.publicKey.toBase64()
+  }
+
   public getAddress() {
-    return this.address
+    return this.publicKey.toSuiAddress()
   }
 
   public getMnemonic() {
     return this.mnemonic
+  }
+
+  public getAccounts(): { address: string; pubkey: string }[] {
+    return [{ address: this.getAddress(), pubkey: this.getPublicKey() }]
   }
 
   public async signMessage({ message }: ISignMessageArguments) {
