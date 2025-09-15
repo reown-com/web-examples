@@ -14,6 +14,7 @@ const btcLogo = getChainMetadata(
   "bip122:000000000933ea01ad0ee984209779ba"
 ).logo;
 const suiLogo = getChainMetadata("sui:mainnet").logo;
+const tronLogo = getChainMetadata("tron:0x2b6653dc").logo;
 const SAsset = styled.div`
   width: 100%;
   padding: 20px;
@@ -55,6 +56,8 @@ function getAssetIcon(asset: AssetData): JSX.Element {
       return <Icon src={btcLogo} />;
     case "sui":
       return <Icon src={suiLogo} />;
+    case "trx":
+      return <Icon src={tronLogo} />;
     default:
       return <Icon src={"/assets/eth20.svg"} />;
   }
