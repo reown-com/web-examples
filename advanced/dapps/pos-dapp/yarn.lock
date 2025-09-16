@@ -1099,10 +1099,10 @@
     "@walletconnect/safe-json" "^1.0.2"
     pino "7.11.0"
 
-"@walletconnect/pos-client@0.0.0-canary.0":
-  version "0.0.0-canary.0"
-  resolved "https://registry.yarnpkg.com/@walletconnect/pos-client/-/pos-client-0.0.0-canary.0.tgz#ec85d59517cd34e49a5ff4a617121050c760546a"
-  integrity sha512-4muQcyc1ATZPjEqiILSgTdUx99D2olVW0/NydXF9L/b0z65a0ihfDjSQG/jFcQ7ai6n3pwh7N6n6pH/QaRPo+A==
+"@walletconnect/pos-client@0.0.0-canary.1":
+  version "0.0.0-canary.1"
+  resolved "https://registry.yarnpkg.com/@walletconnect/pos-client/-/pos-client-0.0.0-canary.1.tgz#89e1440fac9f0ebb62290b9bfff3557a44a48d1d"
+  integrity sha512-lDPsgqVOU0MSCSQNFEHyJ3OxoGF9uUXKUdlExcvUtJ4hZG2audX+/J7noJUFGNiZ7Y+7dpErtcDcFBQZFFenhA==
   dependencies:
     "@walletconnect/core" "2.21.8"
     "@walletconnect/jsonrpc-provider" "1.0.14"

@@ -46,6 +46,22 @@ type PaymentState =
   | "payment_completed"
   | "payment_failed";
 
+type PaymentItemStatus = "idle" | "pending" | "rejected" | "completed";
+
+type PaymentItem = {
+  id: string;
+  amount: string;
+  network: NetworkKey;
+  status: PaymentItemStatus;
+};
+
+type TransactionStatus = "pending" | "success" | "failed";
+
+type TransactionHash = {
+  hash: string;
+  status: TransactionStatus;
+};
+
 let appkit: AppKit | undefined;
 let posClient: IPOSClient | undefined;
 
@@ -56,9 +72,12 @@ const isValidEthereumAddress = (address: string): boolean => {
 
 export default function Home() {
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
-  const [transactionHash, setTransactionHash] = useState("");
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkKey>("base");
-  const [amount, setAmount] = useState("1.00");
+  const [transactionHashes, setTransactionHashes] = useState<TransactionHash[]>(
+    []
+  );
+  const [paymentItems, setPaymentItems] = useState<PaymentItem[]>([
+    { id: "1", amount: "1.00", network: "base", status: "idle" },
+  ]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [merchantAddress, setMerchantAddress] = useState("");
   const [isSetupComplete, setIsSetupComplete] = useState(false);
@@ -91,6 +110,9 @@ export default function Home() {
         url: "https://appkit.reown.com",
       },
       deviceId: "pos-terminal-1234",
+      loggerOptions: {
+        posLevel: "debug",
+      },
     })
       .then((_posClient) => {
         posClient = _posClient;
@@ -152,9 +174,20 @@ export default function Home() {
       setPaymentState("payment_failed");
     });
 
-    posClient.on("payment_failed", (paymentFailed) => {
-      console.log("paymentFailed", paymentFailed);
-      toast.error("Payment failed", {
+    posClient.on("payment_failed", (params) => {
+      console.log("paymentFailed", params);
+      const { transaction } = params;
+
+      // Update transaction status to failed
+      setTransactionHashes((prev) =>
+        prev.map((tx) =>
+          tx.hash === transaction
+            ? { ...tx, status: "failed" as TransactionStatus }
+            : tx
+        )
+      );
+
+      toast.error("Payment failed: " + transaction, {
         icon: "💳",
         duration: 4000,
       });
@@ -164,12 +197,21 @@ export default function Home() {
 
     posClient.on("payment_broadcasted", (paymentBroadcasted) => {
       console.log("paymentBroadcasted", paymentBroadcasted);
-      toast.success("Payment broadcasted to network", {
-        icon: "📡",
-        duration: 4000,
+      setTransactionHashes((prev) => {
+        const newTransaction: TransactionHash = {
+          hash: paymentBroadcasted,
+          status: "pending",
+        };
+        const newHashes = [...prev, newTransaction];
+
+        toast.success(`Payment ${newHashes.length} broadcasted to network`, {
+          icon: "📡",
+          duration: 4000,
+        });
+
+        return newHashes;
       });
       appkit?.close();
-      setTransactionHash(paymentBroadcasted);
       setPaymentState("payment_processing");
     });
 
@@ -184,6 +226,33 @@ export default function Home() {
 
     posClient.on("payment_successful", (paymentSuccessful) => {
       console.log("paymentSuccessful", paymentSuccessful);
+      const { transaction } = paymentSuccessful;
+
+      // Update transaction status to successful
+      setTransactionHashes((prev) =>
+        prev.map((tx) =>
+          tx.hash === transaction
+            ? { ...tx, status: "success" as TransactionStatus }
+            : tx
+        )
+      );
+
+      // Mark the first pending payment item as completed
+      // In a real scenario, you'd need better linking between transactions and items
+      setPaymentItems((prev) => {
+        const pendingIndex = prev.findIndex(
+          (item) => item.status === "pending"
+        );
+        if (pendingIndex !== -1) {
+          return prev.map((item, index) =>
+            index === pendingIndex
+              ? { ...item, status: "completed" as PaymentItemStatus }
+              : item
+          );
+        }
+        return prev;
+      });
+
       toast.success("Payment completed successfully!", {
         icon: "✅",
         duration: 5000,
@@ -194,6 +263,25 @@ export default function Home() {
 
     posClient.on("payment_rejected", (paymentRejected) => {
       console.log("paymentRejected", paymentRejected);
+      const { paymentIntent } = paymentRejected;
+
+      // Find and mark the matching payment item as rejected
+      if (paymentIntent) {
+        setPaymentItems((prev) =>
+          prev.map((item) => {
+            const network = NETWORKS[item.network];
+            // Match by amount and network chain ID
+            if (
+              item.amount === paymentIntent.amount &&
+              network.id === paymentIntent.token?.network?.chainId
+            ) {
+              return { ...item, status: "rejected" as PaymentItemStatus };
+            }
+            return item;
+          })
+        );
+      }
+
       toast.error("Customer rejected payment", {
         icon: "❌",
         duration: 4000,
@@ -219,8 +307,18 @@ export default function Home() {
       return;
     }
 
-    if (!amount || parseFloat(amount) <= 0) {
-      toast.error("Please enter a valid amount");
+    if (paymentItems.length === 0) {
+      toast.error("Please add at least one payment item");
+      return;
+    }
+
+    // Validate all payment items
+    const hasInvalidItems = paymentItems.some(
+      (item) => !item.amount || parseFloat(item.amount) <= 0
+    );
+
+    if (hasInvalidItems) {
+      toast.error("Please enter valid amounts for all payment items");
       return;
     }
 
@@ -229,40 +327,94 @@ export default function Home() {
       return;
     }
 
-    const network = NETWORKS[selectedNetwork];
     setPaymentState("payment_requesting");
 
-    const paymentIntents: POSClientTypes.PaymentIntent[] = [
-      {
-        token: {
-          network: { name: network.name, chainId: network.id },
-          symbol: "USDC",
-          standard: "ERC20",
-          address: network.usdcAddress,
-        },
-        amount: amount,
-        recipient: `${network.id}:${merchantAddress.trim()}`,
-      },
-    ];
+    // Mark all payment items as pending
+    setPaymentItems((prev) =>
+      prev.map((item) => ({ ...item, status: "pending" as PaymentItemStatus }))
+    );
+
+    const paymentIntents: POSClientTypes.PaymentIntent[] = paymentItems.map(
+      (item) => {
+        const network = NETWORKS[item.network];
+        return {
+          token: {
+            network: { name: network.name, chainId: network.id },
+            symbol: "USDC",
+            standard: "ERC20",
+            address: network.usdcAddress,
+          },
+          amount: item.amount,
+          recipient: `${network.id}:${merchantAddress.trim()}`,
+        };
+      }
+    );
 
     try {
       await posClient.createPaymentIntent({ paymentIntents });
+      toast.success(
+        `Payment request created for ${paymentItems.length} item${
+          paymentItems.length > 1 ? "s" : ""
+        }`,
+        {
+          icon: "📋",
+          duration: 3000,
+        }
+      );
     } catch (error) {
       console.error("Payment initiation failed:", error);
       toast.error("Failed to initiate payment");
       setPaymentState("payment_failed");
     }
-  }, [posClient, isInitialized, amount, selectedNetwork, merchantAddress]);
+  }, [posClient, isInitialized, paymentItems, merchantAddress]);
+
+  const addPaymentItem = () => {
+    const newItem: PaymentItem = {
+      id: Date.now().toString(),
+      amount: "1.00",
+      network: "base",
+      status: "idle",
+    };
+    setPaymentItems((prev) => [...prev, newItem]);
+  };
+
+  const removePaymentItem = (id: string) => {
+    setPaymentItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const updatePaymentItem = (
+    id: string,
+    updates: Partial<Omit<PaymentItem, "id">>
+  ) => {
+    setPaymentItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
+    );
+  };
+
+  const getTotalAmount = () => {
+    return paymentItems.reduce(
+      (total, item) => total + parseFloat(item.amount || "0"),
+      0
+    );
+  };
 
   const resetTransaction = () => {
     setPaymentState("idle");
-    setTransactionHash("");
+    setTransactionHashes([]);
+    // Reset all payment item statuses to idle
+    setPaymentItems((prev) =>
+      prev.map((item) => ({ ...item, status: "idle" as PaymentItemStatus }))
+    );
   };
 
-  const restart = () => {
+  const restart = (reinit = true) => {
     setPaymentState("idle");
-    setTransactionHash("");
-    posClient?.restart();
+    setTransactionHashes([]);
+    // Reset all payment item statuses to idle
+    setPaymentItems((prev) =>
+      prev.map((item) => ({ ...item, status: "idle" as PaymentItemStatus }))
+    );
+    posClient?.restart({ reinit: reinit });
   };
 
   const handleSetupMerchant = () => {
@@ -430,66 +582,194 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Transaction Hash Display */}
-        {transactionHash && (
+        {/* Transaction Hashes Display */}
+        {transactionHashes.length > 0 && (
           <div className="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Transaction Hash:
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Transaction Hash{transactionHashes.length > 1 ? "es" : ""}:
             </p>
-            <p className="text-xs font-mono text-gray-600 dark:text-gray-400 break-all bg-white dark:bg-gray-800 p-2 rounded border">
-              {transactionHash}
-            </p>
+            <div className="space-y-2">
+              {transactionHashes.map((tx, index) => {
+                const getStatusIcon = (status: TransactionStatus) => {
+                  switch (status) {
+                    case "pending":
+                      return "⏳";
+                    case "success":
+                      return "✅";
+                    case "failed":
+                      return "❌";
+                    default:
+                      return "⏳";
+                  }
+                };
+
+                const getStatusColor = (status: TransactionStatus) => {
+                  switch (status) {
+                    case "pending":
+                      return "text-yellow-600 dark:text-yellow-400";
+                    case "success":
+                      return "text-green-600 dark:text-green-400";
+                    case "failed":
+                      return "text-red-600 dark:text-red-400";
+                    default:
+                      return "text-yellow-600 dark:text-yellow-400";
+                  }
+                };
+
+                return (
+                  <div
+                    key={tx.hash}
+                    className="bg-white dark:bg-gray-800 p-2 rounded border"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      {transactionHashes.length > 1 ? (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Transaction {index + 1}:
+                        </p>
+                      ) : (
+                        <div></div>
+                      )}
+                      <div
+                        className={`flex items-center space-x-1 ${getStatusColor(
+                          tx.status
+                        )}`}
+                      >
+                        <span className="text-sm">
+                          {getStatusIcon(tx.status)}
+                        </span>
+                        <span className="text-xs font-medium capitalize">
+                          {tx.status}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs font-mono text-gray-600 dark:text-gray-400 break-all">
+                      {tx.hash}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
-        {/* Payment Form */}
+        {/* Payment Items */}
         <div className="p-6 space-y-6">
-          {/* Amount Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Amount (USDC)
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                step="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-4 py-3 text-2xl font-bold text-center border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="0.00"
-                disabled={paymentState !== "idle"}
-              />
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-xl">
-                $
-              </div>
+          {/* Payment Items Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                Payment Items
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Total: ${getTotalAmount().toFixed(2)} USDC
+              </p>
             </div>
+            <button
+              onClick={addPaymentItem}
+              disabled={paymentState !== "idle"}
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+            >
+              + Add Item
+            </button>
           </div>
 
-          {/* Network Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Payment Network
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {Object.entries(NETWORKS).map(([key, network]) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedNetwork(key as NetworkKey)}
-                  disabled={paymentState !== "idle"}
-                  className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                    selectedNetwork === key
-                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                      : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
-                  } ${
-                    paymentState !== "idle"
-                      ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer"
-                  }`}
-                >
-                  {network.displayName}
-                </button>
-              ))}
-            </div>
+          {/* Payment Items List */}
+          <div className="space-y-4">
+            {paymentItems.map((item, index) => (
+              <div
+                key={item.id}
+                className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Item {index + 1}
+                    </span>
+                    {item.status === "rejected" && (
+                      <div className="flex items-center space-x-1 text-red-600 dark:text-red-400">
+                        <span className="text-sm">❌</span>
+                        <span className="text-xs font-medium">Rejected</span>
+                      </div>
+                    )}
+                    {item.status === "pending" && (
+                      <div className="flex items-center space-x-1 text-yellow-600 dark:text-yellow-400">
+                        <span className="text-sm">⏳</span>
+                        <span className="text-xs font-medium">Pending</span>
+                      </div>
+                    )}
+                    {item.status === "completed" && (
+                      <div className="flex items-center space-x-1 text-green-600 dark:text-green-400">
+                        <span className="text-sm">✅</span>
+                        <span className="text-xs font-medium">Completed</span>
+                      </div>
+                    )}
+                  </div>
+                  {paymentItems.length > 1 && (
+                    <button
+                      onClick={() => removePaymentItem(item.id)}
+                      disabled={paymentState !== "idle"}
+                      className="text-red-600 hover:text-red-700 disabled:text-gray-400 text-sm font-medium"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+
+                {/* Amount Input */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Amount (USDC)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={item.amount}
+                      onChange={(e) =>
+                        updatePaymentItem(item.id, { amount: e.target.value })
+                      }
+                      className="w-full px-3 py-2 text-lg font-medium text-center border border-gray-300 dark:border-gray-500 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-600 text-gray-900 dark:text-white"
+                      placeholder="0.00"
+                      disabled={paymentState !== "idle"}
+                    />
+                    <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                      $
+                    </div>
+                  </div>
+                </div>
+
+                {/* Network Selection */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    Network
+                  </label>
+                  <div className="grid grid-cols-3 gap-1">
+                    {Object.entries(NETWORKS).map(([key, network]) => (
+                      <button
+                        key={key}
+                        onClick={() =>
+                          updatePaymentItem(item.id, {
+                            network: key as NetworkKey,
+                          })
+                        }
+                        disabled={paymentState !== "idle"}
+                        className={`p-2 rounded-md border text-xs font-medium transition-all ${
+                          item.network === key
+                            ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                            : "bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500"
+                        } ${
+                          paymentState !== "idle"
+                            ? "opacity-50 cursor-not-allowed"
+                            : "cursor-pointer"
+                        }`}
+                      >
+                        {network.displayName}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Action Button */}
@@ -497,10 +777,20 @@ export default function Home() {
             {paymentState === "idle" || paymentState === "payment_failed" ? (
               <button
                 onClick={handlePayment}
-                disabled={!isInitialized || !amount || parseFloat(amount) <= 0}
+                disabled={
+                  !isInitialized ||
+                  paymentItems.length === 0 ||
+                  paymentItems.some(
+                    (item) => !item.amount || parseFloat(item.amount) <= 0
+                  ) ||
+                  getTotalAmount() <= 0
+                }
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg"
               >
                 Request Payment
+                {paymentItems.length > 1
+                  ? `s (${paymentItems.length} items)`
+                  : ""}
               </button>
             ) : paymentState === "payment_completed" ? (
               <button
@@ -513,7 +803,17 @@ export default function Home() {
               <div className="flex flex-col items-center justify-center py-4 space-y-4">
                 <Spinner />
                 <button
-                  onClick={restart}
+                  onClick={() => {
+                    restart(true);
+                  }}
+                  className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 underline underline-offset-2 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    restart(false);
+                  }}
                   className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 underline underline-offset-2 transition-colors"
                 >
                   Cancel & Restart

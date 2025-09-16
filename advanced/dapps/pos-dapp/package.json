@@ -14,7 +14,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hot-toast": "^2.6.0",
-    "@walletconnect/pos-client": "0.0.0-canary.0"
+    "@walletconnect/pos-client": "0.0.0-canary.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
