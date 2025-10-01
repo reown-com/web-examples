@@ -593,9 +593,9 @@ const Home: NextPage = () => {
   };
 
   const getTonActions = (): AccountAction[] => {
-    const onSendTransaction = async (chainId: string, address: string) => {
+    const onSendMessage = async (chainId: string, address: string) => {
       openRequestModal();
-      await tonRpc.testSendTransaction(chainId, address);
+      await tonRpc.testSendMessage(chainId, address);
     };
     const onSignData = async (chainId: string, address: string) => {
       openRequestModal();
@@ -603,8 +603,8 @@ const Home: NextPage = () => {
     };
     return [
       {
-        method: DEFAULT_TON_METHODS.TON_SEND_TRANSACTION,
-        callback: onSendTransaction,
+        method: DEFAULT_TON_METHODS.TON_SEND_MESSAGE,
+        callback: onSendMessage,
       },
       { method: DEFAULT_TON_METHODS.TON_SIGN_DATA, callback: onSignData },
     ];

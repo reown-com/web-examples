@@ -186,7 +186,7 @@ interface IContext {
     testSignMessage: TRpcRequestCallback;
   };
   tonRpc: {
-    testSendTransaction: TRpcRequestCallback;
+    testSendMessage: TRpcRequestCallback;
     testSignData: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
@@ -2276,12 +2276,12 @@ export function JsonRpcContextProvider({
   };
 
   const tonRpc = {
-    testSendTransaction: _createJsonRpcRequestHandler(
+    testSendMessage: _createJsonRpcRequestHandler(
       async (
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        const method = DEFAULT_TON_METHODS.TON_SEND_TRANSACTION;
+        const method = DEFAULT_TON_METHODS.TON_SEND_MESSAGE;
         const params = [
           {
             valid_until: Math.floor(Date.now() / 1000) + 300,

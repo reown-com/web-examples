@@ -258,7 +258,7 @@ export enum DEFAULT_TRON_EVENTS {}
  * TON
  */
 export enum DEFAULT_TON_METHODS {
-  TON_SEND_TRANSACTION = "SendTransaction",
+  TON_SEND_MESSAGE = "SendMessage",
   TON_SIGN_DATA = "SignData",
 }
 
