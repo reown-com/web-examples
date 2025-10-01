@@ -125,18 +125,18 @@ export default function OrderInfoCard({ orderId, expiry, selectedPayment, metada
         </div>
       </div>
       <Col css={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingLeft: '4px' }}>
-      <Row align="center" justify="space-between">
-        <Text color="$gray400">Merchant</Text>
-        <Text css={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {isVerified ? (
-            <BadgeCheckIcon color="green" size={16} />
-          ) : (
-            <BadgeAlertIcon color="#F5A623" size={16} />
-          )}
-          {name || 'Unknown'}
-        </Text>
-      </Row>
-      
+        <Row align="center" justify="space-between">
+          <Text color="$gray400">Merchant</Text>
+          <Text css={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {isVerified ? (
+              <BadgeCheckIcon color="green" size={16} />
+            ) : (
+              <BadgeAlertIcon color="#F5A623" size={16} />
+            )}
+            {name || 'Unknown'}
+          </Text>
+        </Row>
+
         {selectedPayment && selectedPayment.recipient && (
           <Row align="center" justify="space-between">
             <Text color="$gray400">Address</Text>
