@@ -28,14 +28,14 @@ export default class TonLib {
     let keypair: KeyPair
 
     if (secretKey) {
-      keypair = keyPairFromSecretKey(secretKey as any)
+      keypair = keyPairFromSecretKey(Buffer.from(secretKey))
     } else if (seed) {
-      keypair = keyPairFromSeed(Buffer.from(seed, 'hex') as any)
+      keypair = keyPairFromSeed(Buffer.from(seed, 'hex'))
     } else {
       // Generate random keypair using crypto.getRandomValues
       const secretKey = new Uint8Array(64)
       crypto.getRandomValues(secretKey)
-      keypair = keyPairFromSecretKey(secretKey as any)
+      keypair = keyPairFromSecretKey(Buffer.from(secretKey))
     }
 
     return new TonLib(keypair)
