@@ -53,9 +53,12 @@ export default class TonLib {
     params: TonLib.SignMessage['params']
   ): Promise<TonLib.SignMessage['result']> {
     const messageBytes = new TextEncoder().encode(params.message)
-    const signature = sign(messageBytes as any, this.keypair.secretKey as any)
+    const signature = sign(
+      messageBytes as unknown as Buffer,
+      this.keypair.secretKey as unknown as Buffer
+    )
 
-    return { signature: signature.toString('hex') }
+    return { signature: Buffer.from(signature as unknown as Uint8Array).toString('hex') }
   }
 
   public async sendTransaction(
@@ -68,10 +71,11 @@ export default class TonLib {
 
     const messages = (params.messages || []).map(m => {
       const bodyCell = m.payload ? Cell.fromBoc(Buffer.from(m.payload, 'base64'))[0] : undefined
+      const amountBigInt = typeof m.amount === 'string' ? BigInt(m.amount) : BigInt(m.amount)
       // NOTE: stateInit handling omitted in this example implementation
       return internal({
         to: Address.parse(m.address),
-        value: BigInt(m.amount as any),
+        value: amountBigInt,
         body: bodyCell
       })
     })
@@ -93,25 +97,23 @@ export default class TonLib {
 
   public async signData(params: TonLib.SignData['params']): Promise<TonLib.SignData['result']> {
     let bytes: Uint8Array
-    let payload = params as any
-    if ((params as any).type === 'text') {
-      bytes = new TextEncoder().encode((params as any).text)
-    } else if ((params as any).type === 'binary') {
-      bytes = base64ToBytes((params as any).bytes)
-    } else if ((params as any).type === 'cell') {
-      bytes = base64ToBytes((params as any).cell)
+    const payload: TonLib.SignData['params'] = params
+    if (params.type === 'text') {
+      bytes = new TextEncoder().encode(params.text)
+    } else if (params.type === 'binary') {
+      bytes = base64ToBytes(params.bytes)
+    } else if (params.type === 'cell') {
+      bytes = base64ToBytes(params.cell)
     } else {
       throw new Error('Unsupported sign data type')
     }
 
-    const signature = sign(bytes as any, this.keypair.secretKey as any)
-    const addressRaw = (this.wallet.address as any).toRawString
-      ? (this.wallet.address as any).toRawString()
-      : this.wallet.address.toString()
+    const signature = sign(bytes as unknown as Buffer, this.keypair.secretKey as unknown as Buffer)
+    const addressStr = this.wallet.address.toString()
 
     const result = {
       signature: bytesToBase64(signature as unknown as Uint8Array),
-      address: addressRaw,
+      address: addressStr,
       timestamp: Math.floor(Date.now() / 1000),
       domain:
         typeof window !== 'undefined' && window.location && window.location.hostname
@@ -124,7 +126,7 @@ export default class TonLib {
       const verified = ed25519.verify(
         base64ToBytes(result.signature),
         bytes,
-        new Uint8Array(this.keypair.publicKey as unknown as ArrayBufferLike)
+        new Uint8Array(this.keypair.publicKey)
       )
       console.log('TON signData verified:', verified)
     } catch (e) {
@@ -135,21 +137,17 @@ export default class TonLib {
 
   public verifyDataSignature(params: TonLib.SignData['params'], signatureBase64: string): boolean {
     let bytes: Uint8Array
-    if ((params as any).type === 'text') {
-      bytes = new TextEncoder().encode((params as any).text)
-    } else if ((params as any).type === 'binary') {
-      bytes = base64ToBytes((params as any).bytes)
-    } else if ((params as any).type === 'cell') {
-      bytes = base64ToBytes((params as any).cell)
+    if (params.type === 'text') {
+      bytes = new TextEncoder().encode(params.text)
+    } else if (params.type === 'binary') {
+      bytes = base64ToBytes(params.bytes)
+    } else if (params.type === 'cell') {
+      bytes = base64ToBytes(params.cell)
     } else {
       throw new Error('Unsupported sign data type')
     }
     const sig = base64ToBytes(signatureBase64)
-    return ed25519.verify(
-      sig,
-      bytes,
-      new Uint8Array(this.keypair.publicKey as unknown as ArrayBufferLike)
-    )
+    return ed25519.verify(sig, bytes, new Uint8Array(this.keypair.publicKey))
   }
 
   // no signAllTransactions in TON spec
