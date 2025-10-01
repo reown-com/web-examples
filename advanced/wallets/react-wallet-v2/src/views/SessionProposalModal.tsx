@@ -50,6 +50,8 @@ import { suiAddresses } from '@/utils/SuiWalletUtil'
 import { STACKS_CHAINS, STACKS_EVENTS, STACKS_SIGNING_METHODS } from '@/data/StacksData'
 import { stacksAddresses, stacksWallet } from '@/utils/StacksWalletUtil'
 import StacksLib from '@/lib/StacksLib'
+import { TON_CHAINS, TON_SIGNING_METHODS } from '@/data/TonData'
+import { tonAddresses } from '@/utils/TonWalletUtil'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -131,6 +133,11 @@ export default function SessionProposalModal() {
     const stacksChains = Object.keys(STACKS_CHAINS)
     const stacksMethods = Object.values(STACKS_SIGNING_METHODS)
     const stacksEvents = Object.values(STACKS_EVENTS)
+
+    // ton (SendTransaction/SignData)
+    const tonChains = Object.keys(TON_CHAINS)
+    const tonMethods = Object.values(TON_SIGNING_METHODS)
+    const tonEvents = [] as string[]
 
     console.log('stacksAddresses', stacksAddresses)
 
@@ -229,6 +236,14 @@ export default function SessionProposalModal() {
         methods: stacksMethods,
         events: stacksEvents,
         accounts: stacksAddresses
+      },
+      ton: {
+        chains: tonChains,
+        methods: tonMethods,
+        events: tonEvents,
+        accounts: tonChains
+          .map(chain => (tonAddresses || []).map(address => `${chain}:${address}`))
+          .flat()
       }
     }
   }, [addressesToApprove])
@@ -313,6 +328,8 @@ export default function SessionProposalModal() {
         return suiAddresses[0]
       case 'stacks':
         return stacksWallet.getAddress(`${namespace}:${chainId}`)
+      case 'ton':
+        return tonAddresses[0]
     }
   }, [])
 

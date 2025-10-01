@@ -15,6 +15,7 @@ import useSmartAccounts from './useSmartAccounts'
 import { createOrRestoreBip122Wallet } from '@/utils/Bip122WalletUtil'
 import { createOrRestoreSuiWallet } from '@/utils/SuiWalletUtil'
 import { createOrRestoreStacksWallet } from '@/utils/StacksWalletUtil'
+import { createOrRestoreTonWallet } from '@/utils/TonWalletUtil'
 
 // guard against multiple calls to createWalletKit while the wallet is initializing
 let startedInit = false
@@ -48,6 +49,7 @@ export default function useInitialization() {
         const { bip122Addresses } = await createOrRestoreBip122Wallet()
         const { stacksAddresses } = await createOrRestoreStacksWallet()
         const { suiAddresses } = await createOrRestoreSuiWallet()
+        const { tonAddresses } = await createOrRestoreTonWallet()
         SettingsStore.setCosmosAddress(cosmosAddresses[0])
         SettingsStore.setSolanaAddress(solanaAddresses[0])
         SettingsStore.setPolkadotAddress(polkadotAddresses[0])
@@ -60,6 +62,7 @@ export default function useInitialization() {
         SettingsStore.setStacksAddress('mainnet', stacksAddresses[0])
         SettingsStore.setStacksAddress('testnet', stacksAddresses[1])
         SettingsStore.setSuiAddress(suiAddresses[0])
+        SettingsStore.setTonAddress(tonAddresses[0])
       })()
       await createWalletKit(relayerRegionURL)
       setInitialized(true)
