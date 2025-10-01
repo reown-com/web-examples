@@ -11,6 +11,7 @@ import { TEZOS_CHAINS } from './TezosData'
 import { TRON_CHAINS } from './TronData'
 import { SUI_CHAINS } from './SuiData'
 import { STACKS_CHAINS } from './StacksData'
+import { TON_CHAINS } from './TonData'
 
 export const ALL_CHAINS = {
   ...EIP155_CHAINS,
@@ -24,7 +25,8 @@ export const ALL_CHAINS = {
   ...TRON_CHAINS,
   ...BIP122_CHAINS,
   ...SUI_CHAINS,
-  ...STACKS_CHAINS
+  ...STACKS_CHAINS,
+  ...TON_CHAINS
 }
 
 export function getChainData(chainId?: string) {
