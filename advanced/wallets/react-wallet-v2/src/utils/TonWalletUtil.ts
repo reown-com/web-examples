@@ -25,14 +25,8 @@ export async function createOrRestoreTonWallet() {
     wallet2 = await TonLib.init({})
 
     // Don't store secretKey in local storage in a production project!
-    localStorage.setItem(
-      'TON_SECRET_KEY_1',
-      JSON.stringify(Array.from(wallet1.keypair.secretKey))
-    )
-    localStorage.setItem(
-      'TON_SECRET_KEY_2',
-      JSON.stringify(Array.from(wallet2.keypair.secretKey))
-    )
+    localStorage.setItem('TON_SECRET_KEY_1', JSON.stringify(Array.from(wallet1.keypair.secretKey)))
+    localStorage.setItem('TON_SECRET_KEY_2', JSON.stringify(Array.from(wallet2.keypair.secretKey)))
   }
 
   address1 = await wallet1.getAddress()
