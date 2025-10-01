@@ -86,12 +86,14 @@
     "prettier": "2.6.2",
     "typescript": "5.2.2"
   },
-  "resolutions": {
-    "@walletconnect/core": "2.21.8",
-    "@walletconnect/utils": "2.21.8",
-    "@walletconnect/types": "2.21.8",
-    "@walletconnect/sign-client": "2.21.8",
-    "@walletconnect/ethereum-provider": "2.21.8",
-    "@walletconnect/universal-provider": "2.21.8"
+  "pnpm": {
+    "overrides": {
+      "@walletconnect/core": "2.21.8",
+      "@walletconnect/utils": "2.21.8",
+      "@walletconnect/types": "2.21.8",
+      "@walletconnect/sign-client": "2.21.8",
+      "@walletconnect/ethereum-provider": "2.21.8",
+      "@walletconnect/universal-provider": "2.21.8"
+    }
   }
 }
