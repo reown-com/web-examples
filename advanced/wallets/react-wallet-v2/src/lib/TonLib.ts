@@ -238,7 +238,6 @@ function base64ToBytes(b64: string): Uint8Array {
     return bytes
   }
   // Fallback for non-browser environments
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const nodeBuffer: any = require('buffer').Buffer
   const buf = nodeBuffer.from(b64, 'base64')
   return new Uint8Array(buf)
@@ -255,7 +254,6 @@ function bytesToBase64(bytes: Uint8Array): string {
     return window.btoa(binary)
   }
   // Fallback for non-browser environments
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const nodeBuffer: any = require('buffer').Buffer
   return nodeBuffer.from(bytes).toString('base64')
 }
