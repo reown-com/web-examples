@@ -201,8 +201,8 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
             requestEvent,
             requestSession
           })
-        case TON_SIGNING_METHODS.SEND_TRANSACTION:
-          return ModalStore.open('SessionTonSendTransactionModal', { requestEvent, requestSession })
+        case TON_SIGNING_METHODS.SEND_MESSAGE:
+          return ModalStore.open('SessionTonSendMessageModal', { requestEvent, requestSession })
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }

@@ -27,10 +27,10 @@ export async function approveTonRequest(requestEvent: RequestEventArgs) {
         alert(error.message)
         return formatJsonRpcError(id, error.message)
       }
-    case TON_SIGNING_METHODS.SEND_TRANSACTION:
+    case TON_SIGNING_METHODS.SEND_MESSAGE:
       try {
         const txParams = Array.isArray(request.params) ? request.params[0] : request.params
-        const result = await wallet.sendTransaction(txParams, chainId)
+        const result = await wallet.sendMessage(txParams, chainId)
         return formatJsonRpcResult(id, result)
       } catch (error: any) {
         console.error(error)

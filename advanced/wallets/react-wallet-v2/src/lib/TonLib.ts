@@ -61,10 +61,10 @@ export default class TonLib {
     return { signature: Buffer.from(signature as unknown as Uint8Array).toString('hex') }
   }
 
-  public async sendTransaction(
-    params: TonLib.SendTransaction['params'],
+  public async sendMessage(
+    params: TonLib.SendMessage['params'],
     chainId: string
-  ): Promise<TonLib.SendTransaction['result']> {
+  ): Promise<TonLib.SendMessage['result']> {
     const client = this.getTonClient(chainId)
     const walletContract = client.open(this.wallet)
     const seqno = await walletContract.getSeqno()
@@ -201,7 +201,7 @@ export namespace TonLib {
 
   export type SignMessage = RPCRequest<{ message: string }, { signature: string }>
 
-  export type SendTransaction = RPCRequest<
+  export type SendMessage = RPCRequest<
     {
       valid_until?: number
       from?: string

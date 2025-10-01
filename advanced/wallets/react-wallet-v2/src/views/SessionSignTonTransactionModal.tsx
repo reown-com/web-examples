@@ -10,7 +10,7 @@ import RequestModal from '../components/RequestModal'
 import { tonAddresses } from '@/utils/TonWalletUtil'
 import { approveTonRequest, rejectTonRequest } from '@/utils/TonRequestHandlerUtil'
 
-export default function SessionTonSendTransactionModal() {
+export default function SessionTonSendMessageModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
@@ -26,7 +26,7 @@ export default function SessionTonSendTransactionModal() {
   const { topic, params } = requestEvent
   const { request, chainId } = params
 
-  // Extract transaction details for display (SendTransaction spec)
+  // Extract message details for display (SendMessage spec)
   const tx = Array.isArray(request.params) ? request.params[0] : request.params || {}
   const messages = Array.isArray(tx.messages) ? tx.messages : []
 

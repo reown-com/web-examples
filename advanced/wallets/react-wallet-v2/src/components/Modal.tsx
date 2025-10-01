@@ -28,7 +28,7 @@ import SessionSignSuiTransactionModal from '@/views/SessionSignSuiTransactionMod
 import SessionSignSuiAndExecuteTransactionModal from '@/views/SessionSignAndExecuteSuiTransactionModal'
 import SessionSendStacksTransferModal from '@/views/SessionSendStacksTransferModal'
 import SessionSignStacksMessageModal from '@/views/SessionSignStacksMessageModal'
-import SessionTonSendTransactionModal from '@/views/SessionSignTonTransactionModal'
+import SessionTonSendMessageModal from '@/views/SessionSignTonTransactionModal'
 import SessionTonSignDataModal from '@/views/SessionSignTonPersonalMessageModal'
 
 export default function Modal() {
@@ -94,8 +94,8 @@ export default function Modal() {
         return <SessionSendStacksTransferModal />
       case 'SessionSignStacksMessageModal':
         return <SessionSignStacksMessageModal />
-      case 'SessionTonSendTransactionModal':
-        return <SessionTonSendTransactionModal />
+      case 'SessionTonSendMessageModal':
+        return <SessionTonSendMessageModal />
       case 'SessionTonSignDataModal':
         return <SessionTonSignDataModal />
       default:
