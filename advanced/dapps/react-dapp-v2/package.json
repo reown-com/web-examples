@@ -55,7 +55,7 @@
     "react-scripts": "^4.0.3",
     "solana-wallet": "^1.0.1",
     "styled-components": "^6.1.15",
-    "tronweb": "^4.4.0",
+    "tronweb": "^6.0.4",
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {
