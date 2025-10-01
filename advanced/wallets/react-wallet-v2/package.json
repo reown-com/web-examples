@@ -29,6 +29,7 @@
     "@nextui-org/react": "1.0.8-beta.5",
     "@noble/curves": "^1.6.0",
     "@noble/hashes": "^1.8.0",
+    "@noble/secp256k1": "^3.0.0",
     "@polkadot/keyring": "^10.1.2",
     "@polkadot/types": "^9.3.3",
     "@reown/appkit-experimental": "1.6.8",
