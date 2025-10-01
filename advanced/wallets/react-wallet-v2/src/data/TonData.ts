@@ -12,7 +12,7 @@ export const TON_MAINNET_CHAINS = {
     name: 'TON Mainnet',
     logo: '/chain-logos/ton.png',
     rgb: '0, 136, 204',
-    rpc: 'https://toncenter.com/api/v2/jsonRPC',
+    rpc: '',
     namespace: 'ton'
   }
 }
@@ -23,7 +23,7 @@ export const TON_TEST_CHAINS = {
     name: 'TON Testnet',
     logo: '/chain-logos/ton.png',
     rgb: '0, 136, 204',
-    rpc: 'https://testnet.toncenter.com/api/v2/jsonRPC',
+    rpc: '',
     namespace: 'ton'
   }
 }

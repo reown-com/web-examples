@@ -1,4 +1,5 @@
 import { KeyPair, keyPairFromSeed, keyPairFromSecretKey, sign } from '@ton/crypto'
+import { ed25519 } from '@noble/curves/ed25519'
 import { Cell } from '@ton/core'
 import { WalletContractV4, TonClient, internal, Address } from '@ton/ton'
 import { TON_MAINNET_CHAINS, TON_TEST_CHAINS } from '@/data/TonData'
@@ -108,7 +109,7 @@ export default class TonLib {
       ? (this.wallet.address as any).toRawString()
       : this.wallet.address.toString()
 
-    return {
+    const result = {
       signature: bytesToBase64(signature as unknown as Uint8Array),
       address: addressRaw,
       timestamp: Math.floor(Date.now() / 1000),
@@ -118,6 +119,37 @@ export default class TonLib {
           : 'unknown',
       payload
     }
+    // inline self-verification (for demo parity with Sui)
+    try {
+      const verified = ed25519.verify(
+        base64ToBytes(result.signature),
+        bytes,
+        new Uint8Array(this.keypair.publicKey as unknown as ArrayBufferLike)
+      )
+      console.log('TON signData verified:', verified)
+    } catch (e) {
+      console.warn('TON signData verification failed to run', e)
+    }
+    return result
+  }
+
+  public verifyDataSignature(params: TonLib.SignData['params'], signatureBase64: string): boolean {
+    let bytes: Uint8Array
+    if ((params as any).type === 'text') {
+      bytes = new TextEncoder().encode((params as any).text)
+    } else if ((params as any).type === 'binary') {
+      bytes = base64ToBytes((params as any).bytes)
+    } else if ((params as any).type === 'cell') {
+      bytes = base64ToBytes((params as any).cell)
+    } else {
+      throw new Error('Unsupported sign data type')
+    }
+    const sig = base64ToBytes(signatureBase64)
+    return ed25519.verify(
+      sig,
+      bytes,
+      new Uint8Array(this.keypair.publicKey as unknown as ArrayBufferLike)
+    )
   }
 
   // no signAllTransactions in TON spec

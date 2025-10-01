@@ -360,14 +360,6 @@ export default function SessionProposalModal() {
           // we should append the smart accounts to the available eip155 accounts
           namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
         }
-        // Ensure TON methods are surfaced even if proposal did not request any
-        if (namespaces.ton) {
-          const hasChains = (namespaces.ton.chains || []).length > 0
-          const hasNoMethods = (namespaces.ton.methods || []).length === 0
-          if (hasChains && hasNoMethods) {
-            namespaces.ton.methods = Object.values(TON_SIGNING_METHODS)
-          }
-        }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)
         let sessionProperties = {
