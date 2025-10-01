@@ -1,5 +1,6 @@
 import { KeyPair, keyPairFromSeed, keyPairFromSecretKey, sign } from '@ton/crypto'
-import { WalletContractV4, TonClient, internal, beginCell, Address } from '@ton/ton'
+import { Cell } from '@ton/core'
+import { WalletContractV4, TonClient, internal, Address } from '@ton/ton'
 import { TON_MAINNET_CHAINS, TON_TEST_CHAINS } from '@/data/TonData'
 
 /**
@@ -31,7 +32,7 @@ export default class TonLib {
       keypair = keyPairFromSeed(Buffer.from(seed, 'hex') as any)
     } else {
       // Generate random keypair using crypto.getRandomValues
-      const secretKey = new Uint8Array(32)
+      const secretKey = new Uint8Array(64)
       crypto.getRandomValues(secretKey)
       keypair = keyPairFromSecretKey(secretKey as any)
     }
@@ -56,69 +57,70 @@ export default class TonLib {
     return { signature: signature.toString('hex') }
   }
 
-  public async signTransaction(
-    params: TonLib.SignTransaction['params']
-  ): Promise<TonLib.SignTransaction['result']> {
-    const client = this.getTonClient(params.chainId)
-    const walletContract = client.open(this.wallet)
-    const seqno = await walletContract.getSeqno()
-
-    // Parse the transaction message
-    const message = internal({
-      to: Address.parse(params.transaction.to),
-      value: BigInt(params.transaction.value),
-      body: params.transaction.body ? beginCell().storeBuffer(Buffer.from(params.transaction.body, 'hex')).endCell() : undefined,
-    })
-
-    // Create transfer
-    const transfer = walletContract.createTransfer({
-      seqno,
-      secretKey: this.keypair.secretKey,
-      messages: [message]
-    })
-
-    return {
-      transaction: transfer.toBoc().toString('base64'),
-      signature: 'signed' // TON transactions are signed internally
-    }
-  }
-
-  public async signAndSendTransaction(
-    params: TonLib.SignAndSendTransaction['params'],
+  public async sendTransaction(
+    params: TonLib.SendTransaction['params'],
     chainId: string
-  ): Promise<TonLib.SignAndSendTransaction['result']> {
+  ): Promise<TonLib.SendTransaction['result']> {
     const client = this.getTonClient(chainId)
     const walletContract = client.open(this.wallet)
     const seqno = await walletContract.getSeqno()
 
-    // Parse the transaction message
-    const message = internal({
-      to: Address.parse(params.transaction.to),
-      value: BigInt(params.transaction.value),
-      body: params.transaction.body ? beginCell().storeBuffer(Buffer.from(params.transaction.body, 'hex')).endCell() : undefined,
+    const messages = (params.messages || []).map(m => {
+      const bodyCell = m.payload ? Cell.fromBoc(Buffer.from(m.payload, 'base64'))[0] : undefined
+      // NOTE: stateInit handling omitted in this example implementation
+      return internal({
+        to: Address.parse(m.address),
+        value: BigInt(m.amount as any),
+        body: bodyCell
+      })
     })
 
-    // Create and send transfer
+    const transfer = walletContract.createTransfer({
+      seqno,
+      secretKey: this.keypair.secretKey,
+      messages
+    })
+
     await walletContract.sendTransfer({
       seqno,
       secretKey: this.keypair.secretKey,
-      messages: [message]
+      messages
     })
 
-    return { hash: 'transaction_sent' } // TON doesn't return hash directly
+    return transfer.toBoc().toString('base64')
   }
 
-  public async signAllTransactions(
-    params: TonLib.SignAllTransactions['params']
-  ): Promise<TonLib.SignAllTransactions['result']> {
-    const signedTransactions = params.transactions.map(transaction => {
-      // For now, just return the transaction as-is since TON signing is complex
-      // This would need more sophisticated handling for batch transactions
-      return transaction
-    })
+  public async signData(params: TonLib.SignData['params']): Promise<TonLib.SignData['result']> {
+    let bytes: Uint8Array
+    let payload = params as any
+    if ((params as any).type === 'text') {
+      bytes = new TextEncoder().encode((params as any).text)
+    } else if ((params as any).type === 'binary') {
+      bytes = base64ToBytes((params as any).bytes)
+    } else if ((params as any).type === 'cell') {
+      bytes = base64ToBytes((params as any).cell)
+    } else {
+      throw new Error('Unsupported sign data type')
+    }
 
-    return { transactions: signedTransactions }
+    const signature = sign(bytes as any, this.keypair.secretKey as any)
+    const addressRaw = (this.wallet.address as any).toRawString
+      ? (this.wallet.address as any).toRawString()
+      : this.wallet.address.toString()
+
+    return {
+      signature: bytesToBase64(signature as unknown as Uint8Array),
+      address: addressRaw,
+      timestamp: Math.floor(Date.now() / 1000),
+      domain:
+        typeof window !== 'undefined' && window.location && window.location.hostname
+          ? window.location.hostname
+          : 'unknown',
+      payload
+    }
   }
+
+  // no signAllTransactions in TON spec
 
   private getTonClient(chainId: string): TonClient {
     const rpc = { ...TON_TEST_CHAINS, ...TON_MAINNET_CHAINS }[chainId]?.rpc
@@ -147,7 +149,7 @@ export default class TonLib {
     const message = internal({
       to: Address.parse(recipientAddress),
       value: amount,
-      body: undefined, // No additional body for simple transfers
+      body: undefined // No additional body for simple transfers
     })
 
     // Create and send transfer
@@ -169,18 +171,61 @@ export namespace TonLib {
 
   export type SignMessage = RPCRequest<{ message: string }, { signature: string }>
 
-  export type SignTransaction = RPCRequest<
-    { transaction: { to: string; value: string; body?: string }; chainId: string },
-    { transaction: string; signature: string }
+  export type SendTransaction = RPCRequest<
+    {
+      valid_until?: number
+      from?: string
+      messages: Array<{
+        address: string
+        amount: number | string
+        payload?: string
+        stateInit?: string
+        extra_currency?: Record<string, string | number>
+      }>
+    },
+    string
   >
 
-  export type SignAndSendTransaction = RPCRequest<
-    { transaction: { to: string; value: string; body?: string } },
-    { hash: string }
+  export type SignData = RPCRequest<
+    | { type: 'text'; text: string; from?: string }
+    | { type: 'binary'; bytes: string; from?: string }
+    | { type: 'cell'; schema: string; cell: string; from?: string },
+    {
+      signature: string
+      address: string
+      timestamp: number
+      domain: string
+      payload: unknown
+    }
   >
+}
 
-  export type SignAllTransactions = RPCRequest<
-    { transactions: string[] },
-    { transactions: string[] }
-  >
+function base64ToBytes(b64: string): Uint8Array {
+  if (typeof window !== 'undefined' && typeof window.atob === 'function') {
+    const binary = window.atob(b64)
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+    return bytes
+  }
+  // Fallback for non-browser environments
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const nodeBuffer: any = require('buffer').Buffer
+  const buf = nodeBuffer.from(b64, 'base64')
+  return new Uint8Array(buf)
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
+    let binary = ''
+    const chunkSize = 0x8000
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, i + chunkSize)
+      binary += String.fromCharCode.apply(null, Array.from(chunk) as any)
+    }
+    return window.btoa(binary)
+  }
+  // Fallback for non-browser environments
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const nodeBuffer: any = require('buffer').Buffer
+  return nodeBuffer.from(bytes).toString('base64')
 }

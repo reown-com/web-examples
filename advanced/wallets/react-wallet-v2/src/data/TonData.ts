@@ -34,8 +34,6 @@ export const TON_CHAINS = { ...TON_MAINNET_CHAINS, ...TON_TEST_CHAINS }
  * Methods
  */
 export const TON_SIGNING_METHODS = {
-  TON_SIGN_TRANSACTION: 'ton_signTransaction',
-  TON_SIGN_MESSAGE: 'ton_signMessage',
-  TON_SIGN_AND_SEND_TRANSACTION: 'ton_signAndSendTransaction',
-  TON_SIGN_ALL_TRANSACTIONS: 'ton_signAllTransactions'
+  SEND_TRANSACTION: 'SendTransaction',
+  SIGN_DATA: 'SignData'
 }

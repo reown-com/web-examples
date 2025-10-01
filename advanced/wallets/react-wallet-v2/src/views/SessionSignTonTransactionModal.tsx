@@ -26,8 +26,9 @@ export default function SessionSignTonTransactionModal() {
   const { topic, params } = requestEvent
   const { request, chainId } = params
 
-  // Extract transaction details for display
-  const transaction = request.params?.transaction || {}
+  // Extract transaction details for display (SendTransaction spec)
+  const tx = Array.isArray(request.params) ? request.params[0] : request.params || {}
+  const messages = Array.isArray(tx.messages) ? tx.messages : []
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
@@ -100,13 +101,27 @@ export default function SessionSignTonTransactionModal() {
       <Row>
         <Col>
           <Text h5>Transaction details</Text>
-          <Text color="$gray400" data-testid="request-message-text">
-            <code>
-              To: {transaction.to}<br />
-              Value: {transaction.value} nanotons<br />
-              {transaction.body && `Body: ${transaction.body}`}
-            </code>
-          </Text>
+          {messages.length === 0 ? (
+            <Text color="$gray400">No messages</Text>
+          ) : (
+            messages.map((m: any, idx: number) => (
+              <Text key={idx} color="$gray400" data-testid="request-message-text">
+                <code>
+                  To: {m.address}
+                  <br />
+                  Amount: {m.amount} nanotons
+                  <br />
+                  {m.payload && `Payload: ${m.payload}`}
+                  {m.stateInit && (
+                    <>
+                      <br />
+                      StateInit: {m.stateInit}
+                    </>
+                  )}
+                </code>
+              </Text>
+            ))
+          )}
         </Col>
       </Row>
     </RequestModal>

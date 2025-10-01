@@ -17,38 +17,20 @@ export async function approveTonRequest(requestEvent: RequestEventArgs) {
   const wallet = await getWallet()
 
   switch (request.method) {
-    case TON_SIGNING_METHODS.TON_SIGN_MESSAGE:
+    case TON_SIGNING_METHODS.SIGN_DATA:
       try {
-        const message = request.params.message
-        const signedMessage = await wallet.signMessage({
-          message
-        })
-        return formatJsonRpcResult(id, signedMessage)
-      } catch (error: any) {
-        console.error(error)
-        alert(error.message)
-        return formatJsonRpcError(id, error.message)
-      }
-    case TON_SIGNING_METHODS.TON_SIGN_TRANSACTION:
-      try {
-        const result = await wallet.signTransaction({
-          transaction: request.params.transaction,
-          chainId
-        })
+        const payload = Array.isArray(request.params) ? request.params[0] : request.params
+        const result = await wallet.signData(payload)
         return formatJsonRpcResult(id, result)
       } catch (error: any) {
         console.error(error)
         alert(error.message)
         return formatJsonRpcError(id, error.message)
       }
-    case TON_SIGNING_METHODS.TON_SIGN_AND_SEND_TRANSACTION:
+    case TON_SIGNING_METHODS.SEND_TRANSACTION:
       try {
-        const result = await wallet.signAndSendTransaction(
-          {
-            transaction: request.params.transaction
-          },
-          chainId
-        )
+        const txParams = Array.isArray(request.params) ? request.params[0] : request.params
+        const result = await wallet.sendTransaction(txParams, chainId)
         return formatJsonRpcResult(id, result)
       } catch (error: any) {
         console.error(error)

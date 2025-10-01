@@ -134,7 +134,7 @@ export default function SessionProposalModal() {
     const stacksMethods = Object.values(STACKS_SIGNING_METHODS)
     const stacksEvents = Object.values(STACKS_EVENTS)
 
-    // ton
+    // ton (SendTransaction/SignData)
     const tonChains = Object.keys(TON_CHAINS)
     const tonMethods = Object.values(TON_SIGNING_METHODS)
     const tonEvents = [] as string[]
@@ -241,7 +241,9 @@ export default function SessionProposalModal() {
         chains: tonChains,
         methods: tonMethods,
         events: tonEvents,
-        accounts: tonChains.map(chain => tonAddresses.map(address => `${chain}:${address}`)).flat()
+        accounts: tonChains
+          .map(chain => (tonAddresses || []).map(address => `${chain}:${address}`))
+          .flat()
       }
     }
   }, [addressesToApprove])
@@ -357,6 +359,14 @@ export default function SessionProposalModal() {
         if (reorderedEip155Accounts.length > 0) {
           // we should append the smart accounts to the available eip155 accounts
           namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
+        }
+        // Ensure TON methods are surfaced even if proposal did not request any
+        if (namespaces.ton) {
+          const hasChains = (namespaces.ton.chains || []).length > 0
+          const hasNoMethods = (namespaces.ton.methods || []).length === 0
+          if (hasChains && hasNoMethods) {
+            namespaces.ton.methods = Object.values(TON_SIGNING_METHODS)
+          }
         }
         //get capabilities for all reorderedEip155Accounts in wallet
         const capabilities = getWalletCapabilities(reorderedEip155Accounts)

@@ -26,7 +26,7 @@ export default function SessionSignTonPersonalMessageModal() {
   const { topic, params } = requestEvent
   const { request, chainId } = params
 
-  const message = request.params?.message || ''
+  const payload = Array.isArray(request.params) ? request.params[0] : request.params || {}
 
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
@@ -98,10 +98,24 @@ export default function SessionSignTonPersonalMessageModal() {
       <Divider y={1} />
       <Row>
         <Col>
-          <Text h5>Message</Text>
-          <Text color="$gray400" data-testid="request-message-text">
-            {message}
-          </Text>
+          <Text h5>Payload</Text>
+          {payload?.type === 'text' && (
+            <Text color="$gray400" data-testid="request-message-text">
+              {payload.text}
+            </Text>
+          )}
+          {payload?.type === 'binary' && (
+            <Text color="$gray400" data-testid="request-message-text">
+              Binary (base64): {payload.bytes?.slice(0, 64)}
+              {payload.bytes?.length > 64 ? '...' : ''}
+            </Text>
+          )}
+          {payload?.type === 'cell' && (
+            <Text color="$gray400" data-testid="request-message-text">
+              Cell (base64): {payload.cell?.slice(0, 64)}
+              {payload.cell?.length > 64 ? '...' : ''}
+            </Text>
+          )}
         </Col>
       </Row>
     </RequestModal>
