@@ -197,12 +197,12 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case STACKS_SIGNING_METHODS.STACKS_SIGN_MESSAGE:
           return ModalStore.open('SessionSignStacksMessageModal', { requestEvent, requestSession })
         case TON_SIGNING_METHODS.SIGN_DATA:
-          return ModalStore.open('SessionSignTonPersonalMessageModal', {
+          return ModalStore.open('SessionTonSignDataModal', {
             requestEvent,
             requestSession
           })
         case TON_SIGNING_METHODS.SEND_TRANSACTION:
-          return ModalStore.open('SessionSignTonTransactionModal', { requestEvent, requestSession })
+          return ModalStore.open('SessionTonSendTransactionModal', { requestEvent, requestSession })
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }

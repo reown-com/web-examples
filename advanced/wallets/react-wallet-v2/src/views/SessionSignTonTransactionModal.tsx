@@ -10,7 +10,7 @@ import RequestModal from '../components/RequestModal'
 import { tonAddresses } from '@/utils/TonWalletUtil'
 import { approveTonRequest, rejectTonRequest } from '@/utils/TonRequestHandlerUtil'
 
-export default function SessionSignTonTransactionModal() {
+export default function SessionTonSendTransactionModal() {
   // Get request and wallet data from store
   const requestEvent = ModalStore.state.data?.requestEvent
   const requestSession = ModalStore.state.data?.requestSession
