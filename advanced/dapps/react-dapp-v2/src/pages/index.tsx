@@ -27,6 +27,7 @@ import {
   DEFAULT_EIP7715_METHODS,
   DEFAULT_SUI_METHODS,
   DEFAULT_STACKS_METHODS,
+  DEFAULT_TON_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -100,6 +101,7 @@ const Home: NextPage = () => {
     bip122Rpc,
     suiRpc,
     stacksRpc,
+    tonRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -590,6 +592,24 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getTonActions = (): AccountAction[] => {
+    const onSendMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tonRpc.testSendMessage(chainId, address);
+    };
+    const onSignData = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tonRpc.testSignData(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_TON_METHODS.TON_SEND_MESSAGE,
+        callback: onSendMessage,
+      },
+      { method: DEFAULT_TON_METHODS.TON_SIGN_DATA, callback: onSignData },
+    ];
+  };
+
   const getBlockchainActions = (account: string) => {
     const [namespace, chainId, address] = account.split(":");
     switch (namespace) {
@@ -617,6 +637,8 @@ const Home: NextPage = () => {
         return getSuiActions();
       case "stacks":
         return getStacksActions();
+      case "ton":
+        return getTonActions();
       default:
         break;
     }

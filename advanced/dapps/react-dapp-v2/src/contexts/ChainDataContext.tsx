@@ -19,6 +19,7 @@ import { KadenaChainData } from "../chains/kadena";
 import { BtcChainData } from "../chains/bip122";
 import { SuiChainData } from "../chains/sui";
 import { StacksChainData } from "../chains/stacks";
+import { TonChainData } from "../chains/ton";
 
 /**
  * Types
@@ -63,6 +64,9 @@ export function ChainDataContextProvider({
             break;
           case "tron":
             chains = TronChainData;
+            break;
+          case "ton":
+            chains = TonChainData;
             break;
           case "cosmos":
             chains = CosmosChainData;

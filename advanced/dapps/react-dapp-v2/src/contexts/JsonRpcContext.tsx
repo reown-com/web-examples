@@ -57,6 +57,7 @@ import {
   DEFAULT_NEAR_METHODS,
   DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TRON_METHODS,
+  DEFAULT_TON_METHODS,
   DEFAULT_TEZOS_METHODS,
   DEFAULT_KADENA_METHODS,
   DEFAULT_EIP155_OPTIONAL_METHODS,
@@ -183,6 +184,10 @@ interface IContext {
   stacksRpc: {
     testSendTransfer: TRpcRequestCallback;
     testSignMessage: TRpcRequestCallback;
+  };
+  tonRpc: {
+    testSendMessage: TRpcRequestCallback;
+    testSignData: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -2270,6 +2275,72 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  const tonRpc = {
+    testSendMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_TON_METHODS.TON_SEND_MESSAGE;
+        const params = [
+          {
+            valid_until: Math.floor(Date.now() / 1000) + 300,
+            from: address,
+            messages: [
+              {
+                address,
+                amount: "1000",
+              },
+            ],
+          },
+        ];
+        const result = await client!.request<any>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params,
+          },
+        });
+        return {
+          method,
+          address,
+          valid: !!result,
+          result: JSON.stringify(result),
+        };
+      }
+    ),
+    testSignData: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const method = DEFAULT_TON_METHODS.TON_SIGN_DATA;
+        const params = [
+          {
+            type: "text",
+            text: "Hello from WalletConnect TON",
+            from: address,
+          },
+        ];
+        const result = await client!.request<any>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method,
+            params,
+          },
+        });
+        return {
+          method,
+          address,
+          valid: !!result,
+          result: JSON.stringify(result),
+        };
+      }
+    ),
+  };
+
   const suiRpc = {
     testSendSuiTransaction: _createJsonRpcRequestHandler(
       async (
@@ -2433,6 +2504,7 @@ export function JsonRpcContextProvider({
         tronRpc,
         tezosRpc,
         kadenaRpc,
+        tonRpc,
         rpcResult: result,
         isRpcRequestPending: pending,
         isTestnet,
