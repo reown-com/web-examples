@@ -2495,7 +2495,7 @@ async function isValidSolanaSignature(params: {
   const valid = verifyMessageSignature(
     senderPublicKey.toBase58(),
     signature,
-    bs58.encode(new TextEncoder().encode(message))
+    bs58.encode(new Uint8Array(Buffer.from(message)))
   );
   return valid;
 }
