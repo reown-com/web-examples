@@ -25,6 +25,7 @@ import {
   SystemProgram,
   Transaction as SolanaTransaction,
   clusterApiUrl,
+  PublicKey,
 } from "@solana/web3.js";
 // @ts-expect-error
 import TronWeb from "tronweb";
@@ -97,10 +98,16 @@ import {
   isOrdinalAddress,
   isValidBip122Signature,
 } from "../helpers/bip122";
-import { getAddressFromAccount } from "@walletconnect/utils";
+import {
+  getAddressFromAccount,
+  getDidAddress,
+  getDidAddressNamespace,
+  getDidChainId,
+} from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
 import { SuiClient } from "@mysten/sui/client";
 import { AccessKeyView } from "near-api-js/lib/providers/provider";
+import base58 from "bs58";
 
 /**
  * Types
@@ -1854,7 +1861,7 @@ export function JsonRpcContextProvider({
         const pactCommand = new PactCommand();
         pactCommand.code = `(coin.transfer "${
           kadenaAccount.account
-        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        }" "k:abcabcabcabc" ${new PactNumber(1)})`;
 
         pactCommand
           .setMeta(
@@ -1907,7 +1914,7 @@ export function JsonRpcContextProvider({
         const pactCommand = new PactCommand();
         pactCommand.code = `(coin.transfer "${
           kadenaAccount.account
-        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        }" "k:abcabcabcabc" ${new PactNumber(1)})`;
 
         pactCommand
           .setMeta(
@@ -2453,4 +2460,128 @@ export function useJsonRpc() {
     throw new Error("useJsonRpc must be used within a JsonRpcContextProvider");
   }
   return context;
+}
+
+async function isValidEip155Signature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const chainId = getDidChainId(params.iss);
+  const rpc = rpcProvidersByChainId[Number(chainId)];
+
+  if (typeof rpc === "undefined") {
+    throw new Error(`Missing rpcProvider definition for chainId: ${chainId}`);
+  }
+
+  const hashMsg = hashPersonalMessage(params.message);
+  const valid = await verifySignature(
+    getDidAddress(params.iss)!,
+    params.signature,
+    hashMsg,
+    rpc.baseURL
+  );
+  return valid;
+}
+
+async function isValidSolanaSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const address = getDidAddress(iss)!;
+  const senderPublicKey = new PublicKey(address);
+  const valid = verifyMessageSignature(
+    senderPublicKey.toBase58(),
+    signature,
+    bs58.encode(new TextEncoder().encode(message))
+  );
+  return valid;
+}
+
+async function isValidPolkadotSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const address = getDidAddress(iss)!;
+  await cryptoWaitReady();
+  const { isValid } = signatureVerify(message, signature, address);
+  return isValid;
+}
+
+async function isValidSuiSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const address = getDidAddress(iss)!;
+  const derivedPublicKey = await verifyPersonalMessageSignature(
+    new TextEncoder().encode(message),
+    signature,
+    { address }
+  );
+  return (
+    derivedPublicKey.toSuiAddress().toLowerCase() === address.toLowerCase()
+  );
+}
+
+async function isValidStacksSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const address = getDidAddress(iss)!;
+  const network = getDidChainId(iss)! === "1" ? "mainnet" : "testnet";
+  const hash = Buffer.from(sha256(message)).toString("hex");
+  const pubKey = publicKeyFromSignatureRsv(hash, signature);
+
+  const valid = getAddressFromPublicKey(pubKey, network) === address;
+  return valid;
+}
+
+async function isValidBip122Sig(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const address = getDidAddress(iss)!;
+  const valid = await isValidBip122Signature(address, signature, message);
+  return valid;
+}
+
+export function isValidSignature(params: {
+  message: string;
+  iss: string;
+  signature: string;
+}) {
+  const namespace = getDidAddressNamespace(params.iss);
+  switch (namespace) {
+    case "eip155":
+      return isValidEip155Signature(params);
+    case "solana":
+      return isValidSolanaSignature(params);
+    case "polkadot":
+      return isValidPolkadotSignature(params);
+
+    // case "kadena":
+    //   return isValidKadenaSignature(params);
+    // case "mvx":
+    //   return isValidMultiversxSignature(params);
+    // case "tron":
+    //   return isValidTronSignature(params);
+    // case "tezos":
+    //   return isValidTezosSignature(params);
+    case "bip122":
+      return isValidBip122Sig(params);
+    case "sui":
+      return isValidSuiSignature(params);
+    case "stacks":
+      return isValidStacksSignature(params);
+  }
 }

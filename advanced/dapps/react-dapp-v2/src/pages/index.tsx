@@ -82,7 +82,7 @@ const Home: NextPage = () => {
     setChains,
     setRelayerRegion,
     origin,
-    setAccounts,
+    authenticatedAddresses,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -719,6 +719,7 @@ const Home: NextPage = () => {
             return (
               <Blockchain
                 key={account}
+                isAuthenticated={authenticatedAddresses.includes(account)}
                 active
                 chainData={chainData}
                 fetching={isFetchingBalances}
