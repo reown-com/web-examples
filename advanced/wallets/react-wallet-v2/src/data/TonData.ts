@@ -3,6 +3,10 @@
  */
 export type TTonChain = keyof typeof TON_MAINNET_CHAINS | keyof typeof TON_TEST_CHAINS
 
+export const blockchainApiRpc = (chainId: string) => {
+  return `https://rpc.walletconnect.org/v1?chainId=ton:${chainId}&projectId=${process.env.NEXT_PUBLIC_PROJECT_ID}`
+}
+
 /**
  * Chains
  */
@@ -12,7 +16,7 @@ export const TON_MAINNET_CHAINS = {
     name: 'TON Mainnet',
     logo: '/chain-logos/ton.png',
     rgb: '0, 136, 204',
-    rpc: '',
+    rpc: blockchainApiRpc('mainnet'),
     namespace: 'ton'
   }
 }
@@ -23,7 +27,7 @@ export const TON_TEST_CHAINS = {
     name: 'TON Testnet',
     logo: '/chain-logos/ton.png',
     rgb: '0, 136, 204',
-    rpc: '',
+    rpc: blockchainApiRpc('testnet'),
     namespace: 'ton'
   }
 }
