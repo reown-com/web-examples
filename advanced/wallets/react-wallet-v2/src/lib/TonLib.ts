@@ -53,8 +53,8 @@ export default class TonLib {
   ): Promise<TonLib.SignMessage['result']> {
     const signature = sign(Buffer.from(params.message), this.keypair.secretKey)
     return {
-      signature: signature.toString('hex'),
-      publicKey: this.keypair.publicKey.toString('hex')
+      signature: signature.toString('base64'),
+      publicKey: this.keypair.publicKey.toString('base64')
     }
   }
 
@@ -102,7 +102,7 @@ export default class TonLib {
     const result = {
       signature: signature.toString('base64'),
       address: addressStr,
-      publicKey: this.keypair.publicKey.toString('hex'),
+      publicKey: this.keypair.publicKey.toString('base64'),
       timestamp: Math.floor(Date.now() / 1000),
       domain:
         typeof window !== 'undefined' && window.location && window.location.hostname

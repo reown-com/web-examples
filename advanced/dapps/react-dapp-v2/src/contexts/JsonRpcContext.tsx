@@ -2658,7 +2658,7 @@ async function isValidTonSignature(params: {
   const valid = await signVerify(
     Buffer.from(message, "utf-8"),
     Buffer.from(signature, "base64"),
-    Buffer.from(signatureMeta, "hex")
+    Buffer.from(signatureMeta, "base64")
   );
 
   return valid;
