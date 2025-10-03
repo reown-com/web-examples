@@ -7,6 +7,10 @@ export const blockchainApiRpc = (chainId: string) => {
   return `https://rpc.walletconnect.org/v1?chainId=ton:${chainId}&projectId=${process.env.NEXT_PUBLIC_PROJECT_ID}`
 }
 
+export const tonCenterRpc = (testnet: boolean) => {
+  return `https://${testnet ? 'testnet.' : ''}toncenter.com/api/v2/jsonRPC`
+}
+
 /**
  * Chains
  */
@@ -16,7 +20,7 @@ export const TON_MAINNET_CHAINS = {
     name: 'TON Mainnet',
     logo: '/chain-logos/ton.png',
     rgb: '0, 136, 204',
-    rpc: blockchainApiRpc('mainnet'),
+    rpc: tonCenterRpc(false),
     namespace: 'ton'
   }
 }
@@ -27,7 +31,7 @@ export const TON_TEST_CHAINS = {
     name: 'TON Testnet',
     logo: '/chain-logos/ton.png',
     rgb: '0, 136, 204',
-    rpc: blockchainApiRpc('testnet'),
+    rpc: tonCenterRpc(true),
     namespace: 'ton'
   }
 }
