@@ -160,7 +160,8 @@ export default class TonLib {
     }
 
     return new TonClient({
-      endpoint: rpc
+      endpoint: rpc,
+      apiKey: process.env.NEXT_PUBLIC_TON_CENTER_API_KEY
     })
   }
 
