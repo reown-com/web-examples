@@ -27,8 +27,8 @@ export async function createOrRestoreTronWallet() {
     localStorage.setItem('TRON_PrivateKey_2', tronWeb2.privateKey)
   }
 
-  address1 = tronWeb1.getAddress()
-  address2 = tronWeb2.getAddress()
+  address1 = tronWeb1.getAddress() as string
+  address2 = tronWeb2.getAddress() as string
 
   tronWallets = {
     [address1]: tronWeb1,
