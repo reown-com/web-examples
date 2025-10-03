@@ -159,7 +159,9 @@ function getBlockchainDisplayData(
   } catch (e) {
     return undefined;
   }
-  const data: ChainData = chainData[namespace][reference];
+  const namespaceData = chainData[namespace];
+  if (!namespaceData) return undefined;
+  const data: ChainData = namespaceData[reference];
   if (typeof data === "undefined") return undefined;
   return { data, meta };
 }
