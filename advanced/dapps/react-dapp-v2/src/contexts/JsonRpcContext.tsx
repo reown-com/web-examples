@@ -27,8 +27,7 @@ import {
   clusterApiUrl,
   PublicKey,
 } from "@solana/web3.js";
-// @ts-expect-error
-import TronWeb from "tronweb";
+import { TronWeb } from "tronweb";
 import {
   IPactCommand,
   PactCommand,
@@ -103,11 +102,13 @@ import {
   getDidAddress,
   getDidAddressNamespace,
   getDidChainId,
+  getNamespacedDidChainId,
 } from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
 import { SuiClient } from "@mysten/sui/client";
 import { AccessKeyView } from "near-api-js/lib/providers/provider";
 import base58 from "bs58";
+import { getTronWeb } from "../helpers/tron";
 
 /**
  * Types
@@ -1637,14 +1638,11 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        // Nile TestNet, if you want to use in MainNet, change the fullHost to 'https://api.trongrid.io'
-        const fullHost = isTestnet
-          ? "https://nile.trongrid.io/"
-          : "https://api.trongrid.io/";
+        const tronWeb = getTronWeb(chainId);
 
-        const tronWeb = new TronWeb({
-          fullHost,
-        });
+        if (!tronWeb) {
+          throw new Error("Tron web not found for chainId: " + chainId);
+        }
 
         // Take USDT as an example:
         // Nile TestNet: https://nile.tronscan.org/#/token20/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf
@@ -1695,6 +1693,11 @@ export function JsonRpcContextProvider({
       ): Promise<IFormattedRpcResponse> => {
         const message = "This is a message to be signed for Tron";
 
+        const tronWeb = getTronWeb(chainId);
+        if (!tronWeb) {
+          throw new Error("Tron web not found for chainId: " + chainId);
+        }
+
         const result = await client!.request<{ signature: string }>({
           chainId,
           topic: session!.topic,
@@ -1706,11 +1709,14 @@ export function JsonRpcContextProvider({
             },
           },
         });
-
+        const valid = await tronWeb.trx.verifyMessage(
+          result.signature,
+          message
+        );
         return {
           method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
           address,
-          valid: true,
+          valid: valid,
           result: result.signature,
         };
       }
@@ -2555,6 +2561,22 @@ async function isValidBip122Sig(params: {
   return valid;
 }
 
+async function isValidTronSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const chainId = getNamespacedDidChainId(iss)!;
+  const tronWeb = getTronWeb(chainId);
+  if (!tronWeb) {
+    throw new Error("Tron web not found for chainId: " + iss);
+  }
+  const address = getDidAddress(iss)!;
+  const valid = await tronWeb.trx.verifyMessageV2(message, signature);
+  return valid === address;
+}
+
 export function isValidSignature(params: {
   message: string;
   iss: string;
@@ -2573,8 +2595,8 @@ export function isValidSignature(params: {
     //   return isValidKadenaSignature(params);
     // case "mvx":
     //   return isValidMultiversxSignature(params);
-    // case "tron":
-    //   return isValidTronSignature(params);
+    case "tron":
+      return isValidTronSignature(params);
     // case "tezos":
     //   return isValidTezosSignature(params);
     case "bip122":
