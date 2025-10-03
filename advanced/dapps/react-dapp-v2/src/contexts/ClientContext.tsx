@@ -273,6 +273,7 @@ export function ClientContextProvider({
           message,
           iss: p.iss,
           signature: s.s,
+          signatureMeta: s.m,
         });
         try {
           // finish this

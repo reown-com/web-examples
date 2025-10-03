@@ -106,7 +106,8 @@ export async function signAuthenticationMessages(
         toSign,
         {
           t: result.type as any,
-          s: result.signature
+          s: result.signature,
+          m: result?.publicKey
         },
         toSign.iss
       )
@@ -124,10 +125,11 @@ export async function signMessage(AuthMessage: AuthMessage) {
       const eip155Result = await eip155Wallets[AuthMessage.address].signMessage(AuthMessage.message)
       return { signature: eip155Result, type: 'eip191' }
     case 'ton':
-      const tonResult = await tonWallets[AuthMessage.address].signMessage({
-        message: AuthMessage.message
+      const tonResult = await tonWallets[AuthMessage.address].signData({
+        text: AuthMessage.message,
+        type: 'text'
       })
-      return { signature: tonResult, type: 'ton' }
+      return { signature: tonResult.signature, publicKey: tonResult.publicKey, type: 'ton' }
     case 'solana':
       const solanaResult = await solanaWallets[AuthMessage.address].signMessage({
         message: bs58.encode(new Uint8Array(Buffer.from(AuthMessage.message)))
@@ -162,7 +164,7 @@ export async function signMessage(AuthMessage: AuthMessage) {
       return { signature: polkadotResult.signature, type: 'polkadot' }
     case 'tezos':
       const tezosResult = await tezosWallets[AuthMessage.address].signPayload(AuthMessage.message)
-      return { signature: tezosResult, type: 'tezos' }
+      return { signature: tezosResult.sig, type: 'tezos' }
     case 'tron':
       const tronResult = await tronWallets[AuthMessage.address].signMessage(AuthMessage.message)
       return { signature: tronResult, type: 'tron' }

@@ -27,7 +27,6 @@ import {
   clusterApiUrl,
   PublicKey,
 } from "@solana/web3.js";
-import { TronWeb } from "tronweb";
 import {
   IPactCommand,
   PactCommand,
@@ -89,6 +88,7 @@ import {
   SignableMessage,
 } from "@multiversx/sdk-core";
 import { UserVerifier } from "@multiversx/sdk-wallet/out/userVerifier";
+import { AccessKeyView } from "near-api-js/lib/providers/provider";
 import { parseEther } from "ethers/lib/utils";
 import {
   apiGetAddressUtxos,
@@ -106,11 +106,9 @@ import {
   getNamespacedDidChainId,
 } from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
-import { SuiClient } from "@mysten/sui/client";
-import { AccessKeyView } from "near-api-js/lib/providers/provider";
-import base58 from "bs58";
 import { getTronWeb } from "../helpers/tron";
-
+import { signVerify } from "@ton/crypto";
+import { ed25519 } from "@noble/curves/ed25519";
 /**
  * Types
  */
@@ -2649,10 +2647,27 @@ async function isValidTronSignature(params: {
   return valid === address;
 }
 
+async function isValidTonSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+  signatureMeta?: string;
+}) {
+  const { message, signature, iss, signatureMeta = "" } = params;
+
+  const valid = await signVerify(
+    Buffer.from(message, "utf-8"),
+    Buffer.from(signature, "base64"),
+    Buffer.from(signatureMeta, "hex")
+  );
+
+  return valid;
+}
 export function isValidSignature(params: {
   message: string;
   iss: string;
   signature: string;
+  signatureMeta?: string;
 }) {
   const namespace = getDidAddressNamespace(params.iss);
   switch (namespace) {
@@ -2667,10 +2682,12 @@ export function isValidSignature(params: {
     //   return isValidKadenaSignature(params);
     // case "mvx":
     //   return isValidMultiversxSignature(params);
-    case "tron":
-      return isValidTronSignature(params);
     // case "tezos":
     //   return isValidTezosSignature(params);
+    case "tron":
+      return isValidTronSignature(params);
+    case "ton":
+      return isValidTonSignature(params);
     case "bip122":
       return isValidBip122Sig(params);
     case "sui":

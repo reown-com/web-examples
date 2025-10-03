@@ -56,7 +56,8 @@
     "solana-wallet": "^1.0.1",
     "styled-components": "^6.1.15",
     "tronweb": "^6.0.4",
-    "web-vitals": "^0.2.4"
+    "web-vitals": "^0.2.4",
+    "@ton/crypto": "^3.3.0"
   },
   "devDependencies": {
     "@types/eth-sig-util": "^2.1.1",
