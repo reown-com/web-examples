@@ -108,7 +108,6 @@ import {
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
 import { getTronWeb } from "../helpers/tron";
 import { signVerify } from "@ton/crypto";
-import { ed25519 } from "@noble/curves/ed25519";
 /**
  * Types
  */
@@ -2300,7 +2299,7 @@ export function JsonRpcContextProvider({
             messages: [
               {
                 address,
-                amount: "1000",
+                amount: "10000000", // 0.01 TON
               },
             ],
           },

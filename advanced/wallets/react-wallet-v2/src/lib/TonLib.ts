@@ -1,6 +1,12 @@
-import { KeyPair, keyPairFromSeed, keyPairFromSecretKey, sign, signVerify } from '@ton/crypto'
-import { ed25519 } from '@noble/curves/ed25519'
-import { Cell } from '@ton/core'
+import {
+  KeyPair,
+  keyPairFromSeed,
+  keyPairFromSecretKey,
+  sign,
+  signVerify,
+  sha256_sync
+} from '@ton/crypto'
+import { Cell, toNano } from '@ton/core'
 import { WalletContractV4, TonClient, internal, Address } from '@ton/ton'
 import { TON_MAINNET_CHAINS, TON_TEST_CHAINS } from '@/data/TonData'
 
@@ -65,15 +71,12 @@ export default class TonLib {
     const client = this.getTonClient(chainId)
     const walletContract = client.open(this.wallet)
     const seqno = await walletContract.getSeqno()
-
     const messages = (params.messages || []).map(m => {
-      const bodyCell = m.payload ? Cell.fromBoc(Buffer.from(m.payload, 'base64'))[0] : undefined
       const amountBigInt = typeof m.amount === 'string' ? BigInt(m.amount) : BigInt(m.amount)
-      // NOTE: stateInit handling omitted in this example implementation
       return internal({
         to: Address.parse(m.address),
         value: amountBigInt,
-        body: bodyCell
+        body: 'Test transfer from ton WalletConnect'
       })
     })
 
@@ -88,7 +91,8 @@ export default class TonLib {
       secretKey: this.keypair.secretKey,
       messages
     })
-
+    // const hash2 = sha256_sync(transfer.toBoc())
+    // console.log('hash2', hash2, hash2.toString('base64'), hash2.toString('hex'))
     return transfer.toBoc().toString('base64')
   }
 
@@ -127,7 +131,7 @@ export default class TonLib {
   // no signAllTransactions in TON spec
 
   private getTonClient(chainId: string): TonClient {
-    const rpc = { ...TON_TEST_CHAINS, ...TON_MAINNET_CHAINS }[chainId]?.rpc
+    const rpc = 'https://ton-testnet.api.onfinality.io/public' //{ ...TON_TEST_CHAINS, ...TON_MAINNET_CHAINS }[chainId]?.rpc
 
     if (!rpc) {
       throw new Error('There is no RPC URL for the provided chain')
