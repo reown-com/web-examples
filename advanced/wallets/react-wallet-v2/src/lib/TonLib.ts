@@ -101,7 +101,7 @@ export default class TonLib {
 
     const dataToSign = this.getToSign(params)
     const signature = sign(dataToSign, this.keypair.secretKey as unknown as Buffer)
-    const addressStr = this.wallet.address.toString({ bounceable: false })
+    const addressStr = this.getAddress()
 
     const result = {
       signature: signature.toString('base64'),
