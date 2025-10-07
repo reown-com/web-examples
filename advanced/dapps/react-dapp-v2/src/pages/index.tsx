@@ -53,9 +53,10 @@ import OriginSimulationDropdown from "../components/OriginSimulationDropdown";
 import LoaderModal from "../modals/LoaderModal";
 import { numberToHex } from "@walletconnect/encoding";
 import RequestLoaderModal from "../modals/RequestLoaderModal";
+import { RELAYER_SDK_VERSION } from "@walletconnect/core";
 
 // Normal import does not work here
-const { version } = require("@walletconnect/sign-client/package.json");
+const version = RELAYER_SDK_VERSION;
 
 const Home: NextPage = () => {
   const [modal, setModal] = useState("");
