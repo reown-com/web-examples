@@ -38,14 +38,14 @@ overrides:
   next@>=9.5.5 <14.2.15: '>=14.2.15'
   ansi-html@<0.0.8: '>=0.0.8'
   axios@<1.8.2: '>=1.8.2'
-  '@walletconnect/core@': '>=2.21.8'
+  '@walletconnect/core@': 2.21.10-canary-ws-0
   '@walletconnect/encoding@': '>=1.0.1'
   '@walletconnect/jsonrpc-utils@': '>=1.0.8'
-  '@walletconnect/types@': '>=2.21.8'
-  '@walletconnect/universal-provider@': '>=2.21.8'
-  '@walletconnect/sign-client@': '>=2.21.8'
-  '@walletconnect/utils@': '>=2.21.8'
-  '@walletconnect/ethereum-provider@': '>=2.21.8'
+  '@walletconnect/types@': 2.21.10-canary-ws-0
+  '@walletconnect/universal-provider@': 2.21.10-canary-ws-0
+  '@walletconnect/sign-client@': 2.21.10-canary-ws-0
+  '@walletconnect/utils@': 2.21.10-canary-ws-0
+  '@walletconnect/ethereum-provider@': 2.21.10-canary-ws-0
 
 importers:
 
@@ -103,8 +103,8 @@ importers:
         specifier: ^7.0.6
         version: 7.0.6(encoding@0.1.13)
       '@walletconnect/core':
-        specifier: '>=2.21.8'
-        version: 2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+        specifier: 2.21.10-canary-ws-0
+        version: 2.21.10-canary-ws-0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
       '@walletconnect/encoding':
         specifier: '>=1.0.1'
         version: 1.0.2
@@ -112,14 +112,14 @@ importers:
         specifier: '>=1.0.8'
         version: 1.0.8
       '@walletconnect/types':
-        specifier: '>=2.21.8'
-        version: 2.21.8
+        specifier: 2.21.10-canary-ws-0
+        version: 2.21.10-canary-ws-0
       '@walletconnect/universal-provider':
-        specifier: '>=2.21.8'
-        version: 2.21.8(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+        specifier: 2.21.10-canary-ws-0
+        version: 2.21.10-canary-ws-0(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
       '@walletconnect/utils':
-        specifier: '>=2.21.8'
-        version: 2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+        specifier: 2.21.10-canary-ws-0
+        version: 2.21.10-canary-ws-0(typescript@5.8.3)(zod@3.24.4)
       axios:
         specifier: '>=1.8.2'
         version: 1.8.3
@@ -155,7 +155,7 @@ importers:
         version: 2.16.9
       near-api-js:
         specifier: ^6.0.1
-        version: 6.0.1(449ec5d4e54bbd84ceafbebb84e24a6e)
+        version: 6.0.1(e3nzevk42h66xopb2dhet3g2pa)
       next:
         specifier: 14.2.25
         version: 14.2.25(@babel/core@7.12.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1565,6 +1565,10 @@ packages:
     resolution: {integrity: sha512-HxngEd2XUcg9xi20JkwlLCtYwfoFw4JGkuZpT+WlsPD4gB/cxkvTD8fSsoAnphGZhFdZYKeQIPCuFlWPm1uE0g==}
     engines: {node: ^14.21.3 || >=16}
 
+  '@noble/curves@1.9.7':
+    resolution: {integrity: sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==}
+    engines: {node: ^14.21.3 || >=16}
+
   '@noble/ed25519@1.7.3':
     resolution: {integrity: sha512-iR8GBkDt0Q3GyaVcIu7mSsVIqnFbkbRzGLWlvhwunacoLwt4J3swfKhfaM6rN6WY+TBGoYT1GtT1mIh2/jGbRQ==}
 
@@ -2429,9 +2433,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@walletconnect/core@2.21.8':
-    resolution: {integrity: sha512-MD1SY7KAeHWvufiBK8C1MwP9/pxxI7SnKi/rHYfjco2Xvke+M+Bbm2OzvuSN7dYZvwLTkZCiJmBccTNVPCpSUQ==}
-    engines: {node: '>=18'}
+  '@walletconnect/core@2.21.10-canary-ws-0':
+    resolution: {integrity: sha512-i1bNw4kCAERkF0AIhnDq7LavFnGKoNEhefjwttlnXTzmtJXVV67t1FgGyXo1TI6R6J8TK58EaulZjuKaJwUkcg==}
+    engines: {node: '>=18.20.8'}
 
   '@walletconnect/encoding@1.0.2':
     resolution: {integrity: sha512-CrwSBrjqJ7rpGQcTL3kU+Ief+Bcuu9PH6JLOb+wM6NITX1GTxR/MfNwnQfhLKK6xpRAyj2/nM04OOH6wS8Imag==}
@@ -2480,20 +2484,20 @@ packages:
   '@walletconnect/safe-json@1.0.2':
     resolution: {integrity: sha512-Ogb7I27kZ3LPC3ibn8ldyUr5544t3/STow9+lzz7Sfo808YD7SBWk7SAsdBFlYgP2zDRy2hS3sKRcuSRM0OTmA==}
 
-  '@walletconnect/sign-client@2.21.8':
-    resolution: {integrity: sha512-lTcUbMjQ0YUZ5wzCLhpBeS9OkWYgLLly6BddEp2+pm4QxiwCCU2Nao0nBJXgzKbZYQOgrEGqtdm/7ze67gjzRA==}
+  '@walletconnect/sign-client@2.21.10-canary-ws-0':
+    resolution: {integrity: sha512-MRnQS5C74vKngZ2ekcNfGZ5wthNIcBAO7MdbEyQtR5VUmjBTBUV3GDkc9MaIWaM2f/ZEpDHW7SfjX8CLNR2uqQ==}
 
   '@walletconnect/time@1.0.2':
     resolution: {integrity: sha512-uzdd9woDcJ1AaBZRhqy5rNC9laqWGErfc4dxA9a87mPdKOgWMD85mcFo9dIYIts/Jwocfwn07EC6EzclKubk/g==}
 
-  '@walletconnect/types@2.21.8':
-    resolution: {integrity: sha512-xuLIPrLxe6viMu8Uk28Nf0sgyMy+4oT0mroOjBe5Vqyft8GTiwUBKZXmrGU9uDzZsYVn1FXLO9CkuNHXda3ODA==}
+  '@walletconnect/types@2.21.10-canary-ws-0':
+    resolution: {integrity: sha512-GaO2dDgCXpxIzEE43siNCbw60yX32DL4BYkSQdfKaKbgni9GHgZazUgtNqG0tYUcKLfdWwkrKSMJktWp9+20TQ==}
 
-  '@walletconnect/universal-provider@2.21.8':
-    resolution: {integrity: sha512-Nc1Z6VXnya152yucNDPnlTkrhG289tCUfcjiWqDmwNYzFSfdT5oJQHlnffQXlvoks90kn5Ru8Rnwag2CH1YOVQ==}
+  '@walletconnect/universal-provider@2.21.10-canary-ws-0':
+    resolution: {integrity: sha512-X0rYoGskJbHJBFY/2L5p1oIytfzca81Xt9uU2at4sQDervBCx/04nYUv8aTRmTrF2i4OWTmD9LDCtsMGh8CD3Q==}
 
-  '@walletconnect/utils@2.21.8':
-    resolution: {integrity: sha512-HtMraGJ9qXo55l4wGSM1aZvyz0XVv460iWhlRGAyRl9Yz8RQeKyXavDhwBfcTFha/6kwLxPExqQ+MURtKeVVXw==}
+  '@walletconnect/utils@2.21.10-canary-ws-0':
+    resolution: {integrity: sha512-YM2x1W57OCLa2j3236kSMXD9uTrsZEcGqAy5R26AiTLZGwEgfnl73UIBPnMmBirsiQBZx0nGGYbggBbwqKrJAg==}
 
   '@walletconnect/window-getters@1.0.1':
     resolution: {integrity: sha512-vHp+HqzGxORPAN8gY03qnbTMnhqIwjeRJNOMOAzePRg4xVEEE2WvYsI9G2NMjOknA8hnuYbU3/hwLcKbjhc8+Q==}
@@ -2568,17 +2572,6 @@ packages:
   abab@2.0.6:
     resolution: {integrity: sha512-j2afSsaIENvHZN2B8GOpF566vZ5WVk5opAiMTvWgaQT8DkbOqsTfvNAvHoRGU2zzP8cPoqys+xHTRDWW8L+/BA==}
     deprecated: Use your platform's native atob() and btoa() methods instead
-
-  abitype@1.0.8:
-    resolution: {integrity: sha512-ZeiI6h3GnW06uYDLx0etQtX/p8E24UaHHBj57RSjK7YBFe7iuVn07EDpOeP451D06sF27VOz9JJPlIKJmXgkEg==}
-    peerDependencies:
-      typescript: '>=5.0.4'
-      zod: ^3 >=3.22.0
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-      zod:
-        optional: true
 
   abitype@1.1.0:
     resolution: {integrity: sha512-6Vh4HcRxNMLA0puzPjM5GBgT4aAcFGKZzSgAXvuZ27shJP6NEpielTuqbBmZILR5/xd0PizkBGy5hReKz9jl5A==}
@@ -4555,10 +4548,6 @@ packages:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
     engines: {node: '>=8'}
 
-  filter-obj@1.1.0:
-    resolution: {integrity: sha512-8rXg1ZnX7xzy2NGDVkBVaAy+lSlPNwad13BtgSlLuxfIslyt5Vg64U7tFcCt4WS1R0hvtnQybT/IyCkGZ3DpXQ==}
-    engines: {node: '>=0.10.0'}
-
   finalhandler@1.3.1:
     resolution: {integrity: sha512-6BN9trH7bp3qvnrRyzsBz+g3lZxTNZTbVO2EV1CS0WIcDbawYVdYvGflME/9QP0h0pYlCDBCTjYa9nZzMDpyxQ==}
     engines: {node: '>= 0.8'}
@@ -6450,8 +6439,8 @@ packages:
     resolution: {integrity: sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg==}
     engines: {node: '>= 0.4'}
 
-  ox@0.7.1:
-    resolution: {integrity: sha512-+k9fY9PRNuAMHRFIUbiK9Nt5seYHHzSQs9Bj+iMETcGtlpS7SmBzcGSVUQO3+nqGLEiNK4598pHNFlVRaZbRsg==}
+  ox@0.9.3:
+    resolution: {integrity: sha512-KzyJP+fPV4uhuuqrTZyok4DC7vFzi7HLUFiUNEmpbyh59htKWkOC98IONC1zgXJPbHAhQgqs6B0Z6StCGhmQvg==}
     peerDependencies:
       typescript: '>=5.4.0'
     peerDependenciesMeta:
@@ -7147,10 +7136,6 @@ packages:
     resolution: {integrity: sha512-gjWOsm2SoGlgLEdAGt7a6slVOk9mGiXmPFMqrEhLQ68rhQuBnpfs3+EmlvqKyxnCo9/PPlF+9MtY02S1aFg+Jw==}
     engines: {node: '>=0.10.0'}
 
-  query-string@7.1.3:
-    resolution: {integrity: sha512-hh2WYhq4fi8+b+/2Kg9CEge4fDPvHS534aOOvOZeQ3+Vf2mCFsaFBYj0i+iXcAq6I9Vzp5fjMFBlONvayDC1qg==}
-    engines: {node: '>=6'}
-
   querystring-es3@0.2.1:
     resolution: {integrity: sha512-773xhDQnZBMFobEiztv8LIl70ch5MSF/jUQVlhwFyBILqq96anmoctVIYz+ZRp0qbCKATTn6ev02M3r7Ga5vqA==}
     engines: {node: '>=0.4.x'}
@@ -7817,10 +7802,6 @@ packages:
     resolution: {integrity: sha512-r46gZQZQV+Kl9oItvl1JZZqJKGr+oEkB08A6BzkiR7593/7IbtuncXHd2YoYeTsG4157ZssMu9KYvUHLcjcDoA==}
     engines: {node: '>=6.0.0'}
 
-  split-on-first@1.1.0:
-    resolution: {integrity: sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw==}
-    engines: {node: '>=6'}
-
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
@@ -7884,10 +7865,6 @@ packages:
   strict-uri-encode@1.1.0:
     resolution: {integrity: sha512-R3f198pcvnB+5IpnBlRkphuE9n46WyVl8I39W/ZUTZLz4nqSP/oLYUrcnJrw462Ds8he4YKMov2efsTIw1BDGQ==}
     engines: {node: '>=0.10.0'}
-
-  strict-uri-encode@2.0.0:
-    resolution: {integrity: sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ==}
-    engines: {node: '>=4'}
 
   string-length@4.0.2:
     resolution: {integrity: sha512-+l6rNN5fYHNhZZy41RXsYptCjA2Igmq4EG7kZAYFQI1E1VTXarr6ZPXBg6eq7Y6eK4FEhY6AJlyuFIb/v/S0VQ==}
@@ -8577,14 +8554,6 @@ packages:
     resolution: {integrity: sha512-ZZKSmDAEFOijERBLkmYfJ+vmk3w+7hOLYDNkRCuRuMJGEmqYNCNLyBBFwWKVMhfwaEF3WOd0Zlw86U/WC/+nYw==}
     engines: {'0': node >=0.6.0}
 
-  viem@2.31.0:
-    resolution: {integrity: sha512-U7OMQ6yqK+bRbEIarf2vqxL7unSEQvNxvML/1zG7suAmKuJmipqdVTVJGKBCJiYsm/EremyO2FS4dHIPpGv+eA==}
-    peerDependencies:
-      typescript: '>=5.0.4'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-
   viem@2.37.9:
     resolution: {integrity: sha512-XXUOE5yJcjr9/M9kRoQcPMUfetwHprO9aTho6vNELjBKJIBx7rYq1fjvBw+xEnhsRjhh5lsORi6B0h8fYFB7NA==}
     peerDependencies:
@@ -8942,18 +8911,6 @@ packages:
 
   ws@8.18.1:
     resolution: {integrity: sha512-RKW2aJZMXeMxVpnZ6bck+RswznaxmzdULiBr6KY7XkTnW8uvt0iT9H5DkHUChXrc+uurzwa0rVI16n/Xzjdz1w==}
-    engines: {node: '>=10.0.0'}
-    peerDependencies:
-      bufferutil: ^4.0.1
-      utf-8-validate: '>=5.0.2'
-    peerDependenciesMeta:
-      bufferutil:
-        optional: true
-      utf-8-validate:
-        optional: true
-
-  ws@8.18.2:
-    resolution: {integrity: sha512-DMricUmwGZUVr++AEAe2uiVM7UoO9MAVZMDu05UQOaUII0lp+zOzLLU4Xqh/JvTqklB1T4uELaaPBKyjE1r4fQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -11194,7 +11151,7 @@ snapshots:
       '@types/istanbul-lib-coverage': 2.0.6
       collect-v8-coverage: 1.0.2
 
-  '@jest/test-sequencer@26.6.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@jest/test-sequencer@26.6.3':
     dependencies:
       '@jest/test-result': 26.6.2
       graceful-fs: 4.2.11
@@ -11202,11 +11159,7 @@ snapshots:
       jest-runner: 26.6.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       jest-runtime: 26.6.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - ts-node
-      - utf-8-validate
 
   '@jest/transform@26.6.2':
     dependencies:
@@ -11291,8 +11244,8 @@ snapshots:
       '@kadena/cryptography-utils': 0.3.3
       '@kadena/pactjs': 0.2.9
       '@kadena/types': 0.3.3
-      '@walletconnect/sign-client': 2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
-      '@walletconnect/types': 2.21.8
+      '@walletconnect/sign-client': 2.21.10-canary-ws-0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+      '@walletconnect/types': 2.21.10-canary-ws-0
       cross-fetch: 3.1.8(encoding@0.1.13)
       debug: 4.3.7
       encoding: 0.1.13
@@ -11438,7 +11391,7 @@ snapshots:
       '@tybys/wasm-util': 0.9.0
     optional: true
 
-  '@near-js/accounts@2.0.1(c5365a1f4f3920ec3d4e81630160d850)':
+  '@near-js/accounts@2.0.1(jwlaada4p4papqyv4uh3qnluhu)':
     dependencies:
       '@near-js/crypto': 2.0.1(@near-js/types@2.0.1)(@near-js/utils@2.0.1(@near-js/types@2.0.1))
       '@near-js/providers': 2.0.1(@near-js/crypto@2.0.1(@near-js/types@2.0.1)(@near-js/utils@2.0.1(@near-js/types@2.0.1)))(@near-js/transactions@2.0.1(@near-js/crypto@2.0.1(@near-js/types@2.0.1)(@near-js/utils@2.0.1(@near-js/types@2.0.1)))(@near-js/types@2.0.1)(@near-js/utils@2.0.1(@near-js/types@2.0.1)))(@near-js/types@2.0.1)(@near-js/utils@2.0.1(@near-js/types@2.0.1))(encoding@0.1.13)
@@ -11573,6 +11526,10 @@ snapshots:
       '@noble/hashes': 1.8.0
 
   '@noble/curves@1.9.2':
+    dependencies:
+      '@noble/hashes': 1.8.0
+
+  '@noble/curves@1.9.7':
     dependencies:
       '@noble/hashes': 1.8.0
 
@@ -11783,7 +11740,7 @@ snapshots:
     dependencies:
       '@reown/appkit-common': 1.7.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
       '@reown/appkit-wallet': 1.7.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@walletconnect/universal-provider': 2.21.8(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+      '@walletconnect/universal-provider': 2.21.10-canary-ws-0(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
       valtio: 1.13.2(@types/react@18.0.15)(react@18.3.1)
       viem: 2.37.9(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
     transitivePeerDependencies:
@@ -11929,7 +11886,7 @@ snapshots:
       '@reown/appkit-polyfills': 1.7.5
       '@reown/appkit-wallet': 1.7.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@walletconnect/logger': 2.1.2
-      '@walletconnect/universal-provider': 2.21.8(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+      '@walletconnect/universal-provider': 2.21.10-canary-ws-0(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
       valtio: 1.13.2(@types/react@18.0.15)(react@18.3.1)
       viem: 2.37.9(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
     transitivePeerDependencies:
@@ -11980,8 +11937,8 @@ snapshots:
       '@reown/appkit-ui': 1.7.5(@types/react@18.0.15)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
       '@reown/appkit-utils': 1.7.5(@types/react@18.0.15)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(valtio@1.13.2(@types/react@18.0.15)(react@18.3.1))(zod@3.24.4)
       '@reown/appkit-wallet': 1.7.5(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@walletconnect/types': 2.21.8
-      '@walletconnect/universal-provider': 2.21.8(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+      '@walletconnect/types': 2.21.10-canary-ws-0
+      '@walletconnect/universal-provider': 2.21.10-canary-ws-0(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
       bs58: 6.0.0
       valtio: 1.13.2(@types/react@18.0.15)(react@18.3.1)
       viem: 2.37.9(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
@@ -12750,7 +12707,7 @@ snapshots:
   '@unrs/rspack-resolver-binding-win32-x64-msvc@1.2.2':
     optional: true
 
-  '@walletconnect/core@2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)':
+  '@walletconnect/core@2.21.10-canary-ws-0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)':
     dependencies:
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-provider': 1.0.14
@@ -12763,8 +12720,8 @@ snapshots:
       '@walletconnect/relay-auth': 1.1.0
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.21.8
-      '@walletconnect/utils': 2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+      '@walletconnect/types': 2.21.10-canary-ws-0
+      '@walletconnect/utils': 2.21.10-canary-ws-0(typescript@5.8.3)(zod@3.24.4)
       '@walletconnect/window-getters': 1.0.1
       es-toolkit: 1.39.3
       events: 3.3.0
@@ -12895,16 +12852,16 @@ snapshots:
     dependencies:
       tslib: 1.14.1
 
-  '@walletconnect/sign-client@2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)':
+  '@walletconnect/sign-client@2.21.10-canary-ws-0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)':
     dependencies:
-      '@walletconnect/core': 2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+      '@walletconnect/core': 2.21.10-canary-ws-0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/logger': 2.1.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.21.8
-      '@walletconnect/utils': 2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+      '@walletconnect/types': 2.21.10-canary-ws-0
+      '@walletconnect/utils': 2.21.10-canary-ws-0(typescript@5.8.3)(zod@3.24.4)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -12934,7 +12891,7 @@ snapshots:
     dependencies:
       tslib: 1.14.1
 
-  '@walletconnect/types@2.21.8':
+  '@walletconnect/types@2.21.10-canary-ws-0':
     dependencies:
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.2
@@ -12962,7 +12919,7 @@ snapshots:
       - ioredis
       - uploadthing
 
-  '@walletconnect/universal-provider@2.21.8(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)':
+  '@walletconnect/universal-provider@2.21.10-canary-ws-0(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)':
     dependencies:
       '@walletconnect/events': 1.0.1
       '@walletconnect/jsonrpc-http-connection': 1.0.8(encoding@0.1.13)
@@ -12971,9 +12928,9 @@ snapshots:
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/keyvaluestorage': 1.1.1
       '@walletconnect/logger': 2.1.2
-      '@walletconnect/sign-client': 2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
-      '@walletconnect/types': 2.21.8
-      '@walletconnect/utils': 2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+      '@walletconnect/sign-client': 2.21.10-canary-ws-0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+      '@walletconnect/types': 2.21.10-canary-ws-0
+      '@walletconnect/utils': 2.21.10-canary-ws-0(typescript@5.8.3)(zod@3.24.4)
       es-toolkit: 1.39.3
       events: 3.3.0
     transitivePeerDependencies:
@@ -13001,11 +12958,11 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@walletconnect/utils@2.21.8(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)':
+  '@walletconnect/utils@2.21.10-canary-ws-0(typescript@5.8.3)(zod@3.24.4)':
     dependencies:
       '@msgpack/msgpack': 3.1.2
       '@noble/ciphers': 1.3.0
-      '@noble/curves': 1.9.2
+      '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
       '@walletconnect/jsonrpc-utils': 1.0.8
@@ -13014,15 +12971,14 @@ snapshots:
       '@walletconnect/relay-auth': 1.1.0
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.21.8
+      '@walletconnect/types': 2.21.10-canary-ws-0
       '@walletconnect/window-getters': 1.0.1
       '@walletconnect/window-metadata': 1.0.1
       blakejs: 1.2.1
       bs58: 6.0.0
       detect-browser: 5.3.0
-      query-string: 7.1.3
+      ox: 0.9.3(typescript@5.8.3)(zod@3.24.4)
       uint8arrays: 3.1.1
-      viem: 2.31.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -13039,12 +12995,10 @@ snapshots:
       - '@vercel/blob'
       - '@vercel/kv'
       - aws4fetch
-      - bufferutil
       - db0
       - ioredis
       - typescript
       - uploadthing
-      - utf-8-validate
       - zod
 
   '@walletconnect/window-getters@1.0.1':
@@ -13157,11 +13111,6 @@ snapshots:
       through: 2.3.8
 
   abab@2.0.6: {}
-
-  abitype@1.0.8(typescript@5.8.3)(zod@3.24.4):
-    optionalDependencies:
-      typescript: 5.8.3
-      zod: 3.24.4
 
   abitype@1.1.0(typescript@5.8.3)(zod@3.22.4):
     optionalDependencies:
@@ -15054,8 +15003,8 @@ snapshots:
       '@typescript-eslint/parser': 5.62.0(eslint@9.26.0)(typescript@5.8.3)
       eslint: 9.26.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.9.1(eslint-plugin-import@2.31.0)(eslint@9.26.0)
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.9.1)(eslint@9.26.0)
+      eslint-import-resolver-typescript: 3.9.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0))(eslint@9.26.0)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.9.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0))(eslint@9.26.0))(eslint@9.26.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.26.0)
       eslint-plugin-react: 7.37.4(eslint@9.26.0)
       eslint-plugin-react-hooks: 4.6.2(eslint@9.26.0)
@@ -15066,7 +15015,7 @@ snapshots:
       - eslint-plugin-import-x
       - supports-color
 
-  eslint-config-react-app@6.0.0(@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(babel-eslint@10.1.0(eslint@9.26.0))(eslint-plugin-flowtype@5.10.0(eslint@9.26.0))(eslint-plugin-import@2.31.0)(eslint-plugin-jest@24.7.0(@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.26.0))(eslint-plugin-react-hooks@4.6.2(eslint@9.26.0))(eslint-plugin-react@7.37.4(eslint@9.26.0))(eslint-plugin-testing-library@3.10.2(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3):
+  eslint-config-react-app@6.0.0(@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(babel-eslint@10.1.0(eslint@9.26.0))(eslint-plugin-flowtype@5.10.0(eslint@9.26.0))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0))(eslint-plugin-jest@24.7.0(@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.26.0))(eslint-plugin-react-hooks@4.6.2(eslint@9.26.0))(eslint-plugin-react@7.37.4(eslint@9.26.0))(eslint-plugin-testing-library@3.10.2(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3):
     dependencies:
       '@typescript-eslint/eslint-plugin': 4.33.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3)
       '@typescript-eslint/parser': 4.33.0(eslint@9.26.0)(typescript@5.8.3)
@@ -15091,7 +15040,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.9.1(eslint-plugin-import@2.31.0)(eslint@9.26.0):
+  eslint-import-resolver-typescript@3.9.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0))(eslint@9.26.0):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.0(supports-color@6.1.0)
@@ -15116,14 +15065,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0)(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.9.1)(eslint@9.26.0):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0)(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.9.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0))(eslint@9.26.0))(eslint@9.26.0):
     dependencies:
       debug: 3.2.7(supports-color@6.1.0)
     optionalDependencies:
       '@typescript-eslint/parser': 5.62.0(eslint@9.26.0)(typescript@5.8.3)
       eslint: 9.26.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.9.1(eslint-plugin-import@2.31.0)(eslint@9.26.0)
+      eslint-import-resolver-typescript: 3.9.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0))(eslint@9.26.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -15162,7 +15111,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.9.1)(eslint@9.26.0):
+  eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.9.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0))(eslint@9.26.0))(eslint@9.26.0):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.8
@@ -15173,7 +15122,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.26.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0)(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.9.1)(eslint@9.26.0)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0)(typescript@5.8.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.9.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0))(eslint@9.26.0))(eslint@9.26.0)
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -15750,8 +15699,6 @@ snapshots:
   fill-range@7.1.1:
     dependencies:
       to-regex-range: 5.0.1
-
-  filter-obj@1.1.0: {}
 
   finalhandler@1.3.1(supports-color@6.1.0):
     dependencies:
@@ -16712,10 +16659,6 @@ snapshots:
     dependencies:
       ws: 7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)
 
-  isows@1.0.7(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)):
-    dependencies:
-      ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-
   isows@1.0.7(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)):
     dependencies:
       ws: 8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -16863,7 +16806,7 @@ snapshots:
   jest-config@26.6.3(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
       '@babel/core': 7.12.3
-      '@jest/test-sequencer': 26.6.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@jest/test-sequencer': 26.6.3
       '@jest/types': 26.6.2
       babel-jest: 26.6.3(@babel/core@7.12.3)
       chalk: 4.1.2
@@ -17741,9 +17684,9 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
 
-  near-api-js@6.0.1(449ec5d4e54bbd84ceafbebb84e24a6e):
+  near-api-js@6.0.1(e3nzevk42h66xopb2dhet3g2pa):
     dependencies:
-      '@near-js/accounts': 2.0.1(c5365a1f4f3920ec3d4e81630160d850)
+      '@near-js/accounts': 2.0.1(jwlaada4p4papqyv4uh3qnluhu)
       '@near-js/crypto': 2.0.1(@near-js/types@2.0.1)(@near-js/utils@2.0.1(@near-js/types@2.0.1))
       '@near-js/keystores': 2.0.1(@near-js/crypto@2.0.1(@near-js/types@2.0.1)(@near-js/utils@2.0.1(@near-js/types@2.0.1)))(@near-js/types@2.0.1)
       '@near-js/keystores-browser': 2.0.1(@near-js/types@2.0.1)(@near-js/utils@2.0.1(@near-js/types@2.0.1))
@@ -18055,11 +17998,11 @@ snapshots:
       object-keys: 1.1.1
       safe-push-apply: 1.0.0
 
-  ox@0.7.1(typescript@5.8.3)(zod@3.24.4):
+  ox@0.9.3(typescript@5.8.3)(zod@3.24.4):
     dependencies:
       '@adraffy/ens-normalize': 1.11.0
       '@noble/ciphers': 1.3.0
-      '@noble/curves': 1.9.2
+      '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
@@ -18945,13 +18888,6 @@ snapshots:
       object-assign: 4.1.1
       strict-uri-encode: 1.1.0
 
-  query-string@7.1.3:
-    dependencies:
-      decode-uri-component: 0.2.2
-      filter-obj: 1.1.0
-      split-on-first: 1.1.0
-      strict-uri-encode: 2.0.0
-
   querystring-es3@0.2.1: {}
 
   querystring@0.2.1: {}
@@ -19078,7 +19014,7 @@ snapshots:
       dotenv: 8.2.0
       dotenv-expand: 5.1.0
       eslint: 9.26.0
-      eslint-config-react-app: 6.0.0(@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(babel-eslint@10.1.0(eslint@9.26.0))(eslint-plugin-flowtype@5.10.0(eslint@9.26.0))(eslint-plugin-import@2.31.0)(eslint-plugin-jest@24.7.0(@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.26.0))(eslint-plugin-react-hooks@4.6.2(eslint@9.26.0))(eslint-plugin-react@7.37.4(eslint@9.26.0))(eslint-plugin-testing-library@3.10.2(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3)
+      eslint-config-react-app: 6.0.0(@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(babel-eslint@10.1.0(eslint@9.26.0))(eslint-plugin-flowtype@5.10.0(eslint@9.26.0))(eslint-plugin-import@2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0))(eslint-plugin-jest@24.7.0(@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(eslint-plugin-jsx-a11y@6.10.2(eslint@9.26.0))(eslint-plugin-react-hooks@4.6.2(eslint@9.26.0))(eslint-plugin-react@7.37.4(eslint@9.26.0))(eslint-plugin-testing-library@3.10.2(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3)
       eslint-plugin-flowtype: 5.10.0(eslint@9.26.0)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)
       eslint-plugin-jest: 24.7.0(@typescript-eslint/eslint-plugin@4.33.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)(typescript@5.8.3)
@@ -19901,8 +19837,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  split-on-first@1.1.0: {}
-
   split2@4.2.0: {}
 
   sprintf-js@1.0.3: {}
@@ -19968,8 +19902,6 @@ snapshots:
   streamsearch@1.1.0: {}
 
   strict-uri-encode@1.1.0: {}
-
-  strict-uri-encode@2.0.0: {}
 
   string-length@4.0.2:
     dependencies:
@@ -20665,23 +20597,6 @@ snapshots:
       core-util-is: 1.0.2
       extsprintf: 1.3.0
 
-  viem@2.31.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.24.4):
-    dependencies:
-      '@noble/curves': 1.9.1
-      '@noble/hashes': 1.8.0
-      '@scure/bip32': 1.7.0
-      '@scure/bip39': 1.6.0
-      abitype: 1.0.8(typescript@5.8.3)(zod@3.24.4)
-      isows: 1.0.7(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
-      ox: 0.7.1(typescript@5.8.3)(zod@3.24.4)
-      ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-    optionalDependencies:
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-      - zod
-
   viem@2.37.9(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@5.0.10)(zod@3.22.4):
     dependencies:
       '@noble/curves': 1.9.1
@@ -21319,11 +21234,6 @@ snapshots:
       utf-8-validate: 5.0.10
 
   ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10):
-    optionalDependencies:
-      bufferutil: 4.0.9
-      utf-8-validate: 5.0.10
-
-  ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     optionalDependencies:
       bufferutil: 4.0.9
       utf-8-validate: 5.0.10
