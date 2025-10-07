@@ -1,13 +1,5 @@
-import {
-  KeyPair,
-  keyPairFromSeed,
-  keyPairFromSecretKey,
-  sign,
-  signVerify,
-  sha256_sync
-} from '@ton/crypto'
-import { Cell, toNano } from '@ton/core'
-import { WalletContractV4, TonClient, internal, Address } from '@ton/ton'
+import { KeyPair, keyPairFromSeed, keyPairFromSecretKey, sign, signVerify } from '@ton/crypto'
+import { WalletContractV4, TonClient, internal, Address, Transaction } from '@ton/ton'
 import { TON_MAINNET_CHAINS, TON_TEST_CHAINS } from '@/data/TonData'
 
 /**
@@ -86,13 +78,13 @@ export default class TonLib {
       messages
     })
 
+    // Send the transfer
     await walletContract.sendTransfer({
       seqno,
       secretKey: this.keypair.secretKey,
       messages
     })
-    // const hash2 = sha256_sync(transfer.toBoc())
-    // console.log('hash2', hash2, hash2.toString('base64'), hash2.toString('hex'))
+
     return transfer.toBoc().toString('base64')
   }
 
@@ -128,8 +120,6 @@ export default class TonLib {
     return result
   }
 
-  // no signAllTransactions in TON spec
-
   private getTonClient(chainId: string): TonClient {
     const rpc = 'https://ton-testnet.api.onfinality.io/public' //{ ...TON_TEST_CHAINS, ...TON_MAINNET_CHAINS }[chainId]?.rpc
 
@@ -140,34 +130,6 @@ export default class TonLib {
     return new TonClient({
       endpoint: rpc
     })
-  }
-
-  /**
-   * Send TON to a recipient
-   * @param recipientAddress The recipient's address
-   * @param amount The amount to send in nanotons (as a bigint)
-   * @returns The transaction hash
-   */
-  public async sendTon(recipientAddress: string, chainId: string, amount: bigint): Promise<string> {
-    const client = this.getTonClient(chainId)
-    const walletContract = client.open(this.wallet)
-    const seqno = await walletContract.getSeqno()
-
-    // Create transfer message
-    const message = internal({
-      to: Address.parse(recipientAddress),
-      value: amount,
-      body: undefined // No additional body for simple transfers
-    })
-
-    // Create and send transfer
-    await walletContract.sendTransfer({
-      seqno,
-      secretKey: this.keypair.secretKey,
-      messages: [message]
-    })
-
-    return 'transaction_sent' // TON doesn't return hash directly
   }
 
   private getToSign(params: TonLib.SignData['params']): Buffer {
