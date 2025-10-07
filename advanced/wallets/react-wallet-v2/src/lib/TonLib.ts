@@ -121,7 +121,7 @@ export default class TonLib {
   }
 
   private getTonClient(chainId: string): TonClient {
-    const rpc = 'https://ton-testnet.api.onfinality.io/public' //{ ...TON_TEST_CHAINS, ...TON_MAINNET_CHAINS }[chainId]?.rpc
+    const rpc = { ...TON_TEST_CHAINS, ...TON_MAINNET_CHAINS }[chainId]?.rpc
 
     if (!rpc) {
       throw new Error('There is no RPC URL for the provided chain')

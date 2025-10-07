@@ -27,7 +27,7 @@ export const TON_TEST_CHAINS = {
     name: 'TON Testnet',
     logo: '/chain-logos/ton.png',
     rgb: '0, 136, 204',
-    rpc: blockchainApiRpc('testnet'),
+    rpc: 'https://ton-testnet.api.onfinality.io/public', //blockchainApiRpc('testnet'),
     namespace: 'ton'
   }
 }
