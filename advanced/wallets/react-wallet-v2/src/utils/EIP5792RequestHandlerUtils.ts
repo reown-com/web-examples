@@ -10,7 +10,7 @@ import {
 } from '@/data/EIP5792Data'
 import { getWallet } from '@/utils/EIP155WalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
-import { SignClientTypes } from '@walletconnect/types'
+import { EngineTypes, SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import SettingsStore from '@/store/SettingsStore'
 import EIP155Lib from '@/lib/EIP155Lib'

@@ -56,7 +56,7 @@ function getIss(chain: string) {
   return `${didPrefix}${chain}:${getAddress(chain)}`
 }
 
-function getAddress(chain: string) {
+export function getAddress(chain: string) {
   const parsedChain = parseChainId(chain)
   switch (parsedChain.namespace) {
     case 'eip155':
