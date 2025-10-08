@@ -101,7 +101,7 @@ export default class TonLib {
 
     const dataToSign = this.getToSign(params)
     const signature = sign(dataToSign, this.keypair.secretKey as unknown as Buffer)
-    const addressStr = this.getAddress()
+    const addressStr = await this.getAddress()
 
     const result = {
       signature: signature.toString('base64'),
@@ -125,6 +125,7 @@ export default class TonLib {
     } catch (e) {
       console.warn('TON signData verification failed to run', e)
     }
+
     return result
   }
 
