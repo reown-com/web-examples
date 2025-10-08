@@ -1,5 +1,4 @@
-// @ts-ignore
-import TronWeb from 'tronweb'
+import { TronWeb, utils } from 'tronweb'
 
 /**
  * Types
@@ -13,7 +12,7 @@ interface IInitArguments {
  */
 export default class TronLib {
   privateKey: string
-  tronWeb: any
+  tronWeb: TronWeb
 
   constructor(privateKey: string) {
     this.privateKey = privateKey
@@ -26,7 +25,7 @@ export default class TronLib {
 
   static async init({ privateKey }: IInitArguments) {
     if (!privateKey) {
-      const account = TronWeb.utils.accounts.generateAccount()
+      const account = utils.accounts.generateAccount()
       return new TronLib(account.privateKey)
     } else {
       return new TronLib(privateKey)
