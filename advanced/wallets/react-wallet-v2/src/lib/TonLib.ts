@@ -39,7 +39,7 @@ export default class TonLib {
   }
 
   public async getAddress() {
-    return this.wallet.address.toString()
+    return this.wallet.address.toString({ bounceable: false })
   }
 
   public getSecretKey() {
@@ -68,7 +68,7 @@ export default class TonLib {
       return internal({
         to: Address.parse(m.address),
         value: amountBigInt,
-        body: 'Test transfer from ton WalletConnect'
+        body: m.payload ?? 'Test transfer from ton WalletConnect'
       })
     })
 
@@ -93,7 +93,7 @@ export default class TonLib {
 
     const dataToSign = this.getToSign(params)
     const signature = sign(dataToSign, this.keypair.secretKey as unknown as Buffer)
-    const addressStr = this.wallet.address.toString()
+    const addressStr = await this.getAddress()
 
     const result = {
       signature: signature.toString('base64'),
@@ -117,6 +117,7 @@ export default class TonLib {
     } catch (e) {
       console.warn('TON signData verification failed to run', e)
     }
+
     return result
   }
 
