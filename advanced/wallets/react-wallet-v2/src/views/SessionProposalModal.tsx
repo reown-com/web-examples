@@ -13,6 +13,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
+import PaymentIcon from '@mui/icons-material/Payment'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
@@ -63,6 +64,7 @@ import { TON_CHAINS, TON_SIGNING_METHODS } from '@/data/TonData'
 import { tonAddresses } from '@/utils/TonWalletUtil'
 import { prepareAuthenticationMessages, signAuthenticationMessages } from '@/utils/AuthUtil'
 import { AuthenticationMessage } from '@/types/auth'
+import { processWalletPay } from '@/utils/WalletPay'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -83,7 +85,12 @@ export default function SessionProposalModal() {
     useState<AuthenticationMessage[]>()
   const [selectedMessageIndices, setSelectedMessageIndices] = useState<Set<number>>(new Set())
   const [isAuthMessagesExpanded, setIsAuthMessagesExpanded] = useState(false)
+  const [isWalletPayExpanded, setIsWalletPayExpanded] = useState(
+    proposal?.params?.requests?.walletPay !== undefined
+  )
   const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
+  const [walletPay, setWalletPay] = useState(proposal?.params?.requests?.walletPay)
+  const [processPayment, setProcessPayment] = useState(true)
   console.log('proposal', JSON.stringify(proposal, null, 2))
 
   const { query } = useRouter()
@@ -413,6 +420,14 @@ export default function SessionProposalModal() {
             )
           })
         }
+        const proposalRequestsResponses = []
+        // Handle walletPay response
+        if (walletPay && processPayment) {
+          const walletPayResult = await processWalletPay({ walletPay })
+          proposalRequestsResponses.push(walletPayResult)
+          console.log('walletPayResult', walletPayResult)
+        }
+
         console.log('sessionProperties', sessionProperties)
 
         const signedAuths = await signAuthenticationMessages(authenticationMessagesToSign)
@@ -421,17 +436,25 @@ export default function SessionProposalModal() {
           id: proposal.id,
           namespaces,
           sessionProperties,
-          proposalRequestsResponses: signedAuths
+          proposalRequestsResponses: [...proposalRequestsResponses, ...signedAuths]
         })
         SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }
     } catch (e) {
+      console.error('Error processing payment:', e)
       styledToast((e as Error).message, 'error')
     } finally {
       setIsLoadingApprove(false)
       ModalStore.close()
     }
-  }, [namespaces, proposal, reorderedEip155Accounts])
+  }, [
+    namespaces,
+    proposal,
+    reorderedEip155Accounts,
+    walletPay,
+    processPayment,
+    authenticationMessagesToSign
+  ])
 
   // Hanlde reject action
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -563,6 +586,91 @@ export default function SessionProposalModal() {
                   </Col>
                 </Row>
               ))}
+            </>
+          )}
+          <Divider />
+        </>
+      )}
+      {walletPay && (
+        <>
+          <Row
+            style={{
+              cursor: 'pointer',
+              padding: '10px',
+              borderRadius: '6px',
+              alignItems: 'center'
+            }}
+            onClick={() => setIsWalletPayExpanded(!isWalletPayExpanded)}
+          >
+            <Col>
+              <div
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <PaymentIcon />
+                  <StyledText h5>WalletConnect Pay Request</StyledText>
+                </div>
+                {isWalletPayExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </div>
+            </Col>
+          </Row>
+          {isWalletPayExpanded && (
+            <>
+              <Row
+                style={{
+                  marginTop: '10px',
+                  paddingLeft: '10px',
+                  marginBottom: '10px'
+                }}
+              >
+                <Col>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      cursor: 'pointer',
+                      padding: '8px',
+                      borderRadius: '6px',
+                      backgroundColor: processPayment
+                        ? 'rgba(0, 200, 0, 0.1)'
+                        : 'rgba(200, 0, 0, 0.1)'
+                    }}
+                    onClick={() => setProcessPayment(!processPayment)}
+                  >
+                    {processPayment ? <CheckBoxIcon /> : <CheckBoxOutlineBlankIcon />}
+                    <StyledText small css={{ fontWeight: '600' }}>
+                      Process payment request
+                    </StyledText>
+                  </div>
+                </Col>
+              </Row>
+              <Row
+                style={{
+                  marginTop: '10px',
+                  paddingLeft: '10px'
+                }}
+              >
+                <Col>
+                  <pre
+                    style={{
+                      marginTop: '0',
+                      padding: '12px',
+                      borderRadius: '6px',
+                      wordBreak: 'break-word',
+                      whiteSpace: 'pre-wrap',
+                      fontFamily: 'monospace',
+                      fontSize: '13px',
+                      overflowX: 'auto',
+                      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                      maxHeight: '300px',
+                      overflowY: 'auto'
+                    }}
+                  >
+                    <code>{JSON.stringify(walletPay, null, 2)}</code>
+                  </pre>
+                </Col>
+              </Row>
             </>
           )}
           <Divider />
