@@ -12,6 +12,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "eip155:324",
   "eip155:42161",
   "eip155:42220",
+  "ton:-239",
   "cosmos:cosmoshub-4",
   "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
   "polkadot:91b171bb158e2d3848fa23a9f1c25182",
@@ -33,6 +34,7 @@ export const DEFAULT_TEST_CHAINS = [
   "eip155:80001",
   "eip155:421611",
   "eip155:44787",
+  "ton:-3",
   "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
   "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
   "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
@@ -251,6 +253,16 @@ export enum DEFAULT_TRON_METHODS {
 }
 
 export enum DEFAULT_TRON_EVENTS {}
+
+/**
+ * TON
+ */
+export enum DEFAULT_TON_METHODS {
+  TON_SEND_MESSAGE = "ton_sendMessage",
+  TON_SIGN_DATA = "ton_signData",
+}
+
+export enum DEFAULT_TON_EVENTS {}
 
 /**
  * TEZOS

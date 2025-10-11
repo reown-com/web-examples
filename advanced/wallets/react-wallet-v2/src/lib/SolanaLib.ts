@@ -85,7 +85,7 @@ export default class SolanaLib {
 
     const signature = await connection.sendTransaction(transaction, {
       maxRetries: 3,
-      preflightCommitment: 'recent',
+      preflightCommitment: 'confirmed',
       ...params.options
     })
 
