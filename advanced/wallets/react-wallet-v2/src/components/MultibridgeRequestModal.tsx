@@ -51,7 +51,16 @@ export default function MultibridgeRequestModal({
 
   const chainId = params?.chainId
   const request = params?.request
-  const caService = new ChainAbstractionService()
+
+  // Lazy initialize ChainAbstractionService to avoid errors during component mount
+  const getCaService = useCallback(() => {
+    try {
+      return new ChainAbstractionService()
+    } catch (error) {
+      console.error('Failed to initialize ChainAbstractionService:', error)
+      throw new Error('Chain abstraction service is not available. Please check your configuration.')
+    }
+  }, [])
 
   const bridgeFunds = useCallback(async (): Promise<void> => {
     if (!bridgingTransactions) {
@@ -99,6 +108,7 @@ export default function MultibridgeRequestModal({
     maxAttempts = 100,
     interval = 1500
   ): Promise<void> {
+    const caService = getCaService()
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const { status } = await caService.getOrchestrationStatus(orchestrationId)
       console.log(attempt, '- Orchestration status:', status)
