@@ -1,6 +1,6 @@
 import Navigation from '@/components/Navigation'
 import RouteTransition from '@/components/RouteTransition'
-import { Card, Container, Loading } from '@nextui-org/react'
+import { Card, Container, Loading, Text } from '@nextui-org/react'
 import { Fragment, ReactNode } from 'react'
 
 /**
@@ -81,7 +81,21 @@ export default function Layout({ children, initialized }: Props) {
             </Card.Footer>
           </Fragment>
         ) : (
-          <Loading />
+          <Container
+            display="flex"
+            direction="column"
+            alignItems="center"
+            gap={2}
+            css={{ textAlign: 'center' }}
+          >
+            <Loading size="lg" />
+            <Text size="$lg" css={{ marginTop: '$4' }}>
+              Initializing wallet...
+            </Text>
+            <Text size="$sm" color="$gray600">
+              This may take a few moments
+            </Text>
+          </Container>
         )}
       </Card>
     </Container>
