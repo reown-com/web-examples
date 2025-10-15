@@ -17,7 +17,7 @@ export const tonCenterRpc = (testnet: boolean) => {
 export const TON_MAINNET_CHAINS = {
   'ton:-239': {
     chainId: '-239',
-    name: 'TON Mainnet',
+    name: 'TON',
     logo: '/chain-logos/ton.png',
     rgb: '0, 136, 204',
     rpc: tonCenterRpc(false),
