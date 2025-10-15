@@ -59,6 +59,7 @@ const { version } = require("@walletconnect/sign-client/package.json");
 
 const Home: NextPage = () => {
   const [modal, setModal] = useState("");
+  const [disconnectError, setDisconnectError] = useState<string | null>(null);
 
   const closeModal = () => setModal("");
   const openPairingModal = () => setModal("pairing");
@@ -117,6 +118,19 @@ const Home: NextPage = () => {
     }
   }, [session, modal]);
 
+  // Add debug logging in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      console.log("App State:", {
+        accounts: accounts.length,
+        balances: Object.keys(balances).length,
+        session: !!session,
+        isInitializing,
+        isFetchingBalances,
+      });
+    }
+  }, [accounts, balances, session, isInitializing, isFetchingBalances]);
+
   const onConnect = () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
@@ -136,15 +150,38 @@ const Home: NextPage = () => {
   };
 
   const onDisconnect = useCallback(async () => {
+    setDisconnectError(null);
     openDisconnectModal();
+
     try {
-      await disconnect();
+      // Add timeout to prevent hanging
+      const disconnectPromise = disconnect();
+      const timeoutPromise = new Promise<void>((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Disconnect timeout after 10 seconds")),
+          10000
+        )
+      );
+
+      await Promise.race([disconnectPromise, timeoutPromise]);
+
+      // Add small delay to ensure state updates complete
+      await new Promise((resolve) => setTimeout(resolve, 100));
     } catch (error) {
-      toast.error((error as Error).message, {
+      const errorMessage = (error as Error).message;
+      console.error("Disconnect error:", error);
+      setDisconnectError(errorMessage);
+      toast.error(errorMessage, {
         position: "bottom-left",
+        duration: 5000,
       });
+    } finally {
+      // Close modal after a brief moment to show any final status
+      setTimeout(() => {
+        closeModal();
+        setDisconnectError(null);
+      }, 500);
     }
-    closeModal();
   }, [disconnect]);
 
   async function emit() {
@@ -681,7 +718,13 @@ const Home: NextPage = () => {
           />
         );
       case "disconnect":
-        return <LoaderModal title={"Disconnecting..."} />;
+        return (
+          <LoaderModal
+            title={disconnectError ? "Disconnect Failed" : "Disconnecting..."}
+            subtitle={disconnectError || undefined}
+            isError={!!disconnectError}
+          />
+        );
       default:
         return null;
     }
@@ -696,7 +739,8 @@ const Home: NextPage = () => {
   const renderContent = () => {
     const chainOptions = isTestnet ? DEFAULT_TEST_CHAINS : DEFAULT_MAIN_CHAINS;
 
-    return !accounts.length && !Object.keys(balances).length ? (
+    // Show connect screen if no session or no accounts/balances
+    return !session || (!accounts.length && !Object.keys(balances).length) ? (
       <SLanding center>
         <Banner />
         <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
