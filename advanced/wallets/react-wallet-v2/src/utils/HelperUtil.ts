@@ -8,9 +8,9 @@ import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { TEZOS_CHAINS, TTezosChain } from '@/data/TezosData'
 import { TRON_CHAINS, TTronChain } from '@/data/TronData'
 import { KADENA_CHAINS, TKadenaChain } from '@/data/KadenaData'
+import { TON_CHAINS } from '@/data/TonData'
 
 import { utils } from 'ethers'
-import { Verify } from '@walletconnect/types'
 import bs58 from 'bs58'
 
 /**
@@ -160,6 +160,7 @@ export function formatChainName(chainId: string) {
     TRON_CHAINS[chainId as TTronChain]?.name ??
     TEZOS_CHAINS[chainId as TTezosChain]?.name ??
     KADENA_CHAINS[chainId as TKadenaChain]?.name ??
+    TON_CHAINS[chainId as keyof typeof TON_CHAINS]?.name ??
     chainId
   )
 }
