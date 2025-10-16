@@ -2282,18 +2282,16 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_TON_METHODS.TON_SEND_MESSAGE;
-        const params = [
-          {
-            valid_until: Math.floor(Date.now() / 1000) + 300,
-            from: address,
-            messages: [
-              {
-                address,
-                amount: "1000",
-              },
-            ],
-          },
-        ];
+        const params = {
+          valid_until: Math.floor(Date.now() / 1000) + 300,
+          from: address,
+          messages: [
+            {
+              address,
+              amount: "1000",
+            },
+          ],
+        };
         const result = await client!.request<any>({
           topic: session!.topic,
           chainId,
