@@ -12,7 +12,7 @@ type RelayerType = {
  */
 export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
   {
-    value: 'wss://relay.walletconnect.com',
+    value: process.env.NEXT_PUBLIC_RELAY_URL || 'wss://relay.walletconnect.com',
     label: 'Default'
   },
 
