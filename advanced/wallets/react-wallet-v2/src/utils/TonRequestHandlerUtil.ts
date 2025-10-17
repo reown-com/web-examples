@@ -29,7 +29,7 @@ export async function approveTonRequest(requestEvent: RequestEventArgs) {
       }
     case TON_SIGNING_METHODS.SEND_MESSAGE:
       try {
-        const txParams = Array.isArray(request.params) ? request.params[0] : request.params
+        const txParams = request.params
         const result = await wallet.sendMessage(txParams, chainId)
         return formatJsonRpcResult(id, result)
       } catch (error: any) {
