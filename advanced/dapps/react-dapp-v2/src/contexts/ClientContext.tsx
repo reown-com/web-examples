@@ -88,7 +88,7 @@ export function ClientContextProvider({
     useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
   const [relayerRegion, setRelayerRegion] = useState<string>(
-    DEFAULT_RELAY_URL!
+    DEFAULT_RELAY_URL || ''
   );
   const [origin, setOrigin] = useState<string>(getAppMetadata().url);
   const reset = () => {
@@ -99,7 +99,7 @@ export function ClientContextProvider({
     setBalances({});
     setAccounts([]);
     setChains([]);
-    setRelayerRegion(DEFAULT_RELAY_URL!);
+    setRelayerRegion(DEFAULT_RELAY_URL || '');
     setIsFetchingBalances(false); // Clear loading state on reset
   };
 
@@ -376,7 +376,7 @@ export function ClientContextProvider({
         localStorage.getItem("wallet_connect_dapp_origin") || origin;
       const provider = await UniversalProvider.init({
         logger: DEFAULT_LOGGER,
-        relayUrl: relayerRegion,
+        relayUrl: relayerRegion || process.env.NEXT_PUBLIC_RELAY_URL,
         projectId: DEFAULT_PROJECT_ID,
         metadata: {
           name: "React App",
