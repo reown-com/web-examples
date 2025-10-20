@@ -232,8 +232,6 @@ export function ClientContextProvider({
           },
         ];
 
-        console.log("authentication", authentication);
-
         provider.namespaces = undefined;
         const session = await provider.connect({
           pairingTopic: pairing?.topic,
@@ -314,7 +312,6 @@ export function ClientContextProvider({
           signatureMeta: s.m,
         });
         try {
-          // finish this
           if (valid) {
             const namespace = getDidAddressNamespace(p.iss);
             const reference = getDidChainId(p.iss)!;

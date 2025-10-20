@@ -84,7 +84,6 @@ export default function SessionProposalModal() {
   const [selectedMessageIndices, setSelectedMessageIndices] = useState<Set<number>>(new Set())
   const [isAuthMessagesExpanded, setIsAuthMessagesExpanded] = useState(false)
   const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
-  console.log('proposal', JSON.stringify(proposal, null, 2))
 
   const { query } = useRouter()
 

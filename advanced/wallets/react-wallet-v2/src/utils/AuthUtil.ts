@@ -119,7 +119,7 @@ export async function signAuthenticationMessages(
 
 export async function signMessage(AuthMessage: AuthMessage) {
   const parsed = parseChainId(AuthMessage.chainId)
-  console.log('signMessage', AuthMessage)
+
   switch (parsed.namespace) {
     case 'eip155':
       const eip155Result = await eip155Wallets[AuthMessage.address].signMessage(AuthMessage.message)
