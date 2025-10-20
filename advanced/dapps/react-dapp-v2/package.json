@@ -26,12 +26,12 @@
     "@solana/web3.js": "^1.36.0",
     "@stacks/network": "^7.0.2",
     "@stacks/transactions": "^7.0.6",
-    "@walletconnect/core": "2.21.8",
+    "@walletconnect/core": "2.21.10-canary-a-1",
     "@walletconnect/encoding": "^1.0.1",
     "@walletconnect/jsonrpc-utils": "^1.0.8",
-    "@walletconnect/types": "2.21.8",
-    "@walletconnect/universal-provider": "2.21.8",
-    "@walletconnect/utils": "2.21.8",
+    "@walletconnect/types": "2.21.10-canary-a-1",
+    "@walletconnect/universal-provider": "2.21.10-canary-a-1",
+    "@walletconnect/utils": "2.21.10-canary-a-1",
     "@reown/appkit": "1.7.5",
     "axios": "^1.0.0",
     "@mysten/sui": "^1.29.1",
@@ -55,8 +55,11 @@
     "react-scripts": "^4.0.3",
     "solana-wallet": "^1.0.1",
     "styled-components": "^6.1.15",
-    "tronweb": "^4.4.0",
-    "web-vitals": "^0.2.4"
+    "tronweb": "^6.0.4",
+    "web-vitals": "^0.2.4",
+    "@ton/crypto": "^3.3.0",
+    "@ton/core": "^0.61.0",
+    "@ton/ton": "^15.3.1"
   },
   "devDependencies": {
     "@types/eth-sig-util": "^2.1.1",
@@ -111,14 +114,14 @@
       "next@>=9.5.5 <14.2.15": ">=14.2.15",
       "ansi-html@<0.0.8": ">=0.0.8",
       "axios@<1.8.2": ">=1.8.2",
-      "@walletconnect/core@": ">=2.21.8",
+      "@walletconnect/core@": "2.21.10-canary-a-1",
       "@walletconnect/encoding@": ">=1.0.1",
       "@walletconnect/jsonrpc-utils@": ">=1.0.8",
-      "@walletconnect/types@": ">=2.21.8",
-      "@walletconnect/universal-provider@": ">=2.21.8",
-      "@walletconnect/sign-client@": ">=2.21.8",
-      "@walletconnect/utils@": ">=2.21.8",
-      "@walletconnect/ethereum-provider@": ">=2.21.8"
+      "@walletconnect/types@": "2.21.10-canary-a-1",
+      "@walletconnect/universal-provider@": "2.21.10-canary-a-1",
+      "@walletconnect/sign-client@": "2.21.10-canary-a-1",
+      "@walletconnect/utils@": "2.21.10-canary-a-1",
+      "@walletconnect/ethereum-provider@": "2.21.10-canary-a-1"
     }
   }
 }
