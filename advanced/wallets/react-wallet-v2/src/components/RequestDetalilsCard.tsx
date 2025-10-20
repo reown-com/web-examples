@@ -5,6 +5,7 @@ import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
 import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
 import { TRON_CHAINS, TTronChain } from '@/data/TronData'
+import { TON_CHAINS, TTonChain } from '@/data/TonData'
 import { Col, Divider, Row, Text } from '@nextui-org/react'
 import { Fragment } from 'react'
 
@@ -36,6 +37,7 @@ export default function RequestDetailsCard({ chains, protocol }: IProps) {
                   MULTIVERSX_CHAINS[chain as TMultiversxChain]?.name ??
                   TRON_CHAINS[chain as TTronChain]?.name ??
                   KADENA_CHAINS[chain as TKadenaChain]?.name ??
+                  TON_CHAINS[chain as TTonChain]?.name ??
                   chain
               )
               .join(', ')}

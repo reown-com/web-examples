@@ -8,18 +8,21 @@ import { SModalContainer, SModalParagraph, SModalTitle } from "./shared";
 interface LoaderModal {
   title: string;
   text?: string;
+  subtitle?: string;
+  isError?: boolean;
 }
 
 const LoaderModal = (props: LoaderModal) => {
-  const { title, text } = props;
+  const { title, text, subtitle, isError } = props;
   return (
     <>
       <SModalContainer>
         <SModalTitle>{title}</SModalTitle>
         <SContainer>
-          <Loader />
-          <br />
-          <SModalParagraph>{text}</SModalParagraph>
+          {!isError && <Loader />}
+          {!isError && <br />}
+          {text && <SModalParagraph>{text}</SModalParagraph>}
+          {subtitle && <SModalParagraph>{subtitle}</SModalParagraph>}
         </SContainer>
       </SModalContainer>
     </>

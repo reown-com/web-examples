@@ -94,6 +94,7 @@ export function ClientContextProvider({
   const [authenticatedAddresses, setAuthenticatedAddresses] = useState<
     string[]
   >([]);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const [balances, setBalances] = useState<AccountBalances>({});
   const [accounts, setAccounts] = useState<string[]>([]);
@@ -101,22 +102,36 @@ export function ClientContextProvider({
     useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
   const [relayerRegion, setRelayerRegion] = useState<string>(
-    DEFAULT_RELAY_URL!
+    DEFAULT_RELAY_URL || ""
   );
   const [origin, setOrigin] = useState<string>(getAppMetadata().url);
   const reset = () => {
+    // Abort any in-flight balance fetches
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
     setSession(undefined);
     setBalances({});
     setAccounts([]);
     setChains([]);
-    setRelayerRegion(DEFAULT_RELAY_URL!);
+    setRelayerRegion(DEFAULT_RELAY_URL || "");
+    setIsFetchingBalances(false); // Clear loading state on reset
   };
 
   const getAccountBalances = async (_accounts: string[]) => {
+    if (!_accounts.length) return; // Early return if no accounts
+
+    // Create new abort controller for this fetch
+    abortControllerRef.current = new AbortController();
+    const { signal } = abortControllerRef.current;
+
     setIsFetchingBalances(true);
     try {
+      // Check if aborted before starting
+      if (signal.aborted) return;
+
       const arr = await Promise.all(
         _accounts.map(async (account) => {
+          if (signal.aborted) throw new Error("Aborted");
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
           const assets = await apiGetAccountBalance(address, chainId);
@@ -124,14 +139,21 @@ export function ClientContextProvider({
         })
       );
 
+      // Check again before updating state
+      if (signal.aborted) return;
+
       const balances: AccountBalances = {};
       arr.forEach(({ account, assets }) => {
         balances[account] = assets;
       });
       setBalances(balances);
     } catch (e) {
-      console.error(e);
+      if ((e as Error).message !== "Aborted") {
+        console.error(e);
+        toast.error("Failed to fetch balances", { position: "bottom-left" });
+      }
     } finally {
+      // Always clear loading state, even on abort
       setIsFetchingBalances(false);
     }
   };
@@ -246,19 +268,35 @@ export function ClientContextProvider({
 
   const disconnect = useCallback(async () => {
     if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    if (typeof session === "undefined") {
-      throw new Error("Session is not connected");
+      console.error("WalletConnect client not initialized");
+      toast.error("WalletConnect client not initialized", {
+        position: "bottom-left",
+      });
+      reset(); // Still reset local state if client never initialized
+      return;
     }
 
-    await client.disconnect({
-      topic: session.topic,
-      reason: getSdkError("USER_DISCONNECTED"),
-    });
+    // If no session, just reset and return
+    if (!session) {
+      reset();
+      return;
+    }
 
-    // Reset app state after disconnect.
-    reset();
+    try {
+      await client.disconnect({
+        topic: session.topic,
+        reason: getSdkError("USER_DISCONNECTED"),
+      });
+      // Only reset if disconnect succeeds
+      reset();
+    } catch (error) {
+      console.error("Disconnect error:", error);
+      toast.error(`Failed to disconnect: ${(error as Error).message}`, {
+        position: "bottom-left",
+      });
+      // Don't reset on error - session is still active, allow retry
+      throw error;
+    }
   }, [client, session]);
 
   const validateAuthenticationResults = useCallback(
@@ -410,7 +448,7 @@ export function ClientContextProvider({
         localStorage.getItem("wallet_connect_dapp_origin") || origin;
       const provider = await UniversalProvider.init({
         logger: DEFAULT_LOGGER,
-        relayUrl: relayerRegion,
+        relayUrl: relayerRegion || process.env.NEXT_PUBLIC_RELAY_URL,
         projectId: DEFAULT_PROJECT_ID,
         metadata: {
           name: "React App",
