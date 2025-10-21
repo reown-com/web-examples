@@ -84,6 +84,18 @@ export default function useInitialization() {
             }),
             createOrRestoreKadenaWallet().then(({ kadenaAddresses }) => {
               SettingsStore.setKadenaAddress(kadenaAddresses[0])
+            }),
+            createOrRestoreBip122Wallet().then(({ bip122Addresses }) => {
+              SettingsStore.setbip122Address(bip122Addresses[0])
+            }),
+            createOrRestoreSuiWallet().then(({ suiAddresses }) => {
+              SettingsStore.setSuiAddress(suiAddresses[0])
+            }),
+            createOrRestoreStacksWallet().then(({ stacksAddresses }) => {
+              SettingsStore.setStacksAddress('mainnet', stacksAddresses[0])
+            }),
+            createOrRestoreTonWallet().then(({ tonAddresses }) => {
+              SettingsStore.setTonAddress(tonAddresses[0])
             })
           ])
           console.log('All chain wallets initialized')
