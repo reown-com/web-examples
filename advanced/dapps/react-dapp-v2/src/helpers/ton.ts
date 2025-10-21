@@ -124,9 +124,10 @@ async function retry<T>(
     } catch (e) {
       if (e instanceof Error) lastError = e;
       if (i < options.retries - 1) {
-        await new Promise((resolve) => setTimeout(resolve, options.delay));
       }
     }
+
+    await new Promise((resolve) => setTimeout(resolve, options.delay));
   }
   if (printedAnything) console.log("\n");
   throw lastError;
