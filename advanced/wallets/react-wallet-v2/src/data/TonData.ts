@@ -8,7 +8,9 @@ export const blockchainApiRpc = (chainId: string) => {
 }
 
 export const tonCenterRpc = (testnet: boolean) => {
-  return `https://${testnet ? 'testnet.' : ''}toncenter.com/api/v2/jsonRPC`
+  return testnet
+    ? 'https://ton-testnet.api.onfinality.io/public'
+    : 'https://toncenter.com/api/v2/jsonRPC'
 }
 
 /**
