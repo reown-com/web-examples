@@ -38,13 +38,13 @@ export default function useInitialization() {
 
     try {
       console.log('Starting wallet initialization...')
-      
+
       // Initialize EIP155 wallet first (required)
       const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
       if (!eip155Addresses || !eip155Addresses[0]) {
         throw new Error('Failed to create EIP155 wallet')
       }
-      
+
       console.log('EIP155 wallet created:', eip155Addresses[0])
       SettingsStore.setEIP155Address(eip155Addresses[0])
 
@@ -61,32 +61,30 @@ export default function useInitialization() {
       ;(async () => {
         try {
           const { cosmosAddresses } = await createOrRestoreCosmosWallet()
-          const { solanaAddresses } = await createOrRestoreSolanaWallet()
-          const { polkadotAddresses } = await createOrRestorePolkadotWallet()
-          const { nearAddresses } = await createOrRestoreNearWallet()
-          const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
-          const { tronAddresses } = await createOrRestoreTronWallet()
-          const { tezosAddresses } = await createOrRestoreTezosWallet()
-          const { kadenaAddresses } = await createOrRestoreKadenaWallet()
-          const { bip122Addresses } = await createOrRestoreBip122Wallet()
-          const { stacksAddresses } = await createOrRestoreStacksWallet()
-          const { suiAddresses } = await createOrRestoreSuiWallet()
-          const { tonAddresses } = await createOrRestoreTonWallet()
-          
           SettingsStore.setCosmosAddress(cosmosAddresses[0])
+          const { solanaAddresses } = await createOrRestoreSolanaWallet()
           SettingsStore.setSolanaAddress(solanaAddresses[0])
+          const { polkadotAddresses } = await createOrRestorePolkadotWallet()
           SettingsStore.setPolkadotAddress(polkadotAddresses[0])
+          const { nearAddresses } = await createOrRestoreNearWallet()
           SettingsStore.setNearAddress(nearAddresses[0])
+          const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
           SettingsStore.setMultiversxAddress(multiversxAddresses[0])
+          const { tronAddresses } = await createOrRestoreTronWallet()
           SettingsStore.setTronAddress(tronAddresses[0])
+          const { tezosAddresses } = await createOrRestoreTezosWallet()
           SettingsStore.setTezosAddress(tezosAddresses[0])
+          const { kadenaAddresses } = await createOrRestoreKadenaWallet()
           SettingsStore.setKadenaAddress(kadenaAddresses[0])
+          const { bip122Addresses } = await createOrRestoreBip122Wallet()
           SettingsStore.setbip122Address(bip122Addresses[0])
+          const { stacksAddresses } = await createOrRestoreStacksWallet()
           SettingsStore.setStacksAddress('mainnet', stacksAddresses[0])
           SettingsStore.setStacksAddress('testnet', stacksAddresses[1])
+          const { suiAddresses } = await createOrRestoreSuiWallet()
           SettingsStore.setSuiAddress(suiAddresses[0])
+          const { tonAddresses } = await createOrRestoreTonWallet()
           SettingsStore.setTonAddress(tonAddresses[0])
-          
           console.log('All chain wallets initialized')
         } catch (walletError) {
           console.error('Error initializing some chain wallets:', walletError)
@@ -98,23 +96,23 @@ export default function useInitialization() {
       console.log('Creating WalletConnect client...')
       await createWalletKit(relayerRegionURL)
       console.log('WalletConnect client created successfully')
-      
+
       setInitialized(true)
       console.log('Wallet initialization complete')
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err)
       console.error('Initialization failed:', errorMessage)
       setInitializationError(errorMessage)
-      
+
       // Show user-friendly error message
       alert(
         `Failed to initialize wallet:\n\n${errorMessage}\n\n` +
-        'Please check:\n' +
-        '1. You have created a .env.local file\n' +
-        '2. NEXT_PUBLIC_PROJECT_ID is set in .env.local\n' +
-        '3. Your internet connection is working'
+          'Please check:\n' +
+          '1. You have created a .env.local file\n' +
+          '2. NEXT_PUBLIC_PROJECT_ID is set in .env.local\n' +
+          '3. Your internet connection is working'
       )
-      
+
       // Allow retry by resetting the flag after a delay
       setTimeout(() => {
         initializationAttempted.current = false
