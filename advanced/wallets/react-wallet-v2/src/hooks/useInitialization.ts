@@ -60,31 +60,32 @@ export default function useInitialization() {
       // Initialize other chain wallets in background with error handling
       ;(async () => {
         try {
-          const { cosmosAddresses } = await createOrRestoreCosmosWallet()
-          SettingsStore.setCosmosAddress(cosmosAddresses[0])
-          const { solanaAddresses } = await createOrRestoreSolanaWallet()
-          SettingsStore.setSolanaAddress(solanaAddresses[0])
-          const { polkadotAddresses } = await createOrRestorePolkadotWallet()
-          SettingsStore.setPolkadotAddress(polkadotAddresses[0])
-          const { nearAddresses } = await createOrRestoreNearWallet()
-          SettingsStore.setNearAddress(nearAddresses[0])
-          const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
-          SettingsStore.setMultiversxAddress(multiversxAddresses[0])
-          const { tronAddresses } = await createOrRestoreTronWallet()
-          SettingsStore.setTronAddress(tronAddresses[0])
-          const { tezosAddresses } = await createOrRestoreTezosWallet()
-          SettingsStore.setTezosAddress(tezosAddresses[0])
-          const { kadenaAddresses } = await createOrRestoreKadenaWallet()
-          SettingsStore.setKadenaAddress(kadenaAddresses[0])
-          const { bip122Addresses } = await createOrRestoreBip122Wallet()
-          SettingsStore.setbip122Address(bip122Addresses[0])
-          const { stacksAddresses } = await createOrRestoreStacksWallet()
-          SettingsStore.setStacksAddress('mainnet', stacksAddresses[0])
-          SettingsStore.setStacksAddress('testnet', stacksAddresses[1])
-          const { suiAddresses } = await createOrRestoreSuiWallet()
-          SettingsStore.setSuiAddress(suiAddresses[0])
-          const { tonAddresses } = await createOrRestoreTonWallet()
-          SettingsStore.setTonAddress(tonAddresses[0])
+          await Promise.allSettled([
+            createOrRestoreCosmosWallet().then(({ cosmosAddresses }) => {
+              SettingsStore.setCosmosAddress(cosmosAddresses[0])
+            }),
+            createOrRestoreSolanaWallet().then(({ solanaAddresses }) => {
+              SettingsStore.setSolanaAddress(solanaAddresses[0])
+            }),
+            createOrRestorePolkadotWallet().then(({ polkadotAddresses }) => {
+              SettingsStore.setPolkadotAddress(polkadotAddresses[0])
+            }),
+            createOrRestoreNearWallet().then(({ nearAddresses }) => {
+              SettingsStore.setNearAddress(nearAddresses[0])
+            }),
+            createOrRestoreMultiversxWallet().then(({ multiversxAddresses }) => {
+              SettingsStore.setMultiversxAddress(multiversxAddresses[0])
+            }),
+            createOrRestoreTronWallet().then(({ tronAddresses }) => {
+              SettingsStore.setTronAddress(tronAddresses[0])
+            }),
+            createOrRestoreTezosWallet().then(({ tezosAddresses }) => {
+              SettingsStore.setTezosAddress(tezosAddresses[0])
+            }),
+            createOrRestoreKadenaWallet().then(({ kadenaAddresses }) => {
+              SettingsStore.setKadenaAddress(kadenaAddresses[0])
+            })
+          ])
           console.log('All chain wallets initialized')
         } catch (walletError) {
           console.error('Error initializing some chain wallets:', walletError)
