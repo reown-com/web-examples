@@ -4,6 +4,7 @@ import { AppKit, CaipNetwork, CaipNetworkId } from "@reown/appkit";
 import { createAppKit } from "@reown/appkit/core";
 import { defineChain } from "@reown/appkit/networks";
 import {
+  ConnectParams,
   IUniversalProvider,
   NamespaceConfig,
   UniversalProvider,
@@ -23,7 +24,15 @@ import {
   useState,
 } from "react";
 
-import { getAppMetadata, getSdkError } from "@walletconnect/utils";
+import {
+  formatMessage,
+  getAppMetadata,
+  getDidAddress,
+  getDidAddressNamespace,
+  getDidChainId,
+  getSdkError,
+  parseChainId,
+} from "@walletconnect/utils";
 import {
   DEFAULT_LOGGER,
   DEFAULT_PROJECT_ID,
@@ -32,6 +41,7 @@ import {
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { getRequiredNamespaces } from "../helpers/namespaces";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
+import { isValidSignature } from "./JsonRpcContext";
 
 /**
  * Types
@@ -55,6 +65,7 @@ interface IContext {
   setRelayerRegion: any;
   origin: string;
   setAccounts: any;
+  authenticatedAddresses: string[];
 }
 
 /**
@@ -80,6 +91,10 @@ export function ClientContextProvider({
   const [isFetchingBalances, setIsFetchingBalances] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const prevRelayerValue = useRef<string>("");
+  const [authenticatedAddresses, setAuthenticatedAddresses] = useState<
+    string[]
+  >([]);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const [balances, setBalances] = useState<AccountBalances>({});
   const [accounts, setAccounts] = useState<string[]>([]);
@@ -87,22 +102,36 @@ export function ClientContextProvider({
     useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
   const [relayerRegion, setRelayerRegion] = useState<string>(
-    DEFAULT_RELAY_URL!
+    DEFAULT_RELAY_URL || ""
   );
   const [origin, setOrigin] = useState<string>(getAppMetadata().url);
   const reset = () => {
+    // Abort any in-flight balance fetches
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
     setSession(undefined);
     setBalances({});
     setAccounts([]);
     setChains([]);
-    setRelayerRegion(DEFAULT_RELAY_URL!);
+    setRelayerRegion(DEFAULT_RELAY_URL || "");
+    setIsFetchingBalances(false); // Clear loading state on reset
   };
 
   const getAccountBalances = async (_accounts: string[]) => {
+    if (!_accounts.length) return; // Early return if no accounts
+
+    // Create new abort controller for this fetch
+    abortControllerRef.current = new AbortController();
+    const { signal } = abortControllerRef.current;
+
     setIsFetchingBalances(true);
     try {
+      // Check if aborted before starting
+      if (signal.aborted) return;
+
       const arr = await Promise.all(
         _accounts.map(async (account) => {
+          if (signal.aborted) throw new Error("Aborted");
           const [namespace, reference, address] = account.split(":");
           const chainId = `${namespace}:${reference}`;
           const assets = await apiGetAccountBalance(address, chainId);
@@ -110,14 +139,21 @@ export function ClientContextProvider({
         })
       );
 
+      // Check again before updating state
+      if (signal.aborted) return;
+
       const balances: AccountBalances = {};
       arr.forEach(({ account, assets }) => {
         balances[account] = assets;
       });
       setBalances(balances);
     } catch (e) {
-      console.error(e);
+      if ((e as Error).message !== "Aborted") {
+        console.error(e);
+        toast.error("Failed to fetch balances", { position: "bottom-left" });
+      }
     } finally {
+      // Always clear loading state, even on abort
       setIsFetchingBalances(false);
     }
   };
@@ -182,15 +218,33 @@ export function ClientContextProvider({
           }
         });
 
+        const authentication: ConnectParams["authentication"] = [
+          {
+            uri: window.location.origin,
+            domain: window.location.host,
+            chains: [
+              ...Object.values(namespacesToRequest)
+                .map((namespace) => namespace?.chains?.join(",") || "")
+                .flat(),
+            ],
+            nonce: "1",
+            ttl: 1000,
+          },
+        ];
+
         provider.namespaces = undefined;
         const session = await provider.connect({
           pairingTopic: pairing?.topic,
           optionalNamespaces: namespacesToRequest as NamespaceConfig,
+          authentication,
         });
 
         if (!session) {
           throw new Error("Session is not connected");
         }
+
+        const authenticationResults = session.authentication;
+        validateAuthenticationResults(authenticationResults);
 
         console.log("Established session:", session);
         await onSessionConnected(session);
@@ -212,20 +266,70 @@ export function ClientContextProvider({
 
   const disconnect = useCallback(async () => {
     if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-    if (typeof session === "undefined") {
-      throw new Error("Session is not connected");
+      console.error("WalletConnect client not initialized");
+      toast.error("WalletConnect client not initialized", {
+        position: "bottom-left",
+      });
+      reset(); // Still reset local state if client never initialized
+      return;
     }
 
-    await client.disconnect({
-      topic: session.topic,
-      reason: getSdkError("USER_DISCONNECTED"),
-    });
+    // If no session, just reset and return
+    if (!session) {
+      reset();
+      return;
+    }
 
-    // Reset app state after disconnect.
-    reset();
+    try {
+      await client.disconnect({
+        topic: session.topic,
+        reason: getSdkError("USER_DISCONNECTED"),
+      });
+      // Only reset if disconnect succeeds
+      reset();
+    } catch (error) {
+      console.error("Disconnect error:", error);
+      toast.error(`Failed to disconnect: ${(error as Error).message}`, {
+        position: "bottom-left",
+      });
+      // Don't reset on error - session is still active, allow retry
+      throw error;
+    }
   }, [client, session]);
+
+  const validateAuthenticationResults = useCallback(
+    async (authenticationResults: SessionTypes.Struct["authentication"]) => {
+      console.log("authenticationResults", authenticationResults);
+      if (!authenticationResults) return;
+      for (const cacao of authenticationResults) {
+        console.log("cacao", cacao);
+        const { s, p } = cacao;
+        const message = formatMessage(cacao.p, p.iss);
+        const valid = await isValidSignature({
+          message,
+          iss: p.iss,
+          signature: s.s,
+          signatureMeta: s.m,
+        });
+        try {
+          if (valid) {
+            const namespace = getDidAddressNamespace(p.iss);
+            const reference = getDidChainId(p.iss)!;
+            const address = getDidAddress(p.iss)!;
+            setAuthenticatedAddresses((prev) => [
+              ...prev,
+              `${namespace}:${reference}:${address}`,
+            ]);
+          }
+
+          console.log("isValid", valid);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    },
+    []
+  );
 
   const _subscribeToEvents = useCallback(
     async (_client: Client) => {
@@ -278,6 +382,9 @@ export function ClientContextProvider({
         );
         console.log("RESTORED SESSION:", _session);
         await onSessionConnected(_session);
+
+        const authenticationResults = _session.authentication;
+        validateAuthenticationResults(authenticationResults);
         return _session;
       }
     },
@@ -338,7 +445,7 @@ export function ClientContextProvider({
         localStorage.getItem("wallet_connect_dapp_origin") || origin;
       const provider = await UniversalProvider.init({
         logger: DEFAULT_LOGGER,
-        relayUrl: relayerRegion,
+        relayUrl: relayerRegion || process.env.NEXT_PUBLIC_RELAY_URL,
         projectId: DEFAULT_PROJECT_ID,
         metadata: {
           name: "React App",
@@ -444,6 +551,7 @@ export function ClientContextProvider({
       setRelayerRegion,
       origin,
       setAccounts,
+      authenticatedAddresses,
     }),
     [
       pairings,
@@ -462,6 +570,7 @@ export function ClientContextProvider({
       setRelayerRegion,
       origin,
       setAccounts,
+      authenticatedAddresses,
     ]
   );
 

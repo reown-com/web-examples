@@ -1,9 +1,18 @@
-import { Col, Grid, Row, Text, styled } from '@nextui-org/react'
-import { useCallback, useMemo, useState } from 'react'
-import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils'
-import { SessionTypes, SignClientTypes } from '@walletconnect/types'
+import { Col, Divider, Grid, Row, Text, styled } from '@nextui-org/react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  buildApprovedNamespaces,
+  getDidAddressNamespace,
+  getDidChainId,
+  getSdkError
+} from '@walletconnect/utils'
+import { AuthTypes, SessionTypes, SignClientTypes } from '@walletconnect/types'
 import DoneIcon from '@mui/icons-material/Done'
 import CloseIcon from '@mui/icons-material/Close'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import CheckBoxIcon from '@mui/icons-material/CheckBox'
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import ModalStore from '@/store/ModalStore'
 import { cosmosAddresses } from '@/utils/CosmosWalletUtil'
 import { eip155Addresses } from '@/utils/EIP155WalletUtil'
@@ -52,6 +61,8 @@ import { stacksAddresses, stacksWallet } from '@/utils/StacksWalletUtil'
 import StacksLib from '@/lib/StacksLib'
 import { TON_CHAINS, TON_SIGNING_METHODS } from '@/data/TonData'
 import { tonAddresses } from '@/utils/TonWalletUtil'
+import { prepareAuthenticationMessages, signAuthenticationMessages } from '@/utils/AuthUtil'
+import { AuthenticationMessage } from '@/types/auth'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -68,6 +79,10 @@ export default function SessionProposalModal() {
   const proposal = data?.data?.proposal as SignClientTypes.EventArguments['session_proposal']
   const [isLoadingApprove, setIsLoadingApprove] = useState(false)
   const [isLoadingReject, setIsLoadingReject] = useState(false)
+  const [authenticationMessagesToSign, setAuthenticationMessagesToSign] =
+    useState<AuthenticationMessage[]>()
+  const [selectedMessageIndices, setSelectedMessageIndices] = useState<Set<number>>(new Set())
+  const [isAuthMessagesExpanded, setIsAuthMessagesExpanded] = useState(false)
   const { getAvailableSmartAccountsOnNamespaceChains } = useSmartAccounts()
 
   const { query } = useRouter()
@@ -249,6 +264,16 @@ export default function SessionProposalModal() {
   }, [addressesToApprove])
   console.log('supportedNamespaces', supportedNamespaces, eip155Addresses)
 
+  useEffect(() => {
+    const authenticationRequests = proposal?.params?.requests?.authentication
+    if (!authenticationRequests) return
+    const messagesToSign = prepareAuthenticationMessages(authenticationRequests)
+    setAuthenticationMessagesToSign(messagesToSign)
+    // Select all messages by default
+    setSelectedMessageIndices(new Set(messagesToSign.map((_, index) => index)))
+    console.log('authenticationMessagesToSign', messagesToSign)
+  }, [proposal])
+
   const requestedChains = useMemo(() => {
     if (!proposal) return []
     const required = []
@@ -350,6 +375,19 @@ export default function SessionProposalModal() {
   const reorderedEip155Accounts = usePriorityAccounts({ namespaces })
   console.log('Reordered accounts', { reorderedEip155Accounts })
 
+  // Toggle message selection
+  const toggleMessageSelection = useCallback((index: number) => {
+    setSelectedMessageIndices(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(index)) {
+        newSet.delete(index)
+      } else {
+        newSet.add(index)
+      }
+      return newSet
+    })
+  }, [])
+
   // Hanlde approve action, construct session namespace
   const onApprove = useCallback(async () => {
     console.log('onApprove', { proposal, namespaces })
@@ -381,10 +419,14 @@ export default function SessionProposalModal() {
           })
         }
         console.log('sessionProperties', sessionProperties)
+
+        const signedAuths = await signAuthenticationMessages(authenticationMessagesToSign)
+
         await walletkit.approveSession({
           id: proposal.id,
           namespaces,
-          sessionProperties
+          sessionProperties,
+          proposalRequestsResponses: signedAuths
         })
         SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }
@@ -452,6 +494,85 @@ export default function SessionProposalModal() {
           <StyledSpan>Move funds without permission</StyledSpan>
         </Col>
       </Row>
+      <Divider style={{ marginTop: '10px' }} />
+      {authenticationMessagesToSign && authenticationMessagesToSign.length > 0 && (
+        <>
+          <Row
+            style={{
+              cursor: 'pointer',
+              padding: '10px',
+              borderRadius: '6px',
+              alignItems: 'center'
+            }}
+            onClick={() => setIsAuthMessagesExpanded(!isAuthMessagesExpanded)}
+          >
+            <Col>
+              <div
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              >
+                <StyledText h5>
+                  Authentication Messages. Signing ({selectedMessageIndices.size} of{' '}
+                  {authenticationMessagesToSign.length})
+                </StyledText>
+                {isAuthMessagesExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </div>
+            </Col>
+          </Row>
+          {isAuthMessagesExpanded && (
+            <>
+              {authenticationMessagesToSign.map((item, index) => (
+                <Row
+                  key={index}
+                  style={{
+                    marginTop: '10px',
+                    paddingLeft: '10px'
+                  }}
+                >
+                  <Col>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        marginBottom: '8px'
+                      }}
+                    >
+                      <div
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => toggleMessageSelection(index)}
+                      >
+                        {selectedMessageIndices.has(index) ? (
+                          <CheckBoxIcon />
+                        ) : (
+                          <CheckBoxOutlineBlankIcon />
+                        )}
+                      </div>
+                      <StyledText small css={{ fontWeight: '600' }}>
+                        {`${getDidAddressNamespace(item.iss)!}:${getDidChainId(item.iss)!}`}
+                      </StyledText>
+                    </div>
+                    <pre
+                      style={{
+                        marginTop: '0',
+                        padding: '12px',
+                        borderRadius: '6px',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap',
+                        fontFamily: 'monospace',
+                        fontSize: '13px',
+                        overflowX: 'auto'
+                      }}
+                    >
+                      <code>{item.message}</code>
+                    </pre>
+                  </Col>
+                </Row>
+              ))}
+            </>
+          )}
+          <Divider />
+        </>
+      )}
       <Grid.Container style={{ marginBottom: '10px', marginTop: '10px' }} justify={'space-between'}>
         <Grid>
           <Row style={{ color: 'GrayText' }}>Accounts</Row>

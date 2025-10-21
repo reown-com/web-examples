@@ -25,8 +25,8 @@ import {
   SystemProgram,
   Transaction as SolanaTransaction,
   clusterApiUrl,
+  PublicKey,
 } from "@solana/web3.js";
-import { TronWeb } from "tronweb";
 import {
   IPactCommand,
   PactCommand,
@@ -43,6 +43,7 @@ import {
   getLocalStorageTestnetFlag,
   getProviderUrl,
   getSuiClient,
+  getTonTransactionHash,
   hashPersonalMessage,
   hashTypedDataMessage,
   verifySignature,
@@ -88,6 +89,7 @@ import {
   SignableMessage,
 } from "@multiversx/sdk-core";
 import { UserVerifier } from "@multiversx/sdk-wallet/out/userVerifier";
+import { AccessKeyView } from "near-api-js/lib/providers/provider";
 import { parseEther } from "ethers/lib/utils";
 import {
   apiGetAddressUtxos,
@@ -97,11 +99,16 @@ import {
   isOrdinalAddress,
   isValidBip122Signature,
 } from "../helpers/bip122";
-import { getAddressFromAccount } from "@walletconnect/utils";
+import {
+  getAddressFromAccount,
+  getDidAddress,
+  getDidAddressNamespace,
+  getDidChainId,
+  getNamespacedDidChainId,
+} from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
-import { SuiClient } from "@mysten/sui/client";
-import { AccessKeyView } from "near-api-js/lib/providers/provider";
-
+import { getTronWeb } from "../helpers/tron";
+import { signVerify } from "@ton/crypto";
 /**
  * Types
  */
@@ -1634,14 +1641,11 @@ export function JsonRpcContextProvider({
         chainId: string,
         address: string
       ): Promise<IFormattedRpcResponse> => {
-        // Nile TestNet, if you want to use in MainNet, change the fullHost to 'https://api.trongrid.io'
-        const fullHost = isTestnet
-          ? "https://nile.trongrid.io/"
-          : "https://api.trongrid.io/";
+        const tronWeb = getTronWeb(chainId);
 
-        const tronWeb = new TronWeb({
-          fullHost,
-        });
+        if (!tronWeb) {
+          throw new Error("TronWeb not found for chainId: " + chainId);
+        }
 
         // Take USDT as an example:
         // Nile TestNet: https://nile.tronscan.org/#/token20/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf
@@ -1701,6 +1705,11 @@ export function JsonRpcContextProvider({
       ): Promise<IFormattedRpcResponse> => {
         const message = "This is a message to be signed for Tron";
 
+        const tronWeb = getTronWeb(chainId);
+        if (!tronWeb) {
+          throw new Error("TronWeb not found for chainId: " + chainId);
+        }
+
         const result = await client!.request<{ signature: string }>({
           chainId,
           topic: session!.topic,
@@ -1712,11 +1721,14 @@ export function JsonRpcContextProvider({
             },
           },
         });
-
+        const valid = await tronWeb.trx.verifyMessage(
+          result.signature,
+          message
+        );
         return {
           method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
           address,
-          valid: true,
+          valid: valid,
           result: result.signature,
         };
       }
@@ -1867,7 +1879,7 @@ export function JsonRpcContextProvider({
         const pactCommand = new PactCommand();
         pactCommand.code = `(coin.transfer "${
           kadenaAccount.account
-        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        }" "k:abcabcabcabc" ${new PactNumber(1)})`;
 
         pactCommand
           .setMeta(
@@ -1920,7 +1932,7 @@ export function JsonRpcContextProvider({
         const pactCommand = new PactCommand();
         pactCommand.code = `(coin.transfer "${
           kadenaAccount.account
-        }" "k:abcabcabcabc" ${new PactNumber(1).toDecimal()})`;
+        }" "k:abcabcabcabc" ${new PactNumber(1)})`;
 
         pactCommand
           .setMeta(
@@ -2290,18 +2302,17 @@ export function JsonRpcContextProvider({
         address: string
       ): Promise<IFormattedRpcResponse> => {
         const method = DEFAULT_TON_METHODS.TON_SEND_MESSAGE;
-        const params = [
-          {
-            valid_until: Math.floor(Date.now() / 1000) + 300,
-            from: address,
-            messages: [
-              {
-                address,
-                amount: "1000",
-              },
-            ],
-          },
-        ];
+        const params = {
+          valid_until: Math.floor(Date.now() / 1000) + 300,
+          from: address,
+          messages: [
+            {
+              address,
+              amount: "1000",
+            },
+          ],
+        };
+
         const result = await client!.request<any>({
           topic: session!.topic,
           chainId,
@@ -2310,11 +2321,23 @@ export function JsonRpcContextProvider({
             params,
           },
         });
+
+        let txHash = "";
+        try {
+          txHash = await getTonTransactionHash({
+            boc: result,
+            address,
+            chainId,
+          });
+        } catch (error) {
+          console.error("error fetching ton tx hash", error);
+        }
+
         return {
           method,
           address,
-          valid: !!result,
-          result: JSON.stringify(result),
+          valid: !!txHash,
+          result: `boc: ${result}, txHash: ${txHash}`,
         };
       }
     ),
@@ -2533,4 +2556,163 @@ export function useJsonRpc() {
     throw new Error("useJsonRpc must be used within a JsonRpcContextProvider");
   }
   return context;
+}
+
+async function isValidEip155Signature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const chainId = getDidChainId(params.iss);
+  const rpc = rpcProvidersByChainId[Number(chainId)];
+
+  if (typeof rpc === "undefined") {
+    throw new Error(`Missing rpcProvider definition for chainId: ${chainId}`);
+  }
+
+  const hashMsg = hashPersonalMessage(params.message);
+  const valid = await verifySignature(
+    getDidAddress(params.iss)!,
+    params.signature,
+    hashMsg,
+    rpc.baseURL
+  );
+  return valid;
+}
+
+async function isValidSolanaSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const address = getDidAddress(iss)!;
+  const senderPublicKey = new PublicKey(address);
+  const valid = verifyMessageSignature(
+    senderPublicKey.toBase58(),
+    signature,
+    bs58.encode(new Uint8Array(Buffer.from(message)))
+  );
+  return valid;
+}
+
+async function isValidPolkadotSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const address = getDidAddress(iss)!;
+  await cryptoWaitReady();
+  const { isValid } = signatureVerify(message, signature, address);
+  return isValid;
+}
+
+async function isValidSuiSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const address = getDidAddress(iss)!;
+  const derivedPublicKey = await verifyPersonalMessageSignature(
+    new TextEncoder().encode(message),
+    signature,
+    { address }
+  );
+  return (
+    derivedPublicKey.toSuiAddress().toLowerCase() === address.toLowerCase()
+  );
+}
+
+async function isValidStacksSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const address = getDidAddress(iss)!;
+  const network = getDidChainId(iss)! === "1" ? "mainnet" : "testnet";
+  const hash = Buffer.from(sha256(message)).toString("hex");
+  const pubKey = publicKeyFromSignatureRsv(hash, signature);
+
+  const valid = getAddressFromPublicKey(pubKey, network) === address;
+  return valid;
+}
+
+async function isValidBip122Sig(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const address = getDidAddress(iss)!;
+  const valid = await isValidBip122Signature(address, signature, message);
+  return valid;
+}
+
+async function isValidTronSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+}) {
+  const { message, signature, iss } = params;
+  const chainId = getNamespacedDidChainId(iss)!;
+  const tronWeb = getTronWeb(chainId);
+  if (!tronWeb) {
+    throw new Error("Tron web not found for chainId: " + iss);
+  }
+  const address = getDidAddress(iss)!;
+  const valid = await tronWeb.trx.verifyMessageV2(message, signature);
+  return valid === address;
+}
+
+async function isValidTonSignature(params: {
+  message: string;
+  signature: string;
+  iss: string;
+  signatureMeta?: string;
+}) {
+  const { message, signature, iss, signatureMeta = "" } = params;
+
+  const valid = await signVerify(
+    Buffer.from(message, "utf-8"),
+    Buffer.from(signature, "base64"),
+    Buffer.from(signatureMeta, "base64")
+  );
+
+  return valid;
+}
+export function isValidSignature(params: {
+  message: string;
+  iss: string;
+  signature: string;
+  signatureMeta?: string;
+}) {
+  const namespace = getDidAddressNamespace(params.iss);
+  switch (namespace) {
+    case "eip155":
+      return isValidEip155Signature(params);
+    case "solana":
+      return isValidSolanaSignature(params);
+    case "polkadot":
+      return isValidPolkadotSignature(params);
+
+    // case "kadena":
+    //   return isValidKadenaSignature(params);
+    // case "mvx":
+    //   return isValidMultiversxSignature(params);
+    // case "tezos":
+    //   return isValidTezosSignature(params);
+    case "tron":
+      return isValidTronSignature(params);
+    case "ton":
+      return isValidTonSignature(params);
+    case "bip122":
+      return isValidBip122Sig(params);
+    case "sui":
+      return isValidSuiSignature(params);
+    case "stacks":
+      return isValidStacksSignature(params);
+  }
 }
