@@ -15182,7 +15182,7 @@ snapshots:
       stable-hash: 0.0.5
       tinyglobby: 0.2.12
     optionalDependencies:
-      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@4.33.0(eslint@9.26.0)(typescript@5.8.3))(eslint@9.26.0)
+      eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0)(typescript@5.8.3))(eslint-import-resolver-typescript@3.9.1)(eslint@9.26.0)
     transitivePeerDependencies:
       - supports-color
 
