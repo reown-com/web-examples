@@ -43,7 +43,6 @@ import {
   getLocalStorageTestnetFlag,
   getProviderUrl,
   getSuiClient,
-  getTonTransactionHash,
   hashPersonalMessage,
   hashTypedDataMessage,
   verifySignature,
@@ -2311,15 +2310,6 @@ export function JsonRpcContextProvider({
             method,
             params,
           },
-        });
-
-        // find exporer link async
-        getTonTransactionHash({
-          boc: result,
-          address,
-          chainId,
-        }).catch((error) => {
-          console.warn("error fetching ton tx hash", error);
         });
 
         return {
