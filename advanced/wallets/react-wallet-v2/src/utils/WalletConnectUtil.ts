@@ -3,9 +3,17 @@ import { Core } from '@walletconnect/core'
 export let walletkit: IWalletKit
 
 export async function createWalletKit(relayerRegionURL: string) {
+  // Validate required environment variables
+  if (!process.env.NEXT_PUBLIC_PROJECT_ID) {
+    throw new Error(
+      'NEXT_PUBLIC_PROJECT_ID is not set. Please create a .env.local file with your WalletConnect project ID. ' +
+      'Get one at https://cloud.walletconnect.com'
+    )
+  }
+
   const core = new Core({
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-    relayUrl: relayerRegionURL ?? process.env.NEXT_PUBLIC_RELAY_URL,
+    relayUrl: relayerRegionURL || process.env.NEXT_PUBLIC_RELAY_URL,
     logger: 'trace'
   })
   walletkit = await WalletKit.init({

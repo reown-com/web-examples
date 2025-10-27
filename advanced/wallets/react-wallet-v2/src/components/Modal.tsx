@@ -29,6 +29,8 @@ import SessionSignSuiAndExecuteTransactionModal from '@/views/SessionSignAndExec
 import SessionSendStacksTransferModal from '@/views/SessionSendStacksTransferModal'
 import SessionSignStacksMessageModal from '@/views/SessionSignStacksMessageModal'
 import SessionGetSuiGetAcccountsModal from '@/views/SessionGetSuiGetAcccountsModal'
+import SessionTonSendMessageModal from '@/views/SessionSignTonTransactionModal'
+import SessionTonSignDataModal from '@/views/SessionSignTonPersonalMessageModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -95,6 +97,10 @@ export default function Modal() {
         return <SessionSendStacksTransferModal />
       case 'SessionSignStacksMessageModal':
         return <SessionSignStacksMessageModal />
+      case 'SessionTonSendMessageModal':
+        return <SessionTonSendMessageModal />
+      case 'SessionTonSignDataModal':
+        return <SessionTonSignDataModal />
       default:
         return null
     }

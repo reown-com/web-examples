@@ -1,6 +1,8 @@
 import type { NextPage } from "next";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { numberToHex } from "@walletconnect/encoding";
+import { RELAYER_SDK_VERSION } from "@walletconnect/core";
 
 import Banner from "../components/Banner";
 import Blockchain from "../components/Blockchain";
@@ -27,6 +29,7 @@ import {
   DEFAULT_EIP7715_METHODS,
   DEFAULT_SUI_METHODS,
   DEFAULT_STACKS_METHODS,
+  DEFAULT_TON_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -50,14 +53,14 @@ import { useChainData } from "../contexts/ChainDataContext";
 import Icon from "../components/Icon";
 import OriginSimulationDropdown from "../components/OriginSimulationDropdown";
 import LoaderModal from "../modals/LoaderModal";
-import { numberToHex } from "@walletconnect/encoding";
 import RequestLoaderModal from "../modals/RequestLoaderModal";
 
 // Normal import does not work here
-const { version } = require("@walletconnect/sign-client/package.json");
+const version = RELAYER_SDK_VERSION;
 
 const Home: NextPage = () => {
   const [modal, setModal] = useState("");
+  const [disconnectError, setDisconnectError] = useState<string | null>(null);
 
   const closeModal = () => setModal("");
   const openPairingModal = () => setModal("pairing");
@@ -82,7 +85,7 @@ const Home: NextPage = () => {
     setChains,
     setRelayerRegion,
     origin,
-    setAccounts,
+    authenticatedAddresses,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -100,6 +103,7 @@ const Home: NextPage = () => {
     bip122Rpc,
     suiRpc,
     stacksRpc,
+    tonRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -115,17 +119,25 @@ const Home: NextPage = () => {
     }
   }, [session, modal]);
 
+  // Add debug logging in development
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      console.log("App State:", {
+        accounts: accounts.length,
+        balances: Object.keys(balances).length,
+        session: !!session,
+        isInitializing,
+        isFetchingBalances,
+      });
+    }
+  }, [accounts, balances, session, isInitializing, isFetchingBalances]);
+
   const onConnect = () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
-    // Suggest existing pairings (if any).
-    if (pairings.length) {
-      openPairingModal();
-    } else {
-      // If no existing pairings are available, trigger `WalletConnectClient.connect`.
-      connect();
-    }
+
+    connect();
   };
 
   const onPing = async () => {
@@ -134,15 +146,38 @@ const Home: NextPage = () => {
   };
 
   const onDisconnect = useCallback(async () => {
+    setDisconnectError(null);
     openDisconnectModal();
+
     try {
-      await disconnect();
+      // Add timeout to prevent hanging
+      const disconnectPromise = disconnect();
+      const timeoutPromise = new Promise<void>((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Disconnect timeout after 10 seconds")),
+          10000
+        )
+      );
+
+      await Promise.race([disconnectPromise, timeoutPromise]);
+
+      // Add small delay to ensure state updates complete
+      await new Promise((resolve) => setTimeout(resolve, 100));
     } catch (error) {
-      toast.error((error as Error).message, {
+      const errorMessage = (error as Error).message;
+      console.error("Disconnect error:", error);
+      setDisconnectError(errorMessage);
+      toast.error(errorMessage, {
         position: "bottom-left",
+        duration: 5000,
       });
+    } finally {
+      // Close modal after a brief moment to show any final status
+      setTimeout(() => {
+        closeModal();
+        setDisconnectError(null);
+      }, 500);
     }
-    closeModal();
   }, [disconnect]);
 
   async function emit() {
@@ -590,6 +625,24 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getTonActions = (): AccountAction[] => {
+    const onSendMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tonRpc.testSendMessage(chainId, address);
+    };
+    const onSignData = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tonRpc.testSignData(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_TON_METHODS.TON_SEND_MESSAGE,
+        callback: onSendMessage,
+      },
+      { method: DEFAULT_TON_METHODS.TON_SIGN_DATA, callback: onSignData },
+    ];
+  };
+
   const getBlockchainActions = (account: string) => {
     const [namespace, chainId, address] = account.split(":");
     switch (namespace) {
@@ -617,6 +670,8 @@ const Home: NextPage = () => {
         return getSuiActions();
       case "stacks":
         return getStacksActions();
+      case "ton":
+        return getTonActions();
       default:
         break;
     }
@@ -659,7 +714,13 @@ const Home: NextPage = () => {
           />
         );
       case "disconnect":
-        return <LoaderModal title={"Disconnecting..."} />;
+        return (
+          <LoaderModal
+            title={disconnectError ? "Disconnect Failed" : "Disconnecting..."}
+            subtitle={disconnectError || undefined}
+            isError={!!disconnectError}
+          />
+        );
       default:
         return null;
     }
@@ -674,7 +735,8 @@ const Home: NextPage = () => {
   const renderContent = () => {
     const chainOptions = isTestnet ? DEFAULT_TEST_CHAINS : DEFAULT_MAIN_CHAINS;
 
-    return !accounts.length && !Object.keys(balances).length ? (
+    // Show connect screen if no session or no accounts/balances
+    return !session || (!accounts.length && !Object.keys(balances).length) ? (
       <SLanding center>
         <Banner />
         <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
@@ -719,6 +781,7 @@ const Home: NextPage = () => {
             return (
               <Blockchain
                 key={account}
+                isAuthenticated={authenticatedAddresses.includes(account)}
                 active
                 chainData={chainData}
                 fetching={isFetchingBalances}

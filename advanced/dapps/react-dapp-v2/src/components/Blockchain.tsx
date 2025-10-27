@@ -16,6 +16,7 @@ import {
   ChainData,
 } from "../helpers";
 import { fonts } from "../styles";
+import Icon from "./Icon";
 
 interface AccountStyleProps {
   rgb: string;
@@ -88,6 +89,48 @@ const SBlockchainChildrenContainer = styled(SFullWidthContainer)`
   flex-direction: column;
 `;
 
+const STooltipContainer = styled.span`
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  cursor: help;
+
+  & svg {
+    display: block;
+  }
+
+  &:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 8px;
+    pointer-events: none;
+  }
+
+  &:hover::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.9);
+    margin-bottom: 2px;
+    z-index: 1000;
+    pointer-events: none;
+  }
+`;
+
 interface BlockchainProps {
   chainData: ChainNamespaces;
   fetching?: boolean;
@@ -97,6 +140,7 @@ interface BlockchainProps {
   onClick?: (chain: string) => void;
   balances?: AccountBalances;
   actions?: AccountAction[];
+  isAuthenticated?: boolean;
 }
 
 interface BlockchainDisplayData {
@@ -115,7 +159,9 @@ function getBlockchainDisplayData(
   } catch (e) {
     return undefined;
   }
-  const data: ChainData = chainData[namespace][reference];
+  const namespaceData = chainData[namespace];
+  if (!namespaceData) return undefined;
+  const data: ChainData = namespaceData[reference];
   if (typeof data === "undefined") return undefined;
   return { data, meta };
 }
@@ -132,6 +178,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
     active,
     balances,
     actions,
+    isAuthenticated,
   } = props;
   if (!Object.keys(chainData).length) return null;
 
@@ -146,6 +193,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
     typeof account !== "undefined" && typeof balances !== "undefined"
       ? balances[account]
       : [];
+
   return (
     <React.Fragment>
       <SAccount
@@ -157,7 +205,39 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
           <img src={chain.meta.logo} alt={name} />
           <p>{name}</p>
         </SChain>
-        {!!address && <p>{ellipseAddress(address)}</p>}
+        {!!address && (
+          <p>
+            {ellipseAddress(address)}{" "}
+            {isAuthenticated && (
+              <STooltipContainer data-tooltip="Address ownership has been verified by a signature">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 2L4 6V11C4 16.55 7.84 21.74 12 23C16.16 21.74 20 16.55 20 11V6L12 2Z"
+                    fill="#10B981"
+                    fillOpacity="0.2"
+                    stroke="#10B981"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M9 12L11 14L15 10"
+                    stroke="#10B981"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </STooltipContainer>
+            )}
+          </p>
+        )}
         <SBlockchainChildrenContainer>
           {fetching ? (
             <Column center>

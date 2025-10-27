@@ -282,7 +282,13 @@ export default function PayWith({ payments, onSelectPayment }: PayWithProps) {
 
   return (
     <>
-      <Container css={{ borderRadius: '32px', padding: '16px', backgroundColor: 'var(--nextui-colors-accents1)' }}>
+      <Container
+        css={{
+          borderRadius: '32px',
+          padding: '16px',
+          backgroundColor: 'var(--nextui-colors-accents1)'
+        }}
+      >
         <Col css={{ marginBottom: '16px' }}>
           <Text css={{ color: '$text', fontWeight: '600', fontSize: '14px', marginBottom: '8px' }}>
             Pay with

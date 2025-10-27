@@ -16,6 +16,8 @@ import {
   DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TRON_METHODS,
   DEFAULT_TRON_EVENTS,
+  DEFAULT_TON_METHODS,
+  DEFAULT_TON_EVENTS,
   DEFAULT_TEZOS_METHODS,
   DEFAULT_TEZOS_EVENTS,
   DEFAULT_OPTIONAL_METHODS,
@@ -55,6 +57,8 @@ export const getSupportedRequiredMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_MULTIVERSX_METHODS);
     case "tron":
       return Object.values(DEFAULT_TRON_METHODS);
+    case "ton":
+      return Object.values(DEFAULT_TON_METHODS);
     case "tezos":
       return Object.values(DEFAULT_TEZOS_METHODS);
     case "kadena":
@@ -109,6 +113,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_MULTIVERSX_EVENTS);
     case "tron":
       return Object.values(DEFAULT_TRON_EVENTS);
+    case "ton":
+      return Object.values(DEFAULT_TON_EVENTS);
     case "tezos":
       return Object.values(DEFAULT_TEZOS_EVENTS);
     case "kadena":

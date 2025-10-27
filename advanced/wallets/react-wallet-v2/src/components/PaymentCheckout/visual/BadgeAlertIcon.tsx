@@ -1,6 +1,6 @@
-import React from "react";
+import React from 'react'
 
-const BadgeAlertIcon = ({ color = "red", size = 24 }) => {
+const BadgeAlertIcon = ({ color = 'red', size = 24 }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -17,7 +17,7 @@ const BadgeAlertIcon = ({ color = "red", size = 24 }) => {
       <line x1="12" x2="12" y1="8" y2="12" />
       <line x1="12" x2="12.01" y1="16" y2="16" />
     </svg>
-  );
-};
+  )
+}
 
-export default BadgeAlertIcon;
+export default BadgeAlertIcon

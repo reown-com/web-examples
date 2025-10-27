@@ -183,8 +183,17 @@ export default function SessionCheckoutModal() {
   return (
     <Fragment>
       <Modal.Body css={modalStyles.modalBody}>
-        <Container css={{ padding: 8, paddingTop: 12, backgroundColor: '#2A2A2A',  borderRadius: '0 0 40px 40px' }}>
-          <Text h4 css={{paddingLeft: '8px'}}>Checkout</Text>
+        <Container
+          css={{
+            padding: 8,
+            paddingTop: 12,
+            backgroundColor: '#2A2A2A',
+            borderRadius: '0 0 40px 40px'
+          }}
+        >
+          <Text h4 css={{ paddingLeft: '8px' }}>
+            Checkout
+          </Text>
           {/* Products */}
           <Products products={checkoutRequest.products} />
 
@@ -192,15 +201,13 @@ export default function SessionCheckoutModal() {
           <PaymentOptions payments={feasiblePayments} onSelectPayment={onSelectPayment} />
         </Container>
         <Container>
-           <OrderInfoCard
+          <OrderInfoCard
             orderId={checkoutRequest.orderId}
             expiry={checkoutRequest.expiry}
             selectedPayment={selectedPayment}
             metadata={requestSession.peer.metadata}
           />
         </Container>
-         
-        
       </Modal.Body>
 
       <Container css={modalStyles.footer}>
