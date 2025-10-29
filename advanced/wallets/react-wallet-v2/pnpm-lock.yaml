@@ -87,8 +87,8 @@ importers:
         specifier: 1.6.8
         version: 1.6.8(@types/react@18.2.61)(bufferutil@4.0.9)(react@18.2.0)(typescript@5.2.2)(utf-8-validate@5.0.10)
       '@reown/walletkit':
-        specifier: 1.3.0-canary-auth-1
-        version: 1.3.0-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+        specifier: 1.3.0-canary-auth-2
+        version: 1.3.0-canary-auth-2(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@rhinestone/module-sdk':
         specifier: 0.1.25
         version: 0.1.25(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76))
@@ -129,23 +129,23 @@ importers:
         specifier: ^7.5.8
         version: 7.7.1
       '@walletconnect/core':
-        specifier: 2.22.4-canary-auth-1
-        version: 2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+        specifier: 2.22.4-canary-auth-3
+        version: 2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletconnect/ethereum-provider':
-        specifier: 2.22.4-canary-auth-1
-        version: 2.22.4-canary-auth-1(@types/react@18.2.61)(bufferutil@4.0.9)(react@18.2.0)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+        specifier: 2.22.4-canary-auth-3
+        version: 2.22.4-canary-auth-3(@types/react@18.2.61)(bufferutil@4.0.9)(react@18.2.0)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletconnect/sign-client':
-        specifier: 2.22.4-canary-auth-1
-        version: 2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+        specifier: 2.22.4-canary-auth-3
+        version: 2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletconnect/types':
-        specifier: 2.22.4-canary-auth-1
-        version: 2.22.4-canary-auth-1
+        specifier: 2.22.4-canary-auth-3
+        version: 2.22.4-canary-auth-3
       '@walletconnect/universal-provider':
-        specifier: 2.22.4-canary-auth-1
-        version: 2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+        specifier: 2.22.4-canary-auth-3
+        version: 2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletconnect/utils':
-        specifier: 2.22.4-canary-auth-1
-        version: 2.22.4-canary-auth-1(typescript@5.2.2)(zod@3.25.76)
+        specifier: 2.22.4-canary-auth-3
+        version: 2.22.4-canary-auth-3(typescript@5.2.2)(zod@3.25.76)
       '@zerodev/ecdsa-validator':
         specifier: 5.3.0
         version: 5.3.0(@zerodev/sdk@5.3.1(permissionless@0.1.43(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)))(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)))(permissionless@0.1.43(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)))(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76))
@@ -1642,8 +1642,8 @@ packages:
   '@reown/appkit@1.8.11':
     resolution: {integrity: sha512-G96zt1P3ASrivV7HRrFQuzkCEzSmy3ca7cSQxaLeIS+P2VVhjE5YAyINArGVbooY0heHCPvQuTNM+YgK4oBmfg==}
 
-  '@reown/walletkit@1.3.0-canary-auth-1':
-    resolution: {integrity: sha512-eH/GuaN+MZXBRiwYl1GczdIPZu8xHeTZfxQh5pHUwp3lifAJBgbc6xwFcIyy9+LpKX9tgjc04CwOT4t3CjwFxQ==}
+  '@reown/walletkit@1.3.0-canary-auth-2':
+    resolution: {integrity: sha512-ALa7sq6kSIbLwD/ZXJtPhmCOvaK6A7Aqc3A5sJ43G5zXt55QIz301PGmLnek3uF9mtcowuy/BeNDh8yos4cY2A==}
 
   '@rhinestone/module-sdk@0.1.25':
     resolution: {integrity: sha512-BJnEtKDpAx0VgWGl/iWE4WAB2MKJVmy+5euCtfUdQrRawA5CI54bQNi966UuDrf/yY9GT/yEOvYX+5VwLxGjsw==}
@@ -2153,15 +2153,15 @@ packages:
     resolution: {integrity: sha512-ZQnyDDpqDPAk5lyLV19BRccQ3wwK3LmAwibuIv3X+44aT/dOs2kQGu9pla3iW2LgZ5qRMYvgvvfr5g3WlDGceQ==}
     engines: {node: '>=18.20.8'}
 
-  '@walletconnect/core@2.22.4-canary-auth-1':
-    resolution: {integrity: sha512-CEIWrrkrH4x1Lxbw55YfKre95+FFoyop7ak7pWvMohG8kcFMPeUZtzIbYDGG3mD6TXWa5+JilbD3fGOKCbVA3A==}
+  '@walletconnect/core@2.22.4-canary-auth-3':
+    resolution: {integrity: sha512-Qk4/lnVpjTgHpkgFQAZXkjWM8OQnO3BG7IdhoHVH7amLRO8xKMl9uorv/4ukW9FrL+MZh4sgCnrJzYY8GspU7A==}
     engines: {node: '>=18.20.8'}
 
   '@walletconnect/environment@1.0.1':
     resolution: {integrity: sha512-T426LLZtHj8e8rYnKfzsw1aG6+M0BT1ZxayMdv/p8yM0MU+eJDISqNY3/bccxRr4LrF9csq02Rhqt08Ibl0VRg==}
 
-  '@walletconnect/ethereum-provider@2.22.4-canary-auth-1':
-    resolution: {integrity: sha512-c+o541V3gY5V74NvkIe5/hTJtKJ8Qb88n/ICVf1bxStNuDQUIaVXyzvVg5hHjC5Pk9AMyn0bzSi2Mp6wy0UBCw==}
+  '@walletconnect/ethereum-provider@2.22.4-canary-auth-3':
+    resolution: {integrity: sha512-ZVVpiEY3ihpw0DCvqs4jv2VBS8P/hw1clBlXHQ1TtFV2MiVsoZb9c5tp8j/fnsuxk2UdREgSLySn2YScavlGpA==}
 
   '@walletconnect/events@1.0.1':
     resolution: {integrity: sha512-NPTqaoi0oPBVNuLv7qPaJazmGHs5JGyO8eEAk5VGKmJzDR7AHzD4k6ilox5kxk1iwiOnFopBOOMLs86Oa76HpQ==}
@@ -2214,8 +2214,8 @@ packages:
   '@walletconnect/sign-client@2.22.4':
     resolution: {integrity: sha512-la+sol0KL33Fyx5DRlupHREIv8wA6W33bRfuLAfLm8pINRTT06j9rz0IHIqJihiALebFxVZNYzJnF65PhV0q3g==}
 
-  '@walletconnect/sign-client@2.22.4-canary-auth-1':
-    resolution: {integrity: sha512-3Khirqm99SG/sz3xE2MEbHy09OD9tvSXpaEzcv7iS9S4lp4YqngHAQt+DLnAk14H2Ci+lY5cRWUUU7PwOgbWUQ==}
+  '@walletconnect/sign-client@2.22.4-canary-auth-3':
+    resolution: {integrity: sha512-S2iNT/uQnIt4hSUaap7lcZzWkN9jUr3MB0gPgAH5CwKaO5c44cB62HYd0CCtRYhzgv6z9BPOppc7Hq2Tqshk4A==}
 
   '@walletconnect/time@1.0.2':
     resolution: {integrity: sha512-uzdd9woDcJ1AaBZRhqy5rNC9laqWGErfc4dxA9a87mPdKOgWMD85mcFo9dIYIts/Jwocfwn07EC6EzclKubk/g==}
@@ -2226,8 +2226,8 @@ packages:
   '@walletconnect/types@2.22.4':
     resolution: {integrity: sha512-KJdiS9ezXzx1uASanldYaaenDwb42VOQ6Rj86H7FRwfYddhNnYnyEaDjDKOdToGRGcpt5Uzom6qYUOnrWEbp5g==}
 
-  '@walletconnect/types@2.22.4-canary-auth-1':
-    resolution: {integrity: sha512-lSGF6XHDpnKzLke2cBJw3KA7HKg7WeRAv4U75jh/W27R1NEqr3j+RqAph0wIqwO72qBSxXhiFL0e3suj8I/fUg==}
+  '@walletconnect/types@2.22.4-canary-auth-3':
+    resolution: {integrity: sha512-mWLz6ur82bv4ocnqVtRiJaP4Ef10fHZxjFucxxZ3VXtYWyZeJQrMyQwREy2EC62c0CFtNvkAs0A/VBRmAMjcoA==}
 
   '@walletconnect/universal-provider@2.18.0':
     resolution: {integrity: sha512-zF/e1NAipLqYjNNgM+XZTchh94efaxciBmgcDOaLznS97R7S/1bYj5okQCAEDKx9RALhEKqZKoyo9jwn4p3BVA==}
@@ -2236,8 +2236,8 @@ packages:
   '@walletconnect/universal-provider@2.22.4':
     resolution: {integrity: sha512-TF2RNX13qxa0rrBAhVDs5+C2G8CHX7L0PH5hF2uyQHdGyxZ3pFbXf8rxmeW1yKlB76FSbW80XXNrUes6eK/xHg==}
 
-  '@walletconnect/universal-provider@2.22.4-canary-auth-1':
-    resolution: {integrity: sha512-MxvFZSAIaiZ1s8xyhTAtm54Um9CIsZKfwvOmwEXv9aF+IRYQ9z3MbNpvH/dk4FVbTqm8J28p9Mq0zUNQ9QfMdw==}
+  '@walletconnect/universal-provider@2.22.4-canary-auth-3':
+    resolution: {integrity: sha512-PbI1pTUtVBBNuAKL1xY8Jh2ZDpsZsnmZ4eAf/OhYzcHVwP42gChR/RIjL01Fy1+P/naMfOBy1E5Gl1zNtSIp+g==}
 
   '@walletconnect/utils@2.18.0':
     resolution: {integrity: sha512-6AUXIcjSxTHGRsTtmUP/oqudtwRILrQqrJsH3jS5T28FFDzZt7+On6fR4mXzi64k4nNYeWg1wMCGLEdtxmGbZQ==}
@@ -2245,8 +2245,8 @@ packages:
   '@walletconnect/utils@2.22.4':
     resolution: {integrity: sha512-coAPrNiTiD+snpiXQyXakMVeYcddqVqII7aLU39TeILdPoXeNPc2MAja+MF7cKNM/PA3tespljvvxck/oTm4+Q==}
 
-  '@walletconnect/utils@2.22.4-canary-auth-1':
-    resolution: {integrity: sha512-Dqvqp5Sz0a1vpl/VcFBZeerJaeRXOqVo0XebYPHsHzdk+ejJQF4e/H5xhmp2JZWQa35onJqxofYEiPoIaCuR+A==}
+  '@walletconnect/utils@2.22.4-canary-auth-3':
+    resolution: {integrity: sha512-MyBp5mBT6tKBDz1Ge90E9MFzHxt7c3alCQPVVajep/vw61ZSxlHof4ZZA4XtyYHMiKWtV9S+G98RlCyEps1GOw==}
 
   '@walletconnect/window-getters@1.0.1':
     resolution: {integrity: sha512-vHp+HqzGxORPAN8gY03qnbTMnhqIwjeRJNOMOAzePRg4xVEEE2WvYsI9G2NMjOknA8hnuYbU3/hwLcKbjhc8+Q==}
@@ -7334,15 +7334,15 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@reown/walletkit@1.3.0-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@reown/walletkit@1.3.0-canary-auth-2(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@walletconnect/core': 2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@walletconnect/core': 2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletconnect/jsonrpc-provider': 1.0.14
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/logger': 3.0.0
-      '@walletconnect/sign-client': 2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@walletconnect/types': 2.22.4-canary-auth-1
-      '@walletconnect/utils': 2.22.4-canary-auth-1(typescript@5.2.2)(zod@3.25.76)
+      '@walletconnect/sign-client': 2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@walletconnect/types': 2.22.4-canary-auth-3
+      '@walletconnect/utils': 2.22.4-canary-auth-3(typescript@5.2.2)(zod@3.25.76)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -8143,7 +8143,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@walletconnect/core@2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@walletconnect/core@2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-provider': 1.0.14
@@ -8156,8 +8156,8 @@ snapshots:
       '@walletconnect/relay-auth': 1.1.0
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.22.4-canary-auth-1
-      '@walletconnect/utils': 2.22.4-canary-auth-1(typescript@5.2.2)(zod@3.25.76)
+      '@walletconnect/types': 2.22.4-canary-auth-3
+      '@walletconnect/utils': 2.22.4-canary-auth-3(typescript@5.2.2)(zod@3.25.76)
       '@walletconnect/window-getters': 1.0.1
       es-toolkit: 1.39.3
       events: 3.3.0
@@ -8191,7 +8191,7 @@ snapshots:
     dependencies:
       tslib: 1.14.1
 
-  '@walletconnect/ethereum-provider@2.22.4-canary-auth-1(@types/react@18.2.61)(bufferutil@4.0.9)(react@18.2.0)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@walletconnect/ethereum-provider@2.22.4-canary-auth-3(@types/react@18.2.61)(bufferutil@4.0.9)(react@18.2.0)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
       '@reown/appkit': 1.8.11(@types/react@18.2.61)(bufferutil@4.0.9)(react@18.2.0)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletconnect/jsonrpc-http-connection': 1.0.8
@@ -8200,10 +8200,10 @@ snapshots:
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/keyvaluestorage': 1.1.1
       '@walletconnect/logger': 3.0.0
-      '@walletconnect/sign-client': 2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@walletconnect/types': 2.22.4-canary-auth-1
-      '@walletconnect/universal-provider': 2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@walletconnect/utils': 2.22.4-canary-auth-1(typescript@5.2.2)(zod@3.25.76)
+      '@walletconnect/sign-client': 2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@walletconnect/types': 2.22.4-canary-auth-3
+      '@walletconnect/universal-provider': 2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@walletconnect/utils': 2.22.4-canary-auth-3(typescript@5.2.2)(zod@3.25.76)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -8401,16 +8401,16 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@walletconnect/sign-client@2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@walletconnect/sign-client@2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
-      '@walletconnect/core': 2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@walletconnect/core': 2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/logger': 3.0.0
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.22.4-canary-auth-1
-      '@walletconnect/utils': 2.22.4-canary-auth-1(typescript@5.2.2)(zod@3.25.76)
+      '@walletconnect/types': 2.22.4-canary-auth-3
+      '@walletconnect/utils': 2.22.4-canary-auth-3(typescript@5.2.2)(zod@3.25.76)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -8499,7 +8499,7 @@ snapshots:
       - ioredis
       - uploadthing
 
-  '@walletconnect/types@2.22.4-canary-auth-1':
+  '@walletconnect/types@2.22.4-canary-auth-3':
     dependencies:
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.2
@@ -8606,7 +8606,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@walletconnect/universal-provider@2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@walletconnect/universal-provider@2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
       '@walletconnect/events': 1.0.1
       '@walletconnect/jsonrpc-http-connection': 1.0.8
@@ -8615,9 +8615,9 @@ snapshots:
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/keyvaluestorage': 1.1.1
       '@walletconnect/logger': 3.0.0
-      '@walletconnect/sign-client': 2.22.4-canary-auth-1(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@walletconnect/types': 2.22.4-canary-auth-1
-      '@walletconnect/utils': 2.22.4-canary-auth-1(typescript@5.2.2)(zod@3.25.76)
+      '@walletconnect/sign-client': 2.22.4-canary-auth-3(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@walletconnect/types': 2.22.4-canary-auth-3
+      '@walletconnect/utils': 2.22.4-canary-auth-3(typescript@5.2.2)(zod@3.25.76)
       es-toolkit: 1.39.3
       events: 3.3.0
     transitivePeerDependencies:
@@ -8731,7 +8731,7 @@ snapshots:
       - uploadthing
       - zod
 
-  '@walletconnect/utils@2.22.4-canary-auth-1(typescript@5.2.2)(zod@3.25.76)':
+  '@walletconnect/utils@2.22.4-canary-auth-3(typescript@5.2.2)(zod@3.25.76)':
     dependencies:
       '@msgpack/msgpack': 3.1.2
       '@noble/ciphers': 1.3.0
@@ -8745,7 +8745,7 @@ snapshots:
       '@walletconnect/relay-auth': 1.1.0
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.22.4-canary-auth-1
+      '@walletconnect/types': 2.22.4-canary-auth-3
       '@walletconnect/window-getters': 1.0.1
       '@walletconnect/window-metadata': 1.0.1
       blakejs: 1.2.1
