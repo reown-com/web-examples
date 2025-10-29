@@ -123,7 +123,7 @@ export async function signMessage(AuthMessage: AuthMessage) {
   switch (parsed.namespace) {
     case 'eip155':
       const eip155Result = await eip155Wallets[AuthMessage.address].signMessage(AuthMessage.message)
-      return { signature: eip155Result, type: 'eip191' }
+      return { signature: eip155Result, type: getSignatureType(parsed.namespace) }
     case 'ton':
       const tonResult = await tonWallets[AuthMessage.address].signData({
         text: AuthMessage.message,
@@ -134,7 +134,7 @@ export async function signMessage(AuthMessage: AuthMessage) {
       const solanaResult = await solanaWallets[AuthMessage.address].signMessage({
         message: bs58.encode(new Uint8Array(Buffer.from(AuthMessage.message)))
       })
-      return { signature: solanaResult.signature, type: 'solana' }
+      return { signature: solanaResult.signature, type: getSignatureType(parsed.namespace) }
     case 'cosmos':
       // TODO: Cosmos requires extra params
       // return cosmosWallets[0].signAmino(AuthMessage.message)
@@ -175,7 +175,7 @@ export async function signMessage(AuthMessage: AuthMessage) {
         chainId: AuthMessage.chainId as IBip122ChainId,
         protocol: 'ecdsa'
       })
-      return { signature: bip122Result.signature, type: 'bip122' }
+      return { signature: bip122Result.signature, type: getSignatureType(parsed.namespace) }
     case 'sui':
       const suiResult = await (await getSuiWallet()).signMessage({ message: AuthMessage.message })
       return { signature: suiResult.signature, type: 'sui' }
@@ -188,5 +188,19 @@ export async function signMessage(AuthMessage: AuthMessage) {
       return { signature: stacksResult.signature, type: 'stacks' }
     default:
       throw new Error(`Failed to sign message for chain ${AuthMessage.chainId}`)
+  }
+}
+
+// TODO: Add more signature types for other chains
+function getSignatureType(namespace: string) {
+  switch (namespace) {
+    case 'eip155':
+      return 'eip191'
+    case 'bip122':
+      return 'ecdsa'
+    case 'solana':
+      return 'ed25519'
+    default:
+      return namespace
   }
 }
