@@ -162,8 +162,8 @@ importers:
         specifier: 5.3.0
         version: 5.3.0(@zerodev/sdk@5.3.1(permissionless@0.1.43(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)))(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)))(permissionless@0.1.43(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)))(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76))
       axios:
-        specifier: ^1.12.2
-        version: 1.12.2
+        specifier: ^1.13.0
+        version: 1.13.0
       bip32:
         specifier: ^4.0.0
         version: 4.0.0
@@ -368,9 +368,11 @@ packages:
 
   '@cosmjs/crypto@0.25.6':
     resolution: {integrity: sha512-ec+YcQLrg2ibcxtNrh4FqQnG9kG9IE/Aik2NH6+OXQdFU/qFuBTxSFcKDgzzBOChwlkXwydllM9Jjbp+dgIzRw==}
+    deprecated: This uses elliptic for cryptographic operations, which contains several security-relevant bugs. To what degree this affects your application is something you need to carefully investigate. See https://github.com/cosmos/cosmjs/issues/1708 for further pointers. Starting with version 0.34.0 the cryptographic library has been replaced. However, private keys might still be at risk.
 
   '@cosmjs/crypto@0.32.4':
     resolution: {integrity: sha512-zicjGU051LF1V9v7bp8p7ovq+VyC91xlaHdsFOTo2oVry3KQikp8L/81RkXmUIT8FxMwdx1T7DmFwVQikcSDIw==}
+    deprecated: This uses elliptic for cryptographic operations, which contains several security-relevant bugs. To what degree this affects your application is something you need to carefully investigate. See https://github.com/cosmos/cosmjs/issues/1708 for further pointers. Starting with version 0.34.0 the cryptographic library has been replaced. However, private keys might still be at risk.
 
   '@cosmjs/encoding@0.25.6':
     resolution: {integrity: sha512-0imUOB8XkUstI216uznPaX1hqgvLQ2Xso3zJj5IV5oJuNlsfDj9nt/iQxXWbJuettc6gvrFfpf+Vw2vBZSZ75g==}
@@ -1070,6 +1072,7 @@ packages:
 
   '@multiversx/sdk-wallet@4.2.0':
     resolution: {integrity: sha512-EjSb9AnqMcpmDjZ7ebkUpOzpTfxj1plTuVXwZ6AaqJsdpxMfrE2izbPy18+bg5xFlr8V27wYZcW8zOhkBR50BA==}
+    deprecated: The functionality has been integrated into @multiversx/sdk-core, thus this package is no longer supported.
 
   '@mysten/bcs@1.8.0':
     resolution: {integrity: sha512-bDoLN1nN+XPONsvpNyNyqYHndM3PKWS419GLeRnbLoWyNm4bnyD1X4luEpJLLDq400hBuXiCan4RWjofvyTUIQ==}
@@ -2429,8 +2432,8 @@ packages:
   axios@1.11.0:
     resolution: {integrity: sha512-1Lx3WLFQWm3ooKDYZD1eXmoGO9fxYQjrycfHFC8P0sCfQVXyROp0p9PFWBehewBOdCwHc+f/b8I0fMto5eSfwA==}
 
-  axios@1.12.2:
-    resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
+  axios@1.13.0:
+    resolution: {integrity: sha512-zt40Pz4zcRXra9CVV31KeyofwiNvAbJ5B6YPz9pMJ+yOSLikvPT4Yi5LjfgjRa9CawVYBaD1JQzIVcIvBejKeA==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -7860,7 +7863,7 @@ snapshots:
     dependencies:
       '@ton/core': 0.61.0(@ton/crypto@3.3.0)
       '@ton/crypto': 3.3.0
-      axios: 1.12.2
+      axios: 1.13.0
       dataloader: 2.2.3
       symbol.inspect: 1.0.1
       teslabot: 1.5.0
@@ -8974,7 +8977,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  axios@1.12.2:
+  axios@1.13.0:
     dependencies:
       follow-redirects: 1.15.11
       form-data: 4.0.4
@@ -9620,7 +9623,7 @@ snapshots:
       eslint: 8.15.0
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(eslint@8.15.0))(eslint@8.15.0)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.15.0)(typescript@5.2.2))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(eslint@8.15.0))(eslint@8.15.0))(eslint@8.15.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.15.0)(typescript@5.2.2))(eslint-import-resolver-typescript@3.10.1)(eslint@8.15.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.15.0)
       eslint-plugin-react: 7.37.5(eslint@8.15.0)
       eslint-plugin-react-hooks: 5.0.0-canary-7118f5dd7-20230705(eslint@8.15.0)
@@ -9654,7 +9657,7 @@ snapshots:
       tinyglobby: 0.2.15
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.15.0)(typescript@5.2.2))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(eslint@8.15.0))(eslint@8.15.0))(eslint@8.15.0)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.15.0)(typescript@5.2.2))(eslint-import-resolver-typescript@3.10.1)(eslint@8.15.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -9669,7 +9672,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.15.0)(typescript@5.2.2))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(eslint@8.15.0))(eslint@8.15.0))(eslint@8.15.0):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@6.21.0(eslint@8.15.0)(typescript@5.2.2))(eslint-import-resolver-typescript@3.10.1)(eslint@8.15.0):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
