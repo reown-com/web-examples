@@ -1720,9 +1720,9 @@ export function JsonRpcContextProvider({
             },
           },
         });
-        const valid = await tronWeb.trx.verifyMessage(
+        const valid = await tronWeb.trx.verifyMessageV2(
+          message,
           result.signature,
-          message
         );
         return {
           method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
