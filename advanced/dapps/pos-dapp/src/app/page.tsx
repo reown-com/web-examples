@@ -203,6 +203,7 @@ export default function Home() {
       });
       appkit?.close();
       setPaymentState("payment_failed");
+      setIsWalletConnected(false);
     });
 
     posClient.on("payment_broadcasted", ({ result }) => {
@@ -223,6 +224,7 @@ export default function Home() {
       });
       appkit?.close();
       setPaymentState("payment_processing");
+      setIsWalletConnected(false);
     });
 
     posClient.on("payment_requested", (paymentRequested) => {
