@@ -436,7 +436,9 @@ export default function SessionProposalModal() {
           id: proposal.id,
           namespaces,
           sessionProperties,
-          proposalRequestsResponses: signedAuths
+          proposalRequestsResponses: {
+            authentication: signedAuths
+          }
         })
         SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }

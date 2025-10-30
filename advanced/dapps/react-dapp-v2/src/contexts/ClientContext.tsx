@@ -218,15 +218,17 @@ export function ClientContextProvider({
           }
         });
 
+        const allCaipChains: string[] = [];
+
+        Object.values(namespacesToRequest).forEach((namespace) => {
+          allCaipChains.push(...(namespace.chains || []));
+        });
+
         const authentication: ConnectParams["authentication"] = [
           {
             uri: window.location.origin,
             domain: window.location.host,
-            chains: [
-              ...Object.values(namespacesToRequest)
-                .map((namespace) => namespace?.chains?.join(",") || "")
-                .flat(),
-            ],
+            chains: allCaipChains,
             nonce: "1",
             ttl: 1000,
           },
