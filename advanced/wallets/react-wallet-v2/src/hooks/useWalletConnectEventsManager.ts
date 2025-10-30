@@ -192,6 +192,8 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
             requestEvent,
             requestSession
           })
+        case SUI_SIGNING_METHODS.SUI_GET_ACCOUNTS:
+          return ModalStore.open('SessionGetSuiAccountsModal', { requestEvent, requestSession })
         case STACKS_SIGNING_METHODS.STACKS_SEND_TRANSFER:
           return ModalStore.open('SessionSendStacksTransferModal', { requestEvent, requestSession })
         case STACKS_SIGNING_METHODS.STACKS_SIGN_MESSAGE:

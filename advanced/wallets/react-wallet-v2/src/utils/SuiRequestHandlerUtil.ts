@@ -1,5 +1,4 @@
 import { getWallet } from '@/utils/SuiWalletUtil'
-import { getSignParamsMessage } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
@@ -17,6 +16,15 @@ export async function approveSuiRequest(requestEvent: RequestEventArgs) {
   const wallet = await getWallet()
 
   switch (request.method) {
+    case SUI_SIGNING_METHODS.SUI_GET_ACCOUNTS:
+      try {
+        const result = await wallet.getAccounts()
+        return formatJsonRpcResult(id, result)
+      } catch (error: any) {
+        console.error(error)
+        alert(error.message)
+        return formatJsonRpcError(id, error.message)
+      }
     case SUI_SIGNING_METHODS.SUI_SIGN_PERSONAL_MESSAGE:
       try {
         const message = request.params.message

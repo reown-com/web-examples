@@ -1,5 +1,16 @@
 import { KeyPair, keyPairFromSeed, keyPairFromSecretKey, sign, signVerify } from '@ton/crypto'
-import { WalletContractV4, TonClient, internal, Address, Transaction } from '@ton/ton'
+import {
+  WalletContractV4,
+  TonClient,
+  internal,
+  Address,
+  Transaction,
+  Cell,
+  Message,
+  address,
+  beginCell,
+  storeMessage
+} from '@ton/ton'
 import { TON_MAINNET_CHAINS, TON_TEST_CHAINS } from '@/data/TonData'
 
 /**
@@ -78,14 +89,25 @@ export default class TonLib {
       messages
     })
 
-    // Send the transfer
-    await walletContract.sendTransfer({
-      seqno,
-      secretKey: this.keypair.secretKey,
-      messages
-    })
+    await walletContract.send(transfer)
 
-    return transfer.toBoc().toString('base64')
+    // Build external-in message for the result
+    const message: Message = {
+      info: {
+        type: 'external-in',
+        src: null,
+        dest: Address.parse(this.wallet.address.toString()),
+        importFee: BigInt(0)
+      },
+      init: null,
+      body: transfer
+    }
+
+    const externalMessageCell = beginCell()
+      .store(storeMessage(message, { forceRef: true }))
+      .endCell()
+
+    return externalMessageCell.toBoc().toString('base64')
   }
 
   public async signData(params: TonLib.SignData['params']): Promise<TonLib.SignData['result']> {

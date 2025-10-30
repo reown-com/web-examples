@@ -43,7 +43,6 @@ import {
   getLocalStorageTestnetFlag,
   getProviderUrl,
   getSuiClient,
-  getTonTransactionHash,
   hashPersonalMessage,
   hashTypedDataMessage,
   verifySignature,
@@ -2322,22 +2321,11 @@ export function JsonRpcContextProvider({
           },
         });
 
-        let txHash = "";
-        try {
-          txHash = await getTonTransactionHash({
-            boc: result,
-            address,
-            chainId,
-          });
-        } catch (error) {
-          console.error("error fetching ton tx hash", error);
-        }
-
         return {
           method,
           address,
-          valid: !!txHash,
-          result: `boc: ${result}, txHash: ${txHash}`,
+          valid: !!result,
+          result: result,
         };
       }
     ),

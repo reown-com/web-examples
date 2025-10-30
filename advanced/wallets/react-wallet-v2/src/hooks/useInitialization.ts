@@ -38,13 +38,13 @@ export default function useInitialization() {
 
     try {
       console.log('Starting wallet initialization...')
-      
+
       // Initialize EIP155 wallet first (required)
       const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
       if (!eip155Addresses || !eip155Addresses[0]) {
         throw new Error('Failed to create EIP155 wallet')
       }
-      
+
       console.log('EIP155 wallet created:', eip155Addresses[0])
       SettingsStore.setEIP155Address(eip155Addresses[0])
 
@@ -60,33 +60,44 @@ export default function useInitialization() {
       // Initialize other chain wallets in background with error handling
       ;(async () => {
         try {
-          const { cosmosAddresses } = await createOrRestoreCosmosWallet()
-          const { solanaAddresses } = await createOrRestoreSolanaWallet()
-          const { polkadotAddresses } = await createOrRestorePolkadotWallet()
-          const { nearAddresses } = await createOrRestoreNearWallet()
-          const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
-          const { tronAddresses } = await createOrRestoreTronWallet()
-          const { tezosAddresses } = await createOrRestoreTezosWallet()
-          const { kadenaAddresses } = await createOrRestoreKadenaWallet()
-          const { bip122Addresses } = await createOrRestoreBip122Wallet()
-          const { stacksAddresses } = await createOrRestoreStacksWallet()
-          const { suiAddresses } = await createOrRestoreSuiWallet()
-          const { tonAddresses } = await createOrRestoreTonWallet()
-          
-          SettingsStore.setCosmosAddress(cosmosAddresses[0])
-          SettingsStore.setSolanaAddress(solanaAddresses[0])
-          SettingsStore.setPolkadotAddress(polkadotAddresses[0])
-          SettingsStore.setNearAddress(nearAddresses[0])
-          SettingsStore.setMultiversxAddress(multiversxAddresses[0])
-          SettingsStore.setTronAddress(tronAddresses[0])
-          SettingsStore.setTezosAddress(tezosAddresses[0])
-          SettingsStore.setKadenaAddress(kadenaAddresses[0])
-          SettingsStore.setbip122Address(bip122Addresses[0])
-          SettingsStore.setStacksAddress('mainnet', stacksAddresses[0])
-          SettingsStore.setStacksAddress('testnet', stacksAddresses[1])
-          SettingsStore.setSuiAddress(suiAddresses[0])
-          SettingsStore.setTonAddress(tonAddresses[0])
-          
+          await Promise.allSettled([
+            createOrRestoreCosmosWallet().then(({ cosmosAddresses }) => {
+              SettingsStore.setCosmosAddress(cosmosAddresses[0])
+            }),
+            createOrRestoreSolanaWallet().then(({ solanaAddresses }) => {
+              SettingsStore.setSolanaAddress(solanaAddresses[0])
+            }),
+            createOrRestorePolkadotWallet().then(({ polkadotAddresses }) => {
+              SettingsStore.setPolkadotAddress(polkadotAddresses[0])
+            }),
+            createOrRestoreNearWallet().then(({ nearAddresses }) => {
+              SettingsStore.setNearAddress(nearAddresses[0])
+            }),
+            createOrRestoreMultiversxWallet().then(({ multiversxAddresses }) => {
+              SettingsStore.setMultiversxAddress(multiversxAddresses[0])
+            }),
+            createOrRestoreTronWallet().then(({ tronAddresses }) => {
+              SettingsStore.setTronAddress(tronAddresses[0])
+            }),
+            createOrRestoreTezosWallet().then(({ tezosAddresses }) => {
+              SettingsStore.setTezosAddress(tezosAddresses[0])
+            }),
+            createOrRestoreKadenaWallet().then(({ kadenaAddresses }) => {
+              SettingsStore.setKadenaAddress(kadenaAddresses[0])
+            }),
+            createOrRestoreBip122Wallet().then(({ bip122Addresses }) => {
+              SettingsStore.setbip122Address(bip122Addresses[0])
+            }),
+            createOrRestoreSuiWallet().then(({ suiAddresses }) => {
+              SettingsStore.setSuiAddress(suiAddresses[0])
+            }),
+            createOrRestoreStacksWallet().then(({ stacksAddresses }) => {
+              SettingsStore.setStacksAddress('mainnet', stacksAddresses[0])
+            }),
+            createOrRestoreTonWallet().then(({ tonAddresses }) => {
+              SettingsStore.setTonAddress(tonAddresses[0])
+            })
+          ])
           console.log('All chain wallets initialized')
         } catch (walletError) {
           console.error('Error initializing some chain wallets:', walletError)
@@ -98,23 +109,23 @@ export default function useInitialization() {
       console.log('Creating WalletConnect client...')
       await createWalletKit(relayerRegionURL)
       console.log('WalletConnect client created successfully')
-      
+
       setInitialized(true)
       console.log('Wallet initialization complete')
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err)
       console.error('Initialization failed:', errorMessage)
       setInitializationError(errorMessage)
-      
+
       // Show user-friendly error message
       alert(
         `Failed to initialize wallet:\n\n${errorMessage}\n\n` +
-        'Please check:\n' +
-        '1. You have created a .env.local file\n' +
-        '2. NEXT_PUBLIC_PROJECT_ID is set in .env.local\n' +
-        '3. Your internet connection is working'
+          'Please check:\n' +
+          '1. You have created a .env.local file\n' +
+          '2. NEXT_PUBLIC_PROJECT_ID is set in .env.local\n' +
+          '3. Your internet connection is working'
       )
-      
+
       // Allow retry by resetting the flag after a delay
       setTimeout(() => {
         initializationAttempted.current = false

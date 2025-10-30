@@ -1,6 +1,8 @@
 import type { NextPage } from "next";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { numberToHex } from "@walletconnect/encoding";
+import { RELAYER_SDK_VERSION } from "@walletconnect/core";
 
 import Banner from "../components/Banner";
 import Blockchain from "../components/Blockchain";
@@ -51,11 +53,10 @@ import { useChainData } from "../contexts/ChainDataContext";
 import Icon from "../components/Icon";
 import OriginSimulationDropdown from "../components/OriginSimulationDropdown";
 import LoaderModal from "../modals/LoaderModal";
-import { numberToHex } from "@walletconnect/encoding";
 import RequestLoaderModal from "../modals/RequestLoaderModal";
 
 // Normal import does not work here
-const { version } = require("@walletconnect/sign-client/package.json");
+const version = RELAYER_SDK_VERSION;
 
 const Home: NextPage = () => {
   const [modal, setModal] = useState("");
@@ -135,13 +136,8 @@ const Home: NextPage = () => {
     if (typeof client === "undefined") {
       throw new Error("WalletConnect is not initialized");
     }
-    // Suggest existing pairings (if any).
-    if (pairings.length) {
-      openPairingModal();
-    } else {
-      // If no existing pairings are available, trigger `WalletConnectClient.connect`.
-      connect();
-    }
+
+    connect();
   };
 
   const onPing = async () => {

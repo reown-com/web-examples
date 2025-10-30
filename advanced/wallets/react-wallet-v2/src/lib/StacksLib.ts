@@ -6,11 +6,8 @@ import {
   makeSTXTokenTransfer,
   privateKeyToPublic,
   signMessageHashRsv,
-  verifySignature,
-  signWithKey,
-  hash160,
-  publicKeyFromSignatureVrs,
-  publicKeyFromSignatureRsv
+  publicKeyFromSignatureRsv,
+  publicKeyToHex,
 } from '@stacks/transactions'
 import { networkFromName, StacksNetworks } from '@stacks/network'
 import { STACKS_MAINNET, STACKS_TESTNET, STACKS_TESTNET_CAIP2 } from '@/data/StacksData'
@@ -38,23 +35,35 @@ export interface StacksWallet {
  */
 export default class StacksLib implements StacksWallet {
   wallet: Wallet
-  addresses: {
-    mainnet: string
-    testnet: string
+  accounts: {
+    mainnet: {
+      address: string
+      publicKey: string
+    }
+    testnet: {
+      address: string
+      publicKey: string
+    }
   }
   mnemonic: string
 
   constructor(wallet: Wallet, mnemonic: string) {
     this.wallet = wallet
-    this.addresses = {
-      mainnet: getAddressFromPrivateKey(
-        wallet.accounts[0].stxPrivateKey,
-        networkFromName('mainnet')
-      ),
-      testnet: getAddressFromPrivateKey(
-        wallet.accounts[0].stxPrivateKey,
-        networkFromName('testnet')
-      )
+    this.accounts = {
+      mainnet: {
+        address: getAddressFromPrivateKey(
+          wallet.accounts[0].stxPrivateKey,
+          networkFromName('mainnet')
+        ),
+        publicKey: publicKeyToHex(privateKeyToPublic(wallet.accounts[0].stxPrivateKey))
+      },
+      testnet: {
+        address: getAddressFromPrivateKey(
+          wallet.accounts[0].stxPrivateKey,
+          networkFromName('testnet')
+        ),
+        publicKey: publicKeyToHex(privateKeyToPublic(wallet.accounts[0].stxPrivateKey))
+      }
     }
     this.mnemonic = mnemonic
   }
@@ -81,9 +90,9 @@ export default class StacksLib implements StacksWallet {
 
   getAddress(chainId: string) {
     if (chainId === STACKS_MAINNET_CAIP2) {
-      return this.addresses.mainnet
+      return this.accounts.mainnet.address
     } else if (chainId === STACKS_TESTNET_CAIP2) {
-      return this.addresses.testnet
+      return this.accounts.testnet.address
     }
     console.error(
       `No stacks address found for chainId: ${chainId}, supported chains: ${STACKS_MAINNET_CAIP2}, ${STACKS_TESTNET_CAIP2}`
@@ -92,7 +101,14 @@ export default class StacksLib implements StacksWallet {
   }
 
   getAddresses() {
-    return this.addresses
+    return {
+      mainnet: this.accounts.mainnet.address,
+      testnet: this.accounts.testnet.address
+    }
+  }
+
+  getAccounts() {
+    return this.accounts
   }
 
   async sendTransfer(request: {
@@ -175,9 +191,9 @@ export default class StacksLib implements StacksWallet {
 
   private getNetworkFromAddress(address: string) {
     switch (address) {
-      case this.addresses.mainnet:
+      case this.accounts.mainnet.address:
         return 'mainnet'
-      case this.addresses.testnet:
+      case this.accounts.testnet.address:
         return 'testnet'
       default:
         throw new Error(`Invalid address: ${address}`)
