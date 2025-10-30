@@ -146,6 +146,7 @@ export default function Home() {
     posClient.on("connected", ({ session }) => {
       console.log("connected", session);
       setIsWalletConnected(true);
+      setHasRequestsSent(false);
       toast.success("Customer wallet connected", {
         icon: "🔗",
         duration: 3000,
@@ -224,7 +225,6 @@ export default function Home() {
       });
       appkit?.close();
       setPaymentState("payment_processing");
-      setIsWalletConnected(false);
     });
 
     posClient.on("payment_requested", (paymentRequested) => {
