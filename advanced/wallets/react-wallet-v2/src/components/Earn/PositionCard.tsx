@@ -8,7 +8,7 @@ const Badge = styled('span', {
   display: 'inline-block',
   padding: '2px 8px',
   borderRadius: '4px',
-  fontSize: '20px',
+  fontSize: '16px',
   fontWeight: '500',
   backgroundColor: 'rgba(34, 197, 94, 0.1)',
   color: 'rgb(34, 197, 94)'

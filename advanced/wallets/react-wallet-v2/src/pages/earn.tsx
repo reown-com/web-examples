@@ -102,6 +102,13 @@ export default function EarnPage() {
     return getProtocolsByChain(earnState.selectedChainId)
   }, [earnState.selectedChainId])
 
+  // Auto-select first protocol on mount if none selected
+  useEffect(() => {
+    if (!earnState.selectedProtocol && availableProtocols.length > 0) {
+      EarnStore.setSelectedProtocol(availableProtocols[0])
+    }
+  }, [availableProtocols, earnState.selectedProtocol])
+
   const handleProtocolSelect = (config: ProtocolConfig) => {
     EarnStore.setSelectedProtocol(config)
     EarnStore.setDepositAmount('')
@@ -164,7 +171,7 @@ export default function EarnPage() {
   return (
     <Fragment>
       <PageHeader title="Earn"></PageHeader>
-      <StyledContainer>
+      <StyledContainer style={{ padding: '0px' }}>
         {/* Tab Navigation - Minimal Style */}
         <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', marginBottom: '24px' }}>
           <Row css={{ gap: 0 }}>

@@ -2,7 +2,18 @@ import { Card, Row, Col, Text, styled } from '@nextui-org/react'
 import { ProtocolConfig } from '@/types/earn'
 import Image from 'next/image'
 
-// Minimal Badge component
+// APY Badge component - matching PositionCard
+const APYBadge = styled('span', {
+  display: 'inline-block',
+  padding: '2px 8px',
+  borderRadius: '4px',
+  fontSize: '16px',
+  fontWeight: '500',
+  backgroundColor: 'rgba(34, 197, 94, 0.1)',
+  color: 'rgb(34, 197, 94)'
+} as any)
+
+// Minimal Badge component for Risk
 const Badge = styled('span', {
   display: 'inline-flex',
   padding: '2px 8px',
@@ -12,27 +23,21 @@ const Badge = styled('span', {
   variants: {
     color: {
       success: {
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
         color: 'rgb(34, 197, 94)'
       },
       warning: {
-        backgroundColor: 'rgba(251, 191, 36, 0.1)',
         color: 'rgb(251, 191, 36)'
       },
       error: {
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
         color: 'rgb(239, 68, 68)'
       },
       primary: {
-        backgroundColor: 'rgba(99, 102, 241, 0.1)',
         color: 'rgb(99, 102, 241)'
       },
       secondary: {
-        backgroundColor: 'rgba(168, 85, 247, 0.1)',
         color: 'rgb(168, 85, 247)'
       },
       default: {
-        backgroundColor: 'rgba(156, 163, 175, 0.1)',
         color: 'rgb(156, 163, 175)'
       }
     }
@@ -86,22 +91,20 @@ export default function ProtocolCard({ config, selected, onSelect }: ProtocolCar
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '10px'
+          marginBottom: '2px'
         }}
       >
-        <div>
-          <Text css={{ margin: 0, fontSize: '16px', fontWeight: '600', lineHeight: 1.3 }}>
-            {config.protocol.displayName}
-          </Text>
-          <Text css={{ margin: 0, marginTop: '2px', fontSize: '12px', color: '$gray600' }}>
-            {config.token.symbol} • {config.chainName}
-          </Text>
-        </div>
-        <div>
-          <Text css={{ margin: 0, fontSize: '20px', fontWeight: '700', color: 'rgb(34, 197, 94)' }}>
-            {config.apy.toFixed(2)}% APY
-          </Text>
-        </div>
+        <Text css={{ margin: 0, fontSize: '16px', fontWeight: '600', lineHeight: 1.2 }}>
+          {config.protocol.displayName}
+        </Text>
+        <APYBadge>{config.apy.toFixed(2)}% APY</APYBadge>
+      </div>
+
+      {/* Second Row: Token and Chain */}
+      <div style={{ marginBottom: '10px' }}>
+        <Text css={{ margin: 0, fontSize: '12px', color: '$gray600' }}>
+          {config.token.symbol} • {config.chainName}
+        </Text>
       </div>
 
       {/* Details */}
