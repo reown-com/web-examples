@@ -54,6 +54,38 @@ export default function EarnPage() {
   const [realBalance, setRealBalance] = useState<string>('0')
   const [isLoadingBalance, setIsLoadingBalance] = useState(false)
 
+  // Mock positions for UI testing
+  const [mockPositions] = useState<UserPosition[]>([
+    {
+      protocol: 'aave',
+      chainId: 8453,
+      token: 'USDC',
+      principal: '1000.00',
+      principalUSD: '1,000.00',
+      rewards: '12.50',
+      rewardsUSD: '12.50',
+      total: '1012.50',
+      totalUSD: '1,012.50',
+      apy: 4.35,
+      depositedAt: Date.now() - 30 * 24 * 60 * 60 * 1000, // 30 days ago
+      lastUpdateAt: Date.now()
+    },
+    {
+      protocol: 'spark',
+      chainId: 8453,
+      token: 'USDC',
+      principal: '500.00',
+      principalUSD: '500.00',
+      rewards: '8.20',
+      rewardsUSD: '8.20',
+      total: '508.20',
+      totalUSD: '508.20',
+      apy: 4.82,
+      depositedAt: Date.now() - 15 * 24 * 60 * 60 * 1000, // 15 days ago
+      lastUpdateAt: Date.now()
+    }
+  ])
+
   // Fetch real balance when protocol changes
   useEffect(() => {
     if (earnState.selectedProtocol && eip155Address) {
@@ -341,8 +373,8 @@ export default function EarnPage() {
                 <Loading size="lg" />
                 <Text css={{ marginTop: '$4' }}>Loading positions...</Text>
               </Card>
-            ) : earnState.positions.length > 0 ? (
-              earnState.positions.map((position, index) => (
+            ) : mockPositions.length > 0 ? (
+              mockPositions.map((position, index) => (
                 <PositionCard
                   key={`${position.protocol}-${position.chainId}-${index}`}
                   position={position}
@@ -350,7 +382,7 @@ export default function EarnPage() {
                 />
               ))
             ) : (
-              <Card css={{ padding: '$8', textAlign: 'center' }}>
+              <Card css={{ padding: '0px', textAlign: 'center' }}>
                 <Text css={{ fontSize: '16px', fontWeight: '600' }}>No active positions</Text>
                 <Text css={{ marginTop: '$3', fontSize: '13px', color: '$gray600' }}>
                   Start earning by depositing your assets in the Earn tab

@@ -1,23 +1,23 @@
-import { Card, Row, Col, Text, Button, styled } from '@nextui-org/react'
+import { Card, Row, Col, Text, Button, styled, Input, Divider } from '@nextui-org/react'
 import { UserPosition } from '@/types/earn'
-import { PROTOCOLS } from '@/data/EarnProtocolsData'
-import Image from 'next/image'
-import { useMemo } from 'react'
+import { PROTOCOL_CONFIGS } from '@/data/EarnProtocolsData'
+import { useMemo, useState, ChangeEvent } from 'react'
 
 // Simple Badge component since NextUI v1 doesn't have Badge
 const Badge = styled('span', {
   display: 'inline-block',
-  padding: '4px 12px',
-  borderRadius: '12px',
-  fontSize: '12px',
-  fontWeight: '600',
-  backgroundColor: 'rgba(23, 201, 100, 0.15)',
-  color: '#17c964'
+  padding: '2px 8px',
+  borderRadius: '4px',
+  fontSize: '20px',
+  fontWeight: '500',
+  backgroundColor: 'rgba(34, 197, 94, 0.1)',
+  color: 'rgb(34, 197, 94)'
 } as any)
 
 const StyledCard = styled(Card, {
-  padding: '$6',
-  marginBottom: '$6'
+  padding: '0px',
+  marginBottom: '12px',
+  border: '1px solid rgba(255, 255, 255, 0.1)'
 } as any)
 
 const StyledText = styled(Text, {
@@ -30,7 +30,17 @@ interface PositionCardProps {
 }
 
 export default function PositionCard({ position, onWithdraw }: PositionCardProps) {
-  const protocol = PROTOCOLS[position.protocol.toUpperCase()]
+  const [withdrawAmount, setWithdrawAmount] = useState('')
+
+  const protocolConfig = useMemo(
+    () =>
+      PROTOCOL_CONFIGS.find(
+        p => p.protocol.id === position.protocol && p.chainId === position.chainId
+      ),
+    [position.protocol, position.chainId]
+  )
+
+  const protocol = protocolConfig?.protocol
 
   const formattedDepositDate = useMemo(() => {
     const date = new Date(position.depositedAt)
@@ -47,56 +57,59 @@ export default function PositionCard({ position, onWithdraw }: PositionCardProps
     return Math.floor(diff / (1000 * 60 * 60 * 24))
   }, [position.depositedAt])
 
+  const handleWithdrawAmountChange = (e: ChangeEvent<any>) => {
+    const inputValue = e.target.value
+    // Allow only numbers and decimal point
+    if (inputValue === '' || /^\d*\.?\d*$/.test(inputValue)) {
+      setWithdrawAmount(inputValue)
+    }
+  }
+
+  const handleMaxClick = () => {
+    setWithdrawAmount(position.total)
+  }
+
+  const handleWithdrawClick = () => {
+    onWithdraw(position)
+  }
+
   return (
     <StyledCard>
-      <Row align="center" justify="space-between">
-        <Col css={{ width: 'auto', display: 'flex', alignItems: 'center', gap: '$3' }}>
-          {protocol?.logo && (
-            <Image
-              src={protocol.logo}
-              alt={protocol.name}
-              width={28}
-              height={28}
-              style={{ borderRadius: '50%' }}
-            />
-          )}
-          <div>
-            <Text h6 css={{ margin: 0, lineHeight: 1.2 }}>
-              {protocol?.displayName || position.protocol}
-            </Text>
-            <StyledText size="$xs" color="$gray600" css={{ marginTop: '$1' }}>
-              {position.token} • Deposited {formattedDepositDate} ({durationDays} days)
-            </StyledText>
-          </div>
-        </Col>
-
-        <Col css={{ width: 'auto' }}>
-          <Badge>{position.apy.toFixed(2)}% APY</Badge>
-        </Col>
+      {/* Header Row: Protocol Name and APY */}
+      <Row align="center" justify="space-between" css={{ marginBottom: '2px' }}>
+        <Text css={{ margin: 0, fontSize: '16px', fontWeight: '600', lineHeight: 1.2 }}>
+          {protocol?.displayName || position.protocol}
+        </Text>
+        <Badge>{position.apy.toFixed(2)}% APY</Badge>
       </Row>
 
-      <Row css={{ marginTop: '$6', gap: '$6' }}>
-        <Col>
-          <StyledText size="$xs" color="$gray600" css={{ marginBottom: '$1' }}>
-            Principal
+      {/* Second Row: Token and Chain */}
+      <Row css={{ marginBottom: '16px' }}>
+        <StyledText css={{ fontSize: '12px', color: '$gray600' }}>
+          {position.token} • Base
+        </StyledText>
+      </Row>
+
+      {/* Third Row: Deposit Amount (left) and Rewards (right) */}
+      <Row justify="space-between" css={{ marginBottom: '16px' }}>
+        <Col css={{ width: 'auto' }}>
+          <StyledText css={{ fontSize: '11px', color: '$gray600', marginBottom: '4px' }}>
+            Deposit Amount
           </StyledText>
-          <Text weight="semibold" size="$sm" css={{ margin: 0 }}>
+          <Text weight="semibold" css={{ margin: 0, fontSize: '13px' }}>
             {parseFloat(position.principal).toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 6
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2
             })}{' '}
             {position.token}
           </Text>
-          <StyledText size="$xs" color="$gray600">
-            ${position.principalUSD}
-          </StyledText>
         </Col>
 
-        <Col>
-          <StyledText size="$xs" color="$gray600" css={{ marginBottom: '$1' }}>
+        <Col css={{ width: 'auto', textAlign: 'right' }}>
+          <StyledText css={{ fontSize: '11px', color: '$gray600', marginBottom: '4px' }}>
             Rewards Earned
           </StyledText>
-          <Text weight="semibold" size="$sm" css={{ margin: 0, color: '$success' }}>
+          <Text weight="semibold" css={{ margin: 0, fontSize: '13px', color: '$success' }}>
             +
             {parseFloat(position.rewards).toLocaleString('en-US', {
               minimumFractionDigits: 2,
@@ -104,32 +117,93 @@ export default function PositionCard({ position, onWithdraw }: PositionCardProps
             })}{' '}
             {position.token}
           </Text>
-          <StyledText size="$xs" color="$gray600">
-            ${position.rewardsUSD}
-          </StyledText>
-        </Col>
-
-        <Col>
-          <StyledText size="$xs" color="$gray600" css={{ marginBottom: '$1' }}>
-            Total Value
-          </StyledText>
-          <Text weight="bold" size="$sm" css={{ margin: 0 }}>
-            {parseFloat(position.total).toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 6
-            })}{' '}
-            {position.token}
-          </Text>
-          <StyledText size="$xs" color="$gray600">
-            ${position.totalUSD}
-          </StyledText>
         </Col>
       </Row>
+      <Divider />
+      {/* Withdrawal Input */}
+      <Row css={{ margin: '12px 0' }}>
+        <div style={{ width: '100%' }}>
+          <Row justify="space-between" align="center" css={{ marginBottom: '$2' }}>
+            <Text css={{ fontSize: '11px', fontWeight: '600' }}>Amount to Withdraw</Text>
+            <Text css={{ fontSize: '11px', color: '$gray600' }}>
+              Available:{' '}
+              {parseFloat(position.total).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 6
+              })}{' '}
+              {position.token}
+            </Text>
+          </Row>
 
-      <Row css={{ marginTop: '$6' }} justify="flex-end">
-        <Button size="sm" color="error" flat auto onClick={() => onWithdraw(position)}>
-          Withdraw All
-        </Button>
+          <div style={{ position: 'relative' }}>
+            <Input
+              type="text"
+              value={withdrawAmount}
+              onChange={handleWithdrawAmountChange}
+              placeholder="0.00"
+              size="lg"
+              width="100%"
+              css={{
+                '& input': {
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  paddingRight: '120px'
+                },
+                '& .nextui-input-wrapper': {
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Text css={{ fontSize: '13px', color: '$gray600' }}>{position.token}</Text>
+              <Button
+                size="xs"
+                auto
+                flat
+                color="primary"
+                onClick={handleMaxClick}
+                css={{ fontSize: '11px', minWidth: '50px' }}
+              >
+                MAX
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Row>
+      <Row>
+        {/* Withdraw Button */}
+        <div style={{ marginTop: '12px', width: '100%' }}>
+          <Button
+            onClick={handleWithdrawClick}
+            disabled={
+              !withdrawAmount ||
+              parseFloat(withdrawAmount) <= 0 ||
+              parseFloat(withdrawAmount) > parseFloat(position.total)
+            }
+            css={{
+              fontSize: '11px',
+              width: '100%',
+              height: '36px',
+              minWidth: 'auto',
+              backgroundColor: 'rgb(99, 102, 241)',
+              '&:hover': {
+                backgroundColor: 'rgb(79, 82, 221)'
+              }
+            }}
+          >
+            Withdraw
+          </Button>
+        </div>
       </Row>
     </StyledCard>
   )
