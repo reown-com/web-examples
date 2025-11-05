@@ -69,42 +69,37 @@ export default function EarnPage() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  // Mock balance for demo - will be replaced with real balance
-  const [mockBalance] = useState('5000')
+  // Real balance state
   const [realBalance, setRealBalance] = useState<string>('0')
   const [isLoadingBalance, setIsLoadingBalance] = useState(false)
 
-  // Mock positions for UI testing
-  const [mockPositions] = useState<UserPosition[]>([
-    {
-      protocol: 'aave',
-      chainId: 8453,
-      token: 'USDC',
-      principal: '1000.00',
-      principalUSD: '1,000.00',
-      rewards: '12.50',
-      rewardsUSD: '12.50',
-      total: '1012.50',
-      totalUSD: '1,012.50',
-      apy: 4.35,
-      depositedAt: Date.now() - 30 * 24 * 60 * 60 * 1000, // 30 days ago
-      lastUpdateAt: Date.now()
-    },
-    {
-      protocol: 'spark',
-      chainId: 8453,
-      token: 'USDC',
-      principal: '500.00',
-      principalUSD: '500.00',
-      rewards: '8.20',
-      rewardsUSD: '8.20',
-      total: '508.20',
-      totalUSD: '508.20',
-      apy: 4.82,
-      depositedAt: Date.now() - 15 * 24 * 60 * 60 * 1000, // 15 days ago
-      lastUpdateAt: Date.now()
+  // Fetch real balance when protocol or address changes
+  useEffect(() => {
+    if (earnState.selectedProtocol && eip155Address) {
+      setIsLoadingBalance(true)
+      refreshBalance()
+        .then(balance => {
+          setRealBalance(balance)
+          setIsLoadingBalance(false)
+        })
+        .catch(error => {
+          console.error('Error fetching balance:', error)
+          setRealBalance('0')
+          setIsLoadingBalance(false)
+        })
+    } else {
+      setRealBalance('0')
     }
-  ])
+  }, [earnState.selectedProtocol, eip155Address, refreshBalance])
+
+  // Fetch positions when address changes or when active tab is 'positions'
+  // Disabled to prevent RPC spam - positions will be fetched after successful deposits
+  // useEffect(() => {
+  //   if (earnState.activeTab === 'positions' && eip155Address) {
+  //     console.log('Fetching positions for address:', eip155Address)
+  //     refreshPositions()
+  //   }
+  // }, [earnState.activeTab, eip155Address, refreshPositions])
 
   // Fetch real balance when protocol changes
   // Disabled to prevent RPC spam - using mock balance instead
@@ -150,8 +145,7 @@ export default function EarnPage() {
       return
     }
 
-    const balance = parseFloat(realBalance) > 0 ? realBalance : mockBalance
-    if (parseFloat(earnState.depositAmount) > parseFloat(balance)) {
+    if (parseFloat(earnState.depositAmount) > parseFloat(realBalance)) {
       styledToast('Insufficient balance', 'error')
       return
     }
@@ -217,7 +211,7 @@ export default function EarnPage() {
     }
   }
 
-  const handleWithdraw = async (position: UserPosition) => {
+  const handleWithdraw = async (position: UserPosition, amount: string) => {
     if (!eip155Address) {
       styledToast('Please ensure your wallet is connected', 'error')
       return
@@ -232,24 +226,30 @@ export default function EarnPage() {
       return
     }
 
+    if (!amount || parseFloat(amount) <= 0) {
+      styledToast('Please enter a valid amount to withdraw', 'error')
+      return
+    }
+
+    if (parseFloat(amount) > parseFloat(position.total)) {
+      styledToast('Withdrawal amount exceeds available balance', 'error')
+      return
+    }
+
     try {
       EarnStore.setTransactionStatus('withdrawing')
       EarnStore.setLoading(true)
 
       styledToast('Withdrawing funds...', 'default')
 
-      const withdrawResult = await sendWithdrawTransaction(
-        config,
-        position.total, // Withdraw all
-        eip155Address
-      )
+      const withdrawResult = await sendWithdrawTransaction(config, amount, eip155Address)
 
       if (!withdrawResult.success) {
         throw new Error(withdrawResult.error || 'Withdrawal failed')
       }
 
       EarnStore.setTransactionStatus('success', withdrawResult.txHash)
-      styledToast(`Successfully withdrew ${position.total} ${position.token}!`, 'success')
+      styledToast(`Successfully withdrew ${amount} ${position.token}!`, 'success')
 
       // Refresh data
       refreshBalance()
@@ -389,7 +389,7 @@ export default function EarnPage() {
                 <AmountInput
                   value={earnState.depositAmount}
                   onChange={handleAmountChange}
-                  balance={parseFloat(realBalance) > 0 ? realBalance : mockBalance}
+                  balance={realBalance}
                   tokenSymbol={earnState.selectedProtocol.token.symbol}
                   label="Amount to Deposit"
                   placeholder="0.00"
@@ -471,7 +471,7 @@ export default function EarnPage() {
                       earnState.loading ||
                       !earnState.depositAmount ||
                       parseFloat(earnState.depositAmount) <= 0 ||
-                      parseFloat(earnState.depositAmount) > parseFloat(mockBalance)
+                      parseFloat(earnState.depositAmount) > parseFloat(realBalance)
                     }
                     onClick={handleDeposit}
                   >
@@ -513,26 +513,47 @@ export default function EarnPage() {
         {/* My Positions Tab Content */}
         {earnState.activeTab === 'positions' && (
           <Fragment>
-            <Text
-              css={{
-                marginBottom: '16px',
-                fontSize: '12px',
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                color: '$gray600'
-              }}
-            >
-              Your Active Positions
-            </Text>
+            <Row justify="space-between" align="center" css={{ marginBottom: '16px' }}>
+              <Text
+                css={{
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  color: '$gray600'
+                }}
+              >
+                Your Active Positions
+              </Text>
+              <Button
+                auto
+                size="sm"
+                flat
+                color="primary"
+                disabled={earnState.positionsLoading}
+                onClick={() => refreshPositions()}
+                css={{ fontSize: '11px' }}
+              >
+                {earnState.positionsLoading ? 'Loading...' : 'Refresh'}
+              </Button>
+            </Row>
 
             {earnState.positionsLoading ? (
-              <Card css={{ padding: '$8', textAlign: 'center' }}>
+              <Card
+                css={{
+                  padding: '$8',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
                 <Loading size="lg" />
                 <Text css={{ marginTop: '$4' }}>Loading positions...</Text>
               </Card>
-            ) : mockPositions.length > 0 ? (
-              mockPositions.map((position, index) => (
+            ) : earnState.positions.length > 0 ? (
+              earnState.positions.map((position, index) => (
                 <PositionCard
                   key={`${position.protocol}-${position.chainId}-${index}`}
                   position={position}
@@ -543,7 +564,9 @@ export default function EarnPage() {
               <Card css={{ padding: '0px', textAlign: 'center' }}>
                 <Text css={{ fontSize: '16px', fontWeight: '600' }}>No active positions</Text>
                 <Text css={{ marginTop: '$3', fontSize: '13px', color: '$gray600' }}>
-                  Start earning by depositing your assets in the Earn tab
+                  {earnState.positions.length === 0 && !earnState.positionsLoading
+                    ? 'Click "Refresh" to load your positions, or start earning by depositing in the Earn tab'
+                    : 'Start earning by depositing your assets in the Earn tab'}
                 </Text>
                 <Button
                   auto

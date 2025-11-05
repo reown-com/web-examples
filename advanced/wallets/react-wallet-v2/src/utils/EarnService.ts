@@ -222,23 +222,30 @@ export async function getUserProtocolPosition(
     // Only return if user has a balance
     if (parseFloat(position.supplied) === 0) return null
 
-    // Calculate rewards (simplified - in production use actual on-chain rewards)
+    // Use the APY from the cache if available, otherwise use the position's APY
+    const { default: EarnStore } = await import('@/store/EarnStore')
+    const cachedAPY = EarnStore.getAPY(config.protocol.id, config.chainId)
+    const apy = cachedAPY || position.apy || config.apy
+
+    // In Aave, the aToken balance (position.supplied) already includes accrued interest
+    // We'll estimate the original principal based on a 30-day deposit assumption
+    // This is a rough estimate - in production, you'd track the actual deposit amount
     const daysDeposited = 30 // Mock estimate
-    const dailyRate = position.apy / 365 / 100
-    const rewards = (parseFloat(position.supplied) * dailyRate * daysDeposited).toFixed(6)
-    const total = (parseFloat(position.supplied) + parseFloat(rewards)).toFixed(6)
+    const totalWithInterest = parseFloat(position.supplied)
+    const estimatedPrincipal = totalWithInterest / (1 + (apy / 100 / 365) * daysDeposited)
+    const estimatedRewards = totalWithInterest - estimatedPrincipal
 
     return {
       protocol: config.protocol.id,
       chainId: config.chainId,
       token: config.token.symbol,
-      principal: position.supplied,
-      principalUSD: position.suppliedUSD,
-      rewards,
-      rewardsUSD: rewards, // 1:1 for stablecoins
-      total,
-      totalUSD: total,
-      apy: position.apy,
+      principal: estimatedPrincipal.toFixed(6),
+      principalUSD: estimatedPrincipal.toFixed(6),
+      rewards: estimatedRewards.toFixed(6),
+      rewardsUSD: estimatedRewards.toFixed(6), // 1:1 for stablecoins
+      total: position.supplied, // This is the actual withdrawable amount
+      totalUSD: position.supplied,
+      apy: apy,
       depositedAt: Date.now() - daysDeposited * 24 * 60 * 60 * 1000, // Mock
       lastUpdateAt: Date.now()
     }
@@ -259,14 +266,21 @@ export async function getAllUserPositions(
 
   const positions: UserPosition[] = []
 
-  const promises = configs.map(async config => {
-    const position = await getUserProtocolPosition(config, userAddress)
-    if (position) {
-      positions.push(position)
+  // Fetch positions sequentially to avoid rate limiting
+  for (const config of configs) {
+    try {
+      const position = await getUserProtocolPosition(config, userAddress)
+      if (position) {
+        positions.push(position)
+      }
+      // Add a small delay between requests to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500))
+    } catch (error) {
+      console.error(`Error fetching position for ${config.protocol.name}:`, error)
+      // Continue with next protocol even if one fails
     }
-  })
+  }
 
-  await Promise.allSettled(promises)
   return positions
 }
 

@@ -41,10 +41,18 @@ export function useEarnData() {
   const refreshPositions = useCallback(async () => {
     if (!eip155Address) return
 
+    // Prevent multiple simultaneous calls
+    if (EarnStore.state.positionsLoading) {
+      console.log('Already loading positions, skipping...')
+      return
+    }
+
     try {
       EarnStore.setPositionsLoading(true)
+      console.log('Fetching positions for:', eip155Address, 'chain:', selectedChainId)
       const positions = await getAllUserPositions(eip155Address, selectedChainId)
       EarnStore.setPositions(positions)
+      console.log('Positions loaded:', positions.length)
     } catch (error) {
       console.error('Error refreshing positions:', error)
     } finally {

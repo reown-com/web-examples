@@ -26,7 +26,7 @@ const StyledText = styled(Text, {
 
 interface PositionCardProps {
   position: UserPosition
-  onWithdraw: (position: UserPosition) => void
+  onWithdraw: (position: UserPosition, amount: string) => void
 }
 
 export default function PositionCard({ position, onWithdraw }: PositionCardProps) {
@@ -70,7 +70,7 @@ export default function PositionCard({ position, onWithdraw }: PositionCardProps
   }
 
   const handleWithdrawClick = () => {
-    onWithdraw(position)
+    onWithdraw(position, withdrawAmount)
   }
 
   return (

@@ -41,12 +41,12 @@ export default function AmountInput({
   }, [disabled, balance])
 
   const formattedBalance = useMemo(() => {
-    if (!balance || balance === '0') return '0'
+    if (!balance || balance === '0') return '0.00'
     const num = parseFloat(balance)
-    if (isNaN(num)) return '0'
+    if (isNaN(num)) return '0.00'
     return num.toLocaleString('en-US', {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 6
+      maximumFractionDigits: 2
     })
   }, [balance])
 

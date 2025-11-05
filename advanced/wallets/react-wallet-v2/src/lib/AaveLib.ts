@@ -63,14 +63,18 @@ export class AaveLib {
     try {
       const data = await this.poolContract.getReserveData(tokenAddress)
 
+      console.log('Raw reserve data array length:', data.length)
+      console.log('aTokenAddress from data[8]:', data[8])
+
       // currentLiquidityRate is in Ray units (1e27)
-      // Convert to APY percentage
-      const liquidityRate = data.currentLiquidityRate
+      // The aToken address is at index 8, not 7
+      const liquidityRate = data.currentLiquidityRate || data[2]
+      const aTokenAddress = data[8] // Correct index for aToken address
       const apy = this.rayToAPY(liquidityRate)
 
       return {
         liquidityRate: liquidityRate.toString(),
-        aTokenAddress: data.aTokenAddress,
+        aTokenAddress: aTokenAddress,
         availableLiquidity: '0', // Would need additional call to get this
         totalSupply: '0' // Would need additional call to get this
       }
@@ -89,14 +93,21 @@ export class AaveLib {
     tokenDecimals: number = 6
   ): Promise<AaveUserPosition> {
     try {
+      console.log('Getting user position for:', { userAddress, tokenAddress })
+
       const reserveData = await this.getReserveData(tokenAddress)
+      console.log('Reserve data aToken address:', reserveData.aTokenAddress)
+
       const aTokenContract = new ethers.Contract(
         reserveData.aTokenAddress,
         ATOKEN_ABI,
         this.provider
       )
 
+      console.log('Calling balanceOf on aToken...')
       const balance = await aTokenContract.balanceOf(userAddress)
+      console.log('Balance:', balance.toString())
+
       const supplied = ethers.utils.formatUnits(balance, tokenDecimals)
 
       // For mock, use 1 USDC = 1 USD
