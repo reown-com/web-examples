@@ -1,5 +1,8 @@
 module.exports = {
   reactStrictMode: true,
+  images: {
+    domains: ['cryptologos.cc', 'avatars.githubusercontent.com']
+  },
   webpack(config) {
     config.resolve.fallback = {
       ...config.resolve.fallback,
