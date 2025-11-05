@@ -90,15 +90,16 @@ export const PROTOCOL_CONFIGS: ProtocolConfig[] = [
       instantWithdraw: true
     }
   },
-  // Spark Protocol on Base
+  // NOTE: Spark Protocol does not exist on Base - commenting out to prevent errors
+  /*
   {
     protocol: PROTOCOLS.SPARK,
     chainId: EARN_CHAINS.BASE.id,
     chainName: EARN_CHAINS.BASE.name,
     token: USDC_TOKENS[EARN_CHAINS.BASE.id],
     contracts: {
-      pool: '0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB', // Placeholder - update with actual Spark address
-      poolDataProvider: '0x2d8A3C5677189723C4cB8873CfC9C8976FDF38Ac' // Placeholder
+      pool: '0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB',
+      poolDataProvider: '0x2d8A3C5677189723C4cB8873CfC9C8976FDF38Ac'
     },
     apy: 4.82,
     tvl: '$125.4M',
@@ -109,6 +110,7 @@ export const PROTOCOL_CONFIGS: ProtocolConfig[] = [
       instantWithdraw: true
     }
   },
+  */
   // Aave V3 on Ethereum
   {
     protocol: PROTOCOLS.AAVE,

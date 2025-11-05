@@ -24,6 +24,14 @@ interface State {
 
   // Active tab
   activeTab: 'earn' | 'positions'
+
+  // Simple transaction status for UI
+  transactionStatus: 'idle' | 'approving' | 'depositing' | 'withdrawing' | 'success' | 'error'
+  transactionHash: string | null
+  loading: boolean
+
+  // APY map for live values
+  apyMap: Map<string, number>
 }
 
 /**
@@ -49,7 +57,13 @@ const state = proxy<State>({
   depositAmount: '',
   withdrawAmount: '',
 
-  activeTab: 'earn'
+  activeTab: 'earn',
+
+  transactionStatus: 'idle',
+  transactionHash: null,
+  loading: false,
+
+  apyMap: new Map()
 })
 
 /**
@@ -141,6 +155,36 @@ const EarnStore = {
     this.resetWithdrawState()
   },
 
+  // Simple transaction status management for UI
+  setTransactionStatus(
+    status: 'idle' | 'approving' | 'depositing' | 'withdrawing' | 'success' | 'error',
+    txHash: string | null = null
+  ) {
+    state.transactionStatus = status
+    state.transactionHash = txHash
+  },
+
+  setLoading(loading: boolean) {
+    state.loading = loading
+  },
+
+  resetDepositForm() {
+    state.depositAmount = ''
+    state.transactionStatus = 'idle'
+    state.transactionHash = null
+  },
+
+  // APY management
+  setAPY(protocolId: string, chainId: number, apy: number) {
+    const key = `${protocolId}-${chainId}`
+    state.apyMap.set(key, apy)
+  },
+
+  getAPY(protocolId: string, chainId: number): number | undefined {
+    const key = `${protocolId}-${chainId}`
+    return state.apyMap.get(key)
+  },
+
   // Reset entire store
   reset() {
     state.selectedProtocol = null
@@ -150,6 +194,9 @@ const EarnStore = {
     state.depositAmount = ''
     state.withdrawAmount = ''
     state.activeTab = 'earn'
+    state.transactionStatus = 'idle'
+    state.transactionHash = null
+    state.loading = false
     this.resetAllTransactionStates()
   }
 }

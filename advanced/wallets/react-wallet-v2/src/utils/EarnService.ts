@@ -7,6 +7,7 @@ import AaveLib from '@/lib/AaveLib'
 import SparkLib from '@/lib/SparkLib'
 import { ProtocolConfig, UserPosition, DepositQuote, WithdrawQuote } from '@/types/earn'
 import { PROTOCOL_CONFIGS, EARN_CHAINS } from '@/data/EarnProtocolsData'
+import { BigNumber } from 'ethers'
 
 // Cache for protocol instances
 const protocolInstances: {
@@ -16,6 +17,10 @@ const protocolInstances: {
   aave: new Map(),
   spark: new Map()
 }
+
+// APY Cache with timestamps
+const apyCache: Map<string, { apy: number; timestamp: number }> = new Map()
+const APY_CACHE_DURATION = 2 * 60 * 1000 // 2 minutes in milliseconds
 
 /**
  * Get Aave instance for a specific chain
@@ -59,15 +64,86 @@ function getSparkInstance(chainId: number): SparkLib | null {
  * Fetch live APY for a protocol
  */
 export async function fetchProtocolAPY(config: ProtocolConfig): Promise<number> {
-  try {
-    // For now, use the configured APY value
-    // In production, we would fetch real-time data from the blockchain
-    // The rayToAPY method is private and requires BigNumber conversion
+  const cacheKey = `${config.protocol.id}-${config.chainId}`
 
-    // TODO: Implement real-time APY fetching once contract integration is tested
-    return config.apy
-  } catch (error) {
-    console.error(`Error fetching APY for ${config.protocol.name}:`, error)
+  // Check cache first
+  const cached = apyCache.get(cacheKey)
+  if (cached && Date.now() - cached.timestamp < APY_CACHE_DURATION) {
+    console.log(
+      `Using cached APY for ${config.protocol.name} (${Math.floor(
+        (Date.now() - cached.timestamp) / 1000
+      )}s old)`
+    )
+    return cached.apy
+  }
+
+  try {
+    let protocolLib: AaveLib | SparkLib | null = null
+
+    if (config.protocol.id === 'aave') {
+      protocolLib = getAaveInstance(config.chainId)
+    } else if (config.protocol.id === 'spark') {
+      protocolLib = getSparkInstance(config.chainId)
+    }
+
+    if (!protocolLib) {
+      console.warn(`No protocol instance for ${config.protocol.id} on chain ${config.chainId}`)
+      return config.apy // Fallback to configured value
+    }
+
+    console.log(`Fetching live APY for ${config.protocol.name} on chain ${config.chainId}...`)
+
+    // Fetch reserve data to get current APY
+    const reserveData = await protocolLib.getReserveData(config.token.address)
+
+    let apy = config.apy // Default fallback
+
+    if (reserveData.liquidityRate && reserveData.liquidityRate !== '0') {
+      try {
+        // liquidityRate from Aave is the APR in Ray units (1e27)
+        // Not a per-second rate - it's already annualized!
+        const liquidityRateBN = BigNumber.from(reserveData.liquidityRate)
+
+        // Convert from Ray to decimal APR
+        // APR = liquidityRate / 1e27
+        const { formatUnits } = require('ethers/lib/utils')
+        const depositApr = parseFloat(formatUnits(liquidityRateBN, 27))
+
+        // Convert APR to APY accounting for daily compounding
+        // APY = (1 + APR/365)^365 - 1
+        const depositApy = Math.pow(1 + depositApr / 365, 365) - 1
+
+        // Convert to percentage
+        apy = depositApy * 100
+
+        console.log(`Raw liquidityRate: ${reserveData.liquidityRate}`)
+        console.log(`Deposit APR (decimal): ${depositApr}`)
+        console.log(`Deposit APR (%): ${(depositApr * 100).toFixed(4)}%`)
+        console.log(`Deposit APY (%): ${apy.toFixed(4)}%`)
+      } catch (conversionError) {
+        console.warn('Error converting liquidityRate to APY:', conversionError)
+        apy = config.apy
+      }
+    }
+
+    // Cache the result
+    apyCache.set(cacheKey, { apy, timestamp: Date.now() })
+    console.log(`✓ Fetched APY for ${config.protocol.name}: ${apy.toFixed(2)}%`)
+
+    return apy
+  } catch (error: any) {
+    // Handle rate limiting and other errors gracefully
+    if (error.code === 'CALL_EXCEPTION') {
+      console.warn(
+        `Contract call failed for ${config.protocol.name} on chain ${config.chainId} - using fallback APY`
+      )
+    } else if (error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
+      console.warn(
+        `Rate limited when fetching APY for ${config.protocol.name} - using fallback APY`
+      )
+    } else {
+      console.error(`Error fetching APY for ${config.protocol.name}:`, error)
+    }
     return config.apy // Fallback to config value
   }
 }
@@ -96,23 +172,20 @@ export async function getUserTokenBalance(
   userAddress: string
 ): Promise<string> {
   try {
-    // TODO: Re-enable once correct contract addresses are verified
-    // For now, return mock balance to avoid contract errors
-    console.log(`Using mock balance for ${config.protocol.name} - contract integration pending`)
-    return '5000' // Mock balance
+    let protocolLib: AaveLib | SparkLib | null = null
 
-    /* Disabled until contract addresses are verified
     if (config.protocol.id === 'aave') {
-      const aave = getAaveInstance(config.chainId)
-      if (!aave) return '0'
-      return await aave.getTokenBalance(config.token.address, userAddress)
+      protocolLib = getAaveInstance(config.chainId)
     } else if (config.protocol.id === 'spark') {
-      const spark = getSparkInstance(config.chainId)
-      if (!spark) return '0'
-      return await spark.getTokenBalance(config.token.address, userAddress)
+      protocolLib = getSparkInstance(config.chainId)
     }
-    return '0'
-    */
+
+    if (!protocolLib) {
+      console.warn(`No protocol instance for ${config.protocol.id}`)
+      return '0'
+    }
+
+    return await protocolLib.getTokenBalance(config.token.address, userAddress)
   } catch (error) {
     console.error('Error fetching token balance:', error)
     return '0'
@@ -127,84 +200,48 @@ export async function getUserProtocolPosition(
   userAddress: string
 ): Promise<UserPosition | null> {
   try {
-    // TODO: Re-enable once correct contract addresses are verified
-    // For now, return null to avoid contract errors
-    // The contract addresses need to be verified on Base chain
+    let protocolLib: AaveLib | SparkLib | null = null
 
-    console.log(
-      `Skipping position fetch for ${config.protocol.name} on chain ${config.chainId} - contract integration pending`
-    )
-    return null
-
-    /* Disabled until contract addresses are verified
     if (config.protocol.id === 'aave') {
-      const aave = getAaveInstance(config.chainId)
-      if (!aave) return null
-
-      const position = await aave.getUserPosition(
-        userAddress,
-        config.token.address,
-        config.token.decimals
-      )
-
-      // Only return if user has a balance
-      if (parseFloat(position.supplied) === 0) return null
-
-      // Calculate rewards (mock for now - real rewards need more complex calculation)
-      const daysDeposited = 30 // Mock
-      const dailyRate = position.apy / 365 / 100
-      const rewards = (parseFloat(position.supplied) * dailyRate * daysDeposited).toFixed(6)
-      const total = (parseFloat(position.supplied) + parseFloat(rewards)).toFixed(6)
-
-      return {
-        protocol: config.protocol.id,
-        chainId: config.chainId,
-        token: config.token.symbol,
-        principal: position.supplied,
-        principalUSD: position.suppliedUSD,
-        rewards,
-        rewardsUSD: rewards, // 1:1 for stablecoins
-        total,
-        totalUSD: total,
-        apy: position.apy,
-        depositedAt: Date.now() - daysDeposited * 24 * 60 * 60 * 1000, // Mock
-        lastUpdateAt: Date.now()
-      }
+      protocolLib = getAaveInstance(config.chainId)
     } else if (config.protocol.id === 'spark') {
-      const spark = getSparkInstance(config.chainId)
-      if (!spark) return null
-
-      const position = await spark.getUserPosition(
-        userAddress,
-        config.token.address,
-        config.token.decimals
-      )
-
-      if (parseFloat(position.supplied) === 0) return null
-
-      const daysDeposited = 30
-      const dailyRate = position.apy / 365 / 100
-      const rewards = (parseFloat(position.supplied) * dailyRate * daysDeposited).toFixed(6)
-      const total = (parseFloat(position.supplied) + parseFloat(rewards)).toFixed(6)
-
-      return {
-        protocol: config.protocol.id,
-        chainId: config.chainId,
-        token: config.token.symbol,
-        principal: position.supplied,
-        principalUSD: position.suppliedUSD,
-        rewards,
-        rewardsUSD: rewards,
-        total,
-        totalUSD: total,
-        apy: position.apy,
-        depositedAt: Date.now() - daysDeposited * 24 * 60 * 60 * 1000,
-        lastUpdateAt: Date.now()
-      }
+      protocolLib = getSparkInstance(config.chainId)
     }
 
-    return null
-    */
+    if (!protocolLib) {
+      console.warn(`No protocol instance for ${config.protocol.id}`)
+      return null
+    }
+
+    const position = await protocolLib.getUserPosition(
+      userAddress,
+      config.token.address,
+      config.token.decimals
+    )
+
+    // Only return if user has a balance
+    if (parseFloat(position.supplied) === 0) return null
+
+    // Calculate rewards (simplified - in production use actual on-chain rewards)
+    const daysDeposited = 30 // Mock estimate
+    const dailyRate = position.apy / 365 / 100
+    const rewards = (parseFloat(position.supplied) * dailyRate * daysDeposited).toFixed(6)
+    const total = (parseFloat(position.supplied) + parseFloat(rewards)).toFixed(6)
+
+    return {
+      protocol: config.protocol.id,
+      chainId: config.chainId,
+      token: config.token.symbol,
+      principal: position.supplied,
+      principalUSD: position.suppliedUSD,
+      rewards,
+      rewardsUSD: rewards, // 1:1 for stablecoins
+      total,
+      totalUSD: total,
+      apy: position.apy,
+      depositedAt: Date.now() - daysDeposited * 24 * 60 * 60 * 1000, // Mock
+      lastUpdateAt: Date.now()
+    }
   } catch (error) {
     console.error('Error fetching user position:', error)
     return null

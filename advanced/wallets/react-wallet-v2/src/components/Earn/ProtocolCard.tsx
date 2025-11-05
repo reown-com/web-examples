@@ -1,6 +1,8 @@
 import { Card, Row, Col, Text, styled } from '@nextui-org/react'
 import { ProtocolConfig } from '@/types/earn'
 import Image from 'next/image'
+import { useSnapshot } from 'valtio'
+import EarnStore from '@/store/EarnStore'
 
 // APY Badge component - matching PositionCard
 const APYBadge = styled('span', {
@@ -63,6 +65,11 @@ interface ProtocolCardProps {
 }
 
 export default function ProtocolCard({ config, selected, onSelect }: ProtocolCardProps) {
+  const { apyMap } = useSnapshot(EarnStore.state)
+
+  // Get live APY from store, fallback to config APY
+  const displayAPY = apyMap.get(`${config.protocol.id}-${config.chainId}`) ?? config.apy
+
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case 'Low':
@@ -97,7 +104,7 @@ export default function ProtocolCard({ config, selected, onSelect }: ProtocolCar
         <Text css={{ margin: 0, fontSize: '16px', fontWeight: '600', lineHeight: 1.2 }}>
           {config.protocol.displayName}
         </Text>
-        <APYBadge>{config.apy.toFixed(2)}% APY</APYBadge>
+        <APYBadge>{displayAPY.toFixed(2)}% APY</APYBadge>
       </div>
 
       {/* Second Row: Token and Chain */}

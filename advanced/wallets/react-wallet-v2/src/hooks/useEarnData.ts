@@ -20,12 +20,16 @@ export function useEarnData() {
     if (!selectedChainId) return
 
     try {
+      console.log('Refreshing APYs for chain', selectedChainId)
       const apyMap = await fetchAllProtocolAPYs(selectedChainId)
 
-      // Update protocol configs with live APYs
-      // Note: This would need a more sophisticated state management approach
-      // For now, APYs are fetched but not persisted to the global state
-      console.log('Fetched APYs:', Array.from(apyMap.entries()))
+      // Store APYs in the store
+      apyMap.forEach((apy, key) => {
+        const [protocolId, chainIdStr] = key.split('-')
+        EarnStore.setAPY(protocolId, parseInt(chainIdStr), apy)
+      })
+
+      console.log('APY refresh complete:', Array.from(apyMap.entries()))
     } catch (error) {
       console.error('Error refreshing APYs:', error)
     }
@@ -70,17 +74,10 @@ export function useEarnData() {
     await Promise.all([refreshAPYs(), refreshPositions()])
   }, [refreshAPYs, refreshPositions])
 
-  // Auto-refresh on mount and when dependencies change
+  // Auto-fetch APYs on mount (with 2-minute cache, safe from spam)
   useEffect(() => {
-    refreshAllData()
-
-    // Set up periodic refresh (every 30 seconds)
-    const interval = setInterval(() => {
-      refreshAllData()
-    }, 30000)
-
-    return () => clearInterval(interval)
-  }, [refreshAllData])
+    refreshAPYs()
+  }, [refreshAPYs])
 
   return {
     refreshAPYs,

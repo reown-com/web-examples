@@ -21,6 +21,13 @@ import { getProtocolsByChain } from '@/data/EarnProtocolsData'
 import { ProtocolConfig, UserPosition } from '@/types/earn'
 import { styledToast } from '@/utils/HelperUtil'
 import useEarnData from '@/hooks/useEarnData'
+import { checkApprovalNeeded } from '@/utils/EarnService'
+import {
+  sendApprovalTransaction,
+  sendDepositTransaction,
+  sendWithdrawTransaction
+} from '@/utils/EarnTransactionService'
+import { eip155Addresses } from '@/utils/EIP155WalletUtil'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -46,8 +53,21 @@ const InfoCard = styled(Card, {
 
 export default function EarnPage() {
   const earnState = useSnapshot(EarnStore.state)
-  const { eip155Address } = useSnapshot(SettingsStore.state)
+  const { eip155Address, account } = useSnapshot(SettingsStore.state)
   const { refreshBalance, refreshPositions } = useEarnData()
+
+  // Handle address selection
+  const handleAddressChange = (accountIndex: number) => {
+    SettingsStore.setAccount(accountIndex)
+    SettingsStore.setEIP155Address(eip155Addresses[accountIndex])
+    styledToast(`Switched to Account ${accountIndex + 1}`, 'success')
+  }
+
+  // Format address for display
+  const formatAddress = (address: string) => {
+    if (!address) return ''
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
 
   // Mock balance for demo - will be replaced with real balance
   const [mockBalance] = useState('5000')
@@ -87,15 +107,16 @@ export default function EarnPage() {
   ])
 
   // Fetch real balance when protocol changes
-  useEffect(() => {
-    if (earnState.selectedProtocol && eip155Address) {
-      setIsLoadingBalance(true)
-      refreshBalance().then(balance => {
-        setRealBalance(balance)
-        setIsLoadingBalance(false)
-      })
-    }
-  }, [earnState.selectedProtocol, eip155Address, refreshBalance])
+  // Disabled to prevent RPC spam - using mock balance instead
+  // useEffect(() => {
+  //   if (earnState.selectedProtocol && eip155Address) {
+  //     setIsLoadingBalance(true)
+  //     refreshBalance().then(balance => {
+  //       setRealBalance(balance)
+  //       setIsLoadingBalance(false)
+  //     })
+  //   }
+  // }, [earnState.selectedProtocol, eip155Address])
 
   // Get available protocols for Base chain (hardcoded for POC)
   const availableProtocols = useMemo(() => {
@@ -119,8 +140,8 @@ export default function EarnPage() {
   }
 
   const handleDeposit = async () => {
-    if (!earnState.selectedProtocol) {
-      styledToast('Please select a protocol', 'error')
+    if (!earnState.selectedProtocol || !eip155Address) {
+      styledToast('Please select a protocol and ensure your wallet is connected', 'error')
       return
     }
 
@@ -129,24 +150,117 @@ export default function EarnPage() {
       return
     }
 
-    if (parseFloat(earnState.depositAmount) > parseFloat(mockBalance)) {
+    const balance = parseFloat(realBalance) > 0 ? realBalance : mockBalance
+    if (parseFloat(earnState.depositAmount) > parseFloat(balance)) {
       styledToast('Insufficient balance', 'error')
       return
     }
 
-    // Phase 3 will implement actual deposit logic
-    styledToast(
-      `Deposit functionality coming in Phase 3! Would deposit ${earnState.depositAmount} USDC to ${earnState.selectedProtocol.protocol.displayName}`,
-      'success'
-    )
+    try {
+      EarnStore.setTransactionStatus('approving')
+      EarnStore.setLoading(true)
+
+      // Check if approval is needed
+      const needsApproval = await checkApprovalNeeded(
+        earnState.selectedProtocol,
+        eip155Address,
+        earnState.depositAmount
+      )
+
+      if (needsApproval) {
+        styledToast('Approving USDC spending...', 'default')
+
+        // Send approval transaction
+        const approvalResult = await sendApprovalTransaction(
+          earnState.selectedProtocol,
+          earnState.depositAmount,
+          eip155Address
+        )
+
+        if (!approvalResult.success) {
+          throw new Error(approvalResult.error || 'Approval failed')
+        }
+
+        styledToast('Approval confirmed! Now depositing...', 'success')
+      }
+
+      // Send deposit transaction
+      EarnStore.setTransactionStatus('depositing')
+      styledToast('Depositing USDC...', 'default')
+
+      const depositResult = await sendDepositTransaction(
+        earnState.selectedProtocol,
+        earnState.depositAmount,
+        eip155Address
+      )
+
+      if (!depositResult.success) {
+        throw new Error(depositResult.error || 'Deposit failed')
+      }
+
+      EarnStore.setTransactionStatus('success', depositResult.txHash)
+      styledToast(
+        `Successfully deposited ${earnState.depositAmount} ${earnState.selectedProtocol.token.symbol}!`,
+        'success'
+      )
+
+      // Reset form and refresh data
+      EarnStore.resetDepositForm()
+      refreshBalance()
+      refreshPositions()
+    } catch (error: any) {
+      console.error('Deposit error:', error)
+      EarnStore.setTransactionStatus('error')
+      styledToast(error.message || 'Transaction failed', 'error')
+    } finally {
+      EarnStore.setLoading(false)
+    }
   }
 
   const handleWithdraw = async (position: UserPosition) => {
-    // Phase 4 will implement actual withdrawal logic
-    styledToast(
-      `Withdrawal functionality coming in Phase 4! Would withdraw from ${position.protocol}`,
-      'success'
+    if (!eip155Address) {
+      styledToast('Please ensure your wallet is connected', 'error')
+      return
+    }
+
+    const config = availableProtocols.find(
+      p => p.protocol.id === position.protocol && p.chainId === position.chainId
     )
+
+    if (!config) {
+      styledToast('Protocol configuration not found', 'error')
+      return
+    }
+
+    try {
+      EarnStore.setTransactionStatus('withdrawing')
+      EarnStore.setLoading(true)
+
+      styledToast('Withdrawing funds...', 'default')
+
+      const withdrawResult = await sendWithdrawTransaction(
+        config,
+        position.total, // Withdraw all
+        eip155Address
+      )
+
+      if (!withdrawResult.success) {
+        throw new Error(withdrawResult.error || 'Withdrawal failed')
+      }
+
+      EarnStore.setTransactionStatus('success', withdrawResult.txHash)
+      styledToast(`Successfully withdrew ${position.total} ${position.token}!`, 'success')
+
+      // Refresh data
+      refreshBalance()
+      refreshPositions()
+    } catch (error: any) {
+      console.error('Withdrawal error:', error)
+      EarnStore.setTransactionStatus('error')
+      styledToast(error.message || 'Transaction failed', 'error')
+    } finally {
+      EarnStore.setLoading(false)
+    }
   }
 
   const calculateEstimatedRewards = useMemo(() => {
@@ -159,18 +273,46 @@ export default function EarnPage() {
     }
 
     const amount = parseFloat(earnState.depositAmount)
-    const apy = earnState.selectedProtocol.apy / 100
+
+    // Use live APY from store if available, otherwise use config APY
+    const liveAPY = earnState.apyMap.get(
+      `${earnState.selectedProtocol.protocol.id}-${earnState.selectedProtocol.chainId}`
+    )
+    const apy = (liveAPY ?? earnState.selectedProtocol.apy) / 100
 
     return {
       yearly: (amount * apy).toFixed(2),
       monthly: ((amount * apy) / 12).toFixed(2),
       daily: ((amount * apy) / 365).toFixed(2)
     }
-  }, [earnState.selectedProtocol, earnState.depositAmount])
+  }, [earnState.selectedProtocol, earnState.depositAmount, earnState.apyMap])
 
   return (
     <Fragment>
-      <PageHeader title="Earn"></PageHeader>
+      <PageHeader title="Earn">
+        <Row align="center" css={{ gap: '$4' }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Text css={{ fontSize: '12px', color: '$gray600' }}>Account:</Text>
+            <select
+              value={account}
+              onChange={e => handleAddressChange(Number(e.target.value))}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                color: 'white',
+                fontSize: '12px',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value={0}>{formatAddress(eip155Addresses[0])}</option>
+              <option value={1}>{formatAddress(eip155Addresses[1])}</option>
+            </select>
+          </div>
+        </Row>
+      </PageHeader>
       <StyledContainer style={{ padding: '0px' }}>
         {/* Tab Navigation - Minimal Style */}
         <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', marginBottom: '24px' }}>
@@ -326,13 +468,22 @@ export default function EarnPage() {
                       }
                     }}
                     disabled={
+                      earnState.loading ||
                       !earnState.depositAmount ||
                       parseFloat(earnState.depositAmount) <= 0 ||
                       parseFloat(earnState.depositAmount) > parseFloat(mockBalance)
                     }
                     onClick={handleDeposit}
                   >
-                    Stake {earnState.selectedProtocol.token.symbol}
+                    {earnState.loading ? (
+                      <>
+                        <Loading size="sm" color="white" css={{ marginRight: '$2' }} />
+                        {earnState.transactionStatus === 'approving' && 'Approving...'}
+                        {earnState.transactionStatus === 'depositing' && 'Depositing...'}
+                      </>
+                    ) : (
+                      `Stake ${earnState.selectedProtocol.token.symbol}`
+                    )}
                   </Button>
                 </Row>
 
