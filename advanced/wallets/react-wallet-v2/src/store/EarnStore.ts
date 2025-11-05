@@ -30,8 +30,9 @@ interface State {
   transactionHash: string | null
   loading: boolean
 
-  // APY map for live values
-  apyMap: Map<string, number>
+  // APY and TVL data (using Record for Valtio reactivity)
+  apyData: Record<string, number>
+  tvlData: Record<string, string>
 }
 
 /**
@@ -63,7 +64,8 @@ const state = proxy<State>({
   transactionHash: null,
   loading: false,
 
-  apyMap: new Map()
+  apyData: {},
+  tvlData: {}
 })
 
 /**
@@ -177,12 +179,23 @@ const EarnStore = {
   // APY management
   setAPY(protocolId: string, chainId: number, apy: number) {
     const key = `${protocolId}-${chainId}`
-    state.apyMap.set(key, apy)
+    state.apyData[key] = apy
   },
 
   getAPY(protocolId: string, chainId: number): number | undefined {
     const key = `${protocolId}-${chainId}`
-    return state.apyMap.get(key)
+    return state.apyData[key]
+  },
+
+  // TVL management
+  setTVL(protocolId: string, chainId: number, tvl: string) {
+    const key = `${protocolId}-${chainId}`
+    state.tvlData[key] = tvl
+  },
+
+  getTVL(protocolId: string, chainId: number): string | undefined {
+    const key = `${protocolId}-${chainId}`
+    return state.tvlData[key]
   },
 
   // Reset entire store
@@ -197,6 +210,8 @@ const EarnStore = {
     state.transactionStatus = 'idle'
     state.transactionHash = null
     state.loading = false
+    state.apyData = {}
+    state.tvlData = {}
     this.resetAllTransactionStates()
   }
 }

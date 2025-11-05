@@ -70,17 +70,13 @@ export async function sendApprovalTransaction(
       data: txData.data
     })
 
-    // Get gas price from network
-    const gasPrice = await provider.getGasPrice()
-    console.log('Current gas price:', gasPrice.toString())
-
-    // Send transaction with manual gas limit to avoid estimation issues
+    // Send transaction - let the wallet estimate gas automatically
+    // Base uses EIP-1559, so we don't need to set gasPrice
     const tx = await connectedWallet.sendTransaction({
       to: txData.to,
       data: txData.data,
-      value: txData.value || 0,
-      gasLimit: 100000, // Set a reasonable gas limit for ERC20 approval
-      gasPrice: gasPrice // Use current network gas price
+      value: txData.value || 0
+      // No gasLimit or gasPrice - let ethers estimate for optimal fees
     })
 
     console.log(`Approval transaction sent: ${tx.hash}`)
@@ -168,12 +164,12 @@ export async function sendDepositTransaction(
       console.warn('Could not check USDC balance:', balanceError)
     }
 
-    // Send transaction with manual gas limit
+    // Send transaction - let the wallet estimate gas automatically
     const tx = await connectedWallet.sendTransaction({
       to: txData.to,
       data: txData.data,
-      value: txData.value || 0,
-      gasLimit: 300000 // Set a reasonable gas limit for Aave supply
+      value: txData.value || 0
+      // No gasLimit - let ethers estimate for optimal fees
     })
 
     console.log(`Deposit transaction sent: ${tx.hash}`)
@@ -229,12 +225,12 @@ export async function sendWithdrawTransaction(
       data: txData.data
     })
 
-    // Send transaction with manual gas limit
+    // Send transaction - let the wallet estimate gas automatically
     const tx = await connectedWallet.sendTransaction({
       to: txData.to,
       data: txData.data,
-      value: txData.value || 0,
-      gasLimit: 300000 // Set a reasonable gas limit for Aave withdraw
+      value: txData.value || 0
+      // No gasLimit - let ethers estimate for optimal fees
     })
 
     console.log(`Withdrawal transaction sent: ${tx.hash}`)

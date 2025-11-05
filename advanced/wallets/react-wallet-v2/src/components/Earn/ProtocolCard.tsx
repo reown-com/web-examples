@@ -65,10 +65,20 @@ interface ProtocolCardProps {
 }
 
 export default function ProtocolCard({ config, selected, onSelect }: ProtocolCardProps) {
-  const { apyMap } = useSnapshot(EarnStore.state)
+  const { apyData, tvlData } = useSnapshot(EarnStore.state)
 
   // Get live APY from store, fallback to config APY
-  const displayAPY = apyMap.get(`${config.protocol.id}-${config.chainId}`) ?? config.apy
+  const displayAPY = apyData[`${config.protocol.id}-${config.chainId}`] ?? config.apy
+
+  // Get live TVL from store, fallback to config TVL
+  const displayTVL = tvlData[`${config.protocol.id}-${config.chainId}`]
+  const formattedTVL = displayTVL
+    ? `$${parseFloat(displayTVL).toLocaleString('en-US', {
+        maximumFractionDigits: 1,
+        notation: 'compact',
+        compactDisplay: 'short'
+      })}`
+    : config.tvl
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
@@ -118,7 +128,9 @@ export default function ProtocolCard({ config, selected, onSelect }: ProtocolCar
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ textAlign: 'right' }}>
-            <Text css={{ fontSize: '11px', color: '$gray600', margin: 0 }}>TVL: {config.tvl}</Text>
+            <Text css={{ fontSize: '11px', color: '$gray600', margin: 0 }}>
+              TVL: {formattedTVL}
+            </Text>
           </div>
           <Badge color={getRiskColor(config.riskLevel)}>Risk: {config.riskLevel}</Badge>
         </div>

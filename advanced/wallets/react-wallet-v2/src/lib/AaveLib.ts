@@ -29,7 +29,8 @@ const ERC20_ABI = [
 // aToken ABI for reading deposited balance
 const ATOKEN_ABI = [
   'function balanceOf(address owner) view returns (uint256)',
-  'function scaledBalanceOf(address user) view returns (uint256)'
+  'function scaledBalanceOf(address user) view returns (uint256)',
+  'function totalSupply() view returns (uint256)'
 ]
 
 export interface AaveReserveData {
@@ -137,6 +138,29 @@ export class AaveLib {
       return ethers.utils.formatUnits(balance, decimals)
     } catch (error) {
       console.error('Error fetching token balance:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get Total Value Locked (TVL) for a specific asset
+   * TVL = total supply of aTokens (which represents all deposits)
+   */
+  async getTVL(tokenAddress: string, tokenDecimals: number = 6): Promise<string> {
+    try {
+      const reserveData = await this.getReserveData(tokenAddress)
+      const aTokenContract = new ethers.Contract(
+        reserveData.aTokenAddress,
+        ATOKEN_ABI,
+        this.provider
+      )
+
+      const totalSupply = await aTokenContract.totalSupply()
+      const tvl = ethers.utils.formatUnits(totalSupply, tokenDecimals)
+
+      return tvl
+    } catch (error) {
+      console.error('Error fetching TVL:', error)
       throw error
     }
   }

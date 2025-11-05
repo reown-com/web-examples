@@ -22,7 +22,8 @@ const ERC20_ABI = [
 
 const SPTOKEN_ABI = [
   'function balanceOf(address owner) view returns (uint256)',
-  'function scaledBalanceOf(address user) view returns (uint256)'
+  'function scaledBalanceOf(address user) view returns (uint256)',
+  'function totalSupply() view returns (uint256)'
 ]
 
 export interface SparkReserveData {
@@ -115,6 +116,29 @@ export class SparkLib {
       return ethers.utils.formatUnits(balance, decimals)
     } catch (error) {
       console.error('Error fetching token balance:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get Total Value Locked (TVL) for a specific asset
+   * TVL = total supply of spTokens (which represents all deposits)
+   */
+  async getTVL(tokenAddress: string, tokenDecimals: number = 6): Promise<string> {
+    try {
+      const reserveData = await this.getReserveData(tokenAddress)
+      const spTokenContract = new ethers.Contract(
+        reserveData.spTokenAddress,
+        SPTOKEN_ABI,
+        this.provider
+      )
+
+      const totalSupply = await spTokenContract.totalSupply()
+      const tvl = ethers.utils.formatUnits(totalSupply, tokenDecimals)
+
+      return tvl
+    } catch (error) {
+      console.error('Error fetching TVL:', error)
       throw error
     }
   }

@@ -6,7 +6,12 @@ import { useEffect, useCallback } from 'react'
 import { useSnapshot } from 'valtio'
 import EarnStore from '@/store/EarnStore'
 import SettingsStore from '@/store/SettingsStore'
-import { fetchAllProtocolAPYs, getAllUserPositions, getUserTokenBalance } from '@/utils/EarnService'
+import {
+  fetchAllProtocolAPYs,
+  fetchAllProtocolTVLs,
+  getAllUserPositions,
+  getUserTokenBalance
+} from '@/utils/EarnService'
 import { PROTOCOL_CONFIGS } from '@/data/EarnProtocolsData'
 
 export function useEarnData() {
@@ -32,6 +37,28 @@ export function useEarnData() {
       console.log('APY refresh complete:', Array.from(apyMap.entries()))
     } catch (error) {
       console.error('Error refreshing APYs:', error)
+    }
+  }, [selectedChainId])
+
+  /**
+   * Fetch and update protocol TVLs
+   */
+  const refreshTVLs = useCallback(async () => {
+    if (!selectedChainId) return
+
+    try {
+      console.log('Refreshing TVLs for chain', selectedChainId)
+      const tvlMap = await fetchAllProtocolTVLs(selectedChainId)
+
+      // Store TVLs in the store
+      tvlMap.forEach((tvl, key) => {
+        const [protocolId, chainIdStr] = key.split('-')
+        EarnStore.setTVL(protocolId, parseInt(chainIdStr), tvl)
+      })
+
+      console.log('TVL refresh complete:', Array.from(tvlMap.entries()))
+    } catch (error) {
+      console.error('Error refreshing TVLs:', error)
     }
   }, [selectedChainId])
 
@@ -63,32 +90,37 @@ export function useEarnData() {
   /**
    * Fetch token balance for selected protocol
    */
-  const refreshBalance = useCallback(async () => {
-    if (!selectedProtocol || !eip155Address) return '0'
+  const refreshBalance = useCallback(
+    async (skipCache: boolean = false) => {
+      if (!selectedProtocol || !eip155Address) return '0'
 
-    try {
-      const balance = await getUserTokenBalance(selectedProtocol, eip155Address)
-      return balance
-    } catch (error) {
-      console.error('Error refreshing balance:', error)
-      return '0'
-    }
-  }, [selectedProtocol, eip155Address])
+      try {
+        const balance = await getUserTokenBalance(selectedProtocol, eip155Address, skipCache)
+        return balance
+      } catch (error) {
+        console.error('Error refreshing balance:', error)
+        return '0'
+      }
+    },
+    [selectedProtocol, eip155Address]
+  )
 
   /**
    * Refresh all data
    */
   const refreshAllData = useCallback(async () => {
-    await Promise.all([refreshAPYs(), refreshPositions()])
-  }, [refreshAPYs, refreshPositions])
+    await Promise.all([refreshAPYs(), refreshTVLs(), refreshPositions()])
+  }, [refreshAPYs, refreshTVLs, refreshPositions])
 
-  // Auto-fetch APYs on mount (with 2-minute cache, safe from spam)
+  // Auto-fetch APYs and TVLs on mount (with 2-minute cache, safe from spam)
   useEffect(() => {
     refreshAPYs()
-  }, [refreshAPYs])
+    refreshTVLs()
+  }, [refreshAPYs, refreshTVLs])
 
   return {
     refreshAPYs,
+    refreshTVLs,
     refreshPositions,
     refreshBalance,
     refreshAllData

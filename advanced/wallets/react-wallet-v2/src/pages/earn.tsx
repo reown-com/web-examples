@@ -21,7 +21,7 @@ import { getProtocolsByChain } from '@/data/EarnProtocolsData'
 import { ProtocolConfig, UserPosition } from '@/types/earn'
 import { styledToast } from '@/utils/HelperUtil'
 import useEarnData from '@/hooks/useEarnData'
-import { checkApprovalNeeded } from '@/utils/EarnService'
+import { checkApprovalNeeded, clearBalanceCache } from '@/utils/EarnService'
 import {
   sendApprovalTransaction,
   sendDepositTransaction,
@@ -198,9 +198,16 @@ export default function EarnPage() {
         'success'
       )
 
+      // Clear balance cache to force refresh
+      clearBalanceCache()
+
       // Reset form and refresh data
       EarnStore.resetDepositForm()
-      refreshBalance()
+
+      // Force refresh balance (skip cache)
+      const newBalance = await refreshBalance(true)
+      setRealBalance(newBalance)
+
       refreshPositions()
     } catch (error: any) {
       console.error('Deposit error:', error)
@@ -251,8 +258,14 @@ export default function EarnPage() {
       EarnStore.setTransactionStatus('success', withdrawResult.txHash)
       styledToast(`Successfully withdrew ${amount} ${position.token}!`, 'success')
 
-      // Refresh data
-      refreshBalance()
+      // Clear balance cache to force refresh
+      clearBalanceCache()
+
+      // Force refresh balance (skip cache)
+      const newBalance = await refreshBalance(true)
+      setRealBalance(newBalance)
+
+      // Refresh positions
       refreshPositions()
     } catch (error: any) {
       console.error('Withdrawal error:', error)
@@ -275,9 +288,10 @@ export default function EarnPage() {
     const amount = parseFloat(earnState.depositAmount)
 
     // Use live APY from store if available, otherwise use config APY
-    const liveAPY = earnState.apyMap.get(
-      `${earnState.selectedProtocol.protocol.id}-${earnState.selectedProtocol.chainId}`
-    )
+    const liveAPY =
+      earnState.apyData[
+        `${earnState.selectedProtocol.protocol.id}-${earnState.selectedProtocol.chainId}`
+      ]
     const apy = (liveAPY ?? earnState.selectedProtocol.apy) / 100
 
     return {
@@ -285,7 +299,7 @@ export default function EarnPage() {
       monthly: ((amount * apy) / 12).toFixed(2),
       daily: ((amount * apy) / 365).toFixed(2)
     }
-  }, [earnState.selectedProtocol, earnState.depositAmount, earnState.apyMap])
+  }, [earnState.selectedProtocol, earnState.depositAmount, earnState.apyData])
 
   return (
     <Fragment>

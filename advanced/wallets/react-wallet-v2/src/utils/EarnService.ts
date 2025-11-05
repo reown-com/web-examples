@@ -22,6 +22,19 @@ const protocolInstances: {
 const apyCache: Map<string, { apy: number; timestamp: number }> = new Map()
 const APY_CACHE_DURATION = 2 * 60 * 1000 // 2 minutes in milliseconds
 
+// TVL Cache with timestamps
+const tvlCache: Map<string, { tvl: string; timestamp: number }> = new Map()
+const TVL_CACHE_DURATION = 2 * 60 * 1000 // 2 minutes in milliseconds
+
+// Balance Cache with timestamps
+const balanceCache: Map<string, { balance: string; timestamp: number }> = new Map()
+const BALANCE_CACHE_DURATION = 30 * 1000 // 30 seconds in milliseconds
+
+// In-flight promise tracking to prevent duplicate calls
+const inFlightAPYPromises: Map<string, Promise<number>> = new Map()
+const inFlightTVLPromises: Map<string, Promise<string>> = new Map()
+const inFlightBalancePromises: Map<string, Promise<string>> = new Map()
+
 /**
  * Get Aave instance for a specific chain
  */
@@ -77,75 +90,93 @@ export async function fetchProtocolAPY(config: ProtocolConfig): Promise<number> 
     return cached.apy
   }
 
-  try {
-    let protocolLib: AaveLib | SparkLib | null = null
-
-    if (config.protocol.id === 'aave') {
-      protocolLib = getAaveInstance(config.chainId)
-    } else if (config.protocol.id === 'spark') {
-      protocolLib = getSparkInstance(config.chainId)
-    }
-
-    if (!protocolLib) {
-      console.warn(`No protocol instance for ${config.protocol.id} on chain ${config.chainId}`)
-      return config.apy // Fallback to configured value
-    }
-
-    console.log(`Fetching live APY for ${config.protocol.name} on chain ${config.chainId}...`)
-
-    // Fetch reserve data to get current APY
-    const reserveData = await protocolLib.getReserveData(config.token.address)
-
-    let apy = config.apy // Default fallback
-
-    if (reserveData.liquidityRate && reserveData.liquidityRate !== '0') {
-      try {
-        // liquidityRate from Aave is the APR in Ray units (1e27)
-        // Not a per-second rate - it's already annualized!
-        const liquidityRateBN = BigNumber.from(reserveData.liquidityRate)
-
-        // Convert from Ray to decimal APR
-        // APR = liquidityRate / 1e27
-        const { formatUnits } = require('ethers/lib/utils')
-        const depositApr = parseFloat(formatUnits(liquidityRateBN, 27))
-
-        // Convert APR to APY accounting for daily compounding
-        // APY = (1 + APR/365)^365 - 1
-        const depositApy = Math.pow(1 + depositApr / 365, 365) - 1
-
-        // Convert to percentage
-        apy = depositApy * 100
-
-        console.log(`Raw liquidityRate: ${reserveData.liquidityRate}`)
-        console.log(`Deposit APR (decimal): ${depositApr}`)
-        console.log(`Deposit APR (%): ${(depositApr * 100).toFixed(4)}%`)
-        console.log(`Deposit APY (%): ${apy.toFixed(4)}%`)
-      } catch (conversionError) {
-        console.warn('Error converting liquidityRate to APY:', conversionError)
-        apy = config.apy
-      }
-    }
-
-    // Cache the result
-    apyCache.set(cacheKey, { apy, timestamp: Date.now() })
-    console.log(`✓ Fetched APY for ${config.protocol.name}: ${apy.toFixed(2)}%`)
-
-    return apy
-  } catch (error: any) {
-    // Handle rate limiting and other errors gracefully
-    if (error.code === 'CALL_EXCEPTION') {
-      console.warn(
-        `Contract call failed for ${config.protocol.name} on chain ${config.chainId} - using fallback APY`
-      )
-    } else if (error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
-      console.warn(
-        `Rate limited when fetching APY for ${config.protocol.name} - using fallback APY`
-      )
-    } else {
-      console.error(`Error fetching APY for ${config.protocol.name}:`, error)
-    }
-    return config.apy // Fallback to config value
+  // Check if there's already a fetch in progress for this key
+  const inFlightPromise = inFlightAPYPromises.get(cacheKey)
+  if (inFlightPromise) {
+    console.log(`Awaiting in-flight APY request for ${config.protocol.name}...`)
+    return inFlightPromise
   }
+
+  // Create new fetch promise
+  const fetchPromise = (async () => {
+    try {
+      let protocolLib: AaveLib | SparkLib | null = null
+
+      if (config.protocol.id === 'aave') {
+        protocolLib = getAaveInstance(config.chainId)
+      } else if (config.protocol.id === 'spark') {
+        protocolLib = getSparkInstance(config.chainId)
+      }
+
+      if (!protocolLib) {
+        console.warn(`No protocol instance for ${config.protocol.id} on chain ${config.chainId}`)
+        return config.apy // Fallback to configured value
+      }
+
+      console.log(`Fetching live APY for ${config.protocol.name} on chain ${config.chainId}...`)
+
+      // Fetch reserve data to get current APY
+      const reserveData = await protocolLib.getReserveData(config.token.address)
+
+      let apy = config.apy // Default fallback
+
+      if (reserveData.liquidityRate && reserveData.liquidityRate !== '0') {
+        try {
+          // liquidityRate from Aave is the APR in Ray units (1e27)
+          // Not a per-second rate - it's already annualized!
+          const liquidityRateBN = BigNumber.from(reserveData.liquidityRate)
+
+          // Convert from Ray to decimal APR
+          // APR = liquidityRate / 1e27
+          const { formatUnits } = require('ethers/lib/utils')
+          const depositApr = parseFloat(formatUnits(liquidityRateBN, 27))
+
+          // Convert APR to APY accounting for daily compounding
+          // APY = (1 + APR/365)^365 - 1
+          const depositApy = Math.pow(1 + depositApr / 365, 365) - 1
+
+          // Convert to percentage
+          apy = depositApy * 100
+
+          console.log(`Raw liquidityRate: ${reserveData.liquidityRate}`)
+          console.log(`Deposit APR (decimal): ${depositApr}`)
+          console.log(`Deposit APR (%): ${(depositApr * 100).toFixed(4)}%`)
+          console.log(`Deposit APY (%): ${apy.toFixed(4)}%`)
+        } catch (conversionError) {
+          console.warn('Error converting liquidityRate to APY:', conversionError)
+          apy = config.apy
+        }
+      }
+
+      // Cache the result
+      apyCache.set(cacheKey, { apy, timestamp: Date.now() })
+      console.log(`✓ Fetched APY for ${config.protocol.name}: ${apy.toFixed(2)}%`)
+
+      return apy
+    } catch (error: any) {
+      // Handle rate limiting and other errors gracefully
+      if (error.code === 'CALL_EXCEPTION') {
+        console.warn(
+          `Contract call failed for ${config.protocol.name} on chain ${config.chainId} - using fallback APY`
+        )
+      } else if (error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
+        console.warn(
+          `Rate limited when fetching APY for ${config.protocol.name} - using fallback APY`
+        )
+      } else {
+        console.error(`Error fetching APY for ${config.protocol.name}:`, error)
+      }
+      return config.apy // Fallback to config value
+    } finally {
+      // Remove from in-flight map when done
+      inFlightAPYPromises.delete(cacheKey)
+    }
+  })()
+
+  // Store the promise so other calls can await it
+  inFlightAPYPromises.set(cacheKey, fetchPromise)
+
+  return fetchPromise
 }
 
 /**
@@ -165,31 +196,171 @@ export async function fetchAllProtocolAPYs(chainId: number): Promise<Map<string,
 }
 
 /**
- * Get user's token balance
+ * Fetch TVL for a protocol
+ */
+export async function fetchProtocolTVL(config: ProtocolConfig): Promise<string> {
+  const cacheKey = `${config.protocol.id}-${config.chainId}`
+
+  // Check cache first
+  const cached = tvlCache.get(cacheKey)
+  if (cached && Date.now() - cached.timestamp < TVL_CACHE_DURATION) {
+    console.log(
+      `Using cached TVL for ${config.protocol.name} (${Math.floor(
+        (Date.now() - cached.timestamp) / 1000
+      )}s old)`
+    )
+    return cached.tvl
+  }
+
+  // Check if there's already a fetch in progress for this key
+  const inFlightPromise = inFlightTVLPromises.get(cacheKey)
+  if (inFlightPromise) {
+    console.log(`Awaiting in-flight TVL request for ${config.protocol.name}...`)
+    return inFlightPromise
+  }
+
+  // Create new fetch promise
+  const fetchPromise = (async () => {
+    try {
+      let protocolLib: AaveLib | SparkLib | null = null
+
+      if (config.protocol.id === 'aave') {
+        protocolLib = getAaveInstance(config.chainId)
+      } else if (config.protocol.id === 'spark') {
+        protocolLib = getSparkInstance(config.chainId)
+      }
+
+      if (!protocolLib) {
+        console.warn(`No protocol instance for ${config.protocol.id} on chain ${config.chainId}`)
+        return config.tvl // Fallback to configured value
+      }
+
+      console.log(`Fetching live TVL for ${config.protocol.name} on chain ${config.chainId}...`)
+
+      const tvl = await protocolLib.getTVL(config.token.address, config.token.decimals)
+
+      // Cache the result
+      tvlCache.set(cacheKey, { tvl, timestamp: Date.now() })
+      console.log(`✓ Fetched TVL for ${config.protocol.name}: $${parseFloat(tvl).toLocaleString()}`)
+
+      return tvl
+    } catch (error: any) {
+      // Handle errors gracefully
+      if (error.code === 'CALL_EXCEPTION') {
+        console.warn(
+          `Contract call failed for ${config.protocol.name} on chain ${config.chainId} - using fallback TVL`
+        )
+      } else if (error.message?.includes('429') || error.message?.includes('Too Many Requests')) {
+        console.warn(
+          `Rate limited when fetching TVL for ${config.protocol.name} - using fallback TVL`
+        )
+      } else {
+        console.error(`Error fetching TVL for ${config.protocol.name}:`, error)
+      }
+      return config.tvl // Fallback to config value
+    } finally {
+      // Remove from in-flight map when done
+      inFlightTVLPromises.delete(cacheKey)
+    }
+  })()
+
+  // Store the promise so other calls can await it
+  inFlightTVLPromises.set(cacheKey, fetchPromise)
+
+  return fetchPromise
+}
+
+/**
+ * Fetch all protocol TVLs
+ */
+export async function fetchAllProtocolTVLs(chainId: number): Promise<Map<string, string>> {
+  const configs = PROTOCOL_CONFIGS.filter(c => c.chainId === chainId)
+  const tvlMap = new Map<string, string>()
+
+  const promises = configs.map(async config => {
+    const tvl = await fetchProtocolTVL(config)
+    tvlMap.set(`${config.protocol.id}-${config.chainId}`, tvl)
+  })
+
+  await Promise.allSettled(promises)
+  return tvlMap
+}
+
+/**
+ * Get user's token balance (with caching)
  */
 export async function getUserTokenBalance(
   config: ProtocolConfig,
-  userAddress: string
+  userAddress: string,
+  skipCache: boolean = false
 ): Promise<string> {
-  try {
-    let protocolLib: AaveLib | SparkLib | null = null
+  const cacheKey = `${config.protocol.id}-${config.chainId}-${config.token.address}-${userAddress}`
 
-    if (config.protocol.id === 'aave') {
-      protocolLib = getAaveInstance(config.chainId)
-    } else if (config.protocol.id === 'spark') {
-      protocolLib = getSparkInstance(config.chainId)
+  // Check cache first (unless skipCache is true)
+  if (!skipCache) {
+    const cached = balanceCache.get(cacheKey)
+    if (cached && Date.now() - cached.timestamp < BALANCE_CACHE_DURATION) {
+      console.log(
+        `Using cached balance for ${config.token.symbol} (${Math.floor(
+          (Date.now() - cached.timestamp) / 1000
+        )}s old)`
+      )
+      return cached.balance
     }
-
-    if (!protocolLib) {
-      console.warn(`No protocol instance for ${config.protocol.id}`)
-      return '0'
-    }
-
-    return await protocolLib.getTokenBalance(config.token.address, userAddress)
-  } catch (error) {
-    console.error('Error fetching token balance:', error)
-    return '0'
   }
+
+  // Check if there's already a fetch in progress for this key
+  const inFlightPromise = inFlightBalancePromises.get(cacheKey)
+  if (inFlightPromise) {
+    console.log(`Awaiting in-flight balance request for ${config.token.symbol}...`)
+    return inFlightPromise
+  }
+
+  // Create new fetch promise
+  const fetchPromise = (async () => {
+    try {
+      let protocolLib: AaveLib | SparkLib | null = null
+
+      if (config.protocol.id === 'aave') {
+        protocolLib = getAaveInstance(config.chainId)
+      } else if (config.protocol.id === 'spark') {
+        protocolLib = getSparkInstance(config.chainId)
+      }
+
+      if (!protocolLib) {
+        console.warn(`No protocol instance for ${config.protocol.id}`)
+        return '0'
+      }
+
+      console.log(`Fetching balance for ${config.token.symbol}...`)
+      const balance = await protocolLib.getTokenBalance(config.token.address, userAddress)
+
+      // Cache the result
+      balanceCache.set(cacheKey, { balance, timestamp: Date.now() })
+      console.log(`✓ Fetched balance: ${balance} ${config.token.symbol}`)
+
+      return balance
+    } catch (error) {
+      console.error('Error fetching token balance:', error)
+      return '0'
+    } finally {
+      // Remove from in-flight map when done
+      inFlightBalancePromises.delete(cacheKey)
+    }
+  })()
+
+  // Store the promise so other calls can await it
+  inFlightBalancePromises.set(cacheKey, fetchPromise)
+
+  return fetchPromise
+}
+
+/**
+ * Clear balance cache (call after transactions)
+ */
+export function clearBalanceCache() {
+  balanceCache.clear()
+  console.log('Balance cache cleared')
 }
 
 /**
