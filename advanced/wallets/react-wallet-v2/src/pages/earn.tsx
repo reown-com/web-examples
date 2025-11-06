@@ -598,9 +598,7 @@ export default function EarnPage() {
 
         {/* Footer */}
         <Row css={{ marginTop: '32px', padding: '16px 0' }} justify="center">
-          <Text css={{ fontSize: '11px', color: '$gray700' }}>
-            Powered by Aave V3 and Spark Protocol
-          </Text>
+          <Text css={{ fontSize: '11px', color: '$gray700' }}>Powered by WalletConnect</Text>
         </Row>
       </StyledContainer>
     </Fragment>
