@@ -50,7 +50,8 @@ export default class TronLib {
   }
 
   public async signTransaction(transaction: any) {
-    const signedtxn = await this.tronWeb.trx.sign(transaction.transaction)
+    // Compatible with both new and old structures at the handler level
+    const signedtxn = await this.tronWeb.trx.sign(transaction)
     return signedtxn
   }
 }
