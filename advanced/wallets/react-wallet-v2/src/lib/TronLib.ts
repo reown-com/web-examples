@@ -50,7 +50,8 @@ export default class TronLib {
   }
 
   public async signTransaction(transaction: any) {
-    const signedtxn = await this.tronWeb.trx.sign(transaction.transaction)
+    // The transaction parameter is expected to be unwrapped already.
+    const signedtxn = await this.tronWeb.trx.sign(transaction)
     return signedtxn
   }
 }
