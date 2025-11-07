@@ -2333,7 +2333,10 @@ export function JsonRpcContextProvider({
             from: address,
           },
         ];
-        const result = await client!.request<any>({
+        const result = await client!.request<{
+          signature: string;
+          publicKey: string;
+        }>({
           topic: session!.topic,
           chainId,
           request: {
@@ -2341,10 +2344,25 @@ export function JsonRpcContextProvider({
             params,
           },
         });
+
+        console.log("ton sign data result", result);
+
+        let isValid = false;
+        try {
+          isValid = await isValidTonSignature({
+            message: params[0].text,
+            signature: result.signature,
+            iss: "",
+            signatureMeta: result.publicKey,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+        console.log("ton sign data isValid", isValid);
         return {
           method,
           address,
-          valid: !!result,
+          valid: isValid,
           result: JSON.stringify(result),
         };
       }
