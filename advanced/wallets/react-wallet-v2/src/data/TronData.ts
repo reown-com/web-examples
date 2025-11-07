@@ -23,7 +23,7 @@ export const TRON_MAINNET_CHAINS: TRONChains = {
   'tron:0x2b6653dc': {
     chainId: '0x2b6653dc',
     name: 'Tron',
-    logo: 'https://tronscan.io/static/media/TRON.4a760cebd163969b2ee874abf2415e9a.svg',
+    logo: 'chain-logos/tron.png',
     rgb: '183, 62, 49',
     fullNode: 'https://api.trongrid.io',
     namespace: 'tron'
@@ -34,7 +34,7 @@ export const TRON_TEST_CHAINS: TRONChains = {
   'tron:0xcd8690dc': {
     chainId: '0xcd8690dc',
     name: 'Tron Testnet',
-    logo: 'https://tronscan.io/static/media/TRON.4a760cebd163969b2ee874abf2415e9a.svg',
+    logo: 'chain-logos/tron.png',
     rgb: '183, 62, 49',
     fullNode: 'https://nile.trongrid.io/',
     namespace: 'tron'
