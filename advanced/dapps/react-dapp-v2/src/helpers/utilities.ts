@@ -5,6 +5,7 @@ import * as ethUtil from "ethereumjs-util";
 
 import { eip1271 } from "./eip1271";
 import { DEFAULT_CHAINS } from "../constants";
+import { verifySignMessageSignatureUniversal } from "./eip6492";
 
 export function capitalize(string: string): string {
   return string
@@ -160,7 +161,9 @@ export async function verifySignature(
 ): Promise<boolean> {
   const provider = new providers.JsonRpcProvider(rpcUrl);
   const bytecode = await provider.getCode(address);
-  if (
+  if (isUndeployedSmartContract(sig)) {
+    return verifySignMessageSignatureUniversal({address, hash, signature: sig, provider});
+  } else if (
     !bytecode ||
     bytecode === "0x" ||
     bytecode === "0x0" ||
@@ -171,6 +174,11 @@ export async function verifySignature(
   } else {
     return eip1271.isValidSignature(address, sig, hash, provider);
   }
+}
+
+export const isUndeployedSmartContract = (sig: string) => {
+  const MAGIC_6492_BYTES = "6492649264926492649264926492649264926492649264926492649264926492"
+  return sig.endsWith(MAGIC_6492_BYTES);
 }
 
 export function convertHexToNumber(hex: string) {
