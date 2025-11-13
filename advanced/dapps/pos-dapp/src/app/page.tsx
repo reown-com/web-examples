@@ -82,6 +82,9 @@ export default function Home() {
   const [merchantAddress, setMerchantAddress] = useState("");
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [tempMerchantAddress, setTempMerchantAddress] = useState("");
+  const [isManualControl, setIsManualControl] = useState(false);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [hasRequestsSent, setHasRequestsSent] = useState(false);
 
   useEffect(() => {
     // Check for saved merchant address in localStorage
@@ -89,6 +92,12 @@ export default function Home() {
     if (savedMerchantAddress && isValidEthereumAddress(savedMerchantAddress)) {
       setMerchantAddress(savedMerchantAddress);
       setIsSetupComplete(true);
+    }
+
+    // Check for saved manual mode state
+    const savedManualMode = localStorage.getItem("isManualMode");
+    if (savedManualMode !== null) {
+      setIsManualControl(savedManualMode === "true");
     }
 
     if (appkit) return;
@@ -134,9 +143,10 @@ export default function Home() {
   const setupEventListeners = () => {
     if (!posClient) return;
 
-    posClient.on("connected", (connected) => {
-      connected = true;
-      console.log("connected", connected);
+    posClient.on("connected", ({ session }) => {
+      console.log("connected", session);
+      setIsWalletConnected(true);
+      setHasRequestsSent(false);
       toast.success("Customer wallet connected", {
         icon: "🔗",
         duration: 3000,
@@ -146,6 +156,7 @@ export default function Home() {
 
     posClient.on("disconnected", (disconnected) => {
       console.log("disconnected", disconnected);
+      setIsWalletConnected(false);
       toast.error("Customer wallet disconnected", {
         icon: "🔌",
         duration: 3000,
@@ -193,13 +204,14 @@ export default function Home() {
       });
       appkit?.close();
       setPaymentState("payment_failed");
+      setIsWalletConnected(false);
     });
 
-    posClient.on("payment_broadcasted", (paymentBroadcasted) => {
-      console.log("paymentBroadcasted", paymentBroadcasted);
+    posClient.on("payment_broadcasted", ({ result }) => {
+      console.log("paymentBroadcasted", result);
       setTransactionHashes((prev) => {
         const newTransaction: TransactionHash = {
-          hash: paymentBroadcasted,
+          hash: result,
           status: "pending",
         };
         const newHashes = [...prev, newTransaction];
@@ -224,14 +236,13 @@ export default function Home() {
       setPaymentState("payment_requesting");
     });
 
-    posClient.on("payment_successful", (paymentSuccessful) => {
-      console.log("paymentSuccessful", paymentSuccessful);
-      const { transaction } = paymentSuccessful;
+    posClient.on("payment_successful", ({ result }) => {
+      console.log("paymentSuccessful", result);
 
       // Update transaction status to successful
       setTransactionHashes((prev) =>
         prev.map((tx) =>
-          tx.hash === transaction
+          tx.hash === result
             ? { ...tx, status: "success" as TransactionStatus }
             : tx
         )
@@ -351,7 +362,10 @@ export default function Home() {
     );
 
     try {
-      await posClient.createPaymentIntent({ paymentIntents });
+      await posClient.createPaymentIntent({
+        paymentIntents,
+        manualControl: isManualControl,
+      });
       toast.success(
         `Payment request created for ${paymentItems.length} item${
           paymentItems.length > 1 ? "s" : ""
@@ -401,6 +415,8 @@ export default function Home() {
   const resetTransaction = () => {
     setPaymentState("idle");
     setTransactionHashes([]);
+    setIsWalletConnected(false);
+    setHasRequestsSent(false);
     // Reset all payment item statuses to idle
     setPaymentItems((prev) =>
       prev.map((item) => ({ ...item, status: "idle" as PaymentItemStatus }))
@@ -410,6 +426,8 @@ export default function Home() {
   const restart = (reinit = true) => {
     setPaymentState("idle");
     setTransactionHashes([]);
+    setIsWalletConnected(false);
+    setHasRequestsSent(false);
     // Reset all payment item statuses to idle
     setPaymentItems((prev) =>
       prev.map((item) => ({ ...item, status: "idle" as PaymentItemStatus }))
@@ -442,6 +460,33 @@ export default function Home() {
   const handleEditMerchant = () => {
     setTempMerchantAddress(merchantAddress);
     setIsSetupComplete(false);
+  };
+
+  const handleManualModeToggle = () => {
+    const newValue = !isManualControl;
+    setIsManualControl(newValue);
+    localStorage.setItem("isManualControl", String(newValue));
+  };
+
+  const handleSendRequestsToWallet = async () => {
+    if (!posClient) {
+      toast.error("POS client not available");
+      return;
+    }
+
+    setHasRequestsSent(true);
+
+    try {
+      await posClient.sendPaymentsToWallet();
+      toast.success("Payment requests sent to wallet", {
+        icon: "📤",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Failed to send payment requests:", error);
+      toast.error("Failed to send payment requests");
+      setHasRequestsSent(false);
+    }
   };
 
   const getStatusMessage = () => {
@@ -549,12 +594,37 @@ export default function Home() {
 
         {/* Merchant Address Display */}
         <div className="p-4 bg-blue-50 dark:bg-blue-900 border-b border-gray-200 dark:border-gray-700">
-          <p className="text-xs text-blue-700 dark:text-blue-300 mb-1">
-            Merchant Address:
-          </p>
-          <p className="text-xs font-mono text-blue-800 dark:text-blue-200 break-all">
-            {merchantAddress}
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-blue-700 dark:text-blue-300 mb-1">
+                Merchant Address:
+              </p>
+              <p className="text-xs font-mono text-blue-800 dark:text-blue-200 break-all">
+                {merchantAddress}
+              </p>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <label className="text-xs text-blue-700 dark:text-blue-300 font-medium">
+                Manual Control
+              </label>
+              <button
+                onClick={handleManualModeToggle}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  isManualControl
+                    ? "bg-blue-600"
+                    : "bg-gray-300 dark:bg-gray-600"
+                }`}
+                role="switch"
+                aria-checked={isManualControl}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isManualControl ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Status Display */}
@@ -801,6 +871,19 @@ export default function Home() {
               </button>
             ) : (
               <div className="flex flex-col items-center justify-center py-4 space-y-4">
+                {isManualControl && isWalletConnected && (
+                  <button
+                    onClick={handleSendRequestsToWallet}
+                    disabled={hasRequestsSent}
+                    className={`w-full font-bold py-4 px-6 rounded-lg transition-all shadow-lg text-lg ${
+                      hasRequestsSent
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transform hover:scale-105"
+                    } text-white`}
+                  >
+                    📤 Send Payments to Wallet
+                  </button>
+                )}
                 <Spinner />
                 <button
                   onClick={() => {
