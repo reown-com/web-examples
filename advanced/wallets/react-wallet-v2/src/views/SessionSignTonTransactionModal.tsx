@@ -35,7 +35,7 @@ export default function SessionTonSendMessageModal() {
     try {
       if (requestEvent) {
         setIsLoadingApprove(true)
-        const response = await approveTonRequest(requestEvent)
+        const response = await approveTonRequest(requestEvent, requestSession)
         await walletkit.respondSessionRequest({
           topic,
           response
