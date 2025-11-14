@@ -361,11 +361,6 @@ export namespace TonLib {
     result: Result
   }
 
-  export type SignMessage = RPCRequest<
-    { message: string },
-    { signature: string; publicKey: string }
-  >
-
   export type TonProof = RPCRequest<
     { iat: string; domain: string; payload: string },
     {
