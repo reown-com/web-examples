@@ -1,4 +1,4 @@
-import { blockchainApiRpc } from '@/data/EIP155Data'
+import { blockchainApiRpc } from '@web-examples/shared'
 import { Connection, PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import { createPublicClient, http } from 'viem'
 

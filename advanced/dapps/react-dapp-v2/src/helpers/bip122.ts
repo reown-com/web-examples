@@ -1,8 +1,8 @@
 import { schnorr } from "@noble/curves/secp256k1";
 import * as bitcoin from "bitcoinjs-lib";
 import BitcoinMessage from "bitcoinjs-message";
-import { convertHexToBase64 } from "./utilities";
-import { IUTXO } from "./types";
+import { convertHexToBase64 } from "@web-examples/shared/helpers";
+import type { IUTXO } from "@web-examples/shared";
 import { BIP122_TESTNET } from "../chains/bip122";
 
 export async function apiGetBip122AccountBalance(

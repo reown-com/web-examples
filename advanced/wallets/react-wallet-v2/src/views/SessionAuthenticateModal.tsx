@@ -8,7 +8,7 @@ import SettingsStore from '@/store/SettingsStore'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
-import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@/data/EIP155Data'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS } from '@web-examples/shared'
 import { styledToast } from '@/utils/HelperUtil'
 
 export default function SessionAuthenticateModal() {

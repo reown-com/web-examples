@@ -3,6 +3,26 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { numberToHex } from "@walletconnect/encoding";
 import { RELAYER_SDK_VERSION } from "@walletconnect/core";
+import {
+  DEFAULT_TESTNET_CHAINS,
+  DEFAULT_MAINNET_CHAINS,
+  DEFAULT_EIP155_METHODS,
+  DEFAULT_EIP5792_METHODS,
+  DEFAULT_EIP7715_METHODS,
+  DEFAULT_COSMOS_METHODS,
+  DEFAULT_SOLANA_METHODS,
+  DEFAULT_POLKADOT_METHODS,
+  DEFAULT_NEAR_METHODS,
+  DEFAULT_MULTIVERSX_METHODS,
+  DEFAULT_TRON_METHODS,
+  DEFAULT_TEZOS_METHODS,
+  DEFAULT_KADENA_METHODS,
+  DEFAULT_BIP122_METHODS,
+  DEFAULT_SUI_METHODS,
+  DEFAULT_STACKS_METHODS,
+  DEFAULT_TON_METHODS,
+  AccountAction,
+} from "@web-examples/shared";
 
 import Banner from "../components/Banner";
 import Blockchain from "../components/Blockchain";
@@ -10,28 +30,8 @@ import Column from "../components/Column";
 import RelayRegionDropdown from "../components/RelayRegionDropdown";
 import Header from "../components/Header";
 import Modal from "../components/Modal";
-import {
-  DEFAULT_COSMOS_METHODS,
-  DEFAULT_EIP155_METHODS,
-  DEFAULT_MAIN_CHAINS,
-  DEFAULT_SOLANA_METHODS,
-  DEFAULT_POLKADOT_METHODS,
-  DEFAULT_MULTIVERSX_METHODS,
-  DEFAULT_TEST_CHAINS,
-  DEFAULT_NEAR_METHODS,
-  DEFAULT_KADENA_METHODS,
-  DEFAULT_TRON_METHODS,
-  DEFAULT_TEZOS_METHODS,
-  DEFAULT_EIP155_OPTIONAL_METHODS,
-  DEFAULT_EIP5792_METHODS,
-  GetCapabilitiesResult,
-  DEFAULT_BIP122_METHODS,
-  DEFAULT_EIP7715_METHODS,
-  DEFAULT_SUI_METHODS,
-  DEFAULT_STACKS_METHODS,
-  DEFAULT_TON_METHODS,
-} from "../constants";
-import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
+import { GetCapabilitiesResult } from "../constants";
+import { setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
 import RequestModal from "../modals/RequestModal";
 import PairingModal from "../modals/PairingModal";
@@ -211,29 +211,29 @@ const Home: NextPage = () => {
           await ethereumRpc.testSignPersonalMessage(chainId, address);
         },
       },
-      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION]: {
-        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION,
+      [DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION]: {
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
         callback: async (chainId: string, address: string) => {
           openRequestModal();
           await ethereumRpc.testSignTransaction(chainId, address);
         },
       },
-      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN]: {
-        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN + " (standard)",
+      [DEFAULT_EIP155_METHODS.ETH_SIGN]: {
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
         callback: async (chainId: string, address: string) => {
           openRequestModal();
           await ethereumRpc.testEthSign(chainId, address);
         },
       },
-      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA]: {
-        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
+      [DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA]: {
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
         callback: async (chainId: string, address: string) => {
           openRequestModal();
           await ethereumRpc.testSignTypedData(chainId, address);
         },
       },
-      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4]: {
-        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4,
+      [DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA_V4]: {
+        method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA_V4,
         callback: async (chainId: string, address: string) => {
           openRequestModal();
           await ethereumRpc.testSignTypedDatav4(chainId, address);
@@ -733,7 +733,9 @@ const Home: NextPage = () => {
   };
 
   const renderContent = () => {
-    const chainOptions = isTestnet ? DEFAULT_TEST_CHAINS : DEFAULT_MAIN_CHAINS;
+    const chainOptions = isTestnet
+      ? DEFAULT_TESTNET_CHAINS
+      : DEFAULT_MAINNET_CHAINS;
 
     // Show connect screen if no session or no accounts/balances
     return !session || (!accounts.length && !Object.keys(balances).length) ? (

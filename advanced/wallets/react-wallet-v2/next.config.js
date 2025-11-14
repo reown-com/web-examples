@@ -1,5 +1,6 @@
 module.exports = {
   reactStrictMode: true,
+  transpilePackages: ['@web-examples/shared'],
   webpack(config) {
     config.resolve.fallback = {
       ...config.resolve.fallback,

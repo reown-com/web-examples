@@ -13,7 +13,7 @@ import {
 } from '@/utils/MultibridgeUtil'
 import { getWallet } from '@/utils/EIP155WalletUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
-import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { EIP155_CHAINS, TEIP155Chain } from '@web-examples/shared'
 import { ChainAbstractionService, Transaction } from '@/utils/ChainAbstractionService'
 import { providers } from 'ethers'
 import { formatJsonRpcError } from '@json-rpc-tools/utils'

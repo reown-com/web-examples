@@ -1,54 +1,12 @@
 import { JsonRpcRequest } from "@walletconnect/jsonrpc-utils";
-
+import { getChainMetadata, ChainRequestRender } from "@web-examples/shared";
+export { getChainMetadata };
 import * as eip155 from "./eip155";
 import * as cosmos from "./cosmos";
 import * as polkadot from "./polkadot";
-import * as solana from "./solana";
 import * as near from "./near";
-import * as multiversx from "./multiversx";
-import * as tron from "./tron";
 import * as tezos from "./tezos";
 import * as kadena from "./kadena";
-import * as bip122 from "./bip122";
-import * as sui from "./sui";
-import * as stacks from "./stacks";
-import * as ton from "./ton";
-
-import { ChainMetadata, ChainRequestRender } from "../helpers";
-
-export function getChainMetadata(chainId: string): ChainMetadata {
-  const namespace = chainId.split(":")[0];
-  switch (namespace) {
-    case "eip155":
-      return eip155.getChainMetadata(chainId);
-    case "cosmos":
-      return cosmos.getChainMetadata(chainId);
-    case "polkadot":
-      return polkadot.getChainMetadata(chainId);
-    case "solana":
-      return solana.getChainMetadata(chainId);
-    case "near":
-      return near.getChainMetadata(chainId);
-    case "kadena":
-      return kadena.getChainMetadata(chainId);
-    case "mvx":
-      return multiversx.getChainMetadata(chainId);
-    case "tron":
-      return tron.getChainMetadata(chainId);
-    case "tezos":
-      return tezos.getChainMetadata(chainId);
-    case "bip122":
-      return bip122.getChainMetadata(chainId);
-    case "sui":
-      return sui.getChainMetadata(chainId);
-    case "stacks":
-      return stacks.getChainMetadata(chainId);
-    case "ton":
-      return ton.getChainMetadata(chainId);
-    default:
-      throw new Error(`No metadata handler for namespace ${namespace}`);
-  }
-}
 
 export function getChainRequestRender(
   request: JsonRpcRequest,

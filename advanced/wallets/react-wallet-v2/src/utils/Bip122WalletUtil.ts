@@ -1,4 +1,4 @@
-import { BIP122_MAINNET_CAIP2, BIP122_TESTNET_CAIP2 } from '@/data/Bip122Data'
+import { BIP122_MAINNET_CAIP2, BIP122_TESTNET_CAIP2 } from '@web-examples/shared'
 import BitcoinLib from '@/lib/Bip122Lib'
 
 export let wallet1: BitcoinLib

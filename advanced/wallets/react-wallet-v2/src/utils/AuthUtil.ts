@@ -20,7 +20,7 @@ import {
   getDidChainId,
   parseChainId
 } from '@walletconnect/utils'
-import { IBip122ChainId } from '@/data/Bip122Data'
+import { IBip122ChainId } from '@web-examples/shared'
 import { AuthenticationMessage } from '@/types/auth'
 import bs58 from 'bs58'
 const didPrefix = 'did:pkh:'

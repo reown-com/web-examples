@@ -1,3 +1,8 @@
+/**
+ * EIP-712 Typed Data utilities
+ * From react-dapp-v2
+ */
+
 // From spec: https://eips.ethereum.org/EIPS/eip-712
 const example = {
   types: {

@@ -4,7 +4,7 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import SettingsStore from '@/store/SettingsStore'
-import { TON_SIGNING_METHODS } from '@/data/TonData'
+import { TON_SIGNING_METHODS } from '@web-examples/shared'
 
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 

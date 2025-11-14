@@ -1,4 +1,4 @@
-import { SOLANA_SIGNING_METHODS } from '@/data/SolanaData'
+import { SOLANA_SIGNING_METHODS } from '@web-examples/shared'
 import { getWalletAddressFromParams } from '@/utils/HelperUtil'
 import { solanaAddresses, solanaWallets } from '@/utils/SolanaWalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'

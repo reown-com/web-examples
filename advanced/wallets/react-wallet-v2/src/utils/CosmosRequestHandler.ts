@@ -1,4 +1,4 @@
-import { COSMOS_SIGNING_METHODS } from '@/data/COSMOSData'
+import { COSMOS_SIGNING_METHODS } from '@web-examples/shared'
 import { cosmosAddresses, cosmosWallets } from '@/utils/CosmosWalletUtil'
 import { getWalletAddressFromParams } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'

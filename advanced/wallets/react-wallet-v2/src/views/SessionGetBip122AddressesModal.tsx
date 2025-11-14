@@ -9,7 +9,7 @@ import RequestModal from '../components/RequestModal'
 import { useCallback, useState } from 'react'
 import { approveBip122Request, rejectBip122Request } from '@/utils/Bip122RequestHandlerUtil'
 import { bip122Wallet } from '@/utils/Bip122WalletUtil'
-import { IBip122ChainId } from '@/data/Bip122Data'
+import { IBip122ChainId } from '@web-examples/shared'
 
 export default function SessionGetBip122AddressesModal() {
   // Get request and wallet data from store

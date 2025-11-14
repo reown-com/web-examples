@@ -1,8 +1,5 @@
-export * from "./api";
-export * from "./eip712";
-export * from "./eip1271";
-export * from "./tx";
-export * from "./types";
+// Re-export from shared
+export * from "@web-examples/shared";
+
+// Local helpers
 export * from "./utilities";
-export * from "./sui";
-export * from "./ton";

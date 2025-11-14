@@ -1,4 +1,4 @@
-import { EIP155Chain } from '@/data/EIP155Data'
+import { EIP155Chain } from '@web-examples/shared'
 import SettingsStore from '@/store/SettingsStore'
 import {
   createOrRestoreBiconomySmartAccount,
