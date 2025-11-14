@@ -26,6 +26,9 @@ import bs58 from 'bs58'
 const didPrefix = 'did:pkh:'
 
 type AuthMessage = {
+  iat: string;
+  statement?: string;
+  domain: string;
   message: string
   chainId: string
   address: string
@@ -97,6 +100,9 @@ export async function signAuthenticationMessages(
   const signedAuths = []
   for (const toSign of authenticationMessagesToSign) {
     const result = await signMessage({
+      iat: toSign.iat,
+      statement: toSign.statement,
+      domain: toSign.domain,
       chainId: `${getDidAddressNamespace(toSign.iss)!}:${getDidChainId(toSign.iss)!}`,
       address: getDidAddress(toSign.iss)!,
       message: toSign.message
@@ -107,7 +113,7 @@ export async function signAuthenticationMessages(
         {
           t: result.type as any,
           s: result.signature,
-          m: result?.publicKey
+          m: result.publicKey
         },
         toSign.iss
       )
@@ -125,11 +131,14 @@ export async function signMessage(AuthMessage: AuthMessage) {
       const eip155Result = await eip155Wallets[AuthMessage.address].signMessage(AuthMessage.message)
       return { signature: eip155Result, type: getSignatureType(parsed.namespace) }
     case 'ton':
-      const tonResult = await tonWallets[AuthMessage.address].signData({
-        text: AuthMessage.message,
-        type: 'text'
-      })
-      return { signature: tonResult.signature, publicKey: tonResult.publicKey, type: 'ton' }
+      if (AuthMessage.statement) {
+        const tonResult = await tonWallets[AuthMessage.address].generateTonProof({
+          iat: AuthMessage.iat,
+          domain: AuthMessage.domain,
+          payload: AuthMessage.statement,
+        })
+        return { signature: tonResult.signature, publicKey: tonResult.publicKey, type: 'ton' }
+      }
     case 'solana':
       const solanaResult = await solanaWallets[AuthMessage.address].signMessage({
         message: bs58.encode(new Uint8Array(Buffer.from(AuthMessage.message)))

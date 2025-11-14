@@ -185,6 +185,9 @@ importers:
       cosmos-wallet:
         specifier: 1.2.0
         version: 1.2.0
+      crc-32:
+        specifier: ^1.2.2
+        version: 1.2.2
       ecpair:
         specifier: ^2.1.0
         version: 2.1.0
@@ -2704,6 +2707,11 @@ packages:
 
   cosmos-wallet@1.2.0:
     resolution: {integrity: sha512-lMEpNhjN6FHU6c8l/lYi1hWU/74bOlTmo3pz0mwVpCHjNSe5u7sZCO7j0dndd3oV0tM8tj/u3eJa4NgZxG9a0Q==}
+
+  crc-32@1.2.2:
+    resolution: {integrity: sha512-ROmzCKrTnOwybPcJApAA6WBWij23HVfGVNKqqrZpuyZOHqK2CwHSvpGuyt/UNNvaIjEd8X5IFGp4Mh+Ie1IHJQ==}
+    engines: {node: '>=0.8'}
+    hasBin: true
 
   create-hash@1.2.0:
     resolution: {integrity: sha512-z00bCGNHDG8mHAkP7CtT1qVu+bFQUPjYq/4Iv3C3kWjTFV10zIjfSoeqXo9Asws8gwSHDGj/hl2u4OGIjapeCg==}
@@ -9268,6 +9276,8 @@ snapshots:
     dependencies:
       '@cosmjs/amino': 0.25.6
       '@cosmjs/proto-signing': 0.25.6
+
+  crc-32@1.2.2: {}
 
   create-hash@1.2.0:
     dependencies:

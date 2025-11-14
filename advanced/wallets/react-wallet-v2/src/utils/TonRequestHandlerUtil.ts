@@ -1,14 +1,16 @@
 import { getWallet } from '@/utils/TonWalletUtil'
-import { getSignParamsMessage } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
-import { SignClientTypes } from '@walletconnect/types'
+import { SessionTypes, SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import SettingsStore from '@/store/SettingsStore'
 import { TON_SIGNING_METHODS } from '@/data/TonData'
 
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
 
-export async function approveTonRequest(requestEvent: RequestEventArgs) {
+export async function approveTonRequest(
+  requestEvent: RequestEventArgs,
+  session: SessionTypes.Struct
+) {
   const { params, id } = requestEvent
   const { chainId, request } = params
 
@@ -20,7 +22,8 @@ export async function approveTonRequest(requestEvent: RequestEventArgs) {
     case TON_SIGNING_METHODS.SIGN_DATA:
       try {
         const payload = Array.isArray(request.params) ? request.params[0] : request.params
-        const result = await wallet.signData(payload)
+        const domain = new URL(session.peer.metadata.url).hostname
+        const result = await wallet.signData(payload, domain)
         return formatJsonRpcResult(id, result)
       } catch (error: any) {
         console.error(error)
