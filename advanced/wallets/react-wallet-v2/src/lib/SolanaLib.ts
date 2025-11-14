@@ -15,7 +15,7 @@ import {
   TOKEN_PROGRAM_ID,
   getOrCreateAssociatedTokenAccount
 } from '@solana/spl-token'
-import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
+import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@web-examples/shared'
 
 /**
  * Types

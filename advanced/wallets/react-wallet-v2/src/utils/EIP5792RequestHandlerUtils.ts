@@ -1,4 +1,4 @@
-import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { EIP155_CHAINS, TEIP155Chain } from '@web-examples/shared'
 import {
   EIP5792_METHODS,
   GetCallsParams,

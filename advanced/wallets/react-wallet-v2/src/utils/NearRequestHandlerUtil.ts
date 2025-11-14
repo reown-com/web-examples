@@ -2,7 +2,7 @@ import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { InMemorySigner, transactions, utils, Connection } from 'near-api-js'
 
-import { NEAR_SIGNING_METHODS, NEAR_TEST_CHAINS } from '@/data/NEARData'
+import { NEAR_SIGNING_METHODS, NEAR_TEST_CHAINS } from '@web-examples/shared'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { nearWallet } from '@/utils/NearWalletUtil'
 import { decodeTransaction } from '@/lib/NearLib'

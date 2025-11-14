@@ -1,4 +1,4 @@
-import { KADENA_SIGNING_METHODS } from '@/data/KadenaData'
+import { KADENA_SIGNING_METHODS } from '@web-examples/shared'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'

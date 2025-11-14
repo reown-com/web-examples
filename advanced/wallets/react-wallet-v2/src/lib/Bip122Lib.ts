@@ -5,7 +5,7 @@ import * as bip39 from 'bip39'
 import BIP32Factory, { BIP32Interface } from 'bip32'
 import bitcoinMessage from 'bitcoinjs-message'
 import { schnorr } from '@noble/secp256k1'
-import { BIP122_CHAINS, BIP122_TESTNET_ID, IBip122ChainId } from '@/data/Bip122Data'
+import { BIP122_CHAINS, BIP122_TESTNET_ID, IBip122ChainId } from '@web-examples/shared'
 bitcoin.initEccLib(ecc)
 
 const ECPair = ECPairFactory(ecc)

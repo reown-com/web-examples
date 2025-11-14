@@ -3,7 +3,6 @@ import {
   DEFAULT_COSMOS_EVENTS,
   DEFAULT_COSMOS_METHODS,
   DEFAULT_EIP155_METHODS,
-  DEFAULT_EIP_155_EVENTS,
   DEFAULT_SOLANA_EVENTS,
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_EVENTS,
@@ -20,14 +19,14 @@ import {
   DEFAULT_TON_EVENTS,
   DEFAULT_TEZOS_METHODS,
   DEFAULT_TEZOS_EVENTS,
-  DEFAULT_OPTIONAL_METHODS,
   DEFAULT_BIP122_METHODS,
   DEFAULT_BIP122_EVENTS,
   DEFAULT_SUI_METHODS,
   DEFAULT_SUI_EVENTS,
   DEFAULT_STACKS_METHODS,
   DEFAULT_STACKS_EVENTS,
-} from "../constants";
+  DEFAULT_EIP155_EVENTS,
+} from "../chains";
 
 export const getNamespacesFromChains = (chains: string[]) => {
   const supportedNamespaces: string[] = [];
@@ -41,7 +40,7 @@ export const getNamespacesFromChains = (chains: string[]) => {
   return supportedNamespaces;
 };
 
-export const getSupportedRequiredMethodsByNamespace = (namespace: string) => {
+export const getSupportedOptionalMethodsByNamespace = (namespace: string) => {
   switch (namespace) {
     case "eip155":
       return Object.values(DEFAULT_EIP155_METHODS);
@@ -76,31 +75,10 @@ export const getSupportedRequiredMethodsByNamespace = (namespace: string) => {
   }
 };
 
-export const getSupportedOptionalMethodsByNamespace = (namespace: string) => {
-  switch (namespace) {
-    case "eip155":
-      return Object.values(DEFAULT_OPTIONAL_METHODS);
-    case "cosmos":
-    case "solana":
-    case "polkadot":
-    case "near":
-    case "mvx":
-    case "tron":
-    case "tezos":
-    case "kadena":
-    case "bip122":
-      return [];
-    default:
-      throw new Error(
-        `No default optional methods for namespace: ${namespace}`
-      );
-  }
-};
-
 export const getSupportedEventsByNamespace = (namespace: string) => {
   switch (namespace) {
     case "eip155":
-      return Object.values(DEFAULT_EIP_155_EVENTS);
+      return Object.values(DEFAULT_EIP155_EVENTS);
     case "cosmos":
       return Object.values(DEFAULT_COSMOS_EVENTS);
     case "solana":
@@ -128,24 +106,6 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
     default:
       throw new Error(`No default events for namespace: ${namespace}`);
   }
-};
-
-export const getRequiredNamespaces = (
-  chains: string[]
-): ProposalTypes.OptionalNamespaces => {
-  const selectedNamespaces = getNamespacesFromChains(chains);
-  console.log("selected required namespaces:", selectedNamespaces);
-
-  return Object.fromEntries(
-    selectedNamespaces.map((namespace) => [
-      namespace,
-      {
-        methods: getSupportedRequiredMethodsByNamespace(namespace),
-        chains: chains.filter((chain) => chain.startsWith(namespace)),
-        events: getSupportedEventsByNamespace(namespace) as any[],
-      },
-    ])
-  );
 };
 
 export const getOptionalNamespaces = (

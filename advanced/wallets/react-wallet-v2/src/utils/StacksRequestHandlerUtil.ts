@@ -3,7 +3,7 @@ import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 
 import { stacksWallet } from './StacksWalletUtil'
-import { STACKS_SIGNING_METHODS } from '@/data/StacksData'
+import { STACKS_SIGNING_METHODS } from '@web-examples/shared'
 
 export async function approveStacksRequest(
   requestEvent: SignClientTypes.EventArguments['session_request']

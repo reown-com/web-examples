@@ -9,8 +9,8 @@ import {
   CheckoutError,
   SolanaContractInteraction
 } from '@/types/wallet_checkout'
-import { SOLANA_MAINNET_CHAINS } from '@/data/SolanaData'
-import { SOLANA_TEST_CHAINS } from '@/data/SolanaData'
+import { SOLANA_MAINNET_CHAINS } from '@web-examples/shared'
+import { SOLANA_TEST_CHAINS } from '@web-examples/shared'
 
 export interface PaymentResult {
   txHash: string

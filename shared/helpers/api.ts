@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import { apiGetKadenaAccountBalance } from "./kadena";
 
-import { AssetData } from "./types";
+import { AssetData } from "../types";
 import { PactCommand } from "@kadena/client";
 import { apiGetBip122AccountBalance } from "./bip122";
 import { getSuiClient } from "./sui";
@@ -169,6 +169,8 @@ export async function apiGetAccountBalance(
   if (namespace === "tron") {
     return apiGetTronAccountBalance(address, networkId);
   }
+
+  // todo: add other chains here
 
   if (namespace !== "eip155") {
     return { balance: "", symbol: "", name: "" };

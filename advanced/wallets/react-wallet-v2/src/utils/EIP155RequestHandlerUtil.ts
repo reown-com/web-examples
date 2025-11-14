@@ -1,4 +1,4 @@
-import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
+import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@web-examples/shared'
 import { getWallet } from '@/utils/EIP155WalletUtil'
 import { getSignParamsMessage, getSignTypedDataParamsData } from '@/utils/HelperUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'

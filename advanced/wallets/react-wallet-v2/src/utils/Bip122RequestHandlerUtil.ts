@@ -1,9 +1,9 @@
-import { KADENA_SIGNING_METHODS } from '@/data/KadenaData'
+import { KADENA_SIGNING_METHODS } from '@web-examples/shared'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { getWalletAddressFromParams } from './HelperUtil'
-import { BIP122_SIGNING_METHODS, IBip122ChainId } from '@/data/Bip122Data'
+import { BIP122_SIGNING_METHODS, IBip122ChainId } from '@web-examples/shared'
 import { bip122Addresses, bip122Wallet } from './Bip122WalletUtil'
 
 export async function approveBip122Request(

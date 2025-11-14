@@ -1,4 +1,4 @@
-import { POLKADOT_SIGNING_METHODS } from '@/data/PolkadotData'
+import { POLKADOT_SIGNING_METHODS } from '@web-examples/shared'
 import { getWalletAddressFromParams } from '@/utils/HelperUtil'
 import { getPolkadotWallet, polkadotAddresses, polkadotWallets } from '@/utils/PolkadotWalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'

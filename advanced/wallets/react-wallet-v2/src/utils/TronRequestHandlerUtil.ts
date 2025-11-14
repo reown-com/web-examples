@@ -1,4 +1,4 @@
-import { TRON_MAINNET_CHAINS, TRON_TEST_CHAINS, TRON_SIGNING_METHODS } from '@/data/TronData'
+import { TRON_MAINNET_CHAINS, TRON_TEST_CHAINS, TRON_SIGNING_METHODS } from '@web-examples/shared'
 import { getWalletAddressFromParams } from '@/utils/HelperUtil'
 import { tronAddresses, tronWallets } from '@/utils/TronWalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'

@@ -11,7 +11,7 @@ import {
   beginCell,
   storeMessage
 } from '@ton/ton'
-import { TON_MAINNET_CHAINS, TON_TEST_CHAINS } from '@/data/TonData'
+import { TON_MAINNET_CHAINS, TON_TEST_CHAINS } from '@web-examples/shared'
 
 /**
  * Types

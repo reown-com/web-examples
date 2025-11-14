@@ -10,6 +10,7 @@
     "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
   },
   "dependencies": {
+    "@web-examples/shared": "file:../../../shared",
     "@cosmjs/amino": "0.32.3",
     "@cosmjs/encoding": "0.32.3",
     "@cosmjs/proto-signing": "0.32.3",

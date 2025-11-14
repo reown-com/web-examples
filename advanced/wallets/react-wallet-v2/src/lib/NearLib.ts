@@ -13,7 +13,7 @@ import { AccessKeyView } from 'near-api-js/lib/providers/provider'
 import { Schema, serialize } from 'borsh'
 
 import { walletkit } from '@/utils/WalletConnectUtil'
-import { NEAR_TEST_CHAINS, TNearChain } from '@/data/NEARData'
+import { NEAR_TEST_CHAINS, TNearChain } from '@web-examples/shared'
 
 const RPC_URL = 'https://rpc.testnet.near.org'
 

@@ -10,7 +10,7 @@ import TransactionSimulatorUtil from './TransactionSimulatorUtil'
 import SettingsStore from '@/store/SettingsStore'
 import { getSolanaTokenData, getTokenData } from '@/data/tokenUtil'
 import { getChainById } from './ChainUtil'
-import { blockchainApiRpc } from '@/data/EIP155Data'
+import { blockchainApiRpc } from '@web-examples/shared'
 import {
   Connection,
   PublicKey,
@@ -18,8 +18,8 @@ import {
   Transaction,
   TransactionInstruction
 } from '@solana/web3.js'
-import { SOLANA_TEST_CHAINS } from '@/data/SolanaData'
-import { SOLANA_MAINNET_CHAINS } from '@/data/SolanaData'
+import { SOLANA_TEST_CHAINS } from '@web-examples/shared'
+import { SOLANA_MAINNET_CHAINS } from '@web-examples/shared'
 import { createTransferInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { createAssociatedTokenAccountInstruction } from '@solana/spl-token'
 import { getAssociatedTokenAddress } from '@solana/spl-token'

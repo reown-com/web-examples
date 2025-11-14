@@ -1,3 +1,8 @@
+/**
+ * EIP-1271 Smart Contract Signature Verification
+ * From react-dapp-v2
+ */
+
 import { Contract, providers, utils } from "ethers";
 
 const spec = {

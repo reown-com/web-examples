@@ -33,13 +33,14 @@ import {
   getSdkError,
   parseChainId,
 } from "@walletconnect/utils";
+
+import { getOptionalNamespaces } from "@web-examples/shared";
 import {
   DEFAULT_LOGGER,
   DEFAULT_PROJECT_ID,
   DEFAULT_RELAY_URL,
 } from "../constants";
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
-import { getRequiredNamespaces } from "../helpers/namespaces";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 import { isValidSignature } from "./JsonRpcContext";
 
@@ -207,7 +208,7 @@ export function ClientContextProvider({
       }
       console.log("connect, pairing topic is:", pairing?.topic);
       try {
-        const namespacesToRequest = getRequiredNamespaces(chains);
+        const namespacesToRequest = getOptionalNamespaces(chains);
 
         appkit?.open();
 

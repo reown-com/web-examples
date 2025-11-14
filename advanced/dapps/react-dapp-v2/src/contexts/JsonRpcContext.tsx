@@ -35,8 +35,6 @@ import {
 } from "@kadena/client";
 import { PactNumber } from "@kadena/pactjs";
 import {
-  IUTXO,
-  KadenaAccount,
   eip712,
   formatTestBatchCall,
   formatTestTransaction,
@@ -49,8 +47,16 @@ import {
 } from "../helpers";
 import { useWalletConnectClient } from "./ClientContext";
 import {
-  DEFAULT_COSMOS_METHODS,
+  SendCallsParams,
+  GetCapabilitiesResult,
+  GetCallsResult,
+  WalletGrantPermissionsParameters,
+  WalletGrantPermissionsReturnType,
+} from "../constants";
+
+import {
   DEFAULT_EIP155_METHODS,
+  DEFAULT_COSMOS_METHODS,
   DEFAULT_SOLANA_METHODS,
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_NEAR_METHODS,
@@ -59,20 +65,16 @@ import {
   DEFAULT_TON_METHODS,
   DEFAULT_TEZOS_METHODS,
   DEFAULT_KADENA_METHODS,
-  DEFAULT_EIP155_OPTIONAL_METHODS,
-  DEFAULT_EIP5792_METHODS,
-  SendCallsParams,
-  GetCapabilitiesResult,
-  GetCallsResult,
   DEFAULT_BIP122_METHODS,
-  DEFAULT_EIP7715_METHODS,
-  WalletGrantPermissionsParameters,
-  WalletGrantPermissionsReturnType,
   DEFAULT_SUI_METHODS,
   DEFAULT_STACKS_METHODS,
-} from "../constants";
+  ALL_CHAINS,
+  BIP122_DUST_LIMIT,
+  getTronWeb,
+} from "@web-examples/shared";
+import type { IUTXO, KadenaAccount } from "@web-examples/shared";
 import { useChainData } from "./ChainDataContext";
-import { rpcProvidersByChainId } from "../../src/helpers/api";
+import { rpcProvidersByChainId } from "../helpers";
 import { signatureVerify, cryptoWaitReady } from "@polkadot/util-crypto";
 
 import {
@@ -103,11 +105,7 @@ import {
   getDidAddress,
   getDidAddressNamespace,
   getDidChainId,
-  getNamespacedDidChainId,
 } from "@walletconnect/utils";
-import { BIP122_DUST_LIMIT } from "../chains/bip122";
-import { getTronWeb } from "../helpers/tron";
-import { signVerify } from "@ton/crypto";
 /**
  * Types
  */
@@ -356,7 +354,7 @@ export function JsonRpcContextProvider({
           topic: session!.topic,
           chainId,
           request: {
-            method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION,
+            method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
             params: [tx],
           },
         });
@@ -379,7 +377,7 @@ export function JsonRpcContextProvider({
         }
 
         return {
-          method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION,
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN_TRANSACTION,
           address,
           valid,
           result: signedTx,
@@ -447,7 +445,7 @@ export function JsonRpcContextProvider({
           topic: session!.topic,
           chainId,
           request: {
-            method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN,
+            method: DEFAULT_EIP155_METHODS.ETH_SIGN,
             params,
           },
         });
@@ -472,7 +470,7 @@ export function JsonRpcContextProvider({
 
         // format displayed result
         return {
-          method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN + " (standard)",
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN + " (standard)",
           address,
           valid,
           result: signature,
@@ -491,7 +489,7 @@ export function JsonRpcContextProvider({
           topic: session!.topic,
           chainId,
           request: {
-            method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
+            method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
             params,
           },
         });
@@ -515,7 +513,7 @@ export function JsonRpcContextProvider({
         );
 
         return {
-          method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
           address,
           valid,
           result: signature,
@@ -535,7 +533,7 @@ export function JsonRpcContextProvider({
           topic: session!.topic,
           chainId,
           request: {
-            method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4,
+            method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA_V4,
             params,
           },
         });
@@ -559,7 +557,7 @@ export function JsonRpcContextProvider({
         );
 
         return {
-          method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
+          method: DEFAULT_EIP155_METHODS.ETH_SIGN_TYPED_DATA,
           address,
           valid,
           result: signature,
@@ -592,14 +590,14 @@ export function JsonRpcContextProvider({
             topic: session!.topic,
             chainId,
             request: {
-              method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
+              method: DEFAULT_EIP155_METHODS.WALLET_GET_CAPABILITIES,
               params: [address],
             },
           });
 
         // format displayed result
         return {
-          method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
+          method: DEFAULT_EIP155_METHODS.WALLET_GET_CAPABILITIES,
           address,
           valid: true,
           result: JSON.stringify(capabilities),
@@ -627,14 +625,14 @@ export function JsonRpcContextProvider({
           topic: session!.topic,
           chainId,
           request: {
-            method: DEFAULT_EIP5792_METHODS.WALLET_GET_CALLS_STATUS,
+            method: DEFAULT_EIP155_METHODS.WALLET_GET_CALLS_STATUS,
             params: params,
           },
         });
 
         // format displayed result
         return {
-          method: DEFAULT_EIP5792_METHODS.WALLET_GET_CALLS_STATUS,
+          method: DEFAULT_EIP155_METHODS.WALLET_GET_CALLS_STATUS,
           address,
           valid: true,
           result: JSON.stringify(getCallsStatusResult),
@@ -655,7 +653,7 @@ export function JsonRpcContextProvider({
         const balance = BigNumber.from(balances[account][0].balance || "0");
         if (balance.lt(parseEther("0.0002"))) {
           return {
-            method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
+            method: DEFAULT_EIP155_METHODS.WALLET_SEND_CALLS,
             address,
             valid: false,
             result:
@@ -677,7 +675,7 @@ export function JsonRpcContextProvider({
           topic: session!.topic,
           chainId,
           request: {
-            method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
+            method: DEFAULT_EIP155_METHODS.WALLET_SEND_CALLS,
             params: [sendCallsRequestParams],
           },
         });
@@ -687,7 +685,7 @@ export function JsonRpcContextProvider({
         );
         // format displayed result
         return {
-          method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
+          method: DEFAULT_EIP155_METHODS.WALLET_SEND_CALLS,
           address,
           valid: true,
           result: txId,
@@ -737,14 +735,14 @@ export function JsonRpcContextProvider({
             topic: session!.topic,
             chainId,
             request: {
-              method: DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS,
+              method: DEFAULT_EIP155_METHODS.WALLET_GRANT_PERMISSIONS,
               params: [walletGrantPermissionsParameters],
             },
           });
 
         // format displayed result
         return {
-          method: DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS,
+          method: DEFAULT_EIP155_METHODS.WALLET_GRANT_PERMISSIONS,
           address,
           valid: true,
           result: JSON.stringify(issuePermissionResponse),
@@ -2361,11 +2359,10 @@ export function JsonRpcContextProvider({
 
         let isValid = false;
         try {
-          isValid = await isValidTonSignature({
+          isValid = await ALL_CHAINS.ton.utils.verifyMessage({
             message: params[0].text,
             signature: result.signature,
-            iss: "",
-            signatureMeta: result.publicKey,
+            publicKey: result.publicKey,
           });
         } catch (error) {
           console.error(error);
@@ -2567,131 +2564,6 @@ export function useJsonRpc() {
   return context;
 }
 
-async function isValidEip155Signature(params: {
-  message: string;
-  signature: string;
-  iss: string;
-}) {
-  const chainId = getDidChainId(params.iss);
-  const rpc = rpcProvidersByChainId[Number(chainId)];
-
-  if (typeof rpc === "undefined") {
-    throw new Error(`Missing rpcProvider definition for chainId: ${chainId}`);
-  }
-
-  const hashMsg = hashPersonalMessage(params.message);
-  const valid = await verifySignature(
-    getDidAddress(params.iss)!,
-    params.signature,
-    hashMsg,
-    rpc.baseURL
-  );
-  return valid;
-}
-
-async function isValidSolanaSignature(params: {
-  message: string;
-  signature: string;
-  iss: string;
-}) {
-  const { message, signature, iss } = params;
-  const address = getDidAddress(iss)!;
-  const senderPublicKey = new PublicKey(address);
-  const valid = verifyMessageSignature(
-    senderPublicKey.toBase58(),
-    signature,
-    bs58.encode(new Uint8Array(Buffer.from(message)))
-  );
-  return valid;
-}
-
-async function isValidPolkadotSignature(params: {
-  message: string;
-  signature: string;
-  iss: string;
-}) {
-  const { message, signature, iss } = params;
-  const address = getDidAddress(iss)!;
-  await cryptoWaitReady();
-  const { isValid } = signatureVerify(message, signature, address);
-  return isValid;
-}
-
-async function isValidSuiSignature(params: {
-  message: string;
-  signature: string;
-  iss: string;
-}) {
-  const { message, signature, iss } = params;
-  const address = getDidAddress(iss)!;
-  const derivedPublicKey = await verifyPersonalMessageSignature(
-    new TextEncoder().encode(message),
-    signature,
-    { address }
-  );
-  return (
-    derivedPublicKey.toSuiAddress().toLowerCase() === address.toLowerCase()
-  );
-}
-
-async function isValidStacksSignature(params: {
-  message: string;
-  signature: string;
-  iss: string;
-}) {
-  const { message, signature, iss } = params;
-  const address = getDidAddress(iss)!;
-  const network = getDidChainId(iss)! === "1" ? "mainnet" : "testnet";
-  const hash = Buffer.from(sha256(message)).toString("hex");
-  const pubKey = publicKeyFromSignatureRsv(hash, signature);
-
-  const valid = getAddressFromPublicKey(pubKey, network) === address;
-  return valid;
-}
-
-async function isValidBip122Sig(params: {
-  message: string;
-  signature: string;
-  iss: string;
-}) {
-  const { message, signature, iss } = params;
-  const address = getDidAddress(iss)!;
-  const valid = await isValidBip122Signature(address, signature, message);
-  return valid;
-}
-
-async function isValidTronSignature(params: {
-  message: string;
-  signature: string;
-  iss: string;
-}) {
-  const { message, signature, iss } = params;
-  const chainId = getNamespacedDidChainId(iss)!;
-  const tronWeb = getTronWeb(chainId);
-  if (!tronWeb) {
-    throw new Error("Tron web not found for chainId: " + iss);
-  }
-  const address = getDidAddress(iss)!;
-  const valid = await tronWeb.trx.verifyMessageV2(message, signature);
-  return valid === address;
-}
-
-async function isValidTonSignature(params: {
-  message: string;
-  signature: string;
-  iss: string;
-  signatureMeta?: string;
-}) {
-  const { message, signature, iss, signatureMeta = "" } = params;
-
-  const valid = await signVerify(
-    Buffer.from(message, "utf-8"),
-    Buffer.from(signature, "base64"),
-    Buffer.from(signatureMeta, "base64")
-  );
-
-  return valid;
-}
 export function isValidSignature(params: {
   message: string;
   iss: string;
@@ -2699,29 +2571,66 @@ export function isValidSignature(params: {
   signatureMeta?: string;
 }) {
   const namespace = getDidAddressNamespace(params.iss);
+  const address = getDidAddress(params.iss)!;
+  const chainId = getDidChainId(params.iss)!;
+
   switch (namespace) {
     case "eip155":
-      return isValidEip155Signature(params);
+      return ALL_CHAINS.eip155.utils.verifyMessage({
+        message: params.message,
+        signature: params.signature,
+        chainId: chainId,
+        address: address,
+      });
     case "solana":
-      return isValidSolanaSignature(params);
+      return ALL_CHAINS.solana.utils.verifyMessage({
+        message: params.message,
+        signature: params.signature,
+        address: address,
+      });
     case "polkadot":
-      return isValidPolkadotSignature(params);
-
-    // case "kadena":
-    //   return isValidKadenaSignature(params);
-    // case "mvx":
-    //   return isValidMultiversxSignature(params);
-    // case "tezos":
-    //   return isValidTezosSignature(params);
+      return ALL_CHAINS.polkadot.utils.verifyMessage({
+        message: params.message,
+        signature: params.signature,
+        address: address,
+      });
     case "tron":
-      return isValidTronSignature(params);
+      return ALL_CHAINS.tron.utils.verifyMessage({
+        message: params.message,
+        signature: params.signature,
+        address: address,
+        chainId: chainId,
+      });
     case "ton":
-      return isValidTonSignature(params);
+      return ALL_CHAINS.ton.utils.verifyMessage({
+        message: params.message,
+        signature: params.signature,
+        publicKey: params.signatureMeta!,
+      });
     case "bip122":
-      return isValidBip122Sig(params);
+      return ALL_CHAINS.bip122.utils.verifyMessage({
+        message: params.message,
+        signature: params.signature,
+        address: address,
+      });
     case "sui":
-      return isValidSuiSignature(params);
+      return ALL_CHAINS.sui.utils.verifyMessage({
+        message: params.message,
+        signature: params.signature,
+        address: address,
+      });
     case "stacks":
-      return isValidStacksSignature(params);
+      return ALL_CHAINS.stacks.utils.verifyMessage({
+        message: params.message,
+        signature: params.signature,
+        address: address,
+        chainId: chainId,
+      });
+    case "mvx":
+      return ALL_CHAINS.mvx.utils.verifyMessage({
+        message: params.message,
+        signature: params.signature,
+        address: address,
+      });
   }
 }

@@ -1,4 +1,4 @@
-import { MULTIVERSX_SIGNING_METHODS } from '@/data/MultiversxData'
+import { MULTIVERSX_SIGNING_METHODS } from '@web-examples/shared'
 import { getWalletAddressFromParams } from '@/utils/HelperUtil'
 import { multiversxAddresses, multiversxWallets } from '@/utils/MultiversxWalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'

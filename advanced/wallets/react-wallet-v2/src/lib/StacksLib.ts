@@ -10,8 +10,8 @@ import {
   publicKeyToHex,
 } from '@stacks/transactions'
 import { networkFromName, StacksNetworks } from '@stacks/network'
-import { STACKS_MAINNET, STACKS_TESTNET, STACKS_TESTNET_CAIP2 } from '@/data/StacksData'
-import { STACKS_MAINNET_CAIP2 } from '@/data/StacksData'
+import { STACKS_MAINNET, STACKS_TESTNET, STACKS_TESTNET_CAIP2 } from '@web-examples/shared'
+import { STACKS_MAINNET_CAIP2 } from '@web-examples/shared'
 import { sha256 } from '@noble/hashes/sha2'
 
 /**

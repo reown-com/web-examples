@@ -2,7 +2,7 @@ import { createPublicClient, decodeFunctionData, erc20Abi, getContract, Hex, htt
 import { arbitrum, base, optimism } from 'viem/chains'
 import { getChainById } from './ChainUtil'
 import { providers } from 'ethers'
-import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
+import { EIP155_CHAINS, TEIP155Chain } from '@web-examples/shared'
 
 const BASE_URL = 'https://api.socket.tech/v2'
 const WHITELIST_BRIDGES = 'across'

@@ -1,6 +1,6 @@
 import * as encoding from "@walletconnect/encoding";
 
-import { apiGetAccountNonce, apiGetGasPrice } from "./api";
+import { apiGetAccountNonce, apiGetGasPrice } from "@web-examples/shared/";
 import { parseEther } from "ethers/lib/utils";
 import { SendCallsParams } from "../constants";
 

@@ -1,4 +1,4 @@
-import { TEZOS_SIGNING_METHODS } from '@/data/TezosData'
+import { TEZOS_SIGNING_METHODS } from '@web-examples/shared'
 import { tezosWallets } from '@/utils/TezosWalletUtil'
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'

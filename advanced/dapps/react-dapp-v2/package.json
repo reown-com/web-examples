@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "prettier": "prettier --check '**/*.{js,ts,jsx,tsx}'",
-    "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'"
+    "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'",
+    "postinstall": "cd ../../../shared && pnpm install && pnpm build || echo 'Warning: Shared package postinstall failed'"
   },
   "dependencies": {
+    "@web-examples/shared": "file:../../../shared",
     "@celo/wallet-base": "^5.1.1",
     "@ethereumjs/tx": "^3.5.0",
     "@kadena/client": "^0.5.0",

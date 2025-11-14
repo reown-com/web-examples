@@ -1,4 +1,4 @@
-import { STACKS_MAINNET_CAIP2, STACKS_TESTNET_CAIP2 } from '@/data/StacksData'
+import { STACKS_MAINNET_CAIP2, STACKS_TESTNET_CAIP2 } from '@web-examples/shared'
 import StacksLib from '@/lib/StacksLib'
 
 export let wallet1: StacksLib

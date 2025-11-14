@@ -5,21 +5,25 @@ import {
   useEffect,
   useState,
 } from "react";
-import { SolanaChainData } from "../chains/solana";
-import { PolkadotChainData } from "../chains/polkadot";
-import { MultiversxChainData } from "../chains/multiversx";
-import { TronChainData } from "../chains/tron";
+import {
+  SolanaChainData,
+  PolkadotChainData,
+  MultiversxChainData,
+  TronChainData,
+  NearChainData,
+  CosmosChainData,
+  EIP155ChainData,
+  TezosChainData,
+  KadenaChainData,
+  BtcChainData,
+  SuiChainData,
+  StacksChainData,
+  TonChainData,
+  ChainNamespaces,
+  ChainsMap,
+} from "@web-examples/shared";
 
-import { ChainNamespaces, ChainsMap, getAllChainNamespaces } from "../helpers";
-import { NearChainData } from "../chains/near";
-import { CosmosChainData } from "../chains/cosmos";
-import { EIP155ChainData } from "../chains/eip155";
-import { TezosChainData } from "../chains/tezos";
-import { KadenaChainData } from "../chains/kadena";
-import { BtcChainData } from "../chains/bip122";
-import { SuiChainData } from "../chains/sui";
-import { StacksChainData } from "../chains/stacks";
-import { TonChainData } from "../chains/ton";
+import { getAllChainNamespaces } from "../helpers";
 
 /**
  * Types

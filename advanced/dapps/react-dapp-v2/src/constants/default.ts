@@ -3,54 +3,6 @@ import { getAppMetadata } from "@walletconnect/utils";
 if (!process.env.NEXT_PUBLIC_PROJECT_ID)
   throw new Error("`NEXT_PUBLIC_PROJECT_ID` env variable is missing.");
 
-export const DEFAULT_MAIN_CHAINS = [
-  // mainnets
-  "eip155:1",
-  "eip155:10",
-  "eip155:100",
-  "eip155:137",
-  "eip155:324",
-  "eip155:42161",
-  "eip155:42220",
-  "ton:-239",
-  "cosmos:cosmoshub-4",
-  "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-  "polkadot:91b171bb158e2d3848fa23a9f1c25182",
-  "mvx:1",
-  "tron:0x2b6653dc",
-  "tezos:mainnet",
-  "kadena:mainnet01",
-  "bip122:000000000019d6689c085ae165831e93",
-  "sui:mainnet",
-  "stacks:1",
-];
-
-export const DEFAULT_TEST_CHAINS = [
-  // testnets
-  "eip155:5",
-  "eip155:11155111",
-  "eip155:280",
-  "eip155:420",
-  "eip155:80001",
-  "eip155:421611",
-  "eip155:44787",
-  "ton:-3",
-  "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
-  "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
-  "polkadot:e143f23803ac50e8f6f8e62695d1ce9e",
-  "near:testnet",
-  "mvx:D",
-  "tron:0xcd8690dc",
-  "tezos:testnet",
-  "kadena:testnet04",
-  "bip122:000000000933ea01ad0ee984209779ba",
-  "sui:testnet",
-  "sui:devnet",
-  "stacks:2147483648",
-];
-
-export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
-
 export const DEFAULT_PROJECT_ID = process.env.NEXT_PUBLIC_PROJECT_ID;
 export const DEFAULT_RELAY_URL = process.env.NEXT_PUBLIC_RELAY_URL;
 
