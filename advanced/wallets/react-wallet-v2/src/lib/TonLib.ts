@@ -73,16 +73,6 @@ export default class TonLib {
     return this.keypair.secretKey.toString('hex')
   }
 
-  public async signMessage(
-    params: TonLib.SignMessage['params']
-  ): Promise<TonLib.SignMessage['result']> {
-    const signature = sign(Buffer.from(params.message), this.keypair.secretKey)
-    return {
-      signature: signature.toString('base64'),
-      publicKey: this.keypair.publicKey.toString('base64')
-    }
-  }
-
   public async sendMessage(
     params: TonLib.SendMessage['params'],
     chainId: string
