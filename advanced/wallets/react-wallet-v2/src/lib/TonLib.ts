@@ -8,7 +8,8 @@ import {
   Message,
   beginCell,
   storeMessage,
-  storeStateInit, loadStateInit
+  storeStateInit,
+  loadStateInit
 } from '@ton/ton'
 import { TON_MAINNET_CHAINS, TON_TEST_CHAINS } from '@/data/TonData'
 import { sha256 } from '@noble/hashes/sha2'
@@ -39,6 +40,12 @@ export async function retry<T>(
 interface IInitArguments {
   secretKey?: string
   seed?: string
+}
+
+export class TonValidationError extends Error {
+  constructor(message: string) {
+    super(`TonValidationError: ${message}`)
+  }
 }
 
 /**
@@ -89,6 +96,108 @@ export default class TonLib {
     return this.keypair.secretKey.toString('hex')
   }
 
+  public validateSendMessage(params: unknown) {
+    if (typeof params !== 'object' || params === null) {
+      throw new TonValidationError('Invalid params');
+    }
+
+    if ('from' in params) {
+      if (typeof params.from !== 'string') {
+        throw new TonValidationError('From must be a string.')
+      }
+      let from: Address
+      try {
+        from = Address.parse(params.from)
+      } catch (e) {
+        throw new TonValidationError('Invalid from address.')
+      }
+      if (!this.wallet.address.equals(from)) {
+        throw new TonValidationError('From address does not match.')
+      }
+    }
+
+    if ('valid_until' in params) {
+      if (typeof params.valid_until !== 'number') {
+        throw new TonValidationError('Valid until must be a number.')
+      }
+
+      if (params.valid_until < (Date.now() / 1000)) {
+        throw new TonValidationError('Message is expired.')
+      }
+    }
+
+    if (!('messages' in params)) {
+      throw new TonValidationError('Messages are absent.')
+    }
+
+    if (!Array.isArray(params.messages)) {
+      throw new TonValidationError('Messages must be an array.')
+    }
+
+    if (params.messages.length === 0) {
+      throw new TonValidationError('Messages are empty.')
+    }
+
+    for (const message of params.messages as unknown[]) {
+      if (typeof message !== 'object' || message === null) {
+        throw new TonValidationError('Messages must be an object.')
+      }
+
+      if (!('address' in message)) {
+        throw new TonValidationError('Address is absent.')
+      }
+      if (typeof message.address !== 'string') {
+        throw new TonValidationError('Address must be a string.')
+      }
+
+      if (Address.isRaw(message.address)) {
+        throw new TonValidationError('Address is in HEX format.')
+      }
+      if (!Address.isFriendly(message.address)) {
+        throw new TonValidationError('Address is invalid.')
+      }
+      if (!('amount' in message)) {
+        throw new TonValidationError('Amount is absent.')
+      }
+      if (typeof message.amount === 'number') {
+        throw new TonValidationError('Amount is a number.')
+      }
+      if (typeof message.amount !== 'string') {
+        throw new TonValidationError('Amount is invalid.')
+      }
+
+      try {
+        BigInt(message.amount)
+      } catch (e) {
+        throw new TonValidationError('Amount is invalid.')
+      }
+      // TODO: should include validation for sufficient amount
+
+      if ('payload' in message) {
+        if (typeof message.payload !== 'string') {
+          throw new TonValidationError('Payload is invalid.')
+        }
+        try {
+          Cell.fromBase64(message.payload)
+        } catch (e) {
+          throw new TonValidationError('Payload is invalid.')
+        }
+      }
+
+      if ('stateInit' in message) {
+        if (typeof message.stateInit !== 'string') {
+          throw new TonValidationError('StateInit is invalid.')
+        }
+
+        try {
+          Cell.fromBase64(message.stateInit)
+        } catch (e) {
+          throw new TonValidationError('StateInit is invalid.')
+        }
+      }
+    }
+  }
+
   public async sendMessage(
     params: TonLib.SendMessage['params'],
     chainId: string
@@ -96,20 +205,25 @@ export default class TonLib {
     const client = this.getTonClient(chainId)
     const walletContract = client.open(this.wallet)
     const seqno = await retry(() => walletContract.getSeqno())
+
+    this.validateSendMessage(params)
+
     const messages = (params.messages || []).map(m => {
       const amountBigInt = typeof m.amount === 'string' ? BigInt(m.amount) : BigInt(m.amount)
       return internal({
         to: Address.parse(m.address),
+        bounce: Address.parseFriendly(m.address).isBounceable,
         value: amountBigInt,
         body: m.payload ? Cell.fromBase64(m.payload) : 'Test transfer from ton WalletConnect',
-        init: m.stateInit ? loadStateInit(Cell.fromBase64(m.stateInit).beginParse()) : undefined,
+        init: m.stateInit ? loadStateInit(Cell.fromBase64(m.stateInit).beginParse()) : undefined
       })
     })
 
     const transfer = walletContract.createTransfer({
       seqno,
       secretKey: this.keypair.secretKey,
-      messages
+      messages,
+      timeout: params.valid_until,
     })
 
     await retry(() => walletContract.send(transfer))
@@ -390,7 +504,7 @@ export namespace TonLib {
       from?: string
       messages: Array<{
         address: string
-        amount: number | string
+        amount: string
         payload?: string
         stateInit?: string
         extra_currency?: Record<string, string | number>
