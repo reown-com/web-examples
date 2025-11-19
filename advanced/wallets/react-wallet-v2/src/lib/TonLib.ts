@@ -8,7 +8,7 @@ import {
   Message,
   beginCell,
   storeMessage,
-  storeStateInit
+  storeStateInit, loadStateInit
 } from '@ton/ton'
 import { TON_MAINNET_CHAINS, TON_TEST_CHAINS } from '@/data/TonData'
 import { sha256 } from '@noble/hashes/sha2'
@@ -102,6 +102,7 @@ export default class TonLib {
         to: Address.parse(m.address),
         value: amountBigInt,
         body: m.payload ? Cell.fromBase64(m.payload) : 'Test transfer from ton WalletConnect',
+        init: m.stateInit ? loadStateInit(Cell.fromBase64(m.stateInit).beginParse()) : undefined,
       })
     })
 
