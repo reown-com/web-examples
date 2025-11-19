@@ -4,10 +4,8 @@ import {
   TonClient,
   internal,
   Address,
-  Transaction,
   Cell,
   Message,
-  address,
   beginCell,
   storeMessage,
   storeStateInit
@@ -16,6 +14,24 @@ import { TON_MAINNET_CHAINS, TON_TEST_CHAINS } from '@/data/TonData'
 import { sha256 } from '@noble/hashes/sha2'
 import { Buffer } from 'buffer'
 import crc32 from 'crc-32'
+
+export async function retry<T>(
+  fn: () => Promise<T>,
+  { retries = 3, delay = 1200 }: { retries?: number; delay?: number } = {}
+): Promise<T> {
+  let lastError: Error | undefined
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn()
+    } catch (e) {
+      if (e instanceof Error) {
+        lastError = e
+      }
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+  throw lastError ?? new Error('Retry attempts exhausted')
+}
 
 /**
  * Types
@@ -79,7 +95,7 @@ export default class TonLib {
   ): Promise<TonLib.SendMessage['result']> {
     const client = this.getTonClient(chainId)
     const walletContract = client.open(this.wallet)
-    const seqno = await walletContract.getSeqno()
+    const seqno = await retry(() => walletContract.getSeqno())
     const messages = (params.messages || []).map(m => {
       const amountBigInt = typeof m.amount === 'string' ? BigInt(m.amount) : BigInt(m.amount)
       return internal({
@@ -95,7 +111,7 @@ export default class TonLib {
       messages
     })
 
-    await walletContract.send(transfer)
+    await retry(() => walletContract.send(transfer))
 
     // Build external-in message for the result
     const message: Message = {
@@ -288,17 +304,15 @@ export default class TonLib {
     return Buffer.from(encoded)
   }
 
-  public async signData(params: TonLib.SignData['params'], domain: string): Promise<TonLib.SignData['result']> {
+  public async signData(
+    params: TonLib.SignData['params'],
+    domain: string
+  ): Promise<TonLib.SignData['result']> {
     const payload: TonLib.SignData['params'] = params
 
     const timestamp = Math.floor(Date.now() / 1000)
 
-    const dataToSign = this.getToSign(
-      params,
-      this.wallet.address,
-      domain,
-      timestamp
-    )
+    const dataToSign = this.getToSign(params, this.wallet.address, domain, timestamp)
 
     const signature = sign(dataToSign, this.keypair.secretKey)
     const addressStr = await this.getAddressRaw()
