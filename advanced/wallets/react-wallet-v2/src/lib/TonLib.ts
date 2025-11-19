@@ -101,7 +101,7 @@ export default class TonLib {
       return internal({
         to: Address.parse(m.address),
         value: amountBigInt,
-        body: m.payload ?? 'Test transfer from ton WalletConnect'
+        body: m.payload ? Cell.fromBase64(m.payload) : 'Test transfer from ton WalletConnect',
       })
     })
 
