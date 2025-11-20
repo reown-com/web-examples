@@ -98,7 +98,7 @@ export default class TonLib {
 
   public validateSendMessage(params: unknown) {
     if (typeof params !== 'object' || params === null) {
-      throw new TonValidationError('Invalid params');
+      throw new TonValidationError('Invalid params')
     }
 
     if ('from' in params) {
@@ -121,7 +121,7 @@ export default class TonLib {
         throw new TonValidationError('Valid until must be a number.')
       }
 
-      if (params.valid_until < (Date.now() / 1000)) {
+      if (params.valid_until < Date.now() / 1000) {
         throw new TonValidationError('Message is expired.')
       }
     }
@@ -223,7 +223,7 @@ export default class TonLib {
       seqno,
       secretKey: this.keypair.secretKey,
       messages,
-      timeout: params.valid_until,
+      timeout: params.valid_until
     })
 
     await retry(() => walletContract.send(transfer))
@@ -421,7 +421,8 @@ export default class TonLib {
 
   public async signData(
     params: TonLib.SignData['params'],
-    domain: string
+    domain: string,
+    chainId: string
   ): Promise<TonLib.SignData['result']> {
     const payload: TonLib.SignData['params'] = params
 
@@ -438,7 +439,7 @@ export default class TonLib {
       publicKey: this.getPublicKey(),
       timestamp,
       domain,
-      payload
+      payload: { ...payload, network: chainId.split(":")[1] }
     }
 
     try {

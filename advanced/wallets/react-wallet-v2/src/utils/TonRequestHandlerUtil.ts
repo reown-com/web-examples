@@ -44,7 +44,7 @@ export async function approveTonRequest(
       try {
         const payload = Array.isArray(request.params) ? request.params[0] : request.params
         const domain = new URL(session.peer.metadata.url).hostname
-        const result = await wallet.signData(payload, domain)
+        const result = await wallet.signData(payload, domain, chainId)
         return formatJsonRpcResult(id, result)
       } catch (error: any) {
         console.error(error)
