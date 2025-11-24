@@ -444,7 +444,6 @@ export default function SessionProposalModal() {
 
         const signedAuths = await signAuthenticationMessages(authenticationMessagesToSign)
 
-        console.log('PROPOSAL', proposal);
         await walletkit.approveSession({
           id: proposal.id,
           namespaces,

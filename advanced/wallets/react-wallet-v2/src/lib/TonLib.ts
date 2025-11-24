@@ -171,7 +171,6 @@ export default class TonLib {
       } catch (e) {
         throw new TonValidationError('Amount is invalid.')
       }
-      // TODO: should include validation for sufficient amount
 
       if ('payload' in message) {
         if (typeof message.payload !== 'string') {
@@ -198,17 +197,9 @@ export default class TonLib {
     }
   }
 
-  public async sendMessage(
-    params: TonLib.SendMessage['params'],
-    chainId: string
-  ): Promise<TonLib.SendMessage['result']> {
-    const client = this.getTonClient(chainId)
-    const walletContract = client.open(this.wallet)
-    const seqno = await retry(() => walletContract.getSeqno())
-
+  private parseTonMessages(params: TonLib.SendMessage['params']) {
     this.validateSendMessage(params)
-
-    const messages = (params.messages || []).map(m => {
+    return params.messages.map(m => {
       const amountBigInt = typeof m.amount === 'string' ? BigInt(m.amount) : BigInt(m.amount)
       return internal({
         to: Address.parse(m.address),
@@ -218,6 +209,18 @@ export default class TonLib {
         init: m.stateInit ? loadStateInit(Cell.fromBase64(m.stateInit).beginParse()) : undefined
       })
     })
+  }
+
+  public async sendMessage(
+    params: TonLib.SendMessage['params'],
+    chainId: string
+  ): Promise<TonLib.SendMessage['result']> {
+    const client = this.getTonClient(chainId)
+    const walletContract = client.open(this.wallet)
+    const seqno = await retry(() => walletContract.getSeqno())
+
+
+    const messages = this.parseTonMessages(params)
 
     const transfer = walletContract.createTransfer({
       seqno,
