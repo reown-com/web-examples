@@ -61,7 +61,7 @@ import { stacksAddresses, stacksWallet } from '@/utils/StacksWalletUtil'
 import { getWallet as getSuiWallet } from '@/utils/SuiWalletUtil'
 import StacksLib from '@/lib/StacksLib'
 import { TON_CHAINS, TON_SIGNING_METHODS } from '@/data/TonData'
-import { tonAddresses } from '@/utils/TonWalletUtil'
+import { getWallet, tonAddresses, tonWallets } from '@/utils/TonWalletUtil'
 import { prepareAuthenticationMessages, signAuthenticationMessages } from '@/utils/AuthUtil'
 import { AuthenticationMessage } from '@/types/auth'
 
@@ -432,6 +432,12 @@ export default function SessionProposalModal() {
             accounts.mainnet,
             accounts.testnet
           ])
+        }
+
+        if (namespaces.ton) {
+          const tonWallet = await getWallet();
+          sessionProperties.ton_getPublicKey = tonWallet.getPublicKey();
+          sessionProperties.ton_getStateInit = tonWallet.getStateInit();
         }
 
         console.log('sessionProperties', sessionProperties)
