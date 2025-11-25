@@ -32,6 +32,7 @@ import SessionGetSuiGetAcccountsModal from '@/views/SessionGetSuiGetAcccountsMod
 import SessionTonSendMessageModal from '@/views/SessionSignTonTransactionModal'
 import SessionTonSignDataModal from '@/views/SessionSignTonPersonalMessageModal'
 import KycVerificationModal from '@/views/KycVerificationModal'
+import WalletConnectPayPromptModal from '@/views/WalletConnectPayPromptModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -104,6 +105,8 @@ export default function Modal() {
         return <SessionTonSignDataModal />
       case 'KycVerificationModal':
         return <KycVerificationModal />
+      case 'WalletConnectPayPromptModal':
+        return <WalletConnectPayPromptModal />
       default:
         return null
     }

@@ -45,6 +45,7 @@ interface State {
     | 'SessionTonSendMessageModal'
     | 'SessionTonSignDataModal'
     | 'KycVerificationModal'
+    | 'WalletConnectPayPromptModal'
   data?: ModalData
 }
 

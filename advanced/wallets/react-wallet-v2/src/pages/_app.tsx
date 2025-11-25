@@ -6,6 +6,7 @@ import Layout from '@/components/Layout'
 import Modal from '@/components/Modal'
 import useInitialization from '@/hooks/useInitialization'
 import useWalletConnectEventsManager from '@/hooks/useWalletConnectEventsManager'
+import useWalletConnectPayPrompt from '@/hooks/useWalletConnectPayPrompt'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import { RELAYER_EVENTS } from '@walletconnect/core'
 import { AppProps } from 'next/app'
@@ -18,6 +19,10 @@ export default function App({ Component, pageProps }: AppProps) {
 
   // Step 2 - Once initialized, set up wallet connect event manager
   useWalletConnectEventsManager(initialized)
+
+  // Step 3 - Show WalletConnect Pay prompt if not enabled
+  useWalletConnectPayPrompt(initialized)
+
   useEffect(() => {
     if (!initialized) return
     walletkit?.core.relayer.on(RELAYER_EVENTS.connect, () => {

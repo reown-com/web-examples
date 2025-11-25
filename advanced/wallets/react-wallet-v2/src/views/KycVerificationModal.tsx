@@ -244,7 +244,7 @@ export default function KycVerificationModal() {
   return (
     <RequestModalContainer title="KYC Verification">
       <div style={{ padding: '10px' }}>
-        <Row>
+        {/* <Row>
           <Col>
             <Text css={{ marginBottom: '$5' }}>
               To enable WalletConnect Pay, please complete identity verification.
@@ -268,12 +268,12 @@ export default function KycVerificationModal() {
           </Col>
         </Row>
 
-        <Divider css={{ marginBottom: '$10' }} />
+        <Divider css={{ marginBottom: '$10' }} /> */}
 
         {accessToken && (
           <div
             style={{
-              maxHeight: '75vh',
+              // maxHeight: '75vh',
               overflow: 'auto',
               borderRadius: '8px',
               backgroundColor: '#1a1a1a'
