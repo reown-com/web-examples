@@ -273,10 +273,12 @@ export default function KycVerificationModal() {
         {accessToken && (
           <div
             style={{
-              // maxHeight: '75vh',
               overflow: 'auto',
               borderRadius: '8px',
-              backgroundColor: '#1a1a1a'
+              backgroundColor: '#1a1a1a',
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain',
+              touchAction: 'pan-y'
             }}
           >
             <SumsubWebSdk

@@ -16,7 +16,7 @@ import SessionSendCallsModal from '@/views/SessionSendCallsModal'
 import SessionCheckoutModal from '@/views/SessionCheckoutModal'
 import { Modal as NextModal } from '@nextui-org/react'
 import { useSnapshot } from 'valtio'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import LoadingModal from '@/views/LoadingModal'
 import SessionAuthenticateModal from '@/views/SessionAuthenticateModal'
 import SessionSignBip122Modal from '@/views/SessionSignBip122Modal'
@@ -113,15 +113,35 @@ export default function Modal() {
   }, [view])
 
   // Use larger width for KYC modal
-  const isLargeModal = view === 'KycVerificationModal'
+  const isKycModal = view === 'KycVerificationModal'
+
+  // Detect mobile device
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    // Check on mount
+    checkMobile()
+
+    // Listen for resize
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // KYC modal is fullscreen on mobile
+  const shouldBeFullscreen = isKycModal && isMobile
 
   return (
     <NextModal
       blur
       onClose={onClose}
       open={open}
-      width={isLargeModal ? '700px' : undefined}
-      style={{ border: '1px solid rgba(139, 139, 139, 0.4)' }}
+      width={isKycModal && !isMobile ? '700px' : undefined}
+      fullScreen={shouldBeFullscreen}
+      style={{ border: shouldBeFullscreen ? 'none' : '1px solid rgba(139, 139, 139, 0.4)' }}
     >
       {componentView}
     </NextModal>
