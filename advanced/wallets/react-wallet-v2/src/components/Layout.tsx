@@ -74,7 +74,11 @@ export default function Layout({ children, initialized }: Props) {
                 backgroundColor: '#111111',
                 zIndex: 200,
                 bottom: 0,
-                left: 0
+                left: 0,
+                // Mobile fixes
+                paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
               }}
             >
               <Navigation />

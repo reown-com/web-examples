@@ -4,6 +4,19 @@
   scrollbar-width: none; 
 }
 
+/* Ensure proper mobile viewport */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix for iOS safe areas */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 ::-webkit-scrollbar {
   display: none;
 }
@@ -12,7 +25,9 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .container {
@@ -54,10 +69,19 @@
 
 .navLink {
   transition: ease-in-out .2s opacity;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  user-select: none;
+  padding: 10px;
 }
 
 .navLink:hover {
   opacity: 0.6;
+}
+
+.navLink:active {
+  opacity: 0.5;
 }
 
 select {
