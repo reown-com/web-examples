@@ -15,6 +15,12 @@ const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
 const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
 const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
+const WALLETCONNECT_PAY_ENABLED_KEY = 'WALLETCONNECT_PAY'
+const KYC_STATUS_KEY = 'KYC_STATUS'
+const SELECTED_KYC_ADDRESS_KEY = 'SELECTED_KYC_ADDRESS'
+
+export type KycStatus = 'none' | 'pending' | 'approved' | 'rejected'
+export type KycStatusByAddress = Record<string, KycStatus>
 
 /**
  * Types
@@ -49,6 +55,10 @@ interface State {
   biconomySmartAccountEnabled: boolean
   moduleManagementEnabled: boolean
   chainAbstractionEnabled: boolean
+  walletConnectPayEnabled: boolean
+  kycStatus: KycStatus
+  kycStatusByAddress: KycStatusByAddress
+  selectedKycAddress: string
 }
 
 /**
@@ -104,7 +114,21 @@ const state = proxy<State>({
       ? Boolean(localStorage.getItem(MODULE_MANAGEMENT_ENABLED_KEY))
       : false,
   chainAbstractionEnabled:
-    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false
+    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false,
+  walletConnectPayEnabled:
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(WALLETCONNECT_PAY_ENABLED_KEY))
+      : false,
+  kycStatus:
+    typeof localStorage !== 'undefined'
+      ? (localStorage.getItem(KYC_STATUS_KEY) as KycStatus) || 'none'
+      : 'none',
+  kycStatusByAddress:
+    typeof localStorage !== 'undefined'
+      ? JSON.parse(localStorage.getItem('KYC_STATUS_BY_ADDRESS') || '{}')
+      : {},
+  selectedKycAddress:
+    typeof localStorage !== 'undefined' ? localStorage.getItem(SELECTED_KYC_ADDRESS_KEY) || '' : ''
 })
 
 /**
@@ -281,6 +305,46 @@ const SettingsStore = {
       localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
       localStorage.removeItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY)
     }
+  },
+
+  toggleWalletConnectPayEnabled() {
+    state.walletConnectPayEnabled = !state.walletConnectPayEnabled
+    if (state.walletConnectPayEnabled) {
+      localStorage.setItem(WALLETCONNECT_PAY_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(WALLETCONNECT_PAY_ENABLED_KEY)
+    }
+  },
+
+  setWalletConnectPayEnabled(enabled: boolean) {
+    state.walletConnectPayEnabled = enabled
+    if (enabled) {
+      localStorage.setItem(WALLETCONNECT_PAY_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(WALLETCONNECT_PAY_ENABLED_KEY)
+    }
+  },
+
+  setKycStatus(status: KycStatus) {
+    state.kycStatus = status
+    localStorage.setItem(KYC_STATUS_KEY, status)
+  },
+
+  setKycStatusForAddress(address: string, status: KycStatus) {
+    state.kycStatusByAddress = {
+      ...state.kycStatusByAddress,
+      [address.toLowerCase()]: status
+    }
+    localStorage.setItem('KYC_STATUS_BY_ADDRESS', JSON.stringify(state.kycStatusByAddress))
+  },
+
+  getKycStatusForAddress(address: string): KycStatus {
+    return state.kycStatusByAddress[address.toLowerCase()] || 'none'
+  },
+
+  setSelectedKycAddress(address: string) {
+    state.selectedKycAddress = address
+    localStorage.setItem(SELECTED_KYC_ADDRESS_KEY, address)
   }
 }
 

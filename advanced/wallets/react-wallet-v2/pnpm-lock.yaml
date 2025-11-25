@@ -107,6 +107,9 @@ importers:
       '@stacks/wallet-sdk':
         specifier: ^7.0.6
         version: 7.2.0
+      '@sumsub/websdk-react':
+        specifier: ^2.5.0
+        version: 2.5.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@taquito/local-forging':
         specifier: ^23.0.1
         version: 23.0.1
@@ -1853,6 +1856,12 @@ packages:
 
   '@substrate/ss58-registry@1.51.0':
     resolution: {integrity: sha512-TWDurLiPxndFgKjVavCniytBIw+t4ViOi7TYp9h/D0NMmkEc9klFTo+827eyEJ0lELpqO207Ey7uGxUa+BS1jQ==}
+
+  '@sumsub/websdk-react@2.5.0':
+    resolution: {integrity: sha512-+A+CVGKH9b6ZkkSUWRu0JTxi3R107qL8Xli9L/VBUyFXKOKMcsuvacr3MyAKJ74ShU6MPNpSB5IXa28VGDUpIA==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
@@ -7730,6 +7739,11 @@ snapshots:
       react: 18.2.0
 
   '@substrate/ss58-registry@1.51.0': {}
+
+  '@sumsub/websdk-react@2.5.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
 
   '@swc/helpers@0.5.15':
     dependencies:

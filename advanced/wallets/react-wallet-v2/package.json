@@ -43,6 +43,7 @@
     "@stacks/network": "^7.2.0",
     "@stacks/transactions": "^7.2.0",
     "@stacks/wallet-sdk": "^7.0.6",
+    "@sumsub/websdk-react": "^2.5.0",
     "@taquito/local-forging": "^23.0.1",
     "@taquito/signer": "^15.1.0",
     "@taquito/taquito": "^15.1.0",

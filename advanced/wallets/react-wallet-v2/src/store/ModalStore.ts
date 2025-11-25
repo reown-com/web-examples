@@ -44,6 +44,7 @@ interface State {
     | 'SessionSignStacksMessageModal'
     | 'SessionTonSendMessageModal'
     | 'SessionTonSignDataModal'
+    | 'KycVerificationModal'
   data?: ModalData
 }
 

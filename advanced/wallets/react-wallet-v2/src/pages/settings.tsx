@@ -2,16 +2,17 @@ import PageHeader from '@/components/PageHeader'
 import RelayRegionPicker from '@/components/RelayRegionPicker'
 import SettingsStore from '@/store/SettingsStore'
 import { cosmosWallets } from '@/utils/CosmosWalletUtil'
-import { eip155Wallets } from '@/utils/EIP155WalletUtil'
+import { eip155Wallets, eip155Addresses } from '@/utils/EIP155WalletUtil'
 import { solanaWallets } from '@/utils/SolanaWalletUtil'
 import { multiversxWallets } from '@/utils/MultiversxWalletUtil'
 import { tronWallets } from '@/utils/TronWalletUtil'
 import { kadenaWallets } from '@/utils/KadenaWalletUtil'
-import { Card, Col, Divider, Row, Switch, Text } from '@nextui-org/react'
-import { Fragment } from 'react'
+import { Button, Card, Col, Divider, Loading, Row, Switch, Text } from '@nextui-org/react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import packageJSON from '../../package.json'
 import { tezosWallets } from '@/utils/TezosWalletUtil'
+import useKyc from '@/hooks/useKyc'
 
 export default function SettingsPage() {
   const {
@@ -29,8 +30,88 @@ export default function SettingsPage() {
     safeSmartAccountEnabled,
     biconomySmartAccountEnabled,
     moduleManagementEnabled,
-    chainAbstractionEnabled
+    chainAbstractionEnabled,
+    walletConnectPayEnabled,
+    selectedKycAddress
   } = useSnapshot(SettingsStore.state)
+
+  const {
+    checkKycStatus,
+    initiateKyc,
+    isLoading: isKycLoading,
+    kycStatus,
+    getKycStatusForAddress
+  } = useKyc()
+  const [isCheckingKyc, setIsCheckingKyc] = useState(false)
+
+  // Get all available EIP155 addresses
+  const availableAddresses = useMemo(() => {
+    return eip155Addresses || []
+  }, [])
+
+  // Initialize selected KYC address if not set
+  useEffect(() => {
+    if (!selectedKycAddress && availableAddresses.length > 0) {
+      SettingsStore.setSelectedKycAddress(availableAddresses[0])
+    }
+  }, [selectedKycAddress, availableAddresses])
+
+  // Refresh KYC status when address changes or WalletConnect Pay is enabled
+  useEffect(() => {
+    if (walletConnectPayEnabled && selectedKycAddress) {
+      checkKycStatus(selectedKycAddress)
+    }
+  }, [selectedKycAddress, walletConnectPayEnabled, checkKycStatus])
+
+  // Format address for display (truncate)
+  const formatAddress = (address: string) => {
+    if (!address) return ''
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+
+  // Check KYC status when WalletConnect Pay is enabled
+  const handleWalletConnectPayToggle = useCallback(async () => {
+    const newState = !walletConnectPayEnabled
+
+    if (newState) {
+      // When enabling, first check KYC status
+      setIsCheckingKyc(true)
+      try {
+        const status = await checkKycStatus()
+        if (status !== 'approved') {
+          // KYC required, open modal
+          initiateKyc()
+        }
+        // Enable the feature regardless (user can complete KYC later)
+        SettingsStore.setWalletConnectPayEnabled(true)
+      } catch (error) {
+        console.error('Error checking KYC status:', error)
+        // Still enable the feature, KYC can be completed later
+        SettingsStore.setWalletConnectPayEnabled(true)
+      } finally {
+        setIsCheckingKyc(false)
+      }
+    } else {
+      // Simply disable
+      SettingsStore.setWalletConnectPayEnabled(false)
+    }
+  }, [walletConnectPayEnabled, checkKycStatus, initiateKyc])
+
+  // Get KYC status display info
+  const getKycStatusInfo = () => {
+    switch (kycStatus) {
+      case 'approved':
+        return { text: 'Verified ✅', color: '$success' }
+      case 'pending':
+        return { text: 'Pending Review ⏳', color: '$warning' }
+      case 'rejected':
+        return { text: 'Rejected ❌', color: '$error' }
+      default:
+        return { text: 'Not Verified', color: '$gray400' }
+    }
+  }
+
+  const kycStatusInfo = getKycStatusInfo()
 
   return (
     <Fragment>
@@ -78,6 +159,102 @@ export default function SettingsPage() {
             </>
           ) : (
             <Text color="$gray400">This feature requires testnets</Text>
+          )}
+        </Col>
+      </Row>
+
+      <Divider y={2} />
+
+      <Row>
+        <Col>
+          <Text h4 css={{ marginBottom: '$5' }}>
+            WalletConnect Pay
+          </Text>
+          <Row justify="space-between" align="center">
+            <Switch
+              checked={walletConnectPayEnabled}
+              onChange={handleWalletConnectPayToggle}
+              disabled={isCheckingKyc}
+              data-testid="settings-toggle-walletconnect-pay"
+            />
+            <Text>
+              {isCheckingKyc ? <Loading size="xs" css={{ marginRight: '$2' }} /> : null}
+              {walletConnectPayEnabled ? 'Enabled' : 'Disabled'}
+            </Text>
+          </Row>
+
+          {walletConnectPayEnabled && (
+            <>
+              <Text css={{ marginTop: '$10', marginBottom: '$5' }} color="$gray400" size="$sm">
+                Select Account for KYC:
+              </Text>
+              <Row css={{ gap: '$4', flexWrap: 'wrap' }}>
+                {availableAddresses.map((addr, index) => {
+                  const status = getKycStatusForAddress(addr)
+                  const isSelected = (selectedKycAddress || eip155Address) === addr
+                  const statusIcon =
+                    status === 'approved'
+                      ? ' ✅'
+                      : status === 'pending'
+                      ? ' ⏳'
+                      : status === 'rejected'
+                      ? ' ❌'
+                      : ''
+                  return (
+                    <Button
+                      key={addr}
+                      auto
+                      size="sm"
+                      flat={!isSelected}
+                      color={isSelected ? 'primary' : 'default'}
+                      onClick={() => SettingsStore.setSelectedKycAddress(addr)}
+                      css={{
+                        fontFamily: '$mono',
+                        fontSize: '$xs',
+                        border: isSelected ? '2px solid $primary' : '1px solid $accents3'
+                      }}
+                    >
+                      Account {index + 1}: {formatAddress(addr)}
+                      {statusIcon}
+                    </Button>
+                  )
+                })}
+              </Row>
+
+              <Row justify="space-between" align="center" css={{ marginTop: '$10' }}>
+                <Text color="$gray400">KYC Status:</Text>
+                <Text color={kycStatusInfo.color}>{kycStatusInfo.text}</Text>
+              </Row>
+
+              {kycStatus !== 'approved' && (
+                <Row css={{ marginTop: '$5' }}>
+                  <Button
+                    auto
+                    size="sm"
+                    color={kycStatus === 'rejected' ? 'error' : 'primary'}
+                    onClick={initiateKyc}
+                    disabled={isKycLoading}
+                  >
+                    {kycStatus === 'rejected' ? 'Retry Verification' : 'Complete Verification'}
+                  </Button>
+                </Row>
+              )}
+
+              {kycStatus === 'pending' && (
+                <Row css={{ marginTop: '$5' }}>
+                  <Button
+                    auto
+                    size="sm"
+                    flat
+                    color="warning"
+                    onClick={() => checkKycStatus()}
+                    disabled={isKycLoading}
+                  >
+                    {isKycLoading ? <Loading size="xs" /> : 'Refresh Status'}
+                  </Button>
+                </Row>
+              )}
+            </>
           )}
         </Col>
       </Row>

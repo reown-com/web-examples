@@ -31,6 +31,7 @@ import SessionSignStacksMessageModal from '@/views/SessionSignStacksMessageModal
 import SessionGetSuiGetAcccountsModal from '@/views/SessionGetSuiGetAcccountsModal'
 import SessionTonSendMessageModal from '@/views/SessionSignTonTransactionModal'
 import SessionTonSignDataModal from '@/views/SessionSignTonPersonalMessageModal'
+import KycVerificationModal from '@/views/KycVerificationModal'
 
 export default function Modal() {
   const { open, view } = useSnapshot(ModalStore.state)
@@ -101,16 +102,22 @@ export default function Modal() {
         return <SessionTonSendMessageModal />
       case 'SessionTonSignDataModal':
         return <SessionTonSignDataModal />
+      case 'KycVerificationModal':
+        return <KycVerificationModal />
       default:
         return null
     }
   }, [view])
+
+  // Use larger width for KYC modal
+  const isLargeModal = view === 'KycVerificationModal'
 
   return (
     <NextModal
       blur
       onClose={onClose}
       open={open}
+      width={isLargeModal ? '700px' : undefined}
       style={{ border: '1px solid rgba(139, 139, 139, 0.4)' }}
     >
       {componentView}
