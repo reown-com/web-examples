@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@reown/appkit": "1.8.2",
-    "next": "15.5.2",
+    "next": "15.5.7",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hot-toast": "^2.6.0",
