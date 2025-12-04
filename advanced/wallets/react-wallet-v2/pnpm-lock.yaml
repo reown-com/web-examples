@@ -163,7 +163,7 @@ importers:
         version: 5.3.0(@zerodev/sdk@5.3.1(permissionless@0.1.43(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)))(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)))(permissionless@0.1.43(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76)))(viem@2.17.8(bufferutil@4.0.9)(typescript@5.2.2)(utf-8-validate@5.0.10)(zod@3.25.76))
       axios:
         specifier: ^1.12.2
-        version: 1.12.2
+        version: 1.13.1
       bip32:
         specifier: ^4.0.0
         version: 4.0.0
@@ -2446,8 +2446,8 @@ packages:
   axios@1.11.0:
     resolution: {integrity: sha512-1Lx3WLFQWm3ooKDYZD1eXmoGO9fxYQjrycfHFC8P0sCfQVXyROp0p9PFWBehewBOdCwHc+f/b8I0fMto5eSfwA==}
 
-  axios@1.12.2:
-    resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
+  axios@1.13.1:
+    resolution: {integrity: sha512-hU4EGxxt+j7TQijx1oYdAjw4xuIp1wRQSsbMFwSthCWeBQur1eF+qJ5iQ5sN3Tw8YRzQNKb8jszgBdMDVqwJcw==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -7895,7 +7895,7 @@ snapshots:
     dependencies:
       '@ton/core': 0.61.0(@ton/crypto@3.3.0)
       '@ton/crypto': 3.3.0
-      axios: 1.12.2
+      axios: 1.13.1
       dataloader: 2.2.3
       symbol.inspect: 1.0.1
       teslabot: 1.5.0
@@ -9009,7 +9009,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  axios@1.12.2:
+  axios@1.13.1:
     dependencies:
       follow-redirects: 1.15.11
       form-data: 4.0.4
