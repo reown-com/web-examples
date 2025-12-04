@@ -1,8 +1,0 @@
-{
-  "name": "demo-chat-agent",
-  "compatibility_date": "2025-01-17",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
-  "pages_build_output_dir": ".vercel/output/static"
-}

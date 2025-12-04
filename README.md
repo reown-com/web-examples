@@ -26,4 +26,3 @@ Catalogue of various wallet and dapp examples implementing WalletConnect's **SDK
 - [React dApp v2 with Cosmos Provider](https://github.com/WalletConnect/web-examples/tree/main/advanced/dapps/react-dapp-v2-cosmos-provider)
 - [Chain Abstraction Demo](https://github.com/WalletConnect/web-examples/tree/main/advanced/dapps/chain-abstraction-demo)
 - [Smart Sessions Demo](https://github.com/WalletConnect/web-examples/tree/main/advanced/dapps/smart-sessions-demo)
-- [Chat Demo Agent](https://github.com/WalletConnect/web-examples/tree/main/advanced/dapps/chat-demo-agent)
