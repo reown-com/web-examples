@@ -7,13 +7,14 @@ import {
 } from '@/utils/SmartAccountUtil'
 import { Verify, SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
+import { styledToast } from '@/utils/HelperUtil'
 
 const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
 const CA_ENABLED_KEY = 'CHAIN_ABSTRACTION'
-const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
-const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
-const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
-const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
+export const SMART_ACCOUNTS_ENABLED_KEY = 'SMART_ACCOUNTS'
+export const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
+export const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
+export const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
 const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
 
 /**
@@ -231,13 +232,19 @@ const SettingsStore = {
 
   async toggleKernelSmartAccountsEnabled() {
     state.kernelSmartAccountEnabled = !state.kernelSmartAccountEnabled
+
     if (state.kernelSmartAccountEnabled) {
-      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
-      const { kernelSmartAccountAddress } = await createOrRestoreKernelSmartAccount(
-        eip155Wallets[eip155Addresses[0]].getPrivateKey()
-      )
-      SettingsStore.setKernelSmartAccountAddress(kernelSmartAccountAddress)
-      localStorage.setItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+      try {
+        const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+        const address = await createOrRestoreKernelSmartAccount(
+          eip155Wallets[eip155Addresses[0]].getPrivateKey()
+        )
+        SettingsStore.setKernelSmartAccountAddress(address)
+        localStorage.setItem(ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+      } catch (error) {
+        state.kernelSmartAccountEnabled = false
+        styledToast('Failed to initialize Kernel smart account', 'error')
+      }
     } else {
       removeSmartAccount(SettingsStore.state.kernelSmartAccountAddress)
       SettingsStore.setKernelSmartAccountAddress('')
@@ -249,13 +256,19 @@ const SettingsStore = {
 
   async toggleSafeSmartAccountsEnabled() {
     state.safeSmartAccountEnabled = !state.safeSmartAccountEnabled
+
     if (state.safeSmartAccountEnabled) {
-      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
-      const { safeSmartAccountAddress } = await createOrRestoreSafeSmartAccount(
-        eip155Wallets[eip155Addresses[0]].getPrivateKey()
-      )
-      SettingsStore.setSafeSmartAccountAddress(safeSmartAccountAddress)
-      localStorage.setItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+      try {
+        const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+        const address = await createOrRestoreSafeSmartAccount(
+          eip155Wallets[eip155Addresses[0]].getPrivateKey()
+        )
+        SettingsStore.setSafeSmartAccountAddress(address)
+        localStorage.setItem(SAFE_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+      } catch (error) {
+        state.safeSmartAccountEnabled = false
+        styledToast('Failed to initialize Safe smart account', 'error')
+      }
     } else {
       removeSmartAccount(SettingsStore.state.safeSmartAccountAddress)
       SettingsStore.setSafeSmartAccountAddress('')
@@ -267,18 +280,22 @@ const SettingsStore = {
 
   async toggleBiconomySmartAccountsEnabled() {
     state.biconomySmartAccountEnabled = !state.biconomySmartAccountEnabled
+
     if (state.biconomySmartAccountEnabled) {
-      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
-      const { biconomySmartAccountAddress } = await createOrRestoreBiconomySmartAccount(
-        eip155Wallets[eip155Addresses[0]].getPrivateKey()
-      )
-      SettingsStore.setBiconomySmartAccountAddress(biconomySmartAccountAddress)
-      localStorage.setItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+      try {
+        const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+        const address = await createOrRestoreBiconomySmartAccount(
+          eip155Wallets[eip155Addresses[0]].getPrivateKey()
+        )
+        SettingsStore.setBiconomySmartAccountAddress(address)
+        localStorage.setItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY, 'YES')
+      } catch (error) {
+        state.biconomySmartAccountEnabled = false
+        styledToast('Failed to initialize Biconomy smart account', 'error')
+      }
     } else {
       removeSmartAccount(SettingsStore.state.biconomySmartAccountAddress)
       SettingsStore.setBiconomySmartAccountAddress('')
-      state.moduleManagementEnabled = false
-      localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
       localStorage.removeItem(BICONOMY_SMART_ACCOUNTS_ENABLED_KEY)
     }
   }
