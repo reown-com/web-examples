@@ -1983,7 +1983,6 @@ export function JsonRpcContextProvider({
         console.log("testSignMessage", chainId, address);
         const method = DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE;
         const message = "This is a message to be signed for BIP122";
-        const shouldAddAddress = address !== getAddressFromAccount(accounts[0]);
         const result = await client!.request<{
           signature: string;
           address: string;
@@ -1994,8 +1993,8 @@ export function JsonRpcContextProvider({
             method,
             params: {
               message,
-              account: getAddressFromAccount(accounts[0]),
-              address: shouldAddAddress ? address : undefined,
+              account: address,
+              address: address,
             },
           },
         });
