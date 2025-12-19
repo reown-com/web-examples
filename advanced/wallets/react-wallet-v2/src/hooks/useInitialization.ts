@@ -17,6 +17,42 @@ import { createOrRestoreSuiWallet } from '@/utils/SuiWalletUtil'
 import { createOrRestoreStacksWallet } from '@/utils/StacksWalletUtil'
 import { createOrRestoreTonWallet } from '@/utils/TonWalletUtil'
 
+const CHAIN_STORAGE_KEYS: Record<string, string[]> = {
+  EIP155: ['EIP155_MNEMONIC_1', 'EIP155_MNEMONIC_2'],
+  Cosmos: ['COSMOS_MNEMONIC_1', 'COSMOS_MNEMONIC_2'],
+  Solana: ['SOLANA_SECRET_KEY_1', 'SOLANA_SECRET_KEY_2'],
+  Polkadot: ['POLKADOT_MNEMONIC_1', 'POLKADOT_MNEMONIC_2'],
+  Near: ['NEAR_SEED_PHRASE'],
+  MultiversX: ['MULTIVERSX_MNEMONIC_1', 'MULTIVERSX_MNEMONIC_2'],
+  Tron: ['TRON_PrivateKey_1', 'TRON_PrivateKey_2'],
+  Tezos: ['TEZOS_MNEMONIC_1', 'TEZOS_MNEMONIC_2'],
+  Kadena: ['KADENA_SECRET_KEY'],
+  Bip122: ['BITCOIN_PRIVATE_KEY_1'],
+  Sui: ['SUI_MNEMONIC_1'],
+  Stacks: ['STACKS_MNEMONIC_1'],
+  Ton: ['TON_SECRET_KEY_1', 'TON_SECRET_KEY_2']
+}
+
+function clearChainStorageKeys(chainName: string): void {
+  const keys = CHAIN_STORAGE_KEYS[chainName]
+  if (keys) {
+    keys.forEach(key => localStorage.removeItem(key))
+  }
+}
+
+function handleChainInitError(chainName: string, error: unknown): void {
+  const errorMessage = error instanceof Error ? error.message : String(error)
+  console.error(`${chainName} wallet initialization failed:`, errorMessage)
+
+  alert(
+    `${chainName} wallet failed to initialize due to an invalid key.\n\n` +
+      `The invalid key will be removed and the page will reload to create a fresh wallet.`
+  )
+
+  clearChainStorageKeys(chainName)
+  window.location.reload()
+}
+
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
   const [initializationError, setInitializationError] = useState<string | null>(null)
@@ -40,9 +76,18 @@ export default function useInitialization() {
       console.log('Starting wallet initialization...')
 
       // Initialize EIP155 wallet first (required)
-      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
-      if (!eip155Addresses || !eip155Addresses[0]) {
-        throw new Error('Failed to create EIP155 wallet')
+      let eip155Addresses: string[]
+      let eip155Wallets: ReturnType<typeof createOrRestoreEIP155Wallet>['eip155Wallets']
+      try {
+        const result = createOrRestoreEIP155Wallet()
+        eip155Addresses = result.eip155Addresses
+        eip155Wallets = result.eip155Wallets
+        if (!eip155Addresses || !eip155Addresses[0]) {
+          throw new Error('Failed to create EIP155 wallet')
+        }
+      } catch (eip155Error) {
+        handleChainInitError('EIP155', eip155Error)
+        return
       }
 
       console.log('EIP155 wallet created:', eip155Addresses[0])
@@ -59,50 +104,125 @@ export default function useInitialization() {
 
       // Initialize other chain wallets in background with error handling
       ;(async () => {
-        try {
-          await Promise.allSettled([
-            createOrRestoreCosmosWallet().then(({ cosmosAddresses }) => {
+        const chainInitializers: { name: string; init: () => Promise<void> }[] = [
+          {
+            name: 'Cosmos',
+            init: async () => {
+              const { cosmosAddresses } = await createOrRestoreCosmosWallet()
               SettingsStore.setCosmosAddress(cosmosAddresses[0])
-            }),
-            createOrRestoreSolanaWallet().then(({ solanaAddresses }) => {
+            }
+          },
+          {
+            name: 'Solana',
+            init: async () => {
+              const { solanaAddresses } = await createOrRestoreSolanaWallet()
               SettingsStore.setSolanaAddress(solanaAddresses[0])
-            }),
-            createOrRestorePolkadotWallet().then(({ polkadotAddresses }) => {
+            }
+          },
+          {
+            name: 'Polkadot',
+            init: async () => {
+              const { polkadotAddresses } = await createOrRestorePolkadotWallet()
               SettingsStore.setPolkadotAddress(polkadotAddresses[0])
-            }),
-            createOrRestoreNearWallet().then(({ nearAddresses }) => {
+            }
+          },
+          {
+            name: 'Near',
+            init: async () => {
+              const { nearAddresses } = await createOrRestoreNearWallet()
               SettingsStore.setNearAddress(nearAddresses[0])
-            }),
-            createOrRestoreMultiversxWallet().then(({ multiversxAddresses }) => {
+            }
+          },
+          {
+            name: 'MultiversX',
+            init: async () => {
+              const { multiversxAddresses } = await createOrRestoreMultiversxWallet()
               SettingsStore.setMultiversxAddress(multiversxAddresses[0])
-            }),
-            createOrRestoreTronWallet().then(({ tronAddresses }) => {
+            }
+          },
+          {
+            name: 'Tron',
+            init: async () => {
+              const { tronAddresses } = await createOrRestoreTronWallet()
               SettingsStore.setTronAddress(tronAddresses[0])
-            }),
-            createOrRestoreTezosWallet().then(({ tezosAddresses }) => {
+            }
+          },
+          {
+            name: 'Tezos',
+            init: async () => {
+              const { tezosAddresses } = await createOrRestoreTezosWallet()
               SettingsStore.setTezosAddress(tezosAddresses[0])
-            }),
-            createOrRestoreKadenaWallet().then(({ kadenaAddresses }) => {
+            }
+          },
+          {
+            name: 'Kadena',
+            init: async () => {
+              const { kadenaAddresses } = await createOrRestoreKadenaWallet()
               SettingsStore.setKadenaAddress(kadenaAddresses[0])
-            }),
-            createOrRestoreBip122Wallet().then(({ bip122Addresses }) => {
+            }
+          },
+          {
+            name: 'Bip122',
+            init: async () => {
+              const { bip122Addresses } = await createOrRestoreBip122Wallet()
               SettingsStore.setbip122Address(bip122Addresses[0])
-            }),
-            createOrRestoreSuiWallet().then(({ suiAddresses }) => {
+            }
+          },
+          {
+            name: 'Sui',
+            init: async () => {
+              const { suiAddresses } = await createOrRestoreSuiWallet()
               SettingsStore.setSuiAddress(suiAddresses[0])
-            }),
-            createOrRestoreStacksWallet().then(({ stacksAddresses }) => {
+            }
+          },
+          {
+            name: 'Stacks',
+            init: async () => {
+              const { stacksAddresses } = await createOrRestoreStacksWallet()
               SettingsStore.setStacksAddress('mainnet', stacksAddresses[0])
-            }),
-            createOrRestoreTonWallet().then(({ tonAddresses }) => {
+            }
+          },
+          {
+            name: 'Ton',
+            init: async () => {
+              const { tonAddresses } = await createOrRestoreTonWallet()
               SettingsStore.setTonAddress(tonAddresses[0])
-            })
-          ])
-          console.log('All chain wallets initialized')
-        } catch (walletError) {
-          console.error('Error initializing some chain wallets:', walletError)
-          // Non-critical - wallet can still function with EIP155
+            }
+          }
+        ]
+
+        const results = await Promise.allSettled(
+          chainInitializers.map(async ({ name, init }) => {
+            try {
+              await init()
+              console.log(`${name} wallet initialized`)
+            } catch (error) {
+              console.error(`${name} wallet initialization failed:`, error)
+              throw { chainName: name, error }
+            }
+          })
+        )
+
+        const failedChains = results
+          .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
+          .map(result => result.reason as { chainName: string; error: unknown })
+
+        if (failedChains.length > 0) {
+          const chainNames = failedChains.map(f => f.chainName).join(', ')
+          alert(
+            `The following chain wallets failed to initialize due to invalid keys: ${chainNames}\n\n` +
+              `The invalid keys will be removed and the page will reload to create fresh wallets.`
+          )
+
+          failedChains.forEach(({ chainName }) => {
+            clearChainStorageKeys(chainName)
+          })
+
+          window.location.reload()
+          return
         }
+
+        console.log('All chain wallets initialized')
       })()
 
       // Create WalletConnect client (critical)
