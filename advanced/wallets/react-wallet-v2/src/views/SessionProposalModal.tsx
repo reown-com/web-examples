@@ -230,9 +230,8 @@ export default function SessionProposalModal() {
         chains: tronChains,
         methods: tronMethods,
         events: [],
-        accounts: tronChains
-          .map(chain => tronAddresses.map(address => `${chain}:${address}`))
-          .flat()
+        accounts:
+          tronChains.map(chain => tronAddresses?.map(address => `${chain}:${address}`)).flat() || []
       },
       bip122: {
         chains: bip122Chains,
