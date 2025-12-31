@@ -37,10 +37,6 @@ export async function fetchE2ECredentials(): Promise<boolean> {
     return false
   }
 
-  // Clear any existing wallet to force using E2E credentials
-  localStorage.removeItem('EIP155_MNEMONIC_1')
-  localStorage.removeItem('EIP155_MNEMONIC_2')
-
   try {
     const url = `/api/e2e/decrypt?data=${encodeURIComponent(encrypted)}`
     const response = await fetch(url)

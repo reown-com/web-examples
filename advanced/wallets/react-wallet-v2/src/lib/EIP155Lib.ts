@@ -5,7 +5,6 @@ import { providers, Wallet } from 'ethers'
  */
 interface IInitArgs {
   mnemonic?: string
-  privateKey?: string
 }
 export interface EIP155Wallet {
   getMnemonic(): string
@@ -27,23 +26,14 @@ export default class EIP155Lib implements EIP155Wallet {
     this.wallet = wallet
   }
 
-  static init({ mnemonic, privateKey }: IInitArgs) {
-    let wallet: Wallet
-
-    if (privateKey) {
-      wallet = new Wallet(privateKey)
-    } else if (mnemonic) {
-      wallet = Wallet.fromMnemonic(mnemonic)
-    } else {
-      wallet = Wallet.createRandom()
-    }
+  static init({ mnemonic }: IInitArgs) {
+    const wallet = mnemonic ? Wallet.fromMnemonic(mnemonic) : Wallet.createRandom()
 
     return new EIP155Lib(wallet)
   }
 
   getMnemonic() {
-    // Wallets created from private keys don't have a mnemonic
-    return this.wallet.mnemonic?.phrase ?? ''
+    return this.wallet.mnemonic.phrase
   }
 
   getPrivateKey() {
