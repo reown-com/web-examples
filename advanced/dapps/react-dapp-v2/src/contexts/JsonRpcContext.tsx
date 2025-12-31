@@ -1643,7 +1643,7 @@ export function JsonRpcContextProvider({
         const tronWeb = getTronWeb(chainId);
 
         if (!tronWeb) {
-          throw new Error("Tron web not found for chainId: " + chainId);
+          throw new Error("TronWeb not found for chainId: " + chainId);
         }
 
         // Take USDT as an example:
@@ -1653,7 +1653,7 @@ export function JsonRpcContextProvider({
         const testContract = isTestnet
           ? "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
           : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
-        const testTransaction =
+        const { transaction } =
           await tronWeb.transactionBuilder.triggerSmartContract(
             testContract,
             "approve(address,uint256)",
@@ -1665,17 +1665,26 @@ export function JsonRpcContextProvider({
             address
           );
 
-        const result = await client!.request<{ signature: any }>({
+        const sessionProperties = session!.sessionProperties;
+        const isV1Method = sessionProperties?.tron_method_version === "v1";
+
+        const result = await client!.request<{
+          signature: any;
+          result?: { signature: any };
+        }>({
           chainId,
           topic: session!.topic,
           request: {
             method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
-            params: {
-              address,
-              transaction: {
-                ...testTransaction,
-              },
-            },
+            params: isV1Method
+              ? {
+                  address,
+                  transaction,
+                }
+              : {
+                  address,
+                  transaction: { transaction },
+                },
           },
         });
         console.log("tron sign transaction result", result);
@@ -1684,7 +1693,7 @@ export function JsonRpcContextProvider({
           method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
           address,
           valid: true,
-          result: result.signature,
+          result: result.result?.signature ?? result.signature,
         };
       }
     ),
@@ -1697,7 +1706,7 @@ export function JsonRpcContextProvider({
 
         const tronWeb = getTronWeb(chainId);
         if (!tronWeb) {
-          throw new Error("Tron web not found for chainId: " + chainId);
+          throw new Error("TronWeb not found for chainId: " + chainId);
         }
 
         const result = await client!.request<{ signature: string }>({
@@ -1711,14 +1720,17 @@ export function JsonRpcContextProvider({
             },
           },
         });
-        const valid = await tronWeb.trx.verifyMessage(
-          result.signature,
-          message
+        const valid = await tronWeb.trx.verifyMessageV2(
+          message,
+          result.signature
         );
+
+        console.log("tron sign message valid", { valid, address });
+        console.log("tron sign message result", result);
         return {
           method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
           address,
-          valid: valid,
+          valid: valid === address,
           result: result.signature,
         };
       }
@@ -1971,7 +1983,6 @@ export function JsonRpcContextProvider({
         console.log("testSignMessage", chainId, address);
         const method = DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE;
         const message = "This is a message to be signed for BIP122";
-        const shouldAddAddress = address !== getAddressFromAccount(accounts[0]);
         const result = await client!.request<{
           signature: string;
           address: string;
@@ -1982,8 +1993,8 @@ export function JsonRpcContextProvider({
             method,
             params: {
               message,
-              account: getAddressFromAccount(accounts[0]),
-              address: shouldAddAddress ? address : undefined,
+              account: address,
+              address: address,
             },
           },
         });
@@ -2333,7 +2344,10 @@ export function JsonRpcContextProvider({
             from: address,
           },
         ];
-        const result = await client!.request<any>({
+        const result = await client!.request<{
+          signature: string;
+          publicKey: string;
+        }>({
           topic: session!.topic,
           chainId,
           request: {
@@ -2341,10 +2355,25 @@ export function JsonRpcContextProvider({
             params,
           },
         });
+
+        console.log("ton sign data result", result);
+
+        let isValid = false;
+        try {
+          isValid = await isValidTonSignature({
+            message: params[0].text,
+            signature: result.signature,
+            iss: "",
+            signatureMeta: result.publicKey,
+          });
+        } catch (error) {
+          console.error(error);
+        }
+        console.log("ton sign data isValid", isValid);
         return {
           method,
           address,
-          valid: !!result,
+          valid: isValid,
           result: JSON.stringify(result),
         };
       }

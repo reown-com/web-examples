@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { Col, Divider, Row, Text } from '@nextui-org/react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import ModalStore from '@/store/ModalStore'
@@ -8,7 +8,11 @@ import { styledToast } from '@/utils/HelperUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import RequestModal from '../components/RequestModal'
 import { tonAddresses } from '@/utils/TonWalletUtil'
-import { approveTonRequest, rejectTonRequest } from '@/utils/TonRequestHandlerUtil'
+import {
+  approveTonRequest,
+  rejectTonRequest,
+  validateTonRequest
+} from '@/utils/TonRequestHandlerUtil'
 
 export default function SessionTonSendMessageModal() {
   // Get request and wallet data from store
@@ -30,12 +34,30 @@ export default function SessionTonSendMessageModal() {
   const tx = Array.isArray(request.params) ? request.params[0] : request.params || {}
   const messages = Array.isArray(tx.messages) ? tx.messages : []
 
+  useEffect(() => {
+    if (!request.params) {
+      return
+    }
+    const effect = async () => {
+      const validationResult = await validateTonRequest(requestEvent)
+      if (validationResult) {
+        styledToast(validationResult.error.message, 'error')
+        await walletkit.respondSessionRequest({
+          topic,
+          response: validationResult
+        })
+        ModalStore.close()
+      }
+    }
+    void effect()
+  }, [requestEvent, topic])
+
   // Handle approve action (logic varies based on request method)
   const onApprove = useCallback(async () => {
     try {
       if (requestEvent) {
         setIsLoadingApprove(true)
-        const response = await approveTonRequest(requestEvent)
+        const response = await approveTonRequest(requestEvent, requestSession)
         await walletkit.respondSessionRequest({
           topic,
           response

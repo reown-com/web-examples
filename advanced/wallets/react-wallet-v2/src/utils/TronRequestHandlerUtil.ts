@@ -30,7 +30,11 @@ export async function approveTronRequest(
       return formatJsonRpcResult(id, res)
 
     case TRON_SIGNING_METHODS.TRON_SIGN_TRANSACTION:
-      const signedTransaction = await wallet.signTransaction(request.params.transaction)
+      // Compatible with both new and old structures
+      // New structure : request.params.transaction = transaction
+      // Old structure: request.params.transaction = { transaction: transaction }
+      const transaction = request.params.transaction?.transaction || request.params.transaction
+      const signedTransaction = await wallet.signTransaction(transaction)
 
       return formatJsonRpcResult(id, signedTransaction)
 

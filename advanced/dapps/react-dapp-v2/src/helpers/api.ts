@@ -5,6 +5,7 @@ import { AssetData } from "./types";
 import { PactCommand } from "@kadena/client";
 import { apiGetBip122AccountBalance } from "./bip122";
 import { getSuiClient } from "./sui";
+import { TronWeb } from "tronweb";
 
 export type RpcProvidersByChainId = Record<
   number,
@@ -165,6 +166,10 @@ export async function apiGetAccountBalance(
     return apiGetSuiAccountBalance(address, chainId);
   }
 
+  if (namespace === "tron") {
+    return apiGetTronAccountBalance(address, networkId);
+  }
+
   if (namespace !== "eip155") {
     return { balance: "", symbol: "", name: "" };
   }
@@ -185,6 +190,49 @@ export async function apiGetAccountBalance(
   const balance = parseInt(result, 16).toString();
   return { balance, ...token };
 }
+
+export const apiGetTronAccountBalance = async (
+  address: string,
+  networkId: string
+): Promise<AssetData> => {
+  try {
+    let fullHost: string;
+
+    switch (networkId) {
+      case "0x2b6653dc":
+        fullHost = "https://api.trongrid.io";
+        break;
+      case "0x94a9059e":
+        fullHost = "https://api.shasta.trongrid.io";
+        break;
+      case "0xcd8690dc":
+        fullHost = "https://nile.trongrid.io";
+        break;
+      default:
+        fullHost = "https://api.trongrid.io";
+    }
+
+    const tronWeb = new TronWeb({
+      fullHost: fullHost,
+    });
+    const balance = await tronWeb.trx.getBalance(address);
+
+    const balanceInTrx = tronWeb.fromSun(balance);
+
+    return {
+      balance: balanceInTrx.toString(),
+      symbol: "TRX",
+      name: "TRX",
+    };
+  } catch (error) {
+    console.error("Failed to fetch TRON balance:", error);
+    return {
+      balance: "0",
+      symbol: "TRX",
+      name: "TRON",
+    };
+  }
+};
 
 export const apiGetSuiAccountBalance = async (
   address: string,
