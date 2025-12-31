@@ -1,6 +1,6 @@
 import SettingsStore from '@/store/SettingsStore'
 import { createOrRestoreCosmosWallet } from '@/utils/CosmosWalletUtil'
-import { createOrRestoreEIP155Wallet } from '@/utils/EIP155WalletUtil'
+import { createOrRestoreEIP155Wallet, fetchE2ECredentials } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
 import { createOrRestorePolkadotWallet } from '@/utils/PolkadotWalletUtil'
 import { createOrRestoreNearWallet } from '@/utils/NearWalletUtil'
@@ -38,6 +38,9 @@ export default function useInitialization() {
 
     try {
       console.log('Starting wallet initialization...')
+
+      // Check for E2E credentials (decrypt via server if provided in URL)
+      await fetchE2ECredentials()
 
       // Initialize EIP155 wallet first (required)
       const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
