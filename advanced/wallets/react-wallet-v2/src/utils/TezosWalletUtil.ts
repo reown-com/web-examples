@@ -23,8 +23,22 @@ export async function createOrRestoreTezosWallet() {
   const mnemonic2 = localStorage.getItem('TEZOS_MNEMONIC_2')
 
   if (mnemonic1 && mnemonic2) {
-    wallet1 = await TezosLib.init({ mnemonic: mnemonic1 })
-    wallet2 = await TezosLib.init({ mnemonic: mnemonic2 })
+    try {
+      wallet1 = await TezosLib.init({ mnemonic: mnemonic1 })
+    } catch (error) {
+      console.error('Failed to init Tezos wallet1, creating new one:', error)
+      localStorage.removeItem('TEZOS_MNEMONIC_1')
+      wallet1 = await TezosLib.init({})
+      localStorage.setItem('TEZOS_MNEMONIC_1', wallet1.getMnemonic())
+    }
+    try {
+      wallet2 = await TezosLib.init({ mnemonic: mnemonic2 })
+    } catch (error) {
+      console.error('Failed to init Tezos wallet2, creating new one:', error)
+      localStorage.removeItem('TEZOS_MNEMONIC_2')
+      wallet2 = await TezosLib.init({})
+      localStorage.setItem('TEZOS_MNEMONIC_2', wallet2.getMnemonic())
+    }
   } else {
     wallet1 = await TezosLib.init({})
     wallet2 = await TezosLib.init({})

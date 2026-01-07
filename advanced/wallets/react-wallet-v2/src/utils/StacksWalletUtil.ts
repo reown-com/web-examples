@@ -13,7 +13,15 @@ export async function createOrRestoreStacksWallet() {
   const mnemonic1 = localStorage.getItem('STACKS_MNEMONIC_1')
 
   if (mnemonic1) {
-    wallet1 = await StacksLib.init({ mnemonic: mnemonic1 })
+    try {
+      wallet1 = await StacksLib.init({ mnemonic: mnemonic1 })
+    } catch (error) {
+      console.error('Failed to init Stacks wallet, creating new one:', error)
+      localStorage.removeItem('STACKS_MNEMONIC_1')
+      wallet1 = await StacksLib.init({})
+      localStorage.setItem('STACKS_MNEMONIC_1', wallet1.getMnemonic())
+      console.log('STACKS_MNEMONIC_1', wallet1.getMnemonic())
+    }
     // wallet2 = await StacksLib.init({ privateKey: privateKey2 })
   } else {
     wallet1 = await StacksLib.init({})

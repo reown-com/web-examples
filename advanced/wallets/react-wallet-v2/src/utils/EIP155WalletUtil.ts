@@ -81,8 +81,22 @@ export function createOrRestoreEIP155Wallet() {
     const mnemonic2 = localStorage.getItem('EIP155_MNEMONIC_2')
 
     if (mnemonic1 && mnemonic2) {
-      wallet1 = EIP155Lib.init({ mnemonic: mnemonic1 })
-      wallet2 = EIP155Lib.init({ mnemonic: mnemonic2 })
+      try {
+        wallet1 = EIP155Lib.init({ mnemonic: mnemonic1 })
+      } catch (error) {
+        console.error('Failed to init EIP155 wallet1, creating new one:', error)
+        localStorage.removeItem('EIP155_MNEMONIC_1')
+        wallet1 = EIP155Lib.init({})
+        localStorage.setItem('EIP155_MNEMONIC_1', wallet1.getMnemonic())
+      }
+      try {
+        wallet2 = EIP155Lib.init({ mnemonic: mnemonic2 })
+      } catch (error) {
+        console.error('Failed to init EIP155 wallet2, creating new one:', error)
+        localStorage.removeItem('EIP155_MNEMONIC_2')
+        wallet2 = EIP155Lib.init({})
+        localStorage.setItem('EIP155_MNEMONIC_2', wallet2.getMnemonic())
+      }
     } else {
       wallet1 = EIP155Lib.init({})
       wallet2 = EIP155Lib.init({})

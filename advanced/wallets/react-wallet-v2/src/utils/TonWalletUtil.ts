@@ -16,8 +16,22 @@ export async function createOrRestoreTonWallet() {
   const secretKey2 = localStorage.getItem('TON_SECRET_KEY_2')
 
   if (secretKey1 && secretKey2) {
-    wallet1 = await TonLib.init({ secretKey: secretKey1 })
-    wallet2 = await TonLib.init({ secretKey: secretKey2 })
+    try {
+      wallet1 = await TonLib.init({ secretKey: secretKey1 })
+    } catch (error) {
+      console.error('Failed to init TON wallet1, creating new one:', error)
+      localStorage.removeItem('TON_SECRET_KEY_1')
+      wallet1 = await TonLib.init({})
+      localStorage.setItem('TON_SECRET_KEY_1', wallet1.getSecretKey())
+    }
+    try {
+      wallet2 = await TonLib.init({ secretKey: secretKey2 })
+    } catch (error) {
+      console.error('Failed to init TON wallet2, creating new one:', error)
+      localStorage.removeItem('TON_SECRET_KEY_2')
+      wallet2 = await TonLib.init({})
+      localStorage.setItem('TON_SECRET_KEY_2', wallet2.getSecretKey())
+    }
   } else {
     wallet1 = await TonLib.init({})
     wallet2 = await TonLib.init({})
