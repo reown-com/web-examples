@@ -20,7 +20,6 @@ export async function createOrRestoreStacksWallet() {
       localStorage.removeItem('STACKS_MNEMONIC_1')
       wallet1 = await StacksLib.init({})
       localStorage.setItem('STACKS_MNEMONIC_1', wallet1.getMnemonic())
-      console.log('STACKS_MNEMONIC_1', wallet1.getMnemonic())
     }
     // wallet2 = await StacksLib.init({ privateKey: privateKey2 })
   } else {

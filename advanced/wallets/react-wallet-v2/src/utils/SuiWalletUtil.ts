@@ -17,7 +17,6 @@ export async function createOrRestoreSuiWallet() {
       localStorage.removeItem('SUI_MNEMONIC_1')
       wallet1 = await SuiLib.init({})
       localStorage.setItem('SUI_MNEMONIC_1', wallet1.getMnemonic())
-      console.log('SUI_MNEMONIC_1', wallet1.getMnemonic())
     }
   } else {
     wallet1 = await SuiLib.init({})

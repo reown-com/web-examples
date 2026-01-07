@@ -20,7 +20,6 @@ export async function createOrRestoreBip122Wallet() {
       localStorage.removeItem('BITCOIN_PRIVATE_KEY_1')
       wallet1 = await BitcoinLib.init({})
       localStorage.setItem('BITCOIN_PRIVATE_KEY_1', wallet1.getPrivateKey())
-      console.log('BITCOIN_PRIVATE_KEY_1', wallet1.getPrivateKey())
     }
     // wallet2 = await BitcoinLib.init({ privateKey: privateKey2 })
   } else {
