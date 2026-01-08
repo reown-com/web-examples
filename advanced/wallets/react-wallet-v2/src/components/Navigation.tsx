@@ -33,6 +33,10 @@ export default function Navigation() {
         <Image alt="pairings icon" src="/icons/pairings-icon.svg" width={25} height={25} />
       </Link>
 
+      <Link href="/earn" passHref className="navLink" data-testid="earn">
+        <Image alt="earn icon" src="/icons/earn-icon.svg" width={27} height={27} />
+      </Link>
+
       <Link href="/settings" passHref className="navLink" data-testid="settings">
         <Image alt="settings icon" src="/icons/settings-icon.svg" width={27} height={27} />
       </Link>
