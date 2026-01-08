@@ -13,7 +13,14 @@ export async function createOrRestoreBip122Wallet() {
   const privateKey1 = localStorage.getItem('BITCOIN_PRIVATE_KEY_1')
 
   if (privateKey1) {
-    wallet1 = await BitcoinLib.init({ privateKey: privateKey1 })
+    try {
+      wallet1 = await BitcoinLib.init({ privateKey: privateKey1 })
+    } catch (error) {
+      console.error('Failed to init Bitcoin wallet, creating new one:', error)
+      localStorage.removeItem('BITCOIN_PRIVATE_KEY_1')
+      wallet1 = await BitcoinLib.init({})
+      localStorage.setItem('BITCOIN_PRIVATE_KEY_1', wallet1.getPrivateKey())
+    }
     // wallet2 = await BitcoinLib.init({ privateKey: privateKey2 })
   } else {
     wallet1 = await BitcoinLib.init({})

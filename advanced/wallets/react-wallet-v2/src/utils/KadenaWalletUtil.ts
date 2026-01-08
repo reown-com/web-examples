@@ -12,7 +12,13 @@ export async function createOrRestoreKadenaWallet() {
   const secretKey = localStorage.getItem('KADENA_SECRET_KEY')
 
   if (secretKey) {
-    wallet = KadenaLib.init({ secretKey })
+    try {
+      wallet = KadenaLib.init({ secretKey })
+    } catch (error) {
+      console.error('Failed to init Kadena wallet, creating new one:', error)
+      localStorage.removeItem('KADENA_SECRET_KEY')
+      wallet = KadenaLib.init({})
+    }
   } else {
     wallet = KadenaLib.init({})
   }
