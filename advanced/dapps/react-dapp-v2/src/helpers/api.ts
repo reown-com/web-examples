@@ -134,6 +134,14 @@ export const rpcProvidersByChainId: RpcProvidersByChainId = {
       symbol: "CELO",
     },
   },
+  36900: {
+    name: "ADI Chain",
+    baseURL: "https://rpc.adifoundation.ai",
+    token: {
+      name: "ADI",
+      symbol: "ADI",
+    },
+  },
 };
 
 const api: AxiosInstance = axios.create({
