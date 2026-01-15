@@ -79,6 +79,14 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     rgb: '27, 74, 220',
     rpc: blockchainApiRpc(42161),
     namespace: 'eip155'
+  },
+  'eip155:36900': {
+    chainId: 36900,
+    name: 'ADI Chain',
+    logo: '/chain-logos/adi.png',
+    rgb: '66, 133, 244',
+    rpc: 'https://rpc.adifoundation.ai',
+    namespace: 'eip155'
   }
 }
 
