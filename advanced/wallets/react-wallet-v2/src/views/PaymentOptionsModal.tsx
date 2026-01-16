@@ -19,6 +19,8 @@ import PaymentIcon from '@mui/icons-material/Payment'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import PersonIcon from '@mui/icons-material/Person'
 import CloseIcon from '@mui/icons-material/Close'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import ModalStore from '@/store/ModalStore'
 import PayStore from '@/store/PayStore'
 import SettingsStore from '@/store/SettingsStore'
@@ -197,6 +199,259 @@ const IntroStartButton = styled('button', {
   }
 })
 
+// Form screen styled components
+const FormContainer = styled('div', {
+  padding: '0 24px 24px 24px',
+  display: 'flex',
+  flexDirection: 'column'
+})
+
+const FormHeader = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '16px 16px 8px 16px'
+})
+
+const FormHeaderButton = styled('button', {
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  padding: '8px',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'background-color 0.2s',
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.05)'
+  }
+})
+
+const FormProgressDots = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px'
+})
+
+const FormProgressDot = styled('div', {
+  height: '4px',
+  borderRadius: '2px',
+  transition: 'all 0.2s',
+  variants: {
+    active: {
+      true: {
+        width: '24px',
+        backgroundColor: '#0094FF'
+      },
+      false: {
+        width: '24px',
+        backgroundColor: '#E5E5E5'
+      }
+    }
+  },
+  defaultVariants: {
+    active: false
+  }
+})
+
+const FormTitle = styled('h2', {
+  fontSize: '20px',
+  fontWeight: '600',
+  textAlign: 'center',
+  margin: '16px 0 24px 0',
+  color: '$text'
+})
+
+const FormInputWrapper = styled('div', {
+  marginBottom: '12px'
+})
+
+const FormInput = styled('input', {
+  width: '100%',
+  padding: '16px',
+  fontSize: '16px',
+  border: '2px solid #E5E5E5',
+  borderRadius: '12px',
+  outline: 'none',
+  transition: 'border-color 0.2s',
+  backgroundColor: 'transparent',
+  color: '$text',
+  boxSizing: 'border-box',
+  '&:focus': {
+    borderColor: '#0094FF'
+  },
+  '&::placeholder': {
+    color: '#999'
+  },
+  variants: {
+    hasError: {
+      true: {
+        borderColor: '#F31260'
+      }
+    }
+  }
+})
+
+const FormInputError = styled('span', {
+  fontSize: '12px',
+  color: '#F31260',
+  marginTop: '4px',
+  display: 'block'
+})
+
+const FormContinueButton = styled('button', {
+  width: '100%',
+  padding: '16px',
+  backgroundColor: '#0094FF',
+  color: 'white',
+  border: 'none',
+  borderRadius: '16px',
+  fontSize: '16px',
+  fontWeight: '600',
+  cursor: 'pointer',
+  transition: 'background-color 0.2s',
+  marginTop: '12px',
+  '&:hover': {
+    backgroundColor: '#0080E0'
+  },
+  '&:disabled': {
+    backgroundColor: '#ccc',
+    cursor: 'not-allowed'
+  }
+})
+
+// Payment info screen styled components
+const PaymentInfoContainer = styled('div', {
+  padding: '0 24px 24px 24px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center'
+})
+
+const PaymentInfoMerchantLogo = styled('div', {
+  width: '72px',
+  height: '72px',
+  borderRadius: '20px',
+  backgroundColor: '#000',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+  marginBottom: '16px',
+  '& img': {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
+  }
+})
+
+const PaymentInfoTitle = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '8px',
+  marginBottom: '24px',
+  textAlign: 'center',
+  width: '100%'
+})
+
+const PaymentInfoRow = styled('div', {
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '16px',
+  borderRadius: '12px',
+  border: '1px solid #E5E5E5',
+  marginBottom: '12px'
+})
+
+const PaymentInfoLabel = styled('span', {
+  fontSize: '16px',
+  color: '#666'
+})
+
+const PaymentInfoValue = styled('span', {
+  fontSize: '16px',
+  fontWeight: '600',
+  color: '$text'
+})
+
+const PaymentMethodSelector = styled('button', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  padding: '0'
+})
+
+const PaymentMethodIcon = styled('img', {
+  width: '24px',
+  height: '24px',
+  borderRadius: '50%'
+})
+
+const PaymentMethodDropdown = styled('div', {
+  position: 'absolute',
+  top: '100%',
+  right: '0',
+  marginTop: '8px',
+  backgroundColor: '#2a2a2a',
+  borderRadius: '12px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+  zIndex: 100,
+  minWidth: '200px',
+  maxHeight: '300px',
+  overflowY: 'auto'
+})
+
+const PaymentMethodOption = styled('button', {
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  padding: '12px 16px',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  transition: 'background-color 0.2s',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)'
+  },
+  '&:first-child': {
+    borderTopLeftRadius: '12px',
+    borderTopRightRadius: '12px'
+  },
+  '&:last-child': {
+    borderBottomLeftRadius: '12px',
+    borderBottomRightRadius: '12px'
+  }
+})
+
+const PayButton = styled('button', {
+  width: '100%',
+  padding: '16px',
+  backgroundColor: '#0094FF',
+  color: 'white',
+  border: 'none',
+  borderRadius: '16px',
+  fontSize: '16px',
+  fontWeight: '600',
+  cursor: 'pointer',
+  transition: 'background-color 0.2s',
+  marginTop: '12px',
+  '&:hover': {
+    backgroundColor: '#0080E0'
+  },
+  '&:disabled': {
+    backgroundColor: '#ccc',
+    cursor: 'not-allowed'
+  }
+})
+
 function formatAmount(value: string, decimals: number, maxDecimals = 6): string {
   const num = BigInt(value)
   const divisor = BigInt(10 ** decimals)
@@ -242,6 +497,46 @@ function isValidDate(dateStr: string): boolean {
   )
 }
 
+// Group fields into form steps with titles
+interface FormStepConfig {
+  title: string
+  fields: Array<{ id: string; name: string; fieldType: string; required?: boolean }>
+}
+
+function groupFieldsIntoSteps(fields: Array<{ id: string; name: string; fieldType: string; required?: boolean }>): FormStepConfig[] {
+  const steps: FormStepConfig[] = []
+
+  // Group name fields together
+  const nameFields = fields.filter(f =>
+    f.id.toLowerCase().includes('name') ||
+    f.name.toLowerCase().includes('name')
+  )
+  if (nameFields.length > 0) {
+    steps.push({ title: "What's your name?", fields: nameFields })
+  }
+
+  // Date of birth as separate step
+  const dobFields = fields.filter(f =>
+    f.fieldType === 'date' ||
+    f.id.toLowerCase().includes('birth') ||
+    f.id.toLowerCase().includes('dob') ||
+    f.name.toLowerCase().includes('birth') ||
+    f.name.toLowerCase().includes('date')
+  )
+  if (dobFields.length > 0) {
+    steps.push({ title: "What's your date of birth?", fields: dobFields })
+  }
+
+  // Any remaining fields
+  const usedIds = new Set([...nameFields.map(f => f.id), ...dobFields.map(f => f.id)])
+  const otherFields = fields.filter(f => !usedIds.has(f.id))
+  if (otherFields.length > 0) {
+    steps.push({ title: 'Additional information', fields: otherFields })
+  }
+
+  return steps
+}
+
 export default function PaymentOptionsModal() {
   const [state, setState] = useState<PaymentState>('loading')
   const [errorMessage, setErrorMessage] = useState<string>('')
@@ -253,6 +548,8 @@ export default function PaymentOptionsModal() {
   const [formData, setFormData] = useState<Record<string, string>>({})
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [collectedData, setCollectedData] = useState<CollectDataFieldResult[]>([])
+  const [formStep, setFormStep] = useState(0)
+  const [showPaymentDropdown, setShowPaymentDropdown] = useState(false)
 
   const paymentLink = ModalStore.state.data?.paymentLink as string | undefined
 
@@ -315,12 +612,20 @@ export default function PaymentOptionsModal() {
     }
   }, [formErrors])
 
-  const validateForm = useCallback((): boolean => {
-    if (!paymentData?.collectData?.fields) return true
+  // Get form steps from fields
+  const formSteps = paymentData?.collectData?.fields
+    ? groupFieldsIntoSteps(paymentData.collectData.fields)
+    : []
+
+  const validateCurrentStep = useCallback((): boolean => {
+    if (formSteps.length === 0) return true
+
+    const currentStepConfig = formSteps[formStep]
+    if (!currentStepConfig) return true
 
     const errors: Record<string, string> = {}
 
-    for (const field of paymentData.collectData.fields) {
+    for (const field of currentStepConfig.fields) {
       const value = formData[field.id]?.trim() || ''
 
       if (field.required && !value) {
@@ -332,22 +637,43 @@ export default function PaymentOptionsModal() {
 
     setFormErrors(errors)
     return Object.keys(errors).length === 0
-  }, [paymentData, formData])
+  }, [formSteps, formStep, formData])
 
-  const handleCollectDataSubmit = useCallback(() => {
-    if (!validateForm()) return
+  const handleFormContinue = useCallback(() => {
+    if (!validateCurrentStep()) return
 
-    // Convert form data to CollectDataFieldResult array
-    const results: CollectDataFieldResult[] = Object.entries(formData)
-      .filter(([_, value]) => value.trim())
-      .map(([id, value]) => ({ id, value: value.trim() }))
+    // If there are more steps, go to next step
+    if (formStep < formSteps.length - 1) {
+      setFormStep(prev => prev + 1)
+      setFormErrors({})
+    } else {
+      // Last step - submit form
+      const results: CollectDataFieldResult[] = Object.entries(formData)
+        .filter(([_, value]) => value.trim())
+        .map(([id, value]) => ({ id, value: value.trim() }))
 
-    setCollectedData(results)
-    setState('options')
-  }, [formData, validateForm])
+      setCollectedData(results)
+      setState('options')
+    }
+  }, [validateCurrentStep, formStep, formSteps.length, formData])
+
+  const handleFormStepBack = useCallback(() => {
+    if (formStep > 0) {
+      setFormStep(prev => prev - 1)
+      setFormErrors({})
+    } else {
+      // First step - go back to intro
+      setState('intro')
+    }
+  }, [formStep])
 
   const handleBackToCollectData = useCallback(() => {
     setState('collect_data')
+  }, [])
+
+  const handleBackToIntro = useCallback(() => {
+    setFormStep(0)
+    setState('intro')
   }, [])
 
   const handleStartFromIntro = useCallback(() => {
@@ -361,7 +687,26 @@ export default function PaymentOptionsModal() {
 
   const handleSelectOption = useCallback((option: PaymentOption) => {
     setSelectedOption(option)
+    setShowPaymentDropdown(false)
   }, [])
+
+  const handleBackFromOptions = useCallback(() => {
+    const hasCollectData = paymentData?.collectData && paymentData.collectData.fields && paymentData.collectData.fields.length > 0
+    if (hasCollectData) {
+      // Go back to last form step
+      setFormStep(formSteps.length - 1)
+      setState('collect_data')
+    } else {
+      setState('intro')
+    }
+  }, [paymentData, formSteps.length])
+
+  // Auto-select first payment option when entering options state
+  useEffect(() => {
+    if (state === 'options' && paymentData?.options && paymentData.options.length > 0 && !selectedOption) {
+      setSelectedOption(paymentData.options[0])
+    }
+  }, [state, paymentData?.options, selectedOption])
 
   const handleConfirm = useCallback(async () => {
     if (!selectedOption || !paymentData) return
@@ -616,90 +961,50 @@ export default function PaymentOptionsModal() {
 
   // Collect Data State
   if (state === 'collect_data') {
-    const merchantInfo = paymentData?.info?.merchant
-    const paymentAmount = paymentData?.info?.amount
-    const fields = paymentData?.collectData?.fields || []
+    const currentStepConfig = formSteps[formStep]
+    const totalProgressDots = Math.max(formSteps.length, 4) // At least 4 dots as shown in design
 
     return (
       <Fragment>
-        <Modal.Header>
-          <Text h3>
-            <PersonIcon sx={{ verticalAlign: 'middle', marginRight: '8px' }} />
-            Additional Information
-          </Text>
-        </Modal.Header>
+        <Modal.Body css={{ padding: 0 }}>
+          <FormHeader>
+            <FormHeaderButton onClick={handleFormStepBack}>
+              <ArrowBackIcon sx={{ fontSize: 24, color: '#666' }} />
+            </FormHeaderButton>
+            <FormProgressDots>
+              {Array.from({ length: totalProgressDots }).map((_, index) => (
+                <FormProgressDot key={index} active={index <= formStep} />
+              ))}
+            </FormProgressDots>
+            <FormHeaderButton onClick={handleClose}>
+              <CloseIcon sx={{ fontSize: 24, color: '#666' }} />
+            </FormHeaderButton>
+          </FormHeader>
 
-        <Modal.Body>
-          <Container css={{ padding: 0 }}>
-            {/* Merchant Info */}
-            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <Row justify="center">
-                <StyledMerchantIcon
-                  src={merchantInfo?.iconUrl || '/icons/default-app-icon.png'}
-                  size="xl"
-                  color="gradient"
-                  bordered
-                />
-              </Row>
-              <Text h4 css={{ marginTop: '12px', marginBottom: '4px' }}>
-                {merchantInfo?.name || 'Payment'}
-              </Text>
-              {paymentAmount && (
-                <Text h3 css={{ margin: '8px 0' }} color="primary">
-                  {paymentAmount.display?.assetSymbol}{' '}
-                  {formatAmount(paymentAmount.value, paymentAmount.display?.decimals || 2)}
-                </Text>
-              )}
-            </div>
+          <FormContainer>
+            <FormTitle>{currentStepConfig?.title || 'Additional information'}</FormTitle>
 
-            <Divider css={{ marginBottom: '16px' }} />
-
-            <Text css={{ marginBottom: '16px' }} color="$gray700">
-              Please provide the following information to continue with your payment.
-            </Text>
-
-            {/* Form Fields */}
-            {fields.map(field => (
-              <StyledFormField key={field.id}>
-                <Input
-                  label={`${field.name}${field.required ? ' *' : ''}`}
-                  placeholder={field.fieldType === 'date' ? 'YYYY-MM-DD' : `Enter ${field.name.toLowerCase()}`}
+            {/* Form Fields for current step */}
+            {currentStepConfig?.fields.map(field => (
+              <FormInputWrapper key={field.id}>
+                <FormInput
+                  placeholder={field.name}
                   value={formData[field.id] || ''}
                   onChange={e => handleFormChange(field.id, e.target.value, field.fieldType)}
-                  status={formErrors[field.id] ? 'error' : 'default'}
-                  helperText={formErrors[field.id]}
-                  helperColor="error"
-                  fullWidth
-                  bordered
-                  type={field.fieldType === 'date' ? 'text' : 'text'}
                   maxLength={field.fieldType === 'date' ? 10 : undefined}
+                  hasError={!!formErrors[field.id]}
                 />
-              </StyledFormField>
+                {formErrors[field.id] && (
+                  <FormInputError>{formErrors[field.id]}</FormInputError>
+                )}
+              </FormInputWrapper>
             ))}
-          </Container>
-        </Modal.Body>
 
-        <Modal.Footer>
-          <Row justify="space-between" css={{ width: '100%', gap: '12px' }}>
-            <Button
-              auto
-              flat
-              color="error"
-              onClick={handleClose}
-              css={{ flex: 1 }}
-            >
-              Cancel
-            </Button>
-            <Button
-              auto
-              color="primary"
-              onClick={handleCollectDataSubmit}
-              css={{ flex: 1 }}
-            >
+            <FormContinueButton onClick={handleFormContinue}>
               Continue
-            </Button>
-          </Row>
-        </Modal.Footer>
+            </FormContinueButton>
+          </FormContainer>
+        </Modal.Body>
       </Fragment>
     )
   }
@@ -707,66 +1012,90 @@ export default function PaymentOptionsModal() {
   // Options State
   const merchantInfo = paymentData?.info?.merchant
   const paymentAmount = paymentData?.info?.amount
-  const hasCollectData = paymentData?.collectData && paymentData.collectData.fields && paymentData.collectData.fields.length > 0
+  const totalProgressDots = Math.max(formSteps.length, 4)
+
+  // Format the payment amount for display
+  const formattedPaymentAmount = paymentAmount
+    ? `$${formatAmount(paymentAmount.value, paymentAmount.display?.decimals || 2)}`
+    : ''
 
   return (
     <Fragment>
-      <Modal.Header>
-        <Text h3>
-          <PaymentIcon sx={{ verticalAlign: 'middle', marginRight: '8px' }} />
-          Payment Request
-        </Text>
-      </Modal.Header>
+      <Modal.Body css={{ padding: 0 }}>
+        <FormHeader>
+          <FormHeaderButton onClick={handleBackFromOptions}>
+            <ArrowBackIcon sx={{ fontSize: 24, color: '#666' }} />
+          </FormHeaderButton>
+          <FormProgressDots>
+            {Array.from({ length: totalProgressDots }).map((_, index) => (
+              <FormProgressDot key={index} active={true} />
+            ))}
+          </FormProgressDots>
+          <FormHeaderButton onClick={handleClose}>
+            <CloseIcon sx={{ fontSize: 24, color: '#666' }} />
+          </FormHeaderButton>
+        </FormHeader>
 
-      <Modal.Body>
-        <Container css={{ padding: 0 }}>
-          {/* Merchant Info */}
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <Row justify="center">
-              <StyledMerchantIcon
-                src={merchantInfo?.iconUrl || '/icons/default-app-icon.png'}
-                size="xl"
-                color="gradient"
-                bordered
-              />
-            </Row>
-            <Text h4 css={{ marginTop: '12px', marginBottom: '4px' }}>
-              {merchantInfo?.name || 'Payment'}
-            </Text>
-            {paymentAmount && (
-              <Text h2 css={{ margin: '8px 0' }} color="primary">
-                {paymentAmount.display?.assetSymbol}{' '}
-                {formatAmount(paymentAmount.value, paymentAmount.display?.decimals || 2)}
+        <PaymentInfoContainer>
+          <PaymentInfoMerchantLogo>
+            {merchantInfo?.iconUrl ? (
+              <img src={merchantInfo.iconUrl} alt={merchantInfo.name || 'Merchant'} />
+            ) : (
+              <Text b css={{ color: 'white', fontSize: '28px' }}>
+                {merchantInfo?.name?.charAt(0) || 'M'}
               </Text>
             )}
-          </div>
+          </PaymentInfoMerchantLogo>
 
-          <Divider css={{ marginBottom: '16px' }} />
+          <PaymentInfoTitle>
+            <Text h4 css={{ margin: 0, fontWeight: '600' }}>
+              Pay {formattedPaymentAmount} to {merchantInfo?.name || 'Merchant'}
+            </Text>
+            <VerifiedIcon sx={{ fontSize: 20, color: '#0094FF' }} />
+          </PaymentInfoTitle>
 
-          {/* Payment Options */}
-          <Text h5 css={{ marginBottom: '12px' }}>
-            Select Payment Method
-          </Text>
+          {/* Amount Row */}
+          <PaymentInfoRow>
+            <PaymentInfoLabel>Amount</PaymentInfoLabel>
+            <PaymentInfoValue>{formattedPaymentAmount}</PaymentInfoValue>
+          </PaymentInfoRow>
 
-          {paymentData?.options && paymentData.options.length > 0 ? (
-            paymentData.options.map(option => (
-              <StyledOptionCard
-                key={option.id}
-                selected={selectedOption?.id === option.id}
-                onClick={() => handleSelectOption(option)}
-              >
-                <Row align="center" justify="space-between">
-                  <Row align="center" css={{ gap: '12px', flex: 1 }}>
+          {/* Pay With Row */}
+          <PaymentInfoRow css={{ position: 'relative' }}>
+            <PaymentInfoLabel>Pay with</PaymentInfoLabel>
+            <PaymentMethodSelector onClick={() => setShowPaymentDropdown(!showPaymentDropdown)}>
+              <PaymentInfoValue>
+                {selectedOption
+                  ? `${formatAmount(selectedOption.amount.value, selectedOption.amount.display?.decimals || 18)} ${selectedOption.amount.display?.assetSymbol || ''}`
+                  : 'Select'}
+              </PaymentInfoValue>
+              {selectedOption?.amount.display?.iconUrl && (
+                <PaymentMethodIcon
+                  src={selectedOption.amount.display.iconUrl}
+                  alt={selectedOption.amount.display.assetSymbol}
+                />
+              )}
+              <KeyboardArrowDownIcon sx={{ fontSize: 20, color: '#666' }} />
+            </PaymentMethodSelector>
+
+            {/* Payment Method Dropdown */}
+            {showPaymentDropdown && paymentData?.options && paymentData.options.length > 0 && (
+              <PaymentMethodDropdown>
+                {paymentData.options.map(option => (
+                  <PaymentMethodOption
+                    key={option.id}
+                    onClick={() => handleSelectOption(option)}
+                  >
                     {option.amount.display?.iconUrl ? (
-                      <StyledTokenIcon
+                      <PaymentMethodIcon
                         src={option.amount.display.iconUrl}
                         alt={option.amount.display.assetSymbol}
                       />
                     ) : (
                       <div
                         style={{
-                          width: 32,
-                          height: 32,
+                          width: 24,
+                          height: 24,
                           borderRadius: '50%',
                           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                           display: 'flex',
@@ -774,88 +1103,29 @@ export default function PaymentOptionsModal() {
                           justifyContent: 'center'
                         }}
                       >
-                        <Text b css={{ color: 'white', fontSize: '14px' }}>
+                        <Text css={{ color: 'white', fontSize: '12px' }}>
                           {option.amount.display?.assetSymbol?.charAt(0) || '?'}
                         </Text>
                       </div>
                     )}
-                    <Col>
-                      <Text b css={{ fontSize: '16px' }}>
-                        {option.amount.display?.assetSymbol || 'Token'}
-                      </Text>
-                      <Text size={12} color="$gray700">
-                        {option.amount.display?.networkName || 'Network'}
-                      </Text>
-                    </Col>
-                  </Row>
-
-                  <Col css={{ textAlign: 'right' }}>
-                    <Text b css={{ fontSize: '16px' }}>
-                      {formatAmount(option.amount.value, option.amount.display?.decimals || 18)}
+                    <Text css={{ flex: 1, textAlign: 'left', color: '#fff' }}>
+                      {formatAmount(option.amount.value, option.amount.display?.decimals || 18)}{' '}
+                      {option.amount.display?.assetSymbol || 'Token'}
                     </Text>
-                    <Row align="center" justify="flex-end" css={{ gap: '4px' }}>
-                      <AccessTimeIcon sx={{ fontSize: 12, color: '#697177' }} />
-                      <Text size={12} color="$gray700">
-                        {formatEta(option.etaS)}
-                      </Text>
-                    </Row>
-                  </Col>
-
-                  {selectedOption?.id === option.id && (
-                    <CheckCircleIcon
-                      sx={{ fontSize: 24, color: '#17C964', marginLeft: '12px' }}
-                    />
-                  )}
-                </Row>
-              </StyledOptionCard>
-            ))
-          ) : (
-            <Container css={{ padding: '40px 20px', textAlign: 'center' }}>
-              <Text color="$gray700">No payment options available</Text>
-            </Container>
-          )}
-        </Container>
-      </Modal.Body>
-
-      <Modal.Footer>
-        <Row justify="space-between" css={{ width: '100%', gap: '12px' }}>
-          {hasCollectData ? (
-            <Button
-              auto
-              flat
-              onClick={handleBackToCollectData}
-              disabled={isProcessing}
-              css={{ flex: 1 }}
-            >
-              Back
-            </Button>
-          ) : (
-            <Button
-              auto
-              flat
-              color="error"
-              onClick={handleClose}
-              disabled={isProcessing}
-              css={{ flex: 1 }}
-            >
-              Cancel
-            </Button>
-          )}
-          <Button
-            auto
-            color="success"
-            onClick={handleConfirm}
-            disabled={!selectedOption || isProcessing}
-            css={{ flex: 1 }}
-          >
-            {isProcessing ? (
-              <Loading size="sm" color="white" type="points" />
-            ) : (
-              `Pay${selectedOption ? ` ${formatAmount(selectedOption.amount.value, selectedOption.amount.display?.decimals || 18)} ${selectedOption.amount.display?.assetSymbol || ''}` : ''}`
+                    {selectedOption?.id === option.id && (
+                      <CheckCircleIcon sx={{ fontSize: 18, color: '#17C964' }} />
+                    )}
+                  </PaymentMethodOption>
+                ))}
+              </PaymentMethodDropdown>
             )}
-          </Button>
-        </Row>
-      </Modal.Footer>
+          </PaymentInfoRow>
+
+          <PayButton onClick={handleConfirm} disabled={!selectedOption || isProcessing}>
+            {isProcessing ? 'Processing...' : `Pay ${formattedPaymentAmount}`}
+          </PayButton>
+        </PaymentInfoContainer>
+      </Modal.Body>
     </Fragment>
   )
 }
