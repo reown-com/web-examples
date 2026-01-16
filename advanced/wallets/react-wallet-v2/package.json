@@ -51,6 +51,7 @@
     "@ton/ton": "^15.3.1",
     "@types/semver": "^7.5.8",
     "@walletconnect/core": "2.22.4-canary-auth-3",
+    "@walletconnect/pay": "1.0.1-canary.0",
     "@walletconnect/ethereum-provider": "2.22.4-canary-auth-3",
     "@walletconnect/sign-client": "2.22.4-canary-auth-3",
     "@walletconnect/types": "2.22.4-canary-auth-3",

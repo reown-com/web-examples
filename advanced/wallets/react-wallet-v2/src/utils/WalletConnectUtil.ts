@@ -2,19 +2,67 @@ import { WalletKit, IWalletKit } from '@reown/walletkit'
 import { Core } from '@walletconnect/core'
 export let walletkit: IWalletKit
 
+/**
+ * Payment Link Detection Utilities
+ */
+export function isPaymentLink(uri: string): boolean {
+  // Handle WC URI with pay= parameter
+  if (uri.startsWith('wc:')) {
+    const queryStart = uri.indexOf('?')
+    if (queryStart === -1) return false
+    const queryString = uri.substring(queryStart + 1)
+    const params = new URLSearchParams(queryString)
+    const payParam = params.get('pay')
+    if (payParam) {
+      return isPaymentUrl(decodeURIComponent(payParam))
+    }
+    return false
+  }
+  return isPaymentUrl(uri)
+}
+
+function isPaymentUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    const hostname = parsed.hostname.toLowerCase()
+    const isPayHost =
+      hostname === 'pay.walletconnect.com' || hostname === 'www.pay.walletconnect.com'
+    return isPayHost && parsed.searchParams.has('pid')
+  } catch {
+    return false
+  }
+}
+
+export function extractPaymentLink(uri: string): string {
+  // If it's a WC URI with pay= parameter, extract the payment link
+  if (uri.startsWith('wc:')) {
+    const queryStart = uri.indexOf('?')
+    if (queryStart !== -1) {
+      const queryString = uri.substring(queryStart + 1)
+      const params = new URLSearchParams(queryString)
+      const payParam = params.get('pay')
+      if (payParam) {
+        return decodeURIComponent(payParam)
+      }
+    }
+  }
+  // Otherwise return as-is (it's already a direct payment URL)
+  return uri
+}
+
 export async function createWalletKit(relayerRegionURL: string) {
   // Validate required environment variables
   if (!process.env.NEXT_PUBLIC_PROJECT_ID) {
     throw new Error(
       'NEXT_PUBLIC_PROJECT_ID is not set. Please create a .env.local file with your WalletConnect project ID. ' +
-      'Get one at https://cloud.walletconnect.com'
+        'Get one at https://cloud.walletconnect.com'
     )
   }
 
   const core = new Core({
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
     relayUrl: relayerRegionURL || process.env.NEXT_PUBLIC_RELAY_URL,
-    logger: 'trace'
+    logger: 'error'
   })
   walletkit = await WalletKit.init({
     core,
