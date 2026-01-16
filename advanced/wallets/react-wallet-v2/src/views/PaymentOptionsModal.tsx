@@ -392,7 +392,7 @@ export default function PaymentOptionsModal() {
   // Collect Data State
   if (state === 'collect_data') {
     const merchantInfo = paymentData?.info?.merchant
-    const totalAmount = paymentData?.info?.totalAmount
+    const paymentAmount = paymentData?.info?.amount
     const fields = paymentData?.collectData?.fields || []
 
     return (
@@ -419,10 +419,10 @@ export default function PaymentOptionsModal() {
               <Text h4 css={{ marginTop: '12px', marginBottom: '4px' }}>
                 {merchantInfo?.name || 'Payment'}
               </Text>
-              {totalAmount && (
+              {paymentAmount && (
                 <Text h3 css={{ margin: '8px 0' }} color="primary">
-                  {totalAmount.display?.assetSymbol}{' '}
-                  {formatAmount(totalAmount.value, totalAmount.display?.decimals || 2)}
+                  {paymentAmount.display?.assetSymbol}{' '}
+                  {formatAmount(paymentAmount.value, paymentAmount.display?.decimals || 2)}
                 </Text>
               )}
             </div>
@@ -481,7 +481,7 @@ export default function PaymentOptionsModal() {
 
   // Options State
   const merchantInfo = paymentData?.info?.merchant
-  const totalAmount = paymentData?.info?.totalAmount
+  const paymentAmount = paymentData?.info?.amount
   const hasCollectData = paymentData?.collectData && paymentData.collectData.fields && paymentData.collectData.fields.length > 0
 
   return (
@@ -508,10 +508,10 @@ export default function PaymentOptionsModal() {
             <Text h4 css={{ marginTop: '12px', marginBottom: '4px' }}>
               {merchantInfo?.name || 'Payment'}
             </Text>
-            {totalAmount && (
+            {paymentAmount && (
               <Text h2 css={{ margin: '8px 0' }} color="primary">
-                {totalAmount.display?.assetSymbol}{' '}
-                {formatAmount(totalAmount.value, totalAmount.display?.decimals || 2)}
+                {paymentAmount.display?.assetSymbol}{' '}
+                {formatAmount(paymentAmount.value, paymentAmount.display?.decimals || 2)}
               </Text>
             )}
           </div>
