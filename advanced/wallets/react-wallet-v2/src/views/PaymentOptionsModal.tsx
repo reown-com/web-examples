@@ -13,10 +13,12 @@ import {
 } from '@nextui-org/react'
 import { Fragment, useCallback, useState, useEffect } from 'react'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import VerifiedIcon from '@mui/icons-material/Verified'
 import ErrorIcon from '@mui/icons-material/Error'
 import PaymentIcon from '@mui/icons-material/Payment'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import PersonIcon from '@mui/icons-material/Person'
+import CloseIcon from '@mui/icons-material/Close'
 import ModalStore from '@/store/ModalStore'
 import PayStore from '@/store/PayStore'
 import SettingsStore from '@/store/SettingsStore'
@@ -24,7 +26,7 @@ import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import type { PaymentOptionsResponse, PaymentOption, CollectDataFieldResult } from '@walletconnect/pay'
 
-type PaymentState = 'loading' | 'error' | 'collect_data' | 'options' | 'confirming' | 'success'
+type PaymentState = 'loading' | 'intro' | 'error' | 'collect_data' | 'options' | 'confirming' | 'success'
 
 const StyledOptionCard = styled('div', {
   padding: '16px',
@@ -60,6 +62,139 @@ const StyledMerchantIcon = styled(Avatar, {
 
 const StyledFormField = styled('div', {
   marginBottom: '16px'
+})
+
+// Intro screen styled components
+const IntroContainer = styled('div', {
+  padding: '24px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center'
+})
+
+const IntroCloseButton = styled('button', {
+  position: 'absolute',
+  top: '16px',
+  right: '16px',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  padding: '8px',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'background-color 0.2s',
+  '&:hover': {
+    backgroundColor: 'rgba(0, 0, 0, 0.05)'
+  }
+})
+
+const IntroMerchantLogo = styled('div', {
+  width: '64px',
+  height: '64px',
+  borderRadius: '16px',
+  backgroundColor: '#000',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+  marginBottom: '16px',
+  '& img': {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
+  }
+})
+
+const IntroTitle = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '8px',
+  marginBottom: '32px',
+  textAlign: 'center',
+  width: '100%'
+})
+
+const IntroTimeline = styled('div', {
+  width: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0',
+  marginBottom: '32px'
+})
+
+const IntroTimelineStep = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '16px',
+  position: 'relative'
+})
+
+const IntroTimelineIndicator = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
+  width: '12px',
+  alignSelf: 'stretch'
+})
+
+const IntroTimelineCircle = styled('div', {
+  width: '12px',
+  height: '12px',
+  borderRadius: '50%',
+  border: '2px solid #E5E5E5',
+  backgroundColor: 'white',
+  zIndex: 1,
+  flexShrink: 0
+})
+
+const IntroTimelineLine = styled('div', {
+  position: 'absolute',
+  width: '2px',
+  top: '50%',
+  bottom: '-12px',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  backgroundColor: '#E5E5E5'
+})
+
+const IntroTimelineContent = styled('div', {
+  flex: 1,
+  paddingBottom: '24px'
+})
+
+const IntroTimelineHeader = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: '0'
+})
+
+const IntroTimelineBadge = styled('span', {
+  fontSize: '12px',
+  color: '#888',
+  backgroundColor: 'rgba(128, 128, 128, 0.15)',
+  padding: '4px 8px',
+  borderRadius: '4px'
+})
+
+const IntroStartButton = styled('button', {
+  width: '100%',
+  padding: '16px',
+  backgroundColor: '#0094FF',
+  color: 'white',
+  border: 'none',
+  borderRadius: '16px',
+  fontSize: '16px',
+  fontWeight: '600',
+  cursor: 'pointer',
+  transition: 'background-color 0.2s',
+  '&:hover': {
+    backgroundColor: '#0080E0'
+  }
 })
 
 function formatAmount(value: string, decimals: number, maxDecimals = 6): string {
@@ -148,12 +283,8 @@ export default function PaymentOptionsModal() {
 
         setPaymentData(options)
 
-        // Check if collectData is required
-        if (options.collectData && options.collectData.fields && options.collectData.fields.length > 0) {
-          setState('collect_data')
-        } else {
-          setState('options')
-        }
+        // Show intro screen first
+        setState('intro')
       } catch (error: any) {
         console.error('[PaymentOptionsModal] Failed to fetch options:', error)
         setErrorMessage(error?.message || 'Failed to fetch payment options')
@@ -218,6 +349,15 @@ export default function PaymentOptionsModal() {
   const handleBackToCollectData = useCallback(() => {
     setState('collect_data')
   }, [])
+
+  const handleStartFromIntro = useCallback(() => {
+    // Check if collectData is required
+    if (paymentData?.collectData && paymentData.collectData.fields && paymentData.collectData.fields.length > 0) {
+      setState('collect_data')
+    } else {
+      setState('options')
+    }
+  }, [paymentData])
 
   const handleSelectOption = useCallback((option: PaymentOption) => {
     setSelectedOption(option)
@@ -308,6 +448,91 @@ export default function PaymentOptionsModal() {
               Fetching payment options...
             </Text>
           </Container>
+        </Modal.Body>
+      </Fragment>
+    )
+  }
+
+  // Intro State
+  if (state === 'intro') {
+    const merchantInfo = paymentData?.info?.merchant
+    const paymentAmount = paymentData?.info?.amount
+    const hasCollectData = paymentData?.collectData && paymentData.collectData.fields && paymentData.collectData.fields.length > 0
+
+    // Format the payment amount for display
+    const formattedAmount = paymentAmount
+      ? `$${formatAmount(paymentAmount.value, paymentAmount.display?.decimals || 2)}`
+      : ''
+
+    return (
+      <Fragment>
+        <Modal.Body css={{ position: 'relative', padding: '0' }}>
+          <IntroCloseButton onClick={handleClose}>
+            <CloseIcon sx={{ fontSize: 24, color: '#666' }} />
+          </IntroCloseButton>
+
+          <IntroContainer>
+            <IntroMerchantLogo>
+              {merchantInfo?.iconUrl ? (
+                <img src={merchantInfo.iconUrl} alt={merchantInfo.name || 'Merchant'} />
+              ) : (
+                <Text b css={{ color: 'white', fontSize: '24px' }}>
+                  {merchantInfo?.name?.charAt(0) || 'M'}
+                </Text>
+              )}
+            </IntroMerchantLogo>
+
+            <IntroTitle>
+              <Text h4 css={{ margin: 0, fontWeight: '600' }}>
+                Pay {formattedAmount} to {merchantInfo?.name || 'Merchant'}
+              </Text>
+              <VerifiedIcon sx={{ fontSize: 20, color: '#0094FF' }} />
+            </IntroTitle>
+
+            <IntroTimeline>
+              {/* Step 1: Provide information */}
+              {hasCollectData && (
+                <IntroTimelineStep>
+                  <IntroTimelineIndicator>
+                    <IntroTimelineCircle />
+                    <IntroTimelineLine />
+                  </IntroTimelineIndicator>
+                  <IntroTimelineContent>
+                    <IntroTimelineHeader>
+                      <Text b css={{ fontSize: '16px', margin: 0 }}>
+                        Provide information
+                      </Text>
+                      <IntroTimelineBadge>≈2min</IntroTimelineBadge>
+                    </IntroTimelineHeader>
+                    <Text css={{ fontSize: '14px', color: '#666', margin: 0 }}>
+                      A quick one-time check required for regulated payments.
+                    </Text>
+                  </IntroTimelineContent>
+                </IntroTimelineStep>
+              )}
+
+              {/* Step 2: Confirm payment */}
+              <IntroTimelineStep>
+                <IntroTimelineIndicator>
+                  <IntroTimelineCircle />
+                </IntroTimelineIndicator>
+                <IntroTimelineContent css={{ paddingBottom: 0 }}>
+                  <IntroTimelineHeader>
+                    <Text b css={{ fontSize: '16px', margin: 0 }}>
+                      Confirm payment
+                    </Text>
+                  </IntroTimelineHeader>
+                  <Text css={{ fontSize: '14px', color: '#666', margin: 0 }}>
+                    Review the details and approve the payment.
+                  </Text>
+                </IntroTimelineContent>
+              </IntroTimelineStep>
+            </IntroTimeline>
+
+            <IntroStartButton onClick={handleStartFromIntro}>
+              Let&apos;s start
+            </IntroStartButton>
+          </IntroContainer>
         </Modal.Body>
       </Fragment>
     )
