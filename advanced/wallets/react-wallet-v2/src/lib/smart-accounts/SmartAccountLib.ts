@@ -27,12 +27,7 @@ import {
   createSmartAccountClient
 } from 'permissionless'
 import { PimlicoBundlerActions, pimlicoBundlerActions } from 'permissionless/actions/pimlico'
-import {
-  PIMLICO_NETWORK_NAMES,
-  publicClientUrl,
-  publicRPCUrl,
-  UrlConfig
-} from '@/utils/SmartAccountUtil'
+import { PIMLICO_NETWORK_NAMES, publicClientUrl, UrlConfig } from '@/utils/SmartAccountUtil'
 import { EntryPoint } from 'permissionless/types/entrypoint'
 import { Erc7579Actions, erc7579Actions } from 'permissionless/actions/erc7579'
 import { SmartAccount } from 'permissionless/accounts'
@@ -85,7 +80,6 @@ export abstract class SmartAccountLib implements EIP155Wallet {
     entryPointVersion = 6
   }: SmartAccountLibOptions) {
     const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
-    const publicClientRPCUrl = process.env.NEXT_PUBLIC_LOCAL_CLIENT_URL || publicRPCUrl({ chain })
     const paymasterUrl = ({ chain }: UrlConfig) => {
       const localPaymasterUrl = process.env.NEXT_PUBLIC_LOCAL_PAYMASTER_URL
       if (localPaymasterUrl) {
