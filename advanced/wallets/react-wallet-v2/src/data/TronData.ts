@@ -48,5 +48,6 @@ export const TRON_CHAINS = { ...TRON_MAINNET_CHAINS, ...TRON_TEST_CHAINS }
  */
 export const TRON_SIGNING_METHODS = {
   TRON_SIGN_TRANSACTION: 'tron_signTransaction',
-  TRON_SIGN_MESSAGE: 'tron_signMessage'
+  TRON_SIGN_MESSAGE: 'tron_signMessage',
+  TRON_SEND_TRANSACTION: 'tron_sendTransaction'
 }

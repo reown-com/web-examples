@@ -231,13 +231,15 @@ export const apiGetTronAccountBalance = async (
       balance: balanceInTrx.toString(),
       symbol: "TRX",
       name: "TRX",
+      decimals: 0,
     };
   } catch (error) {
     console.error("Failed to fetch TRON balance:", error);
     return {
       balance: "0",
       symbol: "TRX",
-      name: "TRON",
+      name: "TRX",
+      decimals: 0,
     };
   }
 };
