@@ -131,6 +131,7 @@ export default function PaymentOptionsModal() {
     setState('confirming')
 
     try {
+      // Must call getRequiredPaymentActions to establish server-side state before confirming
       const actions = await payClient.getRequiredPaymentActions({
         paymentId: paymentData.paymentId,
         optionId: selectedOption.id

@@ -116,14 +116,14 @@ export default function useInitialization() {
 
       // Initialize Pay SDK (non-critical)
       try {
-        const projectId = process.env.NEXT_PUBLIC_PROJECT_ID
+        const appId = process.env.NEXT_PUBLIC_PROJECT_ID
         const apiKey = process.env.NEXT_PUBLIC_PAY_API_KEY
-        if (projectId && apiKey) {
+        if (apiKey) {
           // Use local proxy to avoid CORS issues in browser
           const baseUrl = typeof window !== 'undefined'
             ? `${window.location.origin}/api/pay`
             : 'https://api.pay.walletconnect.com'
-          PayStore.initialize({ projectId, apiKey, baseUrl })
+          PayStore.initialize({ appId, apiKey, baseUrl })
           console.log('Pay SDK initialized successfully with baseUrl:', baseUrl)
         } else {
           console.warn('Pay SDK not initialized: Missing NEXT_PUBLIC_PAY_API_KEY')
