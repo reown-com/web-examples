@@ -66,31 +66,74 @@ interface AllBalancesCacheEntry {
 }
 
 const CACHE_DURATION_MS = 10000
-const balanceCache = new Map<string, CacheEntry>()
-const allBalancesCache = new Map<string, AllBalancesCacheEntry>()
+const MAX_CACHE_SIZE = 100
+
+class LRUCache<T> {
+  private cache = new Map<string, T & { timestamp: number }>()
+  private maxSize: number
+  private ttl: number
+
+  constructor(maxSize: number, ttl: number) {
+    this.maxSize = maxSize
+    this.ttl = ttl
+  }
+
+  get(key: string): (T & { timestamp: number }) | null {
+    const entry = this.cache.get(key)
+    if (!entry) return null
+
+    const isExpired = Date.now() - entry.timestamp > this.ttl
+    if (isExpired) {
+      this.cache.delete(key)
+      return null
+    }
+
+    // Move to end (most recently used)
+    this.cache.delete(key)
+    this.cache.set(key, entry)
+    return entry
+  }
+
+  set(key: string, value: T): void {
+    // Remove oldest entries if at capacity
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value
+      if (firstKey) {
+        this.cache.delete(firstKey)
+      }
+    }
+    this.cache.set(key, { ...value, timestamp: Date.now() })
+  }
+
+  clear(): void {
+    this.cache.clear()
+  }
+}
+
+const balanceCache = new LRUCache<{ result: BalanceResult }>(MAX_CACHE_SIZE, CACHE_DURATION_MS)
+const allBalancesCache = new LRUCache<{ result: AllBalancesResult }>(MAX_CACHE_SIZE, CACHE_DURATION_MS)
 
 function getCacheKey(address: string, chainId: string): string {
   return `${chainId}:${address.toLowerCase()}`
 }
 
+function getNamespace(chainId: string): string {
+  return chainId.split(':')[0]
+}
+
+function getChainIdNumber(chainId: string): number {
+  return parseInt(chainId.split(':')[1], 10)
+}
+
 function getCachedBalance(address: string, chainId: string): BalanceResult | null {
   const key = getCacheKey(address, chainId)
   const entry = balanceCache.get(key)
-  
-  if (!entry) return null
-  
-  const isExpired = Date.now() - entry.timestamp > CACHE_DURATION_MS
-  if (isExpired) {
-    balanceCache.delete(key)
-    return null
-  }
-  
-  return entry.result
+  return entry?.result ?? null
 }
 
 function setCachedBalance(address: string, chainId: string, result: BalanceResult): void {
   const key = getCacheKey(address, chainId)
-  balanceCache.set(key, { result, timestamp: Date.now() })
+  balanceCache.set(key, { result })
 }
 
 function getRpcUrl(chainId: string): string | undefined {
@@ -110,7 +153,7 @@ function extractAddressFromCaip10(address: string): string {
 }
 
 async function fetchEIP155Balance(address: string, chainId: string): Promise<BalanceResult> {
-  const numericChainId = parseInt(chainId.split(':')[1], 10)
+  const numericChainId = getChainIdNumber(chainId)
   const chain = getChainById(numericChainId)
   const rpcUrl = getRpcUrl(chainId) || blockchainApiRpc(numericChainId)
   const symbol = getSymbol(chainId)
@@ -243,8 +286,11 @@ async function fetchPolkadotBalance(address: string, rpc: string, chainId: strin
   }
 
   const freeBalance = data.result?.data?.free || '0'
-  const planck = BigInt(freeBalance.replace('0x', '') || '0')
-  const balance = (Number(planck) / 1e10).toString()
+  // Handle both hex (0x...) and decimal string formats
+  const planck = typeof freeBalance === 'string' && freeBalance.startsWith('0x')
+    ? BigInt(freeBalance)
+    : BigInt(freeBalance)
+  const balance = formatUnits(planck, 10)
   return { balance, balanceFormatted: formatBalanceValue(balance), symbol }
 }
 
@@ -325,7 +371,8 @@ async function fetchNearBalance(address: string, rpc: string, chainId: string): 
   }
 
   const yoctoNear = data.result?.amount || '0'
-  const balance = (Number(BigInt(yoctoNear) / BigInt(1e18)) / 1e6).toString()
+  // NEAR uses 24 decimals (yoctoNEAR)
+  const balance = formatUnits(BigInt(yoctoNear), 24)
   return { balance, balanceFormatted: formatBalanceValue(balance), symbol }
 }
 
@@ -352,7 +399,7 @@ export async function fetchNativeBalance(
   }
 
   try {
-    const namespace = chainId.split(':')[0]
+    const namespace = getNamespace(chainId)
     const rpcUrl = getRpcUrl(chainId)
     let result: BalanceResult
 
@@ -446,21 +493,12 @@ async function fetchERC20Balance(
 function getCachedAllBalances(address: string, chainId: string): AllBalancesResult | null {
   const key = getCacheKey(address, chainId) + ':all'
   const entry = allBalancesCache.get(key)
-  
-  if (!entry) return null
-  
-  const isExpired = Date.now() - entry.timestamp > CACHE_DURATION_MS
-  if (isExpired) {
-    allBalancesCache.delete(key)
-    return null
-  }
-  
-  return entry.result
+  return entry?.result ?? null
 }
 
 function setCachedAllBalances(address: string, chainId: string, result: AllBalancesResult): void {
   const key = getCacheKey(address, chainId) + ':all'
-  allBalancesCache.set(key, { result, timestamp: Date.now() })
+  allBalancesCache.set(key, { result })
 }
 
 export async function fetchAllBalances(
@@ -482,14 +520,14 @@ export async function fetchAllBalances(
     return cached
   }
 
-  const namespace = chainId.split(':')[0]
-  
+  const namespace = getNamespace(chainId)
+
   if (namespace !== 'eip155') {
     const nativeBalance = await fetchNativeBalance(address, chainId)
     return { native: nativeBalance, tokens: [] }
   }
 
-  const numericChainId = parseInt(chainId.split(':')[1], 10)
+  const numericChainId = getChainIdNumber(chainId)
   const rpcUrl = getRpcUrl(chainId) || blockchainApiRpc(numericChainId)
 
   const nativeBalance = await fetchNativeBalance(address, chainId)

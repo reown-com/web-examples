@@ -3,9 +3,9 @@ import BalanceOverviewCard from '@/components/BalanceOverviewCard'
 import SettingsStore from '@/store/SettingsStore'
 import { truncate } from '@/utils/HelperUtil'
 import { updateSignClientChainId } from '@/utils/WalletConnectUtil'
-import { Avatar, Button, Text, Tooltip } from '@nextui-org/react'
+import { Avatar, Button, Text, Tooltip, Loading } from '@nextui-org/react'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useSnapshot } from 'valtio'
 
 interface Props {
@@ -19,6 +19,7 @@ interface Props {
 export default function AccountCard({ name, logo, rgb, address = '', chainId }: Props) {
   const [copied, setCopied] = useState(false)
   const [showBalance, setShowBalance] = useState(false)
+  const [balanceLoading, setBalanceLoading] = useState(false)
   const { activeChainId } = useSnapshot(SettingsStore.state)
 
   function onCopy() {
@@ -36,6 +37,10 @@ export default function AccountCard({ name, logo, rgb, address = '', chainId }: 
     e.stopPropagation()
     setShowBalance(!showBalance)
   }
+
+  const handleBalanceLoadingChange = useCallback((loading: boolean) => {
+    setBalanceLoading(loading)
+  }, [])
 
   return (
     <ChainCard rgb={rgb} flexDirection="column" alignItems="stretch">
@@ -61,7 +66,7 @@ export default function AccountCard({ name, logo, rgb, address = '', chainId }: 
               data-testid={'chain-balance-button' + chainId}
               onClick={handleBalanceClick}
             >
-              💰
+              {balanceLoading ? <Loading size="xs" color="white" /> : '💰'}
             </Button>
           </Tooltip>
           <Tooltip content={copied ? 'Copied!' : 'Copy'} placement="left">
@@ -98,7 +103,11 @@ export default function AccountCard({ name, logo, rgb, address = '', chainId }: 
         </div>
       </div>
       {showBalance && (
-        <BalanceOverviewCard chainId={chainId} address={address} />
+        <BalanceOverviewCard
+          chainId={chainId}
+          address={address}
+          onLoadingChange={handleBalanceLoadingChange}
+        />
       )}
     </ChainCard>
   )
