@@ -421,3 +421,145 @@ export const PayButton = styled('button', {
     cursor: 'not-allowed'
   }
 })
+
+// Balance display styled components
+export const BalanceCard = styled('div', {
+  width: '100%',
+  padding: '16px',
+  borderRadius: '16px',
+  backgroundColor: 'rgba(139, 139, 139, 0.08)',
+  marginBottom: '16px'
+})
+
+export const BalanceRow = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  '&:not(:last-child)': {
+    marginBottom: '12px'
+  }
+})
+
+export const BalanceLabel = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  color: '#888',
+  fontSize: '14px'
+})
+
+export const BalanceValue = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  fontSize: '14px',
+  fontWeight: '500',
+  color: '$text'
+})
+
+export const ChainBadge = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px',
+  padding: '4px 8px',
+  borderRadius: '8px',
+  backgroundColor: 'rgba(139, 139, 139, 0.15)',
+  fontSize: '12px',
+  color: '#888'
+})
+
+export const ChainIcon = styled('img', {
+  width: '16px',
+  height: '16px',
+  borderRadius: '50%'
+})
+
+export const TokenIconStack = styled('div', {
+  position: 'relative',
+  width: '32px',
+  height: '24px',
+  display: 'flex',
+  alignItems: 'center'
+})
+
+export const TokenIconPrimary = styled('img', {
+  width: '24px',
+  height: '24px',
+  borderRadius: '50%',
+  position: 'relative',
+  zIndex: 2,
+  border: '2px solid #1a1a1a'
+})
+
+export const TokenIconSecondary = styled('img', {
+  width: '16px',
+  height: '16px',
+  borderRadius: '50%',
+  position: 'absolute',
+  right: '0',
+  bottom: '0',
+  zIndex: 3,
+  border: '1.5px solid #1a1a1a'
+})
+
+export const PaymentOptionCard = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  padding: '12px',
+  borderRadius: '12px',
+  cursor: 'pointer',
+  transition: 'background-color 0.2s',
+  '&:hover': {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)'
+  },
+  variants: {
+    selected: {
+      true: {
+        backgroundColor: 'rgba(0, 148, 255, 0.1)'
+      }
+    }
+  }
+})
+
+export const PaymentOptionInfo = styled('div', {
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2px'
+})
+
+export const PaymentOptionAmount = styled('span', {
+  fontSize: '14px',
+  fontWeight: '500',
+  color: '#fff'
+})
+
+export const PaymentOptionChain = styled('span', {
+  fontSize: '12px',
+  color: '#888',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px'
+})
+
+export const PaymentOptionBalance = styled('span', {
+  fontSize: '12px',
+  color: '#666',
+  textAlign: 'right',
+  variants: {
+    insufficient: {
+      true: {
+        color: '#F31260'
+      }
+    }
+  }
+})
+
+export const EtaBadge = styled('span', {
+  fontSize: '11px',
+  color: '#17C964',
+  backgroundColor: 'rgba(23, 201, 100, 0.15)',
+  padding: '2px 6px',
+  borderRadius: '4px'
+})

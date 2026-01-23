@@ -55,7 +55,11 @@ export default function PaymentOptionsModal() {
 
       try {
         const eip155Address = SettingsStore.state.eip155Address
-        const accounts = eip155Address ? [`eip155:8453:${eip155Address}`] : []
+        // Support multiple chains: Base (8453), Optimism (10), Arbitrum (42161), Ethereum (1)
+        const supportedChainIds = [8453, 10, 42161, 1]
+        const accounts = eip155Address
+          ? supportedChainIds.map(chainId => `eip155:${chainId}:${eip155Address}`)
+          : []
 
         const options = await payClient.getPaymentOptions({
           paymentLink,
