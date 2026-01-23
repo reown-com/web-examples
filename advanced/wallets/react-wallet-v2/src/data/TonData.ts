@@ -23,7 +23,8 @@ export const TON_MAINNET_CHAINS = {
     logo: '/chain-logos/ton.png',
     rgb: '0, 136, 204',
     rpc: tonCenterRpc(false),
-    namespace: 'ton'
+    namespace: 'ton',
+    symbol: 'TON'
   }
 }
 
@@ -34,7 +35,8 @@ export const TON_TEST_CHAINS = {
     logo: '/chain-logos/ton.png',
     rgb: '0, 136, 204',
     rpc: tonCenterRpc(true),
-    namespace: 'ton'
+    namespace: 'ton',
+    symbol: 'TON'
   }
 }
 

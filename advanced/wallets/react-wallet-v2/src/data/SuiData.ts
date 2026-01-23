@@ -21,9 +21,10 @@ export const SUI_MAINNET = {
     name: 'SUI Mainnet',
     logo: '/chain-logos/sui.png',
     rgb: '6, 135, 245',
-    rpc: '',
+    rpc: 'https://fullnode.mainnet.sui.io:443',
     caip2: SUI_MAINNET_CAIP2 as ISuiChainId,
-    namespace: SUI_NAMESPACE
+    namespace: SUI_NAMESPACE,
+    symbol: 'SUI'
   }
 }
 export const SUI_TESTNET = {
@@ -32,9 +33,10 @@ export const SUI_TESTNET = {
     name: 'SUI Testnet',
     logo: '/chain-logos/sui.png',
     rgb: '6, 135, 245',
-    rpc: '',
+    rpc: 'https://fullnode.testnet.sui.io:443',
     caip2: SUI_TESTNET_CAIP2 as ISuiChainId,
-    namespace: SUI_NAMESPACE
+    namespace: SUI_NAMESPACE,
+    symbol: 'SUI'
   }
 }
 export const SUI_DEVNET = {
@@ -43,9 +45,10 @@ export const SUI_DEVNET = {
     name: 'SUI Devnet',
     logo: '/chain-logos/sui.png',
     rgb: '6, 135, 245',
-    rpc: '',
+    rpc: 'https://fullnode.devnet.sui.io:443',
     caip2: SUI_DEVNET_CAIP2 as ISuiChainId,
-    namespace: SUI_NAMESPACE
+    namespace: SUI_NAMESPACE,
+    symbol: 'SUI'
   }
 }
 

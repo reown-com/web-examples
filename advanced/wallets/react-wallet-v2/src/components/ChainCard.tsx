@@ -4,8 +4,8 @@ import { ReactNode } from 'react'
 interface Props {
   children: ReactNode | ReactNode[]
   rgb: string
-  flexDirection: 'row' | 'col'
-  alignItems: 'center' | 'flex-start'
+  flexDirection: 'row' | 'col' | 'column'
+  alignItems: 'center' | 'flex-start' | 'stretch'
   flexWrap?: 'wrap' | 'nowrap'
 }
 

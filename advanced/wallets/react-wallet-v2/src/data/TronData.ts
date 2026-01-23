@@ -14,6 +14,7 @@ type ChainMetadata = {
   rgb: string
   fullNode: string
   namespace: string
+  symbol: string
 }
 
 /**
@@ -26,7 +27,8 @@ export const TRON_MAINNET_CHAINS: TRONChains = {
     logo: 'chain-logos/tron.png',
     rgb: '183, 62, 49',
     fullNode: 'https://api.trongrid.io',
-    namespace: 'tron'
+    namespace: 'tron',
+    symbol: 'TRX'
   }
 }
 
@@ -37,7 +39,8 @@ export const TRON_TEST_CHAINS: TRONChains = {
     logo: 'chain-logos/tron.png',
     rgb: '183, 62, 49',
     fullNode: 'https://nile.trongrid.io/',
-    namespace: 'tron'
+    namespace: 'tron',
+    symbol: 'TRX'
   }
 }
 
