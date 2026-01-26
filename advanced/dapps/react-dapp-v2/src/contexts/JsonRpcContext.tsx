@@ -164,6 +164,7 @@ interface IContext {
   tronRpc: {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
+    testSendTransaction: TRpcRequestCallback;
   };
   tezosRpc: {
     testGetAccounts: TRpcRequestCallback;
@@ -1732,6 +1733,63 @@ export function JsonRpcContextProvider({
           address,
           valid: valid === address,
           result: result.signature,
+        };
+      }
+    ),
+    testSendTransaction: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string
+      ): Promise<IFormattedRpcResponse> => {
+        const tronWeb = getTronWeb(chainId);
+
+        if (!tronWeb) {
+          throw new Error("TronWeb not found for chainId: " + chainId);
+        }
+
+        const testContract = isTestnet
+          ? "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
+          : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+        const { transaction } =
+          await tronWeb.transactionBuilder.triggerSmartContract(
+            testContract,
+            "approve(address,uint256)",
+            { feeLimit: 200000000 },
+            [
+              { type: "address", value: address },
+              { type: "uint256", value: 0 },
+            ],
+            address
+          );
+
+        const sessionProperties = session!.sessionProperties;
+        const isV1Method = sessionProperties?.tron_method_version === "v1";
+
+        const result = await client!.request<{ result: boolean; txid: string }>(
+          {
+            chainId,
+            topic: session!.topic,
+            request: {
+              method: DEFAULT_TRON_METHODS.TRON_SEND_TRANSACTION,
+              params: isV1Method
+                ? {
+                    address,
+                    transaction,
+                  }
+                : {
+                    address,
+                    transaction: { transaction },
+                  },
+            },
+          }
+        );
+        console.log("tron send transaction result", result);
+
+        return {
+          method: DEFAULT_TRON_METHODS.TRON_SEND_TRANSACTION,
+          address,
+          valid: result.result === true,
+          result: result.txid,
         };
       }
     ),

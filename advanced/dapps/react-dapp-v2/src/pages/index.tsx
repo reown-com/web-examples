@@ -466,6 +466,10 @@ const Home: NextPage = () => {
       openRequestModal();
       await tronRpc.testSignMessage(chainId, address);
     };
+    const onSendTransaction = async (chainId: string, address: string) => {
+      openRequestModal();
+      await tronRpc.testSendTransaction(chainId, address);
+    };
     return [
       {
         method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
@@ -474,6 +478,10 @@ const Home: NextPage = () => {
       {
         method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
         callback: onSignMessage,
+      },
+      {
+        method: DEFAULT_TRON_METHODS.TRON_SEND_TRANSACTION,
+        callback: onSendTransaction,
       },
     ];
   };
