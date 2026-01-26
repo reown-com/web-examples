@@ -10,6 +10,7 @@ interface ModalData {
   requestSession?: SessionTypes.Struct
   loadingMessage?: string
   authRequest?: SignClientTypes.EventArguments['session_authenticate']
+  paymentLink?: string
 }
 
 interface State {
@@ -44,6 +45,7 @@ interface State {
     | 'SessionSignStacksMessageModal'
     | 'SessionTonSendMessageModal'
     | 'SessionTonSignDataModal'
+    | 'PaymentOptionsModal'
   data?: ModalData
 }
 

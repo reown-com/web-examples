@@ -1,4 +1,5 @@
 import SettingsStore from '@/store/SettingsStore'
+import PayStore from '@/store/PayStore'
 import { createOrRestoreCosmosWallet } from '@/utils/CosmosWalletUtil'
 import { createOrRestoreEIP155Wallet, fetchE2ECredentials } from '@/utils/EIP155WalletUtil'
 import { createOrRestoreSolanaWallet } from '@/utils/SolanaWalletUtil'
@@ -112,6 +113,24 @@ export default function useInitialization() {
       console.log('Creating WalletConnect client...')
       await createWalletKit(relayerRegionURL)
       console.log('WalletConnect client created successfully')
+
+      // Initialize Pay SDK (non-critical)
+      try {
+        const appId = process.env.NEXT_PUBLIC_PROJECT_ID
+        const apiKey = process.env.NEXT_PUBLIC_PAY_API_KEY
+        if (apiKey) {
+          // Use local proxy to avoid CORS issues in browser
+          const baseUrl = typeof window !== 'undefined'
+            ? `${window.location.origin}/api/pay`
+            : 'https://api.pay.walletconnect.com'
+          PayStore.initialize({ appId, apiKey, baseUrl })
+          console.log('Pay SDK initialized successfully with baseUrl:', baseUrl)
+        } else {
+          console.warn('Pay SDK not initialized: Missing NEXT_PUBLIC_PAY_API_KEY')
+        }
+      } catch (payError) {
+        console.warn('Pay SDK initialization failed (non-critical):', payError)
+      }
 
       setInitialized(true)
       console.log('Wallet initialization complete')
