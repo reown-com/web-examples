@@ -5,6 +5,7 @@ type ChainMetadata = {
   rgb: string
   rpc: string
   namespace: string
+  symbol: string
 }
 
 /**
@@ -22,7 +23,8 @@ export const TEZOS_MAINNET_CHAINS: Record<string, ChainMetadata> = {
     logo: '/chain-logos/tezos.svg',
     rgb: '44, 125, 247',
     rpc: 'https://mainnet.api.tez.ie',
-    namespace: 'tezos'
+    namespace: 'tezos',
+    symbol: 'XTZ'
   }
 }
 
@@ -33,7 +35,8 @@ export const TEZOS_TEST_CHAINS: Record<string, ChainMetadata> = {
     logo: '/chain-logos/tezos.svg',
     rgb: '44, 125, 247',
     rpc: 'https://ghostnet.ecadinfra.com',
-    namespace: 'tezos'
+    namespace: 'tezos',
+    symbol: 'XTZ'
   }
 }
 

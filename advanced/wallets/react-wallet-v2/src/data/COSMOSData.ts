@@ -12,8 +12,9 @@ export const COSMOS_MAINNET_CHAINS = {
     name: 'Cosmos Hub',
     logo: '/chain-logos/cosmos-cosmoshub-4.png',
     rgb: '107, 111, 147',
-    rpc: '',
-    namespace: 'cosmos'
+    rpc: 'https://cosmos-rest.publicnode.com',
+    namespace: 'cosmos',
+    symbol: 'ATOM'
   }
 }
 

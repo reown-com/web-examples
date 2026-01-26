@@ -14,7 +14,8 @@ export const SOLANA_MAINNET_CHAINS = {
     logo: '/chain-logos/solana-5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp.png',
     rgb: '30, 240, 166',
     rpc: '',
-    namespace: 'solana'
+    namespace: 'solana',
+    symbol: 'SOL'
   },
   'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': {
     chainId: '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
@@ -22,7 +23,8 @@ export const SOLANA_MAINNET_CHAINS = {
     logo: '/chain-logos/solana-5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp.png',
     rgb: '30, 240, 166',
     rpc: 'https://api.mainnet-beta.solana.com',
-    namespace: 'solana'
+    namespace: 'solana',
+    symbol: 'SOL'
   }
 }
 
@@ -34,7 +36,8 @@ export const SOLANA_TEST_CHAINS = {
     logo: '/chain-logos/solana-5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp.png',
     rgb: '30, 240, 166',
     rpc: '',
-    namespace: 'solana'
+    namespace: 'solana',
+    symbol: 'SOL'
   },
   'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1': {
     chainId: 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
@@ -42,7 +45,8 @@ export const SOLANA_TEST_CHAINS = {
     logo: '/chain-logos/solana-5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp.png',
     rgb: '30, 240, 166',
     rpc: 'https://api.devnet.solana.com',
-    namespace: 'solana'
+    namespace: 'solana',
+    symbol: 'SOL'
   },
   'solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z': {
     chainId: '4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z',
@@ -50,7 +54,8 @@ export const SOLANA_TEST_CHAINS = {
     logo: '/chain-logos/solana-5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp.png',
     rgb: '30, 240, 166',
     rpc: 'https://api.testnet.solana.com',
-    namespace: 'solana'
+    namespace: 'solana',
+    symbol: 'SOL'
   }
 }
 

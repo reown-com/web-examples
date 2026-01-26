@@ -15,6 +15,7 @@ export type EIP155Chain = {
   rgb: string
   rpc: string
   namespace: string
+  symbol: string
   smartAccountEnabled?: boolean
 }
 export const blockchainApiRpc = (chainId: number) => {
@@ -30,7 +31,8 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/eip155-1.png',
     rgb: '99, 125, 234',
     rpc: blockchainApiRpc(1),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'ETH'
   },
   'eip155:43114': {
     chainId: 43114,
@@ -38,7 +40,8 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/eip155-43113.png',
     rgb: '232, 65, 66',
     rpc: blockchainApiRpc(43114),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'AVAX'
   },
   'eip155:137': {
     chainId: 137,
@@ -46,7 +49,8 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/eip155-137.png',
     rgb: '130, 71, 229',
     rpc: blockchainApiRpc(137),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'POL'
   },
   'eip155:10': {
     chainId: 10,
@@ -54,7 +58,8 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/eip155-10.png',
     rgb: '235, 0, 25',
     rpc: blockchainApiRpc(10),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'ETH'
   },
   'eip155:324': {
     chainId: 324,
@@ -62,7 +67,8 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/eip155-324.svg',
     rgb: '242, 242, 242',
     rpc: blockchainApiRpc(324),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'ETH'
   },
   'eip155:8453': {
     chainId: 8453,
@@ -70,7 +76,8 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/base.webp',
     rgb: '22, 83, 241',
     rpc: blockchainApiRpc(8453),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'ETH'
   },
   'eip155:42161': {
     chainId: 42161,
@@ -78,7 +85,8 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/arbitrum.webp',
     rgb: '27, 74, 220',
     rpc: blockchainApiRpc(42161),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'ETH'
   },
   'eip155:36900': {
     chainId: 36900,
@@ -86,7 +94,8 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/adi.png',
     rgb: '66, 133, 244',
     rpc: 'https://rpc.adifoundation.ai',
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'ADI'
   }
 }
 
@@ -98,6 +107,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rgb: '99, 125, 234',
     rpc: blockchainApiRpc(5),
     namespace: 'eip155',
+    symbol: 'ETH',
     smartAccountEnabled: true
   },
   'eip155:11155111': {
@@ -107,6 +117,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rgb: '99, 125, 234',
     rpc: blockchainApiRpc(11155111),
     namespace: 'eip155',
+    symbol: 'ETH',
     smartAccountEnabled: true
   },
   'eip155:43113': {
@@ -115,7 +126,8 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/eip155-43113.png',
     rgb: '232, 65, 66',
     rpc: blockchainApiRpc(43113),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'AVAX'
   },
   'eip155:80001': {
     chainId: 80001,
@@ -124,6 +136,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rgb: '130, 71, 229',
     rpc: blockchainApiRpc(80001),
     namespace: 'eip155',
+    symbol: 'MATIC',
     smartAccountEnabled: true
   },
   'eip155:420': {
@@ -132,7 +145,8 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/eip155-10.png',
     rgb: '235, 0, 25',
     rpc: blockchainApiRpc(420),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'ETH'
   },
   'eip155:11155420': {
     chainId: 11155420,
@@ -140,7 +154,8 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/eip155-10.png',
     rgb: '235, 0, 25',
     rpc: blockchainApiRpc(11155420),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'ETH'
   },
   'eip155:280': {
     chainId: 280,
@@ -148,7 +163,8 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     logo: '/chain-logos/eip155-324.svg',
     rgb: '242, 242, 242',
     rpc: blockchainApiRpc(280),
-    namespace: 'eip155'
+    namespace: 'eip155',
+    symbol: 'ETH'
   },
   'eip155:84532': {
     chainId: 84532,
@@ -157,6 +173,7 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rgb: '22, 83, 241',
     rpc: blockchainApiRpc(84532),
     namespace: 'eip155',
+    symbol: 'ETH',
     smartAccountEnabled: true
   }
 }

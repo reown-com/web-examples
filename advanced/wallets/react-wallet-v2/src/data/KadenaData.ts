@@ -12,7 +12,9 @@ export const KADENA_MAINNET_CHAINS = {
     name: 'Kadena',
     logo: '/chain-logos/kadena.png',
     rgb: '237, 9, 143',
-    namespace: 'kadena'
+    rpc: 'https://api.chainweb.com/chainweb/0.0/mainnet01/chain/0/pact',
+    namespace: 'kadena',
+    symbol: 'KDA'
   }
 }
 
@@ -22,7 +24,9 @@ export const KADENA_TEST_CHAINS = {
     name: 'Kadena Testnet',
     logo: '/chain-logos/kadena.png',
     rgb: '237, 9, 143',
-    namespace: 'kadena'
+    rpc: 'https://api.testnet.chainweb.com/chainweb/0.0/testnet04/chain/0/pact',
+    namespace: 'kadena',
+    symbol: 'KDA'
   }
 }
 

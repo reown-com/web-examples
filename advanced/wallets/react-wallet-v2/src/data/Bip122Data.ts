@@ -16,10 +16,11 @@ export const BITCOIN_MAINNET = {
     name: 'BTC Mainnet',
     logo: '/chain-logos/btc-testnet.png',
     rgb: '107, 111, 147',
-    rpc: '',
+    rpc: 'https://blockstream.info/api',
     coinType: '0',
     caip2: BIP122_MAINNET_CAIP2 as IBip122ChainId,
-    namespace: BIP122_NAMESPACE
+    namespace: BIP122_NAMESPACE,
+    symbol: 'BTC'
   }
 }
 export const BITCOIN_TESTNET = {
@@ -28,10 +29,11 @@ export const BITCOIN_TESTNET = {
     name: 'BTC Testnet',
     logo: '/chain-logos/btc-testnet.png',
     rgb: '247, 147, 25',
-    rpc: '',
+    rpc: 'https://blockstream.info/testnet/api',
     coinType: '1',
     caip2: BIP122_TESTNET_CAIP2 as IBip122ChainId,
-    namespace: BIP122_NAMESPACE
+    namespace: BIP122_NAMESPACE,
+    symbol: 'BTC'
   }
 }
 
