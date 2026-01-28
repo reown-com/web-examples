@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="earnGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a562d5"/>
+      <stop offset="100%" stop-color="#306feb"/>
+    </linearGradient>
+  </defs>
+  <!-- Stack of coins icon -->
+  <path d="M256 64L64 144L256 224L448 144L256 64Z" stroke="url(#earnGradient)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M64 224L256 304L448 224" stroke="url(#earnGradient)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M64 304L256 384L448 304" stroke="url(#earnGradient)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M64 384L256 464L448 384" stroke="url(#earnGradient)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
+
