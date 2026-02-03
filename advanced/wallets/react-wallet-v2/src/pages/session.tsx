@@ -4,7 +4,8 @@ import ProjectInfoCard from '@/components/ProjectInfoCard'
 import SessionChainCard from '@/components/SessionChainCard'
 import { styledToast } from '@/utils/HelperUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
-import { Button, Col, Divider, Loading, Row, Text } from '@nextui-org/react'
+import { Button, Col, Loading, Row, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { getSdkError } from '@walletconnect/utils'
 import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
@@ -121,7 +122,7 @@ export default function SessionPage() {
 
       <ProjectInfoCard metadata={session.peer.metadata} />
 
-      <Divider y={2} />
+      <StyledDivider css={{ my: '$8' }} />
       {pendingRequests.length > 0 ? (
         <Fragment>
           <Text h4 css={{ marginBottom: '$5' }}>
@@ -145,7 +146,7 @@ export default function SessionPage() {
               </Fragment>
             )
           })}
-          <Divider y={2} />
+          <StyledDivider css={{ my: '$8' }} />
         </Fragment>
       ) : null}
       {namespaces &&
@@ -157,7 +158,7 @@ export default function SessionPage() {
                 namespace={namespaces[chain]}
                 data-testid={'session-card' + namespaces[chain]}
               />
-              <Divider y={2} />
+              <StyledDivider css={{ my: '$8' }} />
             </Fragment>
           )
         })}

@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Col, Divider, Row, Text } from '@nextui-org/react'
+import { Col, Row, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 
 import RequestDataCard from '@/components/RequestDataCard'
 import RequestDetailsCard from '@/components/RequestDetalilsCard'
@@ -75,7 +76,7 @@ export default function SessionSignBip122Modal() {
       approveLoader={{ active: isLoadingApprove }}
       rejectLoader={{ active: isLoadingReject }}
     >
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       {message && (
         <>
           <Row>
@@ -84,7 +85,7 @@ export default function SessionSignBip122Modal() {
               <code color="$gray400">{message}</code>
             </Col>
           </Row>
-          <Divider y={1} />
+          <StyledDivider css={{ my: '$4' }} />
           <Row>
             <Col>
               <Text h5>To sign with address</Text>

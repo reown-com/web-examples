@@ -114,7 +114,11 @@ export default function Modal() {
       blur
       onClose={onClose}
       open={open}
-      style={{ border: '1px solid rgba(139, 139, 139, 0.4)' }}
+      css={{
+        border: '1px solid rgba(139, 139, 139, 0.4)',
+        maxWidth: '420px',
+        margin: '0 auto'
+      }}
     >
       {componentView}
     </NextModal>

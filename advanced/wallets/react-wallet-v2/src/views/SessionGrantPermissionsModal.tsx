@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Divider, Text } from '@nextui-org/react'
+import { Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
@@ -89,10 +90,10 @@ export default function SessionGrantPermissionsModal() {
       rejectLoader={{ active: isLoadingReject }}
     >
       <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       {'Permissions'}
       <PermissionDetailsCard scope={[]} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <RequestMethodCard methods={[method]} />
     </RequestModal>
   )

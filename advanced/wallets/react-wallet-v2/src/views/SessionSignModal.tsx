@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Col, Divider, Row, Text } from '@nextui-org/react'
+import { Col, Row, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { useCallback, useState } from 'react'
 
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
@@ -76,7 +77,7 @@ export default function SessionSignModal() {
       rejectLoader={{ active: isLoadingReject }}
     >
       <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <Row>
         <Col>
           <Text h5>Message</Text>

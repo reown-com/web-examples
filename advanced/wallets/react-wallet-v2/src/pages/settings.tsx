@@ -7,7 +7,8 @@ import { solanaWallets } from '@/utils/SolanaWalletUtil'
 import { multiversxWallets } from '@/utils/MultiversxWalletUtil'
 import { tronWallets } from '@/utils/TronWalletUtil'
 import { kadenaWallets } from '@/utils/KadenaWalletUtil'
-import { Card, Col, Divider, Row, Switch, Text } from '@nextui-org/react'
+import { Card, Col, Row, Switch, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { Fragment } from 'react'
 import { useSnapshot } from 'valtio'
 import packageJSON from '../../package.json'
@@ -44,7 +45,7 @@ export default function SettingsPage() {
         <Text color="$gray400">{packageJSON.dependencies['@reown/walletkit']}</Text>
       </Row>
 
-      <Divider y={2} />
+      <StyledDivider css={{ my: '$8' }} />
 
       <Text h4 css={{ marginBottom: '$5' }}>
         Testnets
@@ -58,7 +59,7 @@ export default function SettingsPage() {
         <Text>{testNets ? 'Enabled' : 'Disabled'}</Text>
       </Row>
 
-      <Divider y={2} />
+      <StyledDivider css={{ my: '$8' }} />
 
       <Row>
         <Col>
@@ -82,7 +83,7 @@ export default function SettingsPage() {
         </Col>
       </Row>
 
-      <Divider y={2} />
+      <StyledDivider css={{ my: '$8' }} />
 
       <Row>
         <Col>
@@ -149,7 +150,7 @@ export default function SettingsPage() {
                     />
                     <Text>{smartAccountSponsorshipEnabled ? 'Enabled' : 'Disabled'}</Text>
                   </Row>
-                  <Divider y={2} />
+                  <StyledDivider css={{ my: '$8' }} />
                   <Text h4 css={{ marginBottom: '$5', cursor: 'pointer' }}>
                     Module Management
                   </Text>
@@ -175,7 +176,7 @@ export default function SettingsPage() {
         </Col>
       </Row>
 
-      <Divider y={2} />
+      <StyledDivider css={{ my: '$8' }} />
 
       <Row justify="space-between" align="center">
         <Text h4 css={{ marginBottom: '$5' }}>
@@ -184,7 +185,7 @@ export default function SettingsPage() {
         <RelayRegionPicker />
       </Row>
 
-      <Divider y={2} />
+      <StyledDivider css={{ my: '$8' }} />
 
       <Text css={{ color: '$yellow500', marginBottom: '$5', textAlign: 'left', padding: 0 }}>
         Warning: mnemonics and secret keys are provided for development purposes only and should not

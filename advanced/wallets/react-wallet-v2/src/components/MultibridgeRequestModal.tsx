@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
-import { Avatar, Col, Divider, Row, Text } from '@nextui-org/react'
+import { Avatar, Col, Row, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { LoaderProps } from '@/components/ModalFooter'
 import RequestMethodCard from '@/components/RequestMethodCard'
 import RequestModal from './RequestModal'
@@ -58,7 +59,9 @@ export default function MultibridgeRequestModal({
       return new ChainAbstractionService()
     } catch (error) {
       console.error('Failed to initialize ChainAbstractionService:', error)
-      throw new Error('Chain abstraction service is not available. Please check your configuration.')
+      throw new Error(
+        'Chain abstraction service is not available. Please check your configuration.'
+      )
     }
   }, [])
 
@@ -198,7 +201,7 @@ export default function MultibridgeRequestModal({
           </Text>
         </Col>
       </Row>
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <Row>
         <Col>
           <Text h5>Chain details</Text>
@@ -219,7 +222,7 @@ export default function MultibridgeRequestModal({
           </Row>
         </Col>
       </Row>
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <RequestMethodCard methods={[request.method]} />
     </RequestModal>
   )

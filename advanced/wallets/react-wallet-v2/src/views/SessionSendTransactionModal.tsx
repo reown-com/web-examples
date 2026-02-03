@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Card, Divider, Loading, Text } from '@nextui-org/react'
+import { Card, Loading, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
@@ -205,9 +206,9 @@ const SingleChainModal = ({
     rejectLoader={{ active: loadingReject }}
   >
     <RequestDataCard data={transaction} />
-    <Divider y={1} />
+    <StyledDivider css={{ my: '$4' }} />
     <RequestDetailsCard chains={[chainId]} protocol={session.relay.protocol} />
-    <Divider y={1} />
+    <StyledDivider css={{ my: '$4' }} />
     <RequestMethodCard methods={[method]} />
   </RequestModal>
 )

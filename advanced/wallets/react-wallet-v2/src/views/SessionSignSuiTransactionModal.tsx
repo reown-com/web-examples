@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Col, Divider, Row, Text } from '@nextui-org/react'
+import { Col, Row, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { useCallback, useMemo, useState } from 'react'
 
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
@@ -91,7 +92,7 @@ export default function SessionSignSuiTransactionModal() {
           </Text>
         </Col>
       </Row>
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <Row>
         <Col>
           <Text h5>Method</Text>
@@ -100,9 +101,9 @@ export default function SessionSignSuiTransactionModal() {
           </Text>
         </Col>
       </Row>
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <RequesDetailsCard chains={[chainId ?? '']} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <Row>
         <Col>
           <Text h5>Transaction details</Text>

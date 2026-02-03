@@ -71,7 +71,14 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
         </Text>
 
         <Input
-          css={{ width: '100%' }}
+          css={{
+            width: '100%',
+            '& > div': {
+              border: '2px solid rgba(255, 255, 255, 0.15) !important',
+              borderRadius: '14px',
+              padding: '8px 12px'
+            }
+          }}
           bordered
           aria-label="wc url connect input"
           placeholder="e.g. wc:a281567bb3e4..."

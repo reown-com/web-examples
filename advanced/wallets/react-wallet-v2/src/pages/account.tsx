@@ -7,7 +7,8 @@ import {
   safeAllowedChains
 } from '@/utils/SmartAccountUtil'
 import ModulesManagement from '@/views/ModulesManagement'
-import { Card, Divider, Row, Text } from '@nextui-org/react'
+import { Card, Row, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { useRouter } from 'next/router'
 import { isSmartAccountDeployed } from 'permissionless'
 import { Fragment, useCallback, useEffect, useState } from 'react'
@@ -154,7 +155,7 @@ export default function AccountPage() {
 
           {moduleManagementEnabled ? (
             <Fragment>
-              <Divider css={{ marginBottom: '$10' }} />
+              <StyledDivider css={{ marginBottom: '$10' }} />
               <ModulesManagement
                 accountAddress={accountAddress}
                 accountType={accountType}
