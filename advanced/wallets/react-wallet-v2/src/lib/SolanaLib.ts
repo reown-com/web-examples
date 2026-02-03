@@ -9,12 +9,6 @@ import {
 } from '@solana/web3.js'
 import bs58 from 'bs58'
 import nacl from 'tweetnacl'
-import {
-  getAssociatedTokenAddress,
-  createTransferInstruction,
-  TOKEN_PROGRAM_ID,
-  getOrCreateAssociatedTokenAccount
-} from '@solana/spl-token'
 import { SOLANA_MAINNET_CHAINS, SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 
 /**
@@ -161,80 +155,6 @@ export default class SolanaLib {
 
     // Sign the transaction
     transaction.sign(this.keypair)
-
-    // Send and confirm the transaction
-    const signature = await connection.sendRawTransaction(transaction.serialize())
-
-    // Wait for confirmation
-    await connection.confirmTransaction(signature, 'confirmed')
-
-    return signature
-  }
-
-  /**
-   * Send an SPL token to a recipient
-   * @param tokenAddress The token's mint address
-   * @param recipientAddress The recipient's address
-   * @param amount The amount to send (as a bigint)
-   * @returns The transaction signature/hash
-   */
-  public async sendSplToken(
-    tokenAddress: string,
-    recipientAddress: string,
-    chainId: string,
-    amount: bigint
-  ): Promise<string> {
-    const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
-
-    if (!rpc) {
-      throw new Error('There is no RPC URL for the provided chain')
-    }
-
-    const connection = new Connection(rpc, 'confirmed')
-    const fromWallet = this.keypair
-    const fromPubkey = fromWallet.publicKey
-    const toPubkey = new PublicKey(recipientAddress)
-    const mint = new PublicKey(tokenAddress)
-
-    // Get sender's token account (create if it doesn't exist)
-    const fromTokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection,
-      fromWallet,
-      mint,
-      fromPubkey
-    )
-
-    // Check if recipient has a token account WITHOUT creating one
-    const associatedTokenAddress = await getAssociatedTokenAddress(mint, toPubkey)
-
-    const recipientTokenAccount = await connection.getAccountInfo(associatedTokenAddress)
-
-    if (!recipientTokenAccount) {
-      throw new Error(
-        `Recipient ${recipientAddress} doesn't have a token account for this SPL token. Transaction cannot proceed.`
-      )
-    }
-
-    // Create transfer instruction to existing account
-    const transferInstruction = createTransferInstruction(
-      fromTokenAccount.address,
-      associatedTokenAddress,
-      fromPubkey,
-      amount,
-      [],
-      TOKEN_PROGRAM_ID
-    )
-
-    // Create transaction and add the transfer instruction
-    const transaction = new Transaction().add(transferInstruction)
-
-    // Get recent blockhash
-    const { blockhash } = await connection.getLatestBlockhash('confirmed')
-    transaction.recentBlockhash = blockhash
-    transaction.feePayer = fromPubkey
-
-    // Sign the transaction
-    transaction.sign(fromWallet)
 
     // Send and confirm the transaction
     const signature = await connection.sendRawTransaction(transaction.serialize())
