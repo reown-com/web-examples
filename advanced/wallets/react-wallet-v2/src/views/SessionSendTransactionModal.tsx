@@ -167,7 +167,7 @@ export default function SessionSendTransactionModal() {
 
 // Extracted Components for Loading, Single-Chain, and Multi-Chain Modals
 
-const LoadingComponent = (): JSX.Element => (
+const LoadingComponent = () => (
   <Card>
     <Card.Body css={{ paddingTop: '$20', paddingBottom: '$20' }}>
       <Loading type="points" />
@@ -195,7 +195,7 @@ const SingleChainModal = ({
   onReject,
   loadingApprove,
   loadingReject
-}: SingleChainModalProps): JSX.Element => (
+}: SingleChainModalProps) => (
   <RequestModal
     intention="sign a transaction"
     metadata={session.peer.metadata}
@@ -224,7 +224,7 @@ const MultiChainModal = ({
   orchestrationId,
   onReject,
   loadingReject
-}: MultiChainModalProps): JSX.Element => (
+}: MultiChainModalProps) => (
   <MultibridgeRequestModal
     transactions={transactions}
     orchestrationId={orchestrationId}
