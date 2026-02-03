@@ -5,12 +5,18 @@ import { addressToEmptyAccount, createKernelAccount } from '@zerodev/sdk'
 import { serializeSessionKeyAccount, signerToSessionKeyValidator } from '@zerodev/session-key'
 import { getUpdateConfigCall } from '@zerodev/weighted-ecdsa-validator'
 import { ENTRYPOINT_ADDRESS_V06, SmartAccountClientConfig } from 'permissionless'
-import { EntryPoint } from 'permissionless/types/entrypoint'
+import { EntryPoint } from 'permissionless/types'
 import { KERNEL_V2_4, KERNEL_V3_1 } from '@zerodev/sdk/constants'
 import { KERNEL_V2_VERSION_TYPE, KERNEL_V3_VERSION_TYPE } from '@zerodev/sdk/types'
 import { decodeDIDToSecp256k1PublicKey } from '@/utils/HelperUtil'
-import { KeySigner } from 'viem/_types/experimental/erc7715/types/signer'
 import { SmartAccountLib } from './SmartAccountLib'
+
+type KeySigner = {
+  type: 'key'
+  data: {
+    id: string
+  }
+}
 
 type DonutPurchasePermissionData = {
   target: string
