@@ -44,7 +44,7 @@ export default function PairingCard({ logo, name, url, topic, onDelete }: IProps
             {truncate(url?.split('https://')[1] ?? 'Unknown', 23)}
           </Link>
         </div>
-        <Tooltip content="Delete" placement="left">
+        <Tooltip content="Delete" placement="left" color="primary" css={{}} contentColor="default">
           <Button
             size="sm"
             color="error"

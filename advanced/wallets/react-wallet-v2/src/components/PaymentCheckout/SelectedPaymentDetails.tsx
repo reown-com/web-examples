@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Text, Row, Container, Col, Card, Divider, Spacer } from '@nextui-org/react'
+import { Text, Row, Container, Col, Card, Spacer } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { DetailedPaymentOption } from '@/types/wallet_checkout'
 import Image from 'next/image'
 import { formatUnits } from 'viem'

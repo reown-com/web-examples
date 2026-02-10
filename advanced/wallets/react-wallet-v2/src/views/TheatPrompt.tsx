@@ -1,4 +1,5 @@
-import { Col, Divider, Link, Row, Text, styled } from '@nextui-org/react'
+import { Col, Link, Row, Text, styled } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { CoreTypes } from '@walletconnect/types'
 import NewReleasesIcon from '@mui/icons-material/NewReleases'
 
@@ -56,7 +57,7 @@ export default function ThreatPrompt({ metadata, onApprove, onReject }: IProps) 
           </Col>
         </Row>
         <div style={{ textAlign: 'center' }}>
-          <Divider y={1} />
+          <StyledDivider css={{ my: '$4' }} />
           <Text>
             This website you`re trying to connect is flagged as malicious by multiple security
             providers. Approving may lead to loss of funds.

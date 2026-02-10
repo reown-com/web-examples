@@ -1,5 +1,5 @@
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
-import { Divider } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { CoreTypes } from '@walletconnect/types'
 import ModalFooter, { LoaderProps } from '@/components/ModalFooter'
 import ProjectInfoCard from '@/components/ProjectInfoCard'
@@ -56,9 +56,9 @@ export default function RequestModal({
       <>
         <RequestModalContainer title="">
           <ProjectInfoCard metadata={metadata} intention={intention} />
-          <Divider y={1} />
+          <StyledDivider css={{ my: '$4' }} />
           {children}
-          <Divider y={1} />
+          <StyledDivider css={{ my: '$4' }} />
           {disableThreatDetection === undefined ? <VerifyInfobox metadata={metadata} /> : null}
         </RequestModalContainer>
         <ModalFooter

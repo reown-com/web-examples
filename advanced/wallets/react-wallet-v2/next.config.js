@@ -1,5 +1,11 @@
 module.exports = {
   reactStrictMode: true,
+  turbopack: {
+    resolveAlias: {
+      fs: { browser: './node_modules/next/dist/compiled/edge-runtime/primitives/crypto.js' },
+      path: { browser: 'path-browserify' }
+    }
+  },
   webpack(config) {
     config.resolve.fallback = {
       ...config.resolve.fallback,

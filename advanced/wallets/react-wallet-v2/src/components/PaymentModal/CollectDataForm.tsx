@@ -133,7 +133,7 @@ export default function CollectDataForm({
               <FormInput
                 placeholder={field.name}
                 value={formData[field.id] || ''}
-                onChange={e => handleFormChange(field.id, e.target.value, field.fieldType)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormChange(field.id, e.target.value, field.fieldType)}
                 maxLength={field.fieldType === 'date' ? 10 : undefined}
                 hasError={!!formErrors[field.id]}
               />

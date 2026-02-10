@@ -1,4 +1,4 @@
-import { Transaction, SignableMessage } from '@multiversx/sdk-core'
+import { Transaction, TransactionComputer, Message, MessageComputer } from '@multiversx/sdk-core'
 import { Mnemonic, UserSecretKey, UserWallet, UserSigner } from '@multiversx/sdk-wallet'
 
 /**
@@ -49,12 +49,14 @@ export default class MultiversxLib {
     const secretKey = UserWallet.decryptSecretKey(this.wallet.toJSON(), this.password)
     const secretKeyHex = secretKey.hex()
 
-    const signMessage = new SignableMessage({
-      message: Buffer.from(message)
+    const messageObj = new Message({
+      data: Buffer.from(message)
     })
 
+    const messageComputer = new MessageComputer()
     const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
-    const signature = await signer.sign(signMessage.serializeForSigning())
+    const bytesToSign = messageComputer.computeBytesForSigning(messageObj)
+    const signature = await signer.sign(Buffer.from(bytesToSign))
 
     return { signature: signature.toString('hex') }
   }
@@ -63,10 +65,12 @@ export default class MultiversxLib {
     const secretKey = UserWallet.decryptSecretKey(this.wallet.toJSON(), this.password)
     const secretKeyHex = secretKey.hex()
 
-    const signTransaction = Transaction.fromPlainObject(transaction)
+    const txObj = Transaction.newFromPlainObject(transaction)
+    const txComputer = new TransactionComputer()
 
     const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
-    const signature = await signer.sign(signTransaction.serializeForSigning())
+    const bytesToSign = txComputer.computeBytesForSigning(txObj)
+    const signature = await signer.sign(Buffer.from(bytesToSign))
 
     return { signature: signature.toString('hex') }
   }
@@ -74,12 +78,14 @@ export default class MultiversxLib {
   async signTransactions(transactions: any[]) {
     const secretKey = UserWallet.decryptSecretKey(this.wallet.toJSON(), this.password)
     const secretKeyHex = secretKey.hex()
+    const txComputer = new TransactionComputer()
 
     const signatures = await Promise.all(
       transactions.map(async (transaction: any): Promise<any> => {
-        const signTransaction = Transaction.fromPlainObject(transaction)
+        const txObj = Transaction.newFromPlainObject(transaction)
         const signer = new UserSigner(UserSecretKey.fromString(secretKeyHex))
-        const signature = await signer.sign(signTransaction.serializeForSigning())
+        const bytesToSign = txComputer.computeBytesForSigning(txObj)
+        const signature = await signer.sign(Buffer.from(bytesToSign))
 
         return { signature: signature.toString('hex') }
       })

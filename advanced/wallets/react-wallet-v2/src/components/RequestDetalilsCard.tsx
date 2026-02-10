@@ -6,7 +6,8 @@ import { SOLANA_CHAINS, TSolanaChain } from '@/data/SolanaData'
 import { MULTIVERSX_CHAINS, TMultiversxChain } from '@/data/MultiversxData'
 import { TRON_CHAINS, TTronChain } from '@/data/TronData'
 import { TON_CHAINS, TTonChain } from '@/data/TonData'
-import { Col, Divider, Row, Text } from '@nextui-org/react'
+import { Col, Row, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { Fragment } from 'react'
 
 /**
@@ -47,7 +48,7 @@ export default function RequestDetailsCard({ chains, protocol }: IProps) {
 
       {protocol ? (
         <Fragment>
-          <Divider y={2} />
+          <StyledDivider css={{ my: '$8' }} />
 
           <Row>
             <Col>

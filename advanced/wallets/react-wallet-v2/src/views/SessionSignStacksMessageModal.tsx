@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
-import { Col, Divider, Row, Text } from '@nextui-org/react'
+import { Col, Row, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
@@ -74,14 +75,14 @@ export default function SessionSignStacksMessageModal() {
       rejectLoader={{ active: isLoadingReject }}
     >
       <RequestMethodCard methods={[request.method]} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <Row>
         <Col>
           <Text h5>ChainId</Text>
           <Text color="$gray400">{chainId}</Text>
         </Col>
       </Row>
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <RequestDataCard data={params.request} />
     </RequestModal>
   ) : (

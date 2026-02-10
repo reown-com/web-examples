@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Card, Divider, Loading, Text } from '@nextui-org/react'
+import { Card, Loading, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { approveEIP155Request, rejectEIP155Request } from '@/utils/EIP155RequestHandlerUtil'
 import { styledToast } from '@/utils/HelperUtil'
 import { walletkit } from '@/utils/WalletConnectUtil'
@@ -167,7 +168,7 @@ export default function SessionSendTransactionModal() {
 
 // Extracted Components for Loading, Single-Chain, and Multi-Chain Modals
 
-const LoadingComponent = (): JSX.Element => (
+const LoadingComponent = () => (
   <Card>
     <Card.Body css={{ paddingTop: '$20', paddingBottom: '$20' }}>
       <Loading type="points" />
@@ -195,7 +196,7 @@ const SingleChainModal = ({
   onReject,
   loadingApprove,
   loadingReject
-}: SingleChainModalProps): JSX.Element => (
+}: SingleChainModalProps) => (
   <RequestModal
     intention="sign a transaction"
     metadata={session.peer.metadata}
@@ -205,9 +206,9 @@ const SingleChainModal = ({
     rejectLoader={{ active: loadingReject }}
   >
     <RequestDataCard data={transaction} />
-    <Divider y={1} />
+    <StyledDivider css={{ my: '$4' }} />
     <RequestDetailsCard chains={[chainId]} protocol={session.relay.protocol} />
-    <Divider y={1} />
+    <StyledDivider css={{ my: '$4' }} />
     <RequestMethodCard methods={[method]} />
   </RequestModal>
 )
@@ -224,7 +225,7 @@ const MultiChainModal = ({
   orchestrationId,
   onReject,
   loadingReject
-}: MultiChainModalProps): JSX.Element => (
+}: MultiChainModalProps) => (
   <MultibridgeRequestModal
     transactions={transactions}
     orchestrationId={orchestrationId}

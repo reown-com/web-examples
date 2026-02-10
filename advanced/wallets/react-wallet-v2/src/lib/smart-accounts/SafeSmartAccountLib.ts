@@ -5,7 +5,7 @@ import {
 } from 'permissionless'
 import { SmartAccountLib } from './SmartAccountLib'
 import { SmartAccount, signerToSafeSmartAccount } from 'permissionless/accounts'
-import { EntryPoint } from 'permissionless/types/entrypoint'
+import { EntryPoint } from 'permissionless/types'
 import { Address, Hex, createWalletClient, http, toHex } from 'viem'
 import { TRUSTED_SMART_SESSIONS_ATTERSTER_ADDRESS } from './builders/SmartSessionUtil'
 import {

@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
-import { Divider, Text } from '@nextui-org/react'
+import { Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import RequestDataCard from '@/components/RequestDataCard'
 import RequesDetailsCard from '@/components/RequestDetalilsCard'
 import RequestMethodCard from '@/components/RequestMethodCard'
@@ -73,9 +74,9 @@ export default function SessionSendCallsModal() {
       rejectLoader={{ active: isLoadingReject }}
     >
       <RequestDataCard data={transaction} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession?.relay.protocol} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <RequestMethodCard methods={[request.method]} />
     </RequestModal>
   ) : (

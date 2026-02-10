@@ -1,4 +1,5 @@
-import { Col, Divider, Grid, Row, Text, styled } from '@nextui-org/react'
+import { Col, Grid, Row, Text, styled } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   buildApprovedNamespaces,
@@ -434,9 +435,9 @@ export default function SessionProposalModal() {
         }
 
         if (namespaces.ton) {
-          const tonWallet = await getWallet();
-          sessionProperties.ton_getPublicKey = tonWallet.getPublicKey();
-          sessionProperties.ton_getStateInit = tonWallet.getStateInit();
+          const tonWallet = await getWallet()
+          sessionProperties.ton_getPublicKey = tonWallet.getPublicKey()
+          sessionProperties.ton_getStateInit = tonWallet.getStateInit()
         }
 
         console.log('sessionProperties', sessionProperties)
@@ -517,7 +518,7 @@ export default function SessionProposalModal() {
           <StyledSpan>Move funds without permission</StyledSpan>
         </Col>
       </Row>
-      <Divider style={{ marginTop: '10px' }} />
+      <StyledDivider css={{ marginTop: '10px' }} />
       {authenticationMessagesToSign && authenticationMessagesToSign.length > 0 && (
         <>
           <Row
@@ -593,7 +594,7 @@ export default function SessionProposalModal() {
               ))}
             </>
           )}
-          <Divider />
+          <StyledDivider />
         </>
       )}
       <Grid.Container style={{ marginBottom: '10px', marginTop: '10px' }} justify={'space-between'}>

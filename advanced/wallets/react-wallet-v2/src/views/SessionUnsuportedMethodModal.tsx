@@ -1,4 +1,5 @@
-import { Button, Divider, Modal, Text } from '@nextui-org/react'
+import { Button, Modal, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { Fragment } from 'react'
 
 import ProjectInfoCard from '@/components/ProjectInfoCard'
@@ -26,11 +27,11 @@ export default function SessionUnsuportedMethodModal() {
       <RequestModalContainer title="Unsuported Method">
         <ProjectInfoCard metadata={requestSession.peer.metadata} />
 
-        <Divider y={1} />
+        <StyledDivider css={{ my: '$4' }} />
 
         <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
 
-        <Divider y={1} />
+        <StyledDivider css={{ my: '$4' }} />
 
         <RequestMethodCard methods={[request.method]} />
       </RequestModalContainer>

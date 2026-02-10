@@ -56,7 +56,7 @@ export default function AccountCard({ name, logo, rgb, address = '', chainId }: 
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
-          <Tooltip content={showBalance ? 'Hide balance' : 'Show balance'} placement="left">
+          <Tooltip content={showBalance ? 'Hide balance' : 'Show balance'} placement="left" color="primary" css={{}} contentColor="default">
             <Button
               size="sm"
               css={{
@@ -69,12 +69,12 @@ export default function AccountCard({ name, logo, rgb, address = '', chainId }: 
               {balanceLoading ? <Loading size="xs" color="white" /> : '💰'}
             </Button>
           </Tooltip>
-          <Tooltip content={copied ? 'Copied!' : 'Copy'} placement="left">
+          <Tooltip content={copied ? 'Copied!' : 'Copy'} placement="left" color="primary" css={{}} contentColor="default">
             <Button
               size="sm"
               css={{ minWidth: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
               data-testid={'chain-copy-button' + chainId}
-              onClick={e => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation()
                 onCopy()
               }}
@@ -87,12 +87,12 @@ export default function AccountCard({ name, logo, rgb, address = '', chainId }: 
               />
             </Button>
           </Tooltip>
-          <Tooltip content={activeChainId === chainId ? 'Active chain' : 'Switch chain'} placement="left">
+          <Tooltip content={activeChainId === chainId ? 'Active chain' : 'Switch chain'} placement="left" color="primary" css={{}} contentColor="default">
             <Button
               size="sm"
               css={{ minWidth: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
               data-testid={'chain-switch-button' + chainId}
-              onClick={e => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation()
                 onChainChanged(chainId, address)
               }}

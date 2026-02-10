@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { transactions } from 'near-api-js'
-import { Divider, Text } from '@nextui-org/react'
+import { Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 
 import RequestDataCard from '@/components/RequestDataCard'
 import RequestDetailsCard from '@/components/RequestDetalilsCard'
@@ -216,9 +217,9 @@ export default function SessionSignNearModal() {
       rejectLoader={{ active: isLoadingReject }}
     >
       <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <RequestDataCard data={formatParams()} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <RequestMethodCard methods={[request.method]} />
     </RequestModal>
   )
