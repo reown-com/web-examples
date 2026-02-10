@@ -122,7 +122,8 @@ interface IProps {
 
 export default function Modal({ children, show, opacity, closeModal }: IProps) {
   const [offset, setOffset] = useState(0);
-  const lightboxRef = useRef<HTMLDivElement>(null);
+  const lightboxRef = useRef<HTMLDivElement>(null!);
+
 
   useEffect(() => {
     if (lightboxRef.current) {

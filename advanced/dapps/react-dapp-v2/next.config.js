@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   distDir: "build",
+  transpilePackages: ["@mysten/sui"],
   webpack(config) {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -12,4 +13,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

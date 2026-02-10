@@ -38,7 +38,7 @@ const SAssetBalance = styled.div`
   display: flex;
 `;
 
-function getAssetIcon(asset: AssetData): JSX.Element {
+function getAssetIcon(asset: AssetData): React.JSX.Element {
   if (!!asset.contractAddress) {
     const src = `https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/${asset.contractAddress.toLowerCase()}.png`;
     return <Icon src={src} fallback={"/assets/erc20.svg"} />;
