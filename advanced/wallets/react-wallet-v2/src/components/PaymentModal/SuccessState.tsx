@@ -9,11 +9,11 @@ interface SuccessStateProps {
 export default function SuccessState({ onClose }: SuccessStateProps) {
   return (
     <Fragment>
-      <Modal.Header>
+      <Modal.Header css={{ justifyContent: 'center' }}>
         <Text h3>Payment Complete</Text>
       </Modal.Header>
       <Modal.Body>
-        <Container css={{ padding: '40px 20px', textAlign: 'center' }}>
+        <Container css={{ padding: '40px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <CheckCircleIcon sx={{ fontSize: 80, color: '#17C964' }} />
           <Text h4 css={{ marginTop: '16px' }} color="success">
             Payment Successful
@@ -24,7 +24,7 @@ export default function SuccessState({ onClose }: SuccessStateProps) {
         </Container>
       </Modal.Body>
       <Modal.Footer>
-        <Button auto color="success" onClick={onClose}>
+        <Button css={{ width: '100%' }} color="success" onClick={onClose}>
           Done
         </Button>
       </Modal.Footer>
