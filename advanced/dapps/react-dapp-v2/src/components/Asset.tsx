@@ -70,7 +70,7 @@ interface AssetProps {
 const Asset = (props: AssetProps) => {
   const { asset } = props;
   return (
-    <SAsset {...props}>
+    <SAsset>
       <SAssetLeft>
         {getAssetIcon(asset)}
         <SAssetName>{asset.name}</SAssetName>

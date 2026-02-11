@@ -1,46 +1,47 @@
 import * as React from "react";
-import * as PropTypes from "prop-types";
 import { styled } from "styled-components";
 
-interface ColumnStyleProps {
-  spanHeight: boolean;
-  maxWidth: number;
-  center: boolean;
-  children?: React.ReactNode;
+interface SColumnStyleProps {
+  $spanHeight: boolean;
+  $maxWidth: number;
+  $center: boolean;
 }
 
-interface ColumnProps extends ColumnStyleProps {
+interface ColumnProps {
   children: React.ReactNode;
+  spanHeight?: boolean;
+  maxWidth?: number;
+  center?: boolean;
+  className?: string;
 }
 
-const SColumn = styled.div<ColumnStyleProps>`
+const SColumn = styled.div<SColumnStyleProps>`
   position: relative;
   width: 100%;
-  height: ${({ spanHeight }) => (spanHeight ? "100%" : "auto")};
-  max-width: ${({ maxWidth }) => `${maxWidth}px`};
+  height: ${({ $spanHeight }) => ($spanHeight ? "100%" : "auto")};
+  max-width: ${({ $maxWidth }) => `${$maxWidth}px`};
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: ${({ center }) => (center ? "center" : "flex-start")};
+  justify-content: ${({ $center }) => ($center ? "center" : "flex-start")};
 `;
 
-const Column = (props: ColumnProps) => {
-  const { children, spanHeight, maxWidth, center } = props;
-  return <SColumn {...props}>{children}</SColumn>;
-};
-
-Column.propTypes = {
-  children: PropTypes.node.isRequired,
-  spanHeight: PropTypes.bool,
-  maxWidth: PropTypes.number,
-  center: PropTypes.bool,
-};
-
-Column.defaultProps = {
-  spanHeight: false,
-  maxWidth: 600,
-  center: false,
-};
+const Column = ({
+  children,
+  spanHeight = false,
+  maxWidth = 600,
+  center = false,
+  className,
+}: ColumnProps) => (
+  <SColumn
+    $spanHeight={spanHeight}
+    $maxWidth={maxWidth}
+    $center={center}
+    className={className}
+  >
+    {children}
+  </SColumn>
+);
 
 export default Column;

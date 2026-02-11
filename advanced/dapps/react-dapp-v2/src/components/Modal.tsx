@@ -2,35 +2,33 @@ import React, { useEffect, useRef, useState } from "react";
 import { styled } from "styled-components";
 import { colors, transitions } from "../styles";
 
-interface LightboxProps {
-  show: boolean;
-  offset: number;
-  opacity?: number;
-  children?: React.ReactNode;
-  ref?: React.RefObject<HTMLDivElement>;
+interface LightboxStyleProps {
+  $show: boolean;
+  $offset: number;
+  $opacity?: number;
 }
 
-const SLightbox = styled.div<LightboxProps>`
+const SLightbox = styled.div<LightboxStyleProps>`
   transition: opacity 0.1s ease-in-out;
   text-align: center;
   position: absolute;
   width: 100vw;
   height: 100%;
   margin-left: -50vw;
-  top: ${({ offset }) => (offset ? `-${offset}px` : 0)};
+  top: ${({ $offset }) => ($offset ? `-${$offset}px` : 0)};
   left: 50%;
   z-index: 2;
   will-change: opacity;
-  background-color: ${({ opacity }) => {
+  background-color: ${({ $opacity }) => {
     let alpha = 0.4;
-    if (typeof opacity === "number") {
-      alpha = opacity;
+    if (typeof $opacity === "number") {
+      alpha = $opacity;
     }
     return `rgba(0, 0, 0, ${alpha})`;
   }};
-  opacity: ${({ show }) => (show ? 1 : 0)};
-  visibility: ${({ show }) => (show ? "visible" : "hidden")};
-  pointer-events: ${({ show }) => (show ? "auto" : "none")};
+  opacity: ${({ $show }) => ($show ? 1 : 0)};
+  visibility: ${({ $show }) => ($show ? "visible" : "hidden")};
+  pointer-events: ${({ $show }) => ($show ? "auto" : "none")};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -59,18 +57,17 @@ const SHitbox = styled.div<HitboxProps>`
 `;
 
 interface CloseButtonStyleProps {
-  size: number;
-  color: string;
-  onClick?: any;
+  $size: number;
+  $color: string;
 }
 
 const SCloseButton = styled.div<CloseButtonStyleProps>`
   transition: ${transitions.short};
   position: absolute;
-  width: ${({ size }) => `${size}px`};
-  height: ${({ size }) => `${size}px`};
-  right: ${({ size }) => `${size / 1.6667}px`};
-  top: ${({ size }) => `${size / 1.6667}px`};
+  width: ${({ $size }) => `${$size}px`};
+  height: ${({ $size }) => `${$size}px`};
+  right: ${({ $size }) => `${$size / 1.6667}px`};
+  top: ${({ $size }) => `${$size / 1.6667}px`};
   opacity: 0.5;
   cursor: pointer;
 
@@ -81,9 +78,9 @@ const SCloseButton = styled.div<CloseButtonStyleProps>`
   &:after {
     position: absolute;
     content: " ";
-    height: ${({ size }) => `${size}px`};
+    height: ${({ $size }) => `${$size}px`};
     width: 2px;
-    background: ${({ color }) => `rgb(${colors[color]})`};
+    background: ${({ $color }) => `rgb(${colors[$color]})`};
   }
   &:before {
     transform: rotate(45deg);
@@ -137,11 +134,11 @@ export default function Modal({ children, show, opacity, closeModal }: IProps) {
   }, [offset]);
 
   return (
-    <SLightbox show={show} offset={offset} opacity={opacity} ref={lightboxRef}>
+    <SLightbox $show={show} $offset={offset} $opacity={opacity} ref={lightboxRef}>
       <SModalContainer>
         <SHitbox onClick={closeModal} />
         <SCard>
-          <SCloseButton size={25} color="dark" onClick={closeModal} />
+          <SCloseButton $size={25} $color="dark" onClick={closeModal} />
           <SModalContent>{children}</SModalContent>
         </SCard>
       </SModalContainer>
