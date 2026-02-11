@@ -139,6 +139,7 @@ export async function signMessage(AuthMessage: AuthMessage) {
         })
         return { signature: tonResult.signature, publicKey: tonResult.publicKey, type: 'ton' }
       }
+      break
     case 'solana':
       const solanaResult = await solanaWallets[AuthMessage.address].signMessage({
         message: bs58.encode(new Uint8Array(Buffer.from(AuthMessage.message)))
@@ -172,7 +173,8 @@ export async function signMessage(AuthMessage: AuthMessage) {
       )
       return { signature: polkadotResult.signature, type: 'polkadot' }
     case 'tezos':
-      const tezosResult = await tezosWallets[AuthMessage.address].signPayload(AuthMessage.message)
+      const tezosHexPayload = Buffer.from(AuthMessage.message, 'utf-8').toString('hex')
+      const tezosResult = await tezosWallets[AuthMessage.address].signPayload(tezosHexPayload)
       return { signature: tezosResult.sig, type: 'tezos' }
     case 'tron':
       const tronResult = await tronWallets[AuthMessage.address].signMessage(AuthMessage.message)
