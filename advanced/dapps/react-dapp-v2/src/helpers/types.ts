@@ -1,5 +1,4 @@
-import { IPactCommand } from "@kadena/client";
-import { ChainId } from "@kadena/types";
+type ChainId = `${number}`;
 
 export interface AssetData {
   symbol: string;

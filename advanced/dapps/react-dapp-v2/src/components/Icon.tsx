@@ -1,42 +1,31 @@
 import * as React from "react";
-import * as PropTypes from "prop-types";
 import styled from "styled-components";
 
-interface IconStyleProps {
-  size: number;
+interface SIconStyleProps {
+  $size: number;
 }
 
-const SIcon = styled.img<IconStyleProps>`
-  width: ${({ size }) => `${size}px`};
-  height: ${({ size }) => `${size}px`};
+const SIcon = styled.img<SIconStyleProps>`
+  width: ${({ $size }) => `${$size}px`};
+  height: ${({ $size }) => `${$size}px`};
 `;
 
-const Icon = (props: any) => {
-  const { src, fallback, size } = props;
-  return (
-    <SIcon
-      {...props}
-      src={src}
-      size={size}
-      onError={(event: any) => {
-        if (fallback) {
-          event.target.src = fallback;
-        }
-      }}
-    />
-  );
-};
+interface IconProps {
+  src?: string | null;
+  fallback?: string;
+  size?: number;
+}
 
-Icon.propTypes = {
-  src: PropTypes.string,
-  fallback: PropTypes.string,
-  size: PropTypes.number,
-};
-
-Icon.defaultProps = {
-  src: null,
-  fallback: "",
-  size: 20,
-};
+const Icon = ({ src = null, fallback = "", size = 20 }: IconProps) => (
+  <SIcon
+    src={src || undefined}
+    $size={size}
+    onError={(event: React.SyntheticEvent<HTMLImageElement>) => {
+      if (fallback) {
+        event.currentTarget.src = fallback;
+      }
+    }}
+  />
+);
 
 export default Icon;

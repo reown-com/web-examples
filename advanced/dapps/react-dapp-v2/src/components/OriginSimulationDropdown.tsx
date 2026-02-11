@@ -60,7 +60,7 @@ const OriginSimulationDropdown = (props: OriginSimulationProps) => {
       {show && (
         <SelectContainer
           value={selectedOrigin}
-          onChange={(e) => setOrigin(e?.target?.value)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setOrigin(e?.target?.value)}
         >
           <option disabled>Origin Url:</option>
           {ORIGIN_OPTIONS.map((e, i) => {

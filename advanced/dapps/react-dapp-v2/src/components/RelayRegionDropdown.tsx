@@ -36,7 +36,7 @@ const RelayRegionDropdown = (props: RelayRegionDropdownProps) => {
       {show && (
         <SelectContainer
           value={relayerRegion}
-          onChange={(e) => setRelayerRegion?.(e?.target?.value)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRelayerRegion?.(e?.target?.value)}
         >
           <option disabled>Relayer Region:</option>
           {REGIONALIZED_RELAYER_ENDPOINTS.map((e, i) => {

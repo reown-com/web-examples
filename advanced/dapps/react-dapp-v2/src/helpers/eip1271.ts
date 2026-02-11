@@ -1,4 +1,4 @@
-import { Contract, providers, utils } from "ethers";
+import { Contract, Provider, getBytes } from "ethers";
 
 const spec = {
   magicValue: "0x1626ba7e",
@@ -33,14 +33,14 @@ async function isValidSignature(
   address: string,
   sig: string,
   data: string,
-  provider: providers.Provider,
+  provider: Provider,
   abi = eip1271.spec.abi,
   magicValue = eip1271.spec.magicValue
 ): Promise<boolean> {
   let returnValue;
   try {
     returnValue = await new Contract(address, abi, provider).isValidSignature(
-      utils.arrayify(data),
+      getBytes(data),
       sig
     );
   } catch (e) {

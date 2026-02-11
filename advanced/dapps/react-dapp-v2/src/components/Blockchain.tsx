@@ -19,10 +19,7 @@ import { fonts } from "../styles";
 import Icon from "./Icon";
 
 interface AccountStyleProps {
-  rgb: string;
-  children?: React.ReactNode;
-  onClick?: () => void;
-  className?: string;
+  $rgb: string;
 }
 
 const SAccount = styled.div<AccountStyleProps>`
@@ -33,9 +30,9 @@ const SAccount = styled.div<AccountStyleProps>`
   border-radius: 8px;
   padding: 8px;
   margin: 5px 0;
-  border: ${({ rgb }) => `2px solid rgb(${rgb})`};
+  border: ${({ $rgb }) => `2px solid rgb(${$rgb})`};
   &.active {
-    box-shadow: ${({ rgb }) => `0 0 8px rgb(${rgb})`};
+    box-shadow: ${({ $rgb }) => `0 0 8px rgb(${$rgb})`};
   }
 `;
 
@@ -72,17 +69,17 @@ const SFullWidthContainer = styled.div`
   flex-wrap: wrap;
 `;
 
-interface ActionProps {
-  rgb: string;
+interface ActionStyleProps {
+  $rgb: string;
 }
 
-const SAction = styled(Button)<ActionProps>`
+const SAction = styled(Button)<ActionStyleProps>`
   border-radius: 8px;
   font-size: ${fonts.size.medium};
   height: 44px;
   width: 100%;
   margin: 12px 0;
-  background-color: ${({ rgb }) => `rgb(${rgb})`};
+  background-color: ${({ $rgb }) => `rgb(${$rgb})`};
 `;
 
 const SBlockchainChildrenContainer = styled(SFullWidthContainer)`
@@ -197,7 +194,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
   return (
     <React.Fragment>
       <SAccount
-        rgb={chain.meta.rgb}
+        $rgb={chain.meta.rgb}
         onClick={() => onClick && onClick(props.chainId)}
         className={active ? "active" : ""}
       >
@@ -266,7 +263,7 @@ const Blockchain: FC<PropsWithChildren<BlockchainProps>> = (
                     <SAction
                       key={action.method}
                       left
-                      rgb={chain.meta.rgb}
+                      $rgb={chain.meta.rgb}
                       onClick={() => action.callback(chainId, address)}
                     >
                       {action.method}
