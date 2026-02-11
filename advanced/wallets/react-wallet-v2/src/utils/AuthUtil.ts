@@ -131,15 +131,12 @@ export async function signMessage(AuthMessage: AuthMessage) {
       const eip155Result = await eip155Wallets[AuthMessage.address].signMessage(AuthMessage.message)
       return { signature: eip155Result, type: getSignatureType(parsed.namespace) }
     case 'ton':
-      if (AuthMessage.statement) {
-        const tonResult = await tonWallets[AuthMessage.address].generateTonProof({
-          iat: AuthMessage.iat,
-          domain: AuthMessage.domain,
-          payload: AuthMessage.statement,
-        })
-        return { signature: tonResult.signature, publicKey: tonResult.publicKey, type: 'ton' }
-      }
-      break
+      const tonResult = await tonWallets[AuthMessage.address].generateTonProof({
+        iat: AuthMessage.iat,
+        domain: AuthMessage.domain,
+        payload: AuthMessage.statement ?? '',
+      })
+      return { signature: tonResult.signature, publicKey: tonResult.publicKey, type: 'ton' }
     case 'solana':
       const solanaResult = await solanaWallets[AuthMessage.address].signMessage({
         message: bs58.encode(new Uint8Array(Buffer.from(AuthMessage.message)))

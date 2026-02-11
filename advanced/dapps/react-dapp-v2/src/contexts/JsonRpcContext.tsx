@@ -116,7 +116,7 @@ import {
 } from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
 import { getTronWeb } from "../helpers/tron";
-import { signVerify } from "@ton/crypto";
+import { verifyTonProofSignature } from "../helpers/ton";
 /**
  * Types
  */
@@ -2716,14 +2716,14 @@ async function isValidTonSignature(params: {
   signatureMeta?: string;
 }) {
   const { message, signature, iss, signatureMeta = "" } = params;
+  const address = getDidAddress(iss)!;
 
-  const valid = await signVerify(
-    Buffer.from(message, "utf-8"),
-    Buffer.from(signature, "base64"),
-    Buffer.from(signatureMeta, "base64"),
-  );
-
-  return valid;
+  return verifyTonProofSignature({
+    message,
+    signature,
+    address,
+    publicKeyHex: signatureMeta,
+  });
 }
 export function isValidSignature(params: {
   message: string;

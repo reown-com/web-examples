@@ -7,6 +7,8 @@ import {
   Address,
 } from "@ton/core";
 import { TonClient, Transaction } from "@ton/ton";
+import { signVerify } from "@ton/crypto";
+import { sha256 } from "@noble/hashes/sha2.js";
 
 let clients = new Map<string, TonClient>();
 function getTonClient(chainId: string) {
@@ -131,6 +133,117 @@ async function retry<T>(
   }
   if (printedAnything) console.log("\n");
   throw lastError;
+}
+
+const TON_PROOF_PREFIX = "ton-proof-item-v2/";
+const TON_CONNECT_PREFIX = "ton-connect";
+
+function parseSiweField(message: string, field: string): string {
+  const match = message.match(new RegExp(`${field}: (.+)`));
+  return match?.[1] ?? "";
+}
+
+function parseSiweStatement(message: string): string {
+  const lines = message.split("\n");
+  const statementLines: string[] = [];
+  let collecting = false;
+  for (const line of lines) {
+    if (collecting) {
+      if (line.startsWith("URI: ")) break;
+      statementLines.push(line);
+    }
+    if (line === "") collecting = true;
+  }
+  return statementLines.join("\n").trim();
+}
+
+function concatBytes(...arrays: Uint8Array[]): Uint8Array {
+  const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const arr of arrays) {
+    result.set(arr, offset);
+    offset += arr.length;
+  }
+  return result;
+}
+
+function writeUint32BE(value: number): Uint8Array {
+  const buf = new Uint8Array(4);
+  new DataView(buf.buffer).setUint32(0, value, false);
+  return buf;
+}
+
+function writeUint32LE(value: number): Uint8Array {
+  const buf = new Uint8Array(4);
+  new DataView(buf.buffer).setUint32(0, value, true);
+  return buf;
+}
+
+function writeBigUint64LE(value: bigint): Uint8Array {
+  const buf = new Uint8Array(8);
+  new DataView(buf.buffer).setBigUint64(0, value, true);
+  return buf;
+}
+
+function buildTonProofMessageBytes(
+  address: Address,
+  domain: string,
+  timestamp: number,
+  payload: string
+): Uint8Array {
+  const wc = writeUint32BE(address.workChain);
+  const ts = writeBigUint64LE(BigInt(timestamp));
+  const dl = writeUint32LE(domain.length);
+  const encoder = new TextEncoder();
+
+  const m = concatBytes(
+    encoder.encode(TON_PROOF_PREFIX),
+    wc,
+    new Uint8Array(address.hash),
+    dl,
+    encoder.encode(domain),
+    ts,
+    encoder.encode(payload),
+  );
+
+  const messageHash = sha256(m);
+
+  const fullMes = concatBytes(
+    new Uint8Array([0xff, 0xff]),
+    encoder.encode(TON_CONNECT_PREFIX),
+    messageHash,
+  );
+
+  return sha256(fullMes);
+}
+
+export async function verifyTonProofSignature(params: {
+  message: string;
+  signature: string;
+  address: string;
+  publicKeyHex: string;
+}): Promise<boolean> {
+  const { message, signature, address, publicKeyHex } = params;
+
+  const tonAddress = Address.parse(address);
+  const domain = message.split(" wants you to sign in")[0];
+  const iat = parseSiweField(message, "Issued At");
+  const statement = parseSiweStatement(message);
+  const timestamp = Math.floor(new Date(iat).getTime() / 1000);
+
+  const dataToVerify = buildTonProofMessageBytes(
+    tonAddress,
+    domain,
+    timestamp,
+    statement
+  );
+
+  return signVerify(
+    Buffer.from(dataToVerify),
+    Buffer.from(signature, "base64"),
+    Buffer.from(publicKeyHex, "hex")
+  );
 }
 
 async function getTransactionByInMessage(
