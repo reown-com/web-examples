@@ -455,6 +455,7 @@ export default function SessionProposalModal() {
         SettingsStore.setSessions(Object.values(walletkit.getActiveSessions()))
       }
     } catch (e) {
+      console.error('Error approving session', e)
       styledToast((e as Error).message, 'error')
     } finally {
       setIsLoadingApprove(false)
