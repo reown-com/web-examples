@@ -18,7 +18,7 @@
     "@noble/curves": "^2.0.0",
     "@noble/hashes": "^2.0.0",
     "@polkadot/util-crypto": "^14.0.0",
-    "@reown/appkit": "^1.8.17",
+    "@reown/appkit": "^1.7.5",
     "@solana/web3.js": "^1.98.4",
     "@stacks/transactions": "^7.3.1",
     "@ton/core": "^0.63.0",
