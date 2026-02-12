@@ -73,7 +73,7 @@ const isValidEthereumAddress = (address: string): boolean => {
 export default function Home() {
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
   const [transactionHashes, setTransactionHashes] = useState<TransactionHash[]>(
-    []
+    [],
   );
   const [paymentItems, setPaymentItems] = useState<PaymentItem[]>([
     { id: "1", amount: "1.00", network: "base", status: "idle" },
@@ -135,7 +135,6 @@ export default function Home() {
     if (!posClient) return;
 
     posClient.on("connected", (connected) => {
-      connected = true;
       console.log("connected", connected);
       toast.success("Customer wallet connected", {
         icon: "🔗",
@@ -183,8 +182,8 @@ export default function Home() {
         prev.map((tx) =>
           tx.hash === transaction
             ? { ...tx, status: "failed" as TransactionStatus }
-            : tx
-        )
+            : tx,
+        ),
       );
 
       toast.error("Payment failed: " + transaction, {
@@ -199,7 +198,7 @@ export default function Home() {
       console.log("paymentBroadcasted", paymentBroadcasted);
       setTransactionHashes((prev) => {
         const newTransaction: TransactionHash = {
-          hash: paymentBroadcasted,
+          hash: paymentBroadcasted.result,
           status: "pending",
         };
         const newHashes = [...prev, newTransaction];
@@ -226,28 +225,28 @@ export default function Home() {
 
     posClient.on("payment_successful", (paymentSuccessful) => {
       console.log("paymentSuccessful", paymentSuccessful);
-      const { transaction } = paymentSuccessful;
+      const { result } = paymentSuccessful;
 
       // Update transaction status to successful
       setTransactionHashes((prev) =>
         prev.map((tx) =>
-          tx.hash === transaction
+          tx.hash === result
             ? { ...tx, status: "success" as TransactionStatus }
-            : tx
-        )
+            : tx,
+        ),
       );
 
       // Mark the first pending payment item as completed
       // In a real scenario, you'd need better linking between transactions and items
       setPaymentItems((prev) => {
         const pendingIndex = prev.findIndex(
-          (item) => item.status === "pending"
+          (item) => item.status === "pending",
         );
         if (pendingIndex !== -1) {
           return prev.map((item, index) =>
             index === pendingIndex
               ? { ...item, status: "completed" as PaymentItemStatus }
-              : item
+              : item,
           );
         }
         return prev;
@@ -278,7 +277,7 @@ export default function Home() {
               return { ...item, status: "rejected" as PaymentItemStatus };
             }
             return item;
-          })
+          }),
         );
       }
 
@@ -314,7 +313,7 @@ export default function Home() {
 
     // Validate all payment items
     const hasInvalidItems = paymentItems.some(
-      (item) => !item.amount || parseFloat(item.amount) <= 0
+      (item) => !item.amount || parseFloat(item.amount) <= 0,
     );
 
     if (hasInvalidItems) {
@@ -331,7 +330,7 @@ export default function Home() {
 
     // Mark all payment items as pending
     setPaymentItems((prev) =>
-      prev.map((item) => ({ ...item, status: "pending" as PaymentItemStatus }))
+      prev.map((item) => ({ ...item, status: "pending" as PaymentItemStatus })),
     );
 
     const paymentIntents: POSClientTypes.PaymentIntent[] = paymentItems.map(
@@ -347,7 +346,7 @@ export default function Home() {
           amount: item.amount,
           recipient: `${network.id}:${merchantAddress.trim()}`,
         };
-      }
+      },
     );
 
     try {
@@ -359,7 +358,7 @@ export default function Home() {
         {
           icon: "📋",
           duration: 3000,
-        }
+        },
       );
     } catch (error) {
       console.error("Payment initiation failed:", error);
@@ -384,17 +383,17 @@ export default function Home() {
 
   const updatePaymentItem = (
     id: string,
-    updates: Partial<Omit<PaymentItem, "id">>
+    updates: Partial<Omit<PaymentItem, "id">>,
   ) => {
     setPaymentItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
+      prev.map((item) => (item.id === id ? { ...item, ...updates } : item)),
     );
   };
 
   const getTotalAmount = () => {
     return paymentItems.reduce(
       (total, item) => total + parseFloat(item.amount || "0"),
-      0
+      0,
     );
   };
 
@@ -403,7 +402,7 @@ export default function Home() {
     setTransactionHashes([]);
     // Reset all payment item statuses to idle
     setPaymentItems((prev) =>
-      prev.map((item) => ({ ...item, status: "idle" as PaymentItemStatus }))
+      prev.map((item) => ({ ...item, status: "idle" as PaymentItemStatus })),
     );
   };
 
@@ -412,7 +411,7 @@ export default function Home() {
     setTransactionHashes([]);
     // Reset all payment item statuses to idle
     setPaymentItems((prev) =>
-      prev.map((item) => ({ ...item, status: "idle" as PaymentItemStatus }))
+      prev.map((item) => ({ ...item, status: "idle" as PaymentItemStatus })),
     );
     posClient?.restart({ reinit: reinit });
   };
@@ -565,10 +564,10 @@ export default function Home() {
                 paymentState === "idle"
                   ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                   : paymentState === "payment_completed"
-                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                  : paymentState === "payment_failed"
-                  ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                  : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                    : paymentState === "payment_failed"
+                      ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
               }`}
             >
               {paymentState === "idle" && "🟢"}
@@ -631,7 +630,7 @@ export default function Home() {
                       )}
                       <div
                         className={`flex items-center space-x-1 ${getStatusColor(
-                          tx.status
+                          tx.status,
                         )}`}
                       >
                         <span className="text-sm">
@@ -781,7 +780,7 @@ export default function Home() {
                   !isInitialized ||
                   paymentItems.length === 0 ||
                   paymentItems.some(
-                    (item) => !item.amount || parseFloat(item.amount) <= 0
+                    (item) => !item.amount || parseFloat(item.amount) <= 0,
                   ) ||
                   getTotalAmount() <= 0
                 }
