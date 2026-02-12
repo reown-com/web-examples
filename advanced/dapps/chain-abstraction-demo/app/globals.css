@@ -1,6 +1,36 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --radius: 0.5rem;
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-invert: hsl(var(--invert));
+}
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -16,10 +46,8 @@
   }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+@utility text-balance {
+  text-wrap: balance;
 }
 
 @layer base {
@@ -50,8 +78,6 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    
-    /* Custom variables from component */
     --foreground-foreground-secondary: rgba(230, 230, 230, 1);
     --foreground-foreground-accent-primary-010: rgba(9, 136, 240, 0.1);
     --text-text-accent-primary: rgba(9, 136, 240, 1);
@@ -85,8 +111,6 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    
-    /* Custom variables from component */
     --foreground-foreground-secondary: rgba(42, 42, 42, 1);
     --foreground-foreground-accent-primary-010: rgba(9, 136, 240, 0.1);
     --text-text-accent-primary: rgba(9, 136, 240, 1);
@@ -103,7 +127,6 @@
   }
 }
 
-/* Additional utility classes for common patterns in the component */
 @layer components {
   .rounded-button {
     @apply h-8 w-8 rounded-full p-0;
