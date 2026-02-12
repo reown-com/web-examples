@@ -1,22 +1,44 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 
 const PAY_API_BASE_URL = 'https://api.pay.walletconnect.com'
+const ALLOWED_HOST_SUFFIX = '.pay.walletconnect.com'
+const PATH_SEGMENT_PATTERN = /^[a-zA-Z0-9._~:@!$&'()*+,;=-]+$/
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Handle CORS preflight
+function sanitizePathSegments(segments: string[]): string | null {
+  for (const segment of segments) {
+    if (!segment || segment === '.' || segment === '..' || !PATH_SEGMENT_PATTERN.test(segment)) {
+      return null
+    }
+  }
+  return segments.join('/')
+}
+
+function isAllowedTargetUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return parsed.hostname.endsWith(ALLOWED_HOST_SUFFIX) && parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-    return res.status(200).end()
+    res.status(200).end()
+    return
   }
 
   try {
-    // Build the target URL from the path segments
     const pathSegments = req.query.path as string[]
-    const targetPath = pathSegments.join('/')
+    const sanitizedPath = sanitizePathSegments(pathSegments)
+    if (!sanitizedPath) {
+      res.status(400).json({ error: 'Invalid path' })
+      return
+    }
 
-    // Build query string
     const queryString = new URLSearchParams()
     Object.entries(req.query).forEach(([key, value]) => {
       if (key !== 'path' && typeof value === 'string') {
@@ -24,22 +46,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     })
 
-    const targetUrl = `${PAY_API_BASE_URL}/${targetPath}${queryString.toString() ? `?${queryString.toString()}` : ''}`
+    const targetUrl = `${PAY_API_BASE_URL}/${sanitizedPath}${queryString.toString() ? `?${queryString.toString()}` : ''}`
+
+    if (!isAllowedTargetUrl(targetUrl)) {
+      res.status(400).json({ error: 'Invalid target URL' })
+      return
+    }
 
     const apiKey = process.env.NEXT_PUBLIC_PAY_API_KEY
     console.log(`[Pay Proxy] ${req.method} ${targetUrl} (API key: ${apiKey ? 'present' : 'MISSING'})`)
 
-    // Forward the request
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
 
-    // Forward authorization header if present
     if (req.headers.authorization) {
       headers['Authorization'] = req.headers.authorization as string
     }
 
-    // Add API key from server-side env (Pay API expects 'Api-Key' header)
     if (apiKey) {
       headers['Api-Key'] = apiKey
     }
@@ -49,7 +73,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers,
     }
 
-    // Add body for POST requests
     if (req.method === 'POST' && req.body) {
       fetchOptions.body = JSON.stringify(req.body)
     }
@@ -57,15 +80,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const response = await fetch(targetUrl, fetchOptions)
     const data = await response.json()
 
-    // Set CORS headers on response
     res.setHeader('Access-Control-Allow-Origin', '*')
-
-    return res.status(response.status).json(data)
-  } catch (error: any) {
-    console.error('[Pay Proxy] Error:', error)
-    return res.status(500).json({
+    res.status(response.status).json(data)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[Pay Proxy] Error:', message)
+    res.status(500).json({
       error: 'Proxy error',
-      message: error.message
+      message
     })
   }
 }
