@@ -9,12 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@reown/appkit": "1.8.2",
-    "next": "15.5.9",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "react-hot-toast": "^2.6.0",
-    "@walletconnect/pos-client": "0.0.0-canary.1"
+    "@reown/appkit": "1.8.18",
+    "@walletconnect/pos-client": "1.0.5",
+    "next": "15.5.10",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-hot-toast": "^2.6.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -23,7 +23,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.2",
+    "eslint-config-next": "15.5.10",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
