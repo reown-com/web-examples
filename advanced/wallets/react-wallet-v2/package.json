@@ -58,7 +58,7 @@
     "@zerodev/sdk": "5.3.1",
     "@zerodev/session-key": "5.4.0",
     "@zerodev/weighted-ecdsa-validator": "5.3.0",
-    "axios": "^1.13.4",
+    "axios": "^1.13.5",
     "bip32": "^4.0.0",
     "bip39": "^3.1.0",
     "bitcoinjs-lib": "^6.1.7",
