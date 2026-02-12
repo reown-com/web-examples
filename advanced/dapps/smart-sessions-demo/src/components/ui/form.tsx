@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-useless-template-literals */
-/* eslint-disable no-implicit-coercion */
-/* eslint-disable no-negated-condition */
-/* eslint-disable arrow-body-style */
-/* eslint-disable func-style */
 "use client";
 
 import * as React from "react";
