@@ -1,4 +1,5 @@
-import { Col, Divider, Link, Loading, Row, Text, styled } from '@nextui-org/react'
+import { Col, Link, Loading, Row, Text, styled } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { CoreTypes } from '@walletconnect/types'
 import NewReleasesIcon from '@mui/icons-material/NewReleases'
 import RequestModalContainer from '@/components/RequestModalContainer'
@@ -24,7 +25,7 @@ export default function LoadingModal() {
         </Row>
         {message ? (
           <div style={{ textAlign: 'center' }}>
-            <Divider y={1} />
+            <StyledDivider css={{ my: '$4' }} />
             <Text>{message}</Text>
           </div>
         ) : null}

@@ -4,7 +4,7 @@ import { Ed25519Keypair, Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519'
 import { verifyPersonalMessageSignature } from '@mysten/sui/verify'
 import { derivePath } from 'ed25519-hd-key'
 import { SerialTransactionExecutor, Transaction } from '@mysten/sui/transactions'
-import { SuiClient } from '@mysten/sui/client'
+import { SuiJsonRpcClient } from '@mysten/sui/jsonRpc'
 
 interface IInitArguments {
   mnemonic?: string
@@ -32,7 +32,7 @@ const SUI_PATH = "m/44'/784'/0'/0'/0'"
 export default class SuiLib {
   private keypair: Ed25519Keypair
   private mnemonic: string
-  private suiClients: Record<string, SuiClient> = {}
+  private suiClients: Record<string, SuiJsonRpcClient> = {}
   private publicKey: Ed25519PublicKey
 
   constructor(mnemonic?: string) {
@@ -116,13 +116,13 @@ export default class SuiLib {
 
     switch (chainId) {
       case 'sui:mainnet':
-        this.suiClients[chainId] = new SuiClient({ url: 'https://fullnode.mainnet.sui.io/' })
+        this.suiClients[chainId] = new SuiJsonRpcClient({ url: 'https://fullnode.mainnet.sui.io/', network: 'mainnet' })
         break
       case 'sui:testnet':
-        this.suiClients[chainId] = new SuiClient({ url: 'https://fullnode.testnet.sui.io/' })
+        this.suiClients[chainId] = new SuiJsonRpcClient({ url: 'https://fullnode.testnet.sui.io/', network: 'testnet' })
         break
       case 'sui:devnet':
-        this.suiClients[chainId] = new SuiClient({ url: 'https://fullnode.devnet.sui.io/' })
+        this.suiClients[chainId] = new SuiJsonRpcClient({ url: 'https://fullnode.devnet.sui.io/', network: 'devnet' })
         break
       default:
         throw new Error(`Unknown chainId: ${chainId}`)

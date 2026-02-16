@@ -5,7 +5,7 @@ import {
   signerToBiconomySmartAccount,
   signerToSafeSmartAccount
 } from 'permissionless/accounts'
-import { EntryPoint } from 'permissionless/types/entrypoint'
+import { EntryPoint } from 'permissionless/types'
 
 export class BiconomySmartAccountLib extends SmartAccountLib {
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {

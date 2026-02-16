@@ -16,8 +16,22 @@ export async function createOrRestoreMultiversxWallet() {
   const mnemonic2 = localStorage.getItem('MULTIVERSX_MNEMONIC_2')
 
   if (mnemonic1 && mnemonic2) {
-    wallet1 = await MultiversxLib.init({ mnemonic: mnemonic1 })
-    wallet2 = await MultiversxLib.init({ mnemonic: mnemonic2 })
+    try {
+      wallet1 = await MultiversxLib.init({ mnemonic: mnemonic1 })
+    } catch (error) {
+      console.error('Failed to init MultiversX wallet1, creating new one:', error)
+      localStorage.removeItem('MULTIVERSX_MNEMONIC_1')
+      wallet1 = await MultiversxLib.init({})
+      localStorage.setItem('MULTIVERSX_MNEMONIC_1', wallet1.getMnemonic())
+    }
+    try {
+      wallet2 = await MultiversxLib.init({ mnemonic: mnemonic2 })
+    } catch (error) {
+      console.error('Failed to init MultiversX wallet2, creating new one:', error)
+      localStorage.removeItem('MULTIVERSX_MNEMONIC_2')
+      wallet2 = await MultiversxLib.init({})
+      localStorage.setItem('MULTIVERSX_MNEMONIC_2', wallet2.getMnemonic())
+    }
   } else {
     wallet1 = await MultiversxLib.init({})
     wallet2 = await MultiversxLib.init({})

@@ -1,4 +1,5 @@
-import { Col, Divider, Row, Text } from '@nextui-org/react'
+import { Col, Row, Text } from '@nextui-org/react'
+import StyledDivider from './StyledDivider'
 import { Fragment, ReactNode } from 'react'
 
 /**
@@ -27,10 +28,12 @@ export default function PageHeader({ title, children }: Props) {
             {title}
           </Text>
         </Col>
-        {children ? <Col css={{ flex: 1 }}>{children}</Col> : null}
+        {children ? (
+          <Col css={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>{children}</Col>
+        ) : null}
       </Row>
 
-      <Divider css={{ marginBottom: '$10' }} />
+      <StyledDivider css={{ marginBottom: '$10' }} />
     </Fragment>
   )
 }

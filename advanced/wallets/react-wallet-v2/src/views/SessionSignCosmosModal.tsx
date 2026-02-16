@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Divider, Text } from '@nextui-org/react'
+import { Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 import { useCallback, useState } from 'react'
 
 import RequestDataCard from '@/components/RequestDataCard'
@@ -76,9 +77,9 @@ export default function SessionSignCosmosModal() {
       rejectLoader={{ active: isLoadingReject }}
     >
       <RequesDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <RequestDataCard data={params} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       <RequestMethodCard methods={[request.method]} />
     </RequestModal>
   )

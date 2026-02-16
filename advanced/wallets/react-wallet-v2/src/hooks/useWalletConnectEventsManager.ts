@@ -158,6 +158,7 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
 
         case TRON_SIGNING_METHODS.TRON_SIGN_MESSAGE:
         case TRON_SIGNING_METHODS.TRON_SIGN_TRANSACTION:
+        case TRON_SIGNING_METHODS.TRON_SEND_TRANSACTION:
           return ModalStore.open('SessionSignTronModal', { requestEvent, requestSession })
         case TEZOS_SIGNING_METHODS.TEZOS_GET_ACCOUNTS:
         case TEZOS_SIGNING_METHODS.TEZOS_SEND:

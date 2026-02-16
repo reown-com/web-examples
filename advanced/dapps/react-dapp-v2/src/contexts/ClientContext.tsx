@@ -1,6 +1,5 @@
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import { AppKit, CaipNetwork, CaipNetworkId } from "@reown/appkit";
-// @ts-expect-error - our "moduleResolution" doesn't like this
+import { CaipNetwork, CaipNetworkId } from "@reown/appkit";
 import { createAppKit } from "@reown/appkit/core";
 import { defineChain } from "@reown/appkit/networks";
 import {
@@ -74,7 +73,7 @@ interface IContext {
 export const ClientContext = createContext<IContext>({} as IContext);
 
 let creatingClient: boolean = false;
-let appkit: AppKit | undefined;
+let appkit: ReturnType<typeof createAppKit> | undefined;
 /**
  * Provider
  */
@@ -418,7 +417,7 @@ export function ClientContextProvider({
       projectId: DEFAULT_PROJECT_ID,
       themeMode: "dark",
       manualWCControl: true,
-      universalProvider: provider,
+      universalProvider: provider as any,
       networks: [networks[0], ...networks],
       metadata: {
         name: "React App",

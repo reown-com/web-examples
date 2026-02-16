@@ -1,4 +1,4 @@
-import { schnorr } from "@noble/curves/secp256k1";
+import { schnorr } from "@noble/curves/secp256k1.js";
 import * as bitcoin from "bitcoinjs-lib";
 import BitcoinMessage from "bitcoinjs-message";
 import { convertHexToBase64 } from "./utilities";
@@ -61,7 +61,7 @@ export async function isValidBip122Signature(
     const publicKey = decoded.data; // The 32-byte internal public key (X coordinate of pubkey)
 
     // Hash the message using SHA256 (standard Bitcoin message hashing)
-    const messageHash = bitcoin.crypto.sha256(Buffer.from(message));
+    const messageHash = bitcoin.crypto.sha256(new Uint8Array(Buffer.from(message)));
 
     // Verify the Schnorr signature using tiny-secp256k1
     return schnorr.verify(

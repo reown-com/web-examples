@@ -16,8 +16,22 @@ export async function createOrRestoreTronWallet() {
   const privateKey2 = localStorage.getItem('TRON_PrivateKey_2')
 
   if (privateKey1 && privateKey2) {
-    tronWeb1 = await TronLib.init({ privateKey: privateKey1 })
-    tronWeb2 = await TronLib.init({ privateKey: privateKey2 })
+    try {
+      tronWeb1 = await TronLib.init({ privateKey: privateKey1 })
+    } catch (error) {
+      console.error('Failed to init Tron wallet1, creating new one:', error)
+      localStorage.removeItem('TRON_PrivateKey_1')
+      tronWeb1 = await TronLib.init({ privateKey: '' })
+      localStorage.setItem('TRON_PrivateKey_1', tronWeb1.privateKey)
+    }
+    try {
+      tronWeb2 = await TronLib.init({ privateKey: privateKey2 })
+    } catch (error) {
+      console.error('Failed to init Tron wallet2, creating new one:', error)
+      localStorage.removeItem('TRON_PrivateKey_2')
+      tronWeb2 = await TronLib.init({ privateKey: '' })
+      localStorage.setItem('TRON_PrivateKey_2', tronWeb2.privateKey)
+    }
   } else {
     tronWeb1 = await TronLib.init({ privateKey: '' })
     tronWeb2 = await TronLib.init({ privateKey: '' })

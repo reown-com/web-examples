@@ -133,6 +133,13 @@ export const EIP155ChainData: ChainsMap = {
     slip44: 60,
     testnet: true,
   },
+  "36900": {
+    name: "ADI Chain",
+    id: "eip155:36900",
+    rpc: ["https://rpc.adifoundation.ai"],
+    slip44: 60,
+    testnet: false,
+  },
 };
 
 export const EIP155Metadata: NamespaceMetadata = {
@@ -202,6 +209,11 @@ export const EIP155Metadata: NamespaceMetadata = {
   "421611": {
     logo: "/assets/" + "eip155-421611.png",
     rgb: EIP155Colors.arbitrum,
+  },
+  "36900": {
+    name: "ADI",
+    logo: "/assets/eip155-36900.svg",
+    rgb: "66, 133, 244",
   },
 };
 export function getChainMetadata(chainId: string): ChainMetadata {

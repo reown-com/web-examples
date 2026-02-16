@@ -12,6 +12,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "eip155:324",
   "eip155:42161",
   "eip155:42220",
+  "eip155:36900",
   "ton:-239",
   "cosmos:cosmoshub-4",
   "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
@@ -250,6 +251,7 @@ export enum DEFAULT_MULTIVERSX_EVENTS {}
 export enum DEFAULT_TRON_METHODS {
   TRON_SIGN_TRANSACTION = "tron_signTransaction",
   TRON_SIGN_MESSAGE = "tron_signMessage",
+  TRON_SEND_TRANSACTION = "tron_sendTransaction",
 }
 
 export enum DEFAULT_TRON_EVENTS {}

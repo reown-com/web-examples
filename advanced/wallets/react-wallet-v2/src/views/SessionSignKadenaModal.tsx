@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Col, Divider, Row, Text } from '@nextui-org/react'
+import { Col, Row, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 
 import RequestDataCard from '@/components/RequestDataCard'
 import RequestDetailsCard from '@/components/RequestDetalilsCard'
@@ -80,7 +81,7 @@ export default function SessionSignKadenaModal() {
       rejectLoader={{ active: isLoadingReject }}
     >
       <RequestDetailsCard chains={[chainId ?? '']} protocol={requestSession.relay.protocol} />
-      <Divider y={1} />
+      <StyledDivider css={{ my: '$4' }} />
       {message && (
         <>
           <Row>
@@ -89,7 +90,7 @@ export default function SessionSignKadenaModal() {
               <Text color="$gray400">{message}</Text>
             </Col>
           </Row>
-          <Divider y={1} />
+          <StyledDivider css={{ my: '$4' }} />
         </>
       )}
       <RequestDataCard data={params} />

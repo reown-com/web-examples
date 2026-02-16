@@ -131,14 +131,12 @@ export async function signMessage(AuthMessage: AuthMessage) {
       const eip155Result = await eip155Wallets[AuthMessage.address].signMessage(AuthMessage.message)
       return { signature: eip155Result, type: getSignatureType(parsed.namespace) }
     case 'ton':
-      if (AuthMessage.statement) {
-        const tonResult = await tonWallets[AuthMessage.address].generateTonProof({
-          iat: AuthMessage.iat,
-          domain: AuthMessage.domain,
-          payload: AuthMessage.statement,
-        })
-        return { signature: tonResult.signature, publicKey: tonResult.publicKey, type: 'ton' }
-      }
+      const tonResult = await tonWallets[AuthMessage.address].generateTonProof({
+        iat: AuthMessage.iat,
+        domain: AuthMessage.domain,
+        payload: AuthMessage.statement ?? '',
+      })
+      return { signature: tonResult.signature, publicKey: tonResult.publicKey, type: 'ton' }
     case 'solana':
       const solanaResult = await solanaWallets[AuthMessage.address].signMessage({
         message: bs58.encode(new Uint8Array(Buffer.from(AuthMessage.message)))
@@ -172,7 +170,8 @@ export async function signMessage(AuthMessage: AuthMessage) {
       )
       return { signature: polkadotResult.signature, type: 'polkadot' }
     case 'tezos':
-      const tezosResult = await tezosWallets[AuthMessage.address].signPayload(AuthMessage.message)
+      const tezosHexPayload = Buffer.from(AuthMessage.message, 'utf-8').toString('hex')
+      const tezosResult = await tezosWallets[AuthMessage.address].signPayload(tezosHexPayload)
       return { signature: tezosResult.sig, type: 'tezos' }
     case 'tron':
       const tronResult = await tronWallets[AuthMessage.address].signMessage(AuthMessage.message)

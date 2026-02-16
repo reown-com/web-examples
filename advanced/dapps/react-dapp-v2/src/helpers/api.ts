@@ -2,7 +2,6 @@ import axios, { AxiosInstance } from "axios";
 import { apiGetKadenaAccountBalance } from "./kadena";
 
 import { AssetData } from "./types";
-import { PactCommand } from "@kadena/client";
 import { apiGetBip122AccountBalance } from "./bip122";
 import { getSuiClient } from "./sui";
 import { TronWeb } from "tronweb";
@@ -134,6 +133,14 @@ export const rpcProvidersByChainId: RpcProvidersByChainId = {
       symbol: "CELO",
     },
   },
+  36900: {
+    name: "ADI Chain",
+    baseURL: "https://rpc.adifoundation.ai",
+    token: {
+      name: "ADI",
+      symbol: "ADI",
+    },
+  },
 };
 
 const api: AxiosInstance = axios.create({
@@ -147,14 +154,14 @@ const api: AxiosInstance = axios.create({
 
 export async function apiGetAccountBalance(
   address: string,
-  chainId: string
+  chainId: string,
 ): Promise<AssetData> {
   const [namespace, networkId] = chainId.split(":");
 
   if (namespace === "kadena") {
     return apiGetKadenaAccountBalance(
       address,
-      networkId as PactCommand["networkId"]
+      networkId,
     );
   }
 
@@ -193,7 +200,7 @@ export async function apiGetAccountBalance(
 
 export const apiGetTronAccountBalance = async (
   address: string,
-  networkId: string
+  networkId: string,
 ): Promise<AssetData> => {
   try {
     let fullHost: string;
@@ -223,34 +230,37 @@ export const apiGetTronAccountBalance = async (
       balance: balanceInTrx.toString(),
       symbol: "TRX",
       name: "TRX",
+      decimals: 0,
     };
   } catch (error) {
     console.error("Failed to fetch TRON balance:", error);
     return {
       balance: "0",
       symbol: "TRX",
-      name: "TRON",
+      name: "TRX",
+      decimals: 0,
     };
   }
 };
 
 export const apiGetSuiAccountBalance = async (
   address: string,
-  chainId: string
+  chainId: string,
 ): Promise<AssetData> => {
   const client = await getSuiClient(chainId);
   if (!client) {
     console.error(
       "No sui client found for chainId and no balance can be fetched",
-      chainId
+      chainId,
     );
     return { balance: "", symbol: "", name: "" };
   }
-  const balance = await client.getBalance({
+  const result = await client.getBalance({
     owner: address,
   });
+
   return {
-    balance: (parseInt(balance.totalBalance) / 10 ** 9).toString(),
+    balance: (parseInt(result.totalBalance) / 10 ** 9).toString(),
     symbol: "SUI",
     name: "SUI",
   };
@@ -258,7 +268,7 @@ export const apiGetSuiAccountBalance = async (
 
 export const apiGetAccountNonce = async (
   address: string,
-  chainId: string
+  chainId: string,
 ): Promise<number> => {
   const ethChainId = chainId.split(":")[1];
   const { baseURL } = rpcProvidersByChainId[Number(ethChainId)];

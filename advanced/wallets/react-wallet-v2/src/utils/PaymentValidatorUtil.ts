@@ -20,9 +20,6 @@ import {
 } from '@solana/web3.js'
 import { SOLANA_TEST_CHAINS } from '@/data/SolanaData'
 import { SOLANA_MAINNET_CHAINS } from '@/data/SolanaData'
-import { createTransferInstruction, TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import { createAssociatedTokenAccountInstruction } from '@solana/spl-token'
-import { getAssociatedTokenAddress } from '@solana/spl-token'
 /**
  * Interface for token details
  */
@@ -93,8 +90,8 @@ export class PaymentValidationUtils {
    * @returns Whether the namespace is supported
    */
   private static isSupportedAssetNamespace(assetNamespace: string): boolean {
-    // Support ERC20 tokens, native tokens, and solana token
-    return ['erc20', 'slip44', 'token'].includes(assetNamespace)
+    // Support ERC20 tokens and native tokens (slip44)
+    return ['erc20', 'slip44'].includes(assetNamespace)
   }
 
   // methods to get token details
@@ -181,74 +178,6 @@ export class PaymentValidationUtils {
       }
     } catch (error) {
       console.error('Error getting SOL balance:', error)
-      return defaultTokenDetails
-    }
-  }
-
-  private static async getSplTokenDetails(
-    tokenAddress: string,
-    account: string,
-    chainId: string,
-    caip19AssetAddress: string
-  ): Promise<TokenDetails> {
-    const defaultTokenDetails: TokenDetails = {
-      balance: BigInt(0),
-      decimals: 6,
-      symbol: 'UNK',
-      name: 'Unknown Token'
-    }
-
-    try {
-      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
-
-      if (!rpc) {
-        return defaultTokenDetails
-      }
-
-      // Connect to Solana
-      const connection = new Connection(rpc, 'confirmed')
-      const publicKey = new PublicKey(account)
-      const mintAddress = new PublicKey(tokenAddress)
-
-      const token = getSolanaTokenData(caip19AssetAddress)
-
-      // Get token balance
-      let balance = BigInt(0)
-      let decimals = token?.decimals || 0 // Use known token decimals or default
-
-      // Find the associated token account(s)
-      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
-        mint: mintAddress
-      })
-
-      // If token account exists, get balance
-      if (tokenAccounts.value.length > 0) {
-        const tokenAccountPubkey = tokenAccounts.value[0].pubkey
-        const tokenBalance = await connection.getTokenAccountBalance(tokenAccountPubkey)
-        balance = BigInt(tokenBalance.value.amount)
-
-        // Update decimals from on-chain data if not a known token
-        if (!token) {
-          decimals = tokenBalance.value.decimals
-        }
-      } else if (!token) {
-        // If no token accounts and not a known token, try to get decimals from mint
-        const mintInfo = await connection.getParsedAccountInfo(mintAddress)
-        if (mintInfo.value) {
-          const parsedMintInfo = (mintInfo.value.data as any).parsed?.info
-          decimals = parsedMintInfo?.decimals || decimals
-        }
-      }
-
-      // Return with known metadata or fallback to generic
-      return {
-        balance,
-        decimals,
-        symbol: token?.symbol || tokenAddress.slice(0, 4).toUpperCase(),
-        name: token?.name || `SPL Token (${tokenAddress.slice(0, 8)}...)`
-      }
-    } catch (error) {
-      // Return default values in case of error
       return defaultTokenDetails
     }
   }
@@ -347,71 +276,6 @@ export class PaymentValidationUtils {
         connection,
         transaction,
         feePayer: publicKey
-      })
-      console.log({ simulationResult })
-      return simulationResult
-    } catch (e) {
-      return null
-    }
-  }
-  private static async simulateSolanaTokenTransfer(params: {
-    account: string
-    recipientAddress: string
-    amount: bigint
-    tokenAddress: string
-    chainId: string
-  }) {
-    try {
-      const { account, recipientAddress, amount, tokenAddress, chainId } = params
-      const rpc = { ...SOLANA_TEST_CHAINS, ...SOLANA_MAINNET_CHAINS }[chainId]?.rpc
-      if (!rpc) {
-        return null
-      }
-
-      const connection = new Connection(rpc, 'confirmed')
-      const fromPubkey = new PublicKey(account)
-      const mintAddress = new PublicKey(tokenAddress)
-      const toPubkey = new PublicKey(recipientAddress)
-
-      const fromTokenAccountAddress = await getAssociatedTokenAddress(mintAddress, fromPubkey)
-
-      const fromTokenAccount = await connection.getAccountInfo(fromTokenAccountAddress)
-      if (!fromTokenAccount) {
-        return null
-      }
-
-      const toTokenAccountAddress = await getAssociatedTokenAddress(mintAddress, toPubkey)
-      const recipientTokenAccount = await connection.getAccountInfo(toTokenAccountAddress)
-
-      // Create transaction
-      const transaction = new Transaction()
-
-      // Add instruction to create recipient token account if needed
-      if (!recipientTokenAccount) {
-        const createAccountInstruction = createAssociatedTokenAccountInstruction(
-          fromPubkey,
-          toTokenAccountAddress,
-          toPubkey,
-          mintAddress
-        )
-        transaction.add(createAccountInstruction)
-      }
-
-      // Add transfer instruction
-      const transferInstruction = createTransferInstruction(
-        fromTokenAccountAddress,
-        toTokenAccountAddress,
-        fromPubkey,
-        amount,
-        [],
-        TOKEN_PROGRAM_ID
-      )
-      transaction.add(transferInstruction)
-
-      const simulationResult = await TransactionSimulatorUtil.simulateSolanaTransaction({
-        connection,
-        transaction,
-        feePayer: fromPubkey
       })
       console.log({ simulationResult })
       return simulationResult
@@ -536,17 +400,6 @@ export class PaymentValidationUtils {
       })
       tokenDetails = simulationResult
         ? await this.getSolNativeAssetDetails(account, `solana:${chainId}`)
-        : undefined
-    } else if (assetNamespace === 'token') {
-      simulationResult = await this.simulateSolanaTokenTransfer({
-        account,
-        recipientAddress: recipientAddress,
-        amount: BigInt(payment.amount),
-        tokenAddress: assetAddress,
-        chainId: `solana:${chainId}`
-      })
-      tokenDetails = simulationResult
-        ? await this.getSplTokenDetails(assetAddress, account, `solana:${chainId}`, payment.asset)
         : undefined
     } else {
       return { validatedPayment: null, hasMatchingAsset: false }
@@ -756,14 +609,6 @@ export class PaymentValidationUtils {
     if (assetNamespace === 'slip44' && assetAddress === '501') {
       // Native SOL
       tokenDetails = await this.getSolNativeAssetDetails(account, `solana:${chainId}`)
-    } else if (assetNamespace === 'token') {
-      // SPL token
-      tokenDetails = await this.getSplTokenDetails(
-        assetAddress,
-        account,
-        `solana:${chainId}`,
-        payment.asset
-      )
     } else {
       return { validatedPayment: null, hasMatchingAsset: false }
     }

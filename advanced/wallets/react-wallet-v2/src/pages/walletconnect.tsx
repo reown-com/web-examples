@@ -1,11 +1,12 @@
 import { parseUri } from '@walletconnect/utils'
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
-import { walletkit } from '@/utils/WalletConnectUtil'
+import { walletkit, isPaymentLink, extractPaymentLink } from '@/utils/WalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
 import { Fragment, useEffect, useState } from 'react'
 import { styledToast } from '@/utils/HelperUtil'
 import ModalStore from '@/store/ModalStore'
+import PayStore from '@/store/PayStore'
 
 export default function WalletConnectPage(params: { deepLink?: string }) {
   const { deepLink } = params
@@ -13,6 +14,21 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
   const [loading, setLoading] = useState(false)
 
   async function onConnect(uri: string) {
+    // Check if this is a payment link
+    if (isPaymentLink(uri)) {
+      const paymentLink = extractPaymentLink(uri)
+
+      if (!PayStore.isAvailable()) {
+        styledToast('Pay SDK not initialized. Please check your API key configuration.', 'error')
+        return
+      }
+
+      ModalStore.open('PaymentOptionsModal', { paymentLink })
+      setUri('')
+      return
+    }
+
+    // Normal WalletConnect pairing flow
     const { topic: pairingTopic } = parseUri(uri)
     // if for some reason, the proposal is not received, we need to close the modal when the pairing expires (5mins)
     const pairingExpiredListener = ({ topic }: { topic: string }) => {
@@ -55,7 +71,14 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
         </Text>
 
         <Input
-          css={{ width: '100%' }}
+          css={{
+            width: '100%',
+            '& > div': {
+              border: '2px solid rgba(255, 255, 255, 0.15) !important',
+              borderRadius: '14px',
+              padding: '8px 12px'
+            }
+          }}
           bordered
           aria-label="wc url connect input"
           placeholder="e.g. wc:a281567bb3e4..."

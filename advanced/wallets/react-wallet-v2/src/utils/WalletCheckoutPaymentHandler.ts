@@ -123,17 +123,6 @@ const WalletCheckoutPaymentHandler = {
             )
             return { txHash }
           }
-
-          // Handle SPL token transfers (token:<mint-address>)
-          if (assetNamespace === 'token') {
-            const txHash = await wallet.sendSplToken(
-              assetReference,
-              recipientAddress,
-              `${chainNamespace}:${chainId}`,
-              BigInt(payment.amount)
-            )
-            return { txHash }
-          }
         }
       }
 

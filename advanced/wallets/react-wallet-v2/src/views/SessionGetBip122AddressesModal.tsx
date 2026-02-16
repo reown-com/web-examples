@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { Col, Divider, Row, Text } from '@nextui-org/react'
+import { Col, Row, Text } from '@nextui-org/react'
+import StyledDivider from '@/components/StyledDivider'
 
 import RequestDataCard from '@/components/RequestDataCard'
 import ModalStore from '@/store/ModalStore'
@@ -90,7 +91,7 @@ export default function SessionGetBip122AddressesModal() {
               <Text color="$gray400">{account}</Text>
             </Col>
           </Row>
-          <Divider y={1} />
+          <StyledDivider css={{ my: '$4' }} />
         </>
       )}
       <RequestDataCard data={Object.fromEntries(addresses.entries())} />

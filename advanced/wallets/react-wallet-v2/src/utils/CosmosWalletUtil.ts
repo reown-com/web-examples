@@ -16,8 +16,22 @@ export async function createOrRestoreCosmosWallet() {
   const mnemonic2 = localStorage.getItem('COSMOS_MNEMONIC_2')
 
   if (mnemonic1 && mnemonic2) {
-    wallet1 = await CosmosLib.init({ mnemonic: mnemonic1 })
-    wallet2 = await CosmosLib.init({ mnemonic: mnemonic2 })
+    try {
+      wallet1 = await CosmosLib.init({ mnemonic: mnemonic1 })
+    } catch (error) {
+      console.error('Failed to init Cosmos wallet1, creating new one:', error)
+      localStorage.removeItem('COSMOS_MNEMONIC_1')
+      wallet1 = await CosmosLib.init({})
+      localStorage.setItem('COSMOS_MNEMONIC_1', wallet1.getMnemonic())
+    }
+    try {
+      wallet2 = await CosmosLib.init({ mnemonic: mnemonic2 })
+    } catch (error) {
+      console.error('Failed to init Cosmos wallet2, creating new one:', error)
+      localStorage.removeItem('COSMOS_MNEMONIC_2')
+      wallet2 = await CosmosLib.init({})
+      localStorage.setItem('COSMOS_MNEMONIC_2', wallet2.getMnemonic())
+    }
   } else {
     wallet1 = await CosmosLib.init({})
     wallet2 = await CosmosLib.init({})

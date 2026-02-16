@@ -11,6 +11,7 @@ const SHeader = styled.div`
   margin-top: -1px;
   margin-bottom: 1px;
   width: 100%;
+  align-self: stretch;
   height: 100px;
   display: flex;
   align-items: flex-start;
@@ -63,7 +64,7 @@ interface HeaderProps {
 const Header = (props: HeaderProps) => {
   const { ping, disconnect, session, emit } = props;
   return (
-    <SHeader {...props}>
+    <SHeader>
       {session ? (
         <>
           <SActiveSession>

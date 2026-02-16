@@ -33,11 +33,11 @@ import {
   publicRPCUrl,
   UrlConfig
 } from '@/utils/SmartAccountUtil'
-import { EntryPoint } from 'permissionless/types/entrypoint'
+import { EntryPoint } from 'permissionless/types'
 import { Erc7579Actions, erc7579Actions } from 'permissionless/actions/erc7579'
 import { SmartAccount } from 'permissionless/accounts'
 import { SendCallsParams, SendCallsPaymasterServiceCapabilityParam } from '@/data/EIP5792Data'
-import { UserOperation } from 'permissionless/_types/types'
+import { UserOperation } from 'permissionless/types'
 import { paymasterActionsEip7677 } from 'permissionless/experimental'
 import { getSendCallData } from '@/utils/EIP5792WalletUtil'
 

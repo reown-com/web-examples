@@ -24,8 +24,22 @@ export async function createOrRestorePolkadotWallet() {
   const mnemonic2 = localStorage.getItem('POLKADOT_MNEMONIC_2')
 
   if (mnemonic1 && mnemonic2) {
-    wallet1 = await PolkadotLib.init({ mnemonic: mnemonic1 })
-    wallet2 = await PolkadotLib.init({ mnemonic: mnemonic2 })
+    try {
+      wallet1 = await PolkadotLib.init({ mnemonic: mnemonic1 })
+    } catch (error) {
+      console.error('Failed to init Polkadot wallet1, creating new one:', error)
+      localStorage.removeItem('POLKADOT_MNEMONIC_1')
+      wallet1 = await PolkadotLib.init({})
+      localStorage.setItem('POLKADOT_MNEMONIC_1', wallet1.getMnemonic())
+    }
+    try {
+      wallet2 = await PolkadotLib.init({ mnemonic: mnemonic2 })
+    } catch (error) {
+      console.error('Failed to init Polkadot wallet2, creating new one:', error)
+      localStorage.removeItem('POLKADOT_MNEMONIC_2')
+      wallet2 = await PolkadotLib.init({})
+      localStorage.setItem('POLKADOT_MNEMONIC_2', wallet2.getMnemonic())
+    }
   } else {
     wallet1 = await PolkadotLib.init({})
     wallet2 = await PolkadotLib.init({})
