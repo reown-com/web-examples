@@ -22,7 +22,7 @@ type ChainMetadata = {
 export const TRON_MAINNET_CHAINS: TRONChains = {
   'tron:0x2b6653dc': {
     chainId: '0x2b6653dc',
-    name: 'Tron',
+    name: 'TRON',
     logo: 'chain-logos/tron.png',
     rgb: '183, 62, 49',
     fullNode: 'https://api.trongrid.io',
@@ -33,7 +33,7 @@ export const TRON_MAINNET_CHAINS: TRONChains = {
 export const TRON_TEST_CHAINS: TRONChains = {
   'tron:0xcd8690dc': {
     chainId: '0xcd8690dc',
-    name: 'Tron Testnet',
+    name: 'TRON Testnet',
     logo: 'chain-logos/tron.png',
     rgb: '183, 62, 49',
     fullNode: 'https://nile.trongrid.io/',
