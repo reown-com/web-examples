@@ -1,253 +1,313 @@
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { Modal, Loading, Text, Container } from '@nextui-org/react'
+import { useSnapshot } from 'valtio'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import CloseIcon from '@mui/icons-material/Close'
+import type { PaymentOption } from '@walletconnect/pay'
+
 import ModalStore from '@/store/ModalStore'
-import PayStore from '@/store/PayStore'
-import SettingsStore from '@/store/SettingsStore'
-import { eip155Wallets } from '@/utils/EIP155WalletUtil'
-import { styledToast } from '@/utils/HelperUtil'
-import type { PaymentOptionsResponse, PaymentOption, CollectDataFieldResult } from '@walletconnect/pay'
+import PaymentStore from '@/store/PaymentStore'
 import {
-  LoadingState,
-  ErrorState,
-  SuccessState,
-  ConfirmingState,
-  IntroScreen,
-  CollectDataForm,
-  PaymentInfoScreen,
-  groupFieldsIntoSteps,
-  PaymentState
+  ConfirmPaymentView,
+  CollectDataIframe,
+  ResultView,
+  detectErrorType,
+  getErrorMessage,
 } from '@/components/PaymentModal'
 
 export default function PaymentOptionsModal() {
-  const [state, setState] = useState<PaymentState>('loading')
-  const [errorMessage, setErrorMessage] = useState<string>('')
-  const [paymentData, setPaymentData] = useState<PaymentOptionsResponse | null>(null)
-  const [selectedOption, setSelectedOption] = useState<PaymentOption | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
+  const snap = useSnapshot(PaymentStore.state)
+  const [showInfoExplainer, setShowInfoExplainer] = useState(false)
 
-  const [formData, setFormData] = useState<Record<string, string>>({})
-  const [collectedData, setCollectedData] = useState<CollectDataFieldResult[]>([])
-
-  const paymentLink = ModalStore.state.data?.paymentLink as string | undefined
-
-  const formSteps = paymentData?.collectData?.fields
-    ? groupFieldsIntoSteps(paymentData.collectData.fields)
-    : []
-
-  const hasCollectData =
-    paymentData?.collectData &&
-    paymentData.collectData.fields &&
-    paymentData.collectData.fields.length > 0
+  const selectedOptionCollectDataUrl = (snap.selectedOption as PaymentOption | null)?.collectData?.url
 
   useEffect(() => {
-    async function fetchOptions() {
-      if (!paymentLink) {
-        setErrorMessage('No payment link provided')
-        setState('error')
-        return
-      }
-
-      const payClient = PayStore.getClient()
-      if (!payClient) {
-        setErrorMessage('Pay SDK not initialized. Please check your API key configuration.')
-        setState('error')
-        return
-      }
-
-      try {
-        const eip155Address = SettingsStore.state.eip155Address
-        // Support multiple chains: Base (8453), Optimism (10), Arbitrum (42161), Ethereum (1)
-        const supportedChainIds = [8453, 10, 42161, 1]
-        const accounts = eip155Address
-          ? supportedChainIds.map(chainId => `eip155:${chainId}:${eip155Address}`)
-          : []
-
-        const options = await payClient.getPaymentOptions({
-          paymentLink,
-          accounts,
-          includePaymentInfo: true
+    if (snap.step === 'loading') {
+      if (snap.errorMessage) {
+        const errorType = detectErrorType(snap.errorMessage)
+        PaymentStore.setResult({
+          status: 'error',
+          message: getErrorMessage(errorType, snap.errorMessage),
+          errorType,
         })
-
-        setPaymentData(options)
-        setState('intro')
-      } catch (error: any) {
-        console.error('[PaymentOptionsModal] Failed to fetch options:', error)
-        setErrorMessage(error?.message || 'Failed to fetch payment options')
-        setState('error')
+      } else if (snap.paymentOptions) {
+        if (!snap.paymentOptions.options || snap.paymentOptions.options.length === 0) {
+          PaymentStore.setResult({
+            status: 'error',
+            errorType: 'insufficient_funds',
+            message: getErrorMessage('insufficient_funds'),
+          })
+        } else {
+          PaymentStore.setStep('confirm')
+        }
       }
     }
+  }, [snap.step, snap.paymentOptions, snap.errorMessage])
 
-    fetchOptions()
-  }, [paymentLink])
-
-  useEffect(() => {
-    if (state === 'options' && paymentData?.options && paymentData.options.length > 0 && !selectedOption) {
-      setSelectedOption(paymentData.options[0])
+  const handleIframeComplete = useCallback(() => {
+    const { selectedOption } = PaymentStore.state
+    if (selectedOption) {
+      PaymentStore.markCollectDataCompleted(selectedOption.id)
     }
-  }, [state, paymentData?.options, selectedOption])
+    PaymentStore.setStep('confirm')
+  }, [])
 
-  const handleClose = useCallback(() => {
+  const handleIframeError = useCallback((error: string) => {
+    const errorType = detectErrorType(error)
+    PaymentStore.setResult({
+      status: 'error',
+      message: getErrorMessage(errorType, error),
+      errorType,
+    })
+  }, [])
+
+  const onClose = useCallback(() => {
+    PaymentStore.reset()
     ModalStore.close()
   }, [])
 
-  const handleStartFromIntro = useCallback(() => {
-    if (hasCollectData) {
-      setState('collect_data')
+  const goBack = useCallback(() => {
+    const { step } = PaymentStore.state
+    switch (step) {
+      case 'collectData':
+        PaymentStore.setStep('confirm')
+        break
+      default:
+        onClose()
+    }
+  }, [onClose])
+
+  const onSelectOption = useCallback((option: PaymentOption) => {
+    PaymentStore.selectOption(option)
+    PaymentStore.fetchPaymentActions(option)
+  }, [])
+
+  const handleConfirmOrNext = useCallback(() => {
+    const { selectedOption, collectDataCompletedIds } = PaymentStore.state
+    if (!selectedOption) return
+
+    const needsCollectData = !!selectedOption.collectData?.url
+    const alreadyCompleted = collectDataCompletedIds.includes(selectedOption.id)
+
+    if (needsCollectData && !alreadyCompleted) {
+      PaymentStore.setStep('collectData')
     } else {
-      setState('options')
+      PaymentStore.approvePayment()
     }
-  }, [hasCollectData])
-
-  const handleFormChange = useCallback((fieldId: string, value: string, _fieldType: string) => {
-    setFormData(prev => ({ ...prev, [fieldId]: value }))
   }, [])
 
-  const handleFormComplete = useCallback((results: CollectDataFieldResult[]) => {
-    setCollectedData(results)
-    setState('options')
-  }, [])
+  useEffect(() => {
+    if (snap.step === 'confirm') {
+      const options = snap.paymentOptions?.options || []
 
-  const handleBackFromForm = useCallback(() => {
-    setState('intro')
-  }, [])
-
-  const handleSelectOption = useCallback((option: PaymentOption) => {
-    setSelectedOption(option)
-  }, [])
-
-  const handleBackFromOptions = useCallback(() => {
-    if (hasCollectData) {
-      setState('collect_data')
-    } else {
-      setState('intro')
-    }
-  }, [hasCollectData])
-
-  const handleConfirm = useCallback(async () => {
-    if (!selectedOption || !paymentData) return
-
-    const payClient = PayStore.getClient()
-    if (!payClient) {
-      styledToast('Pay SDK not available', 'error')
-      return
-    }
-
-    setIsProcessing(true)
-    setState('confirming')
-
-    try {
-      // Must call getRequiredPaymentActions to establish server-side state before confirming
-      const actions = await payClient.getRequiredPaymentActions({
-        paymentId: paymentData.paymentId,
-        optionId: selectedOption.id
-      })
-
-      const signatures: string[] = []
-      const eip155Address = SettingsStore.state.eip155Address
-      const wallet = eip155Wallets[eip155Address]
-
-      if (!wallet) {
-        throw new Error('Wallet not available')
+      if (options.length === 0) {
+        PaymentStore.setResult({
+          status: 'error',
+          errorType: 'insufficient_funds',
+          message: getErrorMessage('insufficient_funds'),
+        })
+        return
       }
 
-      for (const action of actions) {
-        if (!action.walletRpc) continue
-
-        const { method, params } = action.walletRpc
-        const parsedParams = JSON.parse(params)
-
-        if (method === 'eth_signTypedData_v4') {
-          const typedData = JSON.parse(parsedParams[1])
-          const { domain, types, message } = typedData
-          delete types.EIP712Domain
-          const signature = await wallet._signTypedData(domain, types, message)
-          signatures.push(signature)
-        }
+      if (!snap.selectedOption) {
+        onSelectOption(options[0] as PaymentOption)
       }
-
-      const result = await payClient.confirmPayment({
-        paymentId: paymentData.paymentId,
-        optionId: selectedOption.id,
-        signatures,
-        collectedData: collectedData.length > 0 ? collectedData : undefined
-      })
-
-      if (result.status === 'succeeded' || result.isFinal) {
-        setState('success')
-        styledToast('Payment successful!', 'success')
-      } else if (result.status === 'processing') {
-        setState('success')
-        styledToast('Payment is processing...', 'success')
-      } else {
-        throw new Error(`Payment failed with status: ${result.status}`)
-      }
-    } catch (error: any) {
-      console.error('[PaymentOptionsModal] Payment failed:', error)
-      setErrorMessage(error?.message || 'Payment failed')
-      setState('error')
-      styledToast(error?.message || 'Payment failed', 'error')
-    } finally {
-      setIsProcessing(false)
     }
-  }, [selectedOption, paymentData, collectedData])
+  }, [snap.step, snap.paymentOptions?.options, snap.selectedOption, onSelectOption])
 
-  if (state === 'loading') {
-    return <LoadingState />
+  const selectedNeedsCollectData = !!(
+    snap.selectedOption &&
+    (snap.selectedOption as PaymentOption).collectData?.url &&
+    !snap.collectDataCompletedIds.includes(snap.selectedOption.id)
+  )
+
+  console.log('[PaymentOptionsModal] selectedNeedsCollectData:', selectedNeedsCollectData, {
+    hasSelectedOption: !!snap.selectedOption,
+    collectData: snap.selectedOption ? (snap.selectedOption as PaymentOption).collectData : null,
+    collectDataUrl: snap.selectedOption ? (snap.selectedOption as PaymentOption).collectData?.url : null,
+  })
+
+  const showBackButton = snap.step === 'collectData'
+  const hideHeader = snap.step === 'confirming'
+
+  const renderContent = () => {
+    switch (snap.step) {
+      case 'loading':
+        return (
+          <Container css={{ padding: '40px 20px', textAlign: 'center' }}>
+            <Loading size="xl" color="primary" />
+            <Text css={{ marginTop: '20px' }} color="$gray700">
+              {snap.loadingMessage || 'Preparing your payment...'}
+            </Text>
+          </Container>
+        )
+
+      case 'collectData':
+        return (
+          <CollectDataIframe
+            url={selectedOptionCollectDataUrl!}
+            onComplete={handleIframeComplete}
+            onError={handleIframeError}
+          />
+        )
+
+      case 'confirm':
+        return (
+          <ConfirmPaymentView
+            info={snap.paymentOptions?.info}
+            options={(snap.paymentOptions?.options || []) as PaymentOption[]}
+            selectedOption={snap.selectedOption as PaymentOption | null}
+            isLoadingActions={snap.isLoadingActions}
+            isSigningPayment={false}
+            error={snap.actionsError}
+            onSelectOption={onSelectOption}
+            onApprove={handleConfirmOrNext}
+            showNextButton={selectedNeedsCollectData}
+            collectDataCompletedIds={snap.collectDataCompletedIds as string[]}
+          />
+        )
+
+      case 'confirming':
+        return (
+          <Container css={{
+            padding: '40px 20px',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}>
+            <Loading size="xl" color="primary" />
+            <Text h4 css={{ marginTop: '20px' }}>
+              Confirming your payment...
+            </Text>
+          </Container>
+        )
+
+      case 'result':
+        return (
+          <ResultView
+            status={snap.resultStatus}
+            errorType={snap.resultErrorType}
+            message={snap.resultMessage}
+            onClose={onClose}
+          />
+        )
+
+      default:
+        return (
+          <Container css={{ padding: '40px 20px', textAlign: 'center' }}>
+            <Loading size="xl" color="primary" />
+            <Text css={{ marginTop: '20px' }} color="$gray700">Loading...</Text>
+          </Container>
+        )
+    }
   }
-
-  if (state === 'error') {
-    return <ErrorState errorMessage={errorMessage} onClose={handleClose} />
-  }
-
-  if (state === 'success') {
-    return <SuccessState onClose={handleClose} />
-  }
-
-  if (state === 'confirming') {
-    return <ConfirmingState />
-  }
-
-  if (state === 'intro') {
-    return (
-      <IntroScreen
-        merchantName={paymentData?.info?.merchant?.name}
-        merchantIconUrl={paymentData?.info?.merchant?.iconUrl}
-        paymentAmount={paymentData?.info?.amount}
-        hasCollectData={!!hasCollectData}
-        onStart={handleStartFromIntro}
-        onClose={handleClose}
-      />
-    )
-  }
-
-  if (state === 'collect_data') {
-    return (
-      <CollectDataForm
-        formSteps={formSteps}
-        formStep={0}
-        formData={formData}
-        onFormChange={handleFormChange}
-        onContinue={handleFormComplete}
-        onBack={handleBackFromForm}
-        onClose={handleClose}
-      />
-    )
-  }
-
-  const totalProgressDots = Math.max(formSteps.length, 4)
 
   return (
-    <PaymentInfoScreen
-      merchantName={paymentData?.info?.merchant?.name}
-      merchantIconUrl={paymentData?.info?.merchant?.iconUrl}
-      paymentAmount={paymentData?.info?.amount}
-      options={paymentData?.options || []}
-      selectedOption={selectedOption}
-      totalProgressDots={totalProgressDots}
-      isProcessing={isProcessing}
-      onSelectOption={handleSelectOption}
-      onConfirm={handleConfirm}
-      onBack={handleBackFromOptions}
-      onClose={handleClose}
-    />
+    <>
+      <Modal.Body css={{ padding: 0 }}>
+        {!hideHeader && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: showBackButton ? 'space-between' : 'flex-end',
+            padding: '12px 16px 0',
+          }}>
+            {showBackButton && (
+              <button
+                onClick={goBack}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <ArrowBackIcon sx={{ fontSize: 24, color: '#666' }} />
+              </button>
+            )}
+            <button
+              onClick={showInfoExplainer ? () => setShowInfoExplainer(false) : onClose}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '8px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <CloseIcon sx={{ fontSize: 24, color: '#666' }} />
+            </button>
+          </div>
+        )}
+
+        <div style={{ padding: snap.step === 'result' ? '0' : '16px 24px 24px' }}>
+          {showInfoExplainer ? (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              padding: '24px',
+              textAlign: 'center',
+            }}>
+              <Text h4 css={{ marginBottom: '12px' }}>Why we need your information?</Text>
+              <Text css={{ color: '$accents6', fontSize: '14px', lineHeight: '1.6', textAlign: 'left' }}>
+                For regulatory compliance, we collect basic information on your first
+                payment: full name, date of birth, and place of birth.
+              </Text>
+              <Text css={{ color: '$accents6', fontSize: '14px', lineHeight: '1.6', marginTop: '8px', textAlign: 'left' }}>
+                This information is tied to your wallet address and this specific
+                network. If you use the same wallet on this network again, you won&apos;t
+                need to provide it again.
+              </Text>
+              <button
+                onClick={() => setShowInfoExplainer(false)}
+                style={{
+                  marginTop: '24px',
+                  padding: '12px 24px',
+                  backgroundColor: '#0094FF',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                }}
+              >
+                Got it
+              </button>
+            </div>
+          ) : (
+            renderContent()
+          )}
+        </div>
+
+        {snap.step === 'confirm' && selectedNeedsCollectData && !showInfoExplainer && (
+          <div style={{ padding: '0 24px 16px', textAlign: 'center' }}>
+            <button
+              onClick={() => setShowInfoExplainer(true)}
+              style={{
+                background: 'none',
+                border: '1px solid rgba(139, 139, 139, 0.3)',
+                borderRadius: '8px',
+                padding: '6px 12px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                color: '#888',
+              }}
+            >
+              Why is info required?
+            </button>
+          </div>
+        )}
+      </Modal.Body>
+    </>
   )
 }

@@ -1,12 +1,14 @@
 import { parseUri } from '@walletconnect/utils'
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
-import { walletkit, isPaymentLink, extractPaymentLink } from '@/utils/WalletConnectUtil'
+import { walletkit, isPaymentLink } from '@/utils/WalletConnectUtil'
 import { Button, Input, Loading, Text } from '@nextui-org/react'
 import { Fragment, useEffect, useState } from 'react'
 import { styledToast } from '@/utils/HelperUtil'
 import ModalStore from '@/store/ModalStore'
-import PayStore from '@/store/PayStore'
+import PaymentStore from '@/store/PaymentStore'
+import SettingsStore from '@/store/SettingsStore'
+import { EIP155_CHAINS } from '@/data/EIP155Data'
 
 export default function WalletConnectPage(params: { deepLink?: string }) {
   const { deepLink } = params
@@ -14,23 +16,53 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
   const [loading, setLoading] = useState(false)
 
   async function onConnect(uri: string) {
-    // Check if this is a payment link
     if (isPaymentLink(uri)) {
-      const paymentLink = extractPaymentLink(uri)
-
-      if (!PayStore.isAvailable()) {
+      const payClient = walletkit?.pay
+      if (!payClient) {
         styledToast('Pay SDK not initialized. Please check your API key configuration.', 'error')
         return
       }
 
-      ModalStore.open('PaymentOptionsModal', { paymentLink })
+      PaymentStore.startPayment({
+        loadingMessage: 'Preparing your payment...',
+      })
+      ModalStore.open('PaymentOptionsModal', {})
+
+      try {
+        const eip155Address = SettingsStore.state.eip155Address
+        const accounts = eip155Address
+          ? Object.keys(EIP155_CHAINS).map(
+              chainKey => `${chainKey}:${eip155Address}`,
+            )
+          : []
+
+        const paymentOptions = await payClient.getPaymentOptions({
+          paymentLink: uri,
+          accounts,
+          includePaymentInfo: true,
+        })
+
+        console.log('[Pay] getPaymentOptions response:', JSON.stringify(paymentOptions, null, 2))
+        console.log('[Pay] Options with collectData:', paymentOptions.options?.map(o => ({
+          id: o.id,
+          symbol: o.amount.display.assetSymbol,
+          network: o.amount.display.networkName,
+          hasCollectDataUrl: !!o.collectData?.url,
+          collectDataUrl: o.collectData?.url,
+        })))
+
+        PaymentStore.setPaymentOptions(paymentOptions)
+      } catch (error: any) {
+        PaymentStore.setError(
+          error?.message || 'Failed to fetch payment options',
+        )
+      }
+
       setUri('')
       return
     }
 
-    // Normal WalletConnect pairing flow
     const { topic: pairingTopic } = parseUri(uri)
-    // if for some reason, the proposal is not received, we need to close the modal when the pairing expires (5mins)
     const pairingExpiredListener = ({ topic }: { topic: string }) => {
       if (pairingTopic === topic) {
         styledToast('Pairing expired. Please try again with new Connection URI', 'error')
