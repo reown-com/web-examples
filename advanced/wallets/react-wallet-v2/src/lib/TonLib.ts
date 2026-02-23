@@ -121,13 +121,9 @@ export default class TonLib {
         throw new TonValidationError('Valid until must be a number.')
       }
 
-      // Normalize to seconds if milliseconds were provided
-      const validUntilSeconds =
-        params.valid_until > 10_000_000_000
-          ? Math.floor(params.valid_until / 1000)
-          : params.valid_until
+      const validUntilSeconds = this.normalizeValidUntil(params.valid_until)
 
-      if (validUntilSeconds < Date.now() / 1000) {
+      if (validUntilSeconds! < Math.floor(Date.now() / 1000)) {
         throw new TonValidationError('Message is expired.')
       }
     }
