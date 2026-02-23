@@ -24,12 +24,13 @@
     "@ton/core": "^0.63.0",
     "@ton/crypto": "^3.3.0",
     "@ton/ton": "^16.0.0",
-    "@walletconnect/core": "2.23.5",
+    "@walletconnect/core": "2.23.6-canary-exp-1",
     "@walletconnect/encoding": "^1.0.1",
     "@walletconnect/jsonrpc-utils": "^1.0.8",
-    "@walletconnect/types": "2.23.5",
-    "@walletconnect/universal-provider": "2.23.5",
-    "@walletconnect/utils": "2.23.5",
+    "@walletconnect/types": "2.23.6-canary-exp-1",
+    "@walletconnect/universal-provider": "2.23.6-canary-exp-1",
+    "@walletconnect/utils": "2.23.6-canary-exp-1",
+    "@walletconnect/sign-client": "2.23.6-canary-exp-1",
     "axios": "^1.13.5",
     "bitcoinjs-lib": "^7.0.0",
     "bitcoinjs-message": "^2.2.0",
@@ -75,14 +76,14 @@
       "minimist@<0.2.4": ">=0.2.4",
       "js-yaml@>=4.0.0 <4.1.1": ">=4.1.1",
       "@modelcontextprotocol/sdk@<1.26.0": ">=1.26.0",
-      "@walletconnect/core@": "2.23.5",
+      "@walletconnect/core@": "2.23.6-canary-exp-1",
       "@walletconnect/encoding@": ">=1.0.1",
       "@walletconnect/jsonrpc-utils@": ">=1.0.8",
-      "@walletconnect/types@": "2.23.5",
-      "@walletconnect/universal-provider@": "2.23.5",
-      "@walletconnect/sign-client@": "2.23.5",
-      "@walletconnect/utils@": "2.23.5",
-      "@walletconnect/ethereum-provider@": "2.23.5"
+      "@walletconnect/types@": "2.23.6-canary-exp-1",
+      "@walletconnect/universal-provider@": "2.23.6-canary-exp-1",
+      "@walletconnect/sign-client@": "2.23.6-canary-exp-1",
+      "@walletconnect/utils@": "2.23.6-canary-exp-1",
+      "@walletconnect/ethereum-provider@": "2.23.6-canary-exp-1"
     }
   }
 }
