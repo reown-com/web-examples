@@ -1,57 +1,10 @@
-import { WalletKit, IWalletKit } from '@reown/walletkit'
+import { WalletKit, IWalletKit, isPaymentLink } from '@reown/walletkit'
 import { Core } from '@walletconnect/core'
+
+export { isPaymentLink }
 export let walletkit: IWalletKit
 
-/**
- * Payment Link Detection Utilities
- */
-export function isPaymentLink(uri: string): boolean {
-  // Handle WC URI with pay= parameter
-  if (uri.startsWith('wc:')) {
-    const queryStart = uri.indexOf('?')
-    if (queryStart === -1) return false
-    const queryString = uri.substring(queryStart + 1)
-    const params = new URLSearchParams(queryString)
-    const payParam = params.get('pay')
-    if (payParam) {
-      return isPaymentUrl(decodeURIComponent(payParam))
-    }
-    return false
-  }
-  return isPaymentUrl(uri)
-}
-
-function isPaymentUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url)
-    const hostname = parsed.hostname.toLowerCase()
-    const isPayHost =
-      hostname === 'pay.walletconnect.com' || hostname === 'www.pay.walletconnect.com'
-    return isPayHost && parsed.searchParams.has('pid')
-  } catch {
-    return false
-  }
-}
-
-export function extractPaymentLink(uri: string): string {
-  // If it's a WC URI with pay= parameter, extract the payment link
-  if (uri.startsWith('wc:')) {
-    const queryStart = uri.indexOf('?')
-    if (queryStart !== -1) {
-      const queryString = uri.substring(queryStart + 1)
-      const params = new URLSearchParams(queryString)
-      const payParam = params.get('pay')
-      if (payParam) {
-        return decodeURIComponent(payParam)
-      }
-    }
-  }
-  // Otherwise return as-is (it's already a direct payment URL)
-  return uri
-}
-
 export async function createWalletKit(relayerRegionURL: string) {
-  // Validate required environment variables
   if (!process.env.NEXT_PUBLIC_PROJECT_ID) {
     throw new Error(
       'NEXT_PUBLIC_PROJECT_ID is not set. Please create a .env.local file with your WalletConnect project ID. ' +
@@ -64,6 +17,12 @@ export async function createWalletKit(relayerRegionURL: string) {
     relayUrl: relayerRegionURL || process.env.NEXT_PUBLIC_RELAY_URL,
     logger: 'error'
   })
+
+  const apiKey = process.env.NEXT_PUBLIC_PAY_API_KEY
+  const baseUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/api/pay`
+    : 'https://api.pay.walletconnect.com'
+
   walletkit = await WalletKit.init({
     core,
     metadata: {
@@ -74,7 +33,14 @@ export async function createWalletKit(relayerRegionURL: string) {
     },
     signConfig: {
       disableRequestQueue: true
-    }
+    },
+    ...(apiKey ? {
+      payConfig: {
+        appId: process.env.NEXT_PUBLIC_PROJECT_ID,
+        apiKey,
+        baseUrl,
+      }
+    } : {})
   })
 
   try {
@@ -88,7 +54,6 @@ export async function createWalletKit(relayerRegionURL: string) {
 
 export async function updateSignClientChainId(chainId: string, address: string) {
   console.log('chainId', chainId, address)
-  // get most recent session
   const sessions = walletkit.getActiveSessions()
   if (!sessions) return
   const namespace = chainId.split(':')[0]

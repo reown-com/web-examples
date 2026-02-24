@@ -10,6 +10,7 @@ overrides:
   elliptic@<=6.6.0: '>=6.6.1'
   prismjs@<1.30.0: '>=1.30.0'
   '@babel/runtime@<7.26.10': '>=7.26.10'
+  '@walletconnect/pay': 1.0.4-canary.0
 
 importers:
 
@@ -136,8 +137,8 @@ importers:
         specifier: 2.23.5
         version: 2.23.5(bufferutil@4.1.0)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletconnect/pay':
-        specifier: 1.0.4
-        version: 1.0.4(typescript@5.4.5)(zod@3.25.76)
+        specifier: 1.0.4-canary.0
+        version: 1.0.4-canary.0(typescript@5.4.5)(zod@3.25.76)
       '@walletconnect/types':
         specifier: 2.23.5
         version: 2.23.5
@@ -2479,8 +2480,8 @@ packages:
   '@walletconnect/logger@3.0.2':
     resolution: {integrity: sha512-7wR3wAwJTOmX4gbcUZcFMov8fjftY05+5cO/d4cpDD8wDzJ+cIlKdYOXaXfxHLSYeDazMXIsxMYjHYVDfkx+nA==}
 
-  '@walletconnect/pay@1.0.4':
-    resolution: {integrity: sha512-LLkb8BLIe9jmnXSQILCaRBHDYT+CNTfHBDlhxEw5pA8g3K9oilQDtn0ng50CEssbaJpIuZtATLY7WiBaI+nspQ==}
+  '@walletconnect/pay@1.0.4-canary.0':
+    resolution: {integrity: sha512-bLOLdQDmhmYeoLs9l738ik0hFQ4Co/0Y1jLHrKuXD8ssXmwW9thzOIgTBmLdLhPcjLIlaZ+Er5JKi3SGFwJURg==}
     peerDependencies:
       react-native: '>=0.64.0'
     peerDependenciesMeta:
@@ -7398,7 +7399,7 @@ snapshots:
       '@walletconnect/jsonrpc-provider': 1.0.14
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/logger': 3.0.2
-      '@walletconnect/pay': 1.0.4(typescript@5.4.5)(zod@3.25.76)
+      '@walletconnect/pay': 1.0.4-canary.0(typescript@5.4.5)(zod@3.25.76)
       '@walletconnect/sign-client': 2.23.5(bufferutil@4.1.0)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletconnect/types': 2.23.5
       '@walletconnect/utils': 2.23.5(typescript@5.4.5)(zod@3.25.76)
@@ -8724,7 +8725,7 @@ snapshots:
       '@walletconnect/safe-json': 1.0.2
       pino: 10.0.0
 
-  '@walletconnect/pay@1.0.4(typescript@5.4.5)(zod@3.25.76)':
+  '@walletconnect/pay@1.0.4-canary.0(typescript@5.4.5)(zod@3.25.76)':
     dependencies:
       '@walletconnect/logger': 3.0.2
       '@walletconnect/types': 2.23.5
