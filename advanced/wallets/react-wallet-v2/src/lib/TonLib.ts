@@ -121,7 +121,9 @@ export default class TonLib {
         throw new TonValidationError('Valid until must be a number.')
       }
 
-      if (params.valid_until < Date.now() / 1000) {
+      const validUntilSeconds = this.normalizeValidUntil(params.valid_until)
+
+      if (validUntilSeconds! < Math.floor(Date.now() / 1000)) {
         throw new TonValidationError('Message is expired.')
       }
     }
@@ -197,6 +199,21 @@ export default class TonLib {
     }
   }
 
+  /**
+   * Normalizes valid_until to seconds if it appears to be in milliseconds.
+   * TON uses 32-bit timestamps (seconds), but some dApps send milliseconds.
+   */
+  private normalizeValidUntil(validUntil?: number): number | undefined {
+    if (validUntil === undefined) {
+      return undefined
+    }
+    // If value > 10 billion, it's likely milliseconds (year 2286+ in seconds)
+    if (validUntil > 10_000_000_000) {
+      return Math.floor(validUntil / 1000)
+    }
+    return validUntil
+  }
+
   private parseTonMessages(params: TonLib.SendMessage['params']) {
     this.validateSendMessage(params)
     return params.messages.map(m => {
@@ -219,14 +236,13 @@ export default class TonLib {
     const walletContract = client.open(this.wallet)
     const seqno = await retry(() => walletContract.getSeqno())
 
-
     const messages = this.parseTonMessages(params)
 
     const transfer = walletContract.createTransfer({
       seqno,
       secretKey: this.keypair.secretKey,
       messages,
-      timeout: params.valid_until
+      timeout: this.normalizeValidUntil(params.valid_until)
     })
 
     await retry(() => walletContract.send(transfer))
@@ -442,7 +458,7 @@ export default class TonLib {
       publicKey: this.getPublicKey(),
       timestamp,
       domain,
-      payload: { ...payload, network: chainId.split(":")[1] }
+      payload: { ...payload, network: chainId.split(':')[1] }
     }
 
     try {
