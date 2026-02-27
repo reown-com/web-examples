@@ -116,7 +116,7 @@ import {
 } from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
 import { getTronWeb } from "../helpers/tron";
-import { verifyTonProofSignature } from "../helpers/ton";
+import { verifyTonProofSignature, verifyTonSignData } from "../helpers/ton";
 /**
  * Types
  */
@@ -2379,6 +2379,10 @@ export function JsonRpcContextProvider({
         const result = await client!.request<{
           signature: string;
           publicKey: string;
+          address: string;
+          timestamp: number;
+          domain: string;
+          payload: { type: string; text?: string; bytes?: string };
         }>({
           topic: session!.topic,
           chainId,
@@ -2392,11 +2396,13 @@ export function JsonRpcContextProvider({
 
         let isValid = false;
         try {
-          isValid = await isValidTonSignature({
-            message: params[0].text,
+          isValid = verifyTonSignData({
             signature: result.signature,
-            iss: "",
-            signatureMeta: result.publicKey,
+            address: result.address,
+            publicKeyHex: result.publicKey,
+            timestamp: result.timestamp,
+            domain: result.domain,
+            payload: result.payload,
           });
         } catch (error) {
           console.error(error);

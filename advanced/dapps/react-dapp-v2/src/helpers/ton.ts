@@ -186,6 +186,18 @@ function writeBigUint64LE(value: bigint): Uint8Array {
   return buf;
 }
 
+function writeInt32BE(value: number): Uint8Array {
+  const buf = new Uint8Array(4);
+  new DataView(buf.buffer).setInt32(0, value, false);
+  return buf;
+}
+
+function writeBigUint64BE(value: bigint): Uint8Array {
+  const buf = new Uint8Array(8);
+  new DataView(buf.buffer).setBigUint64(0, value, false);
+  return buf;
+}
+
 function buildTonProofMessageBytes(
   address: Address,
   domain: string,
@@ -243,6 +255,68 @@ export async function verifyTonProofSignature(params: {
     Buffer.from(dataToVerify),
     Buffer.from(signature, "base64"),
     Buffer.from(publicKeyHex, "hex")
+  );
+}
+
+const TON_SIGN_DATA_PREFIX = "ton-connect/sign-data/";
+
+function buildSignDataBytes(
+  address: Address,
+  domain: string,
+  timestamp: number,
+  payload: { type: "text" | "binary"; content: string }
+): Uint8Array {
+  const encoder = new TextEncoder();
+  const wc = writeInt32BE(address.workChain);
+  const domainBytes = encoder.encode(domain);
+  const domainLen = writeUint32BE(domainBytes.length);
+  const ts = writeBigUint64BE(BigInt(timestamp));
+  const typePrefix = encoder.encode(payload.type === "text" ? "txt" : "bin");
+  const payloadBytes =
+    payload.type === "text"
+      ? encoder.encode(payload.content)
+      : Uint8Array.from(atob(payload.content), (c) => c.charCodeAt(0));
+  const payloadLen = writeUint32BE(payloadBytes.length);
+
+  return sha256(
+    concatBytes(
+      new Uint8Array([0xff, 0xff]),
+      encoder.encode(TON_SIGN_DATA_PREFIX),
+      wc,
+      new Uint8Array(address.hash),
+      domainLen,
+      domainBytes,
+      ts,
+      typePrefix,
+      payloadLen,
+      payloadBytes
+    )
+  );
+}
+
+export function verifyTonSignData(params: {
+  signature: string;
+  address: string;
+  publicKeyHex: string;
+  timestamp: number;
+  domain: string;
+  payload: { type: string; text?: string; bytes?: string };
+}): boolean {
+  const tonAddress = Address.parse(params.address);
+  const content =
+    params.payload.type === "text"
+      ? params.payload.text!
+      : params.payload.bytes!;
+
+  const dataToVerify = buildSignDataBytes(tonAddress, params.domain, params.timestamp, {
+    type: params.payload.type as "text" | "binary",
+    content,
+  });
+
+  return signVerify(
+    Buffer.from(dataToVerify),
+    Buffer.from(params.signature, "base64"),
+    Buffer.from(params.publicKeyHex, "hex")
   );
 }
 

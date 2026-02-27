@@ -6,6 +6,7 @@ import {
   Address,
   Cell,
   Message,
+  SendMode,
   beginCell,
   storeMessage,
   storeStateInit,
@@ -242,6 +243,7 @@ export default class TonLib {
       seqno,
       secretKey: this.keypair.secretKey,
       messages,
+      sendMode: SendMode.PAY_GAS_SEPARATELY | SendMode.IGNORE_ERRORS,
       timeout: this.normalizeValidUntil(params.valid_until)
     })
 
@@ -269,6 +271,49 @@ export default class TonLib {
   private readonly tonProofPrefix = 'ton-proof-item-v2/'
   private readonly tonConnectPrefix = 'ton-connect'
 
+  private static encoder = new TextEncoder()
+
+  private static concatBytes(...arrays: Uint8Array[]): Uint8Array {
+    const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0)
+    const result = new Uint8Array(totalLength)
+    let offset = 0
+    for (const arr of arrays) {
+      result.set(arr, offset)
+      offset += arr.length
+    }
+    return result
+  }
+
+  private static writeUint32BE(value: number): Uint8Array {
+    const buf = new Uint8Array(4)
+    new DataView(buf.buffer).setUint32(0, value, false)
+    return buf
+  }
+
+  private static writeUint32LE(value: number): Uint8Array {
+    const buf = new Uint8Array(4)
+    new DataView(buf.buffer).setUint32(0, value, true)
+    return buf
+  }
+
+  private static writeInt32BE(value: number): Uint8Array {
+    const buf = new Uint8Array(4)
+    new DataView(buf.buffer).setInt32(0, value, false)
+    return buf
+  }
+
+  private static writeBigUint64LE(value: bigint): Uint8Array {
+    const buf = new Uint8Array(8)
+    new DataView(buf.buffer).setBigUint64(0, value, true)
+    return buf
+  }
+
+  private static writeBigUint64BE(value: bigint): Uint8Array {
+    const buf = new Uint8Array(8)
+    new DataView(buf.buffer).setBigUint64(0, value, false)
+    return buf
+  }
+
   private createTonProofMessageBytes(message: {
     address: Address
     timestamp: number
@@ -277,44 +322,32 @@ export default class TonLib {
       value: string
     }
     payload: string
-  }): Buffer {
-    const innerMessage = {
-      workchain: message.address.workChain,
-      address: message.address.hash,
-      domain: message.domain,
-      payload: message.payload,
-      timestamp: message.timestamp
-    }
+  }): Uint8Array {
+    const { encoder, concatBytes, writeUint32BE, writeUint32LE, writeBigUint64LE } = TonLib
 
-    const wc = Buffer.alloc(4)
-    wc.writeUInt32BE(message.address.workChain)
+    const wc = writeUint32BE(message.address.workChain)
+    const ts = writeBigUint64LE(BigInt(message.timestamp))
+    const dl = writeUint32LE(message.domain.lengthBytes)
 
-    const ts = Buffer.alloc(8)
-    ts.writeBigUInt64LE(BigInt(message.timestamp))
-
-    const dl = Buffer.alloc(4)
-    dl.writeUInt32LE(message.domain.lengthBytes)
-
-    const m = Buffer.concat([
-      Buffer.from(this.tonProofPrefix),
+    const m = concatBytes(
+      encoder.encode(this.tonProofPrefix),
       wc,
-      message.address.hash,
+      new Uint8Array(message.address.hash),
       dl,
-      Buffer.from(message.domain.value),
+      encoder.encode(message.domain.value),
       ts,
-      Buffer.from(message.payload)
-    ])
+      encoder.encode(message.payload)
+    )
 
     const messageHash = sha256(m)
 
-    const fullMes = Buffer.concat([
-      Buffer.from([0xff, 0xff]),
-      Buffer.from(this.tonConnectPrefix),
+    const fullMes = concatBytes(
+      new Uint8Array([0xff, 0xff]),
+      encoder.encode(this.tonConnectPrefix),
       messageHash
-    ])
-    const res = sha256(fullMes)
+    )
 
-    return Buffer.from(res)
+    return sha256(fullMes)
   }
 
   public async generateTonProof(
@@ -332,7 +365,7 @@ export default class TonLib {
       timestamp: Math.floor(new Date(params.iat).getTime() / 1000)
     })
 
-    const signature = sign(dataToSign, this.keypair.secretKey)
+    const signature = sign(Buffer.from(dataToSign), this.keypair.secretKey)
 
     return {
       signature: signature.toString('base64'),
@@ -340,102 +373,78 @@ export default class TonLib {
     }
   }
 
-  /**
-   * Creates hash for Cell payload according to TON Connect specification.
-   */
-  /**
-   * Creates hash for text or binary payload.
-   * Message format:
-   * message = 0xffff || "ton-connect/sign-data/" || workchain || address_hash || domain_len || domain || timestamp || payload
-   */
   private createTextBinaryHash(
     payload: TonLib.SignData['params'] & { type: 'text' | 'binary' },
     parsedAddr: Address,
     domain: string,
     timestamp: number
-  ): Buffer {
-    // Create workchain buffer
-    const wcBuffer = Buffer.alloc(4)
-    wcBuffer.writeInt32BE(parsedAddr.workChain)
+  ): Uint8Array {
+    const { encoder, concatBytes, writeInt32BE, writeUint32BE, writeBigUint64BE } = TonLib
 
-    // Create domain buffer
-    const domainBuffer = Buffer.from(domain, 'utf8')
-    const domainLenBuffer = Buffer.alloc(4)
-    domainLenBuffer.writeUInt32BE(domainBuffer.length)
+    const wcBuffer = writeInt32BE(parsedAddr.workChain)
+    const domainBytes = encoder.encode(domain)
+    const domainLenBuffer = writeUint32BE(domainBytes.length)
+    const tsBuffer = writeBigUint64BE(BigInt(timestamp))
 
-    // Create timestamp buffer
-    const tsBuffer = Buffer.alloc(8)
-    tsBuffer.writeBigUInt64BE(BigInt(timestamp))
-
-    // Create payload buffer
-    const typePrefix = payload.type === 'text' ? 'txt' : 'bin'
     const content = payload.type === 'text' ? payload.text : payload.bytes
-    const encoding = payload.type === 'text' ? 'utf8' : 'base64'
+    const payloadPrefix = encoder.encode(payload.type === 'text' ? 'txt' : 'bin')
+    const payloadBytes =
+      payload.type === 'text'
+        ? encoder.encode(content)
+        : Uint8Array.from(atob(content), c => c.charCodeAt(0))
+    const payloadLenBuffer = writeUint32BE(payloadBytes.length)
 
-    const payloadPrefix = Buffer.from(typePrefix)
-    const payloadBuffer = Buffer.from(content, encoding)
-    const payloadLenBuffer = Buffer.alloc(4)
-    payloadLenBuffer.writeUInt32BE(payloadBuffer.length)
-
-    // Build message
-    const message = Buffer.concat([
-      Buffer.from([0xff, 0xff]),
-      Buffer.from('ton-connect/sign-data/'),
+    const message = concatBytes(
+      new Uint8Array([0xff, 0xff]),
+      encoder.encode('ton-connect/sign-data/'),
       wcBuffer,
-      parsedAddr.hash,
+      new Uint8Array(parsedAddr.hash),
       domainLenBuffer,
-      domainBuffer,
+      domainBytes,
       tsBuffer,
       payloadPrefix,
       payloadLenBuffer,
-      payloadBuffer
-    ])
+      payloadBytes
+    )
 
-    // Hash message with sha256
-    const hash = sha256(message)
-    return Buffer.from(hash)
+    return sha256(message)
   }
 
-  /**
-   * Creates hash for Cell payload according to TON Connect specification.
-   */
   private createCellHash(
     payload: TonLib.SignData['params'] & { type: 'cell' },
     parsedAddr: Address,
     domain: string,
     timestamp: number
-  ): Buffer {
+  ): Uint8Array {
     const cell = Cell.fromBase64(payload.cell)
-    const schemaHash = crc32.buf(Buffer.from(payload.schema, 'utf8')) >>> 0 // unsigned crc32 hash
+    const schemaHash = crc32.buf(TonLib.encoder.encode(payload.schema)) >>> 0
 
-    // Encode domain in DNS-like format (e.g. "example.com" -> "com\0example\0")
     const encodedDomain = this.encodeDomainDnsLike(domain)
 
     const message = beginCell()
-      .storeUint(0x75569022, 32) // prefix
-      .storeUint(schemaHash, 32) // schema hash
-      .storeUint(timestamp, 64) // timestamp
-      .storeAddress(parsedAddr) // user wallet address
-      .storeStringRefTail(encodedDomain.toString('utf8')) // app domain (DNS-like encoded, snake stored)
-      .storeRef(cell) // payload cell
+      .storeUint(0x75569022, 32)
+      .storeUint(schemaHash, 32)
+      .storeUint(timestamp, 64)
+      .storeAddress(parsedAddr)
+      .storeStringRefTail(new TextDecoder().decode(encodedDomain))
+      .storeRef(cell)
       .endCell()
 
-    return Buffer.from(message.hash())
+    return new Uint8Array(message.hash())
   }
 
-  private encodeDomainDnsLike(domain: string): Buffer {
-    const parts = domain.split('.').reverse() // reverse for DNS-like encoding
+  private encodeDomainDnsLike(domain: string): Uint8Array {
+    const parts = domain.split('.').reverse()
     const encoded: number[] = []
 
     for (const part of parts) {
-      // Add the part characters
       for (let i = 0; i < part.length; i++) {
         encoded.push(part.charCodeAt(i))
       }
-      encoded.push(0) // null byte after each part
+      encoded.push(0)
     }
 
-    return Buffer.from(encoded)
+    return new Uint8Array(encoded)
   }
 
   public async signData(
@@ -448,8 +457,9 @@ export default class TonLib {
     const timestamp = Math.floor(Date.now() / 1000)
 
     const dataToSign = this.getToSign(params, this.wallet.address, domain, timestamp)
+    const dataBuffer = Buffer.from(dataToSign)
 
-    const signature = sign(dataToSign, this.keypair.secretKey)
+    const signature = sign(dataBuffer, this.keypair.secretKey)
     const addressStr = await this.getAddressRaw()
 
     const result = {
@@ -463,7 +473,7 @@ export default class TonLib {
 
     try {
       const verified = signVerify(
-        dataToSign,
+        dataBuffer,
         Buffer.from(result.signature, 'base64'),
         this.keypair.publicKey
       )
@@ -493,7 +503,7 @@ export default class TonLib {
     address: Address,
     domain: string,
     timestamp: number
-  ): Buffer {
+  ): Uint8Array {
     if (params.type === 'text' || params.type === 'binary') {
       return this.createTextBinaryHash(params, address, domain, timestamp)
     } else if (params.type === 'cell') {
