@@ -74,7 +74,7 @@
     "graphql": "^16.12.0",
     "near-api-js": "^0.45.1",
     "near-seed-phrase": "^0.2.1",
-    "next": "16.1.6",
+    "next": "16.1.7",
     "permissionless": "0.1.43",
     "react": "19.1.0",
     "react-code-blocks": "0.1.5",
