@@ -36,7 +36,7 @@
     "@polkadot/util": "^10.4.2",
     "@polkadot/util-crypto": "^10.4.2",
     "@reown/appkit-experimental": "1.8.17",
-    "@reown/walletkit": "1.5.2",
+    "@reown/walletkit": "1.5.4",
     "@rhinestone/module-sdk": "0.1.25",
     "@solana/web3.js": "1.98.2",
     "@stacks/network": "^7.3.1",
@@ -50,7 +50,7 @@
     "@ton/ton": "^15.4.0",
     "@types/semver": "^7.7.1",
     "@walletconnect/core": "2.23.5",
-    "@walletconnect/pay": "1.0.4-canary.0",
+    "@walletconnect/pay": "1.0.7",
     "@walletconnect/types": "2.23.5",
     "@walletconnect/utils": "2.23.5",
     "@zerodev/ecdsa-validator": "5.3.0",
@@ -108,8 +108,7 @@
       "protobufjs@>=7.0.0 <7.2.5": ">=7.2.5",
       "elliptic@<=6.6.0": ">=6.6.1",
       "prismjs@<1.30.0": ">=1.30.0",
-      "@babel/runtime@<7.26.10": ">=7.26.10",
-      "@walletconnect/pay": "1.0.4-canary.0"
+      "@babel/runtime@<7.26.10": ">=7.26.10"
     }
   }
 }
