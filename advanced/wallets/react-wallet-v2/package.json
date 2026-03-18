@@ -108,8 +108,7 @@
       "protobufjs@>=7.0.0 <7.2.5": ">=7.2.5",
       "elliptic@<=6.6.0": ">=6.6.1",
       "prismjs@<1.30.0": ">=1.30.0",
-      "@babel/runtime@<7.26.10": ">=7.26.10",
-      "@walletconnect/pay": "1.0.4-canary.0"
+      "@babel/runtime@<7.26.10": ">=7.26.10"
     }
   }
 }
