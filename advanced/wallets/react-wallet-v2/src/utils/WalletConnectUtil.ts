@@ -33,7 +33,8 @@ export async function createWalletKit(relayerRegionURL: string) {
       disableRequestQueue: true
     },
     payConfig: {
-      appId: process.env.NEXT_PUBLIC_PROJECT_ID
+      appId: process.env.NEXT_PUBLIC_PROJECT_ID,
+      apiKey: process.env.NEXT_PUBLIC_PAY_API_KEY || ''
     }
   })
   console.log('pay', {

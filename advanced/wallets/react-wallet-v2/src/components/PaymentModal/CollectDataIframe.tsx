@@ -4,8 +4,8 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 
 const WHITELISTED_ORIGINS = [
   'https://dev.pay.walletconnect.com',
-  'https://staging.pay.walletconnect.com',
   'https://pay.walletconnect.com',
+  'https://staging.pay.walletconnect.com'
 ]
 
 function buildUrlWithTheme(baseUrl: string): string {
@@ -19,11 +19,7 @@ interface CollectDataIframeProps {
   onError: (error: string) => void
 }
 
-export default function CollectDataIframe({
-  url,
-  onComplete,
-  onError,
-}: CollectDataIframeProps) {
+export default function CollectDataIframe({ url, onComplete, onError }: CollectDataIframeProps) {
   const popupRef = useRef<Window | null>(null)
   const [opened, setOpened] = useState(false)
 
@@ -31,15 +27,11 @@ export default function CollectDataIframe({
 
   const handleMessage = useCallback(
     (event: MessageEvent) => {
-      const isAllowedOrigin = WHITELISTED_ORIGINS.some(
-        origin => event.origin === origin
-      )
+      const isAllowedOrigin = WHITELISTED_ORIGINS.some(origin => event.origin === origin)
       if (!isAllowedOrigin) return
 
       try {
-        const message = typeof event.data === 'string'
-          ? JSON.parse(event.data)
-          : event.data
+        const message = typeof event.data === 'string' ? JSON.parse(event.data) : event.data
 
         if (message.type === 'IC_COMPLETE' && message.success) {
           popupRef.current?.close()
@@ -54,7 +46,7 @@ export default function CollectDataIframe({
         // Non-JSON message, ignore
       }
     },
-    [onComplete, onError],
+    [onComplete, onError]
   )
 
   useEffect(() => {
@@ -103,14 +95,16 @@ export default function CollectDataIframe({
 
   if (opened) {
     return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '24px',
-        textAlign: 'center',
-        gap: '16px',
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '24px',
+          textAlign: 'center',
+          gap: '16px'
+        }}
+      >
         <Loading size="xl" color="primary" />
         <Text h4 css={{ marginTop: '8px' }}>
           Complete verification
@@ -119,7 +113,7 @@ export default function CollectDataIframe({
           Complete the form in the opened window. This page will update automatically.
         </Text>
         <button
-          onClick={() => popupRef.current ? popupRef.current.focus() : openPopup()}
+          onClick={() => (popupRef.current ? popupRef.current.focus() : openPopup())}
           style={{
             marginTop: '8px',
             padding: '10px 20px',
@@ -132,7 +126,7 @@ export default function CollectDataIframe({
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
+            gap: '6px'
           }}
         >
           <OpenInNewIcon sx={{ fontSize: 16 }} />
@@ -143,23 +137,24 @@ export default function CollectDataIframe({
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '24px',
-      textAlign: 'center',
-      gap: '16px',
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '24px',
+        textAlign: 'center',
+        gap: '16px'
+      }}
+    >
       <Text h4>Why we need your information?</Text>
       <Text css={{ color: '$accents6', fontSize: '14px', lineHeight: '1.6', textAlign: 'left' }}>
-        For regulatory compliance, we collect basic information on your first
-        payment: full name, date of birth, and place of birth.
+        For regulatory compliance, we collect basic information on your first payment: full name,
+        date of birth, and place of birth.
       </Text>
       <Text css={{ color: '$accents6', fontSize: '14px', lineHeight: '1.6', textAlign: 'left' }}>
-        This information is tied to your wallet address and this specific
-        network. If you use the same wallet on this network again, you won&apos;t
-        need to provide it again.
+        This information is tied to your wallet address and this specific network. If you use the
+        same wallet on this network again, you won&apos;t need to provide it again.
       </Text>
       <button
         onClick={openPopup}
@@ -177,7 +172,7 @@ export default function CollectDataIframe({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '8px',
+          gap: '8px'
         }}
       >
         <OpenInNewIcon sx={{ fontSize: 18 }} />
