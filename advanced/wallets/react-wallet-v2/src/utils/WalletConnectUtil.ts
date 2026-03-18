@@ -32,15 +32,10 @@ export async function createWalletKit(relayerRegionURL: string) {
     signConfig: {
       disableRequestQueue: true
     },
-    ...(apiKey
-      ? {
-          payConfig: {
-            appId: process.env.NEXT_PUBLIC_PROJECT_ID,
-            apiKey,
-            baseUrl
-          }
-        }
-      : {})
+    payConfig: {
+      appId: process.env.NEXT_PUBLIC_PROJECT_ID,
+      baseUrl
+    }
   })
   try {
     const clientId = await walletkit.engine.signClient.core.crypto.getClientId()
