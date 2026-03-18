@@ -19,9 +19,7 @@ export async function createWalletKit(relayerRegionURL: string) {
   })
 
   const apiKey = process.env.NEXT_PUBLIC_PAY_API_KEY
-  const baseUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/api/pay`
-    : 'https://api.pay.walletconnect.com'
+  const baseUrl = process.env.NEXT_PUBLIC_PAY_API_BASE_URL
 
   walletkit = await WalletKit.init({
     core,
@@ -34,15 +32,17 @@ export async function createWalletKit(relayerRegionURL: string) {
     signConfig: {
       disableRequestQueue: true
     },
-    ...(apiKey ? {
-      payConfig: {
-        appId: process.env.NEXT_PUBLIC_PROJECT_ID,
-        apiKey,
-        baseUrl,
-      }
-    } : {})
+    payConfig: {
+      appId: process.env.NEXT_PUBLIC_PROJECT_ID
+    }
   })
-
+  console.log('pay', {
+    payConfig: {
+      appId: process.env.NEXT_PUBLIC_PROJECT_ID,
+      apiKey,
+      ...(baseUrl ? { baseUrl } : {})
+    }
+  })
   try {
     const clientId = await walletkit.engine.signClient.core.crypto.getClientId()
     console.log('WalletConnect ClientID: ', clientId)
