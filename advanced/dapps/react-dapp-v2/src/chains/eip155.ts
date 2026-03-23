@@ -18,6 +18,8 @@ export const EIP155Colors = {
   zksync: "90, 90, 90",
   celo: "60, 203, 132",
   arbitrum: "44, 55, 75",
+  bsc: "243, 186, 47",
+  monad: "131, 110, 249",
 };
 
 export const EIP155ChainData: ChainsMap = {
@@ -140,6 +142,27 @@ export const EIP155ChainData: ChainsMap = {
     slip44: 60,
     testnet: false,
   },
+  "56": {
+    name: "BNB Smart Chain",
+    id: "eip155:56",
+    rpc: ["https://bsc-dataseed.binance.org"],
+    slip44: 60,
+    testnet: false,
+  },
+  "143": {
+    name: "Monad",
+    id: "eip155:143",
+    rpc: ["https://rpc.monad.xyz"],
+    slip44: 60,
+    testnet: false,
+  },
+  "10143": {
+    name: "Monad Testnet",
+    id: "eip155:10143",
+    rpc: ["https://testnet-rpc.monad.xyz"],
+    slip44: 60,
+    testnet: true,
+  },
 };
 
 export const EIP155Metadata: NamespaceMetadata = {
@@ -214,6 +237,20 @@ export const EIP155Metadata: NamespaceMetadata = {
     name: "ADI",
     logo: "/assets/eip155-36900.svg",
     rgb: "66, 133, 244",
+  },
+  "56": {
+    name: "BNB Smart Chain",
+    logo: "/assets/" + "eip155-56.png",
+    rgb: EIP155Colors.bsc,
+  },
+  "143": {
+    name: "Monad",
+    logo: "/assets/" + "eip155-143.png",
+    rgb: EIP155Colors.monad,
+  },
+  "10143": {
+    logo: "/assets/" + "eip155-143.png",
+    rgb: EIP155Colors.monad,
   },
 };
 export function getChainMetadata(chainId: string): ChainMetadata {

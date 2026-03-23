@@ -114,6 +114,15 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     rpc: blockchainApiRpc(56),
     namespace: 'eip155',
     symbol: 'BNB'
+  },
+  'eip155:143': {
+    chainId: 143,
+    name: 'Monad',
+    logo: '/chain-logos/eip155-143.png',
+    rgb: '131, 110, 249',
+    rpc: blockchainApiRpc(143),
+    namespace: 'eip155',
+    symbol: 'MON'
   }
 }
 
@@ -193,6 +202,15 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     namespace: 'eip155',
     symbol: 'ETH',
     smartAccountEnabled: true
+  },
+  'eip155:10143': {
+    chainId: 10143,
+    name: 'Monad Testnet',
+    logo: '/chain-logos/eip155-143.png',
+    rgb: '131, 110, 249',
+    rpc: blockchainApiRpc(10143),
+    namespace: 'eip155',
+    symbol: 'MON'
   }
 }
 
