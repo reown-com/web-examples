@@ -96,6 +96,24 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     rpc: 'https://rpc.adifoundation.ai',
     namespace: 'eip155',
     symbol: 'ADI'
+  },
+  'eip155:42220': {
+    chainId: 42220,
+    name: 'Celo',
+    logo: '/chain-logos/eip155-42220.png',
+    rgb: '53, 208, 127',
+    rpc: blockchainApiRpc(42220),
+    namespace: 'eip155',
+    symbol: 'CELO'
+  },
+  'eip155:56': {
+    chainId: 56,
+    name: 'BNB Smart Chain',
+    logo: '/chain-logos/eip155-56.png',
+    rgb: '243, 186, 47',
+    rpc: blockchainApiRpc(56),
+    namespace: 'eip155',
+    symbol: 'BNB'
   }
 }
 
