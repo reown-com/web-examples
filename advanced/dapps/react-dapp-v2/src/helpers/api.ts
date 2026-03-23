@@ -119,7 +119,7 @@ export const rpcProvidersByChainId: RpcProvidersByChainId = {
   },
   42220: {
     name: "Celo",
-    baseURL: "https://rpc.walletconnect.com/v1",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:42220",
     token: {
       name: "CELO",
       symbol: "CELO",
@@ -141,6 +141,30 @@ export const rpcProvidersByChainId: RpcProvidersByChainId = {
       symbol: "ADI",
     },
   },
+  56: {
+    name: "BNB Smart Chain",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:56",
+    token: {
+      name: "BNB",
+      symbol: "BNB",
+    },
+  },
+  143: {
+    name: "Monad",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:143",
+    token: {
+      name: "MON",
+      symbol: "MON",
+    },
+  },
+  10143: {
+    name: "Monad Testnet",
+    baseURL: WALLETCONNECT_RPC_BASE_URL + "&chainId=eip155:10143",
+    token: {
+      name: "MON",
+      symbol: "MON",
+    },
+  },
 };
 
 const api: AxiosInstance = axios.create({
@@ -159,10 +183,7 @@ export async function apiGetAccountBalance(
   const [namespace, networkId] = chainId.split(":");
 
   if (namespace === "kadena") {
-    return apiGetKadenaAccountBalance(
-      address,
-      networkId,
-    );
+    return apiGetKadenaAccountBalance(address, networkId);
   }
 
   if (namespace === "bip122") {
