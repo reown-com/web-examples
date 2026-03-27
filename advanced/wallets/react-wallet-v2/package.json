@@ -36,7 +36,7 @@
     "@polkadot/util": "^10.4.2",
     "@polkadot/util-crypto": "^10.4.2",
     "@reown/appkit-experimental": "1.8.17",
-    "@reown/walletkit": "1.5.4",
+    "@reown/walletkit": "1.5.5",
     "@rhinestone/module-sdk": "0.1.25",
     "@solana/web3.js": "1.98.2",
     "@stacks/network": "^7.3.1",
@@ -110,6 +110,11 @@
       "elliptic@<=6.6.0": ">=6.6.1",
       "prismjs@<1.30.0": ">=1.30.0",
       "@babel/runtime@<7.26.10": ">=7.26.10",
+      "@walletconnect/core@": "2.23.9",
+      "@walletconnect/types@": "2.23.9",
+      "@walletconnect/utils@": "2.23.9",
+      "@walletconnect/sign-client@": "2.23.9",
+      "@walletconnect/universal-provider@": "2.23.9",
       "@walletconnect/pay": "1.0.8"
     }
   }
