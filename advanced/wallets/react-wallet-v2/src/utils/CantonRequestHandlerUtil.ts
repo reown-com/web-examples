@@ -8,7 +8,8 @@ export async function approveCantonRequest(
   requestEvent: SignClientTypes.EventArguments['session_request']
 ) {
   const { params, id } = requestEvent
-  const { request } = params
+  const { request, chainId } = params
+  const networkId = chainId ?? 'canton:devnet'
 
   const allWallets = Object.entries(cantonWallets)
   const primaryWallet = allWallets[0]
@@ -26,7 +27,7 @@ export async function approveCantonRequest(
           hint: 'operator',
           publicKey: w.getPublicKey(),
           namespace: w.getNamespace(),
-          networkId: 'canton:devnet',
+          networkId,
           signingProviderId: 'participant',
           disabled: false
         }))
@@ -40,13 +41,13 @@ export async function approveCantonRequest(
         hint: 'operator',
         publicKey: wallet.getPublicKey(),
         namespace: wallet.getNamespace(),
-        networkId: 'canton:devnet',
+        networkId,
         signingProviderId: 'participant'
       })
 
     case CANTON_SIGNING_METHODS.CANTON_GET_ACTIVE_NETWORK:
       return formatJsonRpcResult(id, {
-        networkId: 'canton:devnet',
+        networkId,
         ledgerApi: 'http://127.0.0.1:5003'
       })
 
@@ -62,7 +63,7 @@ export async function approveCantonRequest(
           isNetworkConnected: true
         },
         network: {
-          networkId: 'canton:devnet',
+          networkId,
           ledgerApi: 'http://127.0.0.1:5003'
         }
       })
