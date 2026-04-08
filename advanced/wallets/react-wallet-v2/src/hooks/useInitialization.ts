@@ -16,6 +16,7 @@ import { createOrRestoreBip122Wallet } from '@/utils/Bip122WalletUtil'
 import { createOrRestoreSuiWallet } from '@/utils/SuiWalletUtil'
 import { createOrRestoreStacksWallet } from '@/utils/StacksWalletUtil'
 import { createOrRestoreTonWallet } from '@/utils/TonWalletUtil'
+import { createOrRestoreCantonWallet } from '@/utils/CantonWalletUtil'
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
@@ -99,6 +100,10 @@ export default function useInitialization() {
             }),
             createOrRestoreTonWallet().then(({ tonAddresses }) => {
               SettingsStore.setTonAddress(tonAddresses[0])
+            }),
+            Promise.resolve().then(() => {
+              const { cantonAddresses } = createOrRestoreCantonWallet()
+              SettingsStore.setCantonAddress(cantonAddresses[0])
             })
           ])
           console.log('All chain wallets initialized')
