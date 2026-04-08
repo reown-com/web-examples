@@ -62,7 +62,9 @@ import { stacksAddresses, stacksWallet } from '@/utils/StacksWalletUtil'
 import { getWallet as getSuiWallet } from '@/utils/SuiWalletUtil'
 import StacksLib from '@/lib/StacksLib'
 import { TON_CHAINS, TON_SIGNING_METHODS } from '@/data/TonData'
+import { CANTON_CHAINS, CANTON_SIGNING_METHODS, CANTON_EVENTS } from '@/data/CantonData'
 import { getWallet, tonAddresses, tonWallets } from '@/utils/TonWalletUtil'
+import { cantonAddresses } from '@/utils/CantonWalletUtil'
 import { prepareAuthenticationMessages, signAuthenticationMessages } from '@/utils/AuthUtil'
 import { AuthenticationMessage } from '@/types/auth'
 
@@ -155,6 +157,11 @@ export default function SessionProposalModal() {
     const tonChains = Object.keys(TON_CHAINS)
     const tonMethods = Object.values(TON_SIGNING_METHODS)
     const tonEvents = [] as string[]
+
+    // canton
+    const cantonChains = Object.keys(CANTON_CHAINS)
+    const cantonMethods = Object.values(CANTON_SIGNING_METHODS)
+    const cantonEvents = Object.values(CANTON_EVENTS)
 
     console.log('stacksAddresses', stacksAddresses)
 
@@ -260,6 +267,14 @@ export default function SessionProposalModal() {
         accounts: tonChains
           .map(chain => (tonAddresses || []).map(address => `${chain}:${address}`))
           .flat()
+      },
+      canton: {
+        chains: cantonChains,
+        methods: cantonMethods,
+        events: cantonEvents,
+        accounts: cantonChains
+          .map(chain => (cantonAddresses || []).map(address => `${chain}:${address}`))
+          .flat()
       }
     }
   }, [addressesToApprove])
@@ -356,6 +371,8 @@ export default function SessionProposalModal() {
         return stacksWallet.getAddress(`${namespace}:${chainId}`)
       case 'ton':
         return tonAddresses[0]
+      case 'canton':
+        return cantonAddresses[0]
     }
   }, [])
 

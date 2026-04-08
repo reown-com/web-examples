@@ -26,6 +26,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "bip122:000000000019d6689c085ae165831e93",
   "sui:mainnet",
   "stacks:1",
+  "canton:mainnet",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -51,6 +52,7 @@ export const DEFAULT_TEST_CHAINS = [
   "sui:testnet",
   "sui:devnet",
   "stacks:2147483648",
+  "canton:devnet",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -336,6 +338,24 @@ export enum DEFAULT_SUI_METHODS {
 export enum DEFAULT_SUI_EVENTS {
   SUI_ACCOUNTS_CHANGED = "sui_accountsChanged",
   SUI_CHAIN_CHANGED = "sui_chainChanged",
+}
+
+/**
+ * CANTON
+ */
+export enum DEFAULT_CANTON_METHODS {
+  CANTON_PREPARE_SIGN_EXECUTE = "canton_prepareSignExecute",
+  CANTON_LIST_ACCOUNTS = "canton_listAccounts",
+  CANTON_GET_PRIMARY_ACCOUNT = "canton_getPrimaryAccount",
+  CANTON_GET_ACTIVE_NETWORK = "canton_getActiveNetwork",
+  CANTON_STATUS = "canton_status",
+  CANTON_LEDGER_API = "canton_ledgerApi",
+  CANTON_SIGN_MESSAGE = "canton_signMessage",
+}
+
+export enum DEFAULT_CANTON_EVENTS {
+  CANTON_ACCOUNTS_CHANGED = "accountsChanged",
+  CANTON_STATUS_CHANGED = "statusChanged",
 }
 
 export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
