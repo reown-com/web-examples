@@ -30,7 +30,7 @@
     "@walletconnect/types": "2.23.9",
     "@walletconnect/universal-provider": "2.23.9",
     "@walletconnect/utils": "2.23.9",
-    "axios": "1.13.5",
+    "axios": "1.15.0",
     "bitcoinjs-lib": "7.0.1",
     "bitcoinjs-message": "2.2.0",
     "bs58": "6.0.0",
