@@ -45,6 +45,7 @@ interface State {
     | 'SessionSignStacksMessageModal'
     | 'SessionTonSendMessageModal'
     | 'SessionTonSignDataModal'
+    | 'SessionSignCantonModal'
     | 'PaymentOptionsModal'
   data?: ModalData
 }

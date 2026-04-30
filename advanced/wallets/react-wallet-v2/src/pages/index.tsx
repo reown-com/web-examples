@@ -21,6 +21,7 @@ import { useRouter } from 'next/router'
 import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCard'
 import { SUI_MAINNET, SUI_MAINNET_CHAINS, SUI_TESTNET_CHAINS } from '@/data/SuiData'
 import { STACKS_MAINNET, STACKS_TESTNET } from '@/data/StacksData'
+import { CANTON_MAINNET_CHAINS, CANTON_TEST_CHAINS } from '@/data/CantonData'
 
 export default function HomePage() {
   const {
@@ -38,6 +39,7 @@ export default function HomePage() {
     suiAddress,
     stacksAddress,
     tonAddress,
+    cantonAddress,
     smartAccountEnabled,
     chainAbstractionEnabled
   } = useSnapshot(SettingsStore.state)
@@ -182,6 +184,18 @@ export default function HomePage() {
           logo={logo}
           rgb={rgb}
           address={stacksAddress.mainnet}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
+      ))}
+
+      {Object.entries(CANTON_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={cantonAddress}
           chainId={caip10}
           data-testid={'chain-card-' + caip10.toString()}
         />
@@ -347,6 +361,18 @@ export default function HomePage() {
               logo={logo}
               rgb={rgb}
               address={stacksAddress.testnet}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
+          ))}
+
+          {Object.entries(CANTON_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={cantonAddress}
               chainId={caip10}
               data-testid={'chain-card-' + caip10.toString()}
             />

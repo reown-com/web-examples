@@ -28,6 +28,8 @@ import { createCheckoutError } from '@/types/wallet_checkout'
 import { SUI_SIGNING_METHODS } from '@/data/SuiData'
 import { STACKS_SIGNING_METHODS } from '@/data/StacksData'
 import { TON_SIGNING_METHODS } from '@/data/TonData'
+import { CANTON_SIGNING_METHODS } from '@/data/CantonData'
+import { approveCantonRequest } from '@/utils/CantonRequestHandlerUtil'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -206,6 +208,18 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
           })
         case TON_SIGNING_METHODS.SEND_MESSAGE:
           return ModalStore.open('SessionTonSendMessageModal', { requestEvent, requestSession })
+        case CANTON_SIGNING_METHODS.CANTON_LIST_ACCOUNTS:
+        case CANTON_SIGNING_METHODS.CANTON_GET_PRIMARY_ACCOUNT:
+        case CANTON_SIGNING_METHODS.CANTON_GET_ACTIVE_NETWORK:
+        case CANTON_SIGNING_METHODS.CANTON_STATUS:
+        case CANTON_SIGNING_METHODS.CANTON_LEDGER_API:
+          return walletkit.respondSessionRequest({
+            topic,
+            response: await approveCantonRequest(requestEvent)
+          })
+        case CANTON_SIGNING_METHODS.CANTON_PREPARE_SIGN_EXECUTE:
+        case CANTON_SIGNING_METHODS.CANTON_SIGN_MESSAGE:
+          return ModalStore.open('SessionSignCantonModal', { requestEvent, requestSession })
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }

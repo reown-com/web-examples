@@ -30,6 +30,7 @@ import {
   DEFAULT_SUI_METHODS,
   DEFAULT_STACKS_METHODS,
   DEFAULT_TON_METHODS,
+  DEFAULT_CANTON_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
 import Toggle from "../components/Toggle";
@@ -104,6 +105,7 @@ const Home: NextPage = () => {
     suiRpc,
     stacksRpc,
     tonRpc,
+    cantonRpc,
     isRpcRequestPending,
     rpcResult,
     isTestnet,
@@ -651,6 +653,60 @@ const Home: NextPage = () => {
     ];
   };
 
+  const getCantonActions = (): AccountAction[] => {
+    return [
+      {
+        method: DEFAULT_CANTON_METHODS.CANTON_LIST_ACCOUNTS,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await cantonRpc.testListAccounts(chainId, address);
+        },
+      },
+      {
+        method: DEFAULT_CANTON_METHODS.CANTON_GET_PRIMARY_ACCOUNT,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await cantonRpc.testGetPrimaryAccount(chainId, address);
+        },
+      },
+      {
+        method: DEFAULT_CANTON_METHODS.CANTON_GET_ACTIVE_NETWORK,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await cantonRpc.testGetActiveNetwork(chainId, address);
+        },
+      },
+      {
+        method: DEFAULT_CANTON_METHODS.CANTON_STATUS,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await cantonRpc.testStatus(chainId, address);
+        },
+      },
+      {
+        method: DEFAULT_CANTON_METHODS.CANTON_SIGN_MESSAGE,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await cantonRpc.testSignMessage(chainId, address);
+        },
+      },
+      {
+        method: DEFAULT_CANTON_METHODS.CANTON_PREPARE_SIGN_EXECUTE,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await cantonRpc.testPrepareSignExecute(chainId, address);
+        },
+      },
+      {
+        method: DEFAULT_CANTON_METHODS.CANTON_LEDGER_API,
+        callback: async (chainId: string, address: string) => {
+          openRequestModal();
+          await cantonRpc.testLedgerApi(chainId, address);
+        },
+      },
+    ];
+  };
+
   const getBlockchainActions = (account: string) => {
     const [namespace, chainId, address] = account.split(":");
     switch (namespace) {
@@ -680,6 +736,8 @@ const Home: NextPage = () => {
         return getStacksActions();
       case "ton":
         return getTonActions();
+      case "canton":
+        return getCantonActions();
       default:
         break;
     }
@@ -786,6 +844,7 @@ const Home: NextPage = () => {
           {accounts.map((account) => {
             const [namespace, reference, address] = account.split(":");
             const chainId = `${namespace}:${reference}`;
+            const displayAddress = decodeURIComponent(address);
             return (
               <Blockchain
                 key={account}
@@ -793,7 +852,7 @@ const Home: NextPage = () => {
                 active
                 chainData={chainData}
                 fetching={isFetchingBalances}
-                address={address}
+                address={displayAddress}
                 chainId={chainId}
                 balances={balances}
                 actions={getBlockchainActions(account)}

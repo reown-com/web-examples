@@ -27,6 +27,8 @@ import {
   DEFAULT_SUI_EVENTS,
   DEFAULT_STACKS_METHODS,
   DEFAULT_STACKS_EVENTS,
+  DEFAULT_CANTON_METHODS,
+  DEFAULT_CANTON_EVENTS,
 } from "../constants";
 
 export const getNamespacesFromChains = (chains: string[]) => {
@@ -69,6 +71,8 @@ export const getSupportedRequiredMethodsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_SUI_METHODS);
     case "stacks":
       return Object.values(DEFAULT_STACKS_METHODS);
+    case "canton":
+      return Object.values(DEFAULT_CANTON_METHODS);
     default:
       throw new Error(
         `No default required methods for namespace: ${namespace}`
@@ -89,6 +93,7 @@ export const getSupportedOptionalMethodsByNamespace = (namespace: string) => {
     case "tezos":
     case "kadena":
     case "bip122":
+    case "canton":
       return [];
     default:
       throw new Error(
@@ -125,6 +130,8 @@ export const getSupportedEventsByNamespace = (namespace: string) => {
       return Object.values(DEFAULT_SUI_EVENTS);
     case "stacks":
       return Object.values(DEFAULT_STACKS_EVENTS);
+    case "canton":
+      return Object.values(DEFAULT_CANTON_EVENTS);
     default:
       throw new Error(`No default events for namespace: ${namespace}`);
   }

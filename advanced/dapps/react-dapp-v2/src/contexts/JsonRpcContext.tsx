@@ -74,6 +74,7 @@ import {
   WalletGrantPermissionsReturnType,
   DEFAULT_SUI_METHODS,
   DEFAULT_STACKS_METHODS,
+  DEFAULT_CANTON_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -203,6 +204,15 @@ interface IContext {
   tonRpc: {
     testSendMessage: TRpcRequestCallback;
     testSignData: TRpcRequestCallback;
+  };
+  cantonRpc: {
+    testListAccounts: TRpcRequestCallback;
+    testGetPrimaryAccount: TRpcRequestCallback;
+    testGetActiveNetwork: TRpcRequestCallback;
+    testStatus: TRpcRequestCallback;
+    testSignMessage: TRpcRequestCallback;
+    testPrepareSignExecute: TRpcRequestCallback;
+    testLedgerApi: TRpcRequestCallback;
   };
   rpcResult?: IFormattedRpcResponse | null;
   isRpcRequestPending: boolean;
@@ -2418,6 +2428,188 @@ export function JsonRpcContextProvider({
     ),
   };
 
+  // -------- CANTON RPC METHODS --------
+
+  const cantonRpc = {
+    testListAccounts: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+      ): Promise<IFormattedRpcResponse> => {
+        const result = await client!.request<any>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_CANTON_METHODS.CANTON_LIST_ACCOUNTS,
+            params: {},
+          },
+        });
+
+        return {
+          method: DEFAULT_CANTON_METHODS.CANTON_LIST_ACCOUNTS,
+          address,
+          valid: true,
+          result: JSON.stringify(result, null, 2),
+        };
+      },
+    ),
+    testGetPrimaryAccount: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+      ): Promise<IFormattedRpcResponse> => {
+        const result = await client!.request<any>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_CANTON_METHODS.CANTON_GET_PRIMARY_ACCOUNT,
+            params: {},
+          },
+        });
+
+        return {
+          method: DEFAULT_CANTON_METHODS.CANTON_GET_PRIMARY_ACCOUNT,
+          address,
+          valid: true,
+          result: JSON.stringify(result, null, 2),
+        };
+      },
+    ),
+    testGetActiveNetwork: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+      ): Promise<IFormattedRpcResponse> => {
+        const result = await client!.request<any>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_CANTON_METHODS.CANTON_GET_ACTIVE_NETWORK,
+            params: {},
+          },
+        });
+
+        return {
+          method: DEFAULT_CANTON_METHODS.CANTON_GET_ACTIVE_NETWORK,
+          address,
+          valid: true,
+          result: JSON.stringify(result, null, 2),
+        };
+      },
+    ),
+    testStatus: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+      ): Promise<IFormattedRpcResponse> => {
+        const result = await client!.request<any>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_CANTON_METHODS.CANTON_STATUS,
+            params: {},
+          },
+        });
+
+        return {
+          method: DEFAULT_CANTON_METHODS.CANTON_STATUS,
+          address,
+          valid: true,
+          result: JSON.stringify(result, null, 2),
+        };
+      },
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+      ): Promise<IFormattedRpcResponse> => {
+        const message = `Canton sign test - ${Date.now()}`;
+
+        const result = await client!.request<{ signature: string }>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_CANTON_METHODS.CANTON_SIGN_MESSAGE,
+            params: { message },
+          },
+        });
+
+        return {
+          method: DEFAULT_CANTON_METHODS.CANTON_SIGN_MESSAGE,
+          address,
+          valid: true,
+          result: result.signature,
+        };
+      },
+    ),
+    testPrepareSignExecute: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+      ): Promise<IFormattedRpcResponse> => {
+        const result = await client!.request<any>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_CANTON_METHODS.CANTON_PREPARE_SIGN_EXECUTE,
+            params: {
+              commands: {
+                "0": {
+                  ExerciseCommand: {
+                    templateId: "#mock-package-id:Module:Template",
+                    contractId: "00abcdef1234567890",
+                    choice: "Transfer",
+                    choiceArgument: {
+                      receiver: "bob::1220mock",
+                    },
+                  },
+                },
+              },
+              commandId: "d290f1ee-6c54-4b01-90e6-d701748f0851",
+              actAs: [address],
+              readAs: [],
+              disclosedContracts: [],
+              packageIdSelectionPreference: [],
+            },
+          },
+        });
+
+        return {
+          method: DEFAULT_CANTON_METHODS.CANTON_PREPARE_SIGN_EXECUTE,
+          address,
+          valid: true,
+          result: JSON.stringify(result, null, 2),
+        };
+      },
+    ),
+    testLedgerApi: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+      ): Promise<IFormattedRpcResponse> => {
+        const result = await client!.request<any>({
+          topic: session!.topic,
+          chainId,
+          request: {
+            method: DEFAULT_CANTON_METHODS.CANTON_LEDGER_API,
+            params: {
+              requestMethod: "GET",
+              resource: "/v2/version",
+            },
+          },
+        });
+
+        return {
+          method: DEFAULT_CANTON_METHODS.CANTON_LEDGER_API,
+          address,
+          valid: true,
+          result: JSON.stringify(result, null, 2),
+        };
+      },
+    ),
+  };
+
   const suiRpc = {
     testSendSuiTransaction: _createJsonRpcRequestHandler(
       async (
@@ -2589,6 +2781,7 @@ export function JsonRpcContextProvider({
         bip122Rpc,
         suiRpc,
         stacksRpc,
+        cantonRpc,
       }}
     >
       {children}
