@@ -8,7 +8,7 @@ import SettingsStore from "@/store/SettingsStore";
 import { walletkit, isPaymentLink } from "@/utils/walletConnect";
 import ModalStore from "@/store/ModalStore";
 import PaymentStore from "@/store/PaymentStore";
-import { EVM_CHAINS, SOLANA_CHAINS } from "@/config/chains";
+import { EVM_CHAINS } from "@/config/chains";
 import Modal from "@/components/Modal";
 import CopyButton from "@/components/CopyButton";
 
