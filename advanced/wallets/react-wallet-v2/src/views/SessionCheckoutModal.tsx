@@ -14,6 +14,7 @@ import {
   CheckoutErrorCode
 } from '@/types/wallet_checkout'
 import PaymentOptions from '@/components/PaymentOptions'
+import PayEnvPill from '@/components/PayEnvPill'
 import WalletCheckoutUtil from '@/utils/WalletCheckoutUtil'
 import SettingsStore from '@/store/SettingsStore'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
@@ -191,9 +192,12 @@ export default function SessionCheckoutModal() {
             borderRadius: '0 0 40px 40px'
           }}
         >
-          <Text h4 css={{ paddingLeft: '8px' }}>
-            Checkout
-          </Text>
+          <Row align="center" justify="space-between" css={{ paddingLeft: '8px', paddingRight: '8px' }}>
+            <Text h4 css={{ margin: 0 }}>
+              Checkout
+            </Text>
+            <PayEnvPill />
+          </Row>
           {/* Products */}
           <Products products={checkoutRequest.products} />
 
