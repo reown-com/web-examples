@@ -1,0 +1,40 @@
+{
+  "name": "wdk-wallet-example",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3002 --webpack",
+    "build": "next build --webpack",
+    "start": "next start -p 3002",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@json-rpc-tools/utils": "1.7.6",
+    "@noble/hashes": "1.8.0",
+    "@reown/walletkit": "1.5.5",
+    "@solana/web3.js": "1.98.2",
+    "@tetherto/wdk-wallet-evm": "1.0.0-beta.13",
+    "@tetherto/wdk-wallet-solana": "1.0.0-beta.9",
+    "@tetherto/wdk-wallet-ton": "1.0.0-beta.9",
+    "@ton/core": "0.63.1",
+    "@ton/crypto": "3.3.0",
+    "@ton/ton": "16.2.4",
+    "@walletconnect/core": "2.23.9",
+    "@walletconnect/types": "2.23.9",
+    "@walletconnect/utils": "2.23.9",
+    "bs58": "6.0.0",
+    "buffer": "^6.0.3",
+    "crc-32": "1.2.2",
+    "next": "16.1.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "sodium-javascript": "~0.8.0",
+    "tweetnacl": "^1.0.3",
+    "valtio": "2.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "20.11.0",
+    "@types/react": "19.1.6",
+    "@types/react-dom": "19.1.6",
+    "typescript": "5.4.5"
+  }
+}
