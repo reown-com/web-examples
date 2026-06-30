@@ -100,8 +100,8 @@ importers:
         specifier: 1.8.17
         version: 1.8.17(@types/react@19.1.6)(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(react@19.1.0)(typescript@5.4.5)(use-sync-external-store@1.2.0(react@19.1.0))(utf-8-validate@5.0.10)
       '@reown/walletkit':
-        specifier: 1.5.5-canary-1
-        version: 1.5.5-canary-1(bufferutil@4.1.0)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.25.76)
+        specifier: 1.5.6
+        version: 1.5.6(bufferutil@4.1.0)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@rhinestone/module-sdk':
         specifier: 0.1.25
         version: 0.1.25(viem@2.17.8(bufferutil@4.1.0)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.25.76))
@@ -1609,8 +1609,8 @@ packages:
   '@reown/appkit@1.8.17':
     resolution: {integrity: sha512-svov4ShvEi4YboVe+kXT8xGQvDrYsgQBrBmccOel9nT7/lOEDUimFu5Irna8g/8Zji9/XbRrYi49cLPJrzd45Q==}
 
-  '@reown/walletkit@1.5.5-canary-1':
-    resolution: {integrity: sha512-b7MMCHLT0ThlxeUDjyYDnifs6w6iObAo/870V8ora+Nyk7wpQCWHl8JOHIivi8ixtYJ9HoJ/PpHySlWRwkrMlg==}
+  '@reown/walletkit@1.5.6':
+    resolution: {integrity: sha512-pTjarXQ57ImH8s5kUWRT3V++RNCZMGp9FQKODwobyPxmOPkfre3+s7v2PwwH2fDcoNwGRi2eblqoPx3qb9+NrQ==}
 
   '@rhinestone/module-sdk@0.1.25':
     resolution: {integrity: sha512-BJnEtKDpAx0VgWGl/iWE4WAB2MKJVmy+5euCtfUdQrRawA5CI54bQNi966UuDrf/yY9GT/yEOvYX+5VwLxGjsw==}
@@ -1630,6 +1630,7 @@ packages:
   '@safe-global/safe-gateway-typescript-sdk@3.23.1':
     resolution: {integrity: sha512-6ORQfwtEJYpalCeVO21L4XXGSdbEMfyp2hEv6cP82afKXSwvse6d3sdelgaPWUxHIsFRkWvHDdzh8IyyKHZKxw==}
     engines: {node: '>=16'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@scure/base@1.1.1':
     resolution: {integrity: sha512-ZxOhsSyxYwLJj3pLZCefNitxsj093tb2vq90mp2txoYeBqbcjDjqFhyM8eUjq/uFm6zJ+mUuqxlS2FkuSY1MTA==}
@@ -5065,6 +5066,7 @@ packages:
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   valibot@1.2.0:
@@ -7379,7 +7381,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@reown/walletkit@1.5.5-canary-1(bufferutil@4.1.0)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.25.76)':
+  '@reown/walletkit@1.5.6(bufferutil@4.1.0)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
       '@walletconnect/core': 2.23.10(bufferutil@4.1.0)(typescript@5.4.5)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletconnect/jsonrpc-provider': 1.0.14
@@ -9823,7 +9825,7 @@ snapshots:
       eslint: 9.39.2
       eslint-import-resolver-node: 0.3.9
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.4.5))(eslint@9.39.2))(eslint@9.39.2)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.4.5))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.4.5))(eslint@9.39.2))(eslint@9.39.2))(eslint@9.39.2)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.4.5))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.2)
       eslint-plugin-react: 7.37.5(eslint@9.39.2)
       eslint-plugin-react-hooks: 7.0.1(eslint@9.39.2)
@@ -9866,7 +9868,7 @@ snapshots:
       tinyglobby: 0.2.15
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.4.5))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.4.5))(eslint@9.39.2))(eslint@9.39.2))(eslint@9.39.2)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.4.5))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -9881,7 +9883,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.4.5))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.4.5))(eslint@9.39.2))(eslint@9.39.2))(eslint@9.39.2):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.54.0(eslint@9.39.2)(typescript@5.4.5))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9

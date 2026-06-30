@@ -36,7 +36,7 @@
     "@polkadot/util": "10.4.2",
     "@polkadot/util-crypto": "10.4.2",
     "@reown/appkit-experimental": "1.8.17",
-    "@reown/walletkit": "1.5.5-canary-1",
+    "@reown/walletkit": "1.5.6",
     "@rhinestone/module-sdk": "0.1.25",
     "@solana/web3.js": "1.98.2",
     "@stacks/network": "7.3.1",
