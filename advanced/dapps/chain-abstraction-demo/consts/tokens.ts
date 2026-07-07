@@ -17,10 +17,17 @@ export const usdsTokenAddresses: Record<number, Hex> = {
   8453: "0x820c137fa70c8691f0e44dc420a5e53c168921dc", // Base
 };
 
+export const ethTokenAddresses: Record<number, Hex> = {
+  42161: "0x0000000000000000000000000000000000000000", // Arbitrum
+  10: "0x0000000000000000000000000000000000000000", // Optimism
+  8453: "0x0000000000000000000000000000000000000000", // Base
+};
+
 export const tokenAddresses: Record<string, Record<string, Hex>> = {
   USDC: usdcTokenAddresses,
   USDT: usdtTokenAddresses,
   USDS: usdsTokenAddresses,
+  ETH: ethTokenAddresses,
 };
 
 export const getSupportedNetworks = (token: string): number[] => {

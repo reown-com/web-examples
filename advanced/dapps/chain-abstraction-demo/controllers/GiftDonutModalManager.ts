@@ -168,6 +168,14 @@ class GiftDonutModalManager {
   }
 
   getBalanceBySymbol(symbol: string): string {
+    if(symbol === "ETH") {
+      const ethBalance = this.state.state.balances.find((b) => b.symbol === "ETH")?.balance || "0.00";
+      // Convert ETH balance to USD equivalent (0.0005 ETH = 1 USD)
+      const usdEquivalent = parseFloat(ethBalance) / 0.0005;
+      
+      return usdEquivalent.toFixed(2);
+    }
+    
     const balance = this.state.state.balances.find((b) => b.symbol === symbol);
     return balance?.balance || "0.00";
   }
