@@ -95,7 +95,7 @@ const Home: NextPage = () => {
   );
 
   // -------- quote --------
-  const [sellAmount, setSellAmount] = useState("0.02");
+  const [sellAmount, setSellAmount] = useState("");
   const [quote, setQuote] = useState<JupiterQuote>();
   const [quoteError, setQuoteError] = useState<string>();
   const [isQuoting, setIsQuoting] = useState(false);
@@ -345,6 +345,7 @@ const Home: NextPage = () => {
                 type="number"
                 min="0"
                 step="0.01"
+                placeholder="0"
                 value={sellAmount}
                 onChange={(event) => setSellAmount(event.target.value)}
                 disabled={isSwapping}
