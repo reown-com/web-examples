@@ -24,6 +24,14 @@ on Solscan.
 | Demo wallet | `advanced/wallets/react-wallet-v2` | 3001 | Attaches `wc_feeTerms` to `sessionProperties` at session approval (`src/views/SessionProposalModal.tsx`). Signs requests exactly as before. |
 | Fee-demo dapp | `advanced/dapps/react-dapp-v2` | 3000 | Landing page replaced with a single Jupiter-style swap screen (`src/pages/index.tsx`); Jupiter API client + fee-terms parsing in `src/helpers/jupiter.ts`. |
 
+### Alternative wallet: Kotlin sample wallet
+
+The Reown Kotlin sample wallet (`reown-kotlin` repo, branch `session-fees-poc`)
+carries the same change: it declares `wc_feeTerms` (hardcoded recipient +
+50 bps in `SessionProposalViewModel.kt`) at session approval, and its existing
+`solana_signTransaction` handler signs the swap unchanged. Connect it to the
+dapp by scanning the QR code — no react-wallet needed.
+
 ## Setup
 
 Both apps use pnpm and run in dev mode (`pnpm dev`).
