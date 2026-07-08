@@ -95,6 +95,9 @@ detects this.
   whatever arrives, exactly as today. A malicious dapp could ignore the terms.
 - **No split contract.** Fees land on a single recipient; the
   "80% wallet / 20% WCN" split is a UI label only.
+- **Fee recipient defaulting to the wallet's second account is POC-only
+  convenience.** A real integration would declare a dedicated treasury
+  address (or a split contract) as the recipient, not a user account.
 - **No backend, attribution, or dashboard.** The "dashboard" is the live
   balance card + Solscan.
 - **Static fee policy.** `feeBps` is hardcoded via env in the wallet; the dapp
