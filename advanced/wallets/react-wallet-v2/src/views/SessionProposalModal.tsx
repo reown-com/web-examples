@@ -459,13 +459,14 @@ export default function SessionProposalModal() {
 
         // Session Fees POC: declare the wallet's fee terms so the dapp can apply
         // them as an integrator fee when building swaps via an aggregator.
-        // Defaults to the wallet's second Solana account so fees land on an
-        // address the wallet owns but separate from the connected/swapping one.
+        // The session includes all wallet Solana accounts and the dapp swaps
+        // from the first one, so default the recipient to any other account —
+        // fees land on an address the wallet owns but separate from the swapper.
         const sessionSolanaAccounts =
           namespaces.solana?.accounts.map(account => account.split(':')[2]) ?? []
         const feeRecipient =
           process.env.NEXT_PUBLIC_FEE_RECIPIENT ||
-          solanaAddresses.find(address => !sessionSolanaAccounts.includes(address)) ||
+          solanaAddresses.find(address => address !== sessionSolanaAccounts[0]) ||
           solanaAddresses[0]
         if (feeRecipient) {
           sessionProperties.wc_feeTerms = JSON.stringify({
