@@ -1,885 +1,852 @@
 import type { NextPage } from "next";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
-import { numberToHex } from "@walletconnect/encoding";
-import { RELAYER_SDK_VERSION } from "@walletconnect/core";
+import styled from "styled-components";
+import { Connection } from "@solana/web3.js";
 
-import Banner from "../components/Banner";
-import Blockchain from "../components/Blockchain";
-import Column from "../components/Column";
-import RelayRegionDropdown from "../components/RelayRegionDropdown";
-import Header from "../components/Header";
-import Modal from "../components/Modal";
-import {
-  DEFAULT_COSMOS_METHODS,
-  DEFAULT_EIP155_METHODS,
-  DEFAULT_MAIN_CHAINS,
-  DEFAULT_SOLANA_METHODS,
-  DEFAULT_POLKADOT_METHODS,
-  DEFAULT_MULTIVERSX_METHODS,
-  DEFAULT_TEST_CHAINS,
-  DEFAULT_NEAR_METHODS,
-  DEFAULT_KADENA_METHODS,
-  DEFAULT_TRON_METHODS,
-  DEFAULT_TEZOS_METHODS,
-  DEFAULT_EIP155_OPTIONAL_METHODS,
-  DEFAULT_EIP5792_METHODS,
-  GetCapabilitiesResult,
-  DEFAULT_BIP122_METHODS,
-  DEFAULT_EIP7715_METHODS,
-  DEFAULT_SUI_METHODS,
-  DEFAULT_STACKS_METHODS,
-  DEFAULT_TON_METHODS,
-  DEFAULT_CANTON_METHODS,
-} from "../constants";
-import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
-import Toggle from "../components/Toggle";
-import RequestModal from "../modals/RequestModal";
-import PairingModal from "../modals/PairingModal";
-import PingModal from "../modals/PingModal";
-import {
-  SAccounts,
-  SAccountsContainer,
-  SButtonContainer,
-  SConnectButton,
-  SContent,
-  SDropDownContainer,
-  SLanding,
-  SLayout,
-  SToggleContainer,
-} from "../components/app";
 import { useWalletConnectClient } from "../contexts/ClientContext";
-import { useJsonRpc } from "../contexts/JsonRpcContext";
-import { useChainData } from "../contexts/ChainDataContext";
-import Icon from "../components/Icon";
-import OriginSimulationDropdown from "../components/OriginSimulationDropdown";
-import LoaderModal from "../modals/LoaderModal";
-import RequestLoaderModal from "../modals/RequestLoaderModal";
+import { getProviderUrl } from "../helpers";
+import {
+  base64ToBytes,
+  buildJupiterSwapTransaction,
+  formatTokenAmount,
+  getAssociatedTokenAddress,
+  getJupiterPrices,
+  getJupiterQuote,
+  JupiterQuote,
+  JUPITER_MAX_FEE_BPS,
+  parseFeeTerms,
+  SOL_DECIMALS,
+  SOL_MINT,
+  SOLANA_MAINNET_CAIP,
+  USDC_DECIMALS,
+  USDC_MINT,
+} from "../helpers/jupiter";
 
-// Normal import does not work here
-const version = RELAYER_SDK_VERSION;
+/**
+ * Session Fees POC — single swap screen (SOL -> USDC via Jupiter).
+ *
+ * The wallet declares fee terms in `sessionProperties.wc_feeTerms` at session
+ * approval; this dapp reads them and passes them as an integrator fee
+ * (platformFeeBps + feeAccount) into Jupiter's quote/swap endpoints. The fee
+ * is baked into the swap transaction — the user signs once.
+ */
+
+const SOLANA_RPC_URL =
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL || getProviderUrl(SOLANA_MAINNET_CAIP);
+
+const SLIPPAGE_BPS = 50;
+// UI label only for the POC — no split contract exists.
+const FEE_SPLIT_LABEL = "80% wallet / 20% WCN";
+
+type SwapPhase = "idle" | "building" | "signing" | "sending" | "confirming";
+
+const PHASE_LABELS: Record<SwapPhase, string> = {
+  idle: "Swap",
+  building: "Building transaction…",
+  signing: "Sign in your wallet…",
+  sending: "Sending…",
+  confirming: "Confirming…",
+};
 
 const Home: NextPage = () => {
-  const [modal, setModal] = useState("");
-  const [disconnectError, setDisconnectError] = useState<string | null>(null);
-
-  const closeModal = () => setModal("");
-  const openPairingModal = () => setModal("pairing");
-  const openPingModal = () => setModal("ping");
-  const openRequestModal = () => setModal("request");
-  const openRequestLoaderModal = () => setModal("requestLoader");
-  const openDisconnectModal = () => setModal("disconnect");
-
-  // Initialize the WalletConnect client.
   const {
-    client,
-    pairings,
     session,
+    client,
     connect,
     disconnect,
-    chains,
-    relayerRegion,
-    accounts,
-    balances,
-    isFetchingBalances,
     isInitializing,
     setChains,
-    setRelayerRegion,
-    origin,
-    authenticatedAddresses,
+    accounts,
   } = useWalletConnectClient();
 
-  // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
-  const {
-    ping,
-    ethereumRpc,
-    cosmosRpc,
-    solanaRpc,
-    polkadotRpc,
-    nearRpc,
-    multiversxRpc,
-    tronRpc,
-    tezosRpc,
-    kadenaRpc,
-    bip122Rpc,
-    suiRpc,
-    stacksRpc,
-    tonRpc,
-    cantonRpc,
-    isRpcRequestPending,
-    rpcResult,
-    isTestnet,
-    setIsTestnet,
-  } = useJsonRpc();
+  const connection = useMemo(() => new Connection(SOLANA_RPC_URL), []);
 
-  const { chainData } = useChainData();
-
-  // Close the pairing modal after a session is established.
+  // This demo is Solana-mainnet only.
   useEffect(() => {
-    if (session && modal === "pairing") {
-      closeModal();
+    setChains([SOLANA_MAINNET_CAIP]);
+  }, [setChains]);
+
+  const solanaAddress = useMemo(
+    () =>
+      accounts.find((account) => account.startsWith("solana:"))?.split(":")[2],
+    [accounts],
+  );
+
+  // -------- fee terms from the session --------
+  const feeTerms = useMemo(
+    () => parseFeeTerms(session?.sessionProperties),
+    [session],
+  );
+  const feeBps = feeTerms ? Math.min(feeTerms.feeBps, JUPITER_MAX_FEE_BPS) : 0;
+  // Jupiter collects the fee into a token account: the recipient's USDC ATA.
+  const feeAta = useMemo(
+    () =>
+      feeTerms
+        ? getAssociatedTokenAddress(feeTerms.feeRecipient, USDC_MINT)
+        : undefined,
+    [feeTerms],
+  );
+
+  // -------- quote --------
+  const [sellAmount, setSellAmount] = useState("0.02");
+  const [quote, setQuote] = useState<JupiterQuote>();
+  const [quoteError, setQuoteError] = useState<string>();
+  const [isQuoting, setIsQuoting] = useState(false);
+  const quoteSeq = useRef(0);
+
+  const sellLamports = useMemo(() => {
+    const parsed = parseFloat(sellAmount);
+    if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
+    return Math.round(parsed * 10 ** SOL_DECIMALS);
+  }, [sellAmount]);
+
+  const refreshQuote = useCallback(async () => {
+    if (!sellLamports) {
+      setQuote(undefined);
+      setQuoteError(undefined);
+      return;
     }
-  }, [session, modal]);
-
-  // Add debug logging in development
-  useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      console.log("App State:", {
-        accounts: accounts.length,
-        balances: Object.keys(balances).length,
-        session: !!session,
-        isInitializing,
-        isFetchingBalances,
-      });
-    }
-  }, [accounts, balances, session, isInitializing, isFetchingBalances]);
-
-  const onConnect = () => {
-    if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
-
-    connect();
-  };
-
-  const onPing = async () => {
-    openPingModal();
-    await ping();
-  };
-
-  const onDisconnect = useCallback(async () => {
-    setDisconnectError(null);
-    openDisconnectModal();
-
+    const seq = ++quoteSeq.current;
+    setIsQuoting(true);
     try {
-      // Add timeout to prevent hanging
-      const disconnectPromise = disconnect();
-      const timeoutPromise = new Promise<void>((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Disconnect timeout after 10 seconds")),
-          10000
-        )
+      const nextQuote = await getJupiterQuote({
+        inputMint: SOL_MINT,
+        outputMint: USDC_MINT,
+        amount: String(sellLamports),
+        platformFeeBps: feeBps || undefined,
+        slippageBps: SLIPPAGE_BPS,
+      });
+      if (seq === quoteSeq.current) {
+        setQuote(nextQuote);
+        setQuoteError(undefined);
+      }
+    } catch (error) {
+      console.error(error);
+      if (seq === quoteSeq.current) {
+        setQuote(undefined);
+        setQuoteError((error as Error).message);
+      }
+    } finally {
+      if (seq === quoteSeq.current) setIsQuoting(false);
+    }
+  }, [sellLamports, feeBps]);
+
+  // Debounced fetch on input change + periodic refresh to keep quotes fresh.
+  useEffect(() => {
+    const debounce = setTimeout(refreshQuote, 500);
+    const interval = setInterval(refreshQuote, 30_000);
+    return () => {
+      clearTimeout(debounce);
+      clearInterval(interval);
+    };
+  }, [refreshQuote]);
+
+  // -------- token prices (cosmetic cards) --------
+  const [prices, setPrices] = useState<
+    Record<string, { usdPrice: number; priceChange24h?: number }>
+  >({});
+
+  useEffect(() => {
+    let active = true;
+    const fetchPrices = async () => {
+      try {
+        const result = await getJupiterPrices([SOL_MINT, USDC_MINT]);
+        if (active) setPrices(result);
+      } catch (error) {
+        // Price cards are cosmetic; ignore failures.
+        console.warn("price fetch failed", error);
+      }
+    };
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 60_000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  // -------- fee recipient balance (watch fees arrive) --------
+  const [feeBalance, setFeeBalance] = useState<string>();
+  const [feeAtaExists, setFeeAtaExists] = useState<boolean>();
+
+  const refreshFeeBalance = useCallback(async () => {
+    if (!feeAta) return;
+    try {
+      const balance = await connection.getTokenAccountBalance(feeAta);
+      setFeeBalance(balance.value.uiAmountString ?? "0");
+      setFeeAtaExists(true);
+    } catch (error) {
+      // getTokenAccountBalance throws if the ATA is not initialized yet.
+      setFeeAtaExists(false);
+      setFeeBalance(undefined);
+    }
+  }, [connection, feeAta]);
+
+  useEffect(() => {
+    refreshFeeBalance();
+    const interval = setInterval(refreshFeeBalance, 15_000);
+    return () => clearInterval(interval);
+  }, [refreshFeeBalance]);
+
+  // -------- swap --------
+  const [phase, setPhase] = useState<SwapPhase>("idle");
+  const [lastSignature, setLastSignature] = useState<string>();
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const onConnect = useCallback(async () => {
+    setIsConnecting(true);
+    try {
+      await connect();
+    } catch (error) {
+      // ClientContext already toasts the error.
+    } finally {
+      setIsConnecting(false);
+    }
+  }, [connect]);
+
+  const waitForConfirmation = useCallback(
+    async (signature: string) => {
+      const deadline = Date.now() + 90_000;
+      while (Date.now() < deadline) {
+        const { value } = await connection.getSignatureStatuses([signature]);
+        const status = value[0];
+        if (status?.err) {
+          throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
+        }
+        if (
+          status?.confirmationStatus === "confirmed" ||
+          status?.confirmationStatus === "finalized"
+        ) {
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2_000));
+      }
+      throw new Error("Timed out waiting for confirmation");
+    },
+    [connection],
+  );
+
+  const onSwap = useCallback(async () => {
+    if (!client || !session || !solanaAddress || !quote) return;
+    try {
+      setLastSignature(undefined);
+      setPhase("building");
+      const { swapTransaction } = await buildJupiterSwapTransaction({
+        quoteResponse: quote,
+        userPublicKey: solanaAddress,
+        feeAccount: feeBps ? feeAta?.toBase58() : undefined,
+      });
+
+      setPhase("signing");
+      const { transaction: signedTransaction } = await client.request<{
+        transaction: string;
+        signature: string;
+      }>({
+        topic: session.topic,
+        chainId: SOLANA_MAINNET_CAIP,
+        request: {
+          method: "solana_signTransaction",
+          params: {
+            pubkey: solanaAddress,
+            transaction: swapTransaction,
+          },
+        },
+      });
+
+      setPhase("sending");
+      const signature = await connection.sendRawTransaction(
+        base64ToBytes(signedTransaction),
+        { maxRetries: 3, preflightCommitment: "confirmed" },
       );
 
-      await Promise.race([disconnectPromise, timeoutPromise]);
+      setPhase("confirming");
+      await waitForConfirmation(signature);
 
-      // Add small delay to ensure state updates complete
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      setLastSignature(signature);
+      toast.success("Swap confirmed!", { position: "bottom-left" });
+      refreshFeeBalance();
+      refreshQuote();
     } catch (error) {
-      const errorMessage = (error as Error).message;
-      console.error("Disconnect error:", error);
-      setDisconnectError(errorMessage);
-      toast.error(errorMessage, {
-        position: "bottom-left",
-        duration: 5000,
-      });
+      console.error(error);
+      toast.error((error as Error).message, { position: "bottom-left" });
     } finally {
-      // Close modal after a brief moment to show any final status
-      setTimeout(() => {
-        closeModal();
-        setDisconnectError(null);
-      }, 500);
+      setPhase("idle");
     }
-  }, [disconnect]);
+  }, [
+    client,
+    session,
+    solanaAddress,
+    quote,
+    feeBps,
+    feeAta,
+    connection,
+    waitForConfirmation,
+    refreshFeeBalance,
+    refreshQuote,
+  ]);
 
-  async function emit() {
-    if (typeof client === "undefined") {
-      throw new Error("WalletConnect is not initialized");
-    }
+  // -------- derived display values --------
+  const solPrice = prices[SOL_MINT]?.usdPrice;
+  const usdcPrice = prices[USDC_MINT]?.usdPrice;
+  const sellUsd =
+    solPrice && sellLamports
+      ? (sellLamports / 10 ** SOL_DECIMALS) * solPrice
+      : undefined;
+  const buyAmount = quote
+    ? formatTokenAmount(quote.outAmount, USDC_DECIMALS)
+    : "";
+  const buyUsd =
+    quote && usdcPrice
+      ? (Number(quote.outAmount) / 10 ** USDC_DECIMALS) * usdcPrice
+      : undefined;
+  const feeAmount = quote?.platformFee
+    ? formatTokenAmount(quote.platformFee.amount, USDC_DECIMALS)
+    : undefined;
 
-    await client.emit({
-      topic: session?.topic || "",
-      event: { name: "chainChanged", data: {} },
-      chainId: "eip155:5",
-    });
-  }
+  const shortAddress = (address: string) =>
+    `${address.slice(0, 4)}…${address.slice(-4)}`;
 
-  const getEthereumActions = (
-    chainId: string,
-    address: string
-  ): AccountAction[] => {
-    const actions = {
-      [DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION]: {
-        method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testSendTransaction(chainId, address);
-        },
-      },
-      [DEFAULT_EIP155_METHODS.PERSONAL_SIGN]: {
-        method: DEFAULT_EIP155_METHODS.PERSONAL_SIGN,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testSignPersonalMessage(chainId, address);
-        },
-      },
-      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION]: {
-        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TRANSACTION,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testSignTransaction(chainId, address);
-        },
-      },
-      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN]: {
-        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN + " (standard)",
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testEthSign(chainId, address);
-        },
-      },
-      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA]: {
-        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testSignTypedData(chainId, address);
-        },
-      },
-      [DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4]: {
-        method: DEFAULT_EIP155_OPTIONAL_METHODS.ETH_SIGN_TYPED_DATA_V4,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testSignTypedDatav4(chainId, address);
-        },
-      },
-      [DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES]: {
-        method: DEFAULT_EIP5792_METHODS.WALLET_GET_CAPABILITIES,
-        callback: async (chainId: string, address: string) => {
-          openRequestLoaderModal();
-          await ethereumRpc.testWalletGetCapabilities(chainId, address);
-        },
-      },
-      [DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS]: {
-        method: DEFAULT_EIP5792_METHODS.WALLET_SEND_CALLS,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testWalletSendCalls(chainId, address);
-        },
-      },
-      [DEFAULT_EIP5792_METHODS.WALLET_GET_CALLS_STATUS]: {
-        method: DEFAULT_EIP5792_METHODS.WALLET_GET_CALLS_STATUS,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testWalletGetCallsStatus(chainId, address);
-        },
-      },
-      [DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS]: {
-        method: DEFAULT_EIP7715_METHODS.WALLET_GRANT_PERMISSIONS,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await ethereumRpc.testWalletGrantPermissions(chainId, address);
-        },
-      },
-    };
-
-    let availableActions: AccountAction[] = [];
-    const chainIdAsHex = `0x${numberToHex(parseInt(chainId))}`;
-    const capabilitiesJson = session?.sessionProperties?.["capabilities"];
-    const walletCapabilities =
-      capabilitiesJson && JSON.parse(capabilitiesJson as string);
-    session?.namespaces?.["eip155"].methods.forEach((methodName) => {
-      const action: AccountAction | undefined =
-        actions[methodName as keyof typeof actions];
-      // Determine if the method requires additional capability checks
-      const requiresCapabilityCheck = [
-        "wallet_sendCalls",
-        "wallet_getCallsStatus",
-        "wallet_grantPermissions",
-      ].includes(methodName);
-      // Check capabilities only if the method requires it
-      if (
-        !requiresCapabilityCheck ||
-        hasEIP7592RequiredCapabilities(
-          address,
-          chainIdAsHex,
-          walletCapabilities
-        )
-      ) {
-        availableActions.push(action);
-      }
-    });
-
-    // if a method is approved in the session thats not supported by the app, it will result in an undefined item in the array
-    return availableActions.filter((action) => action !== undefined);
-  };
-
-  const hasEIP7592RequiredCapabilities = (
-    address: string,
-    chainId: string,
-    walletCapabilities: any
-  ): boolean => {
-    if (!walletCapabilities) return false;
-    const addressCapabilities: GetCapabilitiesResult | undefined =
-      walletCapabilities[address];
-    if (
-      addressCapabilities &&
-      addressCapabilities[chainId] &&
-      (addressCapabilities[chainId]["atomicBatch"]?.supported ||
-        addressCapabilities[chainId]["paymasterService"]?.supported ||
-        addressCapabilities[chainId]["sessionKey"]?.supported)
-    )
-      return true; // Capabilities are supported
-    return false; // Capabilities are not supported or not defined
-  };
-
-  const getCosmosActions = (): AccountAction[] => {
-    const onSignDirect = async (chainId: string, address: string) => {
-      openRequestModal();
-      await cosmosRpc.testSignDirect(chainId, address);
-    };
-    const onSignAmino = async (chainId: string, address: string) => {
-      openRequestModal();
-      await cosmosRpc.testSignAmino(chainId, address);
-    };
-    return [
-      {
-        method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_DIRECT,
-        callback: onSignDirect,
-      },
-      {
-        method: DEFAULT_COSMOS_METHODS.COSMOS_SIGN_AMINO,
-        callback: onSignAmino,
-      },
-    ];
-  };
-
-  const getSolanaActions = (): AccountAction[] => {
-    const onSignTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await solanaRpc.testSignTransaction(chainId, address);
-    };
-    const onSignMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await solanaRpc.testSignMessage(chainId, address);
-    };
-    return [
-      {
-        method: DEFAULT_SOLANA_METHODS.SOL_SIGN_TRANSACTION,
-        callback: onSignTransaction,
-      },
-      {
-        method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
-        callback: onSignMessage,
-      },
-    ];
-  };
-
-  const getPolkadotActions = (): AccountAction[] => {
-    const onSignTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await polkadotRpc.testSignTransaction(chainId, address);
-    };
-    const onSignMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await polkadotRpc.testSignMessage(chainId, address);
-    };
-    return [
-      {
-        method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_TRANSACTION,
-        callback: onSignTransaction,
-      },
-      {
-        method: DEFAULT_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
-        callback: onSignMessage,
-      },
-    ];
-  };
-
-  const getNearActions = (): AccountAction[] => {
-    const onSignAndSendTransaction = async (
-      chainId: string,
-      address: string
-    ) => {
-      openRequestModal();
-      await nearRpc.testSignAndSendTransaction(chainId, address);
-    };
-    const onSignAndSendTransactions = async (
-      chainId: string,
-      address: string
-    ) => {
-      openRequestModal();
-      await nearRpc.testSignAndSendTransactions(chainId, address);
-    };
-
-    const onSignTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await nearRpc.testSignTransaction(chainId, address);
-    };
-
-    const onSignTransactions = async (chainId: string, address: string) => {
-      openRequestModal();
-      await nearRpc.testSignTransactions(chainId, address);
-    };
-
-    return [
-      {
-        method: DEFAULT_NEAR_METHODS.NEAR_SIGN_TRANSACTION,
-        callback: onSignTransaction,
-      },
-      {
-        method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTION,
-        callback: onSignAndSendTransaction,
-      },
-      {
-        method: DEFAULT_NEAR_METHODS.NEAR_SIGN_TRANSACTIONS,
-        callback: onSignTransactions,
-      },
-      {
-        method: DEFAULT_NEAR_METHODS.NEAR_SIGN_AND_SEND_TRANSACTIONS,
-        callback: onSignAndSendTransactions,
-      },
-    ];
-  };
-
-  const getMultiversxActions = (): AccountAction[] => {
-    const onSignTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await multiversxRpc.testSignTransaction(chainId, address);
-    };
-    const onSignTransactions = async (chainId: string, address: string) => {
-      openRequestModal();
-      await multiversxRpc.testSignTransactions(chainId, address);
-    };
-    const onSignMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await multiversxRpc.testSignMessage(chainId, address);
-    };
-    return [
-      {
-        method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTION,
-        callback: onSignTransaction,
-      },
-      {
-        method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_TRANSACTIONS,
-        callback: onSignTransactions,
-      },
-      {
-        method: DEFAULT_MULTIVERSX_METHODS.MULTIVERSX_SIGN_MESSAGE,
-        callback: onSignMessage,
-      },
-    ];
-  };
-
-  const getTronActions = (): AccountAction[] => {
-    const onSignTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await tronRpc.testSignTransaction(chainId, address);
-    };
-    const onSignMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await tronRpc.testSignMessage(chainId, address);
-    };
-    const onSendTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await tronRpc.testSendTransaction(chainId, address);
-    };
-    return [
-      {
-        method: DEFAULT_TRON_METHODS.TRON_SIGN_TRANSACTION,
-        callback: onSignTransaction,
-      },
-      {
-        method: DEFAULT_TRON_METHODS.TRON_SIGN_MESSAGE,
-        callback: onSignMessage,
-      },
-      {
-        method: DEFAULT_TRON_METHODS.TRON_SEND_TRANSACTION,
-        callback: onSendTransaction,
-      },
-    ];
-  };
-
-  const getTezosActions = (): AccountAction[] => {
-    const onGetAccounts = async (chainId: string, address: string) => {
-      openRequestModal();
-      await tezosRpc.testGetAccounts(chainId, address);
-    };
-    const onSignTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await tezosRpc.testSignTransaction(chainId, address);
-    };
-    const onSignMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await tezosRpc.testSignMessage(chainId, address);
-    };
-    return [
-      {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_GET_ACCOUNTS,
-        callback: onGetAccounts,
-      },
-      {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SEND,
-        callback: onSignTransaction,
-      },
-      {
-        method: DEFAULT_TEZOS_METHODS.TEZOS_SIGN,
-        callback: onSignMessage,
-      },
-    ];
-  };
-
-  const getKadenaActions = (): AccountAction[] => {
-    const testGetAccounts = async (chainId: string, address: string) => {
-      openRequestModal();
-      await kadenaRpc.testGetAccounts(chainId, address);
-    };
-    const testSign = async (chainId: string, address: string) => {
-      openRequestModal();
-      await kadenaRpc.testSign(chainId, address);
-    };
-
-    const testSignMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await kadenaRpc.testQuicksign(chainId, address);
-    };
-
-    return [
-      {
-        method: DEFAULT_KADENA_METHODS.KADENA_GET_ACCOUNTS,
-        callback: testGetAccounts,
-      },
-      {
-        method: DEFAULT_KADENA_METHODS.KADENA_SIGN,
-        callback: testSign,
-      },
-      {
-        method: DEFAULT_KADENA_METHODS.KADENA_QUICKSIGN,
-        callback: testSignMessage,
-      },
-    ];
-  };
-
-  const getBip122Actions = (): AccountAction[] => {
-    const onSignMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await bip122Rpc.testSignMessage(chainId, address);
-    };
-    const onGetAccountAddresses = async (chainId: string, address: string) => {
-      openRequestModal();
-      await bip122Rpc.testGetAccountAddresses(chainId, address);
-    };
-    const onSendTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await bip122Rpc.testSendTransaction(chainId, address);
-    };
-    const onSignPsbt = async (chainId: string, address: string) => {
-      openRequestModal();
-      await bip122Rpc.testSignPsbt(chainId, address);
-    };
-    return [
-      {
-        method: DEFAULT_BIP122_METHODS.BIP122_SEND_TRANSACTION,
-        callback: onSendTransaction,
-      },
-      {
-        method: DEFAULT_BIP122_METHODS.BIP122_GET_ACCOUNT_ADDRESSES,
-        callback: onGetAccountAddresses,
-      },
-      {
-        method: DEFAULT_BIP122_METHODS.BIP122_SIGN_MESSAGE,
-        callback: onSignMessage,
-      },
-      {
-        method: DEFAULT_BIP122_METHODS.BIP122_SIGN_PSBT,
-        callback: onSignPsbt,
-      },
-    ];
-  };
-
-  const getSuiActions = (): AccountAction[] => {
-    const onSendTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await suiRpc.testSendSuiTransaction(chainId, address);
-    };
-    const onSignTransaction = async (chainId: string, address: string) => {
-      openRequestModal();
-      await suiRpc.testSignSuiTransaction(chainId, address);
-    };
-    const onSignPersonalMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await suiRpc.testSignSuiPersonalMessage(chainId, address);
-    };
-
-    return [
-      {
-        method: DEFAULT_SUI_METHODS.SUI_SIGN_AND_EXECUTE_TRANSACTION,
-        callback: onSendTransaction,
-      },
-      {
-        method: DEFAULT_SUI_METHODS.SUI_SIGN_TRANSACTION,
-        callback: onSignTransaction,
-      },
-      {
-        method: DEFAULT_SUI_METHODS.SUI_SIGN_PERSONAL_MESSAGE,
-        callback: onSignPersonalMessage,
-      },
-    ];
-  };
-  const getStacksActions = (): AccountAction[] => {
-    const onSendTransfer = async (chainId: string, address: string) => {
-      openRequestModal();
-      await stacksRpc.testSendTransfer(chainId, address);
-    };
-    const onSignMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await stacksRpc.testSignMessage(chainId, address);
-    };
-    return [
-      {
-        method: DEFAULT_STACKS_METHODS.STACKS_SEND_TRANSFER,
-        callback: onSendTransfer,
-      },
-      {
-        method: DEFAULT_STACKS_METHODS.STACKS_SIGN_MESSAGE,
-        callback: onSignMessage,
-      },
-    ];
-  };
-
-  const getTonActions = (): AccountAction[] => {
-    const onSendMessage = async (chainId: string, address: string) => {
-      openRequestModal();
-      await tonRpc.testSendMessage(chainId, address);
-    };
-    const onSignData = async (chainId: string, address: string) => {
-      openRequestModal();
-      await tonRpc.testSignData(chainId, address);
-    };
-    return [
-      {
-        method: DEFAULT_TON_METHODS.TON_SEND_MESSAGE,
-        callback: onSendMessage,
-      },
-      { method: DEFAULT_TON_METHODS.TON_SIGN_DATA, callback: onSignData },
-    ];
-  };
-
-  const getCantonActions = (): AccountAction[] => {
-    return [
-      {
-        method: DEFAULT_CANTON_METHODS.CANTON_LIST_ACCOUNTS,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await cantonRpc.testListAccounts(chainId, address);
-        },
-      },
-      {
-        method: DEFAULT_CANTON_METHODS.CANTON_GET_PRIMARY_ACCOUNT,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await cantonRpc.testGetPrimaryAccount(chainId, address);
-        },
-      },
-      {
-        method: DEFAULT_CANTON_METHODS.CANTON_GET_ACTIVE_NETWORK,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await cantonRpc.testGetActiveNetwork(chainId, address);
-        },
-      },
-      {
-        method: DEFAULT_CANTON_METHODS.CANTON_STATUS,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await cantonRpc.testStatus(chainId, address);
-        },
-      },
-      {
-        method: DEFAULT_CANTON_METHODS.CANTON_SIGN_MESSAGE,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await cantonRpc.testSignMessage(chainId, address);
-        },
-      },
-      {
-        method: DEFAULT_CANTON_METHODS.CANTON_PREPARE_SIGN_EXECUTE,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await cantonRpc.testPrepareSignExecute(chainId, address);
-        },
-      },
-      {
-        method: DEFAULT_CANTON_METHODS.CANTON_LEDGER_API,
-        callback: async (chainId: string, address: string) => {
-          openRequestModal();
-          await cantonRpc.testLedgerApi(chainId, address);
-        },
-      },
-    ];
-  };
-
-  const getBlockchainActions = (account: string) => {
-    const [namespace, chainId, address] = account.split(":");
-    switch (namespace) {
-      case "eip155":
-        return getEthereumActions(chainId, address);
-      case "cosmos":
-        return getCosmosActions();
-      case "solana":
-        return getSolanaActions();
-      case "polkadot":
-        return getPolkadotActions();
-      case "near":
-        return getNearActions();
-      case "mvx":
-        return getMultiversxActions();
-      case "tron":
-        return getTronActions();
-      case "tezos":
-        return getTezosActions();
-      case "kadena":
-        return getKadenaActions();
-      case "bip122":
-        return getBip122Actions();
-      case "sui":
-        return getSuiActions();
-      case "stacks":
-        return getStacksActions();
-      case "ton":
-        return getTonActions();
-      case "canton":
-        return getCantonActions();
-      default:
-        break;
-    }
-  };
-
-  // Toggle between displaying testnet or mainnet chains as selection options.
-  const toggleTestnets = () => {
-    const nextIsTestnetState = !isTestnet;
-    setIsTestnet(nextIsTestnetState);
-    setLocaleStorageTestnetFlag(nextIsTestnetState);
-  };
-
-  const handleChainSelectionClick = (chainId: string) => {
-    if (chains.includes(chainId)) {
-      setChains(chains.filter((chain) => chain !== chainId));
-    } else {
-      setChains([...chains, chainId]);
-    }
-  };
-
-  // Renders the appropriate model for the given request that is currently in-flight.
-  const renderModal = () => {
-    switch (modal) {
-      case "pairing":
-        if (typeof client === "undefined") {
-          throw new Error("WalletConnect is not initialized");
-        }
-        return <PairingModal pairings={pairings} connect={connect} />;
-      case "request":
-        return (
-          <RequestModal pending={isRpcRequestPending} result={rpcResult} />
-        );
-      case "ping":
-        return <PingModal pending={isRpcRequestPending} result={rpcResult} />;
-      case "requestLoader":
-        return (
-          <RequestLoaderModal
-            pending={isRpcRequestPending}
-            result={rpcResult}
-          />
-        );
-      case "disconnect":
-        return (
-          <LoaderModal
-            title={disconnectError ? "Disconnect Failed" : "Disconnecting..."}
-            subtitle={disconnectError || undefined}
-            isError={!!disconnectError}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
-  const [openSelect, setOpenSelect] = useState(false);
-
-  const openDropdown = () => {
-    setOpenSelect(!openSelect);
-  };
-
-  const renderContent = () => {
-    const chainOptions = isTestnet ? DEFAULT_TEST_CHAINS : DEFAULT_MAIN_CHAINS;
-
-    // Show connect screen if no session or no accounts/balances
-    return !session || (!accounts.length && !Object.keys(balances).length) ? (
-      <SLanding center>
-        <Banner />
-        <h6>{`Using v${version || "2.0.0-beta"}`}</h6>
-        <SButtonContainer>
-          <h6>Select chains:</h6>
-          <SToggleContainer>
-            <p>Testnets Only?</p>
-            <Toggle active={isTestnet} onClick={toggleTestnets} />
-          </SToggleContainer>
-          {chainOptions.map((chainId) => (
-            <Blockchain
-              key={chainId}
-              chainId={chainId}
-              chainData={chainData}
-              onClick={handleChainSelectionClick}
-              active={chains.includes(chainId)}
-            />
-          ))}
-          <SConnectButton left onClick={onConnect} disabled={!chains.length}>
-            Connect
-          </SConnectButton>
-          <SDropDownContainer>
-            <RelayRegionDropdown
-              relayerRegion={relayerRegion}
-              setRelayerRegion={setRelayerRegion}
-              show={openSelect}
-            />
-            <OriginSimulationDropdown origin={origin} show={openSelect} />
-          </SDropDownContainer>
-          <button onClick={openDropdown} style={{ background: "transparent" }}>
-            <Icon size={30} src={"/assets/settings.svg"} />
-          </button>
-        </SButtonContainer>
-      </SLanding>
-    ) : (
-      <SAccountsContainer>
-        <h3>Accounts</h3>
-        <SAccounts>
-          {accounts.map((account) => {
-            const [namespace, reference, address] = account.split(":");
-            const chainId = `${namespace}:${reference}`;
-            const displayAddress = decodeURIComponent(address);
-            return (
-              <Blockchain
-                key={account}
-                isAuthenticated={authenticatedAddresses.includes(account)}
-                active
-                chainData={chainData}
-                fetching={isFetchingBalances}
-                address={displayAddress}
-                chainId={chainId}
-                balances={balances}
-                actions={getBlockchainActions(account)}
-              />
-            );
-          })}
-        </SAccounts>
-      </SAccountsContainer>
-    );
-  };
+  const isSwapping = phase !== "idle";
+  const canSwap = !!session && !!quote && !isSwapping;
 
   return (
-    <SLayout>
-      <Column maxWidth={1000} spanHeight>
-        <Header
-          ping={onPing}
-          disconnect={onDisconnect}
-          session={session}
-          emit={emit}
-        />
-        <SContent>{isInitializing ? "Loading..." : renderContent()}</SContent>
-      </Column>
-      <Modal show={!!modal} closeModal={closeModal}>
-        {renderModal()}
-      </Modal>
-    </SLayout>
+    <SPage>
+      <STopBar>
+        <SLogo>
+          <SLogoMark>◎</SLogoMark> Session Fees <SPocBadge>POC</SPocBadge>
+        </SLogo>
+        {session && solanaAddress ? (
+          <SAccountChip onClick={() => disconnect()}>
+            {shortAddress(solanaAddress)} ✕
+          </SAccountChip>
+        ) : null}
+      </STopBar>
+
+      <SMain>
+        <STabs>
+          <STab $active>Market</STab>
+        </STabs>
+
+        <SCard>
+          <SPanel>
+            <SPanelLabel>Selling</SPanelLabel>
+            <SPanelRow>
+              <STokenChip>
+                <STokenIcon $color="#9945FF">◎</STokenIcon> SOL
+              </STokenChip>
+              <SAmountInput
+                type="number"
+                min="0"
+                step="0.01"
+                value={sellAmount}
+                onChange={(event) => setSellAmount(event.target.value)}
+                disabled={isSwapping}
+              />
+            </SPanelRow>
+            <SUsdValue>
+              {sellUsd !== undefined ? `$${sellUsd.toFixed(2)}` : " "}
+            </SUsdValue>
+          </SPanel>
+
+          <SArrowDivider>
+            <SArrowCircle>↓</SArrowCircle>
+          </SArrowDivider>
+
+          <SPanel>
+            <SPanelLabel>Buying</SPanelLabel>
+            <SPanelRow>
+              <STokenChip>
+                <STokenIcon $color="#2775CA">$</STokenIcon> USDC
+              </STokenChip>
+              <SAmountOutput $dim={isQuoting}>{buyAmount || "0"}</SAmountOutput>
+            </SPanelRow>
+            <SUsdValue>
+              {buyUsd !== undefined ? `$${buyUsd.toFixed(2)}` : " "}
+            </SUsdValue>
+          </SPanel>
+
+          {session ? (
+            feeTerms ? (
+              <SFeeTerms>
+                <SFeeTermsHeader>
+                  Session fee terms <SFeeBadge>from wallet</SFeeBadge>
+                </SFeeTermsHeader>
+                <SBreakdownRow>
+                  <span>
+                    Fee {(feeBps / 100).toFixed(2)}% — {FEE_SPLIT_LABEL}
+                  </span>
+                  <span>{feeAmount ? `${feeAmount} USDC` : "—"}</span>
+                </SBreakdownRow>
+                <SBreakdownRow>
+                  <span>Fee recipient</span>
+                  <SMono>{shortAddress(feeTerms.feeRecipient)}</SMono>
+                </SBreakdownRow>
+                {feeAtaExists === false && (
+                  <SWarning>
+                    Fee recipient&apos;s USDC token account is not initialized —
+                    Jupiter will skip fee collection for this swap.
+                  </SWarning>
+                )}
+              </SFeeTerms>
+            ) : (
+              <SFeeTerms>
+                <SFeeTermsHeader>Session fee terms</SFeeTermsHeader>
+                <SNoTerms>
+                  No fee terms declared by the wallet — swapping without a fee.
+                </SNoTerms>
+              </SFeeTerms>
+            )
+          ) : null}
+
+          {quote && (
+            <SBreakdown>
+              <SBreakdownRow>
+                <span>You receive</span>
+                <span>{buyAmount} USDC</span>
+              </SBreakdownRow>
+              <SBreakdownRow>
+                <span>Min. received ({SLIPPAGE_BPS / 100}% slippage)</span>
+                <span>
+                  {formatTokenAmount(quote.otherAmountThreshold, USDC_DECIMALS)}{" "}
+                  USDC
+                </span>
+              </SBreakdownRow>
+              <SBreakdownRow>
+                <span>Price impact</span>
+                <span>{Number(quote.priceImpactPct ?? 0).toFixed(4)}%</span>
+              </SBreakdownRow>
+            </SBreakdown>
+          )}
+
+          {quoteError && <SWarning>Quote error: {quoteError}</SWarning>}
+
+          {!session ? (
+            <SBigButton
+              onClick={onConnect}
+              disabled={isInitializing || isConnecting}
+            >
+              {isInitializing || isConnecting ? "Connecting…" : "Connect"}
+            </SBigButton>
+          ) : (
+            <SBigButton onClick={onSwap} disabled={!canSwap}>
+              {PHASE_LABELS[phase]}
+            </SBigButton>
+          )}
+        </SCard>
+
+        <SPriceRow>
+          <SPriceCard>
+            <SPriceCardToken>
+              <STokenIcon $color="#9945FF">◎</STokenIcon> SOL
+            </SPriceCardToken>
+            <SPriceCardValue>
+              {solPrice ? `$${solPrice.toFixed(2)}` : "—"}
+            </SPriceCardValue>
+            <SPriceCardChange
+              $negative={(prices[SOL_MINT]?.priceChange24h ?? 0) < 0}
+            >
+              {prices[SOL_MINT]?.priceChange24h !== undefined
+                ? `${prices[SOL_MINT].priceChange24h!.toFixed(2)}% (24h)`
+                : ""}
+            </SPriceCardChange>
+          </SPriceCard>
+          <SPriceCard>
+            <SPriceCardToken>
+              <STokenIcon $color="#2775CA">$</STokenIcon> USDC
+            </SPriceCardToken>
+            <SPriceCardValue>
+              {usdcPrice ? `$${usdcPrice.toFixed(4)}` : "—"}
+            </SPriceCardValue>
+            <SPriceCardChange
+              $negative={(prices[USDC_MINT]?.priceChange24h ?? 0) < 0}
+            >
+              {prices[USDC_MINT]?.priceChange24h !== undefined
+                ? `${prices[USDC_MINT].priceChange24h!.toFixed(2)}% (24h)`
+                : ""}
+            </SPriceCardChange>
+          </SPriceCard>
+        </SPriceRow>
+
+        {lastSignature && (
+          <SResultCard>
+            <SFeeTermsHeader>Swap confirmed ✅</SFeeTermsHeader>
+            <SBreakdownRow>
+              <span>Transaction</span>
+              <SLink
+                href={`https://solscan.io/tx/${lastSignature}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {shortAddress(lastSignature)} ↗
+              </SLink>
+            </SBreakdownRow>
+          </SResultCard>
+        )}
+
+        {feeTerms && feeAta && (
+          <SResultCard>
+            <SFeeTermsHeader>
+              Fee recipient balance <SFeeBadge>live</SFeeBadge>
+            </SFeeTermsHeader>
+            <SBreakdownRow>
+              <span>USDC collected</span>
+              <SFeeBalanceValue>
+                {feeAtaExists === false
+                  ? "token account not initialized"
+                  : feeBalance !== undefined
+                    ? `${feeBalance} USDC`
+                    : "…"}
+              </SFeeBalanceValue>
+            </SBreakdownRow>
+            <SBreakdownRow>
+              <span>Fee token account</span>
+              <SLink
+                href={`https://solscan.io/account/${feeAta.toBase58()}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {shortAddress(feeAta.toBase58())} ↗
+              </SLink>
+            </SBreakdownRow>
+          </SResultCard>
+        )}
+      </SMain>
+    </SPage>
   );
 };
 
 export default Home;
+
+/**
+ * Styles — dark, Jupiter-like.
+ */
+
+const SPage = styled.div`
+  min-height: 100vh;
+  background: #0c0f14;
+  color: #e8f9ff;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    sans-serif;
+`;
+
+const STopBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #1b232d;
+`;
+
+const SLogo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+`;
+
+const SLogoMark = styled.span`
+  color: #c7f284;
+`;
+
+const SPocBadge = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: #c7f284;
+  border: 1px solid #c7f284;
+  border-radius: 6px;
+  padding: 1px 6px;
+`;
+
+const SAccountChip = styled.button`
+  background: #1b232d;
+  color: #e8f9ff;
+  border: 1px solid #2a3441;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  &:hover {
+    border-color: #c7f284;
+  }
+`;
+
+const SMain = styled.main`
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const STabs = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const STab = styled.div<{ $active?: boolean }>`
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  background: ${({ $active }) => ($active ? "#1b232d" : "transparent")};
+  color: ${({ $active }) => ($active ? "#c7f284" : "#5b6b7c")};
+`;
+
+const SCard = styled.div`
+  background: #131920;
+  border: 1px solid #1b232d;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const SPanel = styled.div`
+  background: #0f141a;
+  border: 1px solid #1b232d;
+  border-radius: 12px;
+  padding: 12px 16px;
+`;
+
+const SPanelLabel = styled.div`
+  font-size: 12px;
+  color: #5b6b7c;
+  margin-bottom: 8px;
+`;
+
+const SPanelRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+const STokenChip = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1b232d;
+  border-radius: 20px;
+  padding: 6px 14px 6px 6px;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+`;
+
+const STokenIcon = styled.span<{ $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: ${({ $color }) => $color};
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+`;
+
+const SAmountInput = styled.input`
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e8f9ff;
+  font-size: 26px;
+  font-weight: 600;
+  text-align: right;
+  width: 100%;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+  -moz-appearance: textfield;
+  appearance: textfield;
+`;
+
+const SAmountOutput = styled.div<{ $dim?: boolean }>`
+  font-size: 26px;
+  font-weight: 600;
+  text-align: right;
+  color: ${({ $dim }) => ($dim ? "#5b6b7c" : "#e8f9ff")};
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const SUsdValue = styled.div`
+  font-size: 12px;
+  color: #5b6b7c;
+  text-align: right;
+  margin-top: 4px;
+`;
+
+const SArrowDivider = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: -14px 0;
+  z-index: 1;
+`;
+
+const SArrowCircle = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #1b232d;
+  border: 3px solid #131920;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c7f284;
+  font-size: 15px;
+`;
+
+const SFeeTerms = styled.div`
+  background: #0f141a;
+  border: 1px dashed #2a3441;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const SFeeTermsHeader = styled.div`
+  font-size: 13px;
+  font-weight: 700;
+  color: #c7f284;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const SFeeBadge = styled.span`
+  font-size: 10px;
+  font-weight: 600;
+  color: #5b6b7c;
+  border: 1px solid #2a3441;
+  border-radius: 6px;
+  padding: 1px 6px;
+`;
+
+const SNoTerms = styled.div`
+  font-size: 13px;
+  color: #5b6b7c;
+`;
+
+const SBreakdown = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 16px;
+`;
+
+const SBreakdownRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #8fa3b5;
+  span:last-child {
+    color: #e8f9ff;
+  }
+`;
+
+const SMono = styled.span`
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+`;
+
+const SWarning = styled.div`
+  font-size: 12px;
+  color: #ffb86b;
+  background: rgba(255, 184, 107, 0.08);
+  border-radius: 8px;
+  padding: 8px 12px;
+`;
+
+const SBigButton = styled.button`
+  margin-top: 4px;
+  background: #c7f284;
+  color: #0c0f14;
+  font-size: 17px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+`;
+
+const SPriceRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+`;
+
+const SPriceCard = styled.div`
+  background: #131920;
+  border: 1px solid #1b232d;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const SPriceCardToken = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+`;
+
+const SPriceCardValue = styled.div`
+  font-size: 20px;
+  font-weight: 700;
+`;
+
+const SPriceCardChange = styled.div<{ $negative?: boolean }>`
+  font-size: 12px;
+  color: ${({ $negative }) => ($negative ? "#ff6b6b" : "#7ee787")};
+  min-height: 14px;
+`;
+
+const SResultCard = styled.div`
+  background: #131920;
+  border: 1px solid #1b232d;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const SLink = styled.a`
+  color: #c7f284;
+  text-decoration: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const SFeeBalanceValue = styled.span`
+  font-weight: 700;
+  color: #c7f284 !important;
+`;

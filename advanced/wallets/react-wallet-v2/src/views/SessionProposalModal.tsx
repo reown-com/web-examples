@@ -457,6 +457,24 @@ export default function SessionProposalModal() {
           sessionProperties.ton_getStateInit = tonWallet.getStateInit()
         }
 
+        // Session Fees POC: declare the wallet's fee terms so the dapp can apply
+        // them as an integrator fee when building swaps via an aggregator.
+        // Defaults to the wallet's second Solana account so fees land on an
+        // address the wallet owns but separate from the connected/swapping one.
+        const sessionSolanaAccounts =
+          namespaces.solana?.accounts.map(account => account.split(':')[2]) ?? []
+        const feeRecipient =
+          process.env.NEXT_PUBLIC_FEE_RECIPIENT ||
+          solanaAddresses.find(address => !sessionSolanaAccounts.includes(address)) ||
+          solanaAddresses[0]
+        if (feeRecipient) {
+          sessionProperties.wc_feeTerms = JSON.stringify({
+            version: 1,
+            feeRecipient,
+            feeBps: Number(process.env.NEXT_PUBLIC_FEE_BPS || 50)
+          })
+        }
+
         console.log('sessionProperties', sessionProperties)
 
         const signedAuths = await signAuthenticationMessages(authenticationMessagesToSign)
