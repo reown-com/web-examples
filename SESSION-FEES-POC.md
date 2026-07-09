@@ -17,6 +17,10 @@ a block explorer.
   - **KyberSwap** (Arbitrum One, ETH → USDC) — docs:
     [docs/session-fees/kyberswap.md](./docs/session-fees/kyberswap.md).
     Fully permissionless: no key, no proxy, no cut — the working EVM fee path.
+  - **Uniswap Trading API** (Arbitrum One, ETH → USDC) — docs:
+    [docs/session-fees/uniswap.md](./docs/session-fees/uniswap.md).
+    Self-serve key required; fee-gating status unverified (spec hints at a
+    per-key "Fee is not enabled" gate — first keyed quote is the smoke test).
   - Candidate comparison: [SESSION-FEES-AGGREGATORS.md](./SESSION-FEES-AGGREGATORS.md)
 - **Fee terms carrier:** `sessionProperties.wc_feeTerms` (JSON-encoded string):
   `{"version":1,"feeRecipient":"<Solana address>","feeRecipientEip155":"<EVM address>","feeBps":50}`.
@@ -29,7 +33,7 @@ a block explorer.
 | App | Path | Port | Change |
 |---|---|---|---|
 | Demo wallet | `advanced/wallets/react-wallet-v2` | 3001 | Attaches `wc_feeTerms` to `sessionProperties` at session approval (`src/views/SessionProposalModal.tsx`). Signs requests exactly as before. |
-| Fee-demo dapp | `advanced/dapps/react-dapp-v2` | 3000 | Landing page replaced with a single Jupiter-style swap screen with an aggregator dropdown (`src/pages/index.tsx`). Per-aggregator logic is isolated: `src/helpers/jupiter.ts` (Jupiter/Solana), `src/helpers/oneinch.ts` (1inch/Arbitrum, proxied via `src/pages/api/oneinch/[...path].ts`), `src/helpers/kyberswap.ts` (KyberSwap/Arbitrum, direct — no key), shared terms parsing in `src/helpers/feeTerms.ts`. |
+| Fee-demo dapp | `advanced/dapps/react-dapp-v2` | 3000 | Landing page replaced with a single Jupiter-style swap screen with an aggregator dropdown (`src/pages/index.tsx`). Per-aggregator logic is isolated: `src/helpers/jupiter.ts` (Jupiter/Solana), `src/helpers/oneinch.ts` (1inch/Arbitrum, proxied via `src/pages/api/oneinch/[...path].ts`), `src/helpers/kyberswap.ts` (KyberSwap/Arbitrum, direct — no key), `src/helpers/uniswap.ts` (Uniswap/Arbitrum, proxied via `src/pages/api/uniswap/[...path].ts`), shared terms parsing in `src/helpers/feeTerms.ts`. |
 
 ### Alternative wallet: Kotlin sample wallet
 
@@ -82,6 +86,9 @@ NEXT_PUBLIC_JUPITER_API_BASE=
 # only (no NEXT_PUBLIC_): used by the /api/oneinch proxy, never sent to the
 # browser. Free self-serve key: https://portal.1inch.dev
 ONEINCH_API_KEY=
+# Uniswap Trading API — REQUIRED for the Uniswap aggregator option. Server-side
+# only: used by the /api/uniswap proxy. Free key: https://developers.uniswap.org/dashboard
+UNISWAP_API_KEY=
 # Optional Arbitrum RPC override (defaults to rpc.walletconnect.com).
 NEXT_PUBLIC_ARBITRUM_RPC_URL=
 ```
@@ -104,7 +111,8 @@ detects this.
    card: the terms (`Fee 0.50% — 80% wallet / 20% WCN`, recipient address)
    came from the wallet via `sessionProperties.wc_feeTerms`.
 3. **Swap** — pick the aggregator in the dropdown (Jupiter · Solana,
-   1inch · Arbitrum, or KyberSwap · Arbitrum) and enter a small amount (e.g. 0.02 SOL / 0.001 ETH). The
+   1inch · Arbitrum, KyberSwap · Arbitrum, or Uniswap · Arbitrum) and enter a
+   small amount (e.g. 0.02 SOL / 0.001 ETH). The
    quote shows the payout, the fee amount, and min received. Click Swap,
    approve the single signature prompt in the wallet.
 4. **Watch the fee arrive** — on confirmation the dapp shows the tx hash with a

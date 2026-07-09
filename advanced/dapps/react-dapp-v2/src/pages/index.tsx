@@ -45,6 +45,13 @@ import {
   KYBER_MAX_FEE_BPS,
   kyberToWalletConnectTx,
 } from "../helpers/kyberswap";
+import {
+  buildUniswapSwap,
+  getUniswapQuote,
+  UNISWAP_MAX_FEE_BPS,
+  UniswapQuote,
+  uniswapToWalletConnectTx,
+} from "../helpers/uniswap";
 
 /**
  * Session Fees POC — single swap screen with selectable aggregator.
@@ -70,7 +77,7 @@ const FEE_SPLIT_LABEL = "80% wallet / 20% WCN";
 
 const ERC20_ABI = ["function balanceOf(address) view returns (uint256)"];
 
-type AggregatorId = "jupiter" | "oneinch" | "kyberswap";
+type AggregatorId = "jupiter" | "oneinch" | "kyberswap" | "uniswap";
 
 const AGGREGATORS: Record<
   AggregatorId,
@@ -123,6 +130,18 @@ const AGGREGATORS: Record<
     explorerTx: (id) => `https://arbiscan.io/tx/${id}`,
     explorerAddress: (address) => `https://arbiscan.io/address/${address}`,
   },
+  uniswap: {
+    label: "Uniswap",
+    chainLabel: "Arbitrum",
+    caip: ARBITRUM_CAIP,
+    sellSymbol: "ETH",
+    sellDecimals: ETH_DECIMALS,
+    sellIcon: "Ξ",
+    sellColor: "#FC72FF",
+    maxFeeBps: UNISWAP_MAX_FEE_BPS,
+    explorerTx: (id) => `https://arbiscan.io/tx/${id}`,
+    explorerAddress: (address) => `https://arbiscan.io/address/${address}`,
+  },
 };
 
 /** Aggregator-agnostic quote used by the UI (amounts in USDC base units). */
@@ -132,6 +151,7 @@ interface SwapQuote {
   feeAmount?: string;
   priceImpactPct?: string;
   jupiter?: JupiterQuote;
+  uniswap?: UniswapQuote;
 }
 
 type SwapPhase = "idle" | "building" | "signing" | "sending" | "confirming";
@@ -272,6 +292,35 @@ const Home: NextPage = () => {
             ? ((out * BigInt(feeBps)) / BigInt(10000 - feeBps)).toString()
             : undefined,
         };
+      } else if (aggregator === "uniswap") {
+        if (!evmAddress) {
+          // The Trading API requires a swapper address on /quote.
+          setQuote(undefined);
+          setQuoteError("Connect a wallet to get Uniswap quotes");
+          return;
+        }
+        const response = await getUniswapQuote({
+          amount: sellRaw,
+          swapper: evmAddress,
+          feeBps: feeBps || undefined,
+          feeRecipient: activeFeeRecipient,
+          slippagePercent: SLIPPAGE_BPS / 100,
+        });
+        const gross = BigInt(response.quote.output?.amount ?? "0");
+        // For EXACT_INPUT the quoted output does not subtract the fee; the
+        // fee is reported separately as portionAmount.
+        const fee = BigInt(response.quote.portionAmount ?? "0");
+        const net = gross - fee;
+        nextQuote = {
+          outAmount: net.toString(),
+          minOut: ((net * BigInt(10000 - SLIPPAGE_BPS)) / 10000n).toString(),
+          feeAmount: response.quote.portionAmount ?? undefined,
+          priceImpactPct:
+            response.quote.priceImpact !== undefined
+              ? String(response.quote.priceImpact)
+              : undefined,
+          uniswap: response.quote,
+        };
       } else {
         const { dstAmount } = await getOneInchQuote({
           amount: sellRaw,
@@ -301,7 +350,7 @@ const Home: NextPage = () => {
     } finally {
       if (seq === quoteSeq.current) setIsQuoting(false);
     }
-  }, [sellRaw, isJupiter, aggregator, feeBps, activeFeeRecipient]);
+  }, [sellRaw, isJupiter, aggregator, feeBps, activeFeeRecipient, evmAddress]);
 
   // Debounced fetch on input change + periodic refresh to keep quotes fresh.
   useEffect(() => {
@@ -591,6 +640,29 @@ const Home: NextPage = () => {
     evmProvider,
   ]);
 
+  const swapWithUniswap = useCallback(async () => {
+    if (!client || !session || !evmAddress || !quote?.uniswap) return;
+    setPhase("building");
+    const { swap } = await buildUniswapSwap({ quote: quote.uniswap });
+
+    setPhase("signing");
+    const hash = await client.request<string>({
+      topic: session.topic,
+      chainId: ARBITRUM_CAIP,
+      request: {
+        method: "eth_sendTransaction",
+        params: [uniswapToWalletConnectTx(swap)],
+      },
+    });
+
+    setPhase("confirming");
+    const receipt = await evmProvider.waitForTransaction(hash, 1, 120_000);
+    if (!receipt || receipt.status !== 1) {
+      throw new Error("Transaction failed or timed out");
+    }
+    setLastTxId(hash);
+  }, [client, session, evmAddress, quote, evmProvider]);
+
   const onSwap = useCallback(async () => {
     try {
       setLastTxId(undefined);
@@ -598,6 +670,8 @@ const Home: NextPage = () => {
         await swapWithJupiter();
       } else if (aggregator === "kyberswap") {
         await swapWithKyberSwap();
+      } else if (aggregator === "uniswap") {
+        await swapWithUniswap();
       } else {
         await swapWithOneInch();
       }
@@ -616,6 +690,7 @@ const Home: NextPage = () => {
     aggregator,
     swapWithJupiter,
     swapWithKyberSwap,
+    swapWithUniswap,
     swapWithOneInch,
     refreshFeeBalance,
     refreshSellBalance,
