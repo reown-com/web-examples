@@ -43,7 +43,6 @@ import {
   buildKyberSwap,
   getKyberRoute,
   KYBER_MAX_FEE_BPS,
-  KyberRouteSummary,
   kyberToWalletConnectTx,
 } from "../helpers/kyberswap";
 
@@ -63,6 +62,9 @@ const ARBITRUM_RPC_URL =
   process.env.NEXT_PUBLIC_ARBITRUM_RPC_URL || getProviderUrl(ARBITRUM_CAIP);
 
 const SLIPPAGE_BPS = 50;
+// Kyber routes pin exact pool states; small demo swaps ride volatile
+// micro-pools, so give them a wider guard than the other aggregators.
+const KYBER_SLIPPAGE_BPS = 100;
 // UI label only for the POC — no split contract exists.
 const FEE_SPLIT_LABEL = "80% wallet / 20% WCN";
 
@@ -130,7 +132,6 @@ interface SwapQuote {
   feeAmount?: string;
   priceImpactPct?: string;
   jupiter?: JupiterQuote;
-  kyberRouteSummary?: KyberRouteSummary;
 }
 
 type SwapPhase = "idle" | "building" | "signing" | "sending" | "confirming";
@@ -262,12 +263,14 @@ const Home: NextPage = () => {
         const out = BigInt(routeSummary.amountOut);
         nextQuote = {
           outAmount: routeSummary.amountOut,
-          minOut: ((out * BigInt(10000 - SLIPPAGE_BPS)) / 10000n).toString(),
+          minOut: (
+            (out * BigInt(10000 - KYBER_SLIPPAGE_BPS)) /
+            10000n
+          ).toString(),
           // amountOut is net of the fee (charged on currency_out).
           feeAmount: feeBps
             ? ((out * BigInt(feeBps)) / BigInt(10000 - feeBps)).toString()
             : undefined,
-          kyberRouteSummary: routeSummary,
         };
       } else {
         const { dstAmount } = await getOneInchQuote({
@@ -547,12 +550,19 @@ const Home: NextPage = () => {
   ]);
 
   const swapWithKyberSwap = useCallback(async () => {
-    if (!client || !session || !evmAddress || !quote?.kyberRouteSummary) return;
+    if (!client || !session || !evmAddress || !sellRaw) return;
     setPhase("building");
+    // Kyber routes reference exact pool states and go stale within seconds —
+    // fetch a fresh route at swap time instead of reusing the displayed quote.
+    const { routeSummary } = await getKyberRoute({
+      amount: sellRaw,
+      feeBps: feeBps || undefined,
+      feeReceiver: activeFeeRecipient,
+    });
     const build = await buildKyberSwap({
-      routeSummary: quote.kyberRouteSummary,
+      routeSummary,
       sender: evmAddress,
-      slippageBps: SLIPPAGE_BPS,
+      slippageBps: KYBER_SLIPPAGE_BPS,
     });
 
     setPhase("signing");
@@ -571,7 +581,15 @@ const Home: NextPage = () => {
       throw new Error("Transaction failed or timed out");
     }
     setLastTxId(hash);
-  }, [client, session, evmAddress, quote, evmProvider]);
+  }, [
+    client,
+    session,
+    evmAddress,
+    sellRaw,
+    feeBps,
+    activeFeeRecipient,
+    evmProvider,
+  ]);
 
   const onSwap = useCallback(async () => {
     try {
@@ -764,7 +782,13 @@ const Home: NextPage = () => {
                 <span>{buyAmount} USDC</span>
               </SBreakdownRow>
               <SBreakdownRow>
-                <span>Min. received ({SLIPPAGE_BPS / 100}% slippage)</span>
+                <span>
+                  Min. received (
+                  {(aggregator === "kyberswap"
+                    ? KYBER_SLIPPAGE_BPS
+                    : SLIPPAGE_BPS) / 100}
+                  % slippage)
+                </span>
                 <span>
                   {formatTokenAmount(quote.minOut, USDC_DECIMALS)} USDC
                 </span>
