@@ -459,13 +459,18 @@ export default function SessionProposalModal() {
 
         // Session Fees POC: declare the wallet's fee terms so the dapp can apply
         // them as an integrator fee when building swaps via an aggregator.
-        // Hardcoded demo recipient; its USDC ATA collects the fees.
+        // feeRecipient (Solana) is a hardcoded demo address; feeRecipientEip155
+        // defaults to the wallet's second EVM account so EVM fees land on an
+        // address the wallet owns but separate from the swapping one.
         const feeRecipient =
           process.env.NEXT_PUBLIC_FEE_RECIPIENT || '9zYtGz2nuUMe8yb9EJNNWdh2MNgMjAoWFuNgzjDm2nua'
+        const feeRecipientEip155 =
+          process.env.NEXT_PUBLIC_FEE_RECIPIENT_EVM || eip155Addresses[1] || eip155Addresses[0]
         if (feeRecipient) {
           sessionProperties.wc_feeTerms = JSON.stringify({
             version: 1,
             feeRecipient,
+            feeRecipientEip155,
             feeBps: Number(process.env.NEXT_PUBLIC_FEE_BPS || 50)
           })
         }

@@ -9,9 +9,11 @@ import React, {
 import toast from "react-hot-toast";
 import styled from "styled-components";
 import { Connection } from "@solana/web3.js";
+import { Contract, JsonRpcProvider, formatUnits, parseUnits } from "ethers";
 
 import { useWalletConnectClient } from "../contexts/ClientContext";
 import { getProviderUrl } from "../helpers";
+import { parseFeeTerms } from "../helpers/feeTerms";
 import {
   base64ToBytes,
   buildJupiterSwapTransaction,
@@ -21,29 +23,95 @@ import {
   getJupiterQuote,
   JupiterQuote,
   JUPITER_MAX_FEE_BPS,
-  parseFeeTerms,
   SOL_DECIMALS,
   SOL_MINT,
   SOLANA_MAINNET_CAIP,
   USDC_DECIMALS,
   USDC_MINT,
 } from "../helpers/jupiter";
+import {
+  ARBITRUM_CAIP,
+  ARBITRUM_USDC,
+  buildOneInchSwap,
+  ETH_DECIMALS,
+  getEvmPrices,
+  getOneInchQuote,
+  ONEINCH_MAX_FEE_BPS,
+  toWalletConnectTx,
+} from "../helpers/oneinch";
 
 /**
- * Session Fees POC — single swap screen (SOL -> USDC via Jupiter).
+ * Session Fees POC — single swap screen with selectable aggregator.
  *
  * The wallet declares fee terms in `sessionProperties.wc_feeTerms` at session
- * approval; this dapp reads them and passes them as an integrator fee
- * (platformFeeBps + feeAccount) into Jupiter's quote/swap endpoints. The fee
- * is baked into the swap transaction — the user signs once.
+ * approval; this dapp reads them and passes them as a per-request integrator
+ * fee into the selected aggregator's API (Jupiter on Solana, 1inch on
+ * Arbitrum). The fee is baked into the swap transaction — one signature.
+ * Aggregator-specific logic lives in helpers/jupiter.ts and helpers/oneinch.ts.
  */
 
 const SOLANA_RPC_URL =
   process.env.NEXT_PUBLIC_SOLANA_RPC_URL || getProviderUrl(SOLANA_MAINNET_CAIP);
+const ARBITRUM_RPC_URL =
+  process.env.NEXT_PUBLIC_ARBITRUM_RPC_URL || getProviderUrl(ARBITRUM_CAIP);
 
 const SLIPPAGE_BPS = 50;
 // UI label only for the POC — no split contract exists.
 const FEE_SPLIT_LABEL = "80% wallet / 20% WCN";
+
+const ERC20_ABI = ["function balanceOf(address) view returns (uint256)"];
+
+type AggregatorId = "jupiter" | "oneinch";
+
+const AGGREGATORS: Record<
+  AggregatorId,
+  {
+    label: string;
+    chainLabel: string;
+    caip: string;
+    sellSymbol: string;
+    sellDecimals: number;
+    sellIcon: string;
+    sellColor: string;
+    maxFeeBps: number;
+    explorerTx: (id: string) => string;
+    explorerAddress: (address: string) => string;
+  }
+> = {
+  jupiter: {
+    label: "Jupiter",
+    chainLabel: "Solana",
+    caip: SOLANA_MAINNET_CAIP,
+    sellSymbol: "SOL",
+    sellDecimals: SOL_DECIMALS,
+    sellIcon: "◎",
+    sellColor: "#9945FF",
+    maxFeeBps: JUPITER_MAX_FEE_BPS,
+    explorerTx: (id) => `https://solscan.io/tx/${id}`,
+    explorerAddress: (address) => `https://solscan.io/account/${address}`,
+  },
+  oneinch: {
+    label: "1inch",
+    chainLabel: "Arbitrum",
+    caip: ARBITRUM_CAIP,
+    sellSymbol: "ETH",
+    sellDecimals: ETH_DECIMALS,
+    sellIcon: "Ξ",
+    sellColor: "#627EEA",
+    maxFeeBps: ONEINCH_MAX_FEE_BPS,
+    explorerTx: (id) => `https://arbiscan.io/tx/${id}`,
+    explorerAddress: (address) => `https://arbiscan.io/address/${address}`,
+  },
+};
+
+/** Aggregator-agnostic quote used by the UI (amounts in USDC base units). */
+interface SwapQuote {
+  outAmount: string;
+  minOut: string;
+  feeAmount?: string;
+  priceImpactPct?: string;
+  jupiter?: JupiterQuote;
+}
 
 type SwapPhase = "idle" | "building" | "signing" | "sending" | "confirming";
 
@@ -66,11 +134,16 @@ const Home: NextPage = () => {
     accounts,
   } = useWalletConnectClient();
 
-  const connection = useMemo(() => new Connection(SOLANA_RPC_URL), []);
+  const [aggregator, setAggregator] = useState<AggregatorId>("jupiter");
+  const agg = AGGREGATORS[aggregator];
+  const isJupiter = aggregator === "jupiter";
 
-  // This demo is Solana-mainnet only.
+  const solanaConnection = useMemo(() => new Connection(SOLANA_RPC_URL), []);
+  const evmProvider = useMemo(() => new JsonRpcProvider(ARBITRUM_RPC_URL), []);
+
+  // Request both demo chains so the aggregator can be switched per session.
   useEffect(() => {
-    setChains([SOLANA_MAINNET_CAIP]);
+    setChains([SOLANA_MAINNET_CAIP, ARBITRUM_CAIP]);
   }, [setChains]);
 
   const solanaAddress = useMemo(
@@ -78,37 +151,56 @@ const Home: NextPage = () => {
       accounts.find((account) => account.startsWith("solana:"))?.split(":")[2],
     [accounts],
   );
+  const evmAddress = useMemo(
+    () =>
+      accounts
+        .find((account) => account.startsWith(`${ARBITRUM_CAIP}:`))
+        ?.split(":")[2],
+    [accounts],
+  );
+  const activeAddress = isJupiter ? solanaAddress : evmAddress;
 
   // -------- fee terms from the session --------
   const feeTerms = useMemo(
     () => parseFeeTerms(session?.sessionProperties),
     [session],
   );
-  const feeBps = feeTerms ? Math.min(feeTerms.feeBps, JUPITER_MAX_FEE_BPS) : 0;
+  const activeFeeRecipient = isJupiter
+    ? feeTerms?.feeRecipient
+    : feeTerms?.feeRecipientEip155;
+  const feeBps =
+    feeTerms && activeFeeRecipient
+      ? Math.min(feeTerms.feeBps, agg.maxFeeBps)
+      : 0;
   // Jupiter collects the fee into a token account: the recipient's USDC ATA.
-  const feeAta = useMemo(
-    () =>
-      feeTerms
-        ? getAssociatedTokenAddress(feeTerms.feeRecipient, USDC_MINT)
-        : undefined,
-    [feeTerms],
-  );
+  const feeAta = useMemo(() => {
+    if (!isJupiter || !feeTerms?.feeRecipient) return undefined;
+    try {
+      return getAssociatedTokenAddress(feeTerms.feeRecipient, USDC_MINT);
+    } catch (e) {
+      console.warn("Invalid Solana fee recipient:", feeTerms.feeRecipient, e);
+      return undefined;
+    }
+  }, [isJupiter, feeTerms]);
 
-  // -------- quote --------
+  // -------- amount input & quote --------
   const [sellAmount, setSellAmount] = useState("");
-  const [quote, setQuote] = useState<JupiterQuote>();
+  const [quote, setQuote] = useState<SwapQuote>();
   const [quoteError, setQuoteError] = useState<string>();
   const [isQuoting, setIsQuoting] = useState(false);
   const quoteSeq = useRef(0);
 
-  const sellLamports = useMemo(() => {
-    const parsed = parseFloat(sellAmount);
-    if (!Number.isFinite(parsed) || parsed <= 0) return undefined;
-    return Math.round(parsed * 10 ** SOL_DECIMALS);
-  }, [sellAmount]);
+  const sellRaw = useMemo(() => {
+    try {
+      const raw = parseUnits(sellAmount || "0", agg.sellDecimals);
+      return raw > 0n ? raw.toString() : undefined;
+    } catch {
+      return undefined;
+    }
+  }, [sellAmount, agg.sellDecimals]);
 
   const refreshQuote = useCallback(async () => {
-    if (!sellLamports) {
+    if (!sellRaw) {
       setQuote(undefined);
       setQuoteError(undefined);
       return;
@@ -116,13 +208,38 @@ const Home: NextPage = () => {
     const seq = ++quoteSeq.current;
     setIsQuoting(true);
     try {
-      const nextQuote = await getJupiterQuote({
-        inputMint: SOL_MINT,
-        outputMint: USDC_MINT,
-        amount: String(sellLamports),
-        platformFeeBps: feeBps || undefined,
-        slippageBps: SLIPPAGE_BPS,
-      });
+      let nextQuote: SwapQuote;
+      if (isJupiter) {
+        const jupiterQuote = await getJupiterQuote({
+          inputMint: SOL_MINT,
+          outputMint: USDC_MINT,
+          amount: sellRaw,
+          platformFeeBps: feeBps || undefined,
+          slippageBps: SLIPPAGE_BPS,
+        });
+        nextQuote = {
+          outAmount: jupiterQuote.outAmount,
+          minOut: jupiterQuote.otherAmountThreshold,
+          feeAmount: jupiterQuote.platformFee?.amount ?? undefined,
+          priceImpactPct: jupiterQuote.priceImpactPct,
+          jupiter: jupiterQuote,
+        };
+      } else {
+        const { dstAmount } = await getOneInchQuote({
+          amount: sellRaw,
+          feeBps: feeBps || undefined,
+          referrer: activeFeeRecipient,
+        });
+        const out = BigInt(dstAmount);
+        nextQuote = {
+          outAmount: dstAmount,
+          minOut: ((out * BigInt(10000 - SLIPPAGE_BPS)) / 10000n).toString(),
+          // dstAmount is net of the fee; back out the fee for display.
+          feeAmount: feeBps
+            ? ((out * BigInt(feeBps)) / BigInt(10000 - feeBps)).toString()
+            : undefined,
+        };
+      }
       if (seq === quoteSeq.current) {
         setQuote(nextQuote);
         setQuoteError(undefined);
@@ -136,7 +253,7 @@ const Home: NextPage = () => {
     } finally {
       if (seq === quoteSeq.current) setIsQuoting(false);
     }
-  }, [sellLamports, feeBps]);
+  }, [sellRaw, isJupiter, feeBps, activeFeeRecipient]);
 
   // Debounced fetch on input change + periodic refresh to keep quotes fresh.
   useEffect(() => {
@@ -148,6 +265,14 @@ const Home: NextPage = () => {
     };
   }, [refreshQuote]);
 
+  const onSelectAggregator = useCallback((next: AggregatorId) => {
+    setAggregator(next);
+    setSellAmount("");
+    setQuote(undefined);
+    setQuoteError(undefined);
+    setLastTxId(undefined);
+  }, []);
+
   // -------- token prices (cosmetic cards) --------
   const [prices, setPrices] = useState<
     Record<string, { usdPrice: number; priceChange24h?: number }>
@@ -157,39 +282,66 @@ const Home: NextPage = () => {
     let active = true;
     const fetchPrices = async () => {
       try {
-        const result = await getJupiterPrices([SOL_MINT, USDC_MINT]);
-        if (active) setPrices(result);
+        if (isJupiter) {
+          const result = await getJupiterPrices([SOL_MINT, USDC_MINT]);
+          if (active) {
+            setPrices({
+              sell: result[SOL_MINT],
+              usdc: result[USDC_MINT],
+            });
+          }
+        } else {
+          const result = await getEvmPrices();
+          if (active) {
+            setPrices({ sell: result.ETH, usdc: result.USDC });
+          }
+        }
       } catch (error) {
         // Price cards are cosmetic; ignore failures.
         console.warn("price fetch failed", error);
       }
     };
+    setPrices({});
     fetchPrices();
     const interval = setInterval(fetchPrices, 60_000);
     return () => {
       active = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [isJupiter]);
 
   // -------- fee recipient balance (watch fees arrive) --------
   const [feeBalance, setFeeBalance] = useState<string>();
   const [feeAtaExists, setFeeAtaExists] = useState<boolean>();
 
   const refreshFeeBalance = useCallback(async () => {
-    if (!feeAta) return;
-    try {
-      const balance = await connection.getTokenAccountBalance(feeAta);
-      setFeeBalance(balance.value.uiAmountString ?? "0");
-      setFeeAtaExists(true);
-    } catch (error) {
-      // getTokenAccountBalance throws if the ATA is not initialized yet.
-      setFeeAtaExists(false);
-      setFeeBalance(undefined);
+    if (isJupiter) {
+      if (!feeAta) return;
+      try {
+        const balance = await solanaConnection.getTokenAccountBalance(feeAta);
+        setFeeBalance(balance.value.uiAmountString ?? "0");
+        setFeeAtaExists(true);
+      } catch (error) {
+        // getTokenAccountBalance throws if the ATA is not initialized yet.
+        setFeeAtaExists(false);
+        setFeeBalance(undefined);
+      }
+    } else {
+      if (!feeTerms?.feeRecipientEip155) return;
+      try {
+        const usdc = new Contract(ARBITRUM_USDC, ERC20_ABI, evmProvider);
+        const balance = await usdc.balanceOf(feeTerms.feeRecipientEip155);
+        setFeeBalance(formatUnits(balance, USDC_DECIMALS));
+        setFeeAtaExists(true);
+      } catch (error) {
+        console.warn("fee balance fetch failed", error);
+      }
     }
-  }, [connection, feeAta]);
+  }, [isJupiter, feeAta, feeTerms, solanaConnection, evmProvider]);
 
   useEffect(() => {
+    setFeeBalance(undefined);
+    setFeeAtaExists(undefined);
     refreshFeeBalance();
     const interval = setInterval(refreshFeeBalance, 15_000);
     return () => clearInterval(interval);
@@ -197,7 +349,7 @@ const Home: NextPage = () => {
 
   // -------- swap --------
   const [phase, setPhase] = useState<SwapPhase>("idle");
-  const [lastSignature, setLastSignature] = useState<string>();
+  const [lastTxId, setLastTxId] = useState<string>();
   const [isConnecting, setIsConnecting] = useState(false);
 
   const onConnect = useCallback(async () => {
@@ -211,11 +363,13 @@ const Home: NextPage = () => {
     }
   }, [connect]);
 
-  const waitForConfirmation = useCallback(
+  const waitForSolanaConfirmation = useCallback(
     async (signature: string) => {
       const deadline = Date.now() + 90_000;
       while (Date.now() < deadline) {
-        const { value } = await connection.getSignatureStatuses([signature]);
+        const { value } = await solanaConnection.getSignatureStatuses([
+          signature,
+        ]);
         const status = value[0];
         if (status?.err) {
           throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
@@ -230,46 +384,96 @@ const Home: NextPage = () => {
       }
       throw new Error("Timed out waiting for confirmation");
     },
-    [connection],
+    [solanaConnection],
   );
 
+  const swapWithJupiter = useCallback(async () => {
+    if (!client || !session || !solanaAddress || !quote?.jupiter) return;
+    setPhase("building");
+    const { swapTransaction } = await buildJupiterSwapTransaction({
+      quoteResponse: quote.jupiter,
+      userPublicKey: solanaAddress,
+      feeAccount: feeBps ? feeAta?.toBase58() : undefined,
+    });
+
+    setPhase("signing");
+    const { transaction: signedTransaction } = await client.request<{
+      transaction: string;
+      signature: string;
+    }>({
+      topic: session.topic,
+      chainId: SOLANA_MAINNET_CAIP,
+      request: {
+        method: "solana_signTransaction",
+        params: { pubkey: solanaAddress, transaction: swapTransaction },
+      },
+    });
+
+    setPhase("sending");
+    const signature = await solanaConnection.sendRawTransaction(
+      base64ToBytes(signedTransaction),
+      { maxRetries: 3, preflightCommitment: "confirmed" },
+    );
+
+    setPhase("confirming");
+    await waitForSolanaConfirmation(signature);
+    setLastTxId(signature);
+  }, [
+    client,
+    session,
+    solanaAddress,
+    quote,
+    feeBps,
+    feeAta,
+    solanaConnection,
+    waitForSolanaConfirmation,
+  ]);
+
+  const swapWithOneInch = useCallback(async () => {
+    if (!client || !session || !evmAddress || !sellRaw) return;
+    setPhase("building");
+    const { tx } = await buildOneInchSwap({
+      amount: sellRaw,
+      from: evmAddress,
+      feeBps: feeBps || undefined,
+      referrer: activeFeeRecipient,
+      slippagePercent: SLIPPAGE_BPS / 100,
+    });
+
+    setPhase("signing");
+    const hash = await client.request<string>({
+      topic: session.topic,
+      chainId: ARBITRUM_CAIP,
+      request: {
+        method: "eth_sendTransaction",
+        params: [toWalletConnectTx(tx)],
+      },
+    });
+
+    setPhase("confirming");
+    const receipt = await evmProvider.waitForTransaction(hash, 1, 120_000);
+    if (!receipt || receipt.status !== 1) {
+      throw new Error("Transaction failed or timed out");
+    }
+    setLastTxId(hash);
+  }, [
+    client,
+    session,
+    evmAddress,
+    sellRaw,
+    feeBps,
+    activeFeeRecipient,
+    evmProvider,
+  ]);
+
   const onSwap = useCallback(async () => {
-    if (!client || !session || !solanaAddress || !quote) return;
     try {
-      setLastSignature(undefined);
-      setPhase("building");
-      const { swapTransaction } = await buildJupiterSwapTransaction({
-        quoteResponse: quote,
-        userPublicKey: solanaAddress,
-        feeAccount: feeBps ? feeAta?.toBase58() : undefined,
-      });
-
-      setPhase("signing");
-      const { transaction: signedTransaction } = await client.request<{
-        transaction: string;
-        signature: string;
-      }>({
-        topic: session.topic,
-        chainId: SOLANA_MAINNET_CAIP,
-        request: {
-          method: "solana_signTransaction",
-          params: {
-            pubkey: solanaAddress,
-            transaction: swapTransaction,
-          },
-        },
-      });
-
-      setPhase("sending");
-      const signature = await connection.sendRawTransaction(
-        base64ToBytes(signedTransaction),
-        { maxRetries: 3, preflightCommitment: "confirmed" },
-      );
-
-      setPhase("confirming");
-      await waitForConfirmation(signature);
-
-      setLastSignature(signature);
+      setLastTxId(undefined);
+      if (isJupiter) {
+        await swapWithJupiter();
+      } else {
+        await swapWithOneInch();
+      }
       toast.success("Swap confirmed!", { position: "bottom-left" });
       refreshFeeBalance();
       refreshQuote();
@@ -280,24 +484,19 @@ const Home: NextPage = () => {
       setPhase("idle");
     }
   }, [
-    client,
-    session,
-    solanaAddress,
-    quote,
-    feeBps,
-    feeAta,
-    connection,
-    waitForConfirmation,
+    isJupiter,
+    swapWithJupiter,
+    swapWithOneInch,
     refreshFeeBalance,
     refreshQuote,
   ]);
 
   // -------- derived display values --------
-  const solPrice = prices[SOL_MINT]?.usdPrice;
-  const usdcPrice = prices[USDC_MINT]?.usdPrice;
+  const sellPrice = prices.sell?.usdPrice;
+  const usdcPrice = prices.usdc?.usdPrice;
   const sellUsd =
-    solPrice && sellLamports
-      ? (sellLamports / 10 ** SOL_DECIMALS) * solPrice
+    sellPrice && sellRaw
+      ? Number(formatUnits(BigInt(sellRaw), agg.sellDecimals)) * sellPrice
       : undefined;
   const buyAmount = quote
     ? formatTokenAmount(quote.outAmount, USDC_DECIMALS)
@@ -306,15 +505,18 @@ const Home: NextPage = () => {
     quote && usdcPrice
       ? (Number(quote.outAmount) / 10 ** USDC_DECIMALS) * usdcPrice
       : undefined;
-  const feeAmount = quote?.platformFee
-    ? formatTokenAmount(quote.platformFee.amount, USDC_DECIMALS)
+  const feeAmount = quote?.feeAmount
+    ? formatTokenAmount(quote.feeAmount, USDC_DECIMALS)
     : undefined;
+  const feeBalanceAddress = isJupiter
+    ? feeAta?.toBase58()
+    : feeTerms?.feeRecipientEip155;
 
   const shortAddress = (address: string) =>
     `${address.slice(0, 4)}…${address.slice(-4)}`;
 
   const isSwapping = phase !== "idle";
-  const canSwap = !!session && !!quote && !isSwapping;
+  const canSwap = !!session && !!activeAddress && !!quote && !isSwapping;
 
   return (
     <SPage>
@@ -322,24 +524,38 @@ const Home: NextPage = () => {
         <SLogo>
           <SLogoMark>◎</SLogoMark> Session Fees <SPocBadge>POC</SPocBadge>
         </SLogo>
-        {session && solanaAddress ? (
+        {session && activeAddress ? (
           <SAccountChip onClick={() => disconnect()}>
-            {shortAddress(solanaAddress)} ✕
+            {shortAddress(activeAddress)} ✕
           </SAccountChip>
         ) : null}
       </STopBar>
 
       <SMain>
-        <STabs>
+        <STabsRow>
           <STab $active>Market</STab>
-        </STabs>
+          <SAggregatorSelect
+            value={aggregator}
+            onChange={(event) =>
+              onSelectAggregator(event.target.value as AggregatorId)
+            }
+            disabled={isSwapping}
+          >
+            {Object.entries(AGGREGATORS).map(([id, meta]) => (
+              <option key={id} value={id}>
+                {meta.label} · {meta.chainLabel}
+              </option>
+            ))}
+          </SAggregatorSelect>
+        </STabsRow>
 
         <SCard>
           <SPanel>
             <SPanelLabel>Selling</SPanelLabel>
             <SPanelRow>
               <STokenChip>
-                <STokenIcon $color="#9945FF">◎</STokenIcon> SOL
+                <STokenIcon $color={agg.sellColor}>{agg.sellIcon}</STokenIcon>{" "}
+                {agg.sellSymbol}
               </STokenChip>
               <SAmountInput
                 type="number"
@@ -352,7 +568,7 @@ const Home: NextPage = () => {
               />
             </SPanelRow>
             <SUsdValue>
-              {sellUsd !== undefined ? `$${sellUsd.toFixed(2)}` : " "}
+              {sellUsd !== undefined ? `$${sellUsd.toFixed(2)}` : " "}
             </SUsdValue>
           </SPanel>
 
@@ -369,12 +585,12 @@ const Home: NextPage = () => {
               <SAmountOutput $dim={isQuoting}>{buyAmount || "0"}</SAmountOutput>
             </SPanelRow>
             <SUsdValue>
-              {buyUsd !== undefined ? `$${buyUsd.toFixed(2)}` : " "}
+              {buyUsd !== undefined ? `$${buyUsd.toFixed(2)}` : " "}
             </SUsdValue>
           </SPanel>
 
           {session ? (
-            feeTerms ? (
+            feeTerms && activeFeeRecipient ? (
               <SFeeTerms>
                 <SFeeTermsHeader>
                   Session fee terms <SFeeBadge>from wallet</SFeeBadge>
@@ -386,10 +602,10 @@ const Home: NextPage = () => {
                   <span>{feeAmount ? `${feeAmount} USDC` : "—"}</span>
                 </SBreakdownRow>
                 <SBreakdownRow>
-                  <span>Fee recipient</span>
-                  <SMono>{shortAddress(feeTerms.feeRecipient)}</SMono>
+                  <span>Fee recipient ({agg.chainLabel})</span>
+                  <SMono>{shortAddress(activeFeeRecipient)}</SMono>
                 </SBreakdownRow>
-                {feeAtaExists === false && (
+                {isJupiter && feeAtaExists === false && (
                   <SWarning>
                     Fee recipient&apos;s USDC token account is not initialized —
                     Jupiter will skip fee collection for this swap.
@@ -400,11 +616,19 @@ const Home: NextPage = () => {
               <SFeeTerms>
                 <SFeeTermsHeader>Session fee terms</SFeeTermsHeader>
                 <SNoTerms>
-                  No fee terms declared by the wallet — swapping without a fee.
+                  No {agg.chainLabel} fee terms declared by the wallet —
+                  swapping without a fee.
                 </SNoTerms>
               </SFeeTerms>
             )
           ) : null}
+
+          {session && !activeAddress && (
+            <SWarning>
+              The current session has no {agg.chainLabel} account. Disconnect
+              and reconnect to approve both chains.
+            </SWarning>
+          )}
 
           {quote && (
             <SBreakdown>
@@ -415,14 +639,15 @@ const Home: NextPage = () => {
               <SBreakdownRow>
                 <span>Min. received ({SLIPPAGE_BPS / 100}% slippage)</span>
                 <span>
-                  {formatTokenAmount(quote.otherAmountThreshold, USDC_DECIMALS)}{" "}
-                  USDC
+                  {formatTokenAmount(quote.minOut, USDC_DECIMALS)} USDC
                 </span>
               </SBreakdownRow>
-              <SBreakdownRow>
-                <span>Price impact</span>
-                <span>{Number(quote.priceImpactPct ?? 0).toFixed(4)}%</span>
-              </SBreakdownRow>
+              {quote.priceImpactPct !== undefined && (
+                <SBreakdownRow>
+                  <span>Price impact</span>
+                  <span>{Number(quote.priceImpactPct ?? 0).toFixed(4)}%</span>
+                </SBreakdownRow>
+              )}
             </SBreakdown>
           )}
 
@@ -445,16 +670,17 @@ const Home: NextPage = () => {
         <SPriceRow>
           <SPriceCard>
             <SPriceCardToken>
-              <STokenIcon $color="#9945FF">◎</STokenIcon> SOL
+              <STokenIcon $color={agg.sellColor}>{agg.sellIcon}</STokenIcon>{" "}
+              {agg.sellSymbol}
             </SPriceCardToken>
             <SPriceCardValue>
-              {solPrice ? `$${solPrice.toFixed(2)}` : "—"}
+              {sellPrice ? `$${sellPrice.toFixed(2)}` : "—"}
             </SPriceCardValue>
             <SPriceCardChange
-              $negative={(prices[SOL_MINT]?.priceChange24h ?? 0) < 0}
+              $negative={(prices.sell?.priceChange24h ?? 0) < 0}
             >
-              {prices[SOL_MINT]?.priceChange24h !== undefined
-                ? `${prices[SOL_MINT].priceChange24h!.toFixed(2)}% (24h)`
+              {prices.sell?.priceChange24h !== undefined
+                ? `${prices.sell.priceChange24h!.toFixed(2)}% (24h)`
                 : ""}
             </SPriceCardChange>
           </SPriceCard>
@@ -466,32 +692,32 @@ const Home: NextPage = () => {
               {usdcPrice ? `$${usdcPrice.toFixed(4)}` : "—"}
             </SPriceCardValue>
             <SPriceCardChange
-              $negative={(prices[USDC_MINT]?.priceChange24h ?? 0) < 0}
+              $negative={(prices.usdc?.priceChange24h ?? 0) < 0}
             >
-              {prices[USDC_MINT]?.priceChange24h !== undefined
-                ? `${prices[USDC_MINT].priceChange24h!.toFixed(2)}% (24h)`
+              {prices.usdc?.priceChange24h !== undefined
+                ? `${prices.usdc.priceChange24h!.toFixed(2)}% (24h)`
                 : ""}
             </SPriceCardChange>
           </SPriceCard>
         </SPriceRow>
 
-        {lastSignature && (
+        {lastTxId && (
           <SResultCard>
             <SFeeTermsHeader>Swap confirmed ✅</SFeeTermsHeader>
             <SBreakdownRow>
               <span>Transaction</span>
               <SLink
-                href={`https://solscan.io/tx/${lastSignature}`}
+                href={agg.explorerTx(lastTxId)}
                 target="_blank"
                 rel="noreferrer"
               >
-                {shortAddress(lastSignature)} ↗
+                {shortAddress(lastTxId)} ↗
               </SLink>
             </SBreakdownRow>
           </SResultCard>
         )}
 
-        {feeTerms && feeAta && (
+        {activeFeeRecipient && feeBalanceAddress && (
           <SResultCard>
             <SFeeTermsHeader>
               Fee recipient balance <SFeeBadge>live</SFeeBadge>
@@ -499,7 +725,7 @@ const Home: NextPage = () => {
             <SBreakdownRow>
               <span>USDC collected</span>
               <SFeeBalanceValue>
-                {feeAtaExists === false
+                {isJupiter && feeAtaExists === false
                   ? "token account not initialized"
                   : feeBalance !== undefined
                     ? `${feeBalance} USDC`
@@ -507,13 +733,13 @@ const Home: NextPage = () => {
               </SFeeBalanceValue>
             </SBreakdownRow>
             <SBreakdownRow>
-              <span>Fee token account</span>
+              <span>{isJupiter ? "Fee token account" : "Fee recipient"}</span>
               <SLink
-                href={`https://solscan.io/account/${feeAta.toBase58()}`}
+                href={agg.explorerAddress(feeBalanceAddress)}
                 target="_blank"
                 rel="noreferrer"
               >
-                {shortAddress(feeAta.toBase58())} ↗
+                {shortAddress(feeBalanceAddress)} ↗
               </SLink>
             </SBreakdownRow>
           </SResultCard>
@@ -589,8 +815,10 @@ const SMain = styled.main`
   gap: 16px;
 `;
 
-const STabs = styled.div`
+const STabsRow = styled.div`
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
 `;
 
@@ -601,6 +829,21 @@ const STab = styled.div<{ $active?: boolean }>`
   font-weight: 600;
   background: ${({ $active }) => ($active ? "#1b232d" : "transparent")};
   color: ${({ $active }) => ($active ? "#c7f284" : "#5b6b7c")};
+`;
+
+const SAggregatorSelect = styled.select`
+  background: #1b232d;
+  color: #e8f9ff;
+  border: 1px solid #2a3441;
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  &:hover {
+    border-color: #c7f284;
+  }
 `;
 
 const SCard = styled.div`

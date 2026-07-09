@@ -30,43 +30,6 @@ const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey(
 );
 
 /**
- * wc_feeTerms — fee terms declared by the wallet in sessionProperties.
- */
-export interface FeeTerms {
-  version: number;
-  feeRecipient: string;
-  feeBps: number;
-}
-
-export function parseFeeTerms(
-  sessionProperties?: Record<string, string | undefined>,
-): FeeTerms | undefined {
-  const raw = sessionProperties?.["wc_feeTerms"];
-  if (!raw) return undefined;
-  try {
-    const parsed = JSON.parse(raw);
-    if (
-      typeof parsed?.feeRecipient !== "string" ||
-      typeof parsed?.feeBps !== "number" ||
-      !Number.isFinite(parsed.feeBps) ||
-      parsed.feeBps <= 0
-    ) {
-      return undefined;
-    }
-    // Throws if the recipient is not a valid Solana address.
-    new PublicKey(parsed.feeRecipient);
-    return {
-      version: Number(parsed.version) || 1,
-      feeRecipient: parsed.feeRecipient,
-      feeBps: Math.floor(parsed.feeBps),
-    };
-  } catch (e) {
-    console.warn("Failed to parse wc_feeTerms:", raw, e);
-    return undefined;
-  }
-}
-
-/**
  * Derives the associated token account for owner+mint without pulling in
  * @solana/spl-token. Jupiter takes the integrator fee straight into this
  * account when it is passed as `feeAccount` on /swap.

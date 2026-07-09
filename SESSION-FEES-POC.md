@@ -2,27 +2,29 @@
 
 A working end-to-end proof of concept: the **wallet declares fee terms** in the
 WalletConnect session at approval, the **dapp reads them** and passes an
-integrator fee into the Jupiter Swap API call that builds the transaction. The
+integrator fee into the aggregator API call that builds the transaction. The
 fee is baked into the swap itself — no extra transaction, no second prompt, one
-signature — and lands on a token account owned by the fee recipient, watchable
-on Solscan.
+signature — and lands on an address owned by the fee recipient, watchable in
+a block explorer.
 
-- **Aggregator:** Jupiter Swap API V1 (`/swap/v1/quote` + `/swap/v1/swap`) —
-  permissionless per-request integrator fees (`platformFeeBps` + `feeAccount`),
-  no referral-program registration, no Jupiter cut on this path.
-- **Chain / pair:** Solana mainnet, SOL → USDC.
+- **Aggregators (selectable via a dropdown in the dapp):**
+  - **Jupiter** (Solana mainnet, SOL → USDC) — docs:
+    [docs/session-fees/jupiter.md](./docs/session-fees/jupiter.md)
+  - **1inch Classic Swap** (Arbitrum One, ETH → USDC) — docs:
+    [docs/session-fees/1inch.md](./docs/session-fees/1inch.md)
+  - Candidate comparison: [SESSION-FEES-AGGREGATORS.md](./SESSION-FEES-AGGREGATORS.md)
 - **Fee terms carrier:** `sessionProperties.wc_feeTerms` (JSON-encoded string):
-  `{"version":1,"feeRecipient":"<Solana address>","feeBps":50}`.
-- **Where fees land:** the fee recipient's **USDC associated token account**
-  (derived by the dapp from `feeRecipient`), credited atomically inside every
-  swap transaction.
+  `{"version":1,"feeRecipient":"<Solana address>","feeRecipientEip155":"<EVM address>","feeBps":50}`.
+- **Where fees land:** Jupiter → the Solana recipient's **USDC associated token
+  account**; 1inch → the **EVM recipient EOA** (USDC on Arbitrum). Both are
+  credited atomically inside every swap transaction.
 
 ## Apps
 
 | App | Path | Port | Change |
 |---|---|---|---|
 | Demo wallet | `advanced/wallets/react-wallet-v2` | 3001 | Attaches `wc_feeTerms` to `sessionProperties` at session approval (`src/views/SessionProposalModal.tsx`). Signs requests exactly as before. |
-| Fee-demo dapp | `advanced/dapps/react-dapp-v2` | 3000 | Landing page replaced with a single Jupiter-style swap screen (`src/pages/index.tsx`); Jupiter API client + fee-terms parsing in `src/helpers/jupiter.ts`. |
+| Fee-demo dapp | `advanced/dapps/react-dapp-v2` | 3000 | Landing page replaced with a single Jupiter-style swap screen with an aggregator dropdown (`src/pages/index.tsx`). Per-aggregator logic is isolated: `src/helpers/jupiter.ts` (Jupiter/Solana), `src/helpers/oneinch.ts` (1inch/Arbitrum, proxied via `src/pages/api/oneinch/[...path].ts`), shared terms parsing in `src/helpers/feeTerms.ts`. |
 
 ### Alternative wallet: Kotlin sample wallet
 
@@ -46,10 +48,11 @@ Both apps use pnpm and run in dev mode (`pnpm dev`).
 ```
 NEXT_PUBLIC_PROJECT_ID=<your WalletConnect Cloud project id>
 NEXT_PUBLIC_RELAY_URL=wss://relay.walletconnect.com
-# Optional: override the fee recipient (defaults to the wallet's second
-# Solana account, so fees land on an address you own but separate from the
-# swapping account).
+# Optional overrides for the fee recipients (Solana one defaults to a
+# hardcoded demo address; the EVM one defaults to the wallet's second
+# EVM account).
 NEXT_PUBLIC_FEE_RECIPIENT=
+NEXT_PUBLIC_FEE_RECIPIENT_EVM=
 NEXT_PUBLIC_FEE_BPS=50
 ```
 
@@ -70,6 +73,12 @@ NEXT_PUBLIC_SOLANA_RPC_URL=
 # switches from lite-api.jup.ag to api.jup.ag.
 NEXT_PUBLIC_JUPITER_API_KEY=
 NEXT_PUBLIC_JUPITER_API_BASE=
+# 1inch (Arbitrum) — REQUIRED for the 1inch aggregator option. Server-side
+# only (no NEXT_PUBLIC_): used by the /api/oneinch proxy, never sent to the
+# browser. Free self-serve key: https://portal.1inch.dev
+ONEINCH_API_KEY=
+# Optional Arbitrum RPC override (defaults to rpc.walletconnect.com).
+NEXT_PUBLIC_ARBITRUM_RPC_URL=
 ```
 
 ### Fee recipient token account (one-time)
@@ -89,9 +98,10 @@ detects this.
    approve. Point at the wallet's approval log / the dapp's "Session fee terms"
    card: the terms (`Fee 0.50% — 80% wallet / 20% WCN`, recipient address)
    came from the wallet via `sessionProperties.wc_feeTerms`.
-3. **Swap** — enter a small SOL amount (e.g. 0.02). The quote shows the payout,
-   the fee amount, and min received. Click Swap, approve the single signature
-   prompt in the wallet.
+3. **Swap** — pick the aggregator in the dropdown (Jupiter · Solana or
+   1inch · Arbitrum) and enter a small amount (e.g. 0.02 SOL / 0.001 ETH). The
+   quote shows the payout, the fee amount, and min received. Click Swap,
+   approve the single signature prompt in the wallet.
 4. **Watch the fee arrive** — on confirmation the dapp shows the tx hash with a
    Solscan link, and the "Fee recipient balance" card ticks up (it reads the
    USDC ATA live every 15s). Open the Solscan links to show the fee transfer
@@ -110,8 +120,8 @@ detects this.
   balance card + Solscan.
 - **Static fee policy.** `feeBps` is hardcoded via env in the wallet; the dapp
   clamps it to 255 (Jupiter's on-chain `u8` cap for `platformFeeBps`).
-- **One chain, one pair.** Solana mainnet, SOL → USDC only. Fee is taken in
-  USDC (output token).
+- **One pair per aggregator.** Jupiter: SOL → USDC on Solana mainnet;
+  1inch: ETH → USDC on Arbitrum One. Fee taken in USDC (output token).
 - **Fee account must pre-exist.** If the recipient's USDC ATA isn't
   initialized, Jupiter silently collects nothing (dapp shows a warning but
   doesn't create the account — that would add a second transaction).
@@ -123,4 +133,9 @@ detects this.
 - **Wallet production build** (`next build`) fails with a pre-existing
   `localStorage` error unrelated to this POC — the wallet example is a
   dev-mode app; run it with `pnpm dev`.
-- **0x (EVM) integration** is planned as the next step, not included here.
+- **1inch infrastructure fee.** On the free 1inch tier, 1inch deducts its own
+  10–30 bps from every swap's output (separate from our integrator fee).
+- **1inch fee display is derived.** `/quote` returns the net amount; the dapp
+  backs the fee out arithmetically rather than reading it from the response.
+- **0x / KyberSwap / Uniswap integrations** are candidates for later (see
+  SESSION-FEES-AGGREGATORS.md), not included.
