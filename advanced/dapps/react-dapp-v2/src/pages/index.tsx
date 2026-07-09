@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import toast from "react-hot-toast";
 import styled from "styled-components";
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { Contract, JsonRpcProvider, formatUnits, parseUnits } from "ethers";
 
 import { useWalletConnectClient } from "../contexts/ClientContext";
@@ -393,6 +393,40 @@ const Home: NextPage = () => {
     return () => clearInterval(interval);
   }, [refreshFeeBalance]);
 
+  // -------- connected account's sell-token balance --------
+  const [sellBalanceRaw, setSellBalanceRaw] = useState<bigint>();
+
+  const refreshSellBalance = useCallback(async () => {
+    if (!activeAddress) {
+      setSellBalanceRaw(undefined);
+      return;
+    }
+    try {
+      if (isJupiter) {
+        const lamports = await solanaConnection.getBalance(
+          new PublicKey(activeAddress),
+        );
+        setSellBalanceRaw(BigInt(lamports));
+      } else {
+        setSellBalanceRaw(await evmProvider.getBalance(activeAddress));
+      }
+    } catch (error) {
+      console.warn("sell balance fetch failed", error);
+    }
+  }, [activeAddress, isJupiter, solanaConnection, evmProvider]);
+
+  useEffect(() => {
+    setSellBalanceRaw(undefined);
+    refreshSellBalance();
+    const interval = setInterval(refreshSellBalance, 30_000);
+    return () => clearInterval(interval);
+  }, [refreshSellBalance]);
+
+  const hasInsufficientBalance =
+    sellRaw !== undefined &&
+    sellBalanceRaw !== undefined &&
+    BigInt(sellRaw) > sellBalanceRaw;
+
   // -------- swap --------
   const [phase, setPhase] = useState<SwapPhase>("idle");
   const [lastTxId, setLastTxId] = useState<string>();
@@ -551,6 +585,7 @@ const Home: NextPage = () => {
       }
       toast.success("Swap confirmed!", { position: "bottom-left" });
       refreshFeeBalance();
+      refreshSellBalance();
       refreshQuote();
     } catch (error) {
       console.error(error);
@@ -565,6 +600,7 @@ const Home: NextPage = () => {
     swapWithKyberSwap,
     swapWithOneInch,
     refreshFeeBalance,
+    refreshSellBalance,
     refreshQuote,
   ]);
 
@@ -593,7 +629,12 @@ const Home: NextPage = () => {
     `${address.slice(0, 4)}…${address.slice(-4)}`;
 
   const isSwapping = phase !== "idle";
-  const canSwap = !!session && !!activeAddress && !!quote && !isSwapping;
+  const canSwap =
+    !!session &&
+    !!activeAddress &&
+    !!quote &&
+    !isSwapping &&
+    !hasInsufficientBalance;
 
   return (
     <SPage>
@@ -644,9 +685,18 @@ const Home: NextPage = () => {
                 disabled={isSwapping}
               />
             </SPanelRow>
-            <SUsdValue>
-              {sellUsd !== undefined ? `$${sellUsd.toFixed(2)}` : " "}
-            </SUsdValue>
+            <SPanelFooter>
+              <SBalanceValue $insufficient={hasInsufficientBalance}>
+                {session && activeAddress && sellBalanceRaw !== undefined
+                  ? `Balance: ${Number(
+                      formatUnits(sellBalanceRaw, agg.sellDecimals),
+                    ).toFixed(5)} ${agg.sellSymbol}`
+                  : " "}
+              </SBalanceValue>
+              <SUsdValue>
+                {sellUsd !== undefined ? `$${sellUsd.toFixed(2)}` : " "}
+              </SUsdValue>
+            </SPanelFooter>
           </SPanel>
 
           <SArrowDivider>
@@ -739,7 +789,9 @@ const Home: NextPage = () => {
             </SBigButton>
           ) : (
             <SBigButton onClick={onSwap} disabled={!canSwap}>
-              {PHASE_LABELS[phase]}
+              {hasInsufficientBalance && !isSwapping
+                ? `Insufficient ${agg.sellSymbol} balance`
+                : PHASE_LABELS[phase]}
             </SBigButton>
           )}
         </SCard>
@@ -1008,6 +1060,19 @@ const SUsdValue = styled.div`
   font-size: 12px;
   color: #5b6b7c;
   text-align: right;
+  margin-top: 4px;
+`;
+
+const SPanelFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+const SBalanceValue = styled.div<{ $insufficient?: boolean }>`
+  font-size: 12px;
+  color: ${({ $insufficient }) => ($insufficient ? "#ffb86b" : "#5b6b7c")};
   margin-top: 4px;
 `;
 
