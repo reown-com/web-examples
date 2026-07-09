@@ -60,9 +60,23 @@ user signs, and if not, what is the closest monetization shape?
 ## Takeaways
 
 - **The per-request integrator-fee pattern is industry-standard**: 11 of 16
-  candidates support it. `wc_feeTerms` generalizes across all of them with no
-  protocol changes — the dapp just maps `feeBps`/`feeRecipient` onto each
-  aggregator's params.
+  candidates expose it (Jupiter, 0x, KyberSwap, Velora, OpenOcean, 1inch,
+  Uniswap, Odos, OKX, LI.FI, Raydium). But *exposing* ≠ *paying*: verified to
+  pay permissionlessly/self-serve — Jupiter, KyberSwap, Velora, OpenOcean
+  (empirically), plus 0x/Odos/OKX/LI.FI per docs; silently gated behind
+  agreements — 1inch, Raydium (empirically), likely Uniswap. `wc_feeTerms`
+  maps onto any of them — the dapp just fills each API's `feeBps`/recipient
+  params.
+- **Session Fees is a WalletConnect-layer protocol, not an aggregator
+  feature.** The stack is user → frontend (dapp/wallet UI) → aggregator
+  (tx-building API — *the fee slot lives here*) → base protocols (pools,
+  lending markets — mostly **no fee slot in their contracts**). The POC
+  targets aggregators because that's where per-request fee attachment already
+  exists, and most swap volume is aggregator-routed anyway; direct-protocol
+  flows (Aave/Lido/Curve deposits) have nothing to attach a fee to, which is
+  why they collapse into attribution-programs, curated vaults, or BD (see the
+  WCN section). Hyperliquid is the exception: a venue that built the fee slot
+  into its own order flow.
 - **LlamaSwap is the proof of the business model**: DefiLlama's "zero-fee" swap
   UI monetizes by hardcoding its own referral into 0x/1inch/ParaSwap/Kyber/Odos
   calls — exactly the fee slot the session-fees design gives to wallets.
