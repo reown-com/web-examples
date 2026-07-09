@@ -32,12 +32,41 @@ fee is paid to the recipient EOA inside the same swap transaction
 - **Recipient is a plain EOA** — no token account setup, no initialization
   step (unlike Jupiter's ATA requirement). Fees arrive as an ERC-20 transfer
   inside the swap tx, visible per swap on Arbiscan.
-- **1inch's cut:** none taken from the partner fee itself, **but** 1inch
-  applies its own "infrastructure fee" per plan tier (Dev/free tier: 10 bps
-  stablecoin / 30 bps other tokens, deducted from the destination amount of
-  every swap). Factor this in when eyeballing demo numbers.
+- **1inch's cut:** none taken from the partner fee itself — see the
+  infrastructure fee section below for the separate cut 1inch takes for
+  themselves.
 - The returned `dstAmount` is **net of the fee**; the dapp backs the fee out
   for display (`dst * feeBps / (10000 - feeBps)`).
+
+## The 1inch "infrastructure fee" (why demo numbers don't reconcile exactly)
+
+Every 1inch API swap carries **two independent fees**, and only one is ours:
+
+1. **Our integrator fee** — the `fee` + `referrer` params driven by
+   `wc_feeTerms`. Transferred **in full** to our fee recipient inside the swap
+   tx. 1inch takes no share of it.
+2. **1inch's infrastructure fee** — how 1inch monetizes API users. On the
+   free Dev tier they deduct **10 bps on stable↔stable swaps and 30 bps on
+   everything else** (ETH→USDC counts as 30 bps) from the destination amount
+   before quoting. There is no parameter for it, it never appears in the
+   response, and it goes to 1inch. Paid plans shrink it (down to 2–5 bps on
+   the Business tier).
+
+Worked example — 0.001 ETH swap, quoted `dstAmount = 1.748907 USDC`:
+
+| | Amount | Goes to |
+|---|---|---|
+| Market value of 0.001 ETH | ~1.764 USDC | — |
+| 1inch infrastructure fee (~30 bps) | ~0.005 USDC | 1inch |
+| Our integrator fee (50 bps) | ~0.009 USDC | our fee recipient ✅ |
+| User receives (`dstAmount`) | 1.748907 USDC | user |
+
+Practical consequence: if someone audits the demo with
+"user received + fee recipient received ≈ market rate", the sum will be
+**~30 bps short**. That gap is 1inch's own cut, not a leak in the session-fee
+logic. Jupiter-mode numbers reconcile exactly because Jupiter takes 0% on its
+permissionless fee path. If the gap matters, use a paid 1inch plan (2–5 bps)
+or an aggregator with no house cut (KyberSwap, 0x, Jupiter).
 
 ## API access — key + proxy required
 
@@ -72,8 +101,6 @@ fee is paid to the recipient EOA inside the same swap transaction
   rejected. Divide bps by 100.
 - Missing/invalid `referrer` with `fee` set → 400 from the API.
 - Free-tier 1 rps: bursty UIs will hit 429s; keep the debounce.
-- The 10–30 bps infrastructure fee on the free tier slightly worsens quotes vs
-  paid tiers; it is 1inch's, not ours, and separate from `wc_feeTerms`.
 - `origin` (the tx sender) is required on `/swap` in v6 for compliance
   screening; the dapp passes the connected address for both `from` and
   `origin`.
