@@ -138,6 +138,15 @@ const Home: NextPage = () => {
   const agg = AGGREGATORS[aggregator];
   const isJupiter = aggregator === "jupiter";
 
+  // Restore the aggregator choice across reloads (read after mount — SSR has
+  // no localStorage).
+  useEffect(() => {
+    const stored = localStorage.getItem("session_fees_aggregator");
+    if (stored && stored in AGGREGATORS) {
+      setAggregator(stored as AggregatorId);
+    }
+  }, []);
+
   const solanaConnection = useMemo(() => new Connection(SOLANA_RPC_URL), []);
   const evmProvider = useMemo(() => new JsonRpcProvider(ARBITRUM_RPC_URL), []);
 
@@ -266,6 +275,7 @@ const Home: NextPage = () => {
   }, [refreshQuote]);
 
   const onSelectAggregator = useCallback((next: AggregatorId) => {
+    localStorage.setItem("session_fees_aggregator", next);
     setAggregator(next);
     setSellAmount("");
     setQuote(undefined);
