@@ -39,6 +39,13 @@ import {
   ONEINCH_MAX_FEE_BPS,
   toWalletConnectTx,
 } from "../helpers/oneinch";
+import {
+  buildKyberSwap,
+  getKyberRoute,
+  KYBER_MAX_FEE_BPS,
+  KyberRouteSummary,
+  kyberToWalletConnectTx,
+} from "../helpers/kyberswap";
 
 /**
  * Session Fees POC — single swap screen with selectable aggregator.
@@ -61,7 +68,7 @@ const FEE_SPLIT_LABEL = "80% wallet / 20% WCN";
 
 const ERC20_ABI = ["function balanceOf(address) view returns (uint256)"];
 
-type AggregatorId = "jupiter" | "oneinch";
+type AggregatorId = "jupiter" | "oneinch" | "kyberswap";
 
 const AGGREGATORS: Record<
   AggregatorId,
@@ -102,6 +109,18 @@ const AGGREGATORS: Record<
     explorerTx: (id) => `https://arbiscan.io/tx/${id}`,
     explorerAddress: (address) => `https://arbiscan.io/address/${address}`,
   },
+  kyberswap: {
+    label: "KyberSwap",
+    chainLabel: "Arbitrum",
+    caip: ARBITRUM_CAIP,
+    sellSymbol: "ETH",
+    sellDecimals: ETH_DECIMALS,
+    sellIcon: "Ξ",
+    sellColor: "#31CB9E",
+    maxFeeBps: KYBER_MAX_FEE_BPS,
+    explorerTx: (id) => `https://arbiscan.io/tx/${id}`,
+    explorerAddress: (address) => `https://arbiscan.io/address/${address}`,
+  },
 };
 
 /** Aggregator-agnostic quote used by the UI (amounts in USDC base units). */
@@ -111,6 +130,7 @@ interface SwapQuote {
   feeAmount?: string;
   priceImpactPct?: string;
   jupiter?: JupiterQuote;
+  kyberRouteSummary?: KyberRouteSummary;
 }
 
 type SwapPhase = "idle" | "building" | "signing" | "sending" | "confirming";
@@ -233,6 +253,22 @@ const Home: NextPage = () => {
           priceImpactPct: jupiterQuote.priceImpactPct,
           jupiter: jupiterQuote,
         };
+      } else if (aggregator === "kyberswap") {
+        const { routeSummary } = await getKyberRoute({
+          amount: sellRaw,
+          feeBps: feeBps || undefined,
+          feeReceiver: activeFeeRecipient,
+        });
+        const out = BigInt(routeSummary.amountOut);
+        nextQuote = {
+          outAmount: routeSummary.amountOut,
+          minOut: ((out * BigInt(10000 - SLIPPAGE_BPS)) / 10000n).toString(),
+          // amountOut is net of the fee (charged on currency_out).
+          feeAmount: feeBps
+            ? ((out * BigInt(feeBps)) / BigInt(10000 - feeBps)).toString()
+            : undefined,
+          kyberRouteSummary: routeSummary,
+        };
       } else {
         const { dstAmount } = await getOneInchQuote({
           amount: sellRaw,
@@ -262,7 +298,7 @@ const Home: NextPage = () => {
     } finally {
       if (seq === quoteSeq.current) setIsQuoting(false);
     }
-  }, [sellRaw, isJupiter, feeBps, activeFeeRecipient]);
+  }, [sellRaw, isJupiter, aggregator, feeBps, activeFeeRecipient]);
 
   // Debounced fetch on input change + periodic refresh to keep quotes fresh.
   useEffect(() => {
@@ -476,11 +512,40 @@ const Home: NextPage = () => {
     evmProvider,
   ]);
 
+  const swapWithKyberSwap = useCallback(async () => {
+    if (!client || !session || !evmAddress || !quote?.kyberRouteSummary) return;
+    setPhase("building");
+    const build = await buildKyberSwap({
+      routeSummary: quote.kyberRouteSummary,
+      sender: evmAddress,
+      slippageBps: SLIPPAGE_BPS,
+    });
+
+    setPhase("signing");
+    const hash = await client.request<string>({
+      topic: session.topic,
+      chainId: ARBITRUM_CAIP,
+      request: {
+        method: "eth_sendTransaction",
+        params: [kyberToWalletConnectTx(evmAddress, build)],
+      },
+    });
+
+    setPhase("confirming");
+    const receipt = await evmProvider.waitForTransaction(hash, 1, 120_000);
+    if (!receipt || receipt.status !== 1) {
+      throw new Error("Transaction failed or timed out");
+    }
+    setLastTxId(hash);
+  }, [client, session, evmAddress, quote, evmProvider]);
+
   const onSwap = useCallback(async () => {
     try {
       setLastTxId(undefined);
       if (isJupiter) {
         await swapWithJupiter();
+      } else if (aggregator === "kyberswap") {
+        await swapWithKyberSwap();
       } else {
         await swapWithOneInch();
       }
@@ -495,7 +560,9 @@ const Home: NextPage = () => {
     }
   }, [
     isJupiter,
+    aggregator,
     swapWithJupiter,
+    swapWithKyberSwap,
     swapWithOneInch,
     refreshFeeBalance,
     refreshQuote,

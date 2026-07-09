@@ -11,7 +11,12 @@ a block explorer.
   - **Jupiter** (Solana mainnet, SOL → USDC) — docs:
     [docs/session-fees/jupiter.md](./docs/session-fees/jupiter.md)
   - **1inch Classic Swap** (Arbitrum One, ETH → USDC) — docs:
-    [docs/session-fees/1inch.md](./docs/session-fees/1inch.md)
+    [docs/session-fees/1inch.md](./docs/session-fees/1inch.md).
+    ⚠️ Fee collection is gated behind a 1inch commercial agreement — free keys
+    silently ignore the fee params (integration ready, no fee collected).
+  - **KyberSwap** (Arbitrum One, ETH → USDC) — docs:
+    [docs/session-fees/kyberswap.md](./docs/session-fees/kyberswap.md).
+    Fully permissionless: no key, no proxy, no cut — the working EVM fee path.
   - Candidate comparison: [SESSION-FEES-AGGREGATORS.md](./SESSION-FEES-AGGREGATORS.md)
 - **Fee terms carrier:** `sessionProperties.wc_feeTerms` (JSON-encoded string):
   `{"version":1,"feeRecipient":"<Solana address>","feeRecipientEip155":"<EVM address>","feeBps":50}`.
@@ -24,7 +29,7 @@ a block explorer.
 | App | Path | Port | Change |
 |---|---|---|---|
 | Demo wallet | `advanced/wallets/react-wallet-v2` | 3001 | Attaches `wc_feeTerms` to `sessionProperties` at session approval (`src/views/SessionProposalModal.tsx`). Signs requests exactly as before. |
-| Fee-demo dapp | `advanced/dapps/react-dapp-v2` | 3000 | Landing page replaced with a single Jupiter-style swap screen with an aggregator dropdown (`src/pages/index.tsx`). Per-aggregator logic is isolated: `src/helpers/jupiter.ts` (Jupiter/Solana), `src/helpers/oneinch.ts` (1inch/Arbitrum, proxied via `src/pages/api/oneinch/[...path].ts`), shared terms parsing in `src/helpers/feeTerms.ts`. |
+| Fee-demo dapp | `advanced/dapps/react-dapp-v2` | 3000 | Landing page replaced with a single Jupiter-style swap screen with an aggregator dropdown (`src/pages/index.tsx`). Per-aggregator logic is isolated: `src/helpers/jupiter.ts` (Jupiter/Solana), `src/helpers/oneinch.ts` (1inch/Arbitrum, proxied via `src/pages/api/oneinch/[...path].ts`), `src/helpers/kyberswap.ts` (KyberSwap/Arbitrum, direct — no key), shared terms parsing in `src/helpers/feeTerms.ts`. |
 
 ### Alternative wallet: Kotlin sample wallet
 
@@ -98,8 +103,8 @@ detects this.
    approve. Point at the wallet's approval log / the dapp's "Session fee terms"
    card: the terms (`Fee 0.50% — 80% wallet / 20% WCN`, recipient address)
    came from the wallet via `sessionProperties.wc_feeTerms`.
-3. **Swap** — pick the aggregator in the dropdown (Jupiter · Solana or
-   1inch · Arbitrum) and enter a small amount (e.g. 0.02 SOL / 0.001 ETH). The
+3. **Swap** — pick the aggregator in the dropdown (Jupiter · Solana,
+   1inch · Arbitrum, or KyberSwap · Arbitrum) and enter a small amount (e.g. 0.02 SOL / 0.001 ETH). The
    quote shows the payout, the fee amount, and min received. Click Swap,
    approve the single signature prompt in the wallet.
 4. **Watch the fee arrive** — on confirmation the dapp shows the tx hash with a
