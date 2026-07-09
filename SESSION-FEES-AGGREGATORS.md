@@ -21,7 +21,7 @@ Evaluation criteria, in order:
 | **KyberSwap** | ✅ **No key, no registration** (live-verified) | `feeAmount` + `feeReceiver` + `chargeFeeBy` + `isInBps` | none documented | **0%** (keeps positive slippage) | EOA, in-tx | ✅ `route/build` calldata | 18 EVM (Base, Arb) |
 | **ParaSwap / Velora** | ✅ No signup (`partner` = any string) | `partnerAddress` + `partnerFeeBps` + `isDirectFeeTransfer: true` | 200 bps | 15% | EOA in-tx with direct flag (default: FeeClaimer contract, claim-based) | ✅ | 9 EVM (Base, Arb) |
 | **OpenOcean** | ✅ No key | `referrer` + `referrerFee` (input token) | 5% | ~20% | EOA, in-tx | ✅ | 40+ EVM + Solana |
-| **1inch** (Classic Swap) | 🟡 Free self-serve key | `fee` + `referrer` | 3% | 0% of your fee, **but 10–30 bps "infrastructure fee"** skimmed from output on free tier | EOA, in-tx | ✅ `tx` object | 14 incl. Base/Arb + Solana |
+| **1inch** (Classic Swap) | ❌ **Fee collection requires a commercial agreement** (empirically verified: free Dev keys validate `fee`+`referrer` but silently ignore them — quotes identical, no referrer payout in calldata). Free-key ToS explicitly forbids receiving compensation; monetization needs a paid plan + 1inch approval under the Commercial API ToU (info@1inch.dev) | `fee` + `referrer` | 3% | 0% of your fee + 10–30 bps "infrastructure fee" (2–5 bps on Business tier) | EOA, in-tx (once enabled) | ✅ `tx` object | 14 incl. Base/Arb + Solana |
 | **Uniswap Trading API** | 🟡 Self-serve key; unverified "Fee is not enabled" 401 in spec | `integratorFees: [{bips, recipient}]` | 500 bps | 0% documented | EOA, in-tx (Universal Router `PAY_PORTION`, output token) | ✅ | EVM |
 | **Odos** | 🟡 Free key (v3) or one-time on-chain code registration (v2) | `referralFee` + `referralFeeRecipient` (v3) | 2% (v2 on-chain) | 20% | EOA, in-tx (80% forwarded immediately) | ✅ quote→assemble | 14 EVM + Solana (keyed) |
 | **OKX DEX API** | 🟡 Dev account + HMAC request signing | `feePercent` + `from/toTokenReferrerWalletAddress` | 3% (10% Solana) | 20% at paid tier | EOA, in-tx (Solana referrer needs SOL pre-funded) | ✅ EVM calldata + Solana | EVM + Solana |
@@ -54,14 +54,18 @@ Ordering by *where wallet swap volume actually flows* (e.g. Trust Wallet routes
 through 1inch and the Uniswap Trading API at very high volume) rather than by
 integration friction:
 
-1. **1inch** — biggest wallet-integration footprint (e.g. largest TNV for Trust
-   Wallet); self-serve key, in-tx EOA payout, EVM + Solana. Watch: 10–30 bps
-   1inch infrastructure fee on the free tier distorts small-swap demos.
+1. ~~**1inch**~~ — biggest wallet-integration footprint, and the integration is
+   **built and ready** in the fee-demo dapp, but fee collection turned out to
+   be **commercial-agreement-gated** (verified empirically + in the ToS):
+   free Dev keys silently ignore `fee`/`referrer`. The code works unchanged
+   the moment a commercial key is provisioned; until then no fee is collected.
 2. **Uniswap Trading API** — very high wallet TNV (~$187M via Trust); needs one
-   smoke test with a real key to clear the "Fee is not enabled" 401 question.
+   smoke test with a real key to clear the "Fee is not enabled" 401 question
+   (high risk it is gated exactly like 1inch).
 3. **KyberSwap** — the zero-friction, zero-cut EVM option (no key, no cap,
-   live-verified); cheapest way to prove multi-aggregator generality.
-4. **0x** — original EVM pick, fully validated docs; still a fine choice.
+   live-verified); the pragmatic choice for a *working* EVM fee demo.
+4. **0x** — original EVM pick, fully validated docs (fees documented on the
+   free tier); solid alternative to Kyber.
 
 Everything else is either redundant with the above (Odos/OpenOcean/OKX/Velora —
 same pattern, worse splits or more friction) or reachable later via the same
@@ -80,5 +84,9 @@ worth re-verifying at integration time:
   (OpenAPI 401 "Fee is not enabled" wording suggests a legacy gate).
 - **Raydium**: `referrerBps` vs fixed-1% docs conflict; "referrer authority"
   undefined — one live call settles it.
-- **1inch**: confirm in-tx referrer payout with one live swap; infrastructure
-  fee tier applies per plan.
+- **1inch**: RESOLVED (2026-07-09, live mainnet swap + API probes): free Dev
+  keys validate but ignore `fee`/`referrer` — no payout in calldata, quotes
+  identical with/without fee. Public API ToS forbids monetization on free
+  keys; Commercial API ToU §6.11 grants the "User's Fee" right after a paid
+  plan + 1inch approval. No self-serve enablement exists; the keyless v5 API
+  is dead (301 to the business portal).

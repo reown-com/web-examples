@@ -22,6 +22,27 @@ dapp polls the tx receipt on its own RPC
 fee is paid to the recipient EOA inside the same swap transaction
 ```
 
+## ⚠️ Fee collection is gated — commercial agreement required
+
+**Empirical finding (2026-07-09, live mainnet swap + API probes):** free
+Dev-tier keys **validate** `fee` + `referrer` (`fee > 3` is rejected) but
+**silently do not apply them** — `dstAmount` is identical with and without
+`fee`, and the `/swap` calldata contains no referrer payout (confirmed
+on-chain: the swap tx carried no fee transfer).
+
+This matches 1inch's legal structure: the free-key
+[Public API ToS](https://business.1inch.com/portal/assets/legal-docs/terms_of_service_public_api_20250508.pdf)
+restricts usage to non-commercial purposes ("cannot be used … to receive any
+monetary or other compensation"), while the
+[Commercial API ToU](https://business.1inch.com/portal/assets/legal-docs/terms_of-service_commercial_api_20251107.pdf)
+§6.11 explicitly grants the "User's Fee" right. There is **no self-serve
+toggle**: enabling fees requires a paid plan (Startup $149+/mo and up) plus
+1inch approval under the Commercial ToU — contact info@1inch.dev / csm@1inch.com.
+
+The integration below is correct and complete; it collects fees the moment a
+fee-enabled key is configured, with zero code changes. Until then, swaps
+execute normally with **no fee collected**.
+
 ## Fee mechanics
 
 - **Params:** `fee` (a **percent**, 0–3, e.g. `0.5` = 50 bps) + `referrer`
