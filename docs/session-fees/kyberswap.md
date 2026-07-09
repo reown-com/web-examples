@@ -71,10 +71,12 @@ fee is paid to the recipient EOA inside the same swap transaction
 
 ## Gotchas
 
-- **Don't cache routes**: `routeSummary` goes stale in ~5–10 s. The dapp
-  re-quotes every 30 s and (unlike 1inch) the *swap* is built from the
-  displayed quote, so a very stale screen could build from an old route —
-  acceptable for the POC, mitigated by the periodic refresh.
+- **Don't cache routes**: `routeSummary` pins exact pool states and goes
+  stale in ~5–10 s. Building the swap from the displayed (up to 30 s old)
+  quote reverted on-chain with `Return amount is not enough`, so the dapp
+  **fetches a fresh route at Swap click** and only uses the displayed quote
+  for the UI. Kyber also gets a wider slippage tolerance (100 bps vs 50 for
+  the others) because tiny demo swaps route through volatile micro-pools.
 - The fee params live on `/routes`, not `/route/build` — forgetting them on
   the quote means no fee in the built calldata.
 - `route/build` responses use Kyber's `{code, message, data}` envelope;
