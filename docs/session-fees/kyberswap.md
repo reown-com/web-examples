@@ -8,8 +8,10 @@ branch of `src/pages/index.tsx`.
 KyberSwap is the **most permissionless EVM option we found**: no API key, no
 registration, no fee cap documented, **no cut taken from the integrator fee**,
 and browser CORS is open — so unlike 1inch there is no server-side proxy and
-nothing to configure. (Verified live 2026-07-09: the fee receiver address is
-present in the built calldata, and quotes drop by exactly the fee bps.)
+nothing to configure. (Verified end-to-end on Arbitrum mainnet 2026-07-09: tx
+[`0xa4eb0d1c…88fbd`](https://arbiscan.io/tx/0xa4eb0d1c5da3ea6aeb43d7749aa07fc2ab65d5531346e257b347bf5ada588fbd)
+paid exactly 50 bps of gross output to the fee recipient inside the swap, with
+no Kyber cut — gross − fee = user amount to the digit.)
 
 ## Flow
 
