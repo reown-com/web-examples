@@ -6,16 +6,19 @@ Trading API integrator fee. Code:
 `src/pages/api/uniswap/[...path].ts`, and the Uniswap branch of
 `src/pages/index.tsx`.
 
-## ⚠️ Fee-gating status: unverified
+## ✅ Fee-gating: verified NOT gated (2026-07-10)
 
-The Trading API's OpenAPI spec contains a 401 error described as
-*"Account is blocked or Fee is not enabled"* — the same wording pattern behind
-1inch's silent gating. Whether a fresh self-serve key from
-https://developers.uniswap.org/dashboard is fee-enabled is **unknown until
-tested**: the quote response echoes `portionBips` / `portionAmount` /
-`portionRecipient` when the fee is actually applied, so the first keyed quote
-is the smoke test. If gated, the integration still works end to end — swaps
-execute, no fee is collected — exactly like the 1inch leg.
+Tested with a fresh self-serve key from https://developers.uniswap.org/dashboard:
+`integratorFees` **is applied** — the quote's `aggregatedOutputs` reports the
+split (`bps: 9950, fee: false` to the swapper; `bps: 50, fee: true` to our
+recipient — exactly the requested 50 bps of gross), and the `/swap` calldata
+contains the fee recipient. The spec's 401 *"Fee is not enabled"* wording
+evidently refers to the legacy per-key partner-fee service, not the
+per-request `integratorFees`. **Opposite outcome to 1inch.**
+
+Note: the docs' legacy `portionBips`/`portionAmount`/`portionRecipient` echo
+fields are NOT populated on these quotes — read the split from
+`aggregatedOutputs` instead (the dapp does).
 
 ## Flow
 
@@ -44,9 +47,10 @@ fee is paid to the recipient EOA inside the swap tx (PAY_PORTION, output token)
 - The fee is always taken from the **output token** and disbursed inside the
   swap transaction via the Universal Router's `PAY_PORTION` pattern —
   Arbiscan-visible per swap, nothing to claim.
-- **Quote math:** for `EXACT_INPUT` the quoted `output.amount` does **not**
-  subtract the fee; the fee is reported separately in `portionAmount`. The
-  dapp displays `output.amount − portionAmount` as "you receive".
+- **Quote math:** `output.amount` is gross; the actual split is in
+  `aggregatedOutputs` — the dapp displays the `fee: false` entry's `amount`
+  as "you receive" (and its `minAmount` as min received), and the
+  `fee: true` entry's `amount` as the fee.
 - **Uniswap's cut:** none documented on the integrator fee.
 
 ## API access — key + proxy required
@@ -79,6 +83,6 @@ fee is paid to the recipient EOA inside the swap tx (PAY_PORTION, output token)
 - Quotes go stale; the dapp re-quotes every 30 s and swaps from the displayed
   quote (Uniswap classic quotes tolerate this better than Kyber's
   pool-pinned routes; slippage tolerance covers the drift).
-- If the fee is silently not applied (gating), `portionBips` will be missing
-  from the quote response — the dapp's fee display shows "—" in that case
-  rather than a fabricated number, since `portionAmount` is the source.
+- The `fee: true` entry disappearing from `aggregatedOutputs` would mean the
+  fee stopped being applied — the dapp's fee display reads from it directly,
+  so it would show "—" rather than a fabricated number.

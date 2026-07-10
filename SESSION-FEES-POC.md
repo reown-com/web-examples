@@ -19,8 +19,8 @@ a block explorer.
     Fully permissionless: no key, no proxy, no cut — the working EVM fee path.
   - **Uniswap Trading API** (Arbitrum One, ETH → USDC) — docs:
     [docs/session-fees/uniswap.md](./docs/session-fees/uniswap.md).
-    Self-serve key required; fee-gating status unverified (spec hints at a
-    per-key "Fee is not enabled" gate — first keyed quote is the smoke test).
+    Self-serve key required; fee **verified applied** on a fresh key
+    (aggregatedOutputs split + recipient in calldata) — not gated.
   - Candidate comparison: [SESSION-FEES-AGGREGATORS.md](./SESSION-FEES-AGGREGATORS.md)
 - **Fee terms carrier:** `sessionProperties.wc_feeTerms` (JSON-encoded string):
   `{"version":1,"feeRecipient":"<Solana address>","feeRecipientEip155":"<EVM address>","feeBps":50}`.

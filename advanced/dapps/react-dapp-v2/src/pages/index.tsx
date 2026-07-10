@@ -306,15 +306,19 @@ const Home: NextPage = () => {
           feeRecipient: activeFeeRecipient,
           slippagePercent: SLIPPAGE_BPS / 100,
         });
+        // The output split (user amount + integrator fee) is reported in
+        // aggregatedOutputs; the `fee: true` entry is the integrator fee.
+        const outputs = response.quote.aggregatedOutputs ?? [];
+        const userOutput = outputs.find((output) => !output.fee);
+        const feeOutput = outputs.find((output) => output.fee);
         const gross = BigInt(response.quote.output?.amount ?? "0");
-        // For EXACT_INPUT the quoted output does not subtract the fee; the
-        // fee is reported separately as portionAmount.
-        const fee = BigInt(response.quote.portionAmount ?? "0");
-        const net = gross - fee;
+        const net = userOutput ? BigInt(userOutput.amount) : gross;
         nextQuote = {
           outAmount: net.toString(),
-          minOut: ((net * BigInt(10000 - SLIPPAGE_BPS)) / 10000n).toString(),
-          feeAmount: response.quote.portionAmount ?? undefined,
+          minOut:
+            userOutput?.minAmount ??
+            ((net * BigInt(10000 - SLIPPAGE_BPS)) / 10000n).toString(),
+          feeAmount: feeOutput?.amount,
           priceImpactPct:
             response.quote.priceImpact !== undefined
               ? String(response.quote.priceImpact)

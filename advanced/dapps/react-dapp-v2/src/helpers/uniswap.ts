@@ -5,10 +5,9 @@
  * Requires a self-serve API key; requests go through the dapp's /api/uniswap
  * proxy so the key stays server-side (UNISWAP_API_KEY).
  *
- * ⚠️ Fee-gating status unknown: the OpenAPI spec contains a 401
- * "Fee is not enabled" error, so integratorFees may be gated per key the way
- * 1inch is — the first keyed quote verifies it (the response echoes
- * portionBips/portionAmount/portionRecipient when the fee is applied).
+ * Fee-gating: verified NOT gated (2026-07-10) — a fresh self-serve key
+ * applies `integratorFees`; the split is reported in the quote's
+ * `aggregatedOutputs` (the `fee: true` entry is the integrator fee).
  */
 
 export const UNISWAP_ARBITRUM_CAIP = "eip155:42161";
@@ -24,11 +23,19 @@ export const UNISWAP_MAX_FEE_BPS = 500;
 
 const PROXY_BASE = "/api/uniswap";
 
+export interface UniswapAggregatedOutput {
+  amount: string;
+  token: string;
+  recipient: string;
+  bps: number;
+  fee: boolean;
+  minAmount?: string;
+}
+
 export interface UniswapQuote {
   output?: { amount?: string };
-  portionBips?: number;
-  portionAmount?: string;
-  portionRecipient?: string;
+  /** Output split incl. the integrator fee (`fee: true` entry). */
+  aggregatedOutputs?: UniswapAggregatedOutput[];
   priceImpact?: number;
   [key: string]: unknown;
 }
