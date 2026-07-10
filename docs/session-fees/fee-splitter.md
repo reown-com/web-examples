@@ -31,9 +31,9 @@ handles fee-on-transfer tokens and dust aggregation.)
 
 **Enforcement bonus.** Today the split is unenforceable — a wallet could
 declare its own EOA and keep 100%. With a canonical, deterministically
-deployed splitter, the **dapp can derive the correct splitter address itself**
-from the wallet's beneficiary EOA (CREATE2), so fees can only ever land where
-the 20/80 is enforced by code. The splitter turns the split from a promise
+deployed splitter and recipients served by the WCN registry (§4), fees can
+only ever land where the 20/80 is enforced by code — the wallet never
+transmits a recipient at all. The splitter turns the split from a promise
 into a property.
 
 ## 2. Recommended architecture
@@ -81,8 +81,10 @@ Factory:
   via CREATE2 + EIP-1167 clone; idempotent (reverts or returns existing if
   already deployed).
 - **F10** `computeAddress(walletBeneficiary, wcnBeneficiary, splitBps) →
-  address` pure/view — the function dapps/SDKs use for derivation and
-  verification.
+  address` pure/view — used by the WCN dashboard/registry backend to compute
+  counterfactual addresses at registration time, and by anyone auditing that
+  a served recipient really is the canonical splitter. (Dapps do NOT call
+  this — they receive ready addresses from the registry.)
 - **F11** `event SplitterDeployed(splitter, walletBeneficiary, wcnBeneficiary, splitBps)`.
 - **F12** The WCN beneficiary and default split ratio are published constants
   per chain (documented, and/or exposed by the factory) so all parties derive
@@ -110,100 +112,186 @@ Explicit v1 non-goals (keep it boring):
 - More than two payees, dynamic ratios, streaming, swaps of dust into a
   canonical token.
 
-## 4. `wc_feeTerms` v2 — carrying per-chain recipients
+## 4. Primary solution: WCN Session-Fees Registry (Option C)
 
-Values in `sessionProperties` are strings, so the JSON stays compact. Two
-viable schemas; **Option B is recommended**.
+**Decision:** the dapp must NOT run any address derivation. It receives a
+ready-to-use `recipient` (the splitter address) + `feeBps` per chain from a
+**WCN-hosted registry**, resolved via the wallet's identity. The dashboard is
+the write path; a public read API (same pattern as the existing explorer /
+`api.web3modal.com` APIs that AppKit already consumes) is the read path.
 
-### ❌ Option A — declared recipients map (REJECTED)
+### End-to-end flow
 
-Wallet declares ready-to-use recipient addresses. Rejected: trust-based — a
-wallet could declare its own EOA and keep 100%. Kept only as the documented
-*fallback shape* for chains where the splitter factory is not yet deployed.
+```
+        (once, onboarding)
+┌─────────────┐ 1. enable Session Fees:        ┌────────────────────┐
+│ Wallet team │    payout EOAs (EVM, Solana),  │  Reown Dashboard   │
+│  (human)    ├───────────────────────────────▶│  (write path)      │
+└─────────────┘    feeBps per chain            └─────────┬──────────┘
+                                                         │ 2. validate caps,
+                                                         │    compute splitter
+                                                         │    (CREATE2, no gas),
+                                                         │    store terms
+                                                         ▼
+                                               ┌────────────────────┐
+                                               │ Session-Fees       │
+                                               │ Registry API       │
+                                               │ (public read path) │
+                                               └─────────▲──────────┘
+        (every session)                                  │ 4. GET terms(walletId)
+┌─────────────┐ 3. approveSession with            ┌──────┴──────┐
+│ Wallet app  │    wc_feeTerms:{v:3, walletId} ──▶│ Dapp/AppKit │
+└──────┬──────┘                                   └──────┬──────┘
+       │ 6. user signs once                              │ 5. aggregator quote/
+       │◀────────────────────────────────────────────────┤    build with feeBps
+       ▼                                                 ▼    + splitter address
+   chain: swap executes; fee lands on the splitter in the same tx
+                             │
+                             ▼ 7. keeper: release(token)
+                  80% → wallet EOA      20% → WCN EOA
+```
 
-### Option B (recommended) — declare beneficiaries, derive the splitter
+Notes on the flow:
+- Step 2 uses CREATE2 counterfactual computation — the registry can serve the
+  splitter address **immediately at registration, zero gas**; the contract is
+  deployed lazily before the first release (§2).
+- Step 3: `wc_feeTerms` shrinks to an identity pointer — the wallet app ships
+  no terms, so **terms/rotation changes never require a wallet release**.
+- Step 4 is cached (see S-requirements); one fetch per session, not per quote.
+
+### `wc_feeTerms` v3 — identity pointer only
+
+```json
+{ "version": 3, "walletId": "<wallet's Reown project id>" }
+```
+
+### How does the dapp know WHICH wallet to fetch terms for?
+
+| Option | Mechanism | Assessment |
+|---|---|---|
+| **1. `walletId` in `wc_feeTerms`** (recommended) | Wallet puts its Reown project ID in sessionProperties at approval | Explicit opt-in, versioned, zero guessing. Requires one small wallet-side change (the last one ever needed) |
+| 2. Match `session.peer.metadata` | Dapp matches the session's peer name/url/redirect against the WalletConnect explorer listing | No wallet change needed, but brittle (metadata drift) and spoofable; usable as fallback for wallets that haven't shipped v3 |
+| 3. Signed attestation (future) | Wallet signs its walletId with a key registered in the dashboard; registry serves the pubkey | Strong identity; hardening step once the program matters financially |
+
+**Spoofing analysis for option 1:** the registry only serves entries for
+registered, WCN-approved wallets, and every served recipient is a
+WCN-computed splitter (or WCN-controlled Solana fee account). A wallet lying
+about `walletId` can only redirect fees *to another registered wallet's
+splitter* — it can never route them to its own unregistered EOA, and 20%
+reaches WCN in every case. There is no profitable spoof; option 3 exists for
+when even misattribution matters.
+
+### Registry data model — feeBps and recipient per chain
+
+Namespace-level defaults with optional per-chain overrides (CAIP-2 keys).
+An override may adjust only `feeBps`; `recipient` inherits from the
+namespace default (EVM splitter address is chain-invariant thanks to CREATE2).
+
+`GET /v1/session-fees/terms?walletId=<id>&projectId=<dapp project id>` →
 
 ```json
 {
-  "version": 2,
-  "feeBps": 50,
-  "beneficiaries": {
-    "eip155": "0xWalletPayoutEOA",
-    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "WalletPayoutSolanaAddress"
+  "walletId": "abc123",
+  "version": 3,
+  "updatedAt": "2026-07-10T09:00:00Z",
+  "terms": {
+    "eip155": { "recipient": "0xSplitterSameOnAllEvmChains", "feeBps": 50 },
+    "eip155:1": { "feeBps": 30 },
+    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": {
+      "recipientOwner": "WcnFeeOwnerAddress",
+      "feeBps": 85
+    }
   }
 }
 ```
 
-- The wallet declares only **its own payout EOA per namespace/chain**. The
-  dapp (via a small SDK helper) derives the fee recipient:
-  `recipient = factory.computeAddress(walletEOA, WCN_EOA, 8000)` — with the
-  factory address, WCN beneficiary, and ratio as **published per-chain
-  constants**.
-- Pros: **enforcement by construction** — the dapp always routes fees to a
-  code-enforced splitter; a wallet cannot substitute a keep-everything
-  address. Smallest possible payload; rotation is just changing the EOA.
-- Cons: requires the canonical factory deployed per chain + an SDK constant
-  set; chains without a factory need a documented fallback (see rollout).
-- Hybrid rollout: v2 dapps derive on chains where the factory exists and fall
-  back to explicit `recipients` entries elsewhere (Solana first phase).
+- **EVM:** `recipient` is the splitter address, used verbatim as the
+  aggregator fee recipient. One entry covers all EVM chains; per-chain
+  overrides tune `feeBps` (mainnet gas economics ≠ L2 ≠ Solana).
+- **Solana:** aggregators want a *token account* per mint, so the registry
+  serves the WCN fee-owner address (`recipientOwner`, a PDA or multisig);
+  the dapp derives its ATA for the fee mint with standard SPL tooling —
+  the exact `getAssociatedTokenAddress` call the POC already makes. This is
+  routine Solana practice, not custom derivation logic.
+- feeBps caps are enforced at **write time** in the dashboard (see D3), so
+  every served value is already policy-compliant; dapps still clamp to each
+  aggregator's protocol cap like the POC does today.
 
-### Trust model — who can cheat, and what stops them
+### Component requirements
 
-- **Wallet-side bypass (solved by derivation):** the wallet never transmits a
-  recipient, only its payout EOA — one *input* to the address formula. The
-  dapp computes the recipient; there is nothing for the wallet to lie about.
-  Note the enforcement comes from *derivation*, not the transport: moving the
-  address into a dedicated protocol method (e.g. `wallet_getFeeTerms`) does
-  not help by itself, since anything the wallet transmits can be false and
-  anything the dapp computes cannot.
-- **Dapp-side bypass (not solvable on-chain):** the dapp builds the
-  aggregator call and could apply no fee, or its own recipient. No contract
-  prevents this — it is handled economically (session fees as a distribution
-  agreement) and by monitoring; keep this in mind to avoid over-engineering
-  the wallet side.
-- **Evolution — Option C, WCN registry:** wallets register their payout EOA
-  once with WalletConnect (keyed by wallet project ID); sessions carry only
-  `feeBps`/participation, and the dapp SDK resolves beneficiaries from the
-  registry. Adds verified identity (terms tied to a known wallet project, not
-  to session-claimed data), centralizes rotation and fee policy. Cost: a
-  lookup dependency + WCN infra. Recommended as the follow-up to B, not a
-  prerequisite.
+Dashboard (write path):
+- **D1** "Session Fees" section on the wallet's project: opt-in, payout EOA
+  per namespace (EVM address, Solana address), optional per-chain feeBps
+  overrides, terms-of-service acceptance.
+- **D2** On save: validate addresses, compute the CREATE2 splitter address
+  per supported EVM chain, create/assign the Solana fee owner, persist.
+- **D3** Enforce WCN fee policy at write time: global default (e.g. 50 bps),
+  per-namespace caps (e.g. EVM ≤ 100 bps, Solana ≤ 255 bps — the strictest
+  relevant aggregator cap), floor > 0.
+- **D4** Change history / audit log; payout-address changes may require
+  re-verification (email/2FA) since they redirect revenue.
 
-### Setting the fee % — per wallet, per chain, per dapp
+Registry API (read path):
+- **R1** Public, unauthenticated-read (dapp `projectId` for analytics/rate
+  limiting, mirroring existing AppKit APIs), aggressive CDN caching with
+  short TTL (e.g. 5 min) + `ETag`.
+- **R2** Serves ONLY registered wallets; recipients are exclusively
+  WCN-computed splitters / WCN-controlled fee owners — by construction no
+  response can name a bare wallet EOA.
+- **R3** Versioned response schema; unknown wallets → 404 (dapp proceeds
+  feeless).
+- **R4** Batch endpoint (`walletIds=[...]`) for dapps that pre-fetch.
 
-`feeBps` is a separate axis from the recipient. Options, composable:
+AppKit / dapp SDK:
+- **S1** Post-connect: read `wc_feeTerms.walletId` from sessionProperties
+  (fallback: peer.metadata match), fetch terms, cache for session lifetime,
+  expose e.g. `session.feeTerms` / `getSessionFeeTerms()`.
+- **S2** Per swap: select the entry by CAIP-2 chain (chain override →
+  namespace default), pass `recipient`+`feeBps` into the aggregator call,
+  clamping to the aggregator's cap.
+- **S3** Degrade gracefully: registry unreachable / wallet unknown / chain
+  missing → proceed WITHOUT a fee (never block the swap).
+- **S4** No address computation of any kind on the dapp side (per decision);
+  the only local step is the standard Solana ATA derivation for the fee mint.
 
-1. **Wallet-declared, WCN-capped (v2 recommended):** `feeBps` in
-   `wc_feeTerms` as today, clamped by a WCN-published max and by each
-   aggregator's own cap.
-2. **Per-namespace/chain overrides:** `"feeBps": {"default": 50,
-   "solana": 85, "eip155:1": 30}` — economics differ per chain (mainnet gas
-   makes small fees pointless; Solana tolerates higher bps).
-3. **Per-dapp:** dapp-side policy — the wallet's declared bps acts as a
-   *maximum*, the dapp applies `min(walletMax, dappPolicy)`. Leaves room to
-   later negotiate a dapp share of the fee.
-4. **Registry policy (with Option C):** fee schedule per wallet (or
-   wallet×dapp) lives in the WCN registry; sessions carry only identity.
+Wallet app:
+- **W1** Single change, ever: attach `wc_feeTerms: {"version":3,
+  "walletId":"<project id>"}` at session approval. All economics live in the
+  dashboard thereafter.
 
-v2 recommendation: wallet-declared default + optional per-namespace
-overrides, clamped by WCN max and dapp policy.
+Keeper:
+- **K1** WCN-operated service (either party may also call `release`
+  permissionlessly): monitors splitter balances, batches `release`/
+  `distribute` when a token balance crosses a per-chain threshold; deploys
+  the splitter lazily on first release.
 
-### How wallets define EOAs per chain — the possibilities
+### Alternatives (considered, not primary)
 
-1. **One EVM address for everything** (namespace-level `eip155` entry) — the
-   norm; the same key controls the address on all EVM chains, and CREATE2
-   gives one splitter address everywhere. Recommended default.
-2. **Per-chain overrides** (full CAIP-2 keys) — for wallets with separated
-   treasury ops per chain, or chains where the canonical factory isn't
-   deployed.
-3. **Per-namespace non-EVM entries** — Solana/other namespaces have different
-   address formats and splitter mechanics; always separate entries.
-4. **On-chain registry** (future) — wallets register payout addresses once in
-   a WCN registry keyed by a wallet identifier; dapps look them up instead of
-   reading them from the session. Adds rotation without session changes, at
-   the cost of infra + a lookup. Not needed for v2.
-5. **Name resolution** (ENS et al.) — possible but adds a resolution
-   dependency to every quote; not recommended.
+- **Option B — dapp-side CREATE2 derivation from a wallet-declared EOA:**
+  same enforcement, no registry dependency; rejected as primary because it
+  adds derivation logic + published-constants management to every dapp/SDK,
+  and offers no identity, no rotation-without-session-change, no fee policy
+  control. Documented in git history; viable fallback if the registry is
+  ever unavailable as a product decision.
+- **Option A — wallet-declared recipient addresses:** rejected, trust-based
+  (wallet could declare a keep-everything address).
+- **Protocol method (`wallet_getFeeTerms`):** transport variation only; adds
+  a round-trip and wallet-release coupling without changing the trust model.
+  The registry supersedes it.
+
+### Trust model (registry-based)
+
+- **Wallet-side bypass: blocked at the source.** Recipients never originate
+  from the wallet; they are computed and served by WCN. The wallet only
+  identifies itself.
+- **Dapp-side bypass: not solvable on-chain.** The dapp builds the aggregator
+  call and could omit the fee; handled economically and by monitoring (the
+  registry's write-side data enables exactly that monitoring: WCN knows every
+  splitter address and can index expected vs. observed fee flows).
+- **WCN becomes a trusted operator** of the registry and the fee-owner
+  accounts on Solana — acceptable: WCN is already the party defining the
+  program, and the on-chain splitter still guarantees the wallet its 80%
+  regardless of registry behavior after deployment.
 
 ## 5. Solana
 
@@ -211,10 +299,10 @@ The EVM splitter doesn't translate directly — Jupiter's `feeAccount` must be
 a **token account** of the input/output mint. The equivalent design:
 
 - A small program (`wcn_fee_splitter`) owning **PDA-derived token accounts**
-  per (walletBeneficiary, mint): PDA seeds = `["wcn_fee", wallet_pubkey]`,
-  fee accounts are the PDA's ATAs. The dapp derives the fee ATA exactly like
-  the POC derives ATAs today — deterministic, counterfactual-ish (ATA must be
-  initialized once, same constraint the POC already documents).
+  per (walletBeneficiary, mint). The registry serves the PDA owner
+  (`recipientOwner`); the dapp derives its ATA for the fee mint with standard
+  SPL tooling — the same `getAssociatedTokenAddress` call the POC already
+  makes (ATA must be initialized once, same constraint the POC documents).
 - Permissionless `distribute(mint)` instruction transfers the PDA ATA balance
   80/20 to the wallet's and WCN's ATAs.
 - Alternative for phase 1: keep Solana split off-chain (recipient = WCN- or
@@ -232,7 +320,8 @@ a **token account** of the input/output mint. The equivalent design:
 3. Which party is the canonical WCN beneficiary per chain (one global EOA vs
    per-chain treasury), and where those constants are published (SDK? docs?
    on-chain registry?).
-4. Does WCN want `wc_feeTerms` v2 to be a signed statement (wallet attests
-   terms) — orthogonal to the splitter but natural to bundle into the same
-   version bump.
-5. Solana phase 1 approach (multisig vs program from day one).
+4. Wallet identity hardening: when to add the signed-attestation variant
+   (option 3 in §4) on top of the plain `walletId` pointer.
+5. Registry ↔ dashboard productization: which team owns the API, SLA, and
+   whether terms fetches should flow through the existing AppKit API gateway.
+6. Solana phase 1 approach (multisig vs program from day one).
