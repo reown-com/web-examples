@@ -138,10 +138,10 @@ the write path; a public read API (same pattern as the existing explorer /
                                                │ Registry API       │
                                                │ (public read path) │
                                                └─────────▲──────────┘
-        (every session)                                  │ 4. GET terms(walletId)
-┌─────────────┐ 3. approveSession with            ┌──────┴──────┐
-│ Wallet app  │    wc_feeTerms:{v:3, walletId} ──▶│ Dapp/AppKit │
-└──────┬──────┘                                   └──────┬──────┘
+        (every session)                                  │ 4. sessionFees terms come
+┌─────────────┐ 3. user connects; AppKit          ┌──────┴──────┐  embedded in the wallet-
+│ Wallet app  │    knows the selected wallet ────▶│ Dapp/AppKit │  metadata payload AppKit
+└──────┬──────┘    (no session payload needed)    └──────┬──────┘  already fetches
        │ 6. user signs once                              │ 5. aggregator quote/
        │◀────────────────────────────────────────────────┤    build with feeBps
        ▼                                                 ▼    + splitter address
@@ -155,55 +155,66 @@ Notes on the flow:
 - Step 2 uses CREATE2 counterfactual computation — the registry can serve the
   splitter address **immediately at registration, zero gas**; the contract is
   deployed lazily before the first release (§2).
-- Step 3: `wc_feeTerms` shrinks to an identity pointer — the wallet app ships
-  no terms, so **terms/rotation changes never require a wallet release**.
-- Step 4 is cached (see S-requirements); one fetch per session, not per quote.
+- Steps 3–4: **no session payload and no wallet-side code change at all** —
+  `wc_feeTerms` is dropped. Terms ride inside the wallet-metadata payload
+  AppKit already fetches, and AppKit already knows which wallet the session
+  belongs to. Participation is purely a dashboard registration, and
+  terms/rotation changes never touch the wallet app.
 
-### `wc_feeTerms` v3 — identity pointer only
+### No `wc_feeTerms` — terms live in the wallet-metadata endpoint
 
-```json
-{ "version": 3, "walletId": "<wallet's Reown project id>" }
-```
-
-### How does the dapp know WHICH wallet to fetch terms for?
-
-| Option | Mechanism | Assessment |
-|---|---|---|
-| **1. `walletId` in `wc_feeTerms`** (recommended) | Wallet puts its Reown project ID in sessionProperties at approval | Explicit opt-in, versioned, zero guessing. Requires one small wallet-side change (the last one ever needed) |
-| 2. Match `session.peer.metadata` | Dapp matches the session's peer name/url/redirect against the WalletConnect explorer listing | No wallet change needed, but brittle (metadata drift) and spoofable; usable as fallback for wallets that haven't shipped v3 |
-| 3. Signed attestation (future) | Wallet signs its walletId with a key registered in the dashboard; registry serves the pubkey | Strong identity; hardening step once the program matters financially |
-
-**Spoofing analysis for option 1:** the registry only serves entries for
-registered, WCN-approved wallets, and every served recipient is a
-WCN-computed splitter (or WCN-controlled Solana fee account). A wallet lying
-about `walletId` can only redirect fees *to another registered wallet's
-splitter* — it can never route them to its own unregistered EOA, and 20%
-reaches WCN in every case. There is no profitable spoof; option 3 exists for
-when even misattribution matters.
-
-### Registry data model — feeBps and recipient per chain
-
-Namespace-level defaults with optional per-chain overrides (CAIP-2 keys).
-An override may adjust only `feeBps`; `recipient` inherits from the
-namespace default (EVM splitter address is chain-invariant thanks to CREATE2).
-
-`GET /v1/session-fees/terms?walletId=<id>&projectId=<dapp project id>` →
+The `sessionFees` object is embedded in the wallet's entry in the existing
+WCN wallet-listings/metadata API (the one AppKit consumes today):
 
 ```json
 {
-  "walletId": "abc123",
-  "version": 3,
-  "updatedAt": "2026-07-10T09:00:00Z",
-  "terms": {
-    "eip155": { "recipient": "0xSplitterSameOnAllEvmChains", "feeBps": 50 },
-    "eip155:1": { "feeBps": 30 },
-    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": {
-      "recipientOwner": "WcnFeeOwnerAddress",
-      "feeBps": 85
+  "id": "4b1b1b7f28d7762f40c70131aea78adb",
+  "name": "Example Wallet",
+  "rdns": "com.example.wallet",
+  "image_id": "…",
+
+  "sessionFees": {
+    "version": 1,
+    "updatedAt": "2026-07-10T09:00:00Z",
+    "terms": {
+      "eip155":   { "recipient": "0xSplitterSameOnAllEvmChains", "feeBps": 50 },
+      "eip155:1": { "feeBps": 30 },
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": {
+        "recipientOwner": "WcnFeeOwnerAddress",
+        "feeBps": 85
+      }
     }
   }
 }
 ```
+
+### How does the dapp know WHICH wallet the session belongs to?
+
+AppKit identifies the connected wallet already; the terms lookup reuses that:
+
+| Flow | Identification | Reliability |
+|---|---|---|
+| User taps a listed wallet (mobile/deeplink) | Exact wallet listing ID known to AppKit | Exact |
+| Browser extension via EIP-6963 | `rdns` announced by the extension, matched to the listing | Exact |
+| QR scan with an arbitrary wallet | Match `session.peer.metadata` (name/url/redirect) against the listings | Heuristic — acceptable, see spoofing analysis |
+| Non-AppKit dapps (raw sign-client) | SDK helper performing the same peer-metadata lookup against the endpoint | Heuristic |
+
+**Spoofing analysis:** every recipient the endpoint serves is a WCN-computed
+splitter (or WCN-controlled Solana fee owner) belonging to a registered
+wallet. Misidentifying the wallet can therefore only route fees *to another
+registered wallet's splitter* — never to an attacker-controlled EOA — and
+WCN's 20% arrives in every case. There is no profitable spoof; a signed
+wallet-identity attestation remains a future hardening option if
+misattribution itself ever matters financially.
+
+### Registry data model — feeBps and recipient per chain
+
+Namespace-level defaults with optional per-chain overrides — keys are
+**CAIP-2 chain identifiers**, a bare namespace (`eip155`, `solana`) is the
+default for every chain in that namespace. An override may adjust only
+`feeBps`; `recipient` inherits from the namespace default (the EVM splitter
+address is chain-invariant thanks to CREATE2). Resolution per swap: exact
+chain key → namespace default → no entry = no fee.
 
 - **EVM:** `recipient` is the splitter address, used verbatim as the
   aggregator fee recipient. One entry covers all EVM chains; per-chain
@@ -231,21 +242,22 @@ Dashboard (write path):
 - **D4** Change history / audit log; payout-address changes may require
   re-verification (email/2FA) since they redirect revenue.
 
-Registry API (read path):
-- **R1** Public, unauthenticated-read (dapp `projectId` for analytics/rate
-  limiting, mirroring existing AppKit APIs), aggressive CDN caching with
-  short TTL (e.g. 5 min) + `ETag`.
+Registry / metadata API (read path):
+- **R1** `sessionFees` embedded in the existing wallet-listings/metadata
+  endpoint AppKit consumes — no new endpoint for AppKit dapps; existing CDN
+  caching applies. A standalone lookup (by wallet id or peer-metadata match)
+  is exposed for non-AppKit consumers.
 - **R2** Serves ONLY registered wallets; recipients are exclusively
   WCN-computed splitters / WCN-controlled fee owners — by construction no
   response can name a bare wallet EOA.
-- **R3** Versioned response schema; unknown wallets → 404 (dapp proceeds
-  feeless).
-- **R4** Batch endpoint (`walletIds=[...]`) for dapps that pre-fetch.
+- **R3** Versioned `sessionFees` schema; wallets without the field → dapp
+  proceeds feeless.
 
 AppKit / dapp SDK:
-- **S1** Post-connect: read `wc_feeTerms.walletId` from sessionProperties
-  (fallback: peer.metadata match), fetch terms, cache for session lifetime,
-  expose e.g. `session.feeTerms` / `getSessionFeeTerms()`.
+- **S1** Post-connect: resolve the connected wallet (listing selection /
+  EIP-6963 rdns / peer-metadata match), read its `sessionFees` from the
+  already-fetched metadata, cache for session lifetime, expose e.g.
+  `session.feeTerms` / `getSessionFeeTerms()`.
 - **S2** Per swap: select the entry by CAIP-2 chain (chain override →
   namespace default), pass `recipient`+`feeBps` into the aggregator call,
   clamping to the aggregator's cap.
@@ -255,9 +267,10 @@ AppKit / dapp SDK:
   the only local step is the standard Solana ATA derivation for the fee mint.
 
 Wallet app:
-- **W1** Single change, ever: attach `wc_feeTerms: {"version":3,
-  "walletId":"<project id>"}` at session approval. All economics live in the
-  dashboard thereafter.
+- **W1** **No changes.** Participation, addresses, and fee levels are all
+  dashboard-side. (The POC's `wc_feeTerms` sessionProperties mechanism is
+  superseded; it remains useful only as a demo vehicle and for wallets that
+  want to signal terms to non-AppKit dapps without the lookup.)
 
 Keeper:
 - **K1** WCN-operated service (either party may also call `release`
@@ -278,6 +291,10 @@ Keeper:
 - **Protocol method (`wallet_getFeeTerms`):** transport variation only; adds
   a round-trip and wallet-release coupling without changing the trust model.
   The registry supersedes it.
+- **`wc_feeTerms` identity pointer (`{version, walletId}`):** superseded —
+  AppKit identifies the wallet without any session payload. Could return as
+  an explicit disambiguation hint for the QR-scan flow if heuristic matching
+  ever proves too weak.
 
 ### Trust model (registry-based)
 
