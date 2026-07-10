@@ -6,7 +6,12 @@ Trading API integrator fee. Code:
 `src/pages/api/uniswap/[...path].ts`, and the Uniswap branch of
 `src/pages/index.tsx`.
 
-## ✅ Fee-gating: verified NOT gated (2026-07-10)
+## ✅ Fee-gating: verified NOT gated + E2E on mainnet (2026-07-10)
+
+A live mainnet swap
+([`0xb50f9a54…`](https://arbiscan.io/tx/0xb50f9a548f057367220x)) — see full hash
+on the fee recipient's Arbiscan page — paid **0.001769 USDC (50 bps)** to the
+session fee recipient via the Universal Router.
 
 Tested with a fresh self-serve key from https://developers.uniswap.org/dashboard:
 `integratorFees` **is applied** — the quote's `aggregatedOutputs` reports the
@@ -78,6 +83,8 @@ fee is paid to the recipient EOA inside the swap tx (PAY_PORTION, output token)
 ## Gotchas
 
 - **`bips` is actual bps** (50 = 0.5%) — unlike 1inch's `fee` percent field.
+- **The API's `gasLimit` runs tight** — a live swap reverted out-of-gas at
+  99.97% of it. The dapp adds 50% headroom (`uniswapToWalletConnectTx`).
 - Pass the quote object to `/swap` **unmodified** — it's signed/validated
   server-side.
 - Quotes go stale; the dapp re-quotes every 30 s and swaps from the displayed

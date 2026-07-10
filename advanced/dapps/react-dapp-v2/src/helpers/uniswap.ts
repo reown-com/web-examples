@@ -117,11 +117,16 @@ export function uniswapToWalletConnectTx(tx: UniswapTxRequest) {
       : value.startsWith("0x")
         ? value
         : `0x${BigInt(value).toString(16)}`;
+  // The API's gasLimit runs tight (observed a revert at 99.97% of it) —
+  // give it 50% headroom like the Kyber leg.
+  const gasLimit = tx.gasLimit
+    ? (BigInt(toHex(tx.gasLimit)!) * 15n) / 10n
+    : undefined;
   return {
     from: tx.from,
     to: tx.to,
     data: tx.data,
     value: toHex(tx.value) ?? "0x0",
-    ...(tx.gasLimit ? { gasLimit: toHex(tx.gasLimit) } : {}),
+    ...(gasLimit ? { gasLimit: `0x${gasLimit.toString(16)}` } : {}),
   };
 }
