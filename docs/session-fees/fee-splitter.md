@@ -199,6 +199,35 @@ AppKit identifies the connected wallet already; the terms lookup reuses that:
 | QR scan with an arbitrary wallet | Match `session.peer.metadata` (name/url/redirect) against the listings | Heuristic — acceptable, see spoofing analysis |
 | Non-AppKit dapps (raw sign-client) | SDK helper performing the same peer-metadata lookup against the endpoint | Heuristic |
 
+#### Edge case 1 — QR-scan flow (wallet unknown a priori)
+
+When the user scans the QR with an arbitrary wallet instead of tapping a
+listed one, AppKit learns the wallet only from `session.peer.metadata`.
+Mitigations, in order:
+
+1. **Match on the strongest fields first**: the listing's registered
+   `mobile_link`/redirect and homepage URL (registered in the dashboard,
+   stable), then name as tiebreaker. Wallets earning revenue from the program
+   have a direct incentive to keep their listing metadata accurate —
+   the matching problem is self-correcting for participants.
+2. **Miss behavior**: no confident match → **no fee, never block the swap**
+   (same graceful degradation as S3). A missed match costs the wallet its
+   fee on that session, nothing else.
+3. **Escalation path if heuristics prove too weak in practice**: reintroduce
+   a minimal session hint (`wc_feeTerms: {walletId}`) or a signed identity
+   attestation — both documented in Alternatives. These are additive; the
+   registry design doesn't change.
+
+#### Edge case 2 — non-AppKit dapps (raw sign-client / UniversalProvider)
+
+Dapps not using AppKit never fetch the wallet-listings payload. Solution: a
+small standalone helper package (e.g. `@walletconnect/session-fees`) exposing
+`getSessionFeeTerms(session) → terms | undefined` — it takes the settled
+session, performs the same lookup against the standalone endpoint (R1) using
+peer metadata, and returns the ready-to-use per-chain terms. The POC dapp is
+the natural first consumer. Non-integrating dapps simply collect no fees —
+the program degrades to exactly today's status quo, never worse.
+
 **Spoofing analysis:** every recipient the endpoint serves is a WCN-computed
 splitter (or WCN-controlled Solana fee owner) belonging to a registered
 wallet. Misidentifying the wallet can therefore only route fees *to another
