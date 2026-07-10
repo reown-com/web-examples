@@ -9,9 +9,9 @@ Trading API integrator fee. Code:
 ## ✅ Fee-gating: verified NOT gated + E2E on mainnet (2026-07-10)
 
 A live mainnet swap
-([`0xb50f9a54…`](https://arbiscan.io/tx/0xb50f9a548f057367220x)) — see full hash
-on the fee recipient's Arbiscan page — paid **0.001769 USDC (50 bps)** to the
-session fee recipient via the Universal Router.
+([`0xb50f9a54…36d7b4`](https://arbiscan.io/tx/0xb50f9a548f05736722b89a026658e654d6045150fb0fd7010b6ceb2a6936d7b4))
+paid **0.001769 USDC (50 bps)** to the session fee recipient via the
+Universal Router.
 
 Tested with a fresh self-serve key from https://developers.uniswap.org/dashboard:
 `integratorFees` **is applied** — the quote's `aggregatedOutputs` reports the
