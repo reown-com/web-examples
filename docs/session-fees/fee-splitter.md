@@ -115,28 +115,11 @@ Explicit v1 non-goals (keep it boring):
 Values in `sessionProperties` are strings, so the JSON stays compact. Two
 viable schemas; **Option B is recommended**.
 
-### Option A — declared recipients map
+### ❌ Option A — declared recipients map (REJECTED)
 
-```json
-{
-  "version": 2,
-  "feeBps": 50,
-  "split": { "walletBps": 8000, "wcnBps": 2000 },
-  "recipients": {
-    "eip155": "0xSplitterSameOnAllEvmChains",
-    "eip155:59144": "0xOptionalPerChainOverride",
-    "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "<fee token account / PDA>"
-  }
-}
-```
-
-- Keys are CAIP-2 chain IDs, with a bare namespace (`eip155`, `solana`) as
-  the default for all chains in that namespace. Thanks to CREATE2 cross-chain
-  determinism, `eip155` is usually a single entry.
-- Pros: explicit, no SDK derivation logic needed, works for chains without
-  splitter infra (recipient can be a plain EOA/token account during rollout).
-- Cons: **trust-based** — the dapp can't tell whether the address enforces
-  the split without extra verification.
+Wallet declares ready-to-use recipient addresses. Rejected: trust-based — a
+wallet could declare its own EOA and keep 100%. Kept only as the documented
+*fallback shape* for chains where the splitter factory is not yet deployed.
 
 ### Option B (recommended) — declare beneficiaries, derive the splitter
 
@@ -162,8 +145,48 @@ viable schemas; **Option B is recommended**.
 - Cons: requires the canonical factory deployed per chain + an SDK constant
   set; chains without a factory need a documented fallback (see rollout).
 - Hybrid rollout: v2 dapps derive on chains where the factory exists and fall
-  back to Option-A-style explicit `recipients` entries elsewhere (Solana
-  first phase).
+  back to explicit `recipients` entries elsewhere (Solana first phase).
+
+### Trust model — who can cheat, and what stops them
+
+- **Wallet-side bypass (solved by derivation):** the wallet never transmits a
+  recipient, only its payout EOA — one *input* to the address formula. The
+  dapp computes the recipient; there is nothing for the wallet to lie about.
+  Note the enforcement comes from *derivation*, not the transport: moving the
+  address into a dedicated protocol method (e.g. `wallet_getFeeTerms`) does
+  not help by itself, since anything the wallet transmits can be false and
+  anything the dapp computes cannot.
+- **Dapp-side bypass (not solvable on-chain):** the dapp builds the
+  aggregator call and could apply no fee, or its own recipient. No contract
+  prevents this — it is handled economically (session fees as a distribution
+  agreement) and by monitoring; keep this in mind to avoid over-engineering
+  the wallet side.
+- **Evolution — Option C, WCN registry:** wallets register their payout EOA
+  once with WalletConnect (keyed by wallet project ID); sessions carry only
+  `feeBps`/participation, and the dapp SDK resolves beneficiaries from the
+  registry. Adds verified identity (terms tied to a known wallet project, not
+  to session-claimed data), centralizes rotation and fee policy. Cost: a
+  lookup dependency + WCN infra. Recommended as the follow-up to B, not a
+  prerequisite.
+
+### Setting the fee % — per wallet, per chain, per dapp
+
+`feeBps` is a separate axis from the recipient. Options, composable:
+
+1. **Wallet-declared, WCN-capped (v2 recommended):** `feeBps` in
+   `wc_feeTerms` as today, clamped by a WCN-published max and by each
+   aggregator's own cap.
+2. **Per-namespace/chain overrides:** `"feeBps": {"default": 50,
+   "solana": 85, "eip155:1": 30}` — economics differ per chain (mainnet gas
+   makes small fees pointless; Solana tolerates higher bps).
+3. **Per-dapp:** dapp-side policy — the wallet's declared bps acts as a
+   *maximum*, the dapp applies `min(walletMax, dappPolicy)`. Leaves room to
+   later negotiate a dapp share of the fee.
+4. **Registry policy (with Option C):** fee schedule per wallet (or
+   wallet×dapp) lives in the WCN registry; sessions carry only identity.
+
+v2 recommendation: wallet-declared default + optional per-namespace
+overrides, clamped by WCN max and dapp policy.
 
 ### How wallets define EOAs per chain — the possibilities
 
