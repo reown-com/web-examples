@@ -339,7 +339,45 @@ Keeper:
   program, and the on-chain splitter still guarantees the wallet its 80%
   regardless of registry behavior after deployment.
 
-## 5. Solana
+## 5. Scope — which methods can carry session fees?
+
+The wallet/registry side (recipient + feeBps) is method-agnostic; what varies
+is whether the thing that builds the signed payload accepts a fee parameter.
+**Session fees work wherever such an attachment point exists.**
+
+| Method / vertical | Works? | Attachment point | Evidence |
+|---|---|---|---|
+| **Swaps (EVM + Solana)** | ✅ proven | Aggregator fee params | POC: Jupiter, KyberSwap, Uniswap E2E on mainnet; 1inch built but commercially gated |
+| **Cross-chain swaps / bridging** | ✅ same pattern (untested by us) | Bridge-aggregator fee params — LI.FI `integrator`+`fee` (forwarded per-swap after free portal signup; 30+ chains incl. Solana); Squid/Rango similar | LI.FI mechanics verified in research; natural next integration — dapp-side shape identical to swaps |
+| **Perps trading** | ✅ strong fit, different transport | Hyperliquid builder codes: per-order `builder: {b, f}` after a one-time user-signed max-fee approval (EIP-712) | >$40M already paid to frontends (Phantom ~$20.6M) — the pattern productized by the venue itself |
+| **Staking (Lido, ether.fi)** | 🟡 attribution only | `submit(_referral)` / `deposit(_referral)` — permissionless to pass, **pays nothing** without enrollment (Lido Rewards-Share: BD, up to 2.5% of staking rewards on attributed ETH) | The registry recipient doubles as the referral address per-request; revenue requires program enrollment |
+| **Lending deposits (Aave, Morpho, Spark)** | ❌ per-request / 🟡 via vaults | No fee slot in pool contracts; monetization = wallet-curated vault (Morpho V2 / Euler) whose `feeRecipient` is the splitter | Morpho path proven by Trust Wallet/Ledger/Robinhood — monetizes deposits into *your* vault, not arbitrary dapp traffic |
+| **Intent-based swaps (CoW)** | 🟡 works, weak shape | Partner fee in signed appData; 25% CoW cut, weekly aggregated WETH payouts | Fee slot exists; no per-tx visibility, EIP-712 not eth_sendTransaction |
+| **Plain transfers / arbitrary contract calls** | ❌ | Nothing to attach to — no builder in the middle. Appending a fee transfer via batching (EIP-5792 `wallet_sendCalls` / 7702) is a visible surcharge, not an embedded fee — different consent story | — |
+| **RWA / institutional (USYC, Benji, Ethena mint)** | ❌ | Closed/KYC venues; BD distribution deals only | Researched, skip |
+
+By WalletConnect method: the pattern covers `eth_sendTransaction`
+(swaps/bridges — proven), `solana_signTransaction`/`signAndSendTransaction`
+(proven), and `eth_signTypedData_v4` for order-based venues (Hyperliquid —
+strong; CoW — weak payout shape). It cannot cover methods where the user
+signs something the dapp did not parameterize (`personal_sign`, plain sends).
+
+By the four-bucket taxonomy in
+[SESSION-FEES-AGGREGATORS.md](../../SESSION-FEES-AGGREGATORS.md): session
+fees generalize natively to bucket 1 (per-request fee params), supply the
+*attribution address* for bucket 2 (staking/lending referral programs — the
+registry entry is exactly the address a wallet would enroll with Lido), plug
+in as the vault `feeRecipient` for bucket 3 (curated vaults), and don't help
+with bucket 4 (BD-only venues).
+
+**Rollout implication:** v1 = swaps; v1.5 = bridging (LI.FI-class,
+near-zero incremental dapp work); v2 = perps via builder codes (new
+transport, best-in-class consent UX); attribution-based staking/lending as
+BD programs mature. Watch item: Maple's announced permissionless "Builder
+Codes" (2026) would make yield deposits the first bucket-1 primitive outside
+trading.
+
+## 6. Solana
 
 The EVM splitter doesn't translate directly — Jupiter's `feeAccount` must be
 a **token account** of the input/output mint. The equivalent design:
@@ -356,7 +394,7 @@ a **token account** of the input/output mint. The equivalent design:
   the program in phase 2. Or lean on aggregator-native multi-recipient
   support where it exists (0x on EVM has it; Jupiter does not).
 
-## 6. Open questions / decisions needed
+## 7. Open questions / decisions needed
 
 1. Ratio governance: hardcode 8000/2000 in the salt (a ratio change = new
    splitter address) vs a versioned constant — recommended: in the salt,
