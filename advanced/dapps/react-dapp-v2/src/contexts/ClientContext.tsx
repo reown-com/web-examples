@@ -41,17 +41,28 @@ import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { getRequiredNamespaces } from "../helpers/namespaces";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 import { isValidSignature } from "./JsonRpcContext";
+import { getPickerMode, offerUriToHost } from "../helpers/picker";
 
 /**
  * Types
  */
 
 type Client = IUniversalProvider["client"];
+
+export type AutoConnectStatus =
+  | "off"
+  | "preparing"
+  | "waiting_for_wallet"
+  | "connected"
+  | "error";
+
 interface IContext {
   client: Client | undefined;
   session: SessionTypes.Struct | undefined;
   connect: (pairing?: { topic: string }) => Promise<void>;
   disconnect: () => Promise<void>;
+  autoConnectStatus: AutoConnectStatus;
+  autoConnectError?: string;
   isInitializing: boolean;
   chains: string[];
   relayerRegion: string;
@@ -101,9 +112,13 @@ export function ClientContextProvider({
     useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
   const [relayerRegion, setRelayerRegion] = useState<string>(
-    DEFAULT_RELAY_URL || ""
+    DEFAULT_RELAY_URL || "",
   );
   const [origin, setOrigin] = useState<string>(getAppMetadata().url);
+  const [autoConnectStatus, setAutoConnectStatus] =
+    useState<AutoConnectStatus>("off");
+  const [autoConnectError, setAutoConnectError] = useState<string>();
+  const autoConnectStarted = useRef(false);
   const reset = () => {
     // Abort any in-flight balance fetches
     abortControllerRef.current?.abort();
@@ -135,7 +150,7 @@ export function ClientContextProvider({
           const chainId = `${namespace}:${reference}`;
           const assets = await apiGetAccountBalance(address, chainId);
           return { account, assets: [assets] };
-        })
+        }),
       );
 
       // Check again before updating state
@@ -176,7 +191,7 @@ export function ClientContextProvider({
 
       await getAccountBalances(allNamespaceAccounts);
     },
-    []
+    [],
   );
 
   const mapCaipIdToAppKitCaipNetwork = (caipId: CaipNetworkId): CaipNetwork => {
@@ -262,8 +277,91 @@ export function ClientContextProvider({
         appkit?.close();
       }
     },
-    [chains, client, onSessionConnected, provider]
+    [chains, client, onSessionConnected, provider],
   );
+
+  // -------- Dapp Picker POC: auto-connect (no connect UI) --------
+  // Variant A ("headless"): AppKit headless prefetch — no modal DOM at all.
+  // Variant B ("provider"): raw provider.connect + display_uri — the modal
+  // mounts (normal init) but is never opened.
+  const startAutoConnect = useCallback(async () => {
+    if (!provider || !client) return;
+    const { variant } = getPickerMode();
+    setAutoConnectStatus("preparing");
+    try {
+      if (provider.session) {
+        // A restored session from a previous webview open — already connected.
+        setAutoConnectStatus("connected");
+        return;
+      }
+      let session: SessionTypes.Struct | undefined;
+      if (variant === "headless") {
+        const kit = appkit as any;
+        const unsubscribe = kit?.subscribeWalletConnectUri?.(() => {
+          const { wcUri } = kit.getWalletConnectUri();
+          if (wcUri) {
+            offerUriToHost(wcUri);
+            setAutoConnectStatus("waiting_for_wallet");
+          }
+        });
+        // The WC connector registers asynchronously after provider init —
+        // retry the prefetch instead of racing it (verified in Phase 0).
+        let lastError: unknown;
+        for (let attempt = 0; attempt < 4; attempt++) {
+          try {
+            await kit.prefetchWalletConnectUri();
+            lastError = undefined;
+            break;
+          } catch (e) {
+            lastError = e;
+            await new Promise((r) => setTimeout(r, 1200));
+          }
+        }
+        if (lastError) throw lastError;
+        // Settle detection: poll the shared provider's session.
+        session = await new Promise<SessionTypes.Struct>((resolve, reject) => {
+          const startedAt = Date.now();
+          const poll = setInterval(() => {
+            if (provider.session) {
+              clearInterval(poll);
+              resolve(provider.session as SessionTypes.Struct);
+            } else if (Date.now() - startedAt > 300_000) {
+              clearInterval(poll);
+              reject(new Error("Timed out waiting for wallet approval"));
+            }
+          }, 1000);
+        });
+        unsubscribe?.();
+      } else {
+        (provider as any).on("display_uri", (uri: string) => {
+          offerUriToHost(uri);
+          setAutoConnectStatus("waiting_for_wallet");
+        });
+        provider.namespaces = undefined;
+        session = await provider.connect({
+          optionalNamespaces: getRequiredNamespaces(chains) as NamespaceConfig,
+        });
+      }
+      if (!session) {
+        throw new Error("Session is not connected");
+      }
+      await onSessionConnected(session);
+      setPairings(client.pairing.getAll({ active: true }));
+      setAutoConnectStatus("connected");
+    } catch (e) {
+      console.error("auto-connect failed", e);
+      setAutoConnectError((e as Error).message);
+      setAutoConnectStatus("error");
+    }
+  }, [provider, client, chains, onSessionConnected]);
+
+  useEffect(() => {
+    if (!getPickerMode().wcAuto) return;
+    if (!provider || !client || isInitializing || chains.length === 0) return;
+    if (autoConnectStarted.current) return;
+    autoConnectStarted.current = true;
+    startAutoConnect();
+  }, [provider, client, isInitializing, chains, startAutoConnect]);
 
   const disconnect = useCallback(async () => {
     if (typeof client === "undefined") {
@@ -329,7 +427,7 @@ export function ClientContextProvider({
         }
       }
     },
-    []
+    [],
   );
 
   const _subscribeToEvents = useCallback(
@@ -359,7 +457,7 @@ export function ClientContextProvider({
         reset();
       });
     },
-    [onSessionConnected]
+    [onSessionConnected],
   );
 
   const _checkPersistedState = useCallback(
@@ -371,7 +469,7 @@ export function ClientContextProvider({
       setPairings(_client.pairing.getAll({ active: true }));
       console.log(
         "RESTORED PAIRINGS: ",
-        _client.pairing.getAll({ active: true })
+        _client.pairing.getAll({ active: true }),
       );
 
       if (typeof session !== "undefined") return;
@@ -379,7 +477,7 @@ export function ClientContextProvider({
       if (_client.session.length) {
         const lastKeyIndex = _client.session.keys.length - 1;
         const _session = _client.session.get(
-          _client.session.keys[lastKeyIndex]
+          _client.session.keys[lastKeyIndex],
         );
         console.log("RESTORED SESSION:", _session);
         await onSessionConnected(_session);
@@ -389,7 +487,7 @@ export function ClientContextProvider({
         return _session;
       }
     },
-    [session, onSessionConnected]
+    [session, onSessionConnected],
   );
 
   const _logClientId = useCallback(async (_client: Client) => {
@@ -403,20 +501,28 @@ export function ClientContextProvider({
     } catch (error) {
       console.error(
         "Failed to set WalletConnect clientId in localStorage: ",
-        error
+        error,
       );
     }
   }, []);
 
   const createModal = useCallback((provider: IUniversalProvider) => {
     if (appkit) return;
-    const networks = ["eip155:1"].map((caipId) =>
-      mapCaipIdToAppKitCaipNetwork(caipId as CaipNetworkId)
-    );
+    const picker = getPickerMode();
+    const headlessMode = picker.wcAuto && picker.variant === "headless";
+    // The headless prefetch flow derives its optionalNamespaces from these
+    // networks, so they must cover the swap demo's chains (Arbitrum + Solana
+    // mainnet). Manual mode ignores them (provider.connect passes namespaces).
+    const networks = [
+      "eip155:1",
+      "eip155:42161",
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+    ].map((caipId) => mapCaipIdToAppKitCaipNetwork(caipId as CaipNetworkId));
     appkit = createAppKit({
       projectId: DEFAULT_PROJECT_ID,
       themeMode: "dark",
-      manualWCControl: true,
+      // manualWCControl drives the modal QR flow; headless has no modal.
+      manualWCControl: !headlessMode,
       universalProvider: provider as any,
       networks: [networks[0], ...networks],
       metadata: {
@@ -433,6 +539,7 @@ export function ClientContextProvider({
       features: {
         email: false,
         socials: false,
+        headless: headlessMode,
       },
     });
   }, []);
@@ -499,7 +606,7 @@ export function ClientContextProvider({
       //The interval is needed as Verify tries to init new iframe(with different urls) multiple times
       interval = setInterval(
         () => document.getElementById("verify-api")?.remove(),
-        500
+        500,
       );
     }
     return () => {
@@ -548,6 +655,8 @@ export function ClientContextProvider({
       session,
       connect,
       disconnect,
+      autoConnectStatus,
+      autoConnectError,
       setChains,
       setRelayerRegion,
       origin,
@@ -555,6 +664,8 @@ export function ClientContextProvider({
       authenticatedAddresses,
     }),
     [
+      autoConnectStatus,
+      autoConnectError,
       pairings,
       isInitializing,
       balances,
@@ -572,7 +683,7 @@ export function ClientContextProvider({
       origin,
       setAccounts,
       authenticatedAddresses,
-    ]
+    ],
   );
 
   return (
@@ -590,7 +701,7 @@ export function useWalletConnectClient() {
   const context = useContext(ClientContext);
   if (context === undefined) {
     throw new Error(
-      "useWalletConnectClient must be used within a ClientContextProvider"
+      "useWalletConnectClient must be used within a ClientContextProvider",
     );
   }
   return context;

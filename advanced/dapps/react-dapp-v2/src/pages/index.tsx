@@ -12,6 +12,11 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { Contract, JsonRpcProvider, formatUnits, parseUnits } from "ethers";
 
 import { useWalletConnectClient } from "../contexts/ClientContext";
+import { getPickerMode } from "../helpers/picker";
+
+interface PickerModeState {
+  wcAuto: boolean;
+}
 import { getProviderUrl } from "../helpers";
 import { parseFeeTerms } from "../helpers/feeTerms";
 import {
@@ -173,15 +178,30 @@ const Home: NextPage = () => {
     isInitializing,
     setChains,
     accounts,
+    autoConnectStatus,
+    autoConnectError,
   } = useWalletConnectClient();
+
+  // Dapp Picker POC: URL-driven mode (?wc_auto=1&aggregator=X&connect=Y).
+  // Read after mount to avoid SSR/hydration mismatch.
+  const [pickerMode, setPickerMode] = useState<PickerModeState>({
+    wcAuto: false,
+  });
 
   const [aggregator, setAggregator] = useState<AggregatorId>("jupiter");
   const agg = AGGREGATORS[aggregator];
   const isJupiter = aggregator === "jupiter";
 
   // Restore the aggregator choice across reloads (read after mount — SSR has
-  // no localStorage).
+  // no localStorage). A ?aggregator= URL param (picker tile) overrides it.
   useEffect(() => {
+    const picker = getPickerMode();
+    setPickerMode({ wcAuto: picker.wcAuto });
+    if (picker.aggregator && picker.aggregator in AGGREGATORS) {
+      localStorage.setItem("session_fees_aggregator", picker.aggregator);
+      setAggregator(picker.aggregator as AggregatorId);
+      return;
+    }
     const stored = localStorage.getItem("session_fees_aggregator");
     if (stored && stored in AGGREGATORS) {
       setAggregator(stored as AggregatorId);
@@ -764,6 +784,13 @@ const Home: NextPage = () => {
           </SAggregatorSelect>
         </STabsRow>
 
+        {pickerMode.wcAuto && session && (
+          <SConnectedBanner>
+            ✓ Connected via {session.peer?.metadata?.name ?? "wallet"}
+            {feeTerms ? " — fee sharing active" : " — no fee terms"}
+          </SConnectedBanner>
+        )}
+
         <SCard>
           <SPanel>
             <SPanelLabel>Selling</SPanelLabel>
@@ -884,12 +911,22 @@ const Home: NextPage = () => {
           {quoteError && <SWarning>Quote error: {quoteError}</SWarning>}
 
           {!session ? (
-            <SBigButton
-              onClick={onConnect}
-              disabled={isInitializing || isConnecting}
-            >
-              {isInitializing || isConnecting ? "Connecting…" : "Connect"}
-            </SBigButton>
+            pickerMode.wcAuto ? (
+              <SBigButton disabled>
+                {autoConnectStatus === "error"
+                  ? `Auto-connect failed: ${autoConnectError ?? "unknown"}`
+                  : autoConnectStatus === "waiting_for_wallet"
+                    ? "Approving in your wallet…"
+                    : "Connecting to your wallet…"}
+              </SBigButton>
+            ) : (
+              <SBigButton
+                onClick={onConnect}
+                disabled={isInitializing || isConnecting}
+              >
+                {isInitializing || isConnecting ? "Connecting…" : "Connect"}
+              </SBigButton>
+            )
           ) : (
             <SBigButton onClick={onSwap} disabled={!canSwap}>
               {hasInsufficientBalance && !isSwapping
@@ -1338,4 +1375,14 @@ const SLink = styled.a`
 const SFeeBalanceValue = styled.span`
   font-weight: 700;
   color: #c7f284 !important;
+`;
+
+const SConnectedBanner = styled.div`
+  background: rgba(199, 242, 132, 0.1);
+  border: 1px solid #c7f284;
+  color: #c7f284;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
 `;

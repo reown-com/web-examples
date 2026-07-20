@@ -18,7 +18,9 @@ export type RpcProvidersByChainId = Record<
   }
 >;
 
-const WALLETCONNECT_RPC_BASE_URL = `https://rpc.walletconnect.com/v1?projectId=${process.env.NEXT_PUBLIC_PROJECT_ID}`;
+import { DEFAULT_PROJECT_ID } from "../constants";
+
+const WALLETCONNECT_RPC_BASE_URL = `https://rpc.walletconnect.com/v1?projectId=${DEFAULT_PROJECT_ID}`;
 
 export const rpcProvidersByChainId: RpcProvidersByChainId = {
   1: {

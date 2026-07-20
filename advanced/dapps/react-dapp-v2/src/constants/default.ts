@@ -1,7 +1,7 @@
 import { getAppMetadata } from "@walletconnect/utils";
 
-if (!process.env.NEXT_PUBLIC_PROJECT_ID)
-  throw new Error("`NEXT_PUBLIC_PROJECT_ID` env variable is missing.");
+// Dapp Picker POC: the projectId has a hardcoded default on this branch (see
+// DEFAULT_PROJECT_ID below), so a missing env var is no longer fatal.
 
 export const DEFAULT_MAIN_CHAINS = [
   // mainnets
@@ -57,7 +57,12 @@ export const DEFAULT_TEST_CHAINS = [
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
 
-export const DEFAULT_PROJECT_ID = process.env.NEXT_PUBLIC_PROJECT_ID;
+// Dapp Picker POC: this branch pins the AppKit-Headless-entitled projectId so
+// the ?connect=headless variant works on previews regardless of the Vercel
+// project's NEXT_PUBLIC_PROJECT_ID (which is not headless-entitled).
+export const DEFAULT_PROJECT_ID =
+  process.env.NEXT_PUBLIC_HEADLESS_PROJECT_ID ||
+  "b2aef1b875d50a85795249c97243d1a7";
 export const DEFAULT_RELAY_URL = process.env.NEXT_PUBLIC_RELAY_URL;
 
 export const DEFAULT_LOGGER = "debug";
