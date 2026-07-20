@@ -71,6 +71,76 @@ sign sheet on request  ◀──────────────  swap → f
 URI expiry (~5 min TTL) is handled by generating on page load and pairing
 immediately; a reload regenerates.
 
+## Does this work for non-Reown dapp SDKs (RainbowKit etc.)?
+
+**Yes — the pattern is SDK-agnostic on both ends; only the "how do I get the
+URI" step varies.** The wallet side pairs a standard `wc:` URI and approves a
+standard proposal — it neither knows nor cares which SDK generated it. The
+dapp side needs exactly two capabilities: (1) obtain a pairing URI
+programmatically without showing connect UI, (2) read the settled session's
+`sessionProperties`. Per stack:
+
+| Dapp stack | Headless URI path | Session/feeTerms access | Notes |
+|---|---|---|---|
+| **RainbowKit / wagmi** | First-class: the wagmi `walletConnect` connector takes `showQrModal: false`; call `connect({connector})` and listen for the connector's `display_uri` message — RainbowKit's modal is simply never opened | `connector.getProvider()` → EthereumProvider → `provider.session.sessionProperties` | Arguably **cleaner than our AppKit Variant B**: the connection runs through wagmi core, so wagmi/RainbowKit state syncs correctly — no desync caveat. EVM-only (no Solana namespace) |
+| **Raw `@walletconnect/ethereum-provider`** | Canonical: `EthereumProvider.init({ showQrModal: false })` + `provider.on('display_uri')` + `provider.connect()` | `provider.session.sessionProperties` | The documented WalletConnect headless pattern; what wagmi wraps |
+| **Raw sign-client / UniversalProvider** | What this POC's Variant B does | direct | No UI layer to bypass at all |
+| **AppKit** | Variant A (headless, entitled) or Variant B (provider-direct, state desync caveat) | `provider.session.sessionProperties` | This POC |
+| **Other aggregator SDKs (Dynamic, Privy, …)** | Case-by-case: works iff they expose the underlying WC provider or a headless connect; embedded-wallet-first SDKs may not route through WC at all | — | Needs per-SDK verification |
+
+Implication for the H2b registry: "fee-honoring dapp" does not mean
+"AppKit dapp". The registry entry needs only the URL contract
+(`?wc_auto=1&…`) and the dapp-side snippet is ~30 lines against any of the
+stacks above. The wallet-side code is identical for all of them.
+
+## UX assessment — pros and cons
+
+**The headline win is real: 1-tap wallet↔dapp pairing.** Measured on the
+POC: from the Explore screen, **1 tap** (the tile) lands the user in a
+connected, fee-attached, correctly-chained dapp — after a one-time consent.
+The ceremony it replaces (Connect button → wallet chooser → QR/deeplink →
+app switch → approve → switch back) is typically 4–6 interactions and two
+context switches.
+
+Pros beyond the tap count:
+- **No context switch**: the session rides the relay while the user never
+  leaves the wallet app; signing sheets appear natively *over* the webview.
+- **Zero decisions**: no wallet chooser (the host *is* the wallet), no chain
+  picker (the tile presets aggregator + chain), no terms to read per-dapp.
+- **Trust anchor stays native**: auto-approve only covers the *connection*;
+  every transaction still gets the wallet's own sign sheet.
+- **Revisits are instant**: the session persists in the webview's storage —
+  second open of a tile restores it with no handshake at all.
+
+Cons / the latency question:
+- **Added latency vs a plain webview browse.** Observed cold-flow timing on
+  the POC (Android emulator, Vercel-hosted dapp): page load ~2–4 s, URI
+  acquisition ~1–3 s after load, pair → auto-approve → settle ~2–4 s.
+  **Tile-tap to "Connected" banner ≈ 5–10 s cold** (not precisely
+  instrumented — worth measuring properly in a follow-up).
+- **Does it degrade UX? Less than the number suggests**, for two reasons:
+  (1) the handshake is *passive and concurrent* — the swap UI is fully
+  rendered and browsable immediately (prices, quotes, amount entry work
+  pre-connection); only the Swap button waits for the session. The user is
+  reading/typing during the handshake, not staring at a spinner. (2) it
+  replaces a *longer interactive* ceremony — 5–10 s of passive wait beats
+  20–40 s of QR-scanning and app-switching. The failure mode to avoid is a
+  blocking "Connecting…" splash; the POC deliberately keeps the page
+  interactive instead.
+- **Relay round trip on-device**: the handshake traverses WalletConnect
+  relay infrastructure even though both ends live on the same phone —
+  loopback through the internet. It works and is what makes the pattern
+  zero-integration, but it adds RTTs and an availability dependency; a
+  local/link-mode transport would be the optimization path if the picker
+  ships for real.
+- **Consent surface**: auto-approval removes the moment where users see
+  what a connection shares. Mitigations in the POC: explicit one-time
+  consent, picker-scoped auto-approval only (QR/deeplink proposals keep the
+  full modal), per-transaction signing untouched. A production version
+  should show *which* account/chains were shared (e.g. a toast on settle).
+- **URI TTL (~5 min)**: harmless here since pairing happens immediately
+  after generation; slow page loads regenerate on reload.
+
 ## Corners cut (dapp side)
 
 - `wc_auto` skips 1-Click Auth (`authentication` payload) to keep the
