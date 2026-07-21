@@ -1,12 +1,12 @@
 # Dapp Picker POC (H2b) — dapp side + connect-variant comparison
 
-Companion to the Session Fees POC ([SESSION-FEES-POC.md](./SESSION-FEES-POC.md)).
+Companion to the Session Fees POC ([SESSION-FEES-POC.md](./SESSION-FEES-POC.md)); both POCs live on the session-fees-poc branch.
 A wallet ships an Explore directory of fee-honoring dapps; tapping a tile
 opens this dapp in a webview with a **monetized WC session pre-established**.
 Wallet side: `react-native-examples` branch `dapp-picker-poc`
 (`wallets/rn_cli_wallet/DAPP-PICKER-POC.md`).
 
-Preview: `https://react-dapp-v2-git-dapp-picker-poc-reown-com.vercel.app`
+Preview: `https://react-dapp-v2-git-session-fees-poc-reown-com.vercel.app`
 
 ## URL contract (what a picker tile opens)
 
