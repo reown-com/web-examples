@@ -141,6 +141,46 @@ Cons / the latency question:
 - **URI TTL (~5 min)**: harmless here since pairing happens immediately
   after generation; slow page loads regenerate on reload.
 
+## Integration steps — for a dapp adopting this
+
+What a production dapp needs to become "picker-openable" (≈30–100 lines,
+no redesign):
+
+1. **Support the URL contract.** Parse `?wc_auto=1` (plus whatever
+   dapp-specific presets make sense — our `?aggregator=` is an example) on
+   load, client-side. In `wc_auto` mode, suppress your connect UI.
+2. **Acquire a pairing URI headlessly**, per your stack (details in the
+   SDK-portability table above):
+   - AppKit ≥1.8.15 + headless entitlement: `prefetchWalletConnectUri()` +
+     `subscribeWalletConnectUri()` (retry — the WC connector registers async)
+   - wagmi/RainbowKit: `walletConnect({ showQrModal: false })` connector +
+     its `display_uri` message
+   - raw ethereum-provider / UniversalProvider: `provider.on('display_uri')`
+     + `provider.connect({ optionalNamespaces })`
+3. **Hand the URI to the host**:
+   ```js
+   window.ReactNativeWebView?.postMessage(
+     JSON.stringify({ type: 'wc_session_offer', uri }),
+   ) ?? (window.location.href = uri); // wc: fallback, host intercepts
+   ```
+   Generate on page load, pair immediately (URI TTL ~5 min); regenerate on
+   reload.
+4. **Detect settle and show state** — connection promise resolution or
+   AppKit/wagmi account state (or poll `provider.session`). Show a
+   "connected via {session.peer.metadata.name}" affordance; keep the page
+   **interactive during the handshake** (no blocking splash — this is what
+   keeps the perceived latency near zero).
+5. **Honor the fee terms** — read
+   `provider.session.sessionProperties.wc_feeTerms` and pass
+   `feeBps`/recipient into your aggregator calls (see
+   [SESSION-FEES-POC.md](./SESSION-FEES-POC.md) and
+   `docs/session-fees/*.md` for per-aggregator mappings). In the target
+   architecture this step is replaced by the registry lookup
+   ([fee-splitter design](./docs/session-fees/fee-splitter.md)) — AppKit
+   would do it for you.
+6. **Nothing else changes**: signing, broadcasting, and your normal
+   (non-webview) connect flow stay as they are — `wc_auto` is additive.
+
 ## Corners cut (dapp side)
 
 - `wc_auto` skips 1-Click Auth (`authentication` payload) to keep the
