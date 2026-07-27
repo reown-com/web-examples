@@ -41,10 +41,12 @@ export default function useInitialization() {
       console.log('Starting wallet initialization...')
 
       // Check for E2E credentials (decrypt via server if provided in URL)
-      await fetchE2ECredentials()
+      const e2eMnemonic = await fetchE2ECredentials()
 
       // Initialize EIP155 wallet first (required)
-      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet({
+        mnemonic: e2eMnemonic
+      })
       if (!eip155Addresses || !eip155Addresses[0]) {
         throw new Error('Failed to create EIP155 wallet')
       }
@@ -68,7 +70,7 @@ export default function useInitialization() {
             createOrRestoreCosmosWallet().then(({ cosmosAddresses }) => {
               SettingsStore.setCosmosAddress(cosmosAddresses[0])
             }),
-            createOrRestoreSolanaWallet().then(({ solanaAddresses }) => {
+            createOrRestoreSolanaWallet({ mnemonic: e2eMnemonic }).then(({ solanaAddresses }) => {
               SettingsStore.setSolanaAddress(solanaAddresses[0])
             }),
             createOrRestorePolkadotWallet().then(({ polkadotAddresses }) => {

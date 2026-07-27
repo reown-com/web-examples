@@ -1,4 +1,10 @@
+import { Keypair } from '@solana/web3.js'
+import { mnemonicToSeedSync } from 'bip39'
+import { derivePath } from 'ed25519-hd-key'
+
 import SolanaLib from '@/lib/SolanaLib'
+
+export const SOLANA_E2E_DERIVATION_PATHS = ["m/44'/501'/0'/0'", "m/44'/501'/1'/0'"] as const
 
 export let wallet1: SolanaLib
 export let wallet2: SolanaLib
@@ -11,7 +17,41 @@ let address2: string
 /**
  * Utilities
  */
-export async function createOrRestoreSolanaWallet() {
+export function deriveSolanaKeypair(mnemonic: string, path: string): Keypair {
+  const seed = mnemonicToSeedSync(mnemonic)
+  const { key } = derivePath(path, seed.toString('hex'))
+
+  return Keypair.fromSeed(key)
+}
+
+async function registerSolanaWallets() {
+  address1 = await wallet1.getAddress()
+  address2 = await wallet2.getAddress()
+
+  solanaWallets = {
+    [address1]: wallet1,
+    [address2]: wallet2
+  }
+  solanaAddresses = Object.keys(solanaWallets)
+
+  return {
+    solanaWallets,
+    solanaAddresses
+  }
+}
+
+export async function createOrRestoreSolanaWallet({ mnemonic }: { mnemonic?: string } = {}) {
+  if (mnemonic) {
+    const [path1, path2] = SOLANA_E2E_DERIVATION_PATHS
+    // E2E credentials are derived in memory on every load and are never persisted.
+    localStorage.removeItem('SOLANA_SECRET_KEY_1')
+    localStorage.removeItem('SOLANA_SECRET_KEY_2')
+    wallet1 = SolanaLib.init({ secretKey: deriveSolanaKeypair(mnemonic, path1).secretKey })
+    wallet2 = SolanaLib.init({ secretKey: deriveSolanaKeypair(mnemonic, path2).secretKey })
+
+    return registerSolanaWallets()
+  }
+
   const secretKey1 = localStorage.getItem('SOLANA_SECRET_KEY_1')
   const secretKey2 = localStorage.getItem('SOLANA_SECRET_KEY_2')
 
@@ -55,17 +95,5 @@ export async function createOrRestoreSolanaWallet() {
     )
   }
 
-  address1 = await wallet1.getAddress()
-  address2 = await wallet2.getAddress()
-
-  solanaWallets = {
-    [address1]: wallet1,
-    [address2]: wallet2
-  }
-  solanaAddresses = Object.keys(solanaWallets)
-
-  return {
-    solanaWallets,
-    solanaAddresses
-  }
+  return registerSolanaWallets()
 }

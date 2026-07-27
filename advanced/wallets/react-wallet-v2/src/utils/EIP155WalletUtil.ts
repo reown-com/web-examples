@@ -17,12 +17,12 @@ let address2: string
  * 1. Pre-encrypt mnemonic with scripts/encrypt-mnemonic.js
  * 2. Store encrypted value in E2E_ENCRYPTED_MNEMONIC secret
  * 3. Navigate to wallet with ?e2e_encrypted=<encrypted_value>
- * 4. This function decrypts via /api/e2e/decrypt and stores in localStorage
- * 5. createOrRestoreEIP155Wallet() reads from localStorage
+ * 4. This function decrypts via /api/e2e/decrypt and returns the mnemonic
+ *    directly to the namespace initializers without persisting it
  */
-export async function fetchE2ECredentials(): Promise<boolean> {
+export async function fetchE2ECredentials(): Promise<string | undefined> {
   if (typeof window === 'undefined') {
-    return false
+    return undefined
   }
 
   const urlParams = new URLSearchParams(window.location.search)
@@ -34,7 +34,7 @@ export async function fetchE2ECredentials(): Promise<boolean> {
   }
 
   if (!encrypted) {
-    return false
+    return undefined
   }
 
   try {
@@ -42,39 +42,32 @@ export async function fetchE2ECredentials(): Promise<boolean> {
     const response = await fetch(url)
 
     if (!response.ok) {
-      return false
+      return undefined
     }
 
     const data = await response.json()
 
-    if (data.mnemonic) {
-      localStorage.setItem('E2E_MNEMONIC', data.mnemonic)
-      return true
+    if (typeof data.mnemonic === 'string') {
+      return data.mnemonic
     }
 
-    return false
+    return undefined
   } catch (error) {
-    return false
+    return undefined
   }
 }
 
 /**
  * Utilities
  */
-export function createOrRestoreEIP155Wallet() {
-  // Check for E2E mnemonic (set by fetchE2ECredentials)
-  const e2eMnemonic = localStorage.getItem('E2E_MNEMONIC')
-
-  if (e2eMnemonic) {
-    // E2E mode: Use provided mnemonic for deterministic wallet
+export function createOrRestoreEIP155Wallet({ mnemonic }: { mnemonic?: string } = {}) {
+  if (mnemonic) {
+    // Remove credentials persisted by the legacy E2E handoff.
     localStorage.removeItem('E2E_MNEMONIC')
-
-    // Persist as regular mnemonic so it survives page navigation
-    localStorage.setItem('EIP155_MNEMONIC_1', e2eMnemonic)
-
-    wallet1 = EIP155Lib.init({ mnemonic: e2eMnemonic })
+    localStorage.removeItem('EIP155_MNEMONIC_1')
+    localStorage.removeItem('EIP155_MNEMONIC_2')
+    wallet1 = EIP155Lib.init({ mnemonic })
     wallet2 = EIP155Lib.init({})
-    localStorage.setItem('EIP155_MNEMONIC_2', wallet2.getMnemonic())
   } else {
     // Normal mode: Restore from localStorage or create new
     const mnemonic1 = localStorage.getItem('EIP155_MNEMONIC_1')
