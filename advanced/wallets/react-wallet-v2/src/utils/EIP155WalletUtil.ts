@@ -17,12 +17,13 @@ let address2: string
  * 1. Pre-encrypt mnemonic with scripts/encrypt-mnemonic.js
  * 2. Store encrypted value in E2E_ENCRYPTED_MNEMONIC secret
  * 3. Navigate to wallet with ?e2e_encrypted=<encrypted_value>
- * 4. This function decrypts via /api/e2e/decrypt and stores in localStorage
- * 5. createOrRestoreEIP155Wallet() reads from localStorage
+ * 4. This function decrypts via /api/e2e/decrypt, stores the mnemonic for EVM
+ *    initialization, and returns it for the other namespace initializers
+ * 5. createOrRestoreEIP155Wallet() reads its copy from localStorage
  */
-export async function fetchE2ECredentials(): Promise<boolean> {
+export async function fetchE2ECredentials(): Promise<string | undefined> {
   if (typeof window === 'undefined') {
-    return false
+    return undefined
   }
 
   const urlParams = new URLSearchParams(window.location.search)
@@ -34,7 +35,7 @@ export async function fetchE2ECredentials(): Promise<boolean> {
   }
 
   if (!encrypted) {
-    return false
+    return undefined
   }
 
   try {
@@ -42,19 +43,19 @@ export async function fetchE2ECredentials(): Promise<boolean> {
     const response = await fetch(url)
 
     if (!response.ok) {
-      return false
+      return undefined
     }
 
     const data = await response.json()
 
     if (data.mnemonic) {
       localStorage.setItem('E2E_MNEMONIC', data.mnemonic)
-      return true
+      return data.mnemonic
     }
 
-    return false
+    return undefined
   } catch (error) {
-    return false
+    return undefined
   }
 }
 
