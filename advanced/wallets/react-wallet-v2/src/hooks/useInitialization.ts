@@ -44,7 +44,9 @@ export default function useInitialization() {
       const e2eMnemonic = await fetchE2ECredentials()
 
       // Initialize EIP155 wallet first (required)
-      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet()
+      const { eip155Addresses, eip155Wallets } = createOrRestoreEIP155Wallet({
+        mnemonic: e2eMnemonic
+      })
       if (!eip155Addresses || !eip155Addresses[0]) {
         throw new Error('Failed to create EIP155 wallet')
       }
