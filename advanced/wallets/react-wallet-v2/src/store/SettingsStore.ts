@@ -36,6 +36,7 @@ interface State {
   stacksAddress: Record<'mainnet' | 'testnet', string>
   tonAddress: string
   cantonAddress: string
+  stellarAddress: string
   kernelSmartAccountAddress: string
   safeSmartAccountAddress: string
   biconomySmartAccountAddress: string
@@ -76,6 +77,7 @@ const state = proxy<State>({
   stacksAddress: { mainnet: '', testnet: '' },
   tonAddress: '',
   cantonAddress: '',
+  stellarAddress: '',
   kernelSmartAccountAddress: '',
   safeSmartAccountAddress: '',
   biconomySmartAccountAddress: '',
@@ -154,6 +156,9 @@ const SettingsStore = {
   },
   setCantonAddress(cantonAddress: string) {
     state.cantonAddress = cantonAddress
+  },
+  setStellarAddress(stellarAddress: string) {
+    state.stellarAddress = stellarAddress
   },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL

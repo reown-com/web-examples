@@ -1,17 +1,11 @@
 import { proxy, ref } from 'valtio'
-import type {
-  PaymentOptionsResponse,
-  PaymentOption,
-} from '@walletconnect/pay'
+import type { PaymentOptionsResponse, PaymentOption } from '@walletconnect/pay'
 
 import { walletkit } from '@/utils/WalletConnectUtil'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
+import { stellarWallets } from '@/utils/StellarWalletUtil'
 import SettingsStore from '@/store/SettingsStore'
-import {
-  detectErrorType,
-  getErrorMessage,
-  formatAmount,
-} from '@/components/PaymentModal/utils'
+import { detectErrorType, getErrorMessage, formatAmount } from '@/components/PaymentModal/utils'
 import type { ErrorType, Step } from '@/components/PaymentModal/utils'
 
 interface PaymentState {
@@ -45,7 +39,7 @@ const initialState: PaymentState = {
   paymentActions: null,
   isLoadingActions: false,
   actionsError: null,
-  collectDataCompletedIds: [],
+  collectDataCompletedIds: []
 }
 
 const state = proxy<PaymentState>({ ...initialState })
@@ -73,8 +67,8 @@ const PaymentStore = {
       optionsCount: options.options?.length,
       optionsWithCollectData: options.options?.map(o => ({
         id: o.id,
-        hasCollectDataUrl: !!o.collectData?.url,
-      })),
+        hasCollectDataUrl: !!o.collectData?.url
+      }))
     })
     state.paymentOptions = ref(options)
     state.loadingMessage = null
@@ -100,11 +94,7 @@ const PaymentStore = {
     state.step = step
   },
 
-  setResult(payload: {
-    status: 'success' | 'error'
-    message: string
-    errorType?: ErrorType
-  }) {
+  setResult(payload: { status: 'success' | 'error'; message: string; errorType?: ErrorType }) {
     state.resultStatus = payload.status
     state.resultMessage = payload.message
     state.resultErrorType = payload.errorType ?? null
@@ -147,7 +137,7 @@ const PaymentStore = {
     try {
       const actions = await payClient.getRequiredPaymentActions({
         paymentId: state.paymentOptions.paymentId,
-        optionId: option.id,
+        optionId: option.id
       })
       state.paymentActions = ref(actions)
     } catch (error: any) {
@@ -171,12 +161,7 @@ const PaymentStore = {
 
     const { paymentActions, selectedOption, paymentOptions } = state
 
-    if (
-      !paymentActions ||
-      paymentActions.length === 0 ||
-      !selectedOption ||
-      !paymentOptions
-    ) {
+    if (!paymentActions || paymentActions.length === 0 || !selectedOption || !paymentOptions) {
       console.warn('[PaymentStore] Cannot approve - missing required state')
       return
     }
@@ -190,13 +175,12 @@ const PaymentStore = {
         throw new Error('Pay SDK not available')
       }
 
-      const wallet = eip155Wallets[SettingsStore.state.eip155Address]
       const signatures: string[] = []
 
       for (const [index, action] of paymentActions.entries()) {
         if (action.walletRpc) {
           try {
-            const { method, params } = action.walletRpc
+            const { chainId, method, params } = action.walletRpc
             const parsedParams = JSON.parse(params)
 
             if (
@@ -204,21 +188,34 @@ const PaymentStore = {
               method === 'eth_signTypedData_v3' ||
               method === 'eth_signTypedData'
             ) {
+              const wallet = eip155Wallets[SettingsStore.state.eip155Address]
               const typedData = JSON.parse(parsedParams[1])
               const { domain, types, message: messageData } = typedData
               delete types.EIP712Domain
-              const signature = await wallet._signTypedData(
-                domain,
-                types,
-                messageData,
-              )
+              const signature = await wallet._signTypedData(domain, types, messageData)
               signatures.push(signature)
+            } else if (method === 'stellar_signXDR') {
+              const stellarAddress = selectedOption.account.split(':')[2]
+              const stellarWallet = stellarWallets?.[stellarAddress]
+              if (!stellarWallet) {
+                throw new Error(`No Stellar wallet found for account: ${stellarAddress}`)
+              }
+              console.log('[PaymentStore] Stellar params:', parsedParams)
+              console.log('[PaymentStore] Parsed params:', parsedParams[0])
+              let xdr = parsedParams[0]?.xdr
+              console.log('[PaymentStore] XDR:', xdr)
+              if (!xdr) {
+                throw new Error('Missing transaction XDR in payment action params')
+              }
+
+              const signedXDR = stellarWallet.signXDR(xdr, chainId)
+              signatures.push(signedXDR)
             } else {
               throw new Error(`Unsupported signature method: ${method}`)
             }
           } catch (error: any) {
             throw new Error(
-              `Failed to sign action ${index + 1}: ${error?.message || 'Unknown error'}`,
+              `Failed to sign action ${index + 1}: ${error?.message || 'Unknown error'}`
             )
           }
         }
@@ -227,7 +224,7 @@ const PaymentStore = {
       const confirmResult = await payClient.confirmPayment({
         paymentId: paymentOptions.paymentId,
         optionId: selectedOption.id,
-        signatures,
+        signatures
       })
 
       if (!confirmResult) {
@@ -245,7 +242,7 @@ const PaymentStore = {
       const amount = formatAmount(
         selectedOption.amount.value,
         selectedOption.amount.display.decimals,
-        2,
+        2
       )
       state.resultStatus = 'success'
       state.resultMessage = `You've paid ${amount} ${selectedOption.amount.display.assetSymbol} to ${paymentOptions.info?.merchant?.name}`
@@ -259,7 +256,7 @@ const PaymentStore = {
       state.resultMessage = getErrorMessage(errorType, errorMessage)
       state.step = 'result'
     }
-  },
+  }
 }
 
 export default PaymentStore

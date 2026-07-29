@@ -17,6 +17,7 @@ import { createOrRestoreSuiWallet } from '@/utils/SuiWalletUtil'
 import { createOrRestoreStacksWallet } from '@/utils/StacksWalletUtil'
 import { createOrRestoreTonWallet } from '@/utils/TonWalletUtil'
 import { createOrRestoreCantonWallet } from '@/utils/CantonWalletUtil'
+import { createOrRestoreStellarWallet } from '@/utils/StellarWalletUtil'
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false)
@@ -106,6 +107,9 @@ export default function useInitialization() {
             Promise.resolve().then(() => {
               const { cantonAddresses } = createOrRestoreCantonWallet()
               SettingsStore.setCantonAddress(cantonAddresses[0])
+            }),
+            createOrRestoreStellarWallet().then(({ stellarAddresses }) => {
+              SettingsStore.setStellarAddress(stellarAddresses[0])
             })
           ])
           console.log('All chain wallets initialized')
