@@ -22,6 +22,7 @@ import ChainAbstractionBalanceCard from '@/components/ChainAbstractionBalanceCar
 import { SUI_MAINNET, SUI_MAINNET_CHAINS, SUI_TESTNET_CHAINS } from '@/data/SuiData'
 import { STACKS_MAINNET, STACKS_TESTNET } from '@/data/StacksData'
 import { CANTON_MAINNET_CHAINS, CANTON_TEST_CHAINS } from '@/data/CantonData'
+import { STELLAR_MAINNET_CHAINS, STELLAR_TEST_CHAINS } from '@/data/StellarData'
 
 export default function HomePage() {
   const {
@@ -40,6 +41,7 @@ export default function HomePage() {
     stacksAddress,
     tonAddress,
     cantonAddress,
+    stellarAddress,
     smartAccountEnabled,
     chainAbstractionEnabled
   } = useSnapshot(SettingsStore.state)
@@ -196,6 +198,18 @@ export default function HomePage() {
           logo={logo}
           rgb={rgb}
           address={cantonAddress}
+          chainId={caip10}
+          data-testid={'chain-card-' + caip10.toString()}
+        />
+      ))}
+
+      {Object.entries(STELLAR_MAINNET_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+        <AccountCard
+          key={name}
+          name={name}
+          logo={logo}
+          rgb={rgb}
+          address={stellarAddress}
           chainId={caip10}
           data-testid={'chain-card-' + caip10.toString()}
         />
@@ -373,6 +387,18 @@ export default function HomePage() {
               logo={logo}
               rgb={rgb}
               address={cantonAddress}
+              chainId={caip10}
+              data-testid={'chain-card-' + caip10.toString()}
+            />
+          ))}
+
+          {Object.entries(STELLAR_TEST_CHAINS).map(([caip10, { name, logo, rgb }]) => (
+            <AccountCard
+              key={name}
+              name={name}
+              logo={logo}
+              rgb={rgb}
+              address={stellarAddress}
               chainId={caip10}
               data-testid={'chain-card-' + caip10.toString()}
             />
