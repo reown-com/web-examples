@@ -30,7 +30,8 @@ export default function SettingsPage() {
     safeSmartAccountEnabled,
     biconomySmartAccountEnabled,
     moduleManagementEnabled,
-    chainAbstractionEnabled
+    chainAbstractionEnabled,
+    payStagingEnabled
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -173,6 +174,27 @@ export default function SettingsPage() {
           ) : (
             <Text color="$gray400">This feature requires testnets</Text>
           )}
+        </Col>
+      </Row>
+
+      <StyledDivider css={{ my: '$8' }} />
+
+      <Row>
+        <Col>
+          <Text h4 css={{ marginBottom: '$5' }}>
+            Pay Environment
+          </Text>
+          <Row justify="space-between" align="center">
+            <Switch
+              checked={payStagingEnabled}
+              onChange={SettingsStore.togglePayStagingEnabled}
+              data-testid="settings-toggle-pay-staging"
+            />
+            <Text>{payStagingEnabled ? 'Staging' : 'Production'}</Text>
+          </Row>
+          <Text color="$gray400" css={{ marginTop: '$5' }}>
+            Defaults to production. Reload the page after changing for it to take effect.
+          </Text>
         </Col>
       </Row>
 

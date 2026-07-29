@@ -24,38 +24,42 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
       }
 
       PaymentStore.startPayment({
-        loadingMessage: 'Preparing your payment...',
+        loadingMessage: 'Preparing your payment...'
       })
       ModalStore.open('PaymentOptionsModal', {})
 
       try {
         const eip155Address = SettingsStore.state.eip155Address
         const accounts = eip155Address
-          ? Object.keys(EIP155_CHAINS).map(
-              chainKey => `${chainKey}:${eip155Address}`,
-            )
+          ? Object.keys(EIP155_CHAINS).map(chainKey => `${chainKey}:${eip155Address}`)
           : []
 
+        console.log(
+          '[Pay] environment:',
+          SettingsStore.state.payStagingEnabled === true ? 'staging' : 'production'
+        )
+        console.log('[Pay] fetching payment options for payment link:', uri, 'accounts:', accounts)
         const paymentOptions = await payClient.getPaymentOptions({
           paymentLink: uri,
           accounts,
-          includePaymentInfo: true,
+          includePaymentInfo: true
         })
 
         console.log('[Pay] getPaymentOptions response:', JSON.stringify(paymentOptions, null, 2))
-        console.log('[Pay] Options with collectData:', paymentOptions.options?.map(o => ({
-          id: o.id,
-          symbol: o.amount.display.assetSymbol,
-          network: o.amount.display.networkName,
-          hasCollectDataUrl: !!o.collectData?.url,
-          collectDataUrl: o.collectData?.url,
-        })))
+        console.log(
+          '[Pay] Options with collectData:',
+          paymentOptions.options?.map(o => ({
+            id: o.id,
+            symbol: o.amount.display.assetSymbol,
+            network: o.amount.display.networkName,
+            hasCollectDataUrl: !!o.collectData?.url,
+            collectDataUrl: o.collectData?.url
+          }))
+        )
 
         PaymentStore.setPaymentOptions(paymentOptions)
       } catch (error: any) {
-        PaymentStore.setError(
-          error?.message || 'Failed to fetch payment options',
-        )
+        PaymentStore.setError(error?.message || 'Failed to fetch payment options')
       }
 
       setUri('')
