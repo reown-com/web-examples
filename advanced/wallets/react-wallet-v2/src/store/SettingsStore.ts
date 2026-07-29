@@ -15,6 +15,7 @@ const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
 const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
 const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
+const PAY_STAGING_ENABLED_KEY = 'PAY_STAGING'
 
 /**
  * Types
@@ -51,6 +52,7 @@ interface State {
   biconomySmartAccountEnabled: boolean
   moduleManagementEnabled: boolean
   chainAbstractionEnabled: boolean
+  payStagingEnabled: boolean
 }
 
 /**
@@ -108,7 +110,12 @@ const state = proxy<State>({
       ? Boolean(localStorage.getItem(MODULE_MANAGEMENT_ENABLED_KEY))
       : false,
   chainAbstractionEnabled:
-    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false
+    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false,
+  // Defaults to production; only switches to the staging Pay environment when enabled.
+  payStagingEnabled:
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(PAY_STAGING_ENABLED_KEY))
+      : false
 })
 
 /**
@@ -236,6 +243,15 @@ const SettingsStore = {
       localStorage.setItem(CA_ENABLED_KEY, 'YES')
     } else {
       localStorage.removeItem(CA_ENABLED_KEY)
+    }
+  },
+
+  togglePayStagingEnabled() {
+    state.payStagingEnabled = !state.payStagingEnabled
+    if (state.payStagingEnabled) {
+      localStorage.setItem(PAY_STAGING_ENABLED_KEY, 'YES')
+    } else {
+      localStorage.removeItem(PAY_STAGING_ENABLED_KEY)
     }
   },
 

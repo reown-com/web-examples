@@ -40,6 +40,11 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
           accounts.push(`${STELLAR_CAIP_CHAINS.pubnet}:${stellarAddress}`)
         }
 
+        console.log(
+          '[Pay] environment:',
+          SettingsStore.state.payStagingEnabled === true ? 'staging' : 'production'
+        )
+        console.log('[Pay] fetching payment options for payment link:', uri, 'accounts:', accounts)
         const paymentOptions = await payClient.getPaymentOptions({
           paymentLink: uri,
           accounts,

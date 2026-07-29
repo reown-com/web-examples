@@ -7,6 +7,7 @@ import type { PaymentOption } from '@walletconnect/pay'
 
 import ModalStore from '@/store/ModalStore'
 import PaymentStore from '@/store/PaymentStore'
+import PayEnvPill from '@/components/PayEnvPill'
 import {
   ConfirmPaymentView,
   CollectDataIframe,
@@ -210,26 +211,29 @@ export default function PaymentOptionsModal() {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: showBackButton ? 'space-between' : 'flex-end',
+            justifyContent: 'space-between',
             padding: '12px 16px 0',
           }}>
-            {showBackButton && (
-              <button
-                onClick={goBack}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <ArrowBackIcon sx={{ fontSize: 24, color: '#666' }} />
-              </button>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {showBackButton && (
+                <button
+                  onClick={goBack}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '8px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <ArrowBackIcon sx={{ fontSize: 24, color: '#666' }} />
+                </button>
+              )}
+              <PayEnvPill />
+            </div>
             <button
               onClick={showInfoExplainer ? () => setShowInfoExplainer(false) : onClose}
               style={{
