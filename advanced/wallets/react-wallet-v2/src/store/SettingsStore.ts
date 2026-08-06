@@ -37,6 +37,7 @@ interface State {
   stacksAddress: Record<'mainnet' | 'testnet', string>
   tonAddress: string
   cantonAddress: string
+  stellarAddress: string
   kernelSmartAccountAddress: string
   safeSmartAccountAddress: string
   biconomySmartAccountAddress: string
@@ -78,6 +79,7 @@ const state = proxy<State>({
   stacksAddress: { mainnet: '', testnet: '' },
   tonAddress: '',
   cantonAddress: '',
+  stellarAddress: '',
   kernelSmartAccountAddress: '',
   safeSmartAccountAddress: '',
   biconomySmartAccountAddress: '',
@@ -111,7 +113,9 @@ const state = proxy<State>({
     typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false,
   // Defaults to production; only switches to the staging Pay environment when enabled.
   payStagingEnabled:
-    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(PAY_STAGING_ENABLED_KEY)) : false
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(PAY_STAGING_ENABLED_KEY))
+      : false
 })
 
 /**
@@ -159,6 +163,9 @@ const SettingsStore = {
   },
   setCantonAddress(cantonAddress: string) {
     state.cantonAddress = cantonAddress
+  },
+  setStellarAddress(stellarAddress: string) {
+    state.stellarAddress = stellarAddress
   },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL

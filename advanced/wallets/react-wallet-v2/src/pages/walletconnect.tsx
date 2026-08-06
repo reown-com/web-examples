@@ -9,6 +9,7 @@ import ModalStore from '@/store/ModalStore'
 import PaymentStore from '@/store/PaymentStore'
 import SettingsStore from '@/store/SettingsStore'
 import { EIP155_CHAINS } from '@/data/EIP155Data'
+import { STELLAR_CAIP_CHAINS } from '@/lib/StellarLib'
 
 export default function WalletConnectPage(params: { deepLink?: string }) {
   const { deepLink } = params
@@ -33,6 +34,11 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
         const accounts = eip155Address
           ? Object.keys(EIP155_CHAINS).map(chainKey => `${chainKey}:${eip155Address}`)
           : []
+
+        const stellarAddress = SettingsStore.state.stellarAddress
+        if (stellarAddress) {
+          accounts.push(`${STELLAR_CAIP_CHAINS.pubnet}:${stellarAddress}`)
+        }
 
         console.log(
           '[Pay] environment:',
