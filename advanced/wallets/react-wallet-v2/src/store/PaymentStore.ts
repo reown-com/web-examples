@@ -200,10 +200,7 @@ const PaymentStore = {
               if (!stellarWallet) {
                 throw new Error(`No Stellar wallet found for account: ${stellarAddress}`)
               }
-              console.log('[PaymentStore] Stellar params:', parsedParams)
-              console.log('[PaymentStore] Parsed params:', parsedParams[0])
-              let xdr = parsedParams[0]?.xdr
-              console.log('[PaymentStore] XDR:', xdr)
+              const xdr = parsedParams[0]?.xdr
               if (!xdr) {
                 throw new Error('Missing transaction XDR in payment action params')
               }
