@@ -58,8 +58,7 @@ export default class SolanaLib {
     this.sign(transaction)
 
     return {
-      transaction: this.serialize(transaction),
-      signature: bs58.encode(transaction.signatures[0])
+      transaction: this.serialize(transaction)
     }
   }
 
@@ -174,10 +173,7 @@ export namespace SolanaLib {
 
   export type SignMessage = RPCRequest<{ message: string }, { signature: string }>
 
-  export type SignTransaction = RPCRequest<
-    { transaction: string },
-    { transaction: string; signature: string }
-  >
+  export type SignTransaction = RPCRequest<{ transaction: string }, { transaction: string }>
 
   export type SignAndSendTransaction = RPCRequest<
     { transaction: string; options?: SendOptions },
