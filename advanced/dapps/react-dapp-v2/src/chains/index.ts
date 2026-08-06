@@ -14,6 +14,7 @@ import * as sui from "./sui";
 import * as stacks from "./stacks";
 import * as ton from "./ton";
 import * as canton from "./canton";
+import * as stellar from "./stellar";
 
 import { ChainMetadata, ChainRequestRender } from "../helpers";
 
@@ -48,6 +49,8 @@ export function getChainMetadata(chainId: string): ChainMetadata {
       return ton.getChainMetadata(chainId);
     case "canton":
       return canton.getChainMetadata(chainId);
+    case "stellar":
+      return stellar.getChainMetadata(chainId);
     default:
       throw new Error(`No metadata handler for namespace ${namespace}`);
   }

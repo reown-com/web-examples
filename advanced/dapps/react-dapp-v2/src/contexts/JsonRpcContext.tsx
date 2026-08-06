@@ -35,6 +35,15 @@ import {
   PublicKey,
 } from "@solana/web3.js";
 import {
+  Account as StellarAccount,
+  Asset as StellarAsset,
+  BASE_FEE as STELLAR_BASE_FEE,
+  Keypair as StellarKeypair,
+  Networks as StellarNetworks,
+  Operation as StellarOperation,
+  TransactionBuilder as StellarTransactionBuilder,
+} from "@stellar/stellar-base";
+import {
   buildKadenaSignRequest,
   buildKadenaQuicksignRequest,
 } from "../helpers/kadena-rpc";
@@ -75,6 +84,7 @@ import {
   DEFAULT_SUI_METHODS,
   DEFAULT_STACKS_METHODS,
   DEFAULT_CANTON_METHODS,
+  DEFAULT_STELLAR_METHODS,
 } from "../constants";
 import { useChainData } from "./ChainDataContext";
 import { rpcProvidersByChainId } from "../../src/helpers/api";
@@ -155,6 +165,11 @@ interface IContext {
   solanaRpc: {
     testSignMessage: TRpcRequestCallback;
     testSignTransaction: TRpcRequestCallback;
+  };
+  stellarRpc: {
+    testSignXDR: TRpcRequestCallback;
+    testSignAndSubmitXDR: TRpcRequestCallback;
+    testSignMessage: TRpcRequestCallback;
   };
   polkadotRpc: {
     testSignMessage: TRpcRequestCallback;
@@ -1017,6 +1032,184 @@ export function JsonRpcContextProvider({
 
         return {
           method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
+          address,
+          valid,
+          result: result.signature,
+        };
+      },
+    ),
+  };
+
+  // -------- STELLAR RPC METHODS --------
+
+  const getStellarNetwork = (chainId: string) => {
+    const reference = chainId.split(":")[1];
+    return reference === "pubnet"
+      ? {
+          passphrase: StellarNetworks.PUBLIC,
+          horizonUrl: "https://horizon.stellar.org",
+        }
+      : {
+          passphrase: StellarNetworks.TESTNET,
+          horizonUrl: "https://horizon-testnet.stellar.org",
+        };
+  };
+
+  // Loads the account's current sequence number from Horizon so we can build a
+  // submittable transaction. Requires the account to exist (be funded) on-chain.
+  const loadStellarSequence = async (horizonUrl: string, address: string) => {
+    const response = await fetch(`${horizonUrl}/accounts/${address}`);
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error(
+          `Stellar account ${address} is not funded on this network. Fund it first (use friendbot on testnet).`,
+        );
+      }
+      throw new Error(`Failed to load Stellar account: ${response.status}`);
+    }
+    const data = await response.json();
+    return data.sequence as string;
+  };
+
+  // Builds an unsigned transaction envelope (a 1 XLM payment to self) for the
+  // connected account — enough to exercise the signing methods end to end.
+  const buildStellarPaymentXDR = async (chainId: string, address: string) => {
+    const { passphrase, horizonUrl } = getStellarNetwork(chainId);
+    const sequence = await loadStellarSequence(horizonUrl, address);
+    const account = new StellarAccount(address, sequence);
+
+    const transaction = new StellarTransactionBuilder(account, {
+      fee: STELLAR_BASE_FEE,
+      networkPassphrase: passphrase,
+    })
+      .addOperation(
+        StellarOperation.payment({
+          destination: address,
+          asset: StellarAsset.native(),
+          amount: "1",
+        }),
+      )
+      .setTimeout(120)
+      .build();
+
+    return transaction.toXDR();
+  };
+
+  const stellarRpc = {
+    testSignXDR: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+      ): Promise<IFormattedRpcResponse> => {
+        const { passphrase } = getStellarNetwork(chainId);
+        const xdr = await buildStellarPaymentXDR(chainId, address);
+
+        const result = await client!.request<{
+          signedXDR: string;
+          signerAddress: string;
+        }>({
+          chainId,
+          topic: session!.topic,
+          request: {
+            method: DEFAULT_STELLAR_METHODS.STELLAR_SIGN_XDR,
+            params: { xdr, chain: chainId, account: `${chainId}:${address}` },
+          },
+        });
+
+        // Verify the returned envelope carries a valid signature from the account.
+        const signedTx = StellarTransactionBuilder.fromXDR(
+          result.signedXDR,
+          passphrase,
+        );
+        const keypair = StellarKeypair.fromPublicKey(address);
+        const txHash = signedTx.hash();
+        const valid = signedTx.signatures.some(
+          (sig: { signature: () => Buffer }) =>
+            keypair.verify(txHash, sig.signature()),
+        );
+
+        return {
+          method: DEFAULT_STELLAR_METHODS.STELLAR_SIGN_XDR,
+          address,
+          valid,
+          result: result.signedXDR,
+        };
+      },
+    ),
+    testSignAndSubmitXDR: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+      ): Promise<IFormattedRpcResponse> => {
+        const xdr = await buildStellarPaymentXDR(chainId, address);
+
+        const result = await client!.request<{
+          tx_hash: string;
+          signedXDR: string;
+          successful?: boolean;
+        }>({
+          chainId,
+          topic: session!.topic,
+          request: {
+            method: DEFAULT_STELLAR_METHODS.STELLAR_SIGN_AND_SUBMIT_XDR,
+            params: {
+              xdr,
+              chain: chainId,
+              account: `${chainId}:${address}`,
+              waitForInclusion: true,
+            },
+          },
+        });
+
+        return {
+          method: DEFAULT_STELLAR_METHODS.STELLAR_SIGN_AND_SUBMIT_XDR,
+          address,
+          valid: result.successful !== false,
+          result: result.tx_hash,
+        };
+      },
+    ),
+    testSignMessage: _createJsonRpcRequestHandler(
+      async (
+        chainId: string,
+        address: string,
+      ): Promise<IFormattedRpcResponse> => {
+        const message = `This is an example message to be signed - ${Date.now()}`;
+
+        const result = await client!.request<{
+          signature: string;
+          signerAddress: string;
+        }>({
+          chainId,
+          topic: session!.topic,
+          request: {
+            method: DEFAULT_STELLAR_METHODS.STELLAR_SIGN_MESSAGE,
+            params: {
+              message,
+              messageEncoding: "utf-8",
+              chain: chainId,
+              account: `${chainId}:${address}`,
+            },
+          },
+        });
+
+        // The wallet signs sha256("StellarMessage" || 0x00 || message) — verify the same.
+        const encoder = new TextEncoder();
+        const prefix = encoder.encode("StellarMessage");
+        const messageBytes = encoder.encode(message);
+        const toHash = new Uint8Array(prefix.length + 1 + messageBytes.length);
+        toHash.set(prefix, 0);
+        toHash[prefix.length] = 0; // 0x00 domain separator
+        toHash.set(messageBytes, prefix.length + 1);
+
+        const keypair = StellarKeypair.fromPublicKey(address);
+        const valid = keypair.verify(
+          Buffer.from(sha256(toHash)),
+          Buffer.from(result.signature, "base64"),
+        );
+
+        return {
+          method: DEFAULT_STELLAR_METHODS.STELLAR_SIGN_MESSAGE,
           address,
           valid,
           result: result.signature,
@@ -2767,6 +2960,7 @@ export function JsonRpcContextProvider({
         ethereumRpc,
         cosmosRpc,
         solanaRpc,
+        stellarRpc,
         polkadotRpc,
         nearRpc,
         multiversxRpc,

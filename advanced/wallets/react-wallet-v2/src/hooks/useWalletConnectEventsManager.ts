@@ -30,6 +30,7 @@ import { STACKS_SIGNING_METHODS } from '@/data/StacksData'
 import { TON_SIGNING_METHODS } from '@/data/TonData'
 import { CANTON_SIGNING_METHODS } from '@/data/CantonData'
 import { approveCantonRequest } from '@/utils/CantonRequestHandlerUtil'
+import { STELLAR_SIGNING_METHODS } from '@/data/StellarData'
 
 export default function useWalletConnectEventsManager(initialized: boolean) {
   /******************************************************************************
@@ -220,6 +221,11 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
         case CANTON_SIGNING_METHODS.CANTON_PREPARE_SIGN_EXECUTE:
         case CANTON_SIGNING_METHODS.CANTON_SIGN_MESSAGE:
           return ModalStore.open('SessionSignCantonModal', { requestEvent, requestSession })
+        case STELLAR_SIGNING_METHODS.STELLAR_SIGN_XDR:
+        case STELLAR_SIGNING_METHODS.STELLAR_SIGN_AND_SUBMIT_XDR:
+        case STELLAR_SIGNING_METHODS.STELLAR_SIGN_MESSAGE:
+        case STELLAR_SIGNING_METHODS.STELLAR_SIGN_AUTH_ENTRY:
+          return ModalStore.open('SessionSignStellarModal', { requestEvent, requestSession })
         default:
           return ModalStore.open('SessionUnsuportedMethodModal', { requestEvent, requestSession })
       }

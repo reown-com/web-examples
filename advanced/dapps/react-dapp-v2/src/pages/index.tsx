@@ -15,6 +15,7 @@ import {
   DEFAULT_EIP155_METHODS,
   DEFAULT_MAIN_CHAINS,
   DEFAULT_SOLANA_METHODS,
+  DEFAULT_STELLAR_METHODS,
   DEFAULT_POLKADOT_METHODS,
   DEFAULT_MULTIVERSX_METHODS,
   DEFAULT_TEST_CHAINS,
@@ -95,6 +96,7 @@ const Home: NextPage = () => {
     ethereumRpc,
     cosmosRpc,
     solanaRpc,
+    stellarRpc,
     polkadotRpc,
     nearRpc,
     multiversxRpc,
@@ -358,6 +360,35 @@ const Home: NextPage = () => {
       },
       {
         method: DEFAULT_SOLANA_METHODS.SOL_SIGN_MESSAGE,
+        callback: onSignMessage,
+      },
+    ];
+  };
+
+  const getStellarActions = (): AccountAction[] => {
+    const onSignXDR = async (chainId: string, address: string) => {
+      openRequestModal();
+      await stellarRpc.testSignXDR(chainId, address);
+    };
+    const onSignAndSubmitXDR = async (chainId: string, address: string) => {
+      openRequestModal();
+      await stellarRpc.testSignAndSubmitXDR(chainId, address);
+    };
+    const onSignMessage = async (chainId: string, address: string) => {
+      openRequestModal();
+      await stellarRpc.testSignMessage(chainId, address);
+    };
+    return [
+      {
+        method: DEFAULT_STELLAR_METHODS.STELLAR_SIGN_XDR,
+        callback: onSignXDR,
+      },
+      {
+        method: DEFAULT_STELLAR_METHODS.STELLAR_SIGN_AND_SUBMIT_XDR,
+        callback: onSignAndSubmitXDR,
+      },
+      {
+        method: DEFAULT_STELLAR_METHODS.STELLAR_SIGN_MESSAGE,
         callback: onSignMessage,
       },
     ];
@@ -716,6 +747,8 @@ const Home: NextPage = () => {
         return getCosmosActions();
       case "solana":
         return getSolanaActions();
+      case "stellar":
+        return getStellarActions();
       case "polkadot":
         return getPolkadotActions();
       case "near":

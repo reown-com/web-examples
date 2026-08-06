@@ -21,6 +21,7 @@ import { SuiChainData } from "../chains/sui";
 import { StacksChainData } from "../chains/stacks";
 import { TonChainData } from "../chains/ton";
 import { CantonChainData } from "../chains/canton";
+import { StellarChainData } from "../chains/stellar";
 
 /**
  * Types
@@ -92,6 +93,9 @@ export function ChainDataContextProvider({
             break;
           case "canton":
             chains = CantonChainData;
+            break;
+          case "stellar":
+            chains = StellarChainData;
             break;
           default:
             console.error("Unknown chain namespace: ", namespace);
