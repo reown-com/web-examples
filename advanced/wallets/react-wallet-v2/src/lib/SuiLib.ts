@@ -115,8 +115,6 @@ export default class SuiLib {
       return this.suiClients[chainId]
     }
 
-    // Sui disabled JSON-RPC on its public fullnodes (2026-07-27); use the
-    // CORS-enabled GraphQL RPC instead (see getSuiGraphqlUrl in SuiData).
     switch (chainId) {
       case 'sui:mainnet':
         this.suiClients[chainId] = new SuiGraphQLClient({ url: getSuiGraphqlUrl(chainId), network: 'mainnet' })

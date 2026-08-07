@@ -198,7 +198,6 @@ async function fetchSolanaBalance(address: string, rpc: string, chainId: string)
 async function fetchSuiBalance(address: string, rpc: string, chainId: string): Promise<BalanceResult> {
   const symbol = getSymbol(chainId)
   const actualAddress = extractAddressFromCaip10(address)
-  // Sui disabled JSON-RPC on its public fullnodes (2026-07-27); query the GraphQL RPC.
   const response = await fetch(rpc, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

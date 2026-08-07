@@ -15,11 +15,6 @@ export type ISuiChainId =
   | typeof SUI_TESTNET_CAIP2
   | typeof SUI_DEVNET_CAIP2
 
-/**
- * Sui disabled JSON-RPC on its public fullnodes (2026-07-27), so use the GraphQL
- * RPC — the recommended browser/frontend replacement, which is CORS-enabled out
- * of the box. https://docs.sui.io/develop/accessing-data/json-rpc-migration
- */
 export const getSuiGraphqlUrl = (caip2: ISuiChainId) => {
   const network = caip2.split(':')[1]
   return `https://graphql.${network}.sui.io/graphql`

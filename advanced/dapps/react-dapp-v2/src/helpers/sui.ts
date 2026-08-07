@@ -16,10 +16,6 @@ export function getSuiClient(chainId: string): SuiGraphQLClient {
   if (!network) {
     throw new Error(`Unknown chainId: ${chainId}`);
   }
-  // Sui disabled JSON-RPC on its public fullnodes (2026-07-27), so the SDK's
-  // SuiJsonRpcClient no longer works. Use the GraphQL RPC — the recommended
-  // browser/frontend replacement — which is CORS-enabled out of the box.
-  // https://docs.sui.io/develop/accessing-data/json-rpc-migration
   const client = new SuiGraphQLClient({
     network,
     url: `https://graphql.${network}.sui.io/graphql`,
