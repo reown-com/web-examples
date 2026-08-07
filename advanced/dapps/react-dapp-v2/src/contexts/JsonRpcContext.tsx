@@ -2624,12 +2624,6 @@ export function JsonRpcContextProvider({
         const [coin] = tx.splitCoins(tx.gas, [100]); // 0.001 SUI
         tx.setSender(address);
         tx.transferObjects([coin], recipient?.trim() || address);
-        // Set an explicit gas budget so build() skips its dry-run simulation.
-        // The installed @mysten/sui `simulateTransaction` query requests a
-        // `SimulationResult.error` field the current Sui GraphQL schema no longer
-        // exposes, so auto gas estimation throws "Unknown field 'error' on type
-        // 'SimulationResult'". 0.01 SUI is ample for this transfer.
-        tx.setGasBudget(10_000_000);
 
         const suiClient = getSuiClient(chainId);
         const bcsTransaction = await tx.build({ client: suiClient });
@@ -2671,11 +2665,6 @@ export function JsonRpcContextProvider({
         tx.setSender(address);
 
         tx.transferObjects([coin], address);
-
-        // Explicit gas budget so build() skips the dry-run simulation, whose
-        // query is incompatible with the current Sui GraphQL schema (see
-        // testSendSuiTransaction above).
-        tx.setGasBudget(10_000_000);
 
         const suiClient = getSuiClient(chainId);
 
