@@ -1,53 +1,29 @@
-import { SuiJsonRpcClient, JsonRpcHTTPTransport } from "@mysten/sui/jsonRpc";
-import { getProviderUrl } from "./utilities";
+import { SuiGraphQLClient } from "@mysten/sui/graphql";
 
-const clients = new Map<string, SuiJsonRpcClient>();
+const clients = new Map<string, SuiGraphQLClient>();
 
-// The @mysten/sui HTTP transport attaches Client-Sdk-Type / Client-Sdk-Version /
-// Client-Target-Api-Version / Client-Request-Method headers to every request.
-// The WalletConnect Blockchain API's CORS policy does not allow those header
-// names, so the browser rejects the preflight. They are informational only, so
-// strip them here — only Content-Type (which is allowed) needs to survive.
-const blockchainApiFetch: typeof fetch = (input, init) => {
-  if (init?.headers) {
-    const headers = new Headers(init.headers);
-    [
-      "client-sdk-type",
-      "client-sdk-version",
-      "client-target-api-version",
-      "client-request-method",
-    ].forEach((header) => headers.delete(header));
-    init = { ...init, headers };
-  }
-  return fetch(input, init);
+const SUI_NETWORKS: Record<string, "mainnet" | "testnet" | "devnet"> = {
+  "sui:mainnet": "mainnet",
+  "sui:testnet": "testnet",
+  "sui:devnet": "devnet",
 };
 
-export function getSuiClient(chainId: string): SuiJsonRpcClient {
+export function getSuiClient(chainId: string): SuiGraphQLClient {
   if (clients.has(chainId)) {
     return clients.get(chainId)!;
   }
-  // Route Sui JSON-RPC through the CORS-enabled WalletConnect Blockchain API.
-  // The public Sui fullnodes (fullnode.*.sui.io) do not return CORS headers, so
-  // calling them directly from the browser is blocked, which breaks balance
-  // fetching and transaction building (tx.build needs the reference gas price).
-  const transport = new JsonRpcHTTPTransport({
-    url: getProviderUrl(chainId),
-    fetch: blockchainApiFetch,
-  });
-  let client: SuiJsonRpcClient;
-  switch (chainId) {
-    case "sui:mainnet":
-      client = new SuiJsonRpcClient({ network: "mainnet", transport });
-      break;
-    case "sui:testnet":
-      client = new SuiJsonRpcClient({ network: "testnet", transport });
-      break;
-    case "sui:devnet":
-      client = new SuiJsonRpcClient({ network: "devnet", transport });
-      break;
-    default:
-      throw new Error(`Unknown chainId: ${chainId}`);
+  const network = SUI_NETWORKS[chainId];
+  if (!network) {
+    throw new Error(`Unknown chainId: ${chainId}`);
   }
+  // Sui disabled JSON-RPC on its public fullnodes (2026-07-27), so the SDK's
+  // SuiJsonRpcClient no longer works. Use the GraphQL RPC — the recommended
+  // browser/frontend replacement — which is CORS-enabled out of the box.
+  // https://docs.sui.io/develop/accessing-data/json-rpc-migration
+  const client = new SuiGraphQLClient({
+    network,
+    url: `https://graphql.${network}.sui.io/graphql`,
+  });
   clients.set(chainId, client);
   return client;
 }

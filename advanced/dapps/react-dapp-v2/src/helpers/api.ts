@@ -281,7 +281,7 @@ export const apiGetSuiAccountBalance = async (
   });
 
   return {
-    balance: (parseInt(result.totalBalance) / 10 ** 9).toString(),
+    balance: (parseInt(result.balance.balance) / 10 ** 9).toString(),
     symbol: "SUI",
     name: "SUI",
   };

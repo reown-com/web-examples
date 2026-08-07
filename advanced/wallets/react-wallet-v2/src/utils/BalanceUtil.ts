@@ -198,23 +198,26 @@ async function fetchSolanaBalance(address: string, rpc: string, chainId: string)
 async function fetchSuiBalance(address: string, rpc: string, chainId: string): Promise<BalanceResult> {
   const symbol = getSymbol(chainId)
   const actualAddress = extractAddressFromCaip10(address)
+  // Sui disabled JSON-RPC on its public fullnodes (2026-07-27); query the GraphQL RPC.
   const response = await fetch(rpc, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      jsonrpc: '2.0',
-      id: 1,
-      method: 'suix_getBalance',
-      params: [actualAddress, '0x2::sui::SUI']
+      query: `query($address: SuiAddress!) {
+        address(address: $address) {
+          balance(coinType: "0x2::sui::SUI") { totalBalance }
+        }
+      }`,
+      variables: { address: actualAddress }
     })
   })
 
   const data = await response.json()
-  if (data.error) {
-    throw new Error(data.error.message)
+  if (data.errors?.length) {
+    throw new Error(data.errors[0].message)
   }
 
-  const totalBalance = data.result?.totalBalance || '0'
+  const totalBalance = data.data?.address?.balance?.totalBalance || '0'
   const balance = (BigInt(totalBalance) / BigInt(1e9)).toString()
   const preciseBalance = Number(totalBalance) / 1e9
   return { balance, balanceFormatted: formatBalanceValue(preciseBalance.toString()), symbol }

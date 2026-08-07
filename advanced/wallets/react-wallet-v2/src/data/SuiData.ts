@@ -16,12 +16,13 @@ export type ISuiChainId =
   | typeof SUI_DEVNET_CAIP2
 
 /**
- * Route Sui JSON-RPC through the CORS-enabled WalletConnect Blockchain API.
- * The public Sui fullnodes (fullnode.*.sui.io) do not return CORS headers, so
- * calling them directly from the browser is blocked.
+ * Sui disabled JSON-RPC on its public fullnodes (2026-07-27), so use the GraphQL
+ * RPC — the recommended browser/frontend replacement, which is CORS-enabled out
+ * of the box. https://docs.sui.io/develop/accessing-data/json-rpc-migration
  */
-export const getSuiRpcUrl = (caip2: ISuiChainId) => {
-  return `https://rpc.walletconnect.org/v1?chainId=${caip2}&projectId=${process.env.NEXT_PUBLIC_PROJECT_ID}`
+export const getSuiGraphqlUrl = (caip2: ISuiChainId) => {
+  const network = caip2.split(':')[1]
+  return `https://graphql.${network}.sui.io/graphql`
 }
 
 export const SUI_MAINNET = {
@@ -30,7 +31,7 @@ export const SUI_MAINNET = {
     name: 'SUI Mainnet',
     logo: '/chain-logos/sui.png',
     rgb: '6, 135, 245',
-    rpc: getSuiRpcUrl(SUI_MAINNET_CAIP2),
+    rpc: getSuiGraphqlUrl(SUI_MAINNET_CAIP2),
     caip2: SUI_MAINNET_CAIP2 as ISuiChainId,
     namespace: SUI_NAMESPACE,
     symbol: 'SUI'
@@ -42,7 +43,7 @@ export const SUI_TESTNET = {
     name: 'SUI Testnet',
     logo: '/chain-logos/sui.png',
     rgb: '6, 135, 245',
-    rpc: getSuiRpcUrl(SUI_TESTNET_CAIP2),
+    rpc: getSuiGraphqlUrl(SUI_TESTNET_CAIP2),
     caip2: SUI_TESTNET_CAIP2 as ISuiChainId,
     namespace: SUI_NAMESPACE,
     symbol: 'SUI'
@@ -54,7 +55,7 @@ export const SUI_DEVNET = {
     name: 'SUI Devnet',
     logo: '/chain-logos/sui.png',
     rgb: '6, 135, 245',
-    rpc: getSuiRpcUrl(SUI_DEVNET_CAIP2),
+    rpc: getSuiGraphqlUrl(SUI_DEVNET_CAIP2),
     caip2: SUI_DEVNET_CAIP2 as ISuiChainId,
     namespace: SUI_NAMESPACE,
     symbol: 'SUI'

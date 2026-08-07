@@ -4,24 +4,8 @@ import { Ed25519Keypair, Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519'
 import { verifyPersonalMessageSignature } from '@mysten/sui/verify'
 import { derivePath } from 'ed25519-hd-key'
 import { SerialTransactionExecutor, Transaction } from '@mysten/sui/transactions'
-import { SuiJsonRpcClient, JsonRpcHTTPTransport } from '@mysten/sui/jsonRpc'
-import { getSuiRpcUrl } from '@/data/SuiData'
-
-// The @mysten/sui HTTP transport attaches Client-Sdk-Type / Client-Sdk-Version /
-// Client-Target-Api-Version / Client-Request-Method headers to every request.
-// The WalletConnect Blockchain API's CORS policy does not allow those header
-// names, so the browser rejects the preflight. They are informational only, so
-// strip them here — only Content-Type (which is allowed) needs to survive.
-const blockchainApiFetch: typeof fetch = (input, init) => {
-  if (init?.headers) {
-    const headers = new Headers(init.headers)
-    ;['client-sdk-type', 'client-sdk-version', 'client-target-api-version', 'client-request-method'].forEach(
-      header => headers.delete(header)
-    )
-    init = { ...init, headers }
-  }
-  return fetch(input, init)
-}
+import { SuiGraphQLClient } from '@mysten/sui/graphql'
+import { getSuiGraphqlUrl } from '@/data/SuiData'
 
 interface IInitArguments {
   mnemonic?: string
@@ -49,7 +33,7 @@ const SUI_PATH = "m/44'/784'/0'/0'/0'"
 export default class SuiLib {
   private keypair: Ed25519Keypair
   private mnemonic: string
-  private suiClients: Record<string, SuiJsonRpcClient> = {}
+  private suiClients: Record<string, SuiGraphQLClient> = {}
   private publicKey: Ed25519PublicKey
 
   constructor(mnemonic?: string) {
@@ -131,26 +115,17 @@ export default class SuiLib {
       return this.suiClients[chainId]
     }
 
-    // Route Sui JSON-RPC through the CORS-enabled WalletConnect Blockchain API
-    // rather than the public Sui fullnodes, which are blocked in the browser.
+    // Sui disabled JSON-RPC on its public fullnodes (2026-07-27); use the
+    // CORS-enabled GraphQL RPC instead (see getSuiGraphqlUrl in SuiData).
     switch (chainId) {
       case 'sui:mainnet':
-        this.suiClients[chainId] = new SuiJsonRpcClient({
-          network: 'mainnet',
-          transport: new JsonRpcHTTPTransport({ url: getSuiRpcUrl(chainId), fetch: blockchainApiFetch })
-        })
+        this.suiClients[chainId] = new SuiGraphQLClient({ url: getSuiGraphqlUrl(chainId), network: 'mainnet' })
         break
       case 'sui:testnet':
-        this.suiClients[chainId] = new SuiJsonRpcClient({
-          network: 'testnet',
-          transport: new JsonRpcHTTPTransport({ url: getSuiRpcUrl(chainId), fetch: blockchainApiFetch })
-        })
+        this.suiClients[chainId] = new SuiGraphQLClient({ url: getSuiGraphqlUrl(chainId), network: 'testnet' })
         break
       case 'sui:devnet':
-        this.suiClients[chainId] = new SuiJsonRpcClient({
-          network: 'devnet',
-          transport: new JsonRpcHTTPTransport({ url: getSuiRpcUrl(chainId), fetch: blockchainApiFetch })
-        })
+        this.suiClients[chainId] = new SuiGraphQLClient({ url: getSuiGraphqlUrl(chainId), network: 'devnet' })
         break
       default:
         throw new Error(`Unknown chainId: ${chainId}`)
