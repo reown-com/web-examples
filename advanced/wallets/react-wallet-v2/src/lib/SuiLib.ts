@@ -4,8 +4,24 @@ import { Ed25519Keypair, Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519'
 import { verifyPersonalMessageSignature } from '@mysten/sui/verify'
 import { derivePath } from 'ed25519-hd-key'
 import { SerialTransactionExecutor, Transaction } from '@mysten/sui/transactions'
-import { SuiJsonRpcClient } from '@mysten/sui/jsonRpc'
+import { SuiJsonRpcClient, JsonRpcHTTPTransport } from '@mysten/sui/jsonRpc'
 import { getSuiRpcUrl } from '@/data/SuiData'
+
+// The @mysten/sui HTTP transport attaches Client-Sdk-Type / Client-Sdk-Version /
+// Client-Target-Api-Version / Client-Request-Method headers to every request.
+// The WalletConnect Blockchain API's CORS policy does not allow those header
+// names, so the browser rejects the preflight. They are informational only, so
+// strip them here — only Content-Type (which is allowed) needs to survive.
+const blockchainApiFetch: typeof fetch = (input, init) => {
+  if (init?.headers) {
+    const headers = new Headers(init.headers)
+    ;['client-sdk-type', 'client-sdk-version', 'client-target-api-version', 'client-request-method'].forEach(
+      header => headers.delete(header)
+    )
+    init = { ...init, headers }
+  }
+  return fetch(input, init)
+}
 
 interface IInitArguments {
   mnemonic?: string
@@ -119,13 +135,22 @@ export default class SuiLib {
     // rather than the public Sui fullnodes, which are blocked in the browser.
     switch (chainId) {
       case 'sui:mainnet':
-        this.suiClients[chainId] = new SuiJsonRpcClient({ url: getSuiRpcUrl(chainId), network: 'mainnet' })
+        this.suiClients[chainId] = new SuiJsonRpcClient({
+          network: 'mainnet',
+          transport: new JsonRpcHTTPTransport({ url: getSuiRpcUrl(chainId), fetch: blockchainApiFetch })
+        })
         break
       case 'sui:testnet':
-        this.suiClients[chainId] = new SuiJsonRpcClient({ url: getSuiRpcUrl(chainId), network: 'testnet' })
+        this.suiClients[chainId] = new SuiJsonRpcClient({
+          network: 'testnet',
+          transport: new JsonRpcHTTPTransport({ url: getSuiRpcUrl(chainId), fetch: blockchainApiFetch })
+        })
         break
       case 'sui:devnet':
-        this.suiClients[chainId] = new SuiJsonRpcClient({ url: getSuiRpcUrl(chainId), network: 'devnet' })
+        this.suiClients[chainId] = new SuiJsonRpcClient({
+          network: 'devnet',
+          transport: new JsonRpcHTTPTransport({ url: getSuiRpcUrl(chainId), fetch: blockchainApiFetch })
+        })
         break
       default:
         throw new Error(`Unknown chainId: ${chainId}`)
