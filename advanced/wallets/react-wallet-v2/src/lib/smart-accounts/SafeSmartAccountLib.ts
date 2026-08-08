@@ -24,17 +24,19 @@ const {
   installModule
 } = require('@rhinestone/module-sdk') as typeof import('@rhinestone/module-sdk')
 export class SafeSmartAccountLib extends SmartAccountLib {
-  protected ERC_7579_LAUNCHPAD_ADDRESS: Address = '0xEBe001b3D534B9B6E2500FB78E67a1A137f561CE'
-  protected SAFE_4337_MODULE_ADDRESS: Address = '0x3Fdb5BC686e861480ef99A6E3FaAe03c0b9F32e2'
+  protected ERC_7579_LAUNCHPAD_ADDRESS: Address = '0x7579011aB74c46090561ea277Ba79D510c6C00ff'
+  protected SAFE_4337_MODULE_ADDRESS: Address = '0x7579EE8307284F293B1927136486880611F20002'
+  protected RHINESTONE_ATTESTER_ADDRESS: Address = '0x000000333034E9f539ce08819E12c1b8Cb29084d'
 
   async getClientConfig(): Promise<SmartAccountClientConfig<EntryPoint>> {
     this.type = 'Safe'
     const safeAccount = await signerToSafeSmartAccount(this.publicClient, {
       safeVersion: '1.4.1',
       entryPoint: ENTRYPOINT_ADDRESS_V07,
-      safe4337ModuleAddress: this.SAFE_4337_MODULE_ADDRESS,
-      //@ts-ignore
-      erc7579LaunchpadAddress: this.ERC_7579_LAUNCHPAD_ADDRESS,
+      safe4337ModuleAddress: this.SAFE_4337_MODULE_ADDRESS, 
+      erc7579LaunchpadAddress: this.ERC_7579_LAUNCHPAD_ADDRESS, 
+      attesters: [this.RHINESTONE_ATTESTER_ADDRESS],
+      attestersThreshold: 1,
       signer: this.signer
     })
     return {
