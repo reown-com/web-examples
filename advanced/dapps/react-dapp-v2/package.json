@@ -14,7 +14,7 @@
   "dependencies": {
     "@ethereumjs/tx": "10.1.1",
     "@multiversx/sdk-core": "15.3.2",
-    "@mysten/sui": "2.3.1",
+    "@mysten/sui": "2.23.2",
     "@noble/curves": "2.0.1",
     "@noble/hashes": "2.0.1",
     "@polkadot/util-crypto": "14.0.1",

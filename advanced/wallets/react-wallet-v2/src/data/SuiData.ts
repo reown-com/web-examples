@@ -15,13 +15,18 @@ export type ISuiChainId =
   | typeof SUI_TESTNET_CAIP2
   | typeof SUI_DEVNET_CAIP2
 
+export const getSuiGraphqlUrl = (caip2: ISuiChainId) => {
+  const network = caip2.split(':')[1]
+  return `https://graphql.${network}.sui.io/graphql`
+}
+
 export const SUI_MAINNET = {
   [SUI_MAINNET_CAIP2]: {
     chainId: SUI_MAINNET_ID,
     name: 'SUI Mainnet',
     logo: '/chain-logos/sui.png',
     rgb: '6, 135, 245',
-    rpc: 'https://fullnode.mainnet.sui.io:443',
+    rpc: getSuiGraphqlUrl(SUI_MAINNET_CAIP2),
     caip2: SUI_MAINNET_CAIP2 as ISuiChainId,
     namespace: SUI_NAMESPACE,
     symbol: 'SUI'
@@ -33,7 +38,7 @@ export const SUI_TESTNET = {
     name: 'SUI Testnet',
     logo: '/chain-logos/sui.png',
     rgb: '6, 135, 245',
-    rpc: 'https://fullnode.testnet.sui.io:443',
+    rpc: getSuiGraphqlUrl(SUI_TESTNET_CAIP2),
     caip2: SUI_TESTNET_CAIP2 as ISuiChainId,
     namespace: SUI_NAMESPACE,
     symbol: 'SUI'
@@ -45,7 +50,7 @@ export const SUI_DEVNET = {
     name: 'SUI Devnet',
     logo: '/chain-logos/sui.png',
     rgb: '6, 135, 245',
-    rpc: 'https://fullnode.devnet.sui.io:443',
+    rpc: getSuiGraphqlUrl(SUI_DEVNET_CAIP2),
     caip2: SUI_DEVNET_CAIP2 as ISuiChainId,
     namespace: SUI_NAMESPACE,
     symbol: 'SUI'

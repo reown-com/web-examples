@@ -1,25 +1,25 @@
-import { SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
+import { SuiGraphQLClient } from "@mysten/sui/graphql";
 
-const clients = new Map<string, SuiJsonRpcClient>();
+const clients = new Map<string, SuiGraphQLClient>();
 
-export function getSuiClient(chainId: string): SuiJsonRpcClient {
+const SUI_NETWORKS: Record<string, "mainnet" | "testnet" | "devnet"> = {
+  "sui:mainnet": "mainnet",
+  "sui:testnet": "testnet",
+  "sui:devnet": "devnet",
+};
+
+export function getSuiClient(chainId: string): SuiGraphQLClient {
   if (clients.has(chainId)) {
     return clients.get(chainId)!;
   }
-  let client: SuiJsonRpcClient;
-  switch (chainId) {
-    case "sui:mainnet":
-      client = new SuiJsonRpcClient({ network: "mainnet", url: "https://fullnode.mainnet.sui.io/" });
-      break;
-    case "sui:testnet":
-      client = new SuiJsonRpcClient({ network: "testnet", url: "https://fullnode.testnet.sui.io/" });
-      break;
-    case "sui:devnet":
-      client = new SuiJsonRpcClient({ network: "devnet", url: "https://fullnode.devnet.sui.io/" });
-      break;
-    default:
-      throw new Error(`Unknown chainId: ${chainId}`);
+  const network = SUI_NETWORKS[chainId];
+  if (!network) {
+    throw new Error(`Unknown chainId: ${chainId}`);
   }
+  const client = new SuiGraphQLClient({
+    network,
+    url: `https://graphql.${network}.sui.io/graphql`,
+  });
   clients.set(chainId, client);
   return client;
 }

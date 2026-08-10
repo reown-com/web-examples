@@ -4,7 +4,8 @@ import { Ed25519Keypair, Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519'
 import { verifyPersonalMessageSignature } from '@mysten/sui/verify'
 import { derivePath } from 'ed25519-hd-key'
 import { SerialTransactionExecutor, Transaction } from '@mysten/sui/transactions'
-import { SuiJsonRpcClient } from '@mysten/sui/jsonRpc'
+import { SuiGraphQLClient } from '@mysten/sui/graphql'
+import { getSuiGraphqlUrl } from '@/data/SuiData'
 
 interface IInitArguments {
   mnemonic?: string
@@ -32,7 +33,7 @@ const SUI_PATH = "m/44'/784'/0'/0'/0'"
 export default class SuiLib {
   private keypair: Ed25519Keypair
   private mnemonic: string
-  private suiClients: Record<string, SuiJsonRpcClient> = {}
+  private suiClients: Record<string, SuiGraphQLClient> = {}
   private publicKey: Ed25519PublicKey
 
   constructor(mnemonic?: string) {
@@ -116,13 +117,13 @@ export default class SuiLib {
 
     switch (chainId) {
       case 'sui:mainnet':
-        this.suiClients[chainId] = new SuiJsonRpcClient({ url: 'https://fullnode.mainnet.sui.io/', network: 'mainnet' })
+        this.suiClients[chainId] = new SuiGraphQLClient({ url: getSuiGraphqlUrl(chainId), network: 'mainnet' })
         break
       case 'sui:testnet':
-        this.suiClients[chainId] = new SuiJsonRpcClient({ url: 'https://fullnode.testnet.sui.io/', network: 'testnet' })
+        this.suiClients[chainId] = new SuiGraphQLClient({ url: getSuiGraphqlUrl(chainId), network: 'testnet' })
         break
       case 'sui:devnet':
-        this.suiClients[chainId] = new SuiJsonRpcClient({ url: 'https://fullnode.devnet.sui.io/', network: 'devnet' })
+        this.suiClients[chainId] = new SuiGraphQLClient({ url: getSuiGraphqlUrl(chainId), network: 'devnet' })
         break
       default:
         throw new Error(`Unknown chainId: ${chainId}`)

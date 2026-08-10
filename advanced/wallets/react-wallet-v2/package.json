@@ -26,7 +26,7 @@
     "@mui/material": "5.18.0",
     "@multiversx/sdk-core": "15.3.2",
     "@multiversx/sdk-wallet": "4.2.0",
-    "@mysten/sui": "2.1.0",
+    "@mysten/sui": "2.23.2",
     "@near-wallet-selector/wallet-utils": "8.10.2",
     "@nextui-org/react": "1.0.8-beta.5",
     "@noble/curves": "1.9.7",
