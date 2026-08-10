@@ -1,6 +1,6 @@
 import { Button, Loading, Text } from '@nextui-org/react'
 import { parseUri } from '@walletconnect/utils'
-import { useEffect, useRef } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import PickerStore, { getPickerPopup, setPickerPopup } from '@/store/PickerStore'
 import { dappOrigin } from '@/data/ExploreDapps'
@@ -9,19 +9,34 @@ import { walletkit } from '@/utils/WalletConnectUtil'
 /**
  * Dapp Picker POC — the wallet's embedded browser.
  *
- * Renders the picker-opened dapp (iframe primary, popup fallback) with wallet
- * chrome around it, and is the sole intake point for the pairing URI the dapp
- * offers over postMessage. Auto-approval downstream trusts ONLY pairings
- * recorded here, and only after this component has checked:
+ * Renders the picker-opened dapp INSIDE the wallet UI (it fills the wallet
+ * card's body; the nav footer stays visible), with wallet chrome on top. It is
+ * the sole intake point for the pairing URI the dapp offers over postMessage.
+ * Auto-approval downstream trusts ONLY pairings recorded here, and only after
+ * this component has checked:
  *   - event.origin === the tile's origin (the origin the wallet opened), and
  *   - event.source === the frame/popup the wallet itself created.
- * That is what scopes auto-approve to the wallet's own embedded frames.
+ *
+ * If the dapp can't be framed (e.g. it sends X-Frame-Options / CSP
+ * frame-ancestors) the iframe silently fails — there is no load error for that.
+ * We detect it with a timeout and offer a first-party popup, which XFO does not
+ * block, so the handshake can still complete via window.opener.
  */
+const CONNECT_TIMEOUT_MS = 15000
+
 export default function EmbeddedDappBrowser() {
   const { activeDapp, activeUrl, status, statusDetail } = useSnapshot(PickerStore.state)
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [reloadKey, setReloadKey] = useState(0)
+  const [mode, setMode] = useState<'iframe' | 'popup'>('iframe')
+  const [timedOut, setTimedOut] = useState(false)
 
-  const isPopup = activeDapp?.embed === 'popup'
+  // Reset transient view state whenever a new dapp is opened.
+  useEffect(() => {
+    setMode(activeDapp?.embed === 'popup' ? 'popup' : 'iframe')
+    setTimedOut(false)
+    setReloadKey(0)
+  }, [activeDapp?.id])
 
   // URI intake: validate origin + source, then pair silently.
   useEffect(() => {
@@ -33,7 +48,6 @@ export default function EmbeddedDappBrowser() {
     async function pair(uri: string) {
       try {
         const { topic } = parseUri(uri)
-        // Record as picker-initiated BEFORE pairing so onSessionProposal sees it.
         PickerStore.registerPickerPairing(topic, expectedOrigin, dappId)
         PickerStore.setStatus('connecting')
         await walletkit.pair({ uri })
@@ -44,13 +58,11 @@ export default function EmbeddedDappBrowser() {
     }
 
     function onMessage(ev: MessageEvent) {
-      // 1. Origin gate — must be the exact origin the wallet opened.
       if (ev.origin !== expectedOrigin) return
-      // 2. Source gate — must be the frame/popup the wallet itself created.
-      const validSource = isPopup
-        ? !!getPickerPopup() && ev.source === getPickerPopup()
-        : !!iframeRef.current && ev.source === iframeRef.current.contentWindow
-      if (!validSource) return
+      const popup = getPickerPopup()
+      const fromFrame = !!iframeRef.current && ev.source === iframeRef.current.contentWindow
+      const fromPopup = !!popup && ev.source === popup
+      if (!fromFrame && !fromPopup) return
 
       let data: any
       try {
@@ -61,45 +73,59 @@ export default function EmbeddedDappBrowser() {
       if (!data || typeof data !== 'object') return
 
       if (data.type === 'wc_session_offer' && typeof data.uri === 'string') {
-        if (pairedUris.has(data.uri)) return // dedupe repeat offers
+        setTimedOut(false)
+        if (pairedUris.has(data.uri)) return
         pairedUris.add(data.uri)
         void pair(data.uri)
       } else if (data.type === 'wc_session_settled') {
+        setTimedOut(false)
         PickerStore.setStatus('settled')
       }
     }
 
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [activeDapp, activeUrl, isPopup])
+  }, [activeDapp, activeUrl])
 
-  // Popup mode: reflect the popup being closed by the user, and clean up.
+  // Detect a dapp that never hands off a URI (framing blocked, or just slow).
   useEffect(() => {
-    if (!activeDapp || !isPopup) return
-    const poll = setInterval(() => {
-      const popup = getPickerPopup()
-      if (!popup || popup.closed) {
-        clearInterval(poll)
-        setPickerPopup(null)
-        PickerStore.closeDapp()
-      }
-    }, 500)
-    return () => clearInterval(poll)
-  }, [activeDapp, isPopup])
+    if (!activeDapp) return
+    setTimedOut(false)
+    const t = setTimeout(() => {
+      if (PickerStore.state.status !== 'settled') setTimedOut(true)
+    }, CONNECT_TIMEOUT_MS)
+    return () => clearTimeout(t)
+  }, [activeDapp?.id, reloadKey, mode])
 
   if (!activeDapp || !activeUrl) return null
 
   const pill = statusPill(status, statusDetail)
+  const showPopupPane = mode === 'popup'
+  const showTimeout = timedOut && status !== 'settled'
+
+  function openInWindow() {
+    const popup = window.open(activeUrl!, `wc_picker_${activeDapp!.id}`, 'width=460,height=820')
+    setPickerPopup(popup)
+    setMode('popup')
+    setTimedOut(false)
+    PickerStore.setStatus('connecting')
+  }
+
+  function retryIframe() {
+    setPickerPopup(null)
+    setMode('iframe')
+    setTimedOut(false)
+    PickerStore.setStatus('connecting')
+    setReloadKey(k => k + 1)
+  }
 
   return (
     <div
       style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 250, // above the 450px card + its footer nav (z 200)
         display: 'flex',
         flexDirection: 'column',
-        background: '#0b0b0b'
+        height: '100%',
+        minHeight: 0
       }}
       data-testid="embedded-dapp-browser"
     >
@@ -108,102 +134,124 @@ export default function EmbeddedDappBrowser() {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 12,
-          padding: '10px 14px',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-          background: '#111'
+          gap: 10,
+          padding: '4px 2px 12px'
         }}
       >
         <Button
           auto
           light
-          size="sm"
+          size="xs"
           onClick={() => PickerStore.closeDapp()}
           data-testid="embedded-close"
-          css={{ minWidth: 'auto', px: '$4' }}
+          css={{ minWidth: 'auto', px: '$3' }}
         >
-          ✕ Close
+          ✕
         </Button>
         <div
           style={{
-            width: 28,
-            height: 28,
-            borderRadius: 8,
+            width: 26,
+            height: 26,
+            borderRadius: 7,
             background: activeDapp.color,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 16
+            fontSize: 15,
+            flexShrink: 0
           }}
         >
           {activeDapp.icon}
         </div>
-        <Text b css={{ margin: 0 }}>
-          {activeDapp.name}
-        </Text>
-        <Text small css={{ color: '$gray500', margin: 0 }}>
-          {dappOrigin(activeDapp).replace(/^https?:\/\//, '')}
-        </Text>
-        <div style={{ marginLeft: 'auto' }}>
-          <span
-            data-testid="embedded-status"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '4px 12px',
-              borderRadius: 999,
-              fontSize: 13,
-              fontWeight: 600,
-              color: pill.color,
-              background: pill.bg
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <Text b css={{ margin: 0, lineHeight: 1.1 }}>
+            {activeDapp.name}
+          </Text>
+          <Text
+            css={{
+              margin: 0,
+              fontSize: 11,
+              color: '$gray500',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
             }}
           >
-            {status === 'connecting' && <Loading size="xs" />}
-            {pill.label}
-          </span>
+            {dappOrigin(activeDapp).replace(/^https?:\/\//, '')}
+          </Text>
         </div>
+        <span
+          data-testid="embedded-status"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '3px 9px',
+            borderRadius: 999,
+            fontSize: 11,
+            fontWeight: 600,
+            color: pill.color,
+            background: pill.bg,
+            flexShrink: 0
+          }}
+        >
+          {status === 'connecting' && !showTimeout && <Loading size="xs" />}
+          {pill.label}
+        </span>
       </div>
 
       {/* Dapp surface */}
-      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-        {isPopup ? (
-          <div
-            style={{
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 12,
-              textAlign: 'center',
-              padding: 24
-            }}
-          >
-            <Text h4>Opened in a separate window</Text>
-            <Text css={{ color: '$gray500', maxWidth: 420 }}>
-              {activeDapp.name} refuses to be framed, so the wallet opened it as a popup
-              (a first-party context). The pairing URI arrives over{' '}
-              <code>window.opener.postMessage</code> exactly as with the iframe. Closing that
-              window returns you here.
+      <div
+        style={{
+          position: 'relative',
+          height: '72vh',
+          borderRadius: 12,
+          overflow: 'hidden',
+          border: '1px solid rgba(255,255,255,0.1)',
+          background: '#0b0b0b'
+        }}
+      >
+        {showPopupPane ? (
+          <CenteredPane>
+            <Text h5 css={{ margin: 0 }}>
+              Opened in a separate window
             </Text>
-            <Button
-              auto
-              onClick={() => {
-                const popup = getPickerPopup()
-                if (!popup || popup.closed) {
-                  const reopened = window.open(activeUrl, `wc_picker_${activeDapp.id}`)
-                  setPickerPopup(reopened)
-                } else {
-                  popup.focus()
-                }
-              }}
-            >
-              Focus / reopen window
-            </Button>
-          </div>
+            <Text css={{ color: '$gray500', fontSize: 13 }}>
+              This dapp is running as a first-party popup and connects over{' '}
+              <code>window.opener</code>. Closing that window returns you here.
+            </Text>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button auto size="sm" onClick={openInWindow}>
+                Focus / reopen
+              </Button>
+              <Button auto size="sm" flat onClick={retryIframe}>
+                Try embedding again
+              </Button>
+            </div>
+          </CenteredPane>
+        ) : showTimeout ? (
+          <CenteredPane>
+            <Text h5 css={{ margin: 0 }}>
+              Taking longer than expected
+            </Text>
+            <Text css={{ color: '$gray500', fontSize: 13 }}>
+              The dapp hasn&apos;t completed the handshake. It may be blocking
+              embedding (<code>X-Frame-Options</code> / CSP), or still loading. You
+              can open it in a separate window (which bypasses framing blocks) or
+              retry.
+            </Text>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button auto size="sm" onClick={openInWindow} data-testid="embedded-open-window">
+                Open in a separate window
+              </Button>
+              <Button auto size="sm" flat onClick={retryIframe} data-testid="embedded-retry">
+                Retry
+              </Button>
+            </div>
+          </CenteredPane>
         ) : (
           <iframe
+            key={reloadKey}
             ref={iframeRef}
             src={activeUrl}
             title={activeDapp.name}
@@ -216,6 +264,26 @@ export default function EmbeddedDappBrowser() {
   )
 }
 
+function CenteredPane({ children }: { children: ReactNode }) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        gap: 12,
+        padding: 24
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
 function statusPill(status: string, detail?: string): { label: string; color: string; bg: string } {
   switch (status) {
     case 'connecting':
@@ -223,7 +291,11 @@ function statusPill(status: string, detail?: string): { label: string; color: st
     case 'settled':
       return { label: 'Connected · fees active', color: '#17c964', bg: 'rgba(23,201,100,0.12)' }
     case 'error':
-      return { label: `Error${detail ? `: ${detail}` : ''}`, color: '#f31260', bg: 'rgba(243,18,96,0.12)' }
+      return {
+        label: `Error${detail ? `: ${detail}` : ''}`,
+        color: '#f31260',
+        bg: 'rgba(243,18,96,0.12)'
+      }
     default:
       return { label: 'Idle', color: '#889', bg: 'rgba(136,136,153,0.12)' }
   }

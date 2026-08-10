@@ -117,7 +117,7 @@ to the wallet's own embedded frames.
 |---|---|
 | `src/data/ExploreDapps.ts` | Registry-shaped tile array (`{ id, name, icon, color, url, aggregator, embed }`). All four tiles open the **same** dapp deployment with a different `?aggregator=` — the "picker illusion". `buildPickerUrl()` assembles the full contract. Base URL via `NEXT_PUBLIC_EXPLORE_DAPP_URL`. |
 | `src/store/PickerStore.ts` | Session-scoped valtio store: active dapp/URL, status, and the picker-initiated pairing topics (with expected origin). Popup `Window` handle kept outside the proxy. |
-| `src/components/EmbeddedDappBrowser.tsx` | Full-viewport overlay (the wallet is a 450px card, so the host breaks out with `position: fixed`). Wallet chrome: name, origin, close, status pill. Sole URI-intake point (origin + source gated). iframe primary; popup placeholder + `window.closed` poll for the fallback. |
+| `src/components/EmbeddedDappBrowser.tsx` | Fills the wallet card body (an in-wallet screen; the nav footer stays visible). Wallet chrome: name, origin, close, status pill. Sole URI-intake point (origin + source gated). iframe primary; if no URI/settle arrives within 15s (framing blocked, or slow) it surfaces an **"Open in a separate window"** escape — a first-party popup, which `X-Frame-Options` does not block, so the handshake still completes via `window.opener`. |
 | `src/pages/explore.tsx` | Tile grid + one-time consent dialog. Popup tiles `window.open` inside the click gesture (so the popup blocker allows it). |
 | `src/utils/SessionApprovalUtil.ts` | **Single source of truth** shared by the modal and auto-approve: `getSupportedNamespaces()`, `buildSessionProperties()` (per-namespace props + `wc_feeTerms`), `autoApproveSessionProposal()`, `verifiedOriginMatches()`. The mobile POC duplicated this and flagged it — here it isn't duplicated. |
 | `src/hooks/useWalletConnectEventsManager.ts` | `onSessionProposal` auto-approves **only** when the pairing topic is picker-registered **and** consent is granted **and** the verified origin matches; any failure falls back to the modal. QR / deep-link / `/wc` proposals always get the full modal. |
@@ -195,7 +195,13 @@ UI is browsable throughout; there is no blocking splash.
   production needs either the dapp's cooperation (allow the wallet origin) or a
   browser extension that strips the header (`declarativeNetRequest`); otherwise
   the popup fallback is the only option, and it weakens the "no context switch"
-  benefit.
+  benefit. **Seen in practice:** a Vercel preview with **Deployment Protection**
+  enabled injects `X-Frame-Options: DENY` (plus a Vercel CSP) on the deployment,
+  so even our own dapp becomes unframeable on a protected preview — the wallet's
+  timeout then offers the popup escape. To QA the iframe path on previews,
+  disable Deployment Protection for the dapp's Vercel project (Settings →
+  Deployment Protection), which is why the unprotected `session-fees-poc`
+  preview frames fine.
 - **Storage is partitioned.** An embedded dapp's `localStorage`/IndexedDB is
   keyed to `(top-level wallet origin, dapp origin)` in Chrome (115+), Firefox
   (Total Cookie Protection) and Safari (ITP). Because the wallet is always the

@@ -70,10 +70,7 @@ export const EXPLORE_DAPPS: ExploreDapp[] = [
     color: '#7a1f52',
     url: EXPLORE_DAPP_BASE_URL,
     aggregator: 'uniswap',
-    // Demonstrates the popup fallback (Phase 4): a dapp that refuses framing
-    // (X-Frame-Options / CSP frame-ancestors) can't be iframed, so the wallet
-    // opens it as a first-party popup and receives the URI via window.opener.
-    embed: 'popup'
+    embed: 'iframe'
   }
 ]
 

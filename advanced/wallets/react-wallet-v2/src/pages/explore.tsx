@@ -21,6 +21,7 @@ const CHAIN_LABEL: Record<ExploreDapp['aggregator'], string> = {
 
 export default function ExplorePage() {
   const { explorerAutoConnectEnabled, explorerConnectVariant } = useSnapshot(SettingsStore.state)
+  const { activeDapp } = useSnapshot(PickerStore.state)
   const [consentDapp, setConsentDapp] = useState<ExploreDapp | null>(null)
 
   // Build the picker URL contract and open the dapp. For popup-embed tiles the
@@ -50,6 +51,17 @@ export default function ExplorePage() {
     SettingsStore.setExplorerAutoConnect(true)
     setConsentDapp(null)
     if (dapp) openDapp(dapp)
+  }
+
+  // When a dapp is open, the embedded browser takes over the wallet card body
+  // (the nav footer stays visible) — so it reads as an in-wallet screen, not a
+  // separate page.
+  if (activeDapp) {
+    return (
+      <Fragment>
+        <EmbeddedDappBrowser />
+      </Fragment>
+    )
   }
 
   return (
@@ -139,9 +151,6 @@ export default function ExplorePage() {
           </Button>
         </Modal.Footer>
       </Modal>
-
-      {/* The embedded browser overlay (renders only when a dapp is open) */}
-      <EmbeddedDappBrowser />
     </Fragment>
   )
 }
