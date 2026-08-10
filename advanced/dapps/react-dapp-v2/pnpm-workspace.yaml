@@ -1,0 +1,23 @@
+# pnpm 11 no longer reads the `pnpm.overrides` field from package.json; it reads
+# overrides from this file instead. These mirror package.json's `pnpm.overrides`
+# (and the lockfile's `overrides:` block) so `pnpm install` stays frozen-lockfile
+# consistent. Kept in sync with package.json for older-pnpm compatibility.
+overrides:
+  tar@<7.5.7: '>=7.5.7'
+  axios@>=0.8.1 <0.28.0: '>=1.13.5'
+  axios@<1.13.5: '>=1.13.5'
+  protobufjs@>=7.0.0 <7.2.5: '>=7.2.5'
+  protobufjs@>=6.10.0 <6.11.4: '>=7.2.5'
+  cross-spawn@>=7.0.0 <7.0.5: '>=7.0.5'
+  semver@>=7.0.0 <7.5.2: '>=7.5.2'
+  minimist@<0.2.4: '>=0.2.4'
+  js-yaml@>=4.0.0 <4.1.1: '>=4.1.1'
+  '@modelcontextprotocol/sdk@<1.26.0': '>=1.26.0'
+  '@walletconnect/core@': 2.23.10
+  '@walletconnect/encoding@': '>=1.0.1'
+  '@walletconnect/jsonrpc-utils@': '>=1.0.8'
+  '@walletconnect/types@': 2.23.10
+  '@walletconnect/universal-provider@': 2.23.10
+  '@walletconnect/sign-client@': 2.23.10
+  '@walletconnect/utils@': 2.23.10
+  '@walletconnect/ethereum-provider@': 2.23.10

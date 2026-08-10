@@ -30,7 +30,9 @@ export default function SettingsPage() {
     safeSmartAccountEnabled,
     biconomySmartAccountEnabled,
     moduleManagementEnabled,
-    chainAbstractionEnabled
+    chainAbstractionEnabled,
+    explorerAutoConnectEnabled,
+    explorerConnectVariant
   } = useSnapshot(SettingsStore.state)
 
   return (
@@ -57,6 +59,44 @@ export default function SettingsPage() {
           data-testid="settings-toggle-testnets"
         />
         <Text>{testNets ? 'Enabled' : 'Disabled'}</Text>
+      </Row>
+
+      <StyledDivider css={{ my: '$8' }} />
+
+      <Row>
+        <Col>
+          <Text h4 css={{ marginBottom: '$5' }}>
+            Explore auto-connect (Dapp Picker POC)
+          </Text>
+          <Row justify="space-between" align="center">
+            <Switch
+              checked={explorerAutoConnectEnabled}
+              onChange={SettingsStore.toggleExplorerAutoConnect}
+              data-testid="settings-toggle-explore-autoconnect"
+            />
+            <Text>{explorerAutoConnectEnabled ? 'Enabled' : 'Disabled'}</Text>
+          </Row>
+          <Text small css={{ color: '$gray500', marginTop: '$3' }}>
+            When on, dapps opened from the Explore tab connect without an approval
+            screen. Signing is never auto-approved.
+          </Text>
+
+          <Text h4 css={{ marginBottom: '$5', marginTop: '$8' }}>
+            Explore connect variant
+          </Text>
+          <Row justify="space-between" align="center">
+            <Switch
+              checked={explorerConnectVariant === 'headless'}
+              onChange={SettingsStore.toggleExplorerConnectVariant}
+              data-testid="settings-toggle-explore-variant"
+            />
+            <Text>{explorerConnectVariant === 'headless' ? 'Headless' : 'Provider-direct'}</Text>
+          </Row>
+          <Text small css={{ color: '$gray500', marginTop: '$3' }}>
+            Which URI-acquisition variant the Explore tiles request
+            (<code>connect=headless</code> vs <code>connect=provider</code>).
+          </Text>
+        </Col>
       </Row>
 
       <StyledDivider css={{ my: '$8' }} />

@@ -27,6 +27,11 @@ import { CheckoutErrorCode } from '@/types/wallet_checkout'
 import { createCheckoutError } from '@/types/wallet_checkout'
 import { SUI_SIGNING_METHODS } from '@/data/SuiData'
 import { STACKS_SIGNING_METHODS } from '@/data/StacksData'
+import PickerStore from '@/store/PickerStore'
+import {
+  autoApproveSessionProposal,
+  verifiedOriginMatches
+} from '@/utils/SessionApprovalUtil'
 import { TON_SIGNING_METHODS } from '@/data/TonData'
 import { CANTON_SIGNING_METHODS } from '@/data/CantonData'
 import { approveCantonRequest } from '@/utils/CantonRequestHandlerUtil'
@@ -36,10 +41,39 @@ export default function useWalletConnectEventsManager(initialized: boolean) {
    * 1. Open session proposal modal for confirmation / rejection
    *****************************************************************************/
   const onSessionProposal = useCallback(
-    (proposal: SignClientTypes.EventArguments['session_proposal']) => {
+    async (proposal: SignClientTypes.EventArguments['session_proposal']) => {
       console.log('session_proposal', proposal)
       // set the verify context so it can be displayed in the projectInfoCard
       SettingsStore.setCurrentRequestVerifyContext(proposal.verifyContext)
+
+      // Dapp Picker POC: auto-approve ONLY proposals whose pairing the wallet
+      // itself initiated from an Explore tile, AND only with consent. Everything
+      // else (QR, deep link, /wc) always gets the full modal below.
+      const pairingTopic = proposal.params.pairingTopic
+      const pickerPairing = PickerStore.getPickerPairing(pairingTopic)
+      const consent = SettingsStore.state.explorerAutoConnectEnabled
+      if (pickerPairing && consent) {
+        // Web-only hardening: the Verify-attested origin must match the tile
+        // origin (when Verify can attest one). Nearly free, stronger than mobile.
+        if (verifiedOriginMatches(proposal.verifyContext, pickerPairing.origin)) {
+          try {
+            await autoApproveSessionProposal(proposal)
+            PickerStore.setStatus('settled')
+            refreshSessionsList()
+            return
+          } catch (e) {
+            // Any failure falls back to the interactive modal.
+            console.error('Picker auto-approve failed, showing modal', e)
+            PickerStore.setStatus('error', (e as Error).message)
+          }
+        } else {
+          console.warn('Picker origin mismatch — showing modal instead of auto-approving', {
+            expected: pickerPairing.origin,
+            verified: proposal.verifyContext?.verified?.origin
+          })
+        }
+      }
+
       ModalStore.open('SessionProposalModal', { proposal })
     },
     []

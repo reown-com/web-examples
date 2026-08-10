@@ -67,6 +67,7 @@ import { getWallet, tonAddresses, tonWallets } from '@/utils/TonWalletUtil'
 import { cantonAddresses } from '@/utils/CantonWalletUtil'
 import { prepareAuthenticationMessages, signAuthenticationMessages } from '@/utils/AuthUtil'
 import { AuthenticationMessage } from '@/types/auth'
+import { getSupportedNamespaces, buildSessionProperties } from '@/utils/SessionApprovalUtil'
 
 const StyledText = styled(Text, {
   fontWeight: 400
@@ -93,191 +94,12 @@ export default function SessionProposalModal() {
 
   const addressesToApprove = Number(query.addressesToApprove) || null
 
-  const supportedNamespaces = useMemo(() => {
-    // eip155
-    const eip155Chains = Object.keys(EIP155_CHAINS)
-    const eip155Methods = Object.values(EIP155_SIGNING_METHODS)
-
-    //eip5792
-    const eip5792Chains = Object.keys(EIP155_CHAINS)
-    const eip5792Methods = Object.values(EIP5792_METHODS)
-
-    //eip7715
-    const eip7715Chains = Object.keys(EIP155_CHAINS)
-    const eip7715Methods = Object.values(EIP7715_METHOD)
-
-    // cosmos
-    const cosmosChains = Object.keys(COSMOS_MAINNET_CHAINS)
-    const cosmosMethods = Object.values(COSMOS_SIGNING_METHODS)
-
-    // Kadena
-    const kadenaChains = Object.keys(KADENA_CHAINS)
-    const kadenaMethods = Object.values(KADENA_SIGNING_METHODS)
-
-    // multiversx
-    const multiversxChains = Object.keys(MULTIVERSX_CHAINS)
-    const multiversxMethods = Object.values(MULTIVERSX_SIGNING_METHODS)
-
-    // near
-    const nearChains = Object.keys(NEAR_CHAINS)
-    const nearMethods = Object.values(NEAR_SIGNING_METHODS)
-
-    // polkadot
-    const polkadotChains = Object.keys(POLKADOT_CHAINS)
-    const polkadotMethods = Object.values(POLKADOT_SIGNING_METHODS)
-
-    // solana
-    const solanaChains = Object.keys(SOLANA_CHAINS)
-    const solanaMethods = Object.values(SOLANA_SIGNING_METHODS)
-
-    // tezos
-    const tezosChains = Object.keys(TEZOS_CHAINS)
-    const tezosMethods = Object.values(TEZOS_SIGNING_METHODS)
-
-    // tron
-    const tronChains = Object.keys(TRON_CHAINS)
-    const tronMethods = Object.values(TRON_SIGNING_METHODS)
-
-    // bip122
-    const bip122Chains = Object.keys(BIP122_CHAINS)
-    const bip122Methods = Object.values(BIP122_SIGNING_METHODS)
-    const bip122Events = Object.values(BIP122_EVENTS)
-
-    // sui
-    const suiChains = Object.keys(SUI_CHAINS)
-    const suiMethods = Object.values(SUI_SIGNING_METHODS)
-    const suiEvents = Object.values(SUI_EVENTS)
-
-    // stacks
-    const stacksChains = Object.keys(STACKS_CHAINS)
-    const stacksMethods = Object.values(STACKS_SIGNING_METHODS)
-    const stacksEvents = Object.values(STACKS_EVENTS)
-
-    // ton (SendTransaction/SignData)
-    const tonChains = Object.keys(TON_CHAINS)
-    const tonMethods = Object.values(TON_SIGNING_METHODS)
-    const tonEvents = [] as string[]
-
-    // canton
-    const cantonChains = Object.keys(CANTON_CHAINS)
-    const cantonMethods = Object.values(CANTON_SIGNING_METHODS)
-    const cantonEvents = Object.values(CANTON_EVENTS)
-
-    console.log('stacksAddresses', stacksAddresses)
-
-    return {
-      eip155: {
-        chains: eip155Chains,
-        methods: eip155Methods.concat(eip5792Methods).concat(eip7715Methods),
-        events: ['accountsChanged', 'chainChanged'],
-        accounts: eip155Chains
-          .map(chain =>
-            eip155Addresses
-              .map(account => `${chain}:${account}`)
-              .slice(0, addressesToApprove ?? eip155Addresses.length)
-          )
-          .flat()
-      },
-      cosmos: {
-        chains: cosmosChains,
-        methods: cosmosMethods,
-        events: [],
-        accounts: cosmosChains
-          .map(chain => cosmosAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      kadena: {
-        chains: kadenaChains,
-        methods: kadenaMethods,
-        events: [],
-        accounts: kadenaChains
-          .map(chain => kadenaAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      mvx: {
-        chains: multiversxChains,
-        methods: multiversxMethods,
-        events: [],
-        accounts: multiversxChains
-          .map(chain => multiversxAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      near: {
-        chains: nearChains,
-        methods: nearMethods,
-        events: ['accountsChanged', 'chainChanged'],
-        accounts: nearChains
-          .map(chain => nearAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      polkadot: {
-        chains: polkadotChains,
-        methods: polkadotMethods,
-        events: [],
-        accounts: polkadotChains
-          .map(chain => polkadotAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      solana: {
-        chains: solanaChains,
-        methods: solanaMethods,
-        events: [],
-        accounts: solanaChains
-          .map(chain => solanaAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      tezos: {
-        chains: tezosChains,
-        methods: tezosMethods,
-        events: [],
-        accounts: tezosChains
-          .map(chain => tezosAddresses.map(address => `${chain}:${address}`))
-          .flat()
-      },
-      tron: {
-        chains: tronChains,
-        methods: tronMethods,
-        events: [],
-        accounts:
-          tronChains.map(chain => tronAddresses?.map(address => `${chain}:${address}`)).flat() || []
-      },
-      bip122: {
-        chains: bip122Chains,
-        methods: bip122Methods,
-        events: bip122Events,
-        accounts: bip122Addresses
-      },
-
-      sui: {
-        chains: suiChains,
-        methods: suiMethods,
-        events: suiEvents,
-        accounts: suiChains.map(chain => suiAddresses.map(address => `${chain}:${address}`)).flat()
-      },
-      stacks: {
-        chains: stacksChains,
-        methods: stacksMethods,
-        events: stacksEvents,
-        accounts: stacksAddresses
-      },
-      ton: {
-        chains: tonChains,
-        methods: tonMethods,
-        events: tonEvents,
-        accounts: tonChains
-          .map(chain => (tonAddresses || []).map(address => `${chain}:${address}`))
-          .flat()
-      },
-      canton: {
-        chains: cantonChains,
-        methods: cantonMethods,
-        events: cantonEvents,
-        accounts: cantonChains
-          .map(chain => (cantonAddresses || []).map(address => `${chain}:${address}`))
-          .flat()
-      }
-    }
-  }, [addressesToApprove])
+  // Namespace capability set is shared with the picker auto-approve path
+  // (SessionApprovalUtil) so the two approval routes can never diverge.
+  const supportedNamespaces = useMemo(
+    () => getSupportedNamespaces(addressesToApprove),
+    [addressesToApprove]
+  )
   console.log('supportedNamespaces', supportedNamespaces, eip155Addresses)
 
   useEffect(() => {
@@ -416,64 +238,12 @@ export default function SessionProposalModal() {
           // we should append the smart accounts to the available eip155 accounts
           namespaces.eip155.accounts = reorderedEip155Accounts.concat(namespaces.eip155.accounts)
         }
-        //get capabilities for all reorderedEip155Accounts in wallet
-        const capabilities = getWalletCapabilities(reorderedEip155Accounts)
-        let sessionProperties = {
-          capabilities: JSON.stringify(capabilities)
-        } as any
-
-        // Add TRON-specific properties if TRON namespace exists
-        if (namespaces.tron) {
-          sessionProperties['tron_method_version'] = 'v1'
-        }
-
-        if (namespaces.bip122) {
-          const bip122Chain = namespaces.bip122.chains?.[0]!
-          sessionProperties.bip122_getAccountAddresses = JSON.stringify({
-            payment: Array.from(bip122Wallet.getAddresses(bip122Chain as IBip122ChainId).values()),
-            ordinal: Array.from(
-              bip122Wallet.getAddresses(bip122Chain as IBip122ChainId, ['ordinal']).values()
-            )
-          })
-        }
-
-        if (namespaces.sui) {
-          const suiWallet = await getSuiWallet()
-          const accounts = suiWallet.getAccounts()
-          sessionProperties.sui_getAccounts = JSON.stringify(accounts)
-        }
-
-        if (namespaces.stacks) {
-          const accounts = stacksWallet.getAccounts()
-          sessionProperties.stacks_getAddresses = JSON.stringify([
-            accounts.mainnet,
-            accounts.testnet
-          ])
-        }
-
-        if (namespaces.ton) {
-          const tonWallet = await getWallet()
-          sessionProperties.ton_getPublicKey = tonWallet.getPublicKey()
-          sessionProperties.ton_getStateInit = tonWallet.getStateInit()
-        }
-
-        // Session Fees POC: declare the wallet's fee terms so the dapp can apply
-        // them as an integrator fee when building swaps via an aggregator.
-        // feeRecipient (Solana) is a hardcoded demo address; feeRecipientEip155
-        // defaults to the wallet's second EVM account so EVM fees land on an
-        // address the wallet owns but separate from the swapping one.
-        const feeRecipient =
-          process.env.NEXT_PUBLIC_FEE_RECIPIENT || '9zYtGz2nuUMe8yb9EJNNWdh2MNgMjAoWFuNgzjDm2nua'
-        const feeRecipientEip155 =
-          process.env.NEXT_PUBLIC_FEE_RECIPIENT_EVM || eip155Addresses[1] || eip155Addresses[0]
-        if (feeRecipient) {
-          sessionProperties.wc_feeTerms = JSON.stringify({
-            version: 1,
-            feeRecipient,
-            feeRecipientEip155,
-            feeBps: Number(process.env.NEXT_PUBLIC_FEE_BPS || 50)
-          })
-        }
+        // Capabilities + per-namespace props + Session Fees wc_feeTerms are
+        // built by the shared util so the picker auto-approve path (which calls
+        // the same builder) can never diverge from the interactive approval.
+        const sessionProperties = await buildSessionProperties(namespaces, {
+          capabilitiesAccounts: reorderedEip155Accounts
+        })
 
         console.log('sessionProperties', sessionProperties)
 

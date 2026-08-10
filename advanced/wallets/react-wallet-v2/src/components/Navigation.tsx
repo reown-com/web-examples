@@ -1,4 +1,4 @@
-import { Avatar, Row } from '@nextui-org/react'
+import { Avatar, Row, Text } from '@nextui-org/react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -7,6 +7,12 @@ export default function Navigation() {
     <Row justify="space-between" align="center">
       <Link href="/" passHref className="navLink" data-testid="accounts">
         <Image alt="accounts icon" src="/icons/accounts-icon.svg" width={27} height={27} />
+      </Link>
+
+      <Link href="/explore" passHref className="navLink" data-testid="explore">
+        <Text css={{ fontSize: 24, lineHeight: 1, margin: 0 }} aria-label="explore">
+          🧭
+        </Text>
       </Link>
 
       <Link href="/sessions" passHref className="navLink" data-testid="sessions">
