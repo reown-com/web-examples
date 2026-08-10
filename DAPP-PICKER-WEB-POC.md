@@ -278,10 +278,14 @@ connect variant and revoke consent from **Settings**.
 - **Happy path only.** Auto-approve failures fall back to the interactive modal;
   beyond that, minimal error UX.
 - **Dependency note:** the dapp's `@reown/appkit` must be **≥1.8.15** for the
-  headless variant (`prefetchWalletConnectUri`). This branch pins 1.8.22; a
-  stale local `node_modules` on an older AppKit throws
-  `kit.prefetchWalletConnectUri is not a function` — run `pnpm install`. pnpm 11
-  reads `overrides` from `pnpm-workspace.yaml` (added) rather than the
-  `pnpm.overrides` field in `package.json`.
+  headless variant (`prefetchWalletConnectUri`). This branch's lockfile pins
+  1.8.22 (Vercel installs it); a stale local `node_modules` on an older AppKit
+  throws `kit.prefetchWalletConnectUri is not a function` — run `pnpm install`.
+  Overrides live in `package.json`'s `pnpm.overrides` (read by pnpm ≤9, which is
+  what Vercel uses). Note: pnpm ≥10/11 ignore that field and read overrides from
+  `pnpm-workspace.yaml` instead — but adding that file breaks Vercel's pnpm@9
+  (it then demands a `packages:` field), so the repo keeps overrides in
+  `package.json`; pnpm-11 users may see a lockfile-overrides mismatch on a fresh
+  local install.
 - **On-chain swap not re-run here** — see §4.
 ```
