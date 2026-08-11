@@ -18,6 +18,10 @@ interface Props {
  * Institutional custody-console shell: a fixed left sidebar (brand + vertical
  * nav + account) and a wide, light main content area — instead of the mobile
  * phone-card with a bottom tab bar.
+ *
+ * Note: this file (a wallet-dir change) also serves to satisfy the wallet
+ * Vercel project's "Ignored Build Step" (git diff --quiet HEAD^ HEAD ./), which
+ * skips deploys when the tip commit doesn't touch advanced/wallets/react-wallet-v2.
  */
 export default function Layout({ children, initialized }: Props) {
   const { eip155Address } = useSnapshot(SettingsStore.state)
