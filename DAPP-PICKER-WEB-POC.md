@@ -110,6 +110,12 @@ to the wallet's own embedded frames.
   posts the settle ack. RN path and the two connect variants are untouched.
 - `src/contexts/ClientContext.tsx` — calls `notifyHostSettled()` at both settle
   points (fresh connect + restored session).
+- `src/pages/index.tsx` — per-aggregator theming (styled-components
+  `ThemeProvider`) so each tile resembles the real app: **Jupiter** dark + lime
+  ("Selling/Buying"), **Uniswap** light + pink ("Sell/Buy"), matching wordmarks
+  and buttons. The aggregator switcher is hidden in picker (`wc_auto`) mode.
+  Needs `compiler.styledComponents` in `next.config.js` for stable SSR class
+  names (else the themed styles hydrate-mismatch and drop).
 
 ### Wallet (`advanced/wallets/react-wallet-v2`)
 
