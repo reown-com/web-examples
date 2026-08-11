@@ -1,7 +1,10 @@
 import Navigation from '@/components/Navigation'
 import RouteTransition from '@/components/RouteTransition'
-import { Card, Container, Loading, Text } from '@nextui-org/react'
-import { Fragment, ReactNode } from 'react'
+import SettingsStore from '@/store/SettingsStore'
+import { Loading, Text } from '@nextui-org/react'
+import Image from 'next/image'
+import { ReactNode } from 'react'
+import { useSnapshot } from 'valtio'
 
 /**
  * Types
@@ -12,81 +15,137 @@ interface Props {
 }
 
 /**
- * Container
+ * Institutional custody-console shell: a fixed left sidebar (brand + vertical
+ * nav + account) and a wide, light main content area — instead of the mobile
+ * phone-card with a bottom tab bar.
  */
 export default function Layout({ children, initialized }: Props) {
+  const { eip155Address } = useSnapshot(SettingsStore.state)
+  const shortAddress = eip155Address
+    ? `${eip155Address.slice(0, 6)}…${eip155Address.slice(-4)}`
+    : ''
+
   return (
-    <Container
-      display="flex"
-      justify="center"
-      alignItems="center"
-      css={{
-        width: '100vw',
+    <div
+      style={{
+        display: 'flex',
         height: '100vh',
-        paddingLeft: 0,
-        paddingRight: 0
+        width: '100vw',
+        background: '#f5f6f8',
+        color: '#1a1d23',
+        overflow: 'hidden'
       }}
     >
-      <Card
-        bordered={{ '@initial': false, '@xs': true }}
-        borderWeight={{ '@initial': 'light', '@xs': 'light' }}
-        css={{
-          height: '100%',
-          width: '100%',
-          justifyContent: initialized ? 'normal' : 'center',
-          alignItems: initialized ? 'normal' : 'center',
-          borderRadius: 0,
-          paddingBottom: 5,
-          '@xs': {
-            borderRadius: '$lg',
-            height: '95vh',
-            maxWidth: '450px'
-          }
+      {/* Sidebar */}
+      <aside
+        style={{
+          width: 256,
+          minWidth: 256,
+          background: '#ffffff',
+          borderRight: '1px solid #ecedf1',
+          display: 'flex',
+          flexDirection: 'column',
+          padding: '20px 14px'
+        }}
+      >
+        {/* Brand */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 8px 0' }}>
+          <div
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 9,
+              background: '#eaf0ff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}
+          >
+            <Image alt="logo" src="/wallet-connect-logo.svg" width={20} height={20} />
+          </div>
+          <div style={{ lineHeight: 1.15 }}>
+            <div style={{ fontSize: 15, fontWeight: 700 }}>React Wallet</div>
+            <div style={{ fontSize: 11, color: '#8a8f98' }}>Demo custody console</div>
+          </div>
+        </div>
+
+        {initialized && <Navigation />}
+
+        {/* Account footer */}
+        <div style={{ marginTop: 'auto' }}>
+          {shortAddress ? (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '10px 12px',
+                borderTop: '1px solid #ecedf1',
+                marginTop: 12
+              }}
+            >
+              <div
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg,#2E5CFF,#7C3AED)',
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  flexShrink: 0
+                }}
+              >
+                W
+              </div>
+              <div style={{ lineHeight: 1.2, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>Demo account</div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: '#8a8f98',
+                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace'
+                  }}
+                >
+                  {shortAddress}
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main
+        style={{
+          flex: 1,
+          minWidth: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
         }}
       >
         {initialized ? (
-          <Fragment>
-            <RouteTransition>
-              <Card.Body
-                css={{
-                  display: 'block',
-                  paddingLeft: 2,
-                  paddingRight: 2,
-                  paddingBottom: '40px',
-                  '@xs': {
-                    padding: '20px',
-                    paddingBottom: '40px'
-                  }
-                }}
-              >
-                {children}
-              </Card.Body>
-            </RouteTransition>
-
-            <Card.Footer
-              css={{
-                height: '85px',
-                minHeight: '85px',
-                position: 'sticky',
-                justifyContent: 'flex-end',
-                alignItems: 'flex-end',
-                boxShadow: '0 -30px 20px #111111',
-                backgroundColor: '#111111',
-                zIndex: 200,
-                bottom: 0,
-                left: 0
-              }}
-            >
-              <Navigation />
-            </Card.Footer>
-          </Fragment>
+          <RouteTransition>
+            <div style={{ height: '100%', overflowY: 'auto', padding: '32px 40px' }}>
+              <div style={{ maxWidth: 960, margin: '0 auto', width: '100%' }}>{children}</div>
+            </div>
+          </RouteTransition>
         ) : (
-          <Container
-            display="flex"
-            direction="column"
-            alignItems="center"
-            gap={2}
-            css={{ textAlign: 'center' }}
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 12,
+              textAlign: 'center'
+            }}
           >
             <Loading size="lg" />
             <Text size="$lg" css={{ marginTop: '$4' }}>
@@ -95,9 +154,9 @@ export default function Layout({ children, initialized }: Props) {
             <Text size="$sm" color="$gray600">
               This may take a few moments
             </Text>
-          </Container>
+          </div>
         )}
-      </Card>
-    </Container>
+      </main>
+    </div>
   )
 }

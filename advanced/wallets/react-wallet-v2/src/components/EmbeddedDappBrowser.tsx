@@ -207,8 +207,8 @@ export default function EmbeddedDappBrowser() {
           height: '72vh',
           borderRadius: 12,
           overflow: 'hidden',
-          border: '1px solid rgba(255,255,255,0.1)',
-          background: '#0b0b0b'
+          border: '1px solid #e6e8ec',
+          background: '#ffffff'
         }}
       >
         {showPopupPane ? (
@@ -256,7 +256,7 @@ export default function EmbeddedDappBrowser() {
             src={activeUrl}
             title={activeDapp.name}
             allow="clipboard-read; clipboard-write; publickey-credentials-get *; payment"
-            style={{ width: '100%', height: '100%', border: 0, background: '#0b0b0b' }}
+            style={{ width: '100%', height: '100%', border: 0, background: '#ffffff' }}
           />
         )}
       </div>

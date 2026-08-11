@@ -66,7 +66,7 @@ export default function ExplorePage() {
 
   return (
     <Fragment>
-      <PageHeader title="Explore" />
+      <PageHeader title="Dapps" />
 
       <Text css={{ color: '$gray500', marginBottom: '$8' }}>
         Fee-honoring dapps. Tap one to open it inside the wallet with a monetized

@@ -12,6 +12,29 @@ import { AppProps } from 'next/app'
 import '../../public/main.css'
 import { styledToast } from '@/utils/HelperUtil'
 
+// Institutional light theme — a clean custody-console look (à la enterprise
+// vault dashboards) rather than the default dark mobile styling.
+const institutionalTheme = createTheme({
+  type: 'light',
+  theme: {
+    colors: {
+      primary: '#2E5CFF',
+      primaryLight: '#eaf0ff',
+      primaryLightHover: '#dbe6ff',
+      primaryLightActive: '#c7d8ff',
+      primaryLightContrast: '#2E5CFF',
+      primarySolidContrast: '#ffffff',
+      primaryShadow: 'rgba(46,92,255,0.3)',
+      secondary: '#7C3AED',
+      secondaryLight: '#f1e9ff',
+      link: '#2E5CFF'
+    },
+    fonts: {
+      sans: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`
+    }
+  }
+})
+
 export default function App({ Component, pageProps }: AppProps) {
   // Step 1 - Initialize wallets and wallet connect client
   const initialized = useInitialization()
@@ -29,7 +52,7 @@ export default function App({ Component, pageProps }: AppProps) {
     })
   }, [initialized])
   return (
-    <NextUIProvider theme={createTheme({ type: 'dark' })}>
+    <NextUIProvider theme={institutionalTheme}>
       <Layout initialized={initialized}>
         <Toaster />
         <Component {...pageProps} />
