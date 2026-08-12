@@ -1,5 +1,5 @@
 import { proxy } from 'valtio'
-import { ExploreDapp } from '@/data/ExploreDapps'
+import { ExploreDapp, ExploreOpenMode } from '@/data/ExploreDapps'
 
 /**
  * Dapp Picker POC — session-scoped state for the Explore embedded browser.
@@ -22,6 +22,8 @@ interface State {
   activeDapp: ExploreDapp | null
   /** Fully-built picker URL contract for the active dapp. */
   activeUrl: string | null
+  /** How the active dapp was opened (iframe / popup / new tab). */
+  activeMode: ExploreOpenMode
   status: PickerConnectionStatus
   statusDetail?: string
   /** pairingTopic -> metadata, for picker-initiated pairings only. */
@@ -31,6 +33,7 @@ interface State {
 const state = proxy<State>({
   activeDapp: null,
   activeUrl: null,
+  activeMode: 'iframe',
   status: 'idle',
   pickerPairings: {}
 })
@@ -52,9 +55,10 @@ export function getPickerPopup(): Window | null {
 const PickerStore = {
   state,
 
-  openDapp(dapp: ExploreDapp, url: string) {
+  openDapp(dapp: ExploreDapp, url: string, mode: ExploreOpenMode) {
     state.activeDapp = dapp
     state.activeUrl = url
+    state.activeMode = mode
     state.status = 'connecting'
     state.statusDetail = undefined
   },
@@ -68,6 +72,7 @@ const PickerStore = {
     popupWindow = null
     state.activeDapp = null
     state.activeUrl = null
+    state.activeMode = 'iframe'
     state.status = 'idle'
     state.statusDetail = undefined
   },

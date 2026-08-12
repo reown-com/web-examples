@@ -8,7 +8,17 @@
  * Corner cut: hardcoded array + placeholder (emoji) icons, no remote registry.
  */
 
-export type EmbedMode = 'iframe' | 'popup'
+/**
+ * How the wallet opens a picker dapp — a global user setting (Settings →
+ * Dapps open mode), not per-tile:
+ *   - iframe:  embedded in the Dapps tab; URI over window.parent (sign modals
+ *              render over it — the seamless default).
+ *   - popup:   a small first-party window; URI over window.opener. Works even
+ *              when the dapp blocks framing (X-Frame-Options / CSP).
+ *   - newtab:  a full browser tab; URI over window.opener.
+ * All three auto-connect identically.
+ */
+export type ExploreOpenMode = 'iframe' | 'popup' | 'newtab'
 
 export interface ExploreDapp {
   id: string
@@ -21,8 +31,6 @@ export interface ExploreDapp {
   url: string
   /** Aggregator preset passed as `?aggregator=`. */
   aggregator: 'jupiter' | 'oneinch' | 'kyberswap' | 'uniswap'
-  /** How the wallet embeds it. iframe is primary; popup is the fallback. */
-  embed: EmbedMode
 }
 
 /**
@@ -42,8 +50,7 @@ export const EXPLORE_DAPPS: ExploreDapp[] = [
     icon: '🪐',
     color: '#5c4b8a',
     url: EXPLORE_DAPP_BASE_URL,
-    aggregator: 'jupiter',
-    embed: 'iframe'
+    aggregator: 'jupiter'
   },
   {
     id: 'oneinch',
@@ -51,8 +58,7 @@ export const EXPLORE_DAPPS: ExploreDapp[] = [
     icon: '🦄',
     color: '#1b314f',
     url: EXPLORE_DAPP_BASE_URL,
-    aggregator: 'oneinch',
-    embed: 'iframe'
+    aggregator: 'oneinch'
   },
   {
     id: 'kyberswap',
@@ -60,8 +66,7 @@ export const EXPLORE_DAPPS: ExploreDapp[] = [
     icon: '💠',
     color: '#0b6e5f',
     url: EXPLORE_DAPP_BASE_URL,
-    aggregator: 'kyberswap',
-    embed: 'iframe'
+    aggregator: 'kyberswap'
   },
   {
     id: 'uniswap',
@@ -69,8 +74,7 @@ export const EXPLORE_DAPPS: ExploreDapp[] = [
     icon: '🦄',
     color: '#7a1f52',
     url: EXPLORE_DAPP_BASE_URL,
-    aggregator: 'uniswap',
-    embed: 'iframe'
+    aggregator: 'uniswap'
   }
 ]
 

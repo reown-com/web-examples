@@ -3,7 +3,7 @@ import { parseUri } from '@walletconnect/utils'
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import PickerStore, { getPickerPopup, setPickerPopup } from '@/store/PickerStore'
-import { dappOrigin } from '@/data/ExploreDapps'
+import { dappOrigin, ExploreOpenMode } from '@/data/ExploreDapps'
 import { walletkit } from '@/utils/WalletConnectUtil'
 
 /**
@@ -25,18 +25,19 @@ import { walletkit } from '@/utils/WalletConnectUtil'
 const CONNECT_TIMEOUT_MS = 15000
 
 export default function EmbeddedDappBrowser() {
-  const { activeDapp, activeUrl, status, statusDetail } = useSnapshot(PickerStore.state)
+  const { activeDapp, activeUrl, activeMode, status, statusDetail } = useSnapshot(PickerStore.state)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [reloadKey, setReloadKey] = useState(0)
-  const [mode, setMode] = useState<'iframe' | 'popup'>('iframe')
+  const [mode, setMode] = useState<ExploreOpenMode>('iframe')
   const [timedOut, setTimedOut] = useState(false)
 
-  // Reset transient view state whenever a new dapp is opened.
+  // Reset transient view state whenever a new dapp is opened, honoring the
+  // globally-chosen open mode (Settings → Dapps open mode).
   useEffect(() => {
-    setMode(activeDapp?.embed === 'popup' ? 'popup' : 'iframe')
+    setMode(activeMode)
     setTimedOut(false)
     setReloadKey(0)
-  }, [activeDapp?.id])
+  }, [activeDapp?.id, activeMode])
 
   // URI intake: validate origin + source, then pair silently.
   useEffect(() => {
@@ -87,9 +88,10 @@ export default function EmbeddedDappBrowser() {
     return () => window.removeEventListener('message', onMessage)
   }, [activeDapp, activeUrl])
 
-  // Detect a dapp that never hands off a URI (framing blocked, or just slow).
+  // Detect a framed dapp that never hands off a URI (framing blocked, or slow).
+  // Only relevant for iframe mode — popup/new-tab show their own pane.
   useEffect(() => {
-    if (!activeDapp) return
+    if (!activeDapp || mode !== 'iframe') return
     setTimedOut(false)
     const t = setTimeout(() => {
       if (PickerStore.state.status !== 'settled') setTimedOut(true)
@@ -100,14 +102,30 @@ export default function EmbeddedDappBrowser() {
   if (!activeDapp || !activeUrl) return null
 
   const pill = statusPill(status, statusDetail)
-  const showPopupPane = mode === 'popup'
-  const showTimeout = timedOut && status !== 'settled'
+  const showWindowPane = mode === 'popup' || mode === 'newtab'
+  const showTimeout = mode === 'iframe' && timedOut && status !== 'settled'
 
+  // Escape hatch from a framing-blocked iframe: open a first-party popup.
   function openInWindow() {
     const popup = window.open(activeUrl!, `wc_picker_${activeDapp!.id}`, 'width=460,height=820')
     setPickerPopup(popup)
     setMode('popup')
     setTimedOut(false)
+    PickerStore.setStatus('connecting')
+  }
+
+  // Re-focus (or re-open) the popup/tab for the current mode.
+  function reopenActiveWindow() {
+    const existing = getPickerPopup()
+    if (existing && !existing.closed) {
+      existing.focus()
+      return
+    }
+    const reopened =
+      mode === 'newtab'
+        ? window.open(activeUrl!, `wc_picker_${activeDapp!.id}`)
+        : window.open(activeUrl!, `wc_picker_${activeDapp!.id}`, 'width=460,height=820')
+    setPickerPopup(reopened)
     PickerStore.setStatus('connecting')
   }
 
@@ -211,21 +229,22 @@ export default function EmbeddedDappBrowser() {
           background: '#ffffff'
         }}
       >
-        {showPopupPane ? (
+        {showWindowPane ? (
           <CenteredPane>
             <Text h5 css={{ margin: 0 }}>
-              Opened in a separate window
+              {mode === 'newtab' ? 'Opened in a new tab' : 'Opened in a separate window'}
             </Text>
             <Text css={{ color: '$gray500', fontSize: 13 }}>
-              This dapp is running as a first-party popup and connects over{' '}
-              <code>window.opener</code>. Closing that window returns you here.
+              {activeDapp.name} is running as a first-party{' '}
+              {mode === 'newtab' ? 'browser tab' : 'popup window'} and connects over{' '}
+              <code>window.opener</code>. Sign prompts still appear here in the wallet.
             </Text>
             <div style={{ display: 'flex', gap: 8 }}>
-              <Button auto size="sm" onClick={openInWindow}>
-                Focus / reopen
+              <Button auto size="sm" onClick={reopenActiveWindow}>
+                {mode === 'newtab' ? 'Focus / reopen tab' : 'Focus / reopen window'}
               </Button>
               <Button auto size="sm" flat onClick={retryIframe}>
-                Try embedding again
+                Embed here instead
               </Button>
             </div>
           </CenteredPane>

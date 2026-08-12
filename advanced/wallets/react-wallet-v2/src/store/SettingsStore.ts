@@ -7,6 +7,7 @@ import {
 } from '@/utils/SmartAccountUtil'
 import { Verify, SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
+import type { ExploreOpenMode } from '@/data/ExploreDapps'
 
 const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
 const CA_ENABLED_KEY = 'CHAIN_ABSTRACTION'
@@ -19,8 +20,10 @@ const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
 // Explore tab, and which connect variant the Explore tiles request.
 const EXPLORE_AUTOCONNECT_KEY = 'EXPLORE_AUTOCONNECT'
 const EXPLORE_VARIANT_KEY = 'EXPLORE_CONNECT_VARIANT'
+const EXPLORE_OPEN_MODE_KEY = 'EXPLORE_OPEN_MODE'
 
 export type ExploreConnectVariant = 'headless' | 'provider'
+export type { ExploreOpenMode }
 
 /**
  * Types
@@ -59,6 +62,7 @@ interface State {
   // Dapp Picker POC
   explorerAutoConnectEnabled: boolean
   explorerConnectVariant: ExploreConnectVariant
+  explorerOpenMode: ExploreOpenMode
 }
 
 /**
@@ -124,7 +128,12 @@ const state = proxy<State>({
     typeof localStorage !== 'undefined' &&
     localStorage.getItem(EXPLORE_VARIANT_KEY) === 'headless'
       ? 'headless'
-      : 'provider'
+      : 'provider',
+  explorerOpenMode:
+    typeof localStorage !== 'undefined' &&
+    ['iframe', 'popup', 'newtab'].includes(localStorage.getItem(EXPLORE_OPEN_MODE_KEY) || '')
+      ? (localStorage.getItem(EXPLORE_OPEN_MODE_KEY) as ExploreOpenMode)
+      : 'iframe'
 })
 
 /**
@@ -267,6 +276,11 @@ const SettingsStore = {
     SettingsStore.setExplorerConnectVariant(
       state.explorerConnectVariant === 'headless' ? 'provider' : 'headless'
     )
+  },
+
+  setExplorerOpenMode(mode: ExploreOpenMode) {
+    state.explorerOpenMode = mode
+    localStorage.setItem(EXPLORE_OPEN_MODE_KEY, mode)
   },
 
   toggleChainAbstractionEnabled() {

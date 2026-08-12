@@ -20,21 +20,25 @@ const CHAIN_LABEL: Record<ExploreDapp['aggregator'], string> = {
 }
 
 export default function ExplorePage() {
-  const { explorerAutoConnectEnabled, explorerConnectVariant } = useSnapshot(SettingsStore.state)
+  const { explorerAutoConnectEnabled, explorerConnectVariant, explorerOpenMode } = useSnapshot(
+    SettingsStore.state
+  )
   const { activeDapp } = useSnapshot(PickerStore.state)
   const [consentDapp, setConsentDapp] = useState<ExploreDapp | null>(null)
 
-  // Build the picker URL contract and open the dapp. For popup-embed tiles the
-  // window.open MUST run inside the click gesture (here) or the popup blocker
-  // eats it — so this is always called directly from an onClick.
+  // Build the picker URL contract and open the dapp per the chosen open mode.
+  // For popup / new-tab the window.open MUST run inside the click gesture (here)
+  // or the popup blocker eats it — so this is always called directly from an
+  // onClick.
   function openDapp(dapp: ExploreDapp) {
     const hostOrigin = window.location.origin
     const url = buildPickerUrl(dapp, explorerConnectVariant, hostOrigin)
-    if (dapp.embed === 'popup') {
-      const popup = window.open(url, `wc_picker_${dapp.id}`, 'width=460,height=780')
-      setPickerPopup(popup)
+    if (explorerOpenMode === 'popup') {
+      setPickerPopup(window.open(url, `wc_picker_${dapp.id}`, 'width=460,height=820'))
+    } else if (explorerOpenMode === 'newtab') {
+      setPickerPopup(window.open(url, `wc_picker_${dapp.id}`)) // full tab; opener preserved
     }
-    PickerStore.openDapp(dapp, url)
+    PickerStore.openDapp(dapp, url, explorerOpenMode)
   }
 
   function onTileClick(dapp: ExploreDapp) {
