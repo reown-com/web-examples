@@ -7,7 +7,7 @@ import React, {
   useState,
 } from "react";
 import toast from "react-hot-toast";
-import styled from "styled-components";
+import styled, { ThemeProvider } from "styled-components";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { Contract, JsonRpcProvider, formatUnits, parseUnits } from "ethers";
 
@@ -142,10 +142,148 @@ const AGGREGATORS: Record<
     sellSymbol: "ETH",
     sellDecimals: ETH_DECIMALS,
     sellIcon: "Ξ",
-    sellColor: "#FC72FF",
+    sellColor: "#627EEA",
     maxFeeBps: UNISWAP_MAX_FEE_BPS,
     explorerTx: (id) => `https://arbiscan.io/tx/${id}`,
     explorerAddress: (address) => `https://arbiscan.io/address/${address}`,
+  },
+};
+
+/**
+ * Per-aggregator theming — the "picker illusion": each tile opens the SAME dapp
+ * but skinned to resemble the real app it represents (Jupiter: dark + lime;
+ * Uniswap: light + pink). Consumed via styled-components ThemeProvider.
+ */
+interface AppTheme {
+  name: string;
+  mark: string;
+  sellLabel: string;
+  buyLabel: string;
+  fontFamily: string;
+  pageBg: string;
+  text: string;
+  textDim: string;
+  textMid: string;
+  border: string;
+  borderStrong: string;
+  cardBg: string;
+  cardShadow: string;
+  panelBg: string;
+  chipBg: string;
+  chipBorder: string;
+  accent: string;
+  accentSoft: string;
+  buttonBg: string;
+  buttonText: string;
+  buttonRadius: string;
+  radius: string;
+  positive: string;
+  negative: string;
+  warning: string;
+  warningBg: string;
+  logoMarkColor: string;
+}
+
+declare module "styled-components" {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  export interface DefaultTheme extends AppTheme {}
+}
+
+const DARK_THEME: AppTheme = {
+  name: "Session Fees",
+  mark: "◎",
+  sellLabel: "Selling",
+  buyLabel: "Buying",
+  fontFamily: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif`,
+  pageBg: "#0c0f14",
+  text: "#e8f9ff",
+  textDim: "#5b6b7c",
+  textMid: "#8fa3b5",
+  border: "#1b232d",
+  borderStrong: "#2a3441",
+  cardBg: "#131920",
+  cardShadow: "none",
+  panelBg: "#0f141a",
+  chipBg: "#1b232d",
+  chipBorder: "#2a3441",
+  accent: "#c7f284",
+  accentSoft: "rgba(199, 242, 132, 0.1)",
+  buttonBg: "#c7f284",
+  buttonText: "#0c0f14",
+  buttonRadius: "12px",
+  radius: "16px",
+  positive: "#7ee787",
+  negative: "#ff6b6b",
+  warning: "#ffb86b",
+  warningBg: "rgba(255, 184, 107, 0.08)",
+  logoMarkColor: "#c7f284",
+};
+
+const THEMES: Record<AggregatorId, AppTheme> = {
+  // Jupiter: near-black, mint-lime accent — jup.ag.
+  jupiter: {
+    ...DARK_THEME,
+    name: "Jupiter",
+    mark: "🪐",
+    pageBg: "#0f1114",
+    text: "#f2f4f6",
+    textDim: "#8a8f98",
+    textMid: "#b0b5bd",
+    border: "#26282e",
+    borderStrong: "#34373f",
+    cardBg: "#191b1f",
+    panelBg: "#131518",
+    chipBg: "#26282e",
+    chipBorder: "#34373f",
+    radius: "20px",
+  },
+  // Uniswap: light, pink accent — app.uniswap.org.
+  uniswap: {
+    ...DARK_THEME,
+    name: "Uniswap",
+    mark: "🦄",
+    sellLabel: "Sell",
+    buyLabel: "Buy",
+    fontFamily: `"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`,
+    pageBg: "#ffffff",
+    text: "#131313",
+    textDim: "#7d7d7d",
+    textMid: "#5e5e5e",
+    border: "#f0f0f0",
+    borderStrong: "#e6e6e6",
+    cardBg: "#ffffff",
+    cardShadow: "0 4px 20px rgba(0, 0, 0, 0.06)",
+    panelBg: "#f9f9f9",
+    chipBg: "#ffffff",
+    chipBorder: "#ececec",
+    accent: "#fc72ff",
+    accentSoft: "rgba(252, 114, 255, 0.10)",
+    buttonBg: "#fc72ff",
+    buttonText: "#ffffff",
+    buttonRadius: "20px",
+    radius: "24px",
+    positive: "#21c95e",
+    negative: "#ff5f52",
+    warning: "#9a6a00",
+    warningBg: "rgba(255, 184, 0, 0.12)",
+    logoMarkColor: "#fc72ff",
+  },
+  // 1inch / KyberSwap: keep the neutral dark theme (only the two above were
+  // requested); just brand the name/mark, and give Kyber its teal accent.
+  oneinch: {
+    ...DARK_THEME,
+    name: "1inch",
+    mark: "🔷",
+  },
+  kyberswap: {
+    ...DARK_THEME,
+    name: "KyberSwap",
+    mark: "💠",
+    accent: "#31cb9e",
+    accentSoft: "rgba(49, 203, 158, 0.12)",
+    buttonBg: "#31cb9e",
+    buttonText: "#05201a",
+    logoMarkColor: "#31cb9e",
   },
 };
 
@@ -190,6 +328,7 @@ const Home: NextPage = () => {
 
   const [aggregator, setAggregator] = useState<AggregatorId>("jupiter");
   const agg = AGGREGATORS[aggregator];
+  const theme = THEMES[aggregator];
   const isJupiter = aggregator === "jupiter";
 
   // Restore the aggregator choice across reloads (read after mount — SSR has
@@ -754,10 +893,12 @@ const Home: NextPage = () => {
     !hasInsufficientBalance;
 
   return (
+    <ThemeProvider theme={theme}>
     <SPage>
       <STopBar>
         <SLogo>
-          <SLogoMark>◎</SLogoMark> Session Fees <SPocBadge>POC</SPocBadge>
+          <SLogoMark>{theme.mark}</SLogoMark> {theme.name}{" "}
+          <SPocBadge>POC</SPocBadge>
         </SLogo>
         {session && activeAddress ? (
           <SAccountChip onClick={() => disconnect()}>
@@ -768,20 +909,24 @@ const Home: NextPage = () => {
 
       <SMain>
         <STabsRow>
-          <STab $active>Market</STab>
-          <SAggregatorSelect
-            value={aggregator}
-            onChange={(event) =>
-              onSelectAggregator(event.target.value as AggregatorId)
-            }
-            disabled={isSwapping}
-          >
-            {Object.entries(AGGREGATORS).map(([id, meta]) => (
-              <option key={id} value={id}>
-                {meta.label} · {meta.chainLabel}
-              </option>
-            ))}
-          </SAggregatorSelect>
+          <STab $active>Swap</STab>
+          {/* In picker mode the aggregator is preset by the tile, so hide the
+              switcher — a real dapp doesn't offer "switch to another dapp". */}
+          {!pickerMode.wcAuto && (
+            <SAggregatorSelect
+              value={aggregator}
+              onChange={(event) =>
+                onSelectAggregator(event.target.value as AggregatorId)
+              }
+              disabled={isSwapping}
+            >
+              {Object.entries(AGGREGATORS).map(([id, meta]) => (
+                <option key={id} value={id}>
+                  {meta.label} · {meta.chainLabel}
+                </option>
+              ))}
+            </SAggregatorSelect>
+          )}
         </STabsRow>
 
         {pickerMode.wcAuto && session && (
@@ -793,11 +938,12 @@ const Home: NextPage = () => {
 
         <SCard>
           <SPanel>
-            <SPanelLabel>Selling</SPanelLabel>
+            <SPanelLabel>{theme.sellLabel}</SPanelLabel>
             <SPanelRow>
               <STokenChip>
                 <STokenIcon $color={agg.sellColor}>{agg.sellIcon}</STokenIcon>{" "}
                 {agg.sellSymbol}
+                <SChevron>▾</SChevron>
               </STokenChip>
               <SAmountInput
                 type="number"
@@ -828,10 +974,11 @@ const Home: NextPage = () => {
           </SArrowDivider>
 
           <SPanel>
-            <SPanelLabel>Buying</SPanelLabel>
+            <SPanelLabel>{theme.buyLabel}</SPanelLabel>
             <SPanelRow>
               <STokenChip>
                 <STokenIcon $color="#2775CA">$</STokenIcon> USDC
+                <SChevron>▾</SChevron>
               </STokenChip>
               <SAmountOutput $dim={isQuoting}>{buyAmount || "0"}</SAmountOutput>
             </SPanelRow>
@@ -1015,22 +1162,23 @@ const Home: NextPage = () => {
         )}
       </SMain>
     </SPage>
+    </ThemeProvider>
   );
 };
 
 export default Home;
 
 /**
- * Styles — dark, Jupiter-like.
+ * Styles — theme-driven (see AppTheme / THEMES). All colors come from the
+ * active aggregator's theme so the same markup renders as Jupiter (dark+lime)
+ * or Uniswap (light+pink).
  */
 
 const SPage = styled.div`
   min-height: 100vh;
-  background: #0c0f14;
-  color: #e8f9ff;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    sans-serif;
+  background: ${({ theme }) => theme.pageBg};
+  color: ${({ theme }) => theme.text};
+  font-family: ${({ theme }) => theme.fontFamily};
 `;
 
 const STopBar = styled.div`
@@ -1038,7 +1186,7 @@ const STopBar = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  border-bottom: 1px solid #1b232d;
+  border-bottom: 1px solid ${({ theme }) => theme.border};
 `;
 
 const SLogo = styled.div`
@@ -1050,28 +1198,28 @@ const SLogo = styled.div`
 `;
 
 const SLogoMark = styled.span`
-  color: #c7f284;
+  color: ${({ theme }) => theme.logoMarkColor};
 `;
 
 const SPocBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
-  color: #c7f284;
-  border: 1px solid #c7f284;
+  color: ${({ theme }) => theme.accent};
+  border: 1px solid ${({ theme }) => theme.accent};
   border-radius: 6px;
   padding: 1px 6px;
 `;
 
 const SAccountChip = styled.button`
-  background: #1b232d;
-  color: #e8f9ff;
-  border: 1px solid #2a3441;
+  background: ${({ theme }) => theme.chipBg};
+  color: ${({ theme }) => theme.text};
+  border: 1px solid ${({ theme }) => theme.chipBorder};
   border-radius: 20px;
   padding: 6px 14px;
   font-size: 13px;
   cursor: pointer;
   &:hover {
-    border-color: #c7f284;
+    border-color: ${({ theme }) => theme.accent};
   }
 `;
 
@@ -1096,14 +1244,14 @@ const STab = styled.div<{ $active?: boolean }>`
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
-  background: ${({ $active }) => ($active ? "#1b232d" : "transparent")};
-  color: ${({ $active }) => ($active ? "#c7f284" : "#5b6b7c")};
+  background: ${({ $active, theme }) => ($active ? theme.chipBg : "transparent")};
+  color: ${({ $active, theme }) => ($active ? theme.accent : theme.textDim)};
 `;
 
 const SAggregatorSelect = styled.select`
-  background: #1b232d;
-  color: #e8f9ff;
-  border: 1px solid #2a3441;
+  background: ${({ theme }) => theme.chipBg};
+  color: ${({ theme }) => theme.text};
+  border: 1px solid ${({ theme }) => theme.chipBorder};
   border-radius: 20px;
   padding: 8px 14px;
   font-size: 13px;
@@ -1111,14 +1259,15 @@ const SAggregatorSelect = styled.select`
   cursor: pointer;
   outline: none;
   &:hover {
-    border-color: #c7f284;
+    border-color: ${({ theme }) => theme.accent};
   }
 `;
 
 const SCard = styled.div`
-  background: #131920;
-  border: 1px solid #1b232d;
-  border-radius: 16px;
+  background: ${({ theme }) => theme.cardBg};
+  border: 1px solid ${({ theme }) => theme.border};
+  box-shadow: ${({ theme }) => theme.cardShadow};
+  border-radius: ${({ theme }) => theme.radius};
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -1126,15 +1275,15 @@ const SCard = styled.div`
 `;
 
 const SPanel = styled.div`
-  background: #0f141a;
-  border: 1px solid #1b232d;
+  background: ${({ theme }) => theme.panelBg};
+  border: 1px solid ${({ theme }) => theme.border};
   border-radius: 12px;
   padding: 12px 16px;
 `;
 
 const SPanelLabel = styled.div`
   font-size: 12px;
-  color: #5b6b7c;
+  color: ${({ theme }) => theme.textDim};
   margin-bottom: 8px;
 `;
 
@@ -1149,12 +1298,19 @@ const STokenChip = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #1b232d;
+  background: ${({ theme }) => theme.chipBg};
+  border: 1px solid ${({ theme }) => theme.chipBorder};
   border-radius: 20px;
-  padding: 6px 14px 6px 6px;
+  padding: 6px 12px 6px 6px;
   font-weight: 700;
   font-size: 15px;
   flex-shrink: 0;
+`;
+
+const SChevron = styled.span`
+  color: ${({ theme }) => theme.textDim};
+  font-size: 11px;
+  margin-left: -2px;
 `;
 
 const STokenIcon = styled.span<{ $color: string }>`
@@ -1174,7 +1330,7 @@ const SAmountInput = styled.input`
   background: transparent;
   border: none;
   outline: none;
-  color: #e8f9ff;
+  color: ${({ theme }) => theme.text};
   font-size: 26px;
   font-weight: 600;
   text-align: right;
@@ -1191,14 +1347,14 @@ const SAmountOutput = styled.div<{ $dim?: boolean }>`
   font-size: 26px;
   font-weight: 600;
   text-align: right;
-  color: ${({ $dim }) => ($dim ? "#5b6b7c" : "#e8f9ff")};
+  color: ${({ $dim, theme }) => ($dim ? theme.textDim : theme.text)};
   overflow: hidden;
   text-overflow: ellipsis;
 `;
 
 const SUsdValue = styled.div`
   font-size: 12px;
-  color: #5b6b7c;
+  color: ${({ theme }) => theme.textDim};
   text-align: right;
   margin-top: 4px;
 `;
@@ -1212,7 +1368,8 @@ const SPanelFooter = styled.div`
 
 const SBalanceValue = styled.div<{ $insufficient?: boolean }>`
   font-size: 12px;
-  color: ${({ $insufficient }) => ($insufficient ? "#ffb86b" : "#5b6b7c")};
+  color: ${({ $insufficient, theme }) =>
+    $insufficient ? theme.warning : theme.textDim};
   margin-top: 4px;
 `;
 
@@ -1227,18 +1384,18 @@ const SArrowCircle = styled.div`
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #1b232d;
-  border: 3px solid #131920;
+  background: ${({ theme }) => theme.chipBg};
+  border: 3px solid ${({ theme }) => theme.cardBg};
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #c7f284;
+  color: ${({ theme }) => theme.accent};
   font-size: 15px;
 `;
 
 const SFeeTerms = styled.div`
-  background: #0f141a;
-  border: 1px dashed #2a3441;
+  background: ${({ theme }) => theme.panelBg};
+  border: 1px dashed ${({ theme }) => theme.borderStrong};
   border-radius: 12px;
   padding: 12px 16px;
   display: flex;
@@ -1249,7 +1406,7 @@ const SFeeTerms = styled.div`
 const SFeeTermsHeader = styled.div`
   font-size: 13px;
   font-weight: 700;
-  color: #c7f284;
+  color: ${({ theme }) => theme.accent};
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1258,15 +1415,15 @@ const SFeeTermsHeader = styled.div`
 const SFeeBadge = styled.span`
   font-size: 10px;
   font-weight: 600;
-  color: #5b6b7c;
-  border: 1px solid #2a3441;
+  color: ${({ theme }) => theme.textDim};
+  border: 1px solid ${({ theme }) => theme.borderStrong};
   border-radius: 6px;
   padding: 1px 6px;
 `;
 
 const SNoTerms = styled.div`
   font-size: 13px;
-  color: #5b6b7c;
+  color: ${({ theme }) => theme.textDim};
 `;
 
 const SBreakdown = styled.div`
@@ -1280,9 +1437,9 @@ const SBreakdownRow = styled.div`
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: #8fa3b5;
+  color: ${({ theme }) => theme.textMid};
   span:last-child {
-    color: #e8f9ff;
+    color: ${({ theme }) => theme.text};
   }
 `;
 
@@ -1292,20 +1449,20 @@ const SMono = styled.span`
 
 const SWarning = styled.div`
   font-size: 12px;
-  color: #ffb86b;
-  background: rgba(255, 184, 107, 0.08);
+  color: ${({ theme }) => theme.warning};
+  background: ${({ theme }) => theme.warningBg};
   border-radius: 8px;
   padding: 8px 12px;
 `;
 
 const SBigButton = styled.button`
   margin-top: 4px;
-  background: #c7f284;
-  color: #0c0f14;
+  background: ${({ theme }) => theme.buttonBg};
+  color: ${({ theme }) => theme.buttonText};
   font-size: 17px;
   font-weight: 700;
   border: none;
-  border-radius: 12px;
+  border-radius: ${({ theme }) => theme.buttonRadius};
   padding: 16px;
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -1325,8 +1482,9 @@ const SPriceRow = styled.div`
 `;
 
 const SPriceCard = styled.div`
-  background: #131920;
-  border: 1px solid #1b232d;
+  background: ${({ theme }) => theme.cardBg};
+  border: 1px solid ${({ theme }) => theme.border};
+  box-shadow: ${({ theme }) => theme.cardShadow};
   border-radius: 12px;
   padding: 12px 16px;
   display: flex;
@@ -1349,13 +1507,15 @@ const SPriceCardValue = styled.div`
 
 const SPriceCardChange = styled.div<{ $negative?: boolean }>`
   font-size: 12px;
-  color: ${({ $negative }) => ($negative ? "#ff6b6b" : "#7ee787")};
+  color: ${({ $negative, theme }) =>
+    $negative ? theme.negative : theme.positive};
   min-height: 14px;
 `;
 
 const SResultCard = styled.div`
-  background: #131920;
-  border: 1px solid #1b232d;
+  background: ${({ theme }) => theme.cardBg};
+  border: 1px solid ${({ theme }) => theme.border};
+  box-shadow: ${({ theme }) => theme.cardShadow};
   border-radius: 12px;
   padding: 12px 16px;
   display: flex;
@@ -1364,7 +1524,7 @@ const SResultCard = styled.div`
 `;
 
 const SLink = styled.a`
-  color: #c7f284;
+  color: ${({ theme }) => theme.accent};
   text-decoration: none;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   &:hover {
@@ -1374,13 +1534,13 @@ const SLink = styled.a`
 
 const SFeeBalanceValue = styled.span`
   font-weight: 700;
-  color: #c7f284 !important;
+  color: ${({ theme }) => theme.accent} !important;
 `;
 
 const SConnectedBanner = styled.div`
-  background: rgba(199, 242, 132, 0.1);
-  border: 1px solid #c7f284;
-  color: #c7f284;
+  background: ${({ theme }) => theme.accentSoft};
+  border: 1px solid ${({ theme }) => theme.accent};
+  color: ${({ theme }) => theme.accent};
   border-radius: 12px;
   padding: 10px 16px;
   font-size: 13px;

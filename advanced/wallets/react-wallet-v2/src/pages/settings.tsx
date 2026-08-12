@@ -1,6 +1,7 @@
 import PageHeader from '@/components/PageHeader'
 import RelayRegionPicker from '@/components/RelayRegionPicker'
 import SettingsStore from '@/store/SettingsStore'
+import type { ExploreOpenMode } from '@/store/SettingsStore'
 import { cosmosWallets } from '@/utils/CosmosWalletUtil'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { solanaWallets } from '@/utils/SolanaWalletUtil'
@@ -30,8 +31,29 @@ export default function SettingsPage() {
     safeSmartAccountEnabled,
     biconomySmartAccountEnabled,
     moduleManagementEnabled,
-    chainAbstractionEnabled
+    chainAbstractionEnabled,
+    explorerAutoConnectEnabled,
+    explorerConnectVariant,
+    explorerOpenMode
   } = useSnapshot(SettingsStore.state)
+
+  const OPEN_MODES: { id: ExploreOpenMode; label: string; desc: string }[] = [
+    {
+      id: 'iframe',
+      label: 'Embedded (iframe)',
+      desc: 'Fills the Dapps tab; sign prompts appear over it. Framed — needs the dapp to allow embedding.'
+    },
+    {
+      id: 'popup',
+      label: 'Popup (in-wallet modal)',
+      desc: 'A floating modal inside the wallet. Also a framed iframe — same embedding requirement as Embedded.'
+    },
+    {
+      id: 'newtab',
+      label: 'New tab',
+      desc: 'A separate browser tab. First-party, so it connects even when the dapp blocks framing.'
+    }
+  ]
 
   return (
     <Fragment>
@@ -57,6 +79,101 @@ export default function SettingsPage() {
           data-testid="settings-toggle-testnets"
         />
         <Text>{testNets ? 'Enabled' : 'Disabled'}</Text>
+      </Row>
+
+      <StyledDivider css={{ my: '$8' }} />
+
+      <Row>
+        <Col>
+          <Text h4 css={{ marginBottom: '$5' }}>
+            Dapps auto-connect (Dapp Picker POC)
+          </Text>
+          <Row justify="space-between" align="center">
+            <Switch
+              checked={explorerAutoConnectEnabled}
+              onChange={SettingsStore.toggleExplorerAutoConnect}
+              data-testid="settings-toggle-explore-autoconnect"
+            />
+            <Text>{explorerAutoConnectEnabled ? 'Enabled' : 'Disabled'}</Text>
+          </Row>
+          <Text small css={{ color: '$gray500', marginTop: '$3' }}>
+            When on, dapps opened from the Dapps tab connect without an approval
+            screen. Signing is never auto-approved.
+          </Text>
+
+          <Text h4 css={{ marginBottom: '$5', marginTop: '$8' }}>
+            Dapps open mode
+          </Text>
+          <Text small css={{ color: '$gray500', marginBottom: '$5' }}>
+            How a Dapps tile opens (all auto-connect the same way).
+          </Text>
+          <div>
+            {OPEN_MODES.map(option => {
+              const selected = explorerOpenMode === option.id
+              return (
+                <div
+                  key={option.id}
+                  onClick={() => SettingsStore.setExplorerOpenMode(option.id)}
+                  data-testid={`settings-open-mode-${option.id}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    width: '100%',
+                    cursor: 'pointer',
+                    padding: '12px 14px',
+                    marginBottom: 8,
+                    borderRadius: 12,
+                    border: selected ? '1px solid #2E5CFF' : '1px solid #e6e8ec',
+                    background: selected ? '#eaf0ff' : 'transparent'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: '50%',
+                      flexShrink: 0,
+                      border: `2px solid ${selected ? '#2E5CFF' : '#c2c6cc'}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    {selected && (
+                      <div
+                        style={{ width: 8, height: 8, borderRadius: '50%', background: '#2E5CFF' }}
+                      />
+                    )}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, color: selected ? '#2E5CFF' : '#1a1d23' }}>
+                      {option.label}
+                      {option.id === 'iframe' ? ' — default' : ''}
+                    </div>
+                    <div style={{ fontSize: 13, color: '#8a8f98', marginTop: 2 }}>{option.desc}</div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <Text h4 css={{ marginBottom: '$5', marginTop: '$8' }}>
+            Dapps connect variant
+          </Text>
+          <Row justify="space-between" align="center">
+            <Switch
+              checked={explorerConnectVariant === 'headless'}
+              onChange={SettingsStore.toggleExplorerConnectVariant}
+              data-testid="settings-toggle-explore-variant"
+            />
+            <Text>{explorerConnectVariant === 'headless' ? 'Headless' : 'Provider-direct'}</Text>
+          </Row>
+          <Text small css={{ color: '$gray500', marginTop: '$3' }}>
+            Which URI-acquisition variant the Dapps tiles request
+            (<code>connect=headless</code> vs <code>connect=provider</code>).
+          </Text>
+        </Col>
       </Row>
 
       <StyledDivider css={{ my: '$8' }} />

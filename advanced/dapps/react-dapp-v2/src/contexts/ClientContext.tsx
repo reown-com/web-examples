@@ -41,7 +41,7 @@ import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { getRequiredNamespaces } from "../helpers/namespaces";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
 import { isValidSignature } from "./JsonRpcContext";
-import { getPickerMode, offerUriToHost } from "../helpers/picker";
+import { getPickerMode, offerUriToHost, notifyHostSettled } from "../helpers/picker";
 
 /**
  * Types
@@ -292,6 +292,7 @@ export function ClientContextProvider({
       if (provider.session) {
         // A restored session from a previous webview open — already connected.
         setAutoConnectStatus("connected");
+        notifyHostSettled();
         return;
       }
       let session: SessionTypes.Struct | undefined;
@@ -348,6 +349,7 @@ export function ClientContextProvider({
       await onSessionConnected(session);
       setPairings(client.pairing.getAll({ active: true }));
       setAutoConnectStatus("connected");
+      notifyHostSettled();
     } catch (e) {
       console.error("auto-connect failed", e);
       setAutoConnectError((e as Error).message);

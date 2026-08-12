@@ -7,6 +7,7 @@ import {
 } from '@/utils/SmartAccountUtil'
 import { Verify, SessionTypes } from '@walletconnect/types'
 import { proxy } from 'valtio'
+import type { ExploreOpenMode } from '@/data/ExploreDapps'
 
 const TEST_NETS_ENABLED_KEY = 'TEST_NETS'
 const CA_ENABLED_KEY = 'CHAIN_ABSTRACTION'
@@ -15,6 +16,14 @@ const ZERO_DEV_SMART_ACCOUNTS_ENABLED_KEY = 'ZERO_DEV_SMART_ACCOUNTS'
 const SAFE_SMART_ACCOUNTS_ENABLED_KEY = 'SAFE_SMART_ACCOUNTS'
 const BICONOMY_SMART_ACCOUNTS_ENABLED_KEY = 'BICONOMY_SMART_ACCOUNTS'
 const MODULE_MANAGEMENT_ENABLED_KEY = 'MODULE_MANAGEMENT'
+// Dapp Picker POC: one-time consent to auto-connect to dapps opened from the
+// Explore tab, and which connect variant the Explore tiles request.
+const EXPLORE_AUTOCONNECT_KEY = 'EXPLORE_AUTOCONNECT'
+const EXPLORE_VARIANT_KEY = 'EXPLORE_CONNECT_VARIANT'
+const EXPLORE_OPEN_MODE_KEY = 'EXPLORE_OPEN_MODE'
+
+export type ExploreConnectVariant = 'headless' | 'provider'
+export type { ExploreOpenMode }
 
 /**
  * Types
@@ -50,6 +59,10 @@ interface State {
   biconomySmartAccountEnabled: boolean
   moduleManagementEnabled: boolean
   chainAbstractionEnabled: boolean
+  // Dapp Picker POC
+  explorerAutoConnectEnabled: boolean
+  explorerConnectVariant: ExploreConnectVariant
+  explorerOpenMode: ExploreOpenMode
 }
 
 /**
@@ -106,7 +119,21 @@ const state = proxy<State>({
       ? Boolean(localStorage.getItem(MODULE_MANAGEMENT_ENABLED_KEY))
       : false,
   chainAbstractionEnabled:
-    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false
+    typeof localStorage !== 'undefined' ? Boolean(localStorage.getItem(CA_ENABLED_KEY)) : false,
+  explorerAutoConnectEnabled:
+    typeof localStorage !== 'undefined'
+      ? Boolean(localStorage.getItem(EXPLORE_AUTOCONNECT_KEY))
+      : false,
+  explorerConnectVariant:
+    typeof localStorage !== 'undefined' &&
+    localStorage.getItem(EXPLORE_VARIANT_KEY) === 'headless'
+      ? 'headless'
+      : 'provider',
+  explorerOpenMode:
+    typeof localStorage !== 'undefined' &&
+    ['iframe', 'popup', 'newtab'].includes(localStorage.getItem(EXPLORE_OPEN_MODE_KEY) || '')
+      ? (localStorage.getItem(EXPLORE_OPEN_MODE_KEY) as ExploreOpenMode)
+      : 'iframe'
 })
 
 /**
@@ -223,6 +250,37 @@ const SettingsStore = {
     } else {
       localStorage.removeItem(MODULE_MANAGEMENT_ENABLED_KEY)
     }
+  },
+
+  // Dapp Picker POC: consent to silently auto-approve connections for dapps
+  // opened from the Explore tab. Persisted only when granted; revocable.
+  setExplorerAutoConnect(enabled: boolean) {
+    state.explorerAutoConnectEnabled = enabled
+    if (enabled) {
+      localStorage.setItem(EXPLORE_AUTOCONNECT_KEY, 'YES')
+    } else {
+      localStorage.removeItem(EXPLORE_AUTOCONNECT_KEY)
+    }
+  },
+
+  toggleExplorerAutoConnect() {
+    SettingsStore.setExplorerAutoConnect(!state.explorerAutoConnectEnabled)
+  },
+
+  setExplorerConnectVariant(variant: ExploreConnectVariant) {
+    state.explorerConnectVariant = variant
+    localStorage.setItem(EXPLORE_VARIANT_KEY, variant)
+  },
+
+  toggleExplorerConnectVariant() {
+    SettingsStore.setExplorerConnectVariant(
+      state.explorerConnectVariant === 'headless' ? 'provider' : 'headless'
+    )
+  },
+
+  setExplorerOpenMode(mode: ExploreOpenMode) {
+    state.explorerOpenMode = mode
+    localStorage.setItem(EXPLORE_OPEN_MODE_KEY, mode)
   },
 
   toggleChainAbstractionEnabled() {
