@@ -1,3 +1,5 @@
+// Dapps directory (picker). Open mode (iframe / popup modal / new tab) is a
+// global setting — see Settings → Dapps open mode.
 import PageHeader from '@/components/PageHeader'
 import EmbeddedDappBrowser from '@/components/EmbeddedDappBrowser'
 import SettingsStore from '@/store/SettingsStore'
