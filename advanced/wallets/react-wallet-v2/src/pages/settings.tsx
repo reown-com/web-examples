@@ -41,17 +41,17 @@ export default function SettingsPage() {
     {
       id: 'iframe',
       label: 'Embedded (iframe)',
-      desc: 'Opens inside the Dapps tab; sign prompts appear over it. Needs the dapp to allow framing.'
+      desc: 'Fills the Dapps tab; sign prompts appear over it. Framed — needs the dapp to allow embedding.'
     },
     {
       id: 'popup',
-      label: 'Popup window',
-      desc: 'Opens in a small first-party window. Works even if the dapp blocks framing.'
+      label: 'Popup (in-wallet modal)',
+      desc: 'A floating modal inside the wallet. Also a framed iframe — same embedding requirement as Embedded.'
     },
     {
       id: 'newtab',
       label: 'New tab',
-      desc: 'Opens in a full browser tab.'
+      desc: 'A separate browser tab. First-party, so it connects even when the dapp blocks framing.'
     }
   ]
 

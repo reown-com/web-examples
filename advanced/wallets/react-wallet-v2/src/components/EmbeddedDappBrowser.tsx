@@ -7,20 +7,21 @@ import { dappOrigin, ExploreOpenMode } from '@/data/ExploreDapps'
 import { walletkit } from '@/utils/WalletConnectUtil'
 
 /**
- * Dapp Picker POC — the wallet's embedded browser.
+ * Dapp Picker POC — the wallet's embedded browser. Three presentations, driven
+ * by the global open mode (Settings → Dapps open mode):
+ *   - iframe: fills the Dapps tab; framed, URI over window.parent.
+ *   - popup:  a floating modal INSIDE the wallet; also a framed iframe, URI over
+ *             window.parent (same transport as iframe, just a modal card).
+ *   - newtab: a real separate browser tab (window.open); URI over window.opener,
+ *             which XFO does not block.
  *
- * Renders the picker-opened dapp INSIDE the wallet UI (it fills the wallet
- * card's body; the nav footer stays visible), with wallet chrome on top. It is
- * the sole intake point for the pairing URI the dapp offers over postMessage.
- * Auto-approval downstream trusts ONLY pairings recorded here, and only after
- * this component has checked:
- *   - event.origin === the tile's origin (the origin the wallet opened), and
- *   - event.source === the frame/popup the wallet itself created.
+ * Sole intake point for the pairing URI. Auto-approval downstream trusts ONLY
+ * pairings recorded here, and only after checking event.origin === the tile's
+ * origin AND event.source === the frame/tab the wallet itself created.
  *
- * If the dapp can't be framed (e.g. it sends X-Frame-Options / CSP
- * frame-ancestors) the iframe silently fails — there is no load error for that.
- * We detect it with a timeout and offer a first-party popup, which XFO does not
- * block, so the handshake can still complete via window.opener.
+ * Framed modes (iframe/popup) can silently fail if the dapp forbids framing
+ * (X-Frame-Options / CSP) — there is no load error — so a timeout offers a
+ * new-tab escape, which is first-party and bypasses the block.
  */
 const CONNECT_TIMEOUT_MS = 15000
 
@@ -31,8 +32,10 @@ export default function EmbeddedDappBrowser() {
   const [mode, setMode] = useState<ExploreOpenMode>('iframe')
   const [timedOut, setTimedOut] = useState(false)
 
+  const isFramed = mode === 'iframe' || mode === 'popup'
+
   // Reset transient view state whenever a new dapp is opened, honoring the
-  // globally-chosen open mode (Settings → Dapps open mode).
+  // globally-chosen open mode.
   useEffect(() => {
     setMode(activeMode)
     setTimedOut(false)
@@ -89,195 +92,218 @@ export default function EmbeddedDappBrowser() {
   }, [activeDapp, activeUrl])
 
   // Detect a framed dapp that never hands off a URI (framing blocked, or slow).
-  // Only relevant for iframe mode — popup/new-tab show their own pane.
   useEffect(() => {
-    if (!activeDapp || mode !== 'iframe') return
+    if (!activeDapp || !isFramed) return
     setTimedOut(false)
     const t = setTimeout(() => {
       if (PickerStore.state.status !== 'settled') setTimedOut(true)
     }, CONNECT_TIMEOUT_MS)
     return () => clearTimeout(t)
-  }, [activeDapp?.id, reloadKey, mode])
+  }, [activeDapp?.id, reloadKey, mode, isFramed])
 
   if (!activeDapp || !activeUrl) return null
 
   const pill = statusPill(status, statusDetail)
-  const showWindowPane = mode === 'popup' || mode === 'newtab'
-  const showTimeout = mode === 'iframe' && timedOut && status !== 'settled'
+  const showTimeout = isFramed && timedOut && status !== 'settled'
+  const isModal = mode !== 'iframe' // popup (framed modal) or newtab (info card)
 
-  // Escape hatch from a framing-blocked iframe: open a first-party popup.
-  function openInWindow() {
-    const popup = window.open(activeUrl!, `wc_picker_${activeDapp!.id}`, 'width=460,height=820')
-    setPickerPopup(popup)
-    setMode('popup')
+  // Framing-blocked escape: open a real separate tab (bypasses X-Frame-Options).
+  function openInNewTab() {
+    setPickerPopup(window.open(activeUrl!, `wc_picker_${activeDapp!.id}`))
+    setMode('newtab')
     setTimedOut(false)
     PickerStore.setStatus('connecting')
   }
 
-  // Re-focus (or re-open) the popup/tab for the current mode.
-  function reopenActiveWindow() {
+  // Re-focus (or re-open) the separate tab for newtab mode.
+  function reopenTab() {
     const existing = getPickerPopup()
     if (existing && !existing.closed) {
       existing.focus()
       return
     }
-    const reopened =
-      mode === 'newtab'
-        ? window.open(activeUrl!, `wc_picker_${activeDapp!.id}`)
-        : window.open(activeUrl!, `wc_picker_${activeDapp!.id}`, 'width=460,height=820')
-    setPickerPopup(reopened)
+    setPickerPopup(window.open(activeUrl!, `wc_picker_${activeDapp!.id}`))
     PickerStore.setStatus('connecting')
   }
 
-  function retryIframe() {
+  function retryFramed() {
     setPickerPopup(null)
-    setMode('iframe')
+    setMode(activeMode === 'newtab' ? 'iframe' : activeMode)
     setTimedOut(false)
     PickerStore.setStatus('connecting')
     setReloadKey(k => k + 1)
   }
 
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        minHeight: 0
-      }}
-      data-testid="embedded-dapp-browser"
-    >
-      {/* Wallet chrome */}
+  const header = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 2px 12px' }}>
+      <Button
+        auto
+        light
+        size="xs"
+        onClick={() => PickerStore.closeDapp()}
+        data-testid="embedded-close"
+        css={{ minWidth: 'auto', px: '$3' }}
+      >
+        ✕
+      </Button>
       <div
         style={{
+          width: 26,
+          height: 26,
+          borderRadius: 7,
+          background: activeDapp.color,
           display: 'flex',
           alignItems: 'center',
-          gap: 10,
-          padding: '4px 2px 12px'
+          justifyContent: 'center',
+          fontSize: 15,
+          flexShrink: 0
         }}
       >
-        <Button
-          auto
-          light
-          size="xs"
-          onClick={() => PickerStore.closeDapp()}
-          data-testid="embedded-close"
-          css={{ minWidth: 'auto', px: '$3' }}
-        >
-          ✕
-        </Button>
-        <div
-          style={{
-            width: 26,
-            height: 26,
-            borderRadius: 7,
-            background: activeDapp.color,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 15,
-            flexShrink: 0
-          }}
-        >
-          {activeDapp.icon}
-        </div>
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <Text b css={{ margin: 0, lineHeight: 1.1 }}>
-            {activeDapp.name}
-          </Text>
-          <Text
-            css={{
-              margin: 0,
-              fontSize: 11,
-              color: '$gray500',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
-            }}
-          >
-            {dappOrigin(activeDapp).replace(/^https?:\/\//, '')}
-          </Text>
-        </div>
-        <span
-          data-testid="embedded-status"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            padding: '3px 9px',
-            borderRadius: 999,
-            fontSize: 11,
-            fontWeight: 600,
-            color: pill.color,
-            background: pill.bg,
-            flexShrink: 0
-          }}
-        >
-          {status === 'connecting' && !showTimeout && <Loading size="xs" />}
-          {pill.label}
-        </span>
+        {activeDapp.icon}
       </div>
-
-      {/* Dapp surface */}
-      <div
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <Text b css={{ margin: 0, lineHeight: 1.1 }}>
+          {activeDapp.name}
+        </Text>
+        <Text
+          css={{
+            margin: 0,
+            fontSize: 11,
+            color: '$gray500',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
+          }}
+        >
+          {dappOrigin(activeDapp).replace(/^https?:\/\//, '')}
+        </Text>
+      </div>
+      <span
+        data-testid="embedded-status"
         style={{
-          position: 'relative',
-          height: '72vh',
-          borderRadius: 12,
-          overflow: 'hidden',
-          border: '1px solid #e6e8ec',
-          background: '#ffffff'
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 5,
+          padding: '3px 9px',
+          borderRadius: 999,
+          fontSize: 11,
+          fontWeight: 600,
+          color: pill.color,
+          background: pill.bg,
+          flexShrink: 0
         }}
       >
-        {showWindowPane ? (
-          <CenteredPane>
-            <Text h5 css={{ margin: 0 }}>
-              {mode === 'newtab' ? 'Opened in a new tab' : 'Opened in a separate window'}
-            </Text>
-            <Text css={{ color: '$gray500', fontSize: 13 }}>
-              {activeDapp.name} is running as a first-party{' '}
-              {mode === 'newtab' ? 'browser tab' : 'popup window'} and connects over{' '}
-              <code>window.opener</code>. Sign prompts still appear here in the wallet.
-            </Text>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Button auto size="sm" onClick={reopenActiveWindow}>
-                {mode === 'newtab' ? 'Focus / reopen tab' : 'Focus / reopen window'}
-              </Button>
-              <Button auto size="sm" flat onClick={retryIframe}>
-                Embed here instead
-              </Button>
-            </div>
-          </CenteredPane>
-        ) : showTimeout ? (
-          <CenteredPane>
-            <Text h5 css={{ margin: 0 }}>
-              Taking longer than expected
-            </Text>
-            <Text css={{ color: '$gray500', fontSize: 13 }}>
-              The dapp hasn&apos;t completed the handshake. It may be blocking
-              embedding (<code>X-Frame-Options</code> / CSP), or still loading. You
-              can open it in a separate window (which bypasses framing blocks) or
-              retry.
-            </Text>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Button auto size="sm" onClick={openInWindow} data-testid="embedded-open-window">
-                Open in a separate window
-              </Button>
-              <Button auto size="sm" flat onClick={retryIframe} data-testid="embedded-retry">
-                Retry
-              </Button>
-            </div>
-          </CenteredPane>
-        ) : (
-          <iframe
-            key={reloadKey}
-            ref={iframeRef}
-            src={activeUrl}
-            title={activeDapp.name}
-            allow="clipboard-read; clipboard-write; publickey-credentials-get *; payment"
-            style={{ width: '100%', height: '100%', border: 0, background: '#ffffff' }}
-          />
-        )}
+        {status === 'connecting' && !showTimeout && <Loading size="xs" />}
+        {pill.label}
+      </span>
+    </div>
+  )
+
+  const surface = (
+    <div
+      style={{
+        position: 'relative',
+        flex: isModal ? 1 : undefined,
+        height: isModal ? undefined : '72vh',
+        minHeight: 0,
+        borderRadius: 12,
+        overflow: 'hidden',
+        border: '1px solid #e6e8ec',
+        background: '#ffffff'
+      }}
+    >
+      {mode === 'newtab' ? (
+        <CenteredPane>
+          <Text h5 css={{ margin: 0 }}>
+            Opened in a new tab
+          </Text>
+          <Text css={{ color: '$gray500', fontSize: 13 }}>
+            {activeDapp.name} is running as a first-party browser tab and connects over{' '}
+            <code>window.opener</code>. Sign prompts still appear here in the wallet.
+          </Text>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button auto size="sm" onClick={reopenTab}>
+              Focus / reopen tab
+            </Button>
+          </div>
+        </CenteredPane>
+      ) : showTimeout ? (
+        <CenteredPane>
+          <Text h5 css={{ margin: 0 }}>
+            Taking longer than expected
+          </Text>
+          <Text css={{ color: '$gray500', fontSize: 13 }}>
+            The dapp hasn&apos;t completed the handshake. It may be blocking embedding
+            (<code>X-Frame-Options</code> / CSP), or still loading. Open it in a new tab
+            (which bypasses framing blocks) or retry.
+          </Text>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button auto size="sm" onClick={openInNewTab} data-testid="embedded-open-window">
+              Open in a new tab
+            </Button>
+            <Button auto size="sm" flat onClick={retryFramed} data-testid="embedded-retry">
+              Retry
+            </Button>
+          </div>
+        </CenteredPane>
+      ) : (
+        <iframe
+          key={reloadKey}
+          ref={iframeRef}
+          src={activeUrl}
+          title={activeDapp.name}
+          allow="clipboard-read; clipboard-write; publickey-credentials-get *; payment"
+          style={{ width: '100%', height: '100%', border: 0, background: '#ffffff' }}
+        />
+      )}
+    </div>
+  )
+
+  const body = (
+    <div
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}
+      data-testid="embedded-dapp-browser"
+    >
+      {header}
+      {surface}
+    </div>
+  )
+
+  // iframe mode renders in-flow (fills the Dapps tab). popup/newtab render as a
+  // floating modal card over the wallet.
+  if (!isModal) return body
+
+  return (
+    <div
+      onClick={() => PickerStore.closeDapp()}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 400,
+        background: 'rgba(15,18,25,0.45)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24
+      }}
+      data-testid="embedded-dapp-modal"
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: 'min(460px, 94vw)',
+          height: mode === 'newtab' ? 'auto' : 'min(760px, 86vh)',
+          maxHeight: '86vh',
+          background: '#ffffff',
+          borderRadius: 16,
+          boxShadow: '0 24px 70px rgba(0,0,0,0.35)',
+          padding: '14px 14px 16px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
+        {body}
       </div>
     </div>
   )

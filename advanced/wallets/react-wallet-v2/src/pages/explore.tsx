@@ -23,20 +23,18 @@ export default function ExplorePage() {
   const { explorerAutoConnectEnabled, explorerConnectVariant, explorerOpenMode } = useSnapshot(
     SettingsStore.state
   )
-  const { activeDapp } = useSnapshot(PickerStore.state)
+  const { activeDapp, activeMode } = useSnapshot(PickerStore.state)
   const [consentDapp, setConsentDapp] = useState<ExploreDapp | null>(null)
 
   // Build the picker URL contract and open the dapp per the chosen open mode.
-  // For popup / new-tab the window.open MUST run inside the click gesture (here)
-  // or the popup blocker eats it — so this is always called directly from an
-  // onClick.
+  // iframe + popup are framed and live in-page (no window.open); only new-tab
+  // opens a separate context, and that window.open MUST run inside the click
+  // gesture (here) or the popup blocker eats it.
   function openDapp(dapp: ExploreDapp) {
     const hostOrigin = window.location.origin
     const url = buildPickerUrl(dapp, explorerConnectVariant, hostOrigin)
-    if (explorerOpenMode === 'popup') {
-      setPickerPopup(window.open(url, `wc_picker_${dapp.id}`, 'width=460,height=820'))
-    } else if (explorerOpenMode === 'newtab') {
-      setPickerPopup(window.open(url, `wc_picker_${dapp.id}`)) // full tab; opener preserved
+    if (explorerOpenMode === 'newtab') {
+      setPickerPopup(window.open(url, `wc_picker_${dapp.id}`)) // separate tab; opener preserved
     }
     PickerStore.openDapp(dapp, url, explorerOpenMode)
   }
@@ -57,10 +55,10 @@ export default function ExplorePage() {
     if (dapp) openDapp(dapp)
   }
 
-  // When a dapp is open, the embedded browser takes over the wallet card body
-  // (the nav footer stays visible) — so it reads as an in-wallet screen, not a
-  // separate page.
-  if (activeDapp) {
+  // iframe mode takes over the Dapps content area (an in-wallet screen). popup
+  // (a modal) and new-tab render as an overlay above the tile grid, so the
+  // catalog stays behind.
+  if (activeDapp && activeMode === 'iframe') {
     return (
       <Fragment>
         <EmbeddedDappBrowser />
@@ -125,6 +123,9 @@ export default function ExplorePage() {
           </Text>
         </Link>
       </Row>
+
+      {/* popup (modal) / new-tab render as an overlay above the tile grid */}
+      {activeDapp && <EmbeddedDappBrowser />}
 
       {/* One-time consent dialog */}
       <Modal
