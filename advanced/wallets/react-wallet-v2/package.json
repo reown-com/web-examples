@@ -8,7 +8,8 @@
     "lint": "next lint",
     "prettier": "prettier --check '**/*.{js,ts,jsx,tsx}'",
     "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'",
-    "test:e2e-derivation": "node scripts/test-solana-e2e-derivation.js"
+    "test:e2e-derivation": "node scripts/test-solana-e2e-derivation.js",
+    "test:stellar-sep53": "node scripts/test-stellar-sep53.js"
   },
   "dependencies": {
     "@cosmjs/amino": "0.32.4",

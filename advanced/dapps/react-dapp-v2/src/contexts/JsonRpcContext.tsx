@@ -1193,14 +1193,14 @@ export function JsonRpcContextProvider({
           },
         });
 
-        // The wallet signs sha256("StellarMessage" || 0x00 || message) — verify the same.
+        // SEP-53: the wallet signs sha256("Stellar Signed Message:\n" || message)
+        // (prefix concatenated directly with the message, no separator) — verify the same.
         const encoder = new TextEncoder();
-        const prefix = encoder.encode("StellarMessage");
+        const prefix = encoder.encode("Stellar Signed Message:\n");
         const messageBytes = encoder.encode(message);
-        const toHash = new Uint8Array(prefix.length + 1 + messageBytes.length);
+        const toHash = new Uint8Array(prefix.length + messageBytes.length);
         toHash.set(prefix, 0);
-        toHash[prefix.length] = 0; // 0x00 domain separator
-        toHash.set(messageBytes, prefix.length + 1);
+        toHash.set(messageBytes, prefix.length);
 
         const keypair = StellarKeypair.fromPublicKey(address);
         const valid = keypair.verify(

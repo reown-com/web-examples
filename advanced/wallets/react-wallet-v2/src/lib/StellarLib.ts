@@ -126,10 +126,11 @@ export default class StellarLib {
   }
 
   /**
-   * Signs an arbitrary message under the account's Ed25519 key with the
-   * domain-separating prefix required by the spec:
-   *   sign(Ed25519, sha256("StellarMessage" || 0x00 || message))
-   * This prevents a signed message from ever colliding with a transaction body.
+   * Signs an arbitrary message under the account's Ed25519 key following SEP-53:
+   *   sign(Ed25519, sha256("Stellar Signed Message:\n" || message))
+   * The domain-separating prefix is concatenated directly with the message bytes
+   * (no separator byte) so a signed message can never collide with a transaction
+   * body while staying interoperable with SEP-53-compliant wallets and SDKs.
    * @returns base64-encoded 64-byte Ed25519 signature
    */
   public signMessage(message: string, messageEncoding: 'utf-8' | 'base64' = 'utf-8'): string {
@@ -139,7 +140,7 @@ export default class StellarLib {
         : Buffer.from(message, 'utf-8')
 
     const payload = hash(
-      Buffer.concat([Buffer.from('StellarMessage'), Buffer.from([0]), messageBytes])
+      Buffer.concat([Buffer.from('Stellar Signed Message:\n', 'utf-8'), messageBytes])
     )
 
     return this.keypair.sign(payload).toString('base64')
