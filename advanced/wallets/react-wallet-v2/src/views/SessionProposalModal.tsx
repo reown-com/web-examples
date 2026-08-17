@@ -63,8 +63,10 @@ import { getWallet as getSuiWallet } from '@/utils/SuiWalletUtil'
 import StacksLib from '@/lib/StacksLib'
 import { TON_CHAINS, TON_SIGNING_METHODS } from '@/data/TonData'
 import { CANTON_CHAINS, CANTON_SIGNING_METHODS, CANTON_EVENTS } from '@/data/CantonData'
+import { STELLAR_CHAINS, STELLAR_SIGNING_METHODS } from '@/data/StellarData'
 import { getWallet, tonAddresses, tonWallets } from '@/utils/TonWalletUtil'
 import { cantonAddresses } from '@/utils/CantonWalletUtil'
+import { stellarAddresses } from '@/utils/StellarWalletUtil'
 import { prepareAuthenticationMessages, signAuthenticationMessages } from '@/utils/AuthUtil'
 import { AuthenticationMessage } from '@/types/auth'
 
@@ -162,6 +164,11 @@ export default function SessionProposalModal() {
     const cantonChains = Object.keys(CANTON_CHAINS)
     const cantonMethods = Object.values(CANTON_SIGNING_METHODS)
     const cantonEvents = Object.values(CANTON_EVENTS)
+
+    // stellar
+    const stellarChains = Object.keys(STELLAR_CHAINS)
+    const stellarMethods = Object.values(STELLAR_SIGNING_METHODS)
+    const stellarEvents = ['accountsChanged', 'chainChanged']
 
     console.log('stacksAddresses', stacksAddresses)
 
@@ -275,6 +282,14 @@ export default function SessionProposalModal() {
         accounts: cantonChains
           .map(chain => (cantonAddresses || []).map(address => `${chain}:${address}`))
           .flat()
+      },
+      stellar: {
+        chains: stellarChains,
+        methods: stellarMethods,
+        events: stellarEvents,
+        accounts: stellarChains
+          .map(chain => (stellarAddresses || []).map(address => `${chain}:${address}`))
+          .flat()
       }
     }
   }, [addressesToApprove])
@@ -373,6 +388,8 @@ export default function SessionProposalModal() {
         return tonAddresses[0]
       case 'canton':
         return cantonAddresses[0]
+      case 'stellar':
+        return stellarAddresses[0]
     }
   }, [])
 

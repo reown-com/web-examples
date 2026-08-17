@@ -8,7 +8,8 @@
     "lint": "next lint",
     "prettier": "prettier --check '**/*.{js,ts,jsx,tsx}'",
     "prettier:write": "prettier --write '**/*.{js,ts,jsx,tsx}'",
-    "test:e2e-derivation": "node scripts/test-solana-e2e-derivation.js"
+    "test:e2e-derivation": "node scripts/test-solana-e2e-derivation.js",
+    "test:stellar-sep53": "node scripts/test-stellar-sep53.js"
   },
   "dependencies": {
     "@cosmjs/amino": "0.32.4",
@@ -43,7 +44,7 @@
     "@stacks/network": "7.3.1",
     "@stacks/transactions": "7.3.1",
     "@stacks/wallet-sdk": "7.2.0",
-    "@stellar/stellar-base": "15.0.0",
+    "@stellar/stellar-sdk": "15.0.1",
     "@taquito/local-forging": "24.0.2",
     "@taquito/signer": "24.0.2",
     "@taquito/taquito": "24.0.2",

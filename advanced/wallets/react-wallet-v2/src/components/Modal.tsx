@@ -32,6 +32,7 @@ import SessionGetSuiGetAcccountsModal from '@/views/SessionGetSuiGetAcccountsMod
 import SessionTonSendMessageModal from '@/views/SessionSignTonTransactionModal'
 import SessionTonSignDataModal from '@/views/SessionSignTonPersonalMessageModal'
 import SessionSignCantonModal from '@/views/SessionSignCantonModal'
+import SessionSignStellarModal from '@/views/SessionSignStellarModal'
 import PaymentOptionsModal from '@/views/PaymentOptionsModal'
 
 export default function Modal() {
@@ -105,6 +106,8 @@ export default function Modal() {
         return <SessionTonSignDataModal />
       case 'SessionSignCantonModal':
         return <SessionSignCantonModal />
+      case 'SessionSignStellarModal':
+        return <SessionSignStellarModal />
       case 'PaymentOptionsModal':
         return <PaymentOptionsModal />
       default:

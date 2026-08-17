@@ -27,6 +27,7 @@ export const DEFAULT_MAIN_CHAINS = [
   "sui:mainnet",
   "stacks:1",
   "canton:mainnet",
+  "stellar:pubnet",
 ];
 
 export const DEFAULT_TEST_CHAINS = [
@@ -53,6 +54,7 @@ export const DEFAULT_TEST_CHAINS = [
   "sui:devnet",
   "stacks:2147483648",
   "canton:devnet",
+  "stellar:testnet",
 ];
 
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
@@ -210,6 +212,18 @@ export enum DEFAULT_SOLANA_METHODS {
 }
 
 export enum DEFAULT_SOLANA_EVENTS {}
+
+/**
+ * STELLAR
+ */
+export enum DEFAULT_STELLAR_METHODS {
+  STELLAR_SIGN_XDR = "stellar_signXDR",
+  STELLAR_SIGN_AND_SUBMIT_XDR = "stellar_signAndSubmitXDR",
+  STELLAR_SIGN_MESSAGE = "stellar_signMessage",
+  STELLAR_SIGN_AUTH_ENTRY = "stellar_signAuthEntry",
+}
+
+export enum DEFAULT_STELLAR_EVENTS {}
 
 /**
  * POLKADOT
