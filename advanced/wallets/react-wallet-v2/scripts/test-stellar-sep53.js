@@ -17,7 +17,7 @@
 
 const assert = require('node:assert/strict')
 
-const { Keypair, hash } = require('@stellar/stellar-base')
+const { Keypair, hash } = require('@stellar/stellar-sdk')
 
 const SEED = 'SAKICEVQLYWGSOJS4WW7HZJWAHZVEEBS527LHK5V4MLJALYKICQCJXMW'
 const ADDRESS = 'GBXFXNDLV4LSWA4VB7YIL5GBD7BVNR22SGBTDKMO2SBZZHDXSKZYCP7L'

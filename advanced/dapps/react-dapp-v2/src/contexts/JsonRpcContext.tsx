@@ -42,7 +42,7 @@ import {
   Networks as StellarNetworks,
   Operation as StellarOperation,
   TransactionBuilder as StellarTransactionBuilder,
-} from "@stellar/stellar-base";
+} from "@stellar/stellar-sdk";
 import {
   buildKadenaSignRequest,
   buildKadenaQuicksignRequest,

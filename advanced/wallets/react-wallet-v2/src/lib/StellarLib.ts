@@ -5,7 +5,7 @@ import {
   Networks,
   TransactionBuilder,
   xdr
-} from '@stellar/stellar-base'
+} from '@stellar/stellar-sdk'
 
 /**
  * Types
