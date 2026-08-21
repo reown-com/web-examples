@@ -83,10 +83,7 @@ const state = proxy<State>({
   kernelSmartAccountAddress: '',
   safeSmartAccountAddress: '',
   biconomySmartAccountAddress: '',
-  relayerRegionURL:
-    typeof process !== 'undefined' && process.env.NEXT_PUBLIC_RELAY_URL
-      ? process.env.NEXT_PUBLIC_RELAY_URL
-      : '',
+  relayerRegionURL: 'wss://staging-relay.walletconnect.com',
   sessions: [],
   smartAccountSponsorshipEnabled: false,
   smartAccountEnabled:
