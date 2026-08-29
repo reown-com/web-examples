@@ -2101,8 +2101,10 @@ export function JsonRpcContextProvider({
           request: {
             method,
             params: {
-              account: `${WCNetworkId}:${publicKey}`,
-              contracts: ["coin"],
+              accounts: [{
+                account: `${WCNetworkId}:${publicKey}`,
+                contracts: ["coin"],
+              }]
             },
           },
         });
