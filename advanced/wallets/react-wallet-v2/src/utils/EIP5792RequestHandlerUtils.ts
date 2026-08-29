@@ -21,7 +21,7 @@ import {
 } from 'permissionless'
 import { http, toHex } from 'viem'
 type RequestEventArgs = Omit<SignClientTypes.EventArguments['session_request'], 'verifyContext'>
-const getCallsReceipt = async (getCallParams: GetCallsParams) => {
+const getCallsReceipt = async (getCallParams: GetCallsParams, caip10ChainId: string) => {
   /**
    * This is hardcode implementation of wallet_getCallsStatus
    * as we are not maintaining the data for calls bundled right now.
@@ -29,7 +29,8 @@ const getCallsReceipt = async (getCallParams: GetCallsParams) => {
    */
   const apiKey = process.env.NEXT_PUBLIC_PIMLICO_KEY
   const localBundlerUrl = process.env.NEXT_PUBLIC_LOCAL_BUNDLER_URL
-  const bundlerUrl = localBundlerUrl || `https://api.pimlico.io/v1/sepolia/rpc?apikey=${apiKey}`
+  const chainId = caip10ChainId.split(':')[1]
+  const bundlerUrl = localBundlerUrl || `https://api.pimlico.io/v1/${chainId}/rpc?apikey=${apiKey}`
   const bundlerClient = createBundlerClient({
     entryPoint: ENTRYPOINT_ADDRESS_V07,
     transport: http(bundlerUrl)
@@ -74,7 +75,7 @@ export async function approveEIP5792Request(requestEvent: RequestEventArgs) {
     case EIP5792_METHODS.WALLET_GET_CALLS_STATUS: {
       try {
         const getCallParams = request.params[0] as GetCallsParams
-        const receipt = await getCallsReceipt(getCallParams)
+        const receipt = await getCallsReceipt(getCallParams, chainId)
         return formatJsonRpcResult(id, receipt)
       } catch (error: any) {
         console.error(error)
