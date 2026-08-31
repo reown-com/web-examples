@@ -31,9 +31,28 @@ export default function CollectDataIframe({
 
   const handleMessage = useCallback(
     (event: MessageEvent) => {
-      const isAllowedOrigin = WHITELISTED_ORIGINS.some(
-        origin => event.origin === origin
-      )
+      console.log('[CollectData] message received:', {
+        origin: event.origin,
+        data: event.data,
+        expectedFormOrigin: (() => {
+          try {
+            return new URL(url).origin
+          } catch {
+            return 'invalid-url'
+          }
+        })()
+      })
+
+      // The form's own origin is trusted: it is the exact URL the wallet opened.
+      let formOrigin: string | null = null
+      try {
+        formOrigin = new URL(url).origin
+      } catch {
+        // Invalid URL, rely on the whitelist only
+      }
+      const isAllowedOrigin =
+        WHITELISTED_ORIGINS.some(origin => event.origin === origin) ||
+        (formOrigin !== null && event.origin === formOrigin)
       if (!isAllowedOrigin) return
 
       try {
@@ -45,7 +64,7 @@ export default function CollectDataIframe({
           popupRef.current?.close()
           popupRef.current = null
           onComplete()
-        } else if (message.type === 'IC_ERROR' || !message.success) {
+        } else if (message.type === 'IC_ERROR' || (message.type === 'IC_COMPLETE' && !message.success)) {
           popupRef.current?.close()
           popupRef.current = null
           onError(message.error || 'Form submission failed')
@@ -54,7 +73,7 @@ export default function CollectDataIframe({
         // Non-JSON message, ignore
       }
     },
-    [onComplete, onError],
+    [url, onComplete, onError],
   )
 
   useEffect(() => {
@@ -69,11 +88,14 @@ export default function CollectDataIframe({
       if (popupRef.current?.closed) {
         popupRef.current = null
         setOpened(false)
+        // Not all environments post IC_COMPLETE back to the wallet. Treat a
+        // closed form as completed and let confirmPayment fail if it wasn't.
+        onComplete()
       }
     }, 500)
 
     return () => clearInterval(interval)
-  }, [opened])
+  }, [opened, onComplete])
 
   useEffect(() => {
     return () => {

@@ -47,6 +47,16 @@ export const TRON_TEST_CHAINS: TRONChains = {
 export const TRON_CHAINS = { ...TRON_MAINNET_CHAINS, ...TRON_TEST_CHAINS }
 
 /**
+ * WalletConnect Pay
+ */
+
+/**
+ * On Tron the buyer pays their own energy — there is no fee payer and no fee bump —
+ * so WalletConnect Pay does not offer a Tron option to an account below this balance.
+ */
+export const TRON_MIN_TRX_FOR_ENERGY = 14
+
+/**
  * Methods
  */
 export const TRON_SIGNING_METHODS = {
