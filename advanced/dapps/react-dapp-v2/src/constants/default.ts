@@ -47,6 +47,7 @@ export const DEFAULT_TEST_CHAINS = [
   "near:testnet",
   "mvx:D",
   "tron:0xcd8690dc",
+  "tron:0x94a9059e",
   "tezos:testnet",
   "kadena:testnet04",
   "bip122:000000000933ea01ad0ee984209779ba",

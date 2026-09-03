@@ -41,6 +41,15 @@ export const TRON_TEST_CHAINS: TRONChains = {
     fullNode: 'https://nile.trongrid.io/',
     namespace: 'tron',
     symbol: 'TRX'
+  },
+  'tron:0x94a9059e': {
+    chainId: '0x94a9059e',
+    name: 'TRON Shasta Testnet',
+    logo: 'chain-logos/tron.png',
+    rgb: '183, 62, 49',
+    fullNode: 'https://api.shasta.trongrid.io',
+    namespace: 'tron',
+    symbol: 'TRX'
   }
 }
 
