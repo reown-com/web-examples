@@ -58,6 +58,7 @@ Accessible with `data-testid`
 | ----------- | ----------- |
 |  `accounts` | Accounts page |
 | `sessions` | Sessions page |
+| `send` | Send page |
 | `wc-connect` |  WC Connect page |
 | `pairings` | Pairings page |
 | `settings` | Settings Page |
@@ -69,6 +70,32 @@ url: `/walletconnect`
 | `uri-input` | Uri textbox |
 | `uri-connect-button` | Uri connect button |
 | `qrcode-button` | Use qrcode button | 
+
+### Send Page
+url: `/send`
+
+Self-initiated ERC-20 transfer from the active EOA. Prefilled from the query string, so a test can
+drive it deterministically:
+
+`/send?chain=eip155:8453&token=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&to=0x...&amount=1&auto=1`
+
+| Param | Description |
+| ----------- | ----------- |
+| `chain` | CAIP-2 chain id, e.g. `eip155:8453` (mainnets only) |
+| `token` | ERC-20 contract address, must be a token known for that chain |
+| `to` | Recipient address |
+| `amount` | Amount in human units, e.g. `1.5` |
+| `auto` | `1` submits automatically once the wallet is initialised and the inputs are valid |
+
+| Key | Description |
+| ----------- | ----------- |
+| `send-chain-select` | Chain drop down selector |
+| `send-token-select` | Token drop down selector |
+| `send-to-input` | Recipient textbox |
+| `send-amount-input` | Amount textbox |
+| `send-submit-button` | Send button |
+| `send-tx-hash` | Broadcast transaction hash |
+| `send-error` | Error message |
 
 ### Sessions Page
 url: `/session`

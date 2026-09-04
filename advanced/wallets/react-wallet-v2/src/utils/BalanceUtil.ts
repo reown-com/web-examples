@@ -22,14 +22,14 @@ interface ChainDataWithRpc {
   symbol?: string
 }
 
-interface TokenConfig {
+export interface TokenConfig {
   symbol: string
   decimals: number
   icon: string
   addresses: Record<number, string>
 }
 
-const TOKEN_CONFIGS: TokenConfig[] = [
+export const TOKEN_CONFIGS: TokenConfig[] = [
   {
     symbol: 'USDC',
     decimals: 6,

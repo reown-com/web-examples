@@ -13,6 +13,10 @@ export default function Navigation() {
         <Image alt="sessions icon" src="/icons/sessions-icon.svg" width={27} height={27} />
       </Link>
 
+      <Link href="/send" passHref className="navLink" data-testid="send">
+        <Image alt="send icon" src="/icons/arrow-right-icon.svg" width={27} height={27} />
+      </Link>
+
       <Link href="/walletconnect" passHref className="navLink" data-testid="wc-connect">
         <Avatar
           size="lg"
