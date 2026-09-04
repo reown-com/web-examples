@@ -85,7 +85,7 @@ drive it deterministically:
 | `token` | ERC-20 contract address, must be a token known for that chain |
 | `to` | Recipient address |
 | `amount` | Amount in human units, e.g. `1.5` |
-| `auto` | `1` submits automatically once the wallet is initialised and the inputs are valid |
+| `auto` | `1` submits automatically once the wallet is initialised and the inputs are valid. Only honoured when the wallet was seeded from `e2e_encrypted` in the same page load, so a link can never spend a locally stored wallet |
 
 | Key | Description |
 | ----------- | ----------- |

@@ -2,7 +2,8 @@ import PageHeader from '@/components/PageHeader'
 import StyledDivider from '@/components/StyledDivider'
 import { EIP155_MAINNET_CHAINS } from '@/data/EIP155Data'
 import SettingsStore from '@/store/SettingsStore'
-import { getErc20TokensForChain, sendErc20 } from '@/utils/EIP155SendUtil'
+import { AMOUNT_PATTERN, getErc20TokensForChain, sendErc20 } from '@/utils/EIP155SendUtil'
+import { isE2ESeededWallet } from '@/utils/EIP155WalletUtil'
 import { Button, Input, Loading, Row, Text } from '@nextui-org/react'
 import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -10,7 +11,6 @@ import { useSnapshot } from 'valtio'
 import { isAddress } from 'viem'
 
 const DEFAULT_CHAIN_ID = 'eip155:8453'
-const AMOUNT_PATTERN = /^\d+(\.\d+)?$/
 
 function readQueryParam(value: string | string[] | undefined): string | undefined {
   return typeof value === 'string' ? value : undefined
@@ -32,10 +32,15 @@ export default function SendPage() {
 
   const tokens = useMemo(() => getErc20TokensForChain(chainId), [chainId])
   const initialized = Boolean(eip155Address)
-  const autoSubmit = readQueryParam(query.auto) === '1'
+  const tokenKnown = tokens.some(option => option.address.toLowerCase() === token.toLowerCase())
+
+  /* Unattended submits are for the E2E wallet only: this is a public demo wallet
+     where people import their own mnemonic, and a crafted `?auto=1` link would
+     otherwise drain them without a single click. */
+  const autoSubmit = readQueryParam(query.auto) === '1' && isE2ESeededWallet()
 
   const inputsValid =
-    Boolean(token) && isAddress(to) && AMOUNT_PATTERN.test(amount) && parseFloat(amount) > 0
+    tokenKnown && isAddress(to) && AMOUNT_PATTERN.test(amount) && parseFloat(amount) > 0
   const canSubmit = initialized && inputsValid && !sending
 
   // Prefill once the router has parsed the query string.
@@ -67,11 +72,10 @@ export default function SendPage() {
   /* Keep the token selection consistent with the chain: a token prefilled for
      another chain (or none at all) falls back to the chain's first token. */
   useEffect(() => {
-    const isKnownToken = tokens.some(option => option.address.toLowerCase() === token.toLowerCase())
-    if (!isKnownToken) {
+    if (!tokenKnown) {
       setToken(tokens[0]?.address ?? '')
     }
-  }, [tokens, token])
+  }, [tokens, tokenKnown])
 
   const onSend = useCallback(async () => {
     setSending(true)

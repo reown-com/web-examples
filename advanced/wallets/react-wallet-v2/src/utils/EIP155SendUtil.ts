@@ -26,7 +26,8 @@ export interface SendErc20Result {
   hash: string
 }
 
-const AMOUNT_PATTERN = /^\d+(\.\d+)?$/
+/** Amount in human units, e.g. `1` or `1.5` */
+export const AMOUNT_PATTERN = /^\d+(\.\d+)?$/
 
 /**
  * ERC-20 tokens this wallet knows how to send on a given chain. Derived from the
