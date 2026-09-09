@@ -9,6 +9,16 @@ export let eip155Addresses: string[] = []
 
 let address1: string
 let address2: string
+let e2eSeeded = false
+
+/**
+ * Whether the active EIP155 wallet was seeded from `?e2e_encrypted=` in this page
+ * load, rather than restored from localStorage. Guards unattended actions that
+ * must never run against a wallet holding a real user's funds.
+ */
+export function isE2ESeededWallet(): boolean {
+  return e2eSeeded
+}
 
 /**
  * Fetch E2E credentials (async, called before wallet init)
@@ -61,6 +71,8 @@ export async function fetchE2ECredentials(): Promise<string | undefined> {
  * Utilities
  */
 export function createOrRestoreEIP155Wallet({ mnemonic }: { mnemonic?: string } = {}) {
+  e2eSeeded = Boolean(mnemonic)
+
   if (mnemonic) {
     // Remove credentials persisted by the legacy E2E handoff.
     localStorage.removeItem('E2E_MNEMONIC')
