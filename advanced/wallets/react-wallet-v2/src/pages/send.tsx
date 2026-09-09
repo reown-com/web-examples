@@ -2,8 +2,9 @@ import PageHeader from '@/components/PageHeader'
 import StyledDivider from '@/components/StyledDivider'
 import { EIP155_MAINNET_CHAINS } from '@/data/EIP155Data'
 import SettingsStore from '@/store/SettingsStore'
-import { AMOUNT_PATTERN, getErc20TokensForChain, sendErc20 } from '@/utils/EIP155SendUtil'
+import { getErc20TokensForChain, sendErc20 } from '@/utils/EIP155SendUtil'
 import { isE2ESeededWallet } from '@/utils/EIP155WalletUtil'
+import { getAmountError } from '@/utils/Erc20AmountUtil'
 import { Button, Input, Loading, Row, Text } from '@nextui-org/react'
 import { useRouter } from 'next/router'
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -11,9 +12,19 @@ import { useSnapshot } from 'valtio'
 import { isAddress } from 'viem'
 
 const DEFAULT_CHAIN_ID = 'eip155:8453'
+const HEX_ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/
 
 function readQueryParam(value: string | string[] | undefined): string | undefined {
   return typeof value === 'string' ? value : undefined
+}
+
+function getRecipientError(to: string): string | undefined {
+  if (!to || isAddress(to)) return undefined
+  if (HEX_ADDRESS_PATTERN.test(to)) {
+    return 'Recipient address has an invalid checksum: use all-lowercase or the EIP-55 form'
+  }
+
+  return 'Invalid recipient address'
 }
 
 export default function SendPage() {
@@ -21,7 +32,8 @@ export default function SendPage() {
   const { query, isReady } = useRouter()
 
   const [chainId, setChainId] = useState(DEFAULT_CHAIN_ID)
-  const [token, setToken] = useState('')
+  // Token picked in the dropdown; empty until the user changes it.
+  const [pickedToken, setPickedToken] = useState('')
   const [to, setTo] = useState('')
   const [amount, setAmount] = useState('')
   const [txHash, setTxHash] = useState('')
@@ -29,33 +41,49 @@ export default function SendPage() {
   const [sending, setSending] = useState(false)
 
   const autoSubmitted = useRef(false)
+  const prefilled = useRef(false)
 
   const tokens = useMemo(() => getErc20TokensForChain(chainId), [chainId])
   const initialized = Boolean(eip155Address)
-  const tokenKnown = tokens.some(option => option.address.toLowerCase() === token.toLowerCase())
 
-  /* Unattended submits are for the E2E wallet only: this is a public demo wallet
-     where people import their own mnemonic, and a crafted `?auto=1` link would
-     otherwise drain them without a single click. */
-  const autoSubmit = readQueryParam(query.auto) === '1' && isE2ESeededWallet()
+  /* The query only prefills the wallet the E2E harness seeded from `e2e_encrypted`:
+     this is a public demo wallet where people import their own mnemonic, and a
+     crafted link must never hand them a one-click (or `?auto=1`, zero-click)
+     transfer to an attacker's address. */
+  const e2eSeeded = initialized && isE2ESeededWallet()
+  const autoSubmit = readQueryParam(query.auto) === '1' && e2eSeeded
+
+  /* Derived rather than synced through effects: the dropdown pick wins, then the
+     query token, then the chain's first token. A prefilled token from another
+     chain simply falls through. */
+  const queryToken = readQueryParam(query.token)
+  const token = useMemo(() => {
+    const candidate = [pickedToken, queryToken].find(
+      value => value && tokens.some(option => option.address.toLowerCase() === value.toLowerCase())
+    )
+
+    return candidate ?? tokens[0]?.address ?? ''
+  }, [pickedToken, queryToken, tokens])
+
+  const decimals = tokens.find(option => option.address === token)?.decimals ?? 0
+  const recipientError = getRecipientError(to)
+  const amountError = amount ? getAmountError(amount, decimals) : undefined
 
   const inputsValid =
-    tokenKnown && isAddress(to) && AMOUNT_PATTERN.test(amount) && parseFloat(amount) > 0
+    Boolean(token) && Boolean(to) && Boolean(amount) && !recipientError && !amountError
   const canSubmit = initialized && inputsValid && !sending
 
-  // Prefill once the router has parsed the query string.
+  // Prefill once the router has parsed the query string and the wallet is known.
   useEffect(() => {
-    if (!isReady) return
+    if (!isReady || !initialized || prefilled.current) return
+    prefilled.current = true
 
     const chainParam = readQueryParam(query.chain)
     if (chainParam && EIP155_MAINNET_CHAINS[chainParam]) {
       setChainId(chainParam)
     }
 
-    const tokenParam = readQueryParam(query.token)
-    if (tokenParam) {
-      setToken(tokenParam)
-    }
+    if (!e2eSeeded) return
 
     const toParam = readQueryParam(query.to)
     if (toParam) {
@@ -67,15 +95,7 @@ export default function SendPage() {
       setAmount(amountParam)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReady])
-
-  /* Keep the token selection consistent with the chain: a token prefilled for
-     another chain (or none at all) falls back to the chain's first token. */
-  useEffect(() => {
-    if (!tokenKnown) {
-      setToken(tokens[0]?.address ?? '')
-    }
-  }, [tokens, tokenKnown])
+  }, [isReady, initialized])
 
   const onSend = useCallback(async () => {
     setSending(true)
@@ -126,7 +146,7 @@ export default function SendPage() {
       {tokens.length ? (
         <select
           value={token}
-          onChange={e => setToken(e.currentTarget.value)}
+          onChange={e => setPickedToken(e.currentTarget.value)}
           disabled={!initialized || sending}
           aria-label="send token"
           data-testid="send-token-select"
@@ -188,13 +208,13 @@ export default function SendPage() {
         </Text>
       ) : null}
 
-      {error ? (
+      {error || recipientError || amountError ? (
         <Text
           css={{ marginTop: '$10', wordBreak: 'break-all' }}
           color="error"
           data-testid="send-error"
         >
-          {error}
+          {error || recipientError || amountError}
         </Text>
       ) : null}
     </Fragment>

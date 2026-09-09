@@ -74,17 +74,19 @@ url: `/walletconnect`
 url: `/send`
 
 Self-initiated ERC-20 transfer from the active EOA. Prefilled from the query string, so a test can
-drive it deterministically:
+drive it deterministically. `e2e_encrypted` is the same page-load wallet seed used everywhere else
+(see `scripts/encrypt-mnemonic.js`); without it `to`, `amount` and `auto` are ignored:
 
-`/send?chain=eip155:8453&token=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&to=0x...&amount=1&auto=1`
+`/send?e2e_encrypted=<encrypted_mnemonic>&chain=eip155:8453&token=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913&to=0x000000000000000000000000000000000000dEaD&amount=1&auto=1`
 
 | Param | Description |
 | ----------- | ----------- |
 | `chain` | CAIP-2 chain id, e.g. `eip155:8453` (mainnets only) |
 | `token` | ERC-20 contract address, must be a token known for that chain |
-| `to` | Recipient address |
-| `amount` | Amount in human units, e.g. `1.5` |
-| `auto` | `1` submits automatically once the wallet is initialised and the inputs are valid. Only honoured when the wallet was seeded from `e2e_encrypted` in the same page load, so a link can never spend a locally stored wallet |
+| `e2e_encrypted` | Encrypted mnemonic that seeds the wallet for this page load. Required for `to`, `amount` and `auto` to take effect |
+| `to` | Recipient address (checksummed or all-lowercase). Only prefilled for an `e2e_encrypted` wallet |
+| `amount` | Amount in human units, e.g. `1.5`, with at most the token's decimals. Only prefilled for an `e2e_encrypted` wallet |
+| `auto` | `1` submits automatically once the wallet is initialised and the inputs are valid. Only honoured for an `e2e_encrypted` wallet, so a link can never spend a locally stored wallet |
 
 | Key | Description |
 | ----------- | ----------- |

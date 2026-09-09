@@ -2,8 +2,9 @@ import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import SettingsStore from '@/store/SettingsStore'
 import { TOKEN_CONFIGS } from '@/utils/BalanceUtil'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
+import { parseErc20Amount } from '@/utils/Erc20AmountUtil'
 import { providers } from 'ethers'
-import { encodeFunctionData, erc20Abi, isAddress, parseUnits } from 'viem'
+import { encodeFunctionData, erc20Abi, isAddress } from 'viem'
 
 export interface Erc20TokenOption {
   address: string
@@ -25,9 +26,6 @@ export interface SendErc20Args {
 export interface SendErc20Result {
   hash: string
 }
-
-/** Amount in human units, e.g. `1` or `1.5` */
-export const AMOUNT_PATTERN = /^\d+(\.\d+)?$/
 
 /**
  * ERC-20 tokens this wallet knows how to send on a given chain. Derived from the
@@ -78,14 +76,7 @@ export async function sendErc20({
     throw new Error(`Invalid recipient address: ${to}`)
   }
 
-  if (!AMOUNT_PATTERN.test(amount)) {
-    throw new Error(`Invalid amount: ${amount}`)
-  }
-
-  const value = parseUnits(amount, tokenOption.decimals)
-  if (value <= BigInt(0)) {
-    throw new Error('Amount must be greater than zero')
-  }
+  const value = parseErc20Amount(amount, tokenOption.decimals)
 
   const { eip155Address } = SettingsStore.state
   const wallet = eip155Wallets[eip155Address]
