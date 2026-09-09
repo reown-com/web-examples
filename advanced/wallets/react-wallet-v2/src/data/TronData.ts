@@ -1,7 +1,7 @@
 /**
  * Types
  */
-export type TTronChain = keyof typeof TRON_MAINNET_CHAINS
+export type TTronChain = keyof typeof TRON_CHAINS
 
 interface TRONChains {
   [key: string]: ChainMetadata

@@ -22,7 +22,7 @@ export const getTronWeb = (network: string) => {
   if (network === "tron:0x94a9059e") {
     if (!tronWebShasta) {
       tronWebShasta = new TronWeb({
-        fullHost: "https://api.shasta.trongrid.io",
+        fullHost: "https://api.shasta.trongrid.io/",
       });
     }
     return tronWebShasta;
