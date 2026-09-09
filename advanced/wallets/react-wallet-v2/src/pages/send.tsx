@@ -58,11 +58,15 @@ export default function SendPage() {
      chain simply falls through. */
   const queryToken = readQueryParam(query.token)
   const token = useMemo(() => {
-    const candidate = [pickedToken, queryToken].find(
-      value => value && tokens.some(option => option.address.toLowerCase() === value.toLowerCase())
-    )
+    // Match case-insensitively but return the catalog's address, so the `===`
+    // lookups below (decimals, dropdown value) see the canonical form.
+    for (const value of [pickedToken, queryToken]) {
+      if (!value) continue
+      const match = tokens.find(option => option.address.toLowerCase() === value.toLowerCase())
+      if (match) return match.address
+    }
 
-    return candidate ?? tokens[0]?.address ?? ''
+    return tokens[0]?.address ?? ''
   }, [pickedToken, queryToken, tokens])
 
   const decimals = tokens.find(option => option.address === token)?.decimals ?? 0
