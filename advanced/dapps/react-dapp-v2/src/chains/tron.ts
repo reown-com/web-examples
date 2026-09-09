@@ -15,6 +15,13 @@ export const TronChainData: ChainsMap = {
     slip44: 195,
     testnet: true,
   },
+  "0x94a9059e": {
+    id: "tron:0x94a9059e",
+    name: "Tron Testnet (Shasta)",
+    rpc: [],
+    slip44: 195,
+    testnet: true,
+  },
 };
 
 export const TronMetadata: NamespaceMetadata = {
@@ -26,6 +33,11 @@ export const TronMetadata: NamespaceMetadata = {
   // Tron Testnet (Nile)
   "0xcd8690dc": {
     logo: "assets/tron.png",
+    rgb: "183, 62, 49",
+  },
+  // Tron Shasta Testnet
+  "0x94a9059e": {
+    logo: "/assets/tron.png",
     rgb: "183, 62, 49",
   },
 };

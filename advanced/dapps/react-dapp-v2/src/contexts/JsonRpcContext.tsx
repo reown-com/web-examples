@@ -126,7 +126,11 @@ import {
   getNamespacedDidChainId,
 } from "@walletconnect/utils";
 import { BIP122_DUST_LIMIT } from "../chains/bip122";
-import { getTronWeb } from "../helpers/tron";
+import {
+  getTronWeb,
+  TRON_MAINNET_USDT_CONTRACT,
+  TRON_TEST_CONTRACTS,
+} from "../helpers/tron";
 import { verifyTonProofSignature, verifyTonSignData } from "../helpers/ton";
 /**
  * Types
@@ -1852,13 +1856,12 @@ export function JsonRpcContextProvider({
           throw new Error("TronWeb not found for chainId: " + chainId);
         }
 
-        // Take USDT as an example:
-        // Nile TestNet: https://nile.tronscan.org/#/token20/TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf
-        // MainNet: https://tronscan.org/#/token20/TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
-
         const testContract = isTestnet
-          ? "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
-          : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+          ? TRON_TEST_CONTRACTS[chainId]
+          : TRON_MAINNET_USDT_CONTRACT;
+        if (!testContract) {
+          throw new Error("No TRON test contract configured for chainId: " + chainId);
+        }
         const { transaction } =
           await tronWeb.transactionBuilder.triggerSmartContract(
             testContract,
@@ -1953,8 +1956,11 @@ export function JsonRpcContextProvider({
         }
 
         const testContract = isTestnet
-          ? "TXYZopYRdj2D9XRtbG411XZZ3kM5VkAeBf"
-          : "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+          ? TRON_TEST_CONTRACTS[chainId]
+          : TRON_MAINNET_USDT_CONTRACT;
+        if (!testContract) {
+          throw new Error("No TRON test contract configured for chainId: " + chainId);
+        }
         const { transaction } =
           await tronWeb.transactionBuilder.triggerSmartContract(
             testContract,
