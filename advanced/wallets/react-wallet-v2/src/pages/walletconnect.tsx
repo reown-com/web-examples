@@ -10,6 +10,7 @@ import PaymentStore from '@/store/PaymentStore'
 import SettingsStore from '@/store/SettingsStore'
 import { EIP155_CHAINS } from '@/data/EIP155Data'
 import { STELLAR_CAIP_CHAINS } from '@/lib/StellarLib'
+import { TRON_MAINNET_CHAINS } from '@/data/TronData'
 
 export default function WalletConnectPage(params: { deepLink?: string }) {
   const { deepLink } = params
@@ -38,6 +39,13 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
         const stellarAddress = SettingsStore.state.stellarAddress
         if (stellarAddress) {
           accounts.push(`${STELLAR_CAIP_CHAINS.pubnet}:${stellarAddress}`)
+        }
+
+        const tronAddress = SettingsStore.state.tronAddress
+        if (tronAddress) {
+          accounts.push(
+            ...Object.keys(TRON_MAINNET_CHAINS).map(chainKey => `${chainKey}:${tronAddress}`)
+          )
         }
 
         console.log(

@@ -14,8 +14,6 @@ export async function createWalletKit(relayerRegionURL: string) {
     )
   }
 
-  const prodPayUrl = 'https://api.pay.walletconnect.com'
-  const stagingPayUrl = 'https://staging.api.pay.walletconnect.com'
   const stagingPayAppId = '8b5ef48e106b239385bed130fa34a9a7'
   const payProjectId = process.env.NEXT_PUBLIC_PROJECT_ID
   const env = process.env.NEXT_PUBLIC_PAY_ENV || 'production'
@@ -29,6 +27,11 @@ export async function createWalletKit(relayerRegionURL: string) {
   })
 
   const apiKey = process.env.NEXT_PUBLIC_PAY_API_KEY
+
+  // Non-staging currently targets the dev gateway. For production, point `baseUrl`
+  // below at 'https://api.pay.walletconnect.com'.
+  const payUrl = 'https://api.pay.walletconnect.com'
+  const stagingPayUrl = 'https://staging.api.pay.walletconnect.com'
 
   walletkit = await WalletKit.init({
     core,
@@ -51,7 +54,7 @@ export async function createWalletKit(relayerRegionURL: string) {
         : {
             appId: payProjectId,
             apiKey,
-            baseUrl: prodPayUrl
+            baseUrl: payUrl
           })
     }
   })
