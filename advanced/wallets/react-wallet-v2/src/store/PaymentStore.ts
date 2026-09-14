@@ -1,5 +1,9 @@
 import { proxy, ref } from 'valtio'
-import type { PaymentOptionsResponse, PaymentOption } from '@walletconnect/pay'
+import type {
+  ConfirmPaymentParams,
+  PaymentOptionsResponse,
+  PaymentOption
+} from '@walletconnect/pay'
 
 import { walletkit } from '@/utils/WalletConnectUtil'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
@@ -177,7 +181,10 @@ const PaymentStore = {
         throw new Error('Pay SDK not available')
       }
 
-      const signatures: string[] = []
+      // One wallet RPC result per action: a plain signature string for most
+      // chains, or a JSON object for chains whose confirm payload is an object
+      // (Tron's `{ raw_data_hex, signature }`) — the Pay SDK forwards it verbatim.
+      const data: NonNullable<ConfirmPaymentParams['data']> = []
 
       for (const [index, action] of paymentActions.entries()) {
         if (action.walletRpc) {
@@ -195,7 +202,7 @@ const PaymentStore = {
               const { domain, types, message: messageData } = typedData
               delete types.EIP712Domain
               const signature = await wallet._signTypedData(domain, types, messageData)
-              signatures.push(signature)
+              data.push(signature)
             } else if (method === 'stellar_signXDR') {
               const stellarAddress = selectedOption.account.split(':')[2]
               const stellarWallet = stellarWallets?.[stellarAddress]
@@ -208,7 +215,7 @@ const PaymentStore = {
               }
 
               const signedXDR = stellarWallet.signXDR(xdr, chainId)
-              signatures.push(signedXDR)
+              data.push(signedXDR)
             } else if (method === TRON_SIGNING_METHODS.TRON_SIGN_TRANSACTION) {
               const tronAddress = selectedOption.account.split(':')[2]
               const tronWallet = tronWallets?.[tronAddress]
@@ -229,10 +236,8 @@ const PaymentStore = {
               // rebuilds or submits the transaction.
               //
               // The gateway wants `{ raw_data_hex, signature }` as an object in the
-              // confirm result, while `signatures` is typed `string[]`, so it goes out
-              // stringified — the Pay SDK parses it back into an object on the wire.
-              const signedTransaction = tronWallet.signPaymentTransaction(transaction)
-              signatures.push(JSON.stringify(signedTransaction))
+              // confirm result; `data` carries it as-is.
+              data.push(tronWallet.signPaymentTransaction(transaction))
             } else {
               throw new Error(`Unsupported signature method: ${method}`)
             }
@@ -247,7 +252,7 @@ const PaymentStore = {
       const confirmResult = await payClient.confirmPayment({
         paymentId: paymentOptions.paymentId,
         optionId: selectedOption.id,
-        signatures
+        data
       })
 
       if (!confirmResult) {

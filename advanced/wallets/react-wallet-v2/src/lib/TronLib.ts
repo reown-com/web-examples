@@ -24,7 +24,9 @@ export interface TronUnsignedTransaction {
  * What the wallet hands back at `confirm`: the exact bytes it signed, plus exactly
  * one 65-byte recoverable signature.
  */
-export interface TronSignedTransaction {
+// A type alias (not an interface) so it is assignable to the Pay SDK's
+// `Record<string, unknown>` confirm `data` element without a cast.
+export type TronSignedTransaction = {
   raw_data_hex: string
   signature: string[]
 }
