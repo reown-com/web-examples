@@ -123,6 +123,15 @@ export const EIP155_MAINNET_CHAINS: Record<string, EIP155Chain> = {
     rpc: blockchainApiRpc(143),
     namespace: 'eip155',
     symbol: 'MON'
+  },
+  'eip155:5042': {
+    chainId: 5042,
+    name: 'Arc',
+    logo: '/chain-logos/eip155-5042.png',
+    rgb: '13, 30, 64',
+    rpc: blockchainApiRpc(5042),
+    namespace: 'eip155',
+    symbol: 'USDC'
   }
 }
 
@@ -211,6 +220,15 @@ export const EIP155_TEST_CHAINS: Record<string, EIP155Chain> = {
     rpc: blockchainApiRpc(10143),
     namespace: 'eip155',
     symbol: 'MON'
+  },
+  'eip155:5042002': {
+    chainId: 5042002,
+    name: 'Arc Testnet',
+    logo: '/chain-logos/eip155-5042.png',
+    rgb: '13, 30, 64',
+    rpc: blockchainApiRpc(5042002),
+    namespace: 'eip155',
+    symbol: 'USDC'
   }
 }
 
