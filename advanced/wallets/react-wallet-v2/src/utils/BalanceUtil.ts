@@ -167,7 +167,7 @@ async function fetchEIP155Balance(address: string, chainId: string): Promise<Bal
     address: address as `0x${string}`
   })
 
-  const balance = formatUnits(balanceWei, 18)
+  const balance = formatUnits(balanceWei, chain.nativeCurrency.decimals)
   return { balance, balanceFormatted: formatBalanceValue(balance), symbol }
 }
 

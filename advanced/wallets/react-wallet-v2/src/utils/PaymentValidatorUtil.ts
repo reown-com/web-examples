@@ -100,8 +100,9 @@ export class PaymentValidationUtils {
     chainId: number,
     account: `0x${string}`
   ): Promise<TokenDetails> {
+    const chain = getChainById(chainId)
     const publicClient = createPublicClient({
-      chain: getChainById(chainId),
+      chain,
       transport: http(blockchainApiRpc(Number(chainId)))
     })
 
@@ -111,9 +112,9 @@ export class PaymentValidationUtils {
 
     return {
       balance: balance,
-      decimals: 18,
-      symbol: 'ETH',
-      name: 'Ethereum'
+      decimals: chain.nativeCurrency.decimals,
+      symbol: chain.nativeCurrency.symbol,
+      name: chain.nativeCurrency.name
     }
   }
 
@@ -516,8 +517,8 @@ export class PaymentValidationUtils {
           'eip155',
           {
             gasFee: simulationResult,
-            decimals: 18,
-            feeSymbol: 'ETH'
+            decimals: getChainById(Number(chainId)).nativeCurrency.decimals,
+            feeSymbol: getChainById(Number(chainId)).nativeCurrency.symbol
           }
         )
       : null
@@ -701,8 +702,8 @@ export class PaymentValidationUtils {
           'eip155',
           {
             gasFee: simulationResult,
-            decimals: 18,
-            feeSymbol: 'ETH'
+            decimals: getChainById(Number(chainId)).nativeCurrency.decimals,
+            feeSymbol: getChainById(Number(chainId)).nativeCurrency.symbol
           }
         )
       : null
