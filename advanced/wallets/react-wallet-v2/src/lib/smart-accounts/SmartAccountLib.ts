@@ -1,4 +1,5 @@
 import {
+  Account,
   Hex,
   PrivateKeyAccount,
   PublicClient,
@@ -145,8 +146,10 @@ export abstract class SmartAccountLib implements EIP155Wallet {
 
   async init() {
     const config = await this.getClientConfig()
+    // permissionless 0.1.x accounts don't satisfy viem >=2.18's native SmartAccount type;
+    // the runtime shapes still line up, so bridge the client through the cast.
     this.client = createSmartAccountClient(config)
-      .extend(pimlicoBundlerActions(this.entryPoint))
+      .extend(pimlicoBundlerActions(this.entryPoint) as (client: any) => PimlicoBundlerActions)
       .extend(erc7579Actions({ entryPoint: this.entryPoint }))
     console.log('Smart account initialized', {
       address: this.client?.account?.address,
@@ -215,7 +218,7 @@ export abstract class SmartAccountLib implements EIP155Wallet {
       to,
       value: BigInt(value),
       data,
-      account: this.client.account,
+      account: this.client.account as unknown as Account,
       chain: this.chain
     })
     return txResult
