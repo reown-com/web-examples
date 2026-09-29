@@ -227,13 +227,13 @@ export const apiGetTronAccountBalance = async (
     let fullHost: string;
 
     switch (networkId) {
-      case "0x2b6653dc":
+      case "728126428":
         fullHost = "https://api.trongrid.io";
         break;
-      case "0x94a9059e":
+      case "2494104990":
         fullHost = "https://api.shasta.trongrid.io";
         break;
-      case "0xcd8690dc":
+      case "3448148188":
         fullHost = "https://nile.trongrid.io";
         break;
       default:

@@ -1,22 +1,22 @@
 import { NamespaceMetadata, ChainMetadata, ChainsMap } from "../helpers";
 
 export const TronChainData: ChainsMap = {
-  "0x2b6653dc": {
-    id: "tron:0x2b6653dc",
+  "728126428": {
+    id: "tron:728126428",
     name: "Tron Mainnet",
     rpc: [],
     slip44: 195,
     testnet: false,
   },
-  "0xcd8690dc": {
-    id: "tron:0xcd8690dc",
+  "3448148188": {
+    id: "tron:3448148188",
     name: "Tron Testnet (Nile)",
     rpc: [],
     slip44: 195,
     testnet: true,
   },
-  "0x94a9059e": {
-    id: "tron:0x94a9059e",
+  "2494104990": {
+    id: "tron:2494104990",
     name: "Tron Testnet (Shasta)",
     rpc: [],
     slip44: 195,
@@ -26,17 +26,17 @@ export const TronChainData: ChainsMap = {
 
 export const TronMetadata: NamespaceMetadata = {
   // Tron Mainnet
-  "0x2b6653dc": {
+  "728126428": {
     logo: "/assets/tron.png",
     rgb: "183, 62, 49",
   },
   // Tron Testnet (Nile)
-  "0xcd8690dc": {
-    logo: "assets/tron.png",
+  "3448148188": {
+    logo: "/assets/tron.png",
     rgb: "183, 62, 49",
   },
   // Tron Shasta Testnet
-  "0x94a9059e": {
+  "2494104990": {
     logo: "/assets/tron.png",
     rgb: "183, 62, 49",
   },

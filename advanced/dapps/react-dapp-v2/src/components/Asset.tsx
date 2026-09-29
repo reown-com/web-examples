@@ -14,7 +14,7 @@ const btcLogo = getChainMetadata(
   "bip122:000000000933ea01ad0ee984209779ba"
 ).logo;
 const suiLogo = getChainMetadata("sui:mainnet").logo;
-const tronLogo = getChainMetadata("tron:0x2b6653dc").logo;
+const tronLogo = getChainMetadata("tron:728126428").logo;
 const celoLogo = getChainMetadata("eip155:42220").logo;
 const bnbLogo = getChainMetadata("eip155:56").logo;
 const monadLogo = getChainMetadata("eip155:143").logo;

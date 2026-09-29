@@ -18,11 +18,11 @@ type ChainMetadata = {
 }
 
 /**
- * Chains
+ * Chains (Decimal format as primary)
  */
 export const TRON_MAINNET_CHAINS: TRONChains = {
-  'tron:0x2b6653dc': {
-    chainId: '0x2b6653dc',
+  'tron:728126428': {
+    chainId: '728126428',
     name: 'TRON',
     logo: 'chain-logos/tron.png',
     rgb: '183, 62, 49',
@@ -33,6 +33,39 @@ export const TRON_MAINNET_CHAINS: TRONChains = {
 }
 
 export const TRON_TEST_CHAINS: TRONChains = {
+  'tron:3448148188': {
+    chainId: '3448148188',
+    name: 'TRON Testnet',
+    logo: 'chain-logos/tron.png',
+    rgb: '183, 62, 49',
+    fullNode: 'https://nile.trongrid.io/',
+    namespace: 'tron',
+    symbol: 'TRX'
+  },
+  'tron:2494104990': {
+    chainId: '2494104990',
+    name: 'TRON Shasta Testnet',
+    logo: 'chain-logos/tron.png',
+    rgb: '183, 62, 49',
+    fullNode: 'https://api.shasta.trongrid.io',
+    namespace: 'tron',
+    symbol: 'TRX'
+  }
+}
+
+/**
+ * Backward compatibility chains (Hexadecimal equivalent)
+ */
+export const TRON_COMPATIBILITY_CHAINS: TRONChains = {
+  'tron:0x2b6653dc': {
+    chainId: '0x2b6653dc',
+    name: 'TRON',
+    logo: 'chain-logos/tron.png',
+    rgb: '183, 62, 49',
+    fullNode: 'https://api.trongrid.io',
+    namespace: 'tron',
+    symbol: 'TRX'
+  },
   'tron:0xcd8690dc': {
     chainId: '0xcd8690dc',
     name: 'TRON Testnet',
@@ -53,7 +86,11 @@ export const TRON_TEST_CHAINS: TRONChains = {
   }
 }
 
-export const TRON_CHAINS = { ...TRON_MAINNET_CHAINS, ...TRON_TEST_CHAINS }
+export const TRON_CHAINS = {
+  ...TRON_MAINNET_CHAINS,
+  ...TRON_TEST_CHAINS,
+  ...TRON_COMPATIBILITY_CHAINS
+}
 
 /**
  * WalletConnect Pay
