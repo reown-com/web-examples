@@ -45,6 +45,7 @@ import {
   SConnectButton,
   SContent,
   SDropDownContainer,
+  SHostLaunchCard,
   SLanding,
   SLayout,
   SToggleContainer,
@@ -88,6 +89,7 @@ const Home: NextPage = () => {
     setRelayerRegion,
     origin,
     authenticatedAddresses,
+    isHostLaunch,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -872,6 +874,16 @@ const Home: NextPage = () => {
       </SLanding>
     ) : (
       <SAccountsContainer>
+        {isHostLaunch && (
+          <SHostLaunchCard>
+            <h4>Opened from your wallet</h4>
+            <p>
+              Wallet Guide ID:{" "}
+              {(session?.sessionProperties as Record<string, string> | undefined)
+                ?.wallet_guide_id ?? "—"}
+            </p>
+          </SHostLaunchCard>
+        )}
         <h3>Accounts</h3>
         <SAccounts>
           {accounts.map((account) => {
