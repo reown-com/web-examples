@@ -555,9 +555,22 @@ export function ClientContextProvider({
     if (!isHostLaunch || !provider || !client || isInitializing || session) return;
     if (hostConnectStarted.current) return;
     hostConnectStarted.current = true;
-    connect(undefined).catch(() => {
-      hostConnectStarted.current = false;
+    const toastId = toast.loading("Connecting to your wallet…", {
+      position: "top-center",
     });
+    connect(undefined)
+      .then(() => {
+        const walletName = provider.session?.peer.metadata.name;
+        toast.success(
+          walletName ? `Connected to ${walletName}` : "Connected to your wallet",
+          { id: toastId, position: "top-center" }
+        );
+      })
+      .catch(() => {
+        // connect() already shows the error toast
+        toast.dismiss(toastId);
+        hostConnectStarted.current = false;
+      });
   }, [isHostLaunch, provider, client, isInitializing, session, connect]);
 
   const value = useMemo(
