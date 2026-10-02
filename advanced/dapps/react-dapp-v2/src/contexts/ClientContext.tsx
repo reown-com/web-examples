@@ -65,12 +65,16 @@ interface IContext {
   origin: string;
   setAccounts: any;
   authenticatedAddresses: string[];
+  isHostLaunch: boolean;
 }
 
 /**
  * Context
  */
 export const ClientContext = createContext<IContext>({} as IContext);
+
+// Requested when the app is opened from a wallet and no chains were selected
+const HOST_LAUNCH_CHAINS = ["eip155:11155111", "eip155:1", "eip155:8453"];
 
 let creatingClient: boolean = false;
 let appkit: ReturnType<typeof createAppKit> | undefined;
@@ -100,6 +104,11 @@ export function ClientContextProvider({
   const [solanaPublicKeys, setSolanaPublicKeys] =
     useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
+  // A wallet that opened this app from its Explore section injects `window.walletConnectHost`.
+  // Read after mount so the server render (no wallet) matches the first client render.
+  const [isHostLaunch, setIsHostLaunch] = useState(false);
+  const hostConnectStarted = useRef(false);
+  useEffect(() => setIsHostLaunch(UniversalProvider.isHostLaunch()), []);
   const [relayerRegion, setRelayerRegion] = useState<string>(
     DEFAULT_RELAY_URL || ""
   );
@@ -206,16 +215,22 @@ export function ClientContextProvider({
       }
       console.log("connect, pairing topic is:", pairing?.topic);
       try {
-        const namespacesToRequest = getRequiredNamespaces(chains);
+        // On a host launch, Universal Provider hands the pairing URI to the wallet, so no modal is shown
+        const hostLaunch = UniversalProvider.isHostLaunch();
+        const namespacesToRequest = getRequiredNamespaces(
+          hostLaunch && !chains.length ? HOST_LAUNCH_CHAINS : chains
+        );
 
-        appkit?.open();
+        if (!hostLaunch) {
+          appkit?.open();
 
-        appkit?.subscribeState((state: { open: boolean }) => {
-          // the modal was closed so reject the promise
-          if (!state.open && !provider.session) {
-            throw new Error("Connection request reset. Please try again.");
-          }
-        });
+          appkit?.subscribeState((state: { open: boolean }) => {
+            // the modal was closed so reject the promise
+            if (!state.open && !provider.session) {
+              throw new Error("Connection request reset. Please try again.");
+            }
+          });
+        }
 
         const allCaipChains: string[] = [];
 
@@ -237,7 +252,8 @@ export function ClientContextProvider({
         const session = await provider.connect({
           pairingTopic: pairing?.topic,
           optionalNamespaces: namespacesToRequest as NamespaceConfig,
-          authentication,
+          // Universal Provider only sends pair() to the wallet on a host launch, not authenticate() (WCP4-186)
+          ...(hostLaunch ? {} : { authentication }),
         });
 
         if (!session) {
@@ -534,6 +550,16 @@ export function ClientContextProvider({
     });
   }, [client]);
 
+  // Opened from a wallet: connect once, without a modal, unless a session was restored
+  useEffect(() => {
+    if (!isHostLaunch || !provider || !client || isInitializing || session) return;
+    if (hostConnectStarted.current) return;
+    hostConnectStarted.current = true;
+    connect(undefined).catch(() => {
+      hostConnectStarted.current = false;
+    });
+  }, [isHostLaunch, provider, client, isInitializing, session, connect]);
+
   const value = useMemo(
     () => ({
       pairings,
@@ -553,6 +579,7 @@ export function ClientContextProvider({
       origin,
       setAccounts,
       authenticatedAddresses,
+      isHostLaunch,
     }),
     [
       pairings,
@@ -572,6 +599,7 @@ export function ClientContextProvider({
       origin,
       setAccounts,
       authenticatedAddresses,
+      isHostLaunch,
     ]
   );
 

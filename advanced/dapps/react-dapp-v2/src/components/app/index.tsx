@@ -42,6 +42,24 @@ export const SAccountsContainer = styled(SLanding as any)`
   }
 `;
 
+// Shown when a wallet opened the app from its Explore section (H2b)
+export const SHostLaunchCard = styled.div`
+  width: 100%;
+  margin-top: 30px;
+  padding: 16px;
+  border: 1px solid rgb(51, 150, 255);
+  border-radius: 12px;
+  text-align: left;
+  word-break: break-all;
+  & h4 {
+    margin: 0 0 8px;
+  }
+  & p {
+    margin: 0;
+    font-size: 14px;
+  }
+`;
+
 export const SToggleContainer = styled.div`
   width: 100%;
   display: flex;
