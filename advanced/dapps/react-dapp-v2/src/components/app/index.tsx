@@ -50,13 +50,15 @@ export const SHostLaunchCard = styled.div`
   border: 1px solid rgb(51, 150, 255);
   border-radius: 12px;
   text-align: left;
-  word-break: break-all;
   & h4 {
     margin: 0 0 8px;
+    font-size: 18px;
   }
   & p {
-    margin: 0;
+    margin: 0 0 4px;
     font-size: 14px;
+    /* long IDs and addresses wrap anywhere; words stay whole */
+    overflow-wrap: anywhere;
   }
 `;
 
