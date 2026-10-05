@@ -472,7 +472,8 @@ export function ClientContextProvider({
         },
       });
 
-      createModal(provider);
+      // AppKit is only the QR modal here. On a host launch it can open itself on startup, so skip it
+      if (!UniversalProvider.isHostLaunch()) createModal(provider);
 
       const _client = provider.client;
 
@@ -552,9 +553,11 @@ export function ClientContextProvider({
 
   // Opened from a wallet: connect once, without a modal, unless a session was restored
   useEffect(() => {
-    if (!isHostLaunch || !provider || !client || isInitializing || session) return;
+    if (!isHostLaunch || !provider || !client || isInitializing) return;
     if (hostConnectStarted.current) return;
+    // Only decide on the first load, so a later Disconnect doesn't auto-connect again
     hostConnectStarted.current = true;
+    if (session) return;
     const toastId = toast.loading("Connecting to your wallet…", {
       position: "top-center",
     });
@@ -569,7 +572,6 @@ export function ClientContextProvider({
       .catch(() => {
         // connect() already shows the error toast
         toast.dismiss(toastId);
-        hostConnectStarted.current = false;
       });
   }, [isHostLaunch, provider, client, isInitializing, session, connect]);
 
