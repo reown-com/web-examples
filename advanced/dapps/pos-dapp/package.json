@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@reown/appkit": "1.8.18",
+    "@reown/appkit": "1.8.24",
     "@walletconnect/pos-client": "1.0.5",
     "next": "15.5.10",
     "react": "19.2.4",
