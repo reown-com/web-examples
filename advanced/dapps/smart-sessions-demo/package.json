@@ -19,9 +19,9 @@
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
-    "@reown/appkit": "1.8.24",
-    "@reown/appkit-adapter-wagmi": "1.8.24",
-    "@reown/appkit-experimental": "1.8.24",
+    "@reown/appkit": "1.8.18",
+    "@reown/appkit-adapter-wagmi": "1.8.18",
+    "@reown/appkit-experimental": "1.8.18",
     "@tanstack/react-query": "5.90.21",
     "bs58": "^6.0.0",
     "class-variance-authority": "^0.7.0",
@@ -36,7 +36,7 @@
     "sonner": "2.0.7",
     "tailwind-merge": "3.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "viem": "2.57.3",
+    "viem": "2.45.3",
     "wagmi": "2.19.5",
     "zod": "3.25.76"
   },
@@ -71,8 +71,7 @@
       "glob@>=10.2.0 <10.5.0": ">=10.5.0",
       "h3@<=1.15.4": ">=1.15.5",
       "lodash@>=4.0.0 <=4.17.22": ">=4.17.23",
-      "js-yaml@>=4.0.0 <4.1.1": ">=4.1.1",
-      "@reown/appkit": "1.8.24"
+      "js-yaml@>=4.0.0 <4.1.1": ">=4.1.1"
     }
   }
 }
