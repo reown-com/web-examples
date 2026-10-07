@@ -34,6 +34,8 @@ import {
   DEFAULT_CANTON_METHODS,
 } from "../constants";
 import { AccountAction, setLocaleStorageTestnetFlag } from "../helpers";
+import { getWalletFeeValue, WALLET_FEE_DEMO_AMOUNT } from "../helpers/tx";
+import { formatEther } from "ethers";
 import Toggle from "../components/Toggle";
 import RequestModal from "../modals/RequestModal";
 import PairingModal from "../modals/PairingModal";
@@ -45,6 +47,7 @@ import {
   SConnectButton,
   SContent,
   SDropDownContainer,
+  SHostLaunchCard,
   SLanding,
   SLayout,
   SToggleContainer,
@@ -88,6 +91,8 @@ const Home: NextPage = () => {
     setRelayerRegion,
     origin,
     authenticatedAddresses,
+    isHostLaunch,
+    walletFee,
   } = useWalletConnectClient();
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
@@ -872,6 +877,40 @@ const Home: NextPage = () => {
       </SLanding>
     ) : (
       <SAccountsContainer>
+        {isHostLaunch && (
+          <SHostLaunchCard>
+            <h4>Opened from your wallet</h4>
+            <p>
+              Wallet Guide ID:{" "}
+              {(session?.sessionProperties as Record<string, string> | undefined)
+                ?.wallet_guide_id ?? "—"}
+            </p>
+            {walletFee ? (
+              <>
+                <p>
+                  Wallet fee on {walletFee.chainId}:{" "}
+                  {walletFee.feeBps !== undefined
+                    ? `${walletFee.feeBps / 100}% (${walletFee.feeBps} bps)`
+                    : "—"}
+                </p>
+                <p>Recipient: {walletFee.recipient ?? "—"}</p>
+                {walletFee.referralCode && (
+                  <p>Referral code: {walletFee.referralCode}</p>
+                )}
+                {walletFee.recipient && walletFee.feeBps ? (
+                  <p>
+                    eth_sendTransaction pays{" "}
+                    {formatEther(getWalletFeeValue(walletFee))} ETH (the fee on a{" "}
+                    {formatEther(WALLET_FEE_DEMO_AMOUNT)} ETH demo amount) to the
+                    recipient
+                  </p>
+                ) : null}
+              </>
+            ) : (
+              <p>No wallet fee for this chain</p>
+            )}
+          </SHostLaunchCard>
+        )}
         <h3>Accounts</h3>
         <SAccounts>
           {accounts.map((account) => {

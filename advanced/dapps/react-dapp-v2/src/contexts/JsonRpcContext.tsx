@@ -260,8 +260,15 @@ export function JsonRpcContextProvider({
     null,
   );
 
-  const { client, session, accounts, balances, solanaPublicKeys, setAccounts } =
-    useWalletConnectClient();
+  const {
+    client,
+    session,
+    accounts,
+    balances,
+    solanaPublicKeys,
+    setAccounts,
+    getWalletFeeForChain,
+  } = useWalletConnectClient();
 
   const { chainData } = useChainData();
 
@@ -349,10 +356,15 @@ export function JsonRpcContextProvider({
         if (account === undefined)
           throw new Error(`Account for ${caipAccountAddress} not found`);
 
-        const tx = await formatTestTransaction(account);
+        // Opened from a wallet: pay its fee for this chain, if it has one
+        const walletFee = await getWalletFeeForChain(chainId);
+        const tx = await formatTestTransaction(account, walletFee);
 
         const balance = BigInt(balances[account][0].balance || "0");
-        if (balance < BigInt(tx.gasPrice) * BigInt(tx.gasLimit)) {
+        if (
+          balance <
+          BigInt(tx.gasPrice) * BigInt(tx.gasLimit) + BigInt(tx.value)
+        ) {
           return {
             method: DEFAULT_EIP155_METHODS.ETH_SEND_TRANSACTION,
             address,

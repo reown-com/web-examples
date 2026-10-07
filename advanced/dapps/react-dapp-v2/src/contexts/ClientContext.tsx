@@ -7,6 +7,7 @@ import {
   IUniversalProvider,
   NamespaceConfig,
   UniversalProvider,
+  WalletFee,
 } from "@walletconnect/universal-provider";
 import { RELAYER_EVENTS } from "@walletconnect/core";
 import toast from "react-hot-toast";
@@ -65,12 +66,18 @@ interface IContext {
   origin: string;
   setAccounts: any;
   authenticatedAddresses: string[];
+  isHostLaunch: boolean;
+  walletFee?: WalletFee;
+  getWalletFeeForChain: (chainId: string) => Promise<WalletFee | undefined>;
 }
 
 /**
  * Context
  */
 export const ClientContext = createContext<IContext>({} as IContext);
+
+// Requested when the app is opened from a wallet and no chains were selected
+const HOST_LAUNCH_CHAINS = ["eip155:1", "eip155:10", "eip155:42161"];
 
 let creatingClient: boolean = false;
 let appkit: ReturnType<typeof createAppKit> | undefined;
@@ -100,6 +107,13 @@ export function ClientContextProvider({
   const [solanaPublicKeys, setSolanaPublicKeys] =
     useState<Record<string, PublicKey>>();
   const [chains, setChains] = useState<string[]>([]);
+  // A wallet that opened this app from its Explore section injects `window.walletConnectHost`.
+  // Read after mount so the server render (no wallet) matches the first client render.
+  const [isHostLaunch, setIsHostLaunch] = useState(false);
+  const hostConnectStarted = useRef(false);
+  // The wallet's fee for the active chain, from Universal Provider (only on a host launch)
+  const [walletFee, setWalletFee] = useState<WalletFee>();
+  useEffect(() => setIsHostLaunch(UniversalProvider.isHostLaunch()), []);
   const [relayerRegion, setRelayerRegion] = useState<string>(
     DEFAULT_RELAY_URL || ""
   );
@@ -109,6 +123,7 @@ export function ClientContextProvider({
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
     setSession(undefined);
+    setWalletFee(undefined);
     setBalances({});
     setAccounts([]);
     setChains([]);
@@ -206,16 +221,22 @@ export function ClientContextProvider({
       }
       console.log("connect, pairing topic is:", pairing?.topic);
       try {
-        const namespacesToRequest = getRequiredNamespaces(chains);
+        // On a host launch, Universal Provider hands the pairing URI to the wallet, so no modal is shown
+        const hostLaunch = UniversalProvider.isHostLaunch();
+        const namespacesToRequest = getRequiredNamespaces(
+          hostLaunch && !chains.length ? HOST_LAUNCH_CHAINS : chains
+        );
 
-        appkit?.open();
+        if (!hostLaunch) {
+          appkit?.open();
 
-        appkit?.subscribeState((state: { open: boolean }) => {
-          // the modal was closed so reject the promise
-          if (!state.open && !provider.session) {
-            throw new Error("Connection request reset. Please try again.");
-          }
-        });
+          appkit?.subscribeState((state: { open: boolean }) => {
+            // the modal was closed so reject the promise
+            if (!state.open && !provider.session) {
+              throw new Error("Connection request reset. Please try again.");
+            }
+          });
+        }
 
         const allCaipChains: string[] = [];
 
@@ -237,7 +258,8 @@ export function ClientContextProvider({
         const session = await provider.connect({
           pairingTopic: pairing?.topic,
           optionalNamespaces: namespacesToRequest as NamespaceConfig,
-          authentication,
+          // Universal Provider only sends pair() to the wallet on a host launch, not authenticate() (WCP4-186)
+          ...(hostLaunch ? {} : { authentication }),
         });
 
         if (!session) {
@@ -454,9 +476,15 @@ export function ClientContextProvider({
           url: claimedOrigin,
           icons: [],
         },
+        // Where the wallet fee config is loaded from; defaults to production
+        walletFeeApiUrl: process.env.NEXT_PUBLIC_WALLET_FEE_API_URL || undefined,
       });
 
-      createModal(provider);
+      provider.on("wallet_fee_changed", (fee?: WalletFee) => setWalletFee(fee));
+      provider.getWalletFee().then(setWalletFee);
+
+      // AppKit is only the QR modal here. On a host launch it can open itself on startup, so skip it
+      if (!UniversalProvider.isHostLaunch()) createModal(provider);
 
       const _client = provider.client;
 
@@ -534,6 +562,42 @@ export function ClientContextProvider({
     });
   }, [client]);
 
+  // The fee applies to the chain a transaction is sent on, so make that chain active first
+  const getWalletFeeForChain = useCallback(
+    async (chainId: string) => {
+      if (!provider || !UniversalProvider.isHostLaunch()) return undefined;
+      provider.setDefaultChain(chainId);
+      const fee = await provider.getWalletFee();
+      return fee?.chainId === chainId ? fee : undefined;
+    },
+    [provider]
+  );
+
+  // Opened from a wallet: connect once, without a modal, unless a session was restored
+  useEffect(() => {
+    if (!isHostLaunch || !provider || !client || isInitializing) return;
+    if (hostConnectStarted.current) return;
+    // Only decide on the first load, so a later Disconnect doesn't auto-connect again
+    hostConnectStarted.current = true;
+    if (session) return;
+    const toastId = toast.loading("Connecting to your wallet…", {
+      position: "top-center",
+    });
+    connect(undefined)
+      .then(() => {
+        const walletName = provider.session?.peer.metadata.name;
+        toast.success(
+          walletName ? `Connected to ${walletName}` : "Connected to your wallet",
+          { id: toastId, position: "top-center" }
+        );
+        provider.getWalletFee().then(setWalletFee);
+      })
+      .catch(() => {
+        // connect() already shows the error toast
+        toast.dismiss(toastId);
+      });
+  }, [isHostLaunch, provider, client, isInitializing, session, connect]);
+
   const value = useMemo(
     () => ({
       pairings,
@@ -553,6 +617,9 @@ export function ClientContextProvider({
       origin,
       setAccounts,
       authenticatedAddresses,
+      isHostLaunch,
+      walletFee,
+      getWalletFeeForChain,
     }),
     [
       pairings,
@@ -572,6 +639,9 @@ export function ClientContextProvider({
       origin,
       setAccounts,
       authenticatedAddresses,
+      isHostLaunch,
+      walletFee,
+      getWalletFeeForChain,
     ]
   );
 

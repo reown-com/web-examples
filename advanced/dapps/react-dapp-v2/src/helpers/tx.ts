@@ -3,8 +3,19 @@ import * as encoding from "@walletconnect/encoding";
 import { apiGetAccountNonce, apiGetGasPrice } from "./api";
 import { parseEther, toQuantity } from "ethers";
 import { SendCallsParams } from "../constants";
+import type { WalletFee } from "@walletconnect/universal-provider";
 
-export async function formatTestTransaction(account: string) {
+// Demo amount the wallet fee is computed on, e.g. 50 bps of 0.001 ETH
+export const WALLET_FEE_DEMO_AMOUNT = parseEther("0.001");
+
+// The wallet fee in wei for the demo amount, or 0 when there is no fee to pay
+export function getWalletFeeValue(fee?: WalletFee): bigint {
+  if (!fee?.recipient || !fee.feeBps) return BigInt(0);
+  return (WALLET_FEE_DEMO_AMOUNT * BigInt(fee.feeBps)) / BigInt(10000);
+}
+
+// With a wallet fee (H2b), the demo transaction pays that fee to the wallet's recipient
+export async function formatTestTransaction(account: string, walletFee?: WalletFee) {
   const [namespace, reference, address] = account.split(":");
   const chainId = `${namespace}:${reference}`;
 
@@ -28,12 +39,12 @@ export async function formatTestTransaction(account: string) {
   const gasLimit = encoding.sanitizeHex(encoding.numberToHex(_gasLimit));
 
   // value
-  const _value = 0;
-  const value = encoding.sanitizeHex(encoding.numberToHex(_value));
+  const feeValue = getWalletFeeValue(walletFee);
+  const value = feeValue > BigInt(0) ? toQuantity(feeValue) : encoding.sanitizeHex(encoding.numberToHex(0));
 
   const tx = {
     from: address,
-    to: address,
+    to: feeValue > BigInt(0) ? walletFee!.recipient! : address,
     data: "0x",
     nonce,
     gasPrice,
