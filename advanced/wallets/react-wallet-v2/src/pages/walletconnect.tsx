@@ -44,7 +44,8 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
         const tronAddress = SettingsStore.state.tronAddress
         if (tronAddress) {
           accounts.push(
-            ...Object.keys(TRON_MAINNET_CHAINS).map(chainKey => `${chainKey}:${tronAddress}`)
+            ...Object.keys(TRON_MAINNET_CHAINS).map(chainKey => `${chainKey}:${tronAddress}`),
+            `tron:0x2b6653dc:${tronAddress}`
           )
         }
 
