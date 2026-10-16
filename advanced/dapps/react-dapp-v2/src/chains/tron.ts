@@ -1,5 +1,18 @@
 import { NamespaceMetadata, ChainMetadata, ChainsMap } from "../helpers";
 
+/**
+ * TRON Chains & Metadata (CAIP-2 Specification)
+ *
+ * Aligned with the CASA CAIP-2 specification for the TRON namespace:
+ * https://github.com/ChainAgnostic/namespaces
+ *
+ * Canonical TRON chain references use decimal representation:
+ * - Mainnet: tron:728126428 (legacy: tron:0x2b6653dc)
+ * - Nile:    tron:3448148188 (legacy: tron:0xcd8690dc)
+ * - Shasta:  tron:2494104990 (legacy: tron:0x94a9059e)
+ *
+ * Matches TRON's ethereum-lists/chains registration and TRON ecosystem conventions.
+ */
 export const TronChainData: ChainsMap = {
   "728126428": {
     id: "tron:728126428",

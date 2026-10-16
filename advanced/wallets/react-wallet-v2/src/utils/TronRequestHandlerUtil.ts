@@ -13,6 +13,8 @@ export async function approveTronRequest(
 
   const wallet = tronWallets[getWalletAddressFromParams(tronAddresses, params)]
 
+  // Resolve target fullNode via TRON_CHAINS, supporting both primary decimal chain IDs
+  // (e.g. tron:728126428) and legacy hex chain IDs (e.g. tron:0x2b6653dc).
   const chain = TRON_CHAINS[params.chainId as TTronChain]
   if (chain) {
     wallet.setFullNode(chain.fullNode)
