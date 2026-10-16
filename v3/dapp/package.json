@@ -1,0 +1,25 @@
+{
+  "name": "v3-dapp",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "prettier": "prettier --check 'src/**/*.{ts,tsx}'",
+    "prettier:write": "prettier --write 'src/**/*.{ts,tsx}'"
+  },
+  "dependencies": {
+    "next": "16.1.6",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "viem": "2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@walletconnect/types": "2.26.0",
+    "prettier": "3.8.1",
+    "typescript": "5.8.3"
+  }
+}
