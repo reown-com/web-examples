@@ -42,6 +42,66 @@ export const SAccountsContainer = styled(SLanding as any)`
   }
 `;
 
+// Shown when a wallet opened the app from its Explore section (H2b)
+export const SHostLaunchCard = styled.div`
+  width: 100%;
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid rgb(51, 150, 255);
+  border-radius: 12px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.4;
+  & h4 {
+    margin: 0 0 16px;
+    font-size: 18px;
+  }
+  /* a bold label above each value */
+  & dl {
+    margin: 0;
+  }
+  & dt {
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+  & dd {
+    margin: 0 0 16px;
+  }
+  & dd:last-child {
+    margin-bottom: 0;
+  }
+  & ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  & li {
+    font-weight: 500;
+  }
+  & li + li {
+    margin-top: 10px;
+  }
+  /* long IDs and addresses wrap anywhere, in a monospace font */
+  & code {
+    display: block;
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+  }
+  & p {
+    margin: 0;
+  }
+  /* the demo note, set apart from the config */
+  & p.note {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 13px;
+    opacity: 0.7;
+  }
+`;
+
 export const SToggleContainer = styled.div`
   width: 100%;
   display: flex;

@@ -3,8 +3,43 @@ import * as encoding from "@walletconnect/encoding";
 import { apiGetAccountNonce, apiGetGasPrice } from "./api";
 import { parseEther, toQuantity } from "ethers";
 import { SendCallsParams } from "../constants";
+import type { WalletFee } from "@walletconnect/universal-provider";
 
-export async function formatTestTransaction(account: string) {
+// Demo amount the wallet fee is computed on, e.g. 50 bps of 0.001 ETH
+export const WALLET_FEE_DEMO_AMOUNT = parseEther("0.001");
+
+// The wallet fee for one chain: Universal Provider returns the wallet's whole fee config
+export type ChainWalletFee = {
+  chainId: string;
+  feeBps?: number;
+  recipient?: string;
+  referralCode?: string;
+};
+
+export function getChainWalletFee(
+  fee: WalletFee | undefined,
+  chainId: string,
+): ChainWalletFee | undefined {
+  if (!fee) return undefined;
+  return {
+    chainId,
+    feeBps: fee.feeBps,
+    recipient: fee.recipients.find((r) => r.chainId === chainId)?.address,
+    referralCode: fee.referralCode,
+  };
+}
+
+// The wallet fee in wei for the demo amount, or 0 when there is no fee to pay on that chain
+export function getWalletFeeValue(fee?: ChainWalletFee): bigint {
+  if (!fee?.recipient || !fee.feeBps) return BigInt(0);
+  return (WALLET_FEE_DEMO_AMOUNT * BigInt(fee.feeBps)) / BigInt(10000);
+}
+
+// With a wallet fee (H2b), the demo transaction pays that fee to the wallet's recipient on its chain
+export async function formatTestTransaction(
+  account: string,
+  walletFee?: ChainWalletFee,
+) {
   const [namespace, reference, address] = account.split(":");
   const chainId = `${namespace}:${reference}`;
 
@@ -28,12 +63,14 @@ export async function formatTestTransaction(account: string) {
   const gasLimit = encoding.sanitizeHex(encoding.numberToHex(_gasLimit));
 
   // value
-  const _value = 0;
-  const value = encoding.sanitizeHex(encoding.numberToHex(_value));
+  // No recipient for this chain means no fee, and the transaction is unchanged
+  const feeValue =
+    walletFee?.chainId === chainId ? getWalletFeeValue(walletFee) : BigInt(0);
+  const value = feeValue > BigInt(0) ? toQuantity(feeValue) : encoding.sanitizeHex(encoding.numberToHex(0));
 
   const tx = {
     from: address,
-    to: address,
+    to: feeValue > BigInt(0) ? walletFee!.recipient! : address,
     data: "0x",
     nonce,
     gasPrice,

@@ -1,22 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import { styled } from "styled-components";
 import { colors, transitions } from "../styles";
 
 interface LightboxStyleProps {
   $show: boolean;
-  $offset: number;
   $opacity?: number;
 }
 
 const SLightbox = styled.div<LightboxStyleProps>`
   transition: opacity 0.1s ease-in-out;
   text-align: center;
-  position: absolute;
+  /* Cover the viewport, so the card is centered on screen even on a long page */
+  position: fixed;
   width: 100vw;
-  height: 100%;
-  margin-left: -50vw;
-  top: ${({ $offset }) => ($offset ? `-${$offset}px` : 0)};
-  left: 50%;
+  height: 100vh;
+  top: 0;
+  left: 0;
   z-index: 2;
   will-change: opacity;
   background-color: ${({ $opacity }) => {
@@ -38,6 +37,7 @@ const SModalContainer = styled.div`
   position: relative;
   width: 100%;
   height: 100%;
+  overflow-y: auto;
   padding: 15px;
   display: flex;
   align-items: center;
@@ -118,23 +118,8 @@ interface IProps {
 }
 
 export default function Modal({ children, show, opacity, closeModal }: IProps) {
-  const [offset, setOffset] = useState(0);
-  const lightboxRef = useRef<HTMLDivElement>(null!);
-
-
-  useEffect(() => {
-    if (lightboxRef.current) {
-      const lightboxRect = lightboxRef.current.getBoundingClientRect();
-      const nextOffset = lightboxRect.top > 0 ? lightboxRect.top : 0;
-
-      if (nextOffset !== 0 && nextOffset !== offset) {
-        setOffset(nextOffset);
-      }
-    }
-  }, [offset]);
-
   return (
-    <SLightbox $show={show} $offset={offset} $opacity={opacity} ref={lightboxRef}>
+    <SLightbox $show={show} $opacity={opacity}>
       <SModalContainer>
         <SHitbox onClick={closeModal} />
         <SCard>
