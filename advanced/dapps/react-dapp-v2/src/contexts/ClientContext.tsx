@@ -41,6 +41,7 @@ import {
 import { AccountBalances, apiGetAccountBalance } from "../helpers";
 import { getRequiredNamespaces } from "../helpers/namespaces";
 import { getPublicKeysFromAccounts } from "../helpers/solana";
+import { ChainWalletFee, getChainWalletFee } from "../helpers/tx";
 import { isValidSignature } from "./JsonRpcContext";
 
 /**
@@ -68,7 +69,11 @@ interface IContext {
   authenticatedAddresses: string[];
   isHostLaunch: boolean;
   walletFee?: WalletFee;
-  getWalletFeeForChain: (chainId: string) => Promise<WalletFee | undefined>;
+  getWalletFeeForChain: (
+    chainId: string,
+  ) => Promise<ChainWalletFee | undefined>;
+  activeChainId?: string;
+  setActiveChainId: (chainId: string) => void;
 }
 
 /**
@@ -111,8 +116,10 @@ export function ClientContextProvider({
   // Read after mount so the server render (no wallet) matches the first client render.
   const [isHostLaunch, setIsHostLaunch] = useState(false);
   const hostConnectStarted = useRef(false);
-  // The wallet's fee for the active chain, from Universal Provider (only on a host launch)
+  // The wallet's whole fee config, from Universal Provider (only on a host launch)
   const [walletFee, setWalletFee] = useState<WalletFee>();
+  // The chain the last transaction was sent on; the wallet fee card shows this chain's fee
+  const [selectedChainId, setActiveChainId] = useState<string>();
   useEffect(() => setIsHostLaunch(UniversalProvider.isHostLaunch()), []);
   const [relayerRegion, setRelayerRegion] = useState<string>(
     DEFAULT_RELAY_URL || ""
@@ -124,6 +131,7 @@ export function ClientContextProvider({
     abortControllerRef.current = null;
     setSession(undefined);
     setWalletFee(undefined);
+    setActiveChainId(undefined);
     setBalances({});
     setAccounts([]);
     setChains([]);
@@ -562,16 +570,20 @@ export function ClientContextProvider({
     });
   }, [client]);
 
-  // The fee applies to the chain a transaction is sent on, so make that chain active first
+  // The fee applies to the chain a transaction is sent on: that chain's recipient, bps and referral code
   const getWalletFeeForChain = useCallback(
     async (chainId: string) => {
       if (!provider || !UniversalProvider.isHostLaunch()) return undefined;
-      provider.setDefaultChain(chainId);
-      const fee = await provider.getWalletFee();
-      return fee?.chainId === chainId ? fee : undefined;
+      return getChainWalletFee(await provider.getWalletFee(), chainId);
     },
     [provider]
   );
+
+  // Defaults to the session's first EVM chain until a transaction is sent on another one
+  const activeChainId =
+    selectedChainId && chains.includes(selectedChainId)
+      ? selectedChainId
+      : (chains.find((chain) => chain.startsWith("eip155:")) ?? chains[0]);
 
   // Opened from a wallet: connect once, without a modal, unless a session was restored
   useEffect(() => {
@@ -620,6 +632,8 @@ export function ClientContextProvider({
       isHostLaunch,
       walletFee,
       getWalletFeeForChain,
+      activeChainId,
+      setActiveChainId,
     }),
     [
       pairings,
@@ -642,6 +656,8 @@ export function ClientContextProvider({
       isHostLaunch,
       walletFee,
       getWalletFeeForChain,
+      activeChainId,
+      setActiveChainId,
     ]
   );
 
