@@ -884,53 +884,78 @@ const Home: NextPage = () => {
         {isHostLaunch && (
           <SHostLaunchCard>
             <h4>Opened from your wallet</h4>
-            <p>
-              Wallet Guide ID:{" "}
-              {(session?.sessionProperties as Record<string, string> | undefined)
-                ?.wallet_guide_id ?? "—"}
-            </p>
-            {walletFee ? (
-              <>
-                <p>
-                  Wallet fee:{" "}
-                  {walletFee.feeBps !== undefined
-                    ? `${walletFee.feeBps / 100}% (${walletFee.feeBps} bps)`
-                    : "—"}
-                </p>
-                {walletFee.referralCode && (
-                  <p>Referral code: {walletFee.referralCode}</p>
-                )}
-                <p>Recipients:{walletFee.recipients.length ? "" : " —"}</p>
-                {walletFee.recipients.map(({ chainId, address }) => {
-                  const [namespace, reference] = chainId.split(":");
-                  const chainName = chainData[namespace]?.[reference]?.name;
-                  return (
-                    <p key={chainId}>
-                      {chainName ? `${chainName} (${chainId})` : chainId}:{" "}
-                      {address}
-                    </p>
-                  );
-                })}
-                {walletFee.recipients.length && walletFee.feeBps ? (
-                  <p>
-                    On these chains, eth_sendTransaction pays{" "}
-                    {formatEther(
-                      getWalletFeeValue(
-                        getChainWalletFee(
-                          walletFee,
-                          walletFee.recipients[0].chainId,
-                        ),
-                      ),
-                    )}{" "}
-                    ETH (the fee on a {formatEther(WALLET_FEE_DEMO_AMOUNT)} ETH
-                    demo amount) to the chain&apos;s recipient. Other chains pay
-                    no fee.
-                  </p>
-                ) : null}
-              </>
-            ) : (
-              <p>No wallet fee configured</p>
-            )}
+            <dl>
+              <dt>Wallet Guide ID</dt>
+              <dd>
+                <code>
+                  {(
+                    session?.sessionProperties as
+                      | Record<string, string>
+                      | undefined
+                  )?.wallet_guide_id ?? "—"}
+                </code>
+              </dd>
+              {walletFee ? (
+                <>
+                  <dt>Wallet fee</dt>
+                  <dd>
+                    {walletFee.feeBps !== undefined
+                      ? `${walletFee.feeBps / 100}% (${walletFee.feeBps} bps)`
+                      : "—"}
+                  </dd>
+                  {walletFee.referralCode && (
+                    <>
+                      <dt>Referral code</dt>
+                      <dd>
+                        <code>{walletFee.referralCode}</code>
+                      </dd>
+                    </>
+                  )}
+                  <dt>Recipients</dt>
+                  <dd>
+                    {walletFee.recipients.length ? (
+                      <ul>
+                        {walletFee.recipients.map(({ chainId, address }) => {
+                          const [namespace, reference] = chainId.split(":");
+                          const chainName =
+                            chainData[namespace]?.[reference]?.name;
+                          return (
+                            <li key={chainId}>
+                              {chainName
+                                ? `${chainName} (${chainId})`
+                                : chainId}
+                              <code>{address}</code>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : (
+                      "—"
+                    )}
+                  </dd>
+                </>
+              ) : (
+                <>
+                  <dt>Wallet fee</dt>
+                  <dd>No wallet fee configured</dd>
+                </>
+              )}
+            </dl>
+            {walletFee?.recipients.length && walletFee.feeBps ? (
+              <p className="note">
+                On these chains, eth_sendTransaction pays{" "}
+                {formatEther(
+                  getWalletFeeValue(
+                    getChainWalletFee(
+                      walletFee,
+                      walletFee.recipients[0].chainId,
+                    ),
+                  ),
+                )}{" "}
+                ETH (the fee on a {formatEther(WALLET_FEE_DEMO_AMOUNT)} ETH demo
+                amount) to the chain&apos;s recipient. Other chains pay no fee.
+              </p>
+            ) : null}
           </SHostLaunchCard>
         )}
         <h3>Accounts</h3>
