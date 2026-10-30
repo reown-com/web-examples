@@ -1,11 +1,5 @@
 import type { NextPage } from "next";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { numberToHex } from "@walletconnect/encoding";
 import { RELAYER_SDK_VERSION } from "@walletconnect/core";
@@ -103,15 +97,7 @@ const Home: NextPage = () => {
     authenticatedAddresses,
     isHostLaunch,
     walletFee,
-    activeChainId,
   } = useWalletConnectClient();
-
-  // The provider doesn't emit on chain switches, so derive the active chain's fee here
-  const activeChainFee = useMemo(
-    () =>
-      activeChainId ? getChainWalletFee(walletFee, activeChainId) : undefined,
-    [walletFee, activeChainId],
-  );
 
   // Use `JsonRpcContext` to provide us with relevant RPC methods and states.
   const {
@@ -903,30 +889,47 @@ const Home: NextPage = () => {
               {(session?.sessionProperties as Record<string, string> | undefined)
                 ?.wallet_guide_id ?? "—"}
             </p>
-            <p>Active chain: {activeChainId ?? "—"}</p>
-            {activeChainFee?.recipient ? (
+            {walletFee ? (
               <>
                 <p>
                   Wallet fee:{" "}
-                  {activeChainFee.feeBps !== undefined
-                    ? `${activeChainFee.feeBps / 100}% (${activeChainFee.feeBps} bps)`
+                  {walletFee.feeBps !== undefined
+                    ? `${walletFee.feeBps / 100}% (${walletFee.feeBps} bps)`
                     : "—"}
                 </p>
-                <p>Recipient: {activeChainFee.recipient}</p>
-                {activeChainFee.feeBps ? (
+                {walletFee.referralCode && (
+                  <p>Referral code: {walletFee.referralCode}</p>
+                )}
+                <p>Recipients:{walletFee.recipients.length ? "" : " —"}</p>
+                {walletFee.recipients.map(({ chainId, address }) => {
+                  const [namespace, reference] = chainId.split(":");
+                  const chainName = chainData[namespace]?.[reference]?.name;
+                  return (
+                    <p key={chainId}>
+                      {chainName ? `${chainName} (${chainId})` : chainId}:{" "}
+                      {address}
+                    </p>
+                  );
+                })}
+                {walletFee.recipients.length && walletFee.feeBps ? (
                   <p>
-                    eth_sendTransaction pays{" "}
-                    {formatEther(getWalletFeeValue(activeChainFee))} ETH (the
-                    fee on a {formatEther(WALLET_FEE_DEMO_AMOUNT)} ETH demo
-                    amount) to the recipient
+                    On these chains, eth_sendTransaction pays{" "}
+                    {formatEther(
+                      getWalletFeeValue(
+                        getChainWalletFee(
+                          walletFee,
+                          walletFee.recipients[0].chainId,
+                        ),
+                      ),
+                    )}{" "}
+                    ETH (the fee on a {formatEther(WALLET_FEE_DEMO_AMOUNT)} ETH
+                    demo amount) to the chain&apos;s recipient. Other chains pay
+                    no fee.
                   </p>
                 ) : null}
               </>
             ) : (
-              <p>No wallet fee for this chain</p>
-            )}
-            {walletFee?.referralCode && (
-              <p>Referral code: {walletFee.referralCode}</p>
+              <p>No wallet fee configured</p>
             )}
           </SHostLaunchCard>
         )}

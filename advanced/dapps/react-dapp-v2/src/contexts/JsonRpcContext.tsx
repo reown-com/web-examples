@@ -268,7 +268,6 @@ export function JsonRpcContextProvider({
     solanaPublicKeys,
     setAccounts,
     getWalletFeeForChain,
-    setActiveChainId,
   } = useWalletConnectClient();
 
   const { chainData } = useChainData();
@@ -357,9 +356,7 @@ export function JsonRpcContextProvider({
         if (account === undefined)
           throw new Error(`Account for ${caipAccountAddress} not found`);
 
-        // Opened from a wallet: this chain becomes the active one, and the transaction pays
-        // the wallet's fee on it, if it has a recipient here
-        setActiveChainId(chainId);
+        // Opened from a wallet: pay its fee on this chain, if it has a recipient here
         const walletFee = await getWalletFeeForChain(chainId);
         const tx = await formatTestTransaction(account, walletFee);
 

@@ -72,8 +72,6 @@ interface IContext {
   getWalletFeeForChain: (
     chainId: string,
   ) => Promise<ChainWalletFee | undefined>;
-  activeChainId?: string;
-  setActiveChainId: (chainId: string) => void;
 }
 
 /**
@@ -118,8 +116,6 @@ export function ClientContextProvider({
   const hostConnectStarted = useRef(false);
   // The wallet's whole fee config, from Universal Provider (only on a host launch)
   const [walletFee, setWalletFee] = useState<WalletFee>();
-  // The chain the last transaction was sent on; the wallet fee card shows this chain's fee
-  const [selectedChainId, setActiveChainId] = useState<string>();
   useEffect(() => setIsHostLaunch(UniversalProvider.isHostLaunch()), []);
   const [relayerRegion, setRelayerRegion] = useState<string>(
     DEFAULT_RELAY_URL || ""
@@ -131,7 +127,6 @@ export function ClientContextProvider({
     abortControllerRef.current = null;
     setSession(undefined);
     setWalletFee(undefined);
-    setActiveChainId(undefined);
     setBalances({});
     setAccounts([]);
     setChains([]);
@@ -579,12 +574,6 @@ export function ClientContextProvider({
     [provider]
   );
 
-  // Defaults to the session's first EVM chain until a transaction is sent on another one
-  const activeChainId =
-    selectedChainId && chains.includes(selectedChainId)
-      ? selectedChainId
-      : (chains.find((chain) => chain.startsWith("eip155:")) ?? chains[0]);
-
   // Opened from a wallet: connect once, without a modal, unless a session was restored
   useEffect(() => {
     if (!isHostLaunch || !provider || !client || isInitializing) return;
@@ -632,8 +621,6 @@ export function ClientContextProvider({
       isHostLaunch,
       walletFee,
       getWalletFeeForChain,
-      activeChainId,
-      setActiveChainId,
     }),
     [
       pairings,
@@ -656,8 +643,6 @@ export function ClientContextProvider({
       isHostLaunch,
       walletFee,
       getWalletFeeForChain,
-      activeChainId,
-      setActiveChainId,
     ]
   );
 
