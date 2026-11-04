@@ -1,8 +1,8 @@
-import { parseUri } from '@walletconnect/utils'
 import PageHeader from '@/components/PageHeader'
 import QrReader from '@/components/QrReader'
-import { walletkit, isPaymentLink } from '@/utils/WalletConnectUtil'
-import { Button, Input, Loading, Text } from '@nextui-org/react'
+import { walletkit, isPaymentLink, pairWithUri } from '@/utils/WalletConnectUtil'
+import { Button, Input, Loading, Row, Text } from '@nextui-org/react'
+import { useRouter } from 'next/router'
 import { Fragment, useEffect, useState } from 'react'
 import { styledToast } from '@/utils/HelperUtil'
 import ModalStore from '@/store/ModalStore'
@@ -14,6 +14,7 @@ import { TRON_MAINNET_CHAINS } from '@/data/TronData'
 
 export default function WalletConnectPage(params: { deepLink?: string }) {
   const { deepLink } = params
+  const router = useRouter()
   const [uri, setUri] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -80,21 +81,9 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
       return
     }
 
-    const { topic: pairingTopic } = parseUri(uri)
-    const pairingExpiredListener = ({ topic }: { topic: string }) => {
-      if (pairingTopic === topic) {
-        styledToast('Pairing expired. Please try again with new Connection URI', 'error')
-        ModalStore.close()
-        walletkit.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
-      }
-    }
-    walletkit.once('session_proposal', () => {
-      walletkit.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
-    })
     try {
       setLoading(true)
-      walletkit.core.pairing.events.on('pairing_expire', pairingExpiredListener)
-      await walletkit.pair({ uri })
+      await pairWithUri(uri)
     } catch (error) {
       styledToast((error as Error).message, 'error')
       ModalStore.close()
@@ -148,6 +137,22 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
             </Button>
           }
         />
+
+        <Text size={13} css={{ textAlign: 'center', marginTop: '$10', marginBottom: '$10' }}>
+          or connect to WalletConnect MCP
+        </Text>
+
+        <Row justify="center">
+          <Button
+            size="sm"
+            bordered
+            color="gradient"
+            onClick={() => router.push('/mcp')}
+            data-testid="mcp-page-button"
+          >
+            WalletConnect MCP
+          </Button>
+        </Row>
       </>
     </Fragment>
   )

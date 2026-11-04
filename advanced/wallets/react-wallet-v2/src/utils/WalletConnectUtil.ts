@@ -2,6 +2,9 @@ import { WalletKit, IWalletKit, isPaymentLink } from '@reown/walletkit'
 import { Core } from '@walletconnect/core'
 import { SessionTypes } from '@walletconnect/types'
 import SettingsStore from '@/store/SettingsStore'
+import ModalStore from '@/store/ModalStore'
+import { styledToast } from '@/utils/HelperUtil'
+import { parseUri } from '@walletconnect/utils'
 
 export { isPaymentLink }
 export let walletkit: IWalletKit
@@ -119,4 +122,25 @@ export async function updateSignClientChainId(chainId: string, address: string) 
       await walletkit.emitSessionEvent(accountsChanged)
     }
   )
+}
+
+/**
+ * Pairs with a `wc:` URI and clears the modal with a toast if the pairing
+ * expires before a session proposal arrives. Shared by the WalletConnect page
+ * (QR / pasted URI) and the MCP page (URI fetched from the MCP server).
+ */
+export async function pairWithUri(uri: string) {
+  const { topic: pairingTopic } = parseUri(uri)
+  const pairingExpiredListener = ({ topic }: { topic: string }) => {
+    if (pairingTopic === topic) {
+      styledToast('Pairing expired. Please try again with new Connection URI', 'error')
+      ModalStore.close()
+      walletkit.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
+    }
+  }
+  walletkit.once('session_proposal', () => {
+    walletkit.core.pairing.events.removeListener('pairing_expire', pairingExpiredListener)
+  })
+  walletkit.core.pairing.events.on('pairing_expire', pairingExpiredListener)
+  await walletkit.pair({ uri })
 }

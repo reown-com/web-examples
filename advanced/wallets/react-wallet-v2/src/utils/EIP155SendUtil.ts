@@ -4,6 +4,7 @@ import { TOKEN_CONFIGS } from '@/utils/BalanceUtil'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { parseErc20Amount } from '@/utils/Erc20AmountUtil'
 import { providers } from 'ethers'
+import { withNodeFees } from '@/utils/EIP155FeeUtil'
 import { encodeFunctionData, erc20Abi, isAddress } from 'viem'
 
 export interface Erc20TokenOption {
@@ -92,11 +93,13 @@ export async function sendErc20({
 
   const provider = new providers.JsonRpcProvider(chain.rpc)
   const connectedWallet = wallet.connect(provider)
-  const txResponse = await connectedWallet.sendTransaction({
-    to: tokenOption.address,
-    value: '0x0',
-    data
-  })
+  const txResponse = await connectedWallet.sendTransaction(
+    await withNodeFees(provider, {
+      to: tokenOption.address,
+      value: '0x0',
+      data
+    })
+  )
 
   return { hash: txResponse.hash }
 }
