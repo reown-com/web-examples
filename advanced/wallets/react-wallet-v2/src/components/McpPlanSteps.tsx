@@ -35,6 +35,9 @@ const LABELS: Record<string, string> = {
   quotedOut: 'Quoted out',
   minOut: 'Minimum out',
   maxSlippagePct: 'Max slippage',
+  feeTierPct: 'Fee tier',
+  provider: 'Provider',
+  pool: 'Pool',
   spenderLabel: 'Spender',
   spender: 'Spender address',
   tokenAddress: 'Token contract',
@@ -56,7 +59,7 @@ export function labelFor(key: string) {
 export function formatValue(key: string, value: string | number | boolean, full: boolean) {
   const text = String(value)
   if (!full && ADDRESS_PATTERN.test(text)) return truncate(text, 16)
-  if (key === 'maxSlippagePct') return `${text}%`
+  if (key === 'maxSlippagePct' || key === 'feeTierPct') return `${text}%`
   return text
 }
 

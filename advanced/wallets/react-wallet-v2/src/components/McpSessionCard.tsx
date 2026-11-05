@@ -108,9 +108,12 @@ export default function McpSessionCard({ session, serverInfo, busy, onDisconnect
         <Text size={12} color="$gray600" css={{ marginTop: '$6', marginBottom: '$2' }}>
           Limits per transaction
         </Text>
-        <Row css={{ gap: '$3' }}>
-          <McpPill rgb={GRAY_RGB}>≤ {serverInfo.caps.eth} ETH</McpPill>
-          <McpPill rgb={GRAY_RGB}>≤ {serverInfo.caps.usdc} USDC</McpPill>
+        <Row css={{ gap: '$3', flexWrap: 'wrap' }}>
+          {Object.entries(serverInfo.caps).map(([symbol, cap]) => (
+            <McpPill key={symbol} rgb={GRAY_RGB}>
+              ≤ {cap} {symbol.toUpperCase()}
+            </McpPill>
+          ))}
         </Row>
 
         <StyledDivider css={{ my: '$6' }} />

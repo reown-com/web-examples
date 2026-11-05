@@ -14,8 +14,8 @@ import {
   McpSession,
   McpStep,
   McpStepTx,
+  McpSwapAssets,
   McpToolResult,
-  McpSwapAsset,
   McpWalletStatus
 } from '@/utils/McpApiUtil'
 import {
@@ -34,7 +34,7 @@ export type McpPhase = 'idle' | 'pairing' | 'loading' | 'ready'
 /** What the user asked for in the wallet's own form, kept to restate in confirm's `expect` */
 export type McpPendingRequest =
   | { kind: 'transfer'; chain: string; token: string; amount: string; to: string }
-  | { kind: 'swap'; chain: string; from: McpSwapAsset; amount: string }
+  | { kind: 'swap'; chain: string; from: string; to: string; amount: string }
 
 export interface McpMismatch {
   key: string
@@ -66,6 +66,9 @@ interface State {
   session: McpSession | null
   portfolio: McpPortfolio | null
   portfolioChain: string
+  /** What the server can swap, per chain */
+  swapAssets: McpSwapAssets | null
+  swapAssetsError: string | null
   openActions: McpAction[]
   currentAction: McpAction | null
   pendingRequest: McpPendingRequest | null
@@ -88,6 +91,8 @@ const initialState = (): State => ({
   session: null,
   portfolio: null,
   portfolioChain: '',
+  swapAssets: null,
+  swapAssetsError: null,
   openActions: [],
   currentAction: null,
   pendingRequest: null,
@@ -194,7 +199,7 @@ function requestedValues(request: McpPendingRequest): Record<string, string> {
     kind: 'swap',
     chain: request.chain,
     from_asset: request.from,
-    to_asset: request.from === 'USDC' ? 'ETH' : 'USDC',
+    to_asset: request.to,
     amount_in: request.amount,
     recipient: ownAddress()
   }
@@ -364,6 +369,18 @@ async function loadPortfolio(abort: AbortSignal) {
   }
 }
 
+async function loadSwapAssets(abort: AbortSignal) {
+  try {
+    state.swapAssets = (await McpApi.swapAssets(undefined, abort)).data
+    state.swapAssetsError = null
+  } catch (error) {
+    if (isAbort(error)) return
+    if (error instanceof McpAuthError) throw error
+    state.swapAssets = null
+    state.swapAssetsError = describe(error)
+  }
+}
+
 async function loadOpenActions(abort: AbortSignal) {
   state.openActions = (await McpApi.openActions(abort)).data.actions
 }
@@ -372,7 +389,7 @@ async function loadAll(abort: AbortSignal) {
   const info = (await McpApi.info(abort)).data
   state.serverInfo = info
   if (!state.portfolioChain) state.portfolioChain = info.chains[0]?.name ?? ''
-  await Promise.all([loadPortfolio(abort), loadOpenActions(abort)])
+  await Promise.all([loadPortfolio(abort), loadOpenActions(abort), loadSwapAssets(abort)])
 }
 
 /**
@@ -449,7 +466,7 @@ const actions = {
         return
       }
       state.session = own
-      await Promise.all([loadPortfolio(abort), loadOpenActions(abort)])
+      await Promise.all([loadPortfolio(abort), loadOpenActions(abort), loadSwapAssets(abort)])
     } catch (error) {
       fail(error)
     }
@@ -464,6 +481,10 @@ const actions = {
     await loadPortfolio(signal()).catch(fail)
   },
 
+  async reloadSwapAssets() {
+    await loadSwapAssets(signal()).catch(fail)
+  },
+
   async prepareTransfer(input: { chain: string; token: string; amount: string; to: string }) {
     await prepareAndSend(
       () =>
@@ -475,11 +496,11 @@ const actions = {
     )
   },
 
-  async prepareSwap(input: { chain: string; from: McpSwapAsset; amount: string }) {
+  async prepareSwap(input: { chain: string; from: string; to: string; amount: string }) {
     await prepareAndSend(
       () =>
         McpApi.prepareSwap(
-          { from: input.from, amount: input.amount, chain: input.chain },
+          { from: input.from, to: input.to, amount: input.amount, chain: input.chain },
           signal()
         ),
       { kind: 'swap', ...input }

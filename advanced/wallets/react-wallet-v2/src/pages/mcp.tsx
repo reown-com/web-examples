@@ -26,7 +26,8 @@ import {
   McpApi,
   McpPortfolio,
   McpServerInfo,
-  McpSession
+  McpSession,
+  McpSwapChainAssets
 } from '@/utils/McpApiUtil'
 import { isAuthorizationCallback, MCP_ORIGIN } from '@/utils/McpAuthUtil'
 
@@ -321,7 +322,10 @@ export default function McpPage() {
           <McpActionForms
             chains={chains}
             caps={state.serverInfo.caps}
+            swapChains={(state.swapAssets?.chains as McpSwapChainAssets[] | undefined) ?? null}
+            swapChainsError={state.swapAssetsError}
             disabled={state.busy || actionInFlight}
+            onReloadSwapChains={() => actions.reloadSwapAssets()}
             onQuote={async input => (await McpApi.swapQuote(input)).data}
             onPrepareTransfer={input => actions.prepareTransfer(input)}
             onPrepareSwap={input => actions.prepareSwap(input)}

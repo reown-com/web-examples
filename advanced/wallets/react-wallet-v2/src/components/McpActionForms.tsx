@@ -4,7 +4,7 @@ import { useState } from 'react'
 import McpSwapForm, { McpSwapInput } from '@/components/McpSwapForm'
 import McpTransferForm, { McpTransferInput } from '@/components/McpTransferForm'
 import { McpSection, McpSegmented } from '@/components/McpUi'
-import { McpQuote } from '@/utils/McpApiUtil'
+import { McpCaps, McpQuote, McpSwapChainAssets } from '@/utils/McpApiUtil'
 
 /**
  * Types
@@ -13,8 +13,12 @@ type Tab = 'transfer' | 'swap'
 
 interface Props {
   chains: ReadonlyArray<{ id: string; name: string }>
-  caps: { eth: string; usdc: string } | null
+  caps: McpCaps | null
+  /** Chains with their swappable assets, from GET /swaps/assets; null while not loaded */
+  swapChains: ReadonlyArray<McpSwapChainAssets> | null
+  swapChainsError: string | null
   disabled: boolean
+  onReloadSwapChains: () => void
   onQuote: (input: McpSwapInput) => Promise<McpQuote>
   onPrepareTransfer: (input: McpTransferInput) => Promise<void>
   onPrepareSwap: (input: McpSwapInput) => Promise<void>
@@ -26,7 +30,10 @@ interface Props {
 export default function McpActionForms({
   chains,
   caps,
+  swapChains,
+  swapChainsError,
   disabled,
+  onReloadSwapChains,
   onQuote,
   onPrepareTransfer,
   onPrepareSwap
@@ -64,8 +71,11 @@ export default function McpActionForms({
         />
       ) : (
         <McpSwapForm
-          chains={chains}
+          chains={swapChains}
+          chainsError={swapChainsError}
+          caps={caps}
           disabled={disabled}
+          onReloadChains={onReloadSwapChains}
           onQuote={onQuote}
           onPrepare={onPrepareSwap}
         />

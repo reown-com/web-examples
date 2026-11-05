@@ -1,7 +1,7 @@
 import { clearTokens, getAccessToken, MCP_API_BASE, McpAuthError } from '@/utils/McpAuthUtil'
 
 /**
- * Typed client for the WalletConnect MCP HTTP API (v0.3.0).
+ * Typed client for the WalletConnect MCP HTTP API (v0.5.0).
  * Shapes mirror https://mcp.walletconnect.com/api/v1/openapi.json
  */
 
@@ -94,14 +94,44 @@ export interface McpPortfolio {
   source: 'blockchain-api' | 'rpc'
 }
 
-export type McpSwapAsset = 'USDC' | 'ETH'
+export type McpSwapProvider = 'uniswap-v3'
+
+export interface McpSwapAssetInfo {
+  symbol: string
+  decimals: number
+  /** Token contract; absent for the native asset */
+  address?: string
+  native: boolean
+}
+
+export interface McpSwapChainAssets {
+  /** Chain name */
+  chain: string
+  /** CAIP-2 id */
+  caip2: string
+  assets: McpSwapAssetInfo[]
+}
+
+/** What can be swapped where; availability differs by chain */
+export interface McpSwapAssets {
+  provider: McpSwapProvider
+  chains: McpSwapChainAssets[]
+}
 
 export interface McpQuote {
+  /** Chain name */
   chain: string
-  from: McpSwapAsset
-  to: McpSwapAsset
+  provider: McpSwapProvider
+  /** Asset symbol being sold */
+  from: string
+  /** Asset symbol being bought */
+  to: string
+  /** Whole units */
   amountIn: string
+  /** Whole units, what the pool quotes right now */
   amountOut: string
+  /** Fee tier of the pool chosen for this trade, in percent; differs by chain, pair and direction */
+  feeTierPct: number
   pool: string
 }
 
@@ -170,12 +200,15 @@ export interface McpActionList {
   actions: McpAction[]
 }
 
+/** Per-transaction caps in whole units, keyed by lower-case symbol */
+export type McpCaps = { eth: string; usdc: string } & Record<string, string>
+
 export interface McpServerInfo {
   name: string
   version: string
   instructions: string
   chains: { id: string; name: string }[]
-  caps: { eth: string; usdc: string }
+  caps: McpCaps
   tools: string[]
   openapi: string
   docs: string
@@ -338,7 +371,16 @@ export const McpApi = {
     return request<McpActionList>('GET', '/actions', { signal })
   },
 
-  swapQuote(params: { from: McpSwapAsset; amount: string; chain?: string }, signal?: AbortSignal) {
+  /** Which assets can be swapped on which chains; availability differs by chain */
+  swapAssets(chain?: string, signal?: AbortSignal) {
+    return request<McpSwapAssets>('GET', '/swaps/assets', { query: { chain }, signal })
+  },
+
+  /** Best pool across the fee tiers, right now; `from` and `to` are symbols from swapAssets */
+  swapQuote(
+    params: { from: string; to: string; amount: string; chain?: string },
+    signal?: AbortSignal
+  ) {
     return request<McpQuote>('GET', '/swaps/quote', { query: params, signal })
   },
 
@@ -352,7 +394,7 @@ export const McpApi = {
 
   /** Prepares only; nothing reaches the wallet until confirmAction */
   prepareSwap(
-    body: { from: McpSwapAsset; amount: string; max_slippage_pct?: number; chain?: string },
+    body: { from: string; to: string; amount: string; max_slippage_pct?: number; chain?: string },
     signal?: AbortSignal
   ) {
     return request<McpAction>('POST', '/actions/swaps', { body, signal })
