@@ -33,6 +33,10 @@ export default function Navigation() {
         <Image alt="pairings icon" src="/icons/pairings-icon.svg" width={25} height={25} />
       </Link>
 
+      <Link href="/mcp" passHref className="navLink" data-testid="mcp">
+        <Image alt="walletconnect mcp icon" src="/icons/mcp-icon.svg" width={27} height={27} />
+      </Link>
+
       <Link href="/settings" passHref className="navLink" data-testid="settings">
         <Image alt="settings icon" src="/icons/settings-icon.svg" width={27} height={27} />
       </Link>
