@@ -78,7 +78,7 @@ function TokenList({
         <div key={index} className="w-full">
           <TokenItem
             token={tokenItem}
-            selected={token?.address === tokenItem.address}
+            selected={token?.id === tokenItem.id}
             onClick={() => setSelectedToken(tokenItem)}
           />
           {availableTokens.length - 1 !== index && <Separator />}
@@ -122,7 +122,7 @@ function TokenItem({
         <div className="flex flex-col items-start gap-0.5">
           <Label className="font-medium">{token.name}</Label>
           <span className="text-xs text-muted-foreground">
-            Balance: ${formattedBalance}
+            Balance: ${formattedBalance} { token.type === "native" && token.name === "ETH" &&'(0.0005 ETH = $1)'}
           </span>
         </div>
         {selected && <CheckIcon className="h-5 w-5 text-green-500" />}
