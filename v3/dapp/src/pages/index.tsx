@@ -21,7 +21,8 @@ import {
 import { NIMBUS_ICON } from '@/lib/icons'
 
 // The wallet answers within this, or the call fails. The SDK adds 30 s before giving up.
-const DEADLINE_S = 15
+// Sign v2 takes no deadline under 5 minutes; a v3 session's topic is digits, a v2 one's is hex.
+const deadlineS = (topic: string) => (/^\d+$/.test(topic) ? 15 : 300)
 const optionalNamespaces = {
   eip155: {
     chains: ['eip155:1'],
@@ -193,7 +194,7 @@ export default function Nimbus() {
         title,
         detail,
         status: 'pending',
-        giveUpAt: Date.now() + (DEADLINE_S + 30) * 1000,
+        giveUpAt: Date.now() + (deadlineS(session.topic) + 30) * 1000,
         risky
       },
       ...xs
@@ -203,7 +204,7 @@ export default function Nimbus() {
         topic: session.topic,
         chainId: 'eip155:1',
         request,
-        expiry: DEADLINE_S
+        expiry: deadlineS(session.topic)
       })
       log('call', { [request.method]: result })
       const note =
