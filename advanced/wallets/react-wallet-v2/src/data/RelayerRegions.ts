@@ -12,7 +12,9 @@ type RelayerType = {
  */
 export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
   {
-    value: process.env.NEXT_PUBLIC_RELAY_URL || 'wss://relay.walletconnect.com',
+    // The dev Relay, over the WebSocket, so this app can pair with the ones on Sign v2 over HTTP
+    // and Sign v3, which only that Relay serves so far.
+    value: 'wss://pool-1.dev-relay.walletconnect.com',
     label: 'Default'
   },
 

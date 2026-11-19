@@ -61,7 +61,9 @@ export const DEFAULT_TEST_CHAINS = [
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
 
 export const DEFAULT_PROJECT_ID = process.env.NEXT_PUBLIC_PROJECT_ID;
-export const DEFAULT_RELAY_URL = process.env.NEXT_PUBLIC_RELAY_URL;
+// The dev Relay, over the WebSocket, so this app can pair with the ones on Sign v2 over HTTP and
+// Sign v3, which only that Relay serves so far.
+export const DEFAULT_RELAY_URL = "wss://pool-1.dev-relay.walletconnect.com";
 
 export const DEFAULT_LOGGER = "debug";
 
