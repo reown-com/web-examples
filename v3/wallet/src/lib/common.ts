@@ -52,7 +52,6 @@ export function explain(e: unknown): string {
     return 'No answer in time. The Relay may have withheld the request.'
   if (/request_resolved/.test(m)) return 'This request was already answered or has expired.'
   if (/not_found/.test(m)) return 'Not found. The request was replaced or has expired.'
-  if (/unsupported_uri/.test(m)) return "That's a v2 URI. This wallet speaks Sign v3 only."
   if (/invalid_uri/.test(m)) return "That isn't a valid wc: URI."
   if (/connection_closed/.test(m)) return 'The connection was closed.'
   return m

@@ -1,4 +1,4 @@
-import type SignClient from '@/lib/sign-client-v3'
+import type SignClient from '@walletconnect/sign-client'
 import type { SignClientTypes } from '@walletconnect/types'
 
 import { DEFAULT_PROJECT_ID, RELAY_URL } from './common'
@@ -27,7 +27,8 @@ const prefixFor = (app: App, projectId: string) =>
 /** Forgets this app's identities and sessions in every project. */
 export function resetApp(app: App, extraKeys: string[] = []) {
   for (const k of Object.keys(localStorage)) {
-    if (k.startsWith(`demo-${app}:`) || k.startsWith(`demo-${app}@`)) localStorage.removeItem(k)
+    // the SDK puts its own prefixes in front of ours
+    if (k.includes(`demo-${app}:`) || k.includes(`demo-${app}@`)) localStorage.removeItem(k)
   }
   for (const k of extraKeys) localStorage.removeItem(k)
   location.reload()
@@ -56,12 +57,12 @@ const localStorageKV = {
 let started: Promise<Started> | undefined
 
 /**
- * Starts the one client this page uses, from the vendored @walletconnect/sign-client/v3. It loads
+ * Starts the one client this page uses. It speaks Sign v3, with Sign v2 as the fallback. It loads
  * in the browser only, and once, even with React strict mode running effects twice.
  */
 export function startClient(app: App, metadata: SignClientTypes.Metadata): Promise<Started> {
   started ??= (async () => {
-    const { SignClient } = await import('@/lib/sign-client-v3')
+    const { SignClient } = await import('@walletconnect/sign-client')
     const projectId = currentProject(app)
     const client = await SignClient.init({
       projectId,
