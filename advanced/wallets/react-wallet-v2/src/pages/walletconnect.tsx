@@ -94,8 +94,7 @@ export default function WalletConnectPage(params: { deepLink?: string }) {
     try {
       setLoading(true)
       walletkit.core.pairing.events.on('pairing_expire', pairingExpiredListener)
-      // SignClient's pair picks Sign v3 or v2 from the URI; WalletKit's own pair is v2 only.
-      await walletkit.engine.signClient.pair({ uri })
+      await walletkit.pair({ uri })
     } catch (error) {
       styledToast((error as Error).message, 'error')
       ModalStore.close()
