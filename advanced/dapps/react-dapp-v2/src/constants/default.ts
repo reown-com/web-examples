@@ -61,9 +61,10 @@ export const DEFAULT_TEST_CHAINS = [
 export const DEFAULT_CHAINS = [...DEFAULT_MAIN_CHAINS, ...DEFAULT_TEST_CHAINS];
 
 export const DEFAULT_PROJECT_ID = process.env.NEXT_PUBLIC_PROJECT_ID;
-// The dev Relay: the only one that serves Sign v3 and Sign v2 over HTTP so far.
+// The dev Relay: the only one that serves Sign v2 over HTTP so far. NEXT_PUBLIC_RELAY_URL is not
+// read: where it is set, it names a Relay that serves the WebSocket only.
 export const DEFAULT_RELAY_URL =
-  process.env.NEXT_PUBLIC_RELAY_URL || "https://pool-1.dev-relay.walletconnect.com";
+  process.env.NEXT_PUBLIC_HTTP_RELAY_URL || "https://pool-1.dev-relay.walletconnect.com";
 
 export const DEFAULT_LOGGER = "debug";
 
