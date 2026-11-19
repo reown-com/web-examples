@@ -2,6 +2,7 @@ import { WalletKit, IWalletKit, isPaymentLink } from '@reown/walletkit'
 import { Core } from '@walletconnect/core'
 import { SessionTypes } from '@walletconnect/types'
 import SettingsStore from '@/store/SettingsStore'
+import { REGIONALIZED_RELAYER_ENDPOINTS } from '@/data/RelayerRegions'
 
 export { isPaymentLink }
 export let walletkit: IWalletKit
@@ -22,7 +23,7 @@ export async function createWalletKit(relayerRegionURL: string) {
 
   const core = new Core({
     projectId: process.env.NEXT_PUBLIC_PROJECT_ID,
-    relayUrl: relayerRegionURL || process.env.NEXT_PUBLIC_RELAY_URL,
+    relayUrl: relayerRegionURL || REGIONALIZED_RELAYER_ENDPOINTS[0].value,
     logger: 'error'
   })
 

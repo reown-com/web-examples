@@ -446,7 +446,7 @@ export function ClientContextProvider({
         localStorage.getItem("wallet_connect_dapp_origin") || origin;
       const provider = await UniversalProvider.init({
         logger: DEFAULT_LOGGER,
-        relayUrl: relayerRegion || process.env.NEXT_PUBLIC_RELAY_URL,
+        relayUrl: relayerRegion || DEFAULT_RELAY_URL,
         projectId: DEFAULT_PROJECT_ID,
         metadata: {
           name: "React App",
