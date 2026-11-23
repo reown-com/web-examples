@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { SessionTypes, SignClientTypes } from '@walletconnect/types'
 
-import { AppIdentity, v4Of } from '@/components/AppIdentity'
+import { AppIdentity, verificationOf } from '@/components/AppIdentity'
 import { Avatar, Sheet, SheetHead } from '@/components/ui'
 import type { Account } from '@/components/Accounts'
 import { isSanctioned, short, when } from '@/lib/common'
@@ -102,14 +102,14 @@ export function PairSheet({
       </div>
     )
   } else {
-    const { params, verifyContext } = state.proposal
+    const { params } = state.proposal
     const ns = namespacesFor(params, account?.address ?? '')
     const methods = Object.values(ns).flatMap(n => n.methods)
     body = (
       <>
         <SheetHead title="Connection request" onClose={onClose} />
         <div className="req-hero">
-          <AppIdentity ctx={v4Of(verifyContext)} />
+          <AppIdentity verification={verificationOf(state.proposal)} />
           <p className="muted" style={{ fontSize: 14 }}>
             wants to connect to your wallet
           </p>

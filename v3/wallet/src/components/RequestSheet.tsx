@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { AppIdentity, type V4Context } from '@/components/AppIdentity'
+import { AppIdentity, type AppVerification } from '@/components/AppIdentity'
 import { Avatar, Sheet, SheetHead } from '@/components/ui'
 import { isSanctioned, same, SANCTIONED, short, TRANSFER, USDC } from '@/lib/common'
 
@@ -10,7 +10,7 @@ export interface Request {
   chainId: string
   request: { method: string; params: any }
   /** Verify v4: who sent this request, as the Relay vouches. */
-  verify: V4Context
+  verification: AppVerification
 }
 
 function decodeText(hex: string) {
@@ -153,7 +153,7 @@ export function RequestSheet({
         }
       />
       <div className="req-hero" style={{ marginBottom: 14 }}>
-        <AppIdentity ctx={request.verify} size={48} />
+        <AppIdentity verification={request.verification} size={48} />
       </div>
       <div className="stack">{d.body}</div>
       {watchOnly && (

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SessionTypes } from '@walletconnect/types'
 
 import { AccountsSheet, KEY, sanctionBadge, useAccounts } from '@/components/Accounts'
-import { v4Of } from '@/components/AppIdentity'
+import { appLabel, verificationOf } from '@/components/AppIdentity'
 import { namespacesFor, PairSheet, type PairState } from '@/components/PairSheet'
 import { describe, RequestSheet, type Request } from '@/components/RequestSheet'
 import {
@@ -103,7 +103,7 @@ export default function Ember() {
     refresh()
     const gone = ({ topic }: { topic: string }) => {
       const s = sessionsRef.current.find(x => x.topic === topic)
-      toast(`${s?.peer.metadata.name ?? 'The dApp'} disconnected`, 'warn')
+      toast(`${s ? appLabel(verificationOf(s)) : 'The dApp'} disconnected`, 'warn')
       setQueue(q => q.filter(r => r.topic !== topic))
       refresh()
     }
@@ -112,13 +112,14 @@ export default function Ember() {
       ['session_proposal', proposal => setPair({ phase: 'proposal', proposal })],
       [
         'session_request',
-        ({ id, topic, params, verifyContext }) => {
+        (args: { id: number; topic: string; params: any }) => {
+          const { id, topic, params } = args
           const r: Request = {
             id,
             topic,
             chainId: params.chainId,
             request: params.request,
-            verify: v4Of(verifyContext)
+            verification: verificationOf(args)
           }
           setQueue(q => [...q, r])
           if (!openRef.current) openRequest(r)
@@ -164,7 +165,7 @@ export default function Ember() {
   async function answerProposal(ok: boolean) {
     if (!sdk || pair?.phase !== 'proposal' || !current) return
     const { id, params } = pair.proposal
-    const peer = params.proposer.metadata
+    const name = appLabel(verificationOf(pair.proposal))
     setPair({ ...pair, busy: true })
     try {
       if (ok) {
@@ -177,12 +178,12 @@ export default function Ember() {
       log('call', { [ok ? 'approve' : 'reject']: id })
       record({
         glyph: ok ? '🔗' : '✕',
-        title: ok ? `Connected to ${peer.name}` : `Declined ${peer.name}`,
-        sub: ok ? short(current.address) : peer.url,
+        title: ok ? `Connected to ${name}` : `Declined ${name}`,
+        sub: short(current.address),
         status: ok ? ['Connected', 'ok'] : ['Declined', 'neutral']
       })
       if (ok) {
-        setPair({ phase: 'done', name: peer.name })
+        setPair({ phase: 'done', name })
         setTimeout(() => setPair(p => (p?.phase === 'done' ? null : p)), 1200)
       } else setPair(null)
       refresh()
@@ -191,7 +192,7 @@ export default function Ember() {
       const blocked = /\bblocked\b/.test(String((e as Error).message))
       record({
         glyph: '⛔',
-        title: `Couldn't connect to ${peer.name}`,
+        title: `Couldn't connect to ${name}`,
         sub: explain(e),
         status: [blocked ? 'Blocked' : 'Failed', 'warn']
       })
@@ -203,7 +204,6 @@ export default function Ember() {
     if (!sdk || !active) return
     const r = active
     const d = describe(r)
-    const peer = sessions.find(s => s.topic === r.topic)?.peer.metadata
     let response: { result: unknown } | { error: { code: number; message: string } }
     if (!approve) response = { error: USER_REJECTED }
     else if (r.request.method === 'personal_sign')
@@ -221,7 +221,7 @@ export default function Ember() {
       record({
         glyph: d.glyph,
         title: `${approve ? 'Approved' : 'Declined'}: ${d.kind.toLowerCase()}`,
-        sub: `${peer?.name ?? 'dApp'} · ${d.summary}`,
+        sub: `${appLabel(r.verification)} · ${d.summary}`,
         status: approve ? ['Approved', 'ok'] : ['Declined', 'neutral']
       })
     } catch (e) {
@@ -241,8 +241,8 @@ export default function Ember() {
       await sdk.client.disconnect({ topic: s.topic, reason: USER_DISCONNECTED })
       record({
         glyph: '⏏',
-        title: `Disconnected ${s.peer.metadata.name}`,
-        sub: s.peer.metadata.url,
+        title: `Disconnected ${appLabel(verificationOf(s))}`,
+        sub: verificationOf(s).domain ?? 'unverified',
         status: ['Closed', 'neutral']
       })
     } catch (e) {
@@ -259,7 +259,7 @@ export default function Ember() {
         chainId: 'eip155:1',
         event: { name: 'chainChanged', data: 1 }
       })
-      toast(`Sent chainChanged to ${s.peer.metadata.name}`, 'ok')
+      toast(`Sent chainChanged to ${appLabel(verificationOf(s))}`, 'ok')
     } catch (e) {
       toast(explain(e), 'warn')
     }
@@ -343,17 +343,18 @@ export default function Ember() {
               <div className="list">
                 {sessions.map(s => {
                   const account = s.namespaces?.eip155?.accounts?.[0]?.split(':')[2] ?? ''
+                  const v = verificationOf(s)
                   return (
                     <div key={s.topic} className="list-item">
-                      <AppIcon
-                        src={s.peer.metadata.icons?.[0]}
-                        size={40}
-                        name={s.peer.metadata.name}
-                      />
+                      <AppIcon src={v.icon} size={40} name={v.name || v.domain} />
                       <div className="grow">
-                        <strong>{s.peer.metadata.name || 'dApp'}</strong>
+                        <strong>
+                          {appLabel(v)} {v.isVerified && <span className="badge ok">✓</span>}
+                          {v.isScam && <span className="badge warn">Scam</span>}
+                        </strong>
                         <small>
-                          {s.peer.metadata.url} · {short(account)}
+                          {v.name && v.domain ? `${v.domain} · ` : ''}
+                          {short(account)}
                         </small>
                         <small>Expires {when(s.expiry)}</small>
                       </div>

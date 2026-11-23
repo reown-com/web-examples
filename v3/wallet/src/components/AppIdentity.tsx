@@ -1,92 +1,70 @@
 import { AppIcon } from '@/components/ui'
 
 /**
- * Verify v4's context for one proposal or request, as the SDK derives it from the app's signature
- * and the Relay's `appMetadata`. Newer than the SDK's published types, so declared here.
+ * Who sent a proposal or request, as the Relay vouches for it (Verify v4): the SDK's
+ * `verification`. Every field comes from the Relay, never from the dApp's own metadata. Newer than
+ * the SDK's published types, so declared here.
  */
-export interface V4Context {
-  state: 'default' | 'domain_validated' | 'business_name' | 'verified' | 'invalid'
-  origin?: string
+export interface AppVerification {
+  domain?: string
   name?: string
   icon?: string
-  isScam?: boolean
+  isVerified: boolean
+  isScam: boolean
   isSimilarTo?: string
 }
 
-/** The Verify v4 context in an event's `verifyContext`, or "default" from an older SDK. */
-export const v4Of = (verifyContext: unknown): V4Context =>
-  (verifyContext as { v4?: V4Context } | undefined)?.v4 ?? { state: 'default' }
+const UNVERIFIED: AppVerification = { isVerified: false, isScam: false }
 
-const hostOf = (origin?: string) => {
-  try {
-    return origin ? new URL(origin).host : ''
-  } catch {
-    return origin ?? ''
-  }
-}
+/** An event's or session's `verification`. An SDK without Verify v4 has none: unverified. */
+export const verificationOf = (from: unknown): AppVerification =>
+  (from as { verification?: AppVerification } | undefined)?.verification ?? UNVERIFIED
 
-const BADGE: Record<V4Context['state'], [string, string]> = {
-  verified: ['✓ Verified', 'ok'],
-  business_name: ['Business', 'ok'],
-  domain_validated: ['Domain', 'neutral'],
-  default: ['Unverified', 'amber'],
-  invalid: ['Invalid signature', 'warn']
-}
+/** What to call the app in one line: its reviewed name, else its domain. */
+export const appLabel = (v: AppVerification) => v.name || v.domain || 'Unverified app'
 
 /**
- * Who the app is, as far as the Relay vouches for it. Never from the app's own metadata: an
- * unsigned app is just "Unverified app".
- * - default: unsigned, nothing known;
- * - domain_validated: only the domain;
- * - business_name: name, icon and domain;
- * - verified: name, icon and domain, with the verified badge;
- * - invalid: signed, but not this request.
+ * Renders whatever the verification has: the domain if there is one, the name and icon if there
+ * are, a badge when verified, and warnings for scams and look-alikes. Nothing else identifies the
+ * app.
  */
-export function AppIdentity({ ctx, size = 64 }: { ctx: V4Context; size?: number }) {
-  const host = hostOf(ctx.origin)
-  const [badge, tone] = BADGE[ctx.state] ?? BADGE.default
-  const named = ctx.state === 'business_name' || ctx.state === 'verified'
-  const title =
-    ctx.state === 'invalid'
-      ? 'Signature mismatch'
-      : named
-        ? ctx.name || host
-        : ctx.state === 'domain_validated'
-          ? host
-          : 'Unverified app'
+export function AppIdentity({
+  verification: v,
+  size = 64
+}: {
+  verification: AppVerification
+  size?: number
+}) {
   return (
     <div className="stack" style={{ gap: 10, alignItems: 'center' }} id="app-identity">
-      {named ? (
-        <AppIcon src={ctx.icon} size={size} name={ctx.name || host} />
+      {v.icon || v.name ? (
+        <AppIcon src={v.icon} size={size} name={v.name || v.domain} />
       ) : (
         <span className="app-icon placeholder" style={{ width: size, height: size }}>
-          {ctx.state === 'invalid' ? '!' : ctx.state === 'domain_validated' ? '🌐' : '?'}
+          {v.domain ? '🌐' : '?'}
         </span>
       )}
-      <h3 style={{ margin: 0 }}>{title}</h3>
-      {named && host && <span className="from">{host}</span>}
-      <span className={`badge ${tone}`} id="verify-state" data-state={ctx.state}>
-        {badge}
-      </span>
-      {ctx.state === 'default' && (
+      <h3 style={{ margin: 0 }}>{appLabel(v)}</h3>
+      {v.name && v.domain && <span className="from">{v.domain}</span>}
+      {v.isVerified && (
+        <span className="badge ok" id="verified-badge">
+          ✓ Verified
+        </span>
+      )}
+      {!v.domain && (
         <p className="muted" style={{ fontSize: 13, textAlign: 'center' }}>
-          This app didn&apos;t sign the request, so nothing confirms who sent it.
+          Nothing confirms who sent this: the app didn&apos;t sign it.
         </p>
       )}
-      {ctx.state === 'invalid' && (
-        <div className="callout warn">
-          The app&apos;s signature is for a different request. Something changed this one on the
-          way: don&apos;t approve it.
-        </div>
-      )}
-      {ctx.isScam && (
-        <div className="callout warn">
+      {v.isScam && (
+        <div className="callout warn" id="scam-warning">
           <strong>Known scam.</strong> The Relay flags this app as malicious.
         </div>
       )}
-      {ctx.isSimilarTo && (
-        <div className="callout amber">
-          This app looks similar to <strong>{ctx.isSimilarTo}</strong>. Check the address.
+      {v.isSimilarTo && (
+        <div className="callout amber" id="similar-warning">
+          This app looks like <strong>{v.isSimilarTo}</strong>, but isn&apos;t it. Check the
+          address.
         </div>
       )}
     </div>

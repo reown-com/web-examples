@@ -42,17 +42,16 @@ Nimbus can sign every request it sends, and Ember shows who sent it as the Relay
 - **Policy.** It refuses to sign ETH sent to a denylisted address: `0x…dEaD`, or `APP_SIGNATURE_DENYLIST`. Nimbus then fails the request instead of sending it unsigned.
 - **The JWT.** ES256, with the key in `APP_SIGNATURE_PRIVATE_JWK`. The claims are `iss`, the host; `sub`, base64url SHA-256 of the request JSON exactly as the SDK sends it; `cth` for sealed messages; and `exp`, 5 minutes.
 
-**Ember.** It shows the request's `verifyContext.v4`, and never the dApp's own name, URL or icon:
+**Ember.** It shows who sent a proposal, request or session from the SDK's `verification` only, never from the dApp's own name, URL or icon, which the SDK no longer exposes to wallets. It renders whatever is present:
 
-| State | Ember shows |
-|---|---|
-| `default` | "Unverified app": the request isn't signed |
-| `domain_validated` | The domain only |
-| `business_name` | Name, icon and domain |
-| `verified` | Name, icon, domain and a verified badge |
-| `invalid` | "Signature mismatch": signed, but for another request |
+- **the domain,** when the dApp's signature checked out;
+- **the name and icon,** when WalletConnect reviewed the app;
+- **a "✓ Verified" badge** when `isVerified`;
+- **warning banners** for `isScam` and `isSimilarTo`, whatever else is present.
 
-`isScam` and `isSimilarTo` add warnings in any state.
+An unsigned request, or one over Sign v2, shows as "Unverified app". A request whose signature is for another request never reaches Ember: the SDK drops it and answers Nimbus with an error.
+
+Nimbus signs its Sign v2 traffic too (the fallback offer and requests on a v2 session), so wallets on older SDKs can see it as verified through the Relay's legacy attestation.
 
 **Run it against a Relay dev slot:**
 
@@ -62,11 +61,11 @@ Nimbus can sign every request it sends, and Ember shows who sent it as the Relay
    ```
    It prints three things:
    - the dApp's env, for `v3/dapp/.env.local`;
-   - `wc-domain-validate.json`, for `https://<host>/.well-known/`;
+   - `wc-domain-validate.json`, `{ allowed_organizations, keys }`, for `https://<host>/.well-known/`;
    - `RELAY_VERIFY_V4_DOMAINS`, the Relay's static registry entry.
 2. Deploy the Relay's Verify v4 branch to a dev slot with that `RELAY_VERIFY_V4_DOMAINS`.
 3. Point both apps at the slot: `NEXT_PUBLIC_RELAY_URL=https://pool-N.dev-relay.walletconnect.com` in each `.env.local`.
-4. Install an `@walletconnect/sign-client` build with App Signatures in both apps, then `pnpm dev`. The published `2.26.1-canary-2` predates them: Nimbus would send nothing signed, and Ember would show every request as Unverified.
+4. Install an `@walletconnect/sign-client` build with Verify v4 in both apps, then `pnpm dev`. The published `2.26.1-canary-2` predates it: Nimbus would send nothing signed, and Ember would show every app as "Unverified app".
 5. In Nimbus, set **Denylisted address** as the ETH recipient to see a refused signature.
 
 ## Configuration
