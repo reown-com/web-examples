@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SessionTypes } from '@walletconnect/types'
 
 import { AccountsSheet, KEY, sanctionBadge, useAccounts } from '@/components/Accounts'
+import { v4Of } from '@/components/AppIdentity'
 import { namespacesFor, PairSheet, type PairState } from '@/components/PairSheet'
 import { describe, RequestSheet, type Request } from '@/components/RequestSheet'
 import {
@@ -111,8 +112,14 @@ export default function Ember() {
       ['session_proposal', proposal => setPair({ phase: 'proposal', proposal })],
       [
         'session_request',
-        ({ id, topic, params }) => {
-          const r: Request = { id, topic, chainId: params.chainId, request: params.request }
+        ({ id, topic, params, verifyContext }) => {
+          const r: Request = {
+            id,
+            topic,
+            chainId: params.chainId,
+            request: params.request,
+            verify: v4Of(verifyContext)
+          }
           setQueue(q => [...q, r])
           if (!openRef.current) openRequest(r)
         }
@@ -424,7 +431,6 @@ export default function Ember() {
       <RequestSheet
         open={requestOpen}
         request={active}
-        peer={sessions.find(s => s.topic === active?.topic)?.peer.metadata}
         pending={queue.length}
         canSign={address => !!signerFor(address)}
         onAnswer={answerRequest}

@@ -1,7 +1,7 @@
 import type SignClient from '@walletconnect/sign-client'
 import type { SignClientTypes } from '@walletconnect/types'
 
-import { DEFAULT_PROJECT_ID, RELAY_URL } from './common'
+import { APP_SIGNATURE, DEFAULT_PROJECT_ID, RELAY_URL } from './common'
 
 export type App = 'dapp' | 'wallet'
 export interface Started {
@@ -54,6 +54,32 @@ const localStorageKV = {
   removeItem: async (k: string) => localStorage.removeItem(k)
 }
 
+/** What the SDK passes to the App Signature callback (Verify v4, Sign v3). */
+interface AppSignatureParams {
+  request: Record<string, unknown>
+  /** `request` exactly as sent: the JWT's `sub` is the SHA-256 of these bytes. */
+  requestJson: string
+  ciphertextHash: string | null
+}
+
+/**
+ * Verify v4: the SDK calls this before it creates a connection and before every message, and
+ * sends the JWT with it. The backend holds the key and decides what it signs; if it refuses,
+ * this throws and the request fails, rather than going out unsigned.
+ */
+const appSignature = {
+  callback: async ({ requestJson, ciphertextHash }: AppSignatureParams) => {
+    const res = await fetch('/api/wc-attestation', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ requestJson, ciphertextHash })
+    })
+    const body = await res.json().catch(() => ({}))
+    if (!res.ok) throw new Error(`App Signature refused: ${body.error ?? res.status}`)
+    return { appSignature: body.appSignature as string }
+  }
+}
+
 let started: Promise<Started> | undefined
 
 /**
@@ -64,13 +90,17 @@ export function startClient(app: App, metadata: SignClientTypes.Metadata): Promi
   started ??= (async () => {
     const { SignClient } = await import('@walletconnect/sign-client')
     const projectId = currentProject(app)
-    const client = await SignClient.init({
-      projectId,
-      metadata,
-      relayUrl: RELAY_URL,
-      customStoragePrefix: prefixFor(app, projectId),
-      storage: localStorageKV
-    })
+    // `appSignature` is newer than the SDK's published types.
+    const options: Parameters<typeof SignClient.init>[0] & { appSignature?: typeof appSignature } =
+      {
+        projectId,
+        metadata,
+        relayUrl: RELAY_URL,
+        customStoragePrefix: prefixFor(app, projectId),
+        storage: localStorageKV,
+        ...(app === 'dapp' && APP_SIGNATURE ? { appSignature } : {})
+      }
+    const client = await SignClient.init(options)
     return { client, projectId, clientId: await client.core.crypto.getClientId() }
   })()
   return started

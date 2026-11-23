@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { useNow } from '@/components/ui'
-import { SANCTIONED, short } from '@/lib/common'
+import { APP_SIGNATURE, DENYLISTED, SANCTIONED, short } from '@/lib/common'
 
 export type Kind = 'sign' | 'eth' | 'usdc'
 export interface Form {
@@ -66,6 +66,11 @@ export function ActionCard({
         <button className="risk" onClick={() => set({ [key]: SANCTIONED })}>
           Sanctioned address
         </button>
+        {APP_SIGNATURE && key === 'ethTo' && (
+          <button className="risk" onClick={() => set({ [key]: DENYLISTED })}>
+            Denylisted address
+          </button>
+        )}
       </div>
     </div>
   )

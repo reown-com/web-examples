@@ -8,6 +8,10 @@ export const DEFAULT_PROJECT_ID = process.env.NEXT_PUBLIC_PROJECT_ID || 'sign-v3
 export const SANCTIONED = '0xEe4AB1140F8f519F0De7FFf252Cf914Ee9154D2e'
 export const POLICY_A = 'ccb3504a8edab30995573bd2d12490d2'
 export const POLICY_B = '6c4987808a32c733009faf0d9b43a9af'
+// The signing backend (pages/api/wc-attestation.ts) refuses to sign ETH sent here.
+export const DENYLISTED = '0x000000000000000000000000000000000000dEaD'
+// Verify v4: sign every request with the backend. Needs APP_SIGNATURE_PRIVATE_JWK on the server.
+export const APP_SIGNATURE = process.env.NEXT_PUBLIC_APP_SIGNATURE === 'on'
 export const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
 export const TRANSFER = '0xa9059cbb'
 
