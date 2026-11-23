@@ -39,7 +39,7 @@ APP_SIGNATURE_DOMAIN=${host}
 APP_SIGNATURE_PRIVATE_JWK='${JSON.stringify(privJwk)}'
 
 # 2. Public: https://${host}/.well-known/wc-domain-validate.json
-${JSON.stringify({ allowed_teams: [], keys: [pub] }, null, 2)}
+${JSON.stringify({ allowed_organizations: [], keys: [pub] }, null, 2)}
 
 # 3. Relay, its static Verify v4 registry
 RELAY_VERIFY_V4_DOMAINS='${JSON.stringify(registry)}'`)
