@@ -1,7 +1,7 @@
 # Sign v3 examples
 
 Two Next.js apps on the Sign v3 protocol:
-- **Nimbus**, in `dapp/`, is the dApp.
+- **Nimbus**, in `app/`, is the app.
 - **Ember**, in `wallet/`, is the wallet.
 
 Both use `@walletconnect/sign-client`'s `SignClient`, which speaks Sign v3 over the Sign v3 Rust SDK, with the WASM embedded, and falls back to Sign v2. They install the `2.26.1-canary-2` canary from npm; `scripts/use-local-sdk.sh` swaps in a local build.
@@ -51,6 +51,12 @@ Nimbus can sign every request it sends, and Ember shows who sent it as the Relay
 
 An unsigned request, or one over Sign v2, shows as "Unverified app". A request whose signature is for another request never reaches Ember: the SDK drops it and answers Nimbus with an error.
 
+**Signing on or off.** Nimbus's top bar has an **App Signatures: on/off** switch, remembered per host; `?appSignature=on` or `off` in the URL sets it too. It starts on for the hosts in `NEXT_PUBLIC_APP_SIGNATURE_DOMAINS`. It stands in for deploying the signing backend, or not: a new domain sends unsigned until it is verified, and a domain that requires signatures can be tried unsigned.
+
+**A backend not to copy.** `src/pages/api/wc-attestation-insecure.ts` signs whatever any caller sends, with no policy. It answers only with `APP_SIGNATURE_INSECURE_DEMO=on`, for the exploit demo in `v3/e2e`: with it, an attacker's script gets the app's Business verified badge on its own transaction.
+
+**For tests.** Nimbus puts its client on `window.nimbus.client`, so the end-to-end tests can send requests as a script injected into the page would.
+
 Nimbus signs its Sign v2 traffic too (the fallback offer and requests on a v2 session). Wallets on older SDKs show it as unverified: the Relay sends them `attestation: ""` for every Sign v2 message and never mints a legacy attestation, since old SDKs can only bind one to the encrypted envelope, which the backend can't check.
 
 **Run it against a Relay dev slot:**
@@ -74,7 +80,8 @@ All settings are optional. See `.env.local.example` in each app.
 - **`NEXT_PUBLIC_RELAY_URL`:** a Relay that speaks Sign v3. Defaults to the dev Relay, `https://pool-1.dev-relay.walletconnect.com`; production doesn't speak v3 yet.
 - **`NEXT_PUBLIC_PROJECT_ID`:** the default project, `sign-v3-demo`.
 - **`NEXT_PUBLIC_WALLET_URL`:** dApp only, where "Open Ember Wallet" points. Defaults to `http://localhost:3001`.
-- **`NEXT_PUBLIC_APP_SIGNATURE`:** app only, `on` to sign with the backend, which then needs `APP_SIGNATURE_PRIVATE_JWK`. It signs as the host the page is on (`iss`), and only on the hosts in `NEXT_PUBLIC_APP_SIGNATURE_DOMAINS` (comma-separated), the ones whose published keys include this key; on any other host it sends unsigned. Empty, it signs on every host.
+- **`NEXT_PUBLIC_APP_SIGNATURE`:** app only, `on` to sign with the backend, which then needs `APP_SIGNATURE_PRIVATE_JWK`. It signs as the host the page is on (`iss`), and only on the hosts in `NEXT_PUBLIC_APP_SIGNATURE_DOMAINS` (comma-separated, `*.example.com` for any name under it), the ones whose published keys include this key; on any other host it sends unsigned. Empty, it signs on every host.
+- **`APP_SIGNATURE_INSECURE_DEMO`:** app only, never in a deployment. `on` serves the insecure demo backend, `/api/wc-attestation-insecure`.
 
 ## Deploying to Vercel
 
@@ -101,8 +108,9 @@ With rs-relay's `scripts/verify-v4-local/up.sh` running, the Relay is `http://12
 NEXT_PUBLIC_RELAY_URL=http://127.0.0.1:8080
 NEXT_PUBLIC_PROJECT_ID=c0ffee254729296a45a3885639ac7e10
 NEXT_PUBLIC_APP_SIGNATURE=on
-NEXT_PUBLIC_APP_SIGNATURE_DOMAINS=app.localhost,required.localhost,scam.localhost   # the domains publishing the app key
+NEXT_PUBLIC_APP_SIGNATURE_DOMAINS=app.localhost,required.localhost,scam.localhost,other.localhost,*.new.localhost   # the domains publishing the app key
 APP_SIGNATURE_PRIVATE_JWK='…'   # jq -c .app.privateJwk <rs-relay>/scripts/verify-v4-local/.state/keys.json
+APP_SIGNATURE_INSECURE_DEMO=on   # local only: the insecure backend the exploit demo uses
 
 # v3/wallet/.env.local
 NEXT_PUBLIC_RELAY_URL=http://127.0.0.1:8080
@@ -112,9 +120,31 @@ NEXT_PUBLIC_PROJECT_ID=c0ffee254729296a45a3885639ac7e10
 Open Ember at `http://localhost:3001` and Nimbus at any of these, with no restart in between:
 
 - `http://app.localhost:3000`: signed, Ember shows "Business verified";
-- `http://required.localhost:3000`: signed, and the domain requires signatures;
+- `http://other.localhost:3000`: signed, Ember shows the domain only (Domain verified);
 - `http://scam.localhost:3000`: signed, Ember shows the "Known scam" warning;
-- `http://unknown.localhost:3000` or `http://other.localhost:3000`: not in the list, so unsigned, and Ember shows "Unverified app" (`other.localhost` publishes only the `other` key).
+- `http://unknown.localhost:3000`: not in the list, so unsigned, and Ember shows "Unverified app";
+- `http://required.localhost:3000`: signed; switch App Signatures off and Nimbus's connection is refused, since the domain requires signatures;
+- `http://<anything>.new.localhost:3000`: a new domain, for walking it up from unverified to Business verified.
+
+### End-to-end tests
+
+`v3/e2e` is a Playwright suite that drives Nimbus and Ember in a headless browser against the local stack: each status Ember shows, the upgrade from an unknown domain to Business verified (through the WalletConnect Dashboard), attacks that fail and attacks that succeed. Start the stack and both apps first, with the `.env.local` above.
+
+```bash
+cd v3/e2e && pnpm install && pnpm exec playwright install chromium
+VERIFY_V4_LOCAL=<rs-relay>/scripts/verify-v4-local pnpm test
+```
+
+- `VERIFY_V4_LOCAL`: rs-relay's `scripts/verify-v4-local`, for its keys and the organization's IDs. Defaults to an rs-relay checkout next to this one. rs-relay's `scripts/verify-v4-local/browser.sh` runs the suite with it set.
+- `DASHBOARD_PASSWORD` (and `DASHBOARD_EMAIL`, default `agent@walletconnect.invalid`): the local Dashboard's sign-in, for the upgrade test's Dashboard steps. Without it, that test refreshes the domain through the organization API instead, as the Dashboard does.
+- `SCREENSHOTS=1` saves every screenshot to `v3/e2e/screenshots/`; they're in the HTML report (`pnpm exec playwright show-report`) either way.
+
+| File | Covers |
+|---|---|
+| `tests/statuses.spec.ts` | Business verified, Domain verified, Default (unverified), Security risk, and the refusal on a domain requiring signatures |
+| `tests/upgrade.spec.ts` | A new domain: unverified, then its domain file and a Dashboard refresh (Domain verified), then WalletConnect's review (Business verified), then a scam flag |
+| `tests/exploits-fail.spec.ts` | An unpublished key, a `sub` over another request (refused by the Relay on Sign v3, dropped by the wallet on Sign v2), another domain's token from another Origin, an expired token, unsigned or garbage-signed Sign v2 from a domain requiring signatures, a short domain hijack, old wallets, and the real backend's policy |
+| `tests/exploits-succeed.spec.ts` | Where the protection ends: a backend that signs anything, a compromised frontend, unsigned Sign v2 with no Origin from a script, and a hijack that lasts the whole hold |
 
 ## License
 
