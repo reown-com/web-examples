@@ -40,7 +40,7 @@ Nimbus can sign every request it sends, and Ember shows who sent it as the Relay
 
 **Nimbus.** `src/pages/api/wc-attestation.ts` is a tiny signing backend. The SDK calls it before it creates a connection and before every message, through the `appSignature` callback in `src/lib/client.ts`.
 - **Policy.** It refuses to sign ETH sent to a denylisted address: `0x…dEaD`, or `APP_SIGNATURE_DENYLIST`. Nimbus then fails the request instead of sending it unsigned.
-- **The JWT.** ES256, with the key in `APP_SIGNATURE_PRIVATE_JWK`. The claims are `iss`, the host; `sub`, base64url SHA-256 of the request JSON exactly as the SDK sends it; `cth`, the SDK's `ciphertextHash`, whenever it gives one (sealed Sign v3 messages, and every Sign v2 message, where it covers the published envelope); and `exp`, 2 minutes. `sub` always covers the plaintext, Sign v2 included, so the backend signs only a request it has read; it can't check `cth`, which only ties the JWT to the envelope for the Relay. A send retried after its JWT expired asks the backend again; wallets never check `exp`.
+- **The JWT.** ES256, with the key in `APP_SIGNATURE_PRIVATE_JWK`. The claims are `iss`, the host; `sub`, base64url SHA-256 of the request JSON exactly as the SDK sends it; and `exp`, 2 minutes. `sub` always covers the plaintext, Sign v2 and sealed messages included, so the backend signs only a request it has read. No claim covers the encrypted bytes, which the backend couldn't check; the wallet's `sub` check binds the JWT to the content. A send retried after its JWT expired asks the backend again; wallets never check `exp`.
 
 **Ember.** It shows who sent a proposal, request or session from the SDK's `verification` only, never from the dApp's own name, URL or icon, which the SDK no longer exposes to wallets. It renders whatever is present:
 
@@ -51,7 +51,7 @@ Nimbus can sign every request it sends, and Ember shows who sent it as the Relay
 
 An unsigned request, or one over Sign v2, shows as "Unverified app". A request whose signature is for another request never reaches Ember: the SDK drops it and answers Nimbus with an error.
 
-Nimbus signs its Sign v2 traffic too (the fallback offer and requests on a v2 session). Wallets on older SDKs show it as unverified: the Relay sends them `attestation: ""` for any signed message and never mints a legacy attestation, since the backend can't check the envelope `cth` covers.
+Nimbus signs its Sign v2 traffic too (the fallback offer and requests on a v2 session). Wallets on older SDKs show it as unverified: the Relay sends them `attestation: ""` for every Sign v2 message and never mints a legacy attestation, since old SDKs can only bind one to the encrypted envelope, which the backend can't check.
 
 **Run it against a Relay dev slot:**
 

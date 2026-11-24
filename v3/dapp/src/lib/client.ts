@@ -54,13 +54,11 @@ const localStorageKV = {
   removeItem: async (k: string) => localStorage.removeItem(k)
 }
 
-/** What the SDK passes to the App Signature callback (Verify v4, Sign v3). */
+/** What the SDK passes to the App Signature callback (Verify v4, Sign v2 and v3). */
 interface AppSignatureParams {
   request: Record<string, unknown>
   /** `request` exactly as sent: the JWT's `sub` is the SHA-256 of these bytes. */
   requestJson: string
-  /** `cth`: the published bytes' hash, for sealed Sign v3 messages and every Sign v2 message. */
-  ciphertextHash: string | null
 }
 
 /**
@@ -69,11 +67,11 @@ interface AppSignatureParams {
  * this throws and the request fails, rather than going out unsigned.
  */
 const appSignature = {
-  callback: async ({ requestJson, ciphertextHash }: AppSignatureParams) => {
+  callback: async ({ requestJson }: AppSignatureParams) => {
     const res = await fetch('/api/wc-attestation', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ requestJson, ciphertextHash })
+      body: JSON.stringify({ requestJson })
     })
     const body = await res.json().catch(() => ({}))
     if (!res.ok) throw new Error(`App Signature refused: ${body.error ?? res.status}`)

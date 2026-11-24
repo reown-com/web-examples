@@ -6,18 +6,16 @@ import { DENYLISTED } from '@/lib/common'
 /**
  * Verify v4's App Signature backend: signs one Sign v3 message for Nimbus, or refuses to.
  *
- * POST { requestJson, ciphertextHash? } → { appSignature } or 403 { error }
+ * POST { requestJson } → { appSignature } or 403 { error }
  *
  * The JWT is ES256 with the key in APP_SIGNATURE_PRIVATE_JWK (`node scripts/app-signature-keys.mjs`):
  * - `iss`: this app's host, APP_SIGNATURE_DOMAIN or the request's Host;
  * - `sub`: base64url SHA-256 of `requestJson`'s UTF-8 bytes, exactly the plaintext the SDK sends,
  *   on Sign v2 too. This is what the policy below reads, so the backend signs only what it checked;
- * - `cth`: the SDK's `ciphertextHash`, whenever it gives one: the hash of what is published, a
- *   sealed Sign v3 payload or a Sign v2 envelope. This backend can't check it, so it is signed as
- *   given and nothing trusts it alone: it only ties the JWT to the envelope for the Relay, which
- *   mints no legacy attestation;
  * - `exp`: 2 minutes. The SDK asks again for a send retried after that; wallets never check it.
- * The Relay checks it against the keys the domain published; the wallet checks `sub`.
+ * No claim covers the encrypted bytes: this backend couldn't check one, and the wallet's `sub`
+ * check binds the JWT to the content. The Relay checks the JWT against the keys the domain
+ * published; the wallet checks `sub`.
  */
 
 const b64u = (b: Uint8Array | Buffer) => Buffer.from(b).toString('base64url')
@@ -58,7 +56,7 @@ function refusal(rpc: any): string | undefined {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
-  const { requestJson, ciphertextHash } = req.body ?? {}
+  const { requestJson } = req.body ?? {}
   if (typeof requestJson !== 'string') return res.status(400).json({ error: 'requestJson' })
   let rpc: unknown
   try {
@@ -82,7 +80,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const claims = {
     iss,
     sub: b64u(createHash('sha256').update(requestJson, 'utf8').digest()),
-    ...(typeof ciphertextHash === 'string' ? { cth: ciphertextHash } : {}),
     exp: Math.floor(Date.now() / 1000) + 120
   }
   const header = { alg: 'ES256', typ: 'JWT', ...(k.kid ? { kid: k.kid } : {}) }
