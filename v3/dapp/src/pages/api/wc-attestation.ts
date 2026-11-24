@@ -14,7 +14,7 @@ import { DENYLISTED } from '@/lib/common'
  * - `cth`: the SDK's `ciphertextHash`, whenever it gives one: the hash of what is published, a
  *   sealed Sign v3 payload or a Sign v2 envelope. The Relay mints a legacy attestation for Sign v2
  *   only when `cth` matches the published envelope, so it is always signed as given;
- * - `exp`: 5 minutes.
+ * - `exp`: 2 minutes. The SDK asks again for a send retried after that; wallets never check it.
  * The Relay checks it against the keys the domain published; the wallet checks `sub`.
  */
 
@@ -81,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     iss,
     sub: b64u(createHash('sha256').update(requestJson, 'utf8').digest()),
     ...(typeof ciphertextHash === 'string' ? { cth: ciphertextHash } : {}),
-    exp: Math.floor(Date.now() / 1000) + 300
+    exp: Math.floor(Date.now() / 1000) + 120
   }
   const header = { alg: 'ES256', typ: 'JWT', ...(k.kid ? { kid: k.kid } : {}) }
   const input = `${b64u(Buffer.from(JSON.stringify(header)))}.${b64u(Buffer.from(JSON.stringify(claims)))}`
