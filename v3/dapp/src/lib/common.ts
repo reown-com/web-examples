@@ -52,6 +52,11 @@ export function explain(e: unknown): string {
   if (err?.code === 6) return 'No answer in time. The Relay may have withheld the request.'
   const m = err?.message ?? String(e)
   if (/\bblocked\b/.test(m)) return "Blocked by the Relay's policy for these two projects."
+  // Verify v4: the SDK's AppSignatureRefusedError
+  if (/\bapp_signature_required\b/.test(m))
+    return "Refused by the Relay: this domain requires App Signatures, and this request wasn't signed."
+  if (/\binvalid_app_signature\b/.test(m))
+    return "Refused by the Relay: this request's App Signature doesn't check out."
   if (/message_expired/.test(m))
     return 'No answer in time. The Relay may have withheld the request.'
   if (/request_resolved/.test(m)) return 'This request was already answered or has expired.'
