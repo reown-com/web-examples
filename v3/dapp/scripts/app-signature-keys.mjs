@@ -33,7 +33,7 @@ const registry = [
   }
 ]
 
-console.log(`# 1. App server, in v3/app/.env.local (keep it secret)
+console.log(`# 1. App server, in v3/dapp/.env.local (keep it secret)
 NEXT_PUBLIC_APP_SIGNATURE=on
 NEXT_PUBLIC_APP_SIGNATURE_DOMAINS=${host}
 APP_SIGNATURE_PRIVATE_JWK='${JSON.stringify(privJwk)}'

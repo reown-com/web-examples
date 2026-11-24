@@ -15,7 +15,7 @@ export default async function globalSetup() {
       "its local development controls (pay-core#2288 with ORGANIZATION_LOCAL_DEV)",
       `${ORGANIZATION_URL}/local-dev/facts`,
     ],
-    ["Nimbus (cd v3/app && pnpm dev)", `${nimbusUrl("localhost")}/`],
+    ["Nimbus (cd v3/dapp && pnpm dev)", `${nimbusUrl("localhost")}/`],
     ["Ember (cd v3/wallet && pnpm dev)", `${EMBER_URL}/`],
   ];
   const missing: string[] = [];

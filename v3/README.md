@@ -7,7 +7,7 @@ Two Next.js apps on the Sign v3 protocol:
 Both use `@walletconnect/sign-client`'s `SignClient`, which speaks Sign v3 over the Sign v3 Rust SDK, with the WASM embedded, and falls back to Sign v2. They install the `2.26.1-canary-2` canary from npm; `scripts/use-local-sdk.sh` swaps in a local build.
 
 ```bash
-cd v3/app && pnpm install && pnpm dev      # http://localhost:3000
+cd v3/dapp && pnpm install && pnpm dev      # http://localhost:3000
 cd v3/wallet && pnpm install && pnpm dev    # http://localhost:3001
 ```
 
@@ -63,10 +63,10 @@ Nimbus signs its Sign v2 traffic too (the fallback offer and requests on a v2 se
 
 1. Make a key pair for the host the app runs on:
    ```bash
-   cd v3/app && node scripts/app-signature-keys.mjs localhost
+   cd v3/dapp && node scripts/app-signature-keys.mjs localhost
    ```
    It prints three things:
-   - the app's env, for `v3/app/.env.local`;
+   - the app's env, for `v3/dapp/.env.local`;
    - `wc-domain-verify.json`, `{ allowed_organizations, keys }`, for `https://<host>/.well-known/`;
    - `RELAY_VERIFY_V4_DOMAINS`, the Relay's static registry entry.
 2. Deploy the Relay's Verify v4 branch to a dev slot with that `RELAY_VERIFY_V4_DOMAINS`.
@@ -85,7 +85,7 @@ All settings are optional. See `.env.local.example` in each app.
 
 ## Deploying to Vercel
 
-Make one Vercel project per app, with **Root Directory** set to `v3/app` or `v3/wallet`. The framework is detected as Next.js. On the dApp, set `NEXT_PUBLIC_WALLET_URL` to the wallet's URL.
+Make one Vercel project per app, with **Root Directory** set to `v3/dapp` or `v3/wallet`. The framework is detected as Next.js. On the dApp, set `NEXT_PUBLIC_WALLET_URL` to the wallet's URL.
 
 ## Using a local SDK build
 
@@ -104,7 +104,7 @@ Run it again after changing the SDK, then restart `pnpm dev`. A plain `pnpm inst
 With rs-relay's `scripts/verify-v4-local/up.sh` running, the Relay is `http://127.0.0.1:8080`, it knows one project, and the `*.localhost` domains publish the keys in its `.state/keys.json`. Browsers resolve `*.localhost` to this machine, so Nimbus can run as any of them; `iss` must be the host it's opened at.
 
 ```bash
-# v3/app/.env.local
+# v3/dapp/.env.local
 NEXT_PUBLIC_RELAY_URL=http://127.0.0.1:8080
 NEXT_PUBLIC_PROJECT_ID=c0ffee254729296a45a3885639ac7e10
 NEXT_PUBLIC_APP_SIGNATURE=on

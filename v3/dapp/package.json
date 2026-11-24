@@ -1,5 +1,5 @@
 {
-  "name": "v3-app",
+  "name": "v3-dapp",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",

@@ -1,4 +1,4 @@
-// Drives Nimbus (v3/app, the app) and Ember (v3/wallet, the wallet) in the browser.
+// Drives Nimbus (v3/dapp, the app) and Ember (v3/wallet, the wallet) in the browser.
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

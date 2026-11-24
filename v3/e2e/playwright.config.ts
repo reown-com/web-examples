@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-// End-to-end tests of Verify v4 in the browser: Nimbus (v3/app) and Ember (v3/wallet) against
+// End-to-end tests of Verify v4 in the browser: Nimbus (v3/dapp) and Ember (v3/wallet) against
 // rs-relay's local stack (scripts/verify-v4-local). Start the stack, both apps (`pnpm dev`) and,
 // for the Dashboard steps, the WalletConnect Dashboard first. See README.md in v3/.
 export default defineConfig({

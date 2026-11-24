@@ -2,7 +2,7 @@
 # Installs a local walletconnect-monorepo build of @walletconnect/sign-client (and the types, utils
 # and core it needs) into Nimbus and Ember, without touching package.json or pnpm-lock.yaml.
 #
-#   v3/scripts/use-local-sdk.sh            build, pack and install into v3/app and v3/wallet
+#   v3/scripts/use-local-sdk.sh            build, pack and install into v3/dapp and v3/wallet
 #   SKIP_BUILD=1 v3/scripts/use-local-sdk.sh   pack what is already built
 #   v3/scripts/use-local-sdk.sh --undo     reinstall the published packages from the lockfile
 #
@@ -13,7 +13,7 @@
 set -euo pipefail
 
 v3=$(cd "$(dirname "$0")/.." && pwd)
-apps=("$v3/app" "$v3/wallet")
+apps=("$v3/dapp" "$v3/wallet")
 
 if [ "${1:-}" = --undo ]; then
   for app in "${apps[@]}"; do (cd "$app" && rm -rf node_modules .next && pnpm install --frozen-lockfile); done

@@ -14,10 +14,10 @@ export const OldSignClient = createRequire(join(here, "..", "package.json"))(
   "@walletconnect/sign-client",
 ).SignClient as any;
 
-/** The SDK Nimbus runs: the Verify v4 build installed in v3/app (scripts/use-local-sdk.sh), with
+/** The SDK Nimbus runs: the Verify v4 build installed in v3/dapp (scripts/use-local-sdk.sh), with
  * Sign v3 and App Signatures. */
 export const NewSignClient = createRequire(
-  join(here, "..", "..", "app", "package.json"),
+  join(here, "..", "..", "dapp", "package.json"),
 )("@walletconnect/sign-client").SignClient as any;
 
 const memory = () => {
