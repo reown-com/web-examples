@@ -59,6 +59,7 @@ interface AppSignatureParams {
   request: Record<string, unknown>
   /** `request` exactly as sent: the JWT's `sub` is the SHA-256 of these bytes. */
   requestJson: string
+  /** `cth`: the published bytes' hash, for sealed Sign v3 messages and every Sign v2 message. */
   ciphertextHash: string | null
 }
 

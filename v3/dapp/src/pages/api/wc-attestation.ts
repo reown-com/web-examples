@@ -11,7 +11,9 @@ import { DENYLISTED } from '@/lib/common'
  * The JWT is ES256 with the key in APP_SIGNATURE_PRIVATE_JWK (`node scripts/app-signature-keys.mjs`):
  * - `iss`: this app's host, APP_SIGNATURE_DOMAIN or the request's Host;
  * - `sub`: base64url SHA-256 of `requestJson`'s UTF-8 bytes, exactly the plaintext the SDK sends;
- * - `cth`: the SDK's hash of the sealed payload, for sealed messages;
+ * - `cth`: the SDK's `ciphertextHash`, whenever it gives one: the hash of what is published, a
+ *   sealed Sign v3 payload or a Sign v2 envelope. The Relay mints a legacy attestation for Sign v2
+ *   only when `cth` matches the published envelope, so it is always signed as given;
  * - `exp`: 5 minutes.
  * The Relay checks it against the keys the domain published; the wallet checks `sub`.
  */
