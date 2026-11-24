@@ -1,7 +1,7 @@
 import type SignClient from '@walletconnect/sign-client'
 import type { SignClientTypes } from '@walletconnect/types'
 
-import { APP_SIGNATURE, DEFAULT_PROJECT_ID, RELAY_URL } from './common'
+import { APP_SIGNATURE, DEFAULT_PROJECT_ID, RELAY_URL, signsFor } from './common'
 
 export type App = 'dapp' | 'wallet'
 export interface Started {
@@ -97,7 +97,7 @@ export function startClient(app: App, metadata: SignClientTypes.Metadata): Promi
         relayUrl: RELAY_URL,
         customStoragePrefix: prefixFor(app, projectId),
         storage: localStorageKV,
-        ...(app === 'dapp' && APP_SIGNATURE ? { appSignature } : {})
+        ...(app === 'dapp' && APP_SIGNATURE && signsFor(location.hostname) ? { appSignature } : {})
       }
     const client = await SignClient.init(options)
     return { client, projectId, clientId: await client.core.crypto.getClientId() }

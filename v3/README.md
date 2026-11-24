@@ -74,7 +74,7 @@ All settings are optional. See `.env.local.example` in each app.
 - **`NEXT_PUBLIC_RELAY_URL`:** a Relay that speaks Sign v3. Defaults to the dev Relay, `https://pool-1.dev-relay.walletconnect.com`; production doesn't speak v3 yet.
 - **`NEXT_PUBLIC_PROJECT_ID`:** the default project, `sign-v3-demo`.
 - **`NEXT_PUBLIC_WALLET_URL`:** dApp only, where "Open Ember Wallet" points. Defaults to `http://localhost:3001`.
-- **`NEXT_PUBLIC_APP_SIGNATURE`:** dApp only, `on` to sign with the backend, which then needs `APP_SIGNATURE_PRIVATE_JWK`. `APP_SIGNATURE_DOMAIN` sets `iss`; it defaults to the request's host.
+- **`NEXT_PUBLIC_APP_SIGNATURE`:** dApp only, `on` to sign with the backend, which then needs `APP_SIGNATURE_PRIVATE_JWK`. It signs as the host the page is on (`iss`), and only on the hosts in `NEXT_PUBLIC_APP_SIGNATURE_DOMAINS` (comma-separated), the ones whose published keys include this key; on any other host it sends unsigned. Empty, it signs on every host.
 
 ## Deploying to Vercel
 
@@ -101,7 +101,7 @@ With rs-relay's `scripts/verify-v4-local/up.sh` running, the Relay is `http://12
 NEXT_PUBLIC_RELAY_URL=http://127.0.0.1:8080
 NEXT_PUBLIC_PROJECT_ID=c0ffee254729296a45a3885639ac7e10
 NEXT_PUBLIC_APP_SIGNATURE=on
-APP_SIGNATURE_DOMAIN=dapp.localhost
+NEXT_PUBLIC_APP_SIGNATURE_DOMAINS=dapp.localhost,required.localhost,scam.localhost   # the domains publishing the app key
 APP_SIGNATURE_PRIVATE_JWK='…'   # jq -c .app.privateJwk <rs-relay>/scripts/verify-v4-local/.state/keys.json
 
 # v3/wallet/.env.local
@@ -109,7 +109,12 @@ NEXT_PUBLIC_RELAY_URL=http://127.0.0.1:8080
 NEXT_PUBLIC_PROJECT_ID=c0ffee254729296a45a3885639ac7e10
 ```
 
-Open Nimbus at `http://dapp.localhost:3000` and Ember at `http://localhost:3001`. For the other cases, change `APP_SIGNATURE_DOMAIN`, the key and the host together, and restart Nimbus: `scam.localhost` (the `app` key) shows the scam warning, `other.localhost` (the `other` key) a domain without a name, and `NEXT_PUBLIC_APP_SIGNATURE` off shows "Unverified app".
+Open Ember at `http://localhost:3001` and Nimbus at any of these, with no restart in between:
+
+- `http://dapp.localhost:3000`: signed, Ember shows "Business verified";
+- `http://required.localhost:3000`: signed, and the domain requires signatures;
+- `http://scam.localhost:3000`: signed, Ember shows the "Known scam" warning;
+- `http://unknown.localhost:3000` or `http://other.localhost:3000`: not in the list, so unsigned, and Ember shows "Unverified app" (`other.localhost` publishes only the `other` key).
 
 ## License
 

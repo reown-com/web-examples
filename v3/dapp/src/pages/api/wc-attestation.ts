@@ -1,7 +1,7 @@
 import { createHash, webcrypto } from 'crypto'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-import { DENYLISTED } from '@/lib/common'
+import { DENYLISTED, signsFor } from '@/lib/common'
 
 /**
  * Verify v4's App Signature backend: signs one Sign v3 message for Nimbus, or refuses to.
@@ -9,7 +9,8 @@ import { DENYLISTED } from '@/lib/common'
  * POST { requestJson } → { appSignature } or 403 { error }
  *
  * The JWT is ES256 with the key in APP_SIGNATURE_PRIVATE_JWK (`node scripts/app-signature-keys.mjs`):
- * - `iss`: this app's host, APP_SIGNATURE_DOMAIN or the request's Host;
+ * - `iss`: the request's Host, if NEXT_PUBLIC_APP_SIGNATURE_DOMAINS lists it (or the list is empty);
+ *   the browser's Origin must match it. Any other host is refused: its key isn't this one;
  * - `sub`: base64url SHA-256 of `requestJson`'s UTF-8 bytes, exactly the plaintext the SDK sends,
  *   on Sign v2 too. This is what the policy below reads, so the backend signs only what it checked;
  * - `exp`: 2 minutes. The SDK asks again for a send retried after that; wallets never check it.
@@ -66,6 +67,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   const refused = refusal(rpc)
   if (refused) return res.status(403).json({ error: refused })
+  // The Relay wants a bare lowercase hostname, and the browser's Origin host to match it.
+  const iss = (req.headers.host ?? '').replace(/:\d+$/, '').toLowerCase()
+  if (!iss || !signsFor(iss))
+    return res.status(403).json({ error: `this key isn't published for ${iss || 'this host'}` })
 
   let k
   try {
@@ -73,10 +78,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (e) {
     return res.status(500).json({ error: (e as Error).message })
   }
-  // The Relay wants a bare lowercase hostname, and the browser's Origin host to match it.
-  const iss = (
-    process.env.APP_SIGNATURE_DOMAIN || (req.headers.host ?? '').replace(/:\d+$/, '')
-  ).toLowerCase()
   const claims = {
     iss,
     sub: b64u(createHash('sha256').update(requestJson, 'utf8').digest()),

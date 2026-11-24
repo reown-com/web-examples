@@ -35,7 +35,7 @@ const registry = [
 
 console.log(`# 1. dApp server, in v3/dapp/.env.local (keep it secret)
 NEXT_PUBLIC_APP_SIGNATURE=on
-APP_SIGNATURE_DOMAIN=${host}
+NEXT_PUBLIC_APP_SIGNATURE_DOMAINS=${host}
 APP_SIGNATURE_PRIVATE_JWK='${JSON.stringify(privJwk)}'
 
 # 2. Public: https://${host}/.well-known/wc-domain-verify.json
