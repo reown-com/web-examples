@@ -10,10 +10,12 @@ import { DENYLISTED } from '@/lib/common'
  *
  * The JWT is ES256 with the key in APP_SIGNATURE_PRIVATE_JWK (`node scripts/app-signature-keys.mjs`):
  * - `iss`: this app's host, APP_SIGNATURE_DOMAIN or the request's Host;
- * - `sub`: base64url SHA-256 of `requestJson`'s UTF-8 bytes, exactly the plaintext the SDK sends;
+ * - `sub`: base64url SHA-256 of `requestJson`'s UTF-8 bytes, exactly the plaintext the SDK sends,
+ *   on Sign v2 too. This is what the policy below reads, so the backend signs only what it checked;
  * - `cth`: the SDK's `ciphertextHash`, whenever it gives one: the hash of what is published, a
- *   sealed Sign v3 payload or a Sign v2 envelope. The Relay mints a legacy attestation for Sign v2
- *   only when `cth` matches the published envelope, so it is always signed as given;
+ *   sealed Sign v3 payload or a Sign v2 envelope. This backend can't check it, so it is signed as
+ *   given and nothing trusts it alone: it only ties the JWT to the envelope for the Relay, which
+ *   mints no legacy attestation;
  * - `exp`: 2 minutes. The SDK asks again for a send retried after that; wallets never check it.
  * The Relay checks it against the keys the domain published; the wallet checks `sub`.
  */
