@@ -7,8 +7,9 @@ import { ActionCard, ActivityCard, type Activity, type Form, type Kind } from '@
 import { ConnectSheet, type ConnectState } from '@/components/ConnectSheet'
 import { accountOf, SessionCard } from '@/components/SessionCard'
 import { Avatar, copy, DevLog, ProjectPicker, toast, Toaster, useLog } from '@/components/ui'
-import { resetApp, startClient, type Started } from '@/lib/client'
+import { appSignatureOn, resetApp, setAppSignature, startClient, type Started } from '@/lib/client'
 import {
+  APP_SIGNATURE,
   EVENTS,
   explain,
   isSanctioned,
@@ -271,6 +272,17 @@ export default function Nimbus() {
           {sdk && (
             <>
               <ProjectPicker app="dapp" projectId={sdk.projectId} />
+              {APP_SIGNATURE && (
+                <button
+                  className="chip pill-btn"
+                  id="app-signature-toggle"
+                  data-on={appSignatureOn()}
+                  title="Whether Nimbus signs its requests with its backend (Verify v4 App Signatures)"
+                  onClick={() => setAppSignature(!appSignatureOn())}
+                >
+                  App Signatures: {appSignatureOn() ? 'on' : 'off'}
+                </button>
+              )}
               <span className="chip">
                 <i
                   className="chip-dot"

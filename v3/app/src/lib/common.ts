@@ -13,14 +13,20 @@ export const DENYLISTED = '0x000000000000000000000000000000000000dEaD'
 // Verify v4: sign every request with the backend. Needs APP_SIGNATURE_PRIVATE_JWK on the server.
 export const APP_SIGNATURE = process.env.NEXT_PUBLIC_APP_SIGNATURE === 'on'
 // The hosts whose published keys include APP_SIGNATURE_PRIVATE_JWK's: on one of them the app signs
-// as that host, on any other it sends unsigned. Empty: it signs as whatever host it is on.
+// as that host, on any other it sends unsigned. `*.example.com` matches any name under
+// example.com. Empty: it signs as whatever host it is on.
 export const APP_SIGNATURE_DOMAINS = (process.env.NEXT_PUBLIC_APP_SIGNATURE_DOMAINS || '')
   .split(',')
   .map(d => d.trim().toLowerCase())
   .filter(Boolean)
 /** Whether the app signs on `host` (a bare hostname, no port). */
-export const signsFor = (host: string) =>
-  APP_SIGNATURE_DOMAINS.length === 0 || APP_SIGNATURE_DOMAINS.includes(host.toLowerCase())
+export const signsFor = (host: string) => {
+  const h = host.toLowerCase()
+  return (
+    APP_SIGNATURE_DOMAINS.length === 0 ||
+    APP_SIGNATURE_DOMAINS.some(d => (d.startsWith('*.') ? h.endsWith(d.slice(1)) : d === h))
+  )
+}
 export const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
 export const TRANSFER = '0xa9059cbb'
 

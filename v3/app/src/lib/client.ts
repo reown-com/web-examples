@@ -79,6 +79,29 @@ const appSignature = {
   }
 }
 
+const APP_SIGNATURE_KEY = 'demo-app-signature'
+
+/**
+ * Whether Nimbus signs on this page: `?appSignature=on|off` sets it for this host (remembered),
+ * else the last setting, else on where NEXT_PUBLIC_APP_SIGNATURE_DOMAINS lists the host. It stands
+ * in for deploying, or not, the signing backend: a new domain sends unsigned until it is verified,
+ * and a domain requiring signatures can be tried unsigned.
+ */
+export function appSignatureOn(): boolean {
+  if (!APP_SIGNATURE) return false
+  const fromUrl = new URLSearchParams(location.search).get('appSignature')
+  if (fromUrl === 'on' || fromUrl === 'off') localStorage.setItem(APP_SIGNATURE_KEY, fromUrl)
+  const saved = localStorage.getItem(APP_SIGNATURE_KEY)
+  return saved ? saved === 'on' : signsFor(location.hostname)
+}
+
+export function setAppSignature(on: boolean) {
+  localStorage.setItem(APP_SIGNATURE_KEY, on ? 'on' : 'off')
+  const url = new URL(location.href)
+  url.searchParams.delete('appSignature')
+  location.replace(url)
+}
+
 let started: Promise<Started> | undefined
 
 /**
@@ -97,9 +120,12 @@ export function startClient(app: App, metadata: SignClientTypes.Metadata): Promi
         relayUrl: RELAY_URL,
         customStoragePrefix: prefixFor(app, projectId),
         storage: localStorageKV,
-        ...(app === 'dapp' && APP_SIGNATURE && signsFor(location.hostname) ? { appSignature } : {})
+        ...(app === 'dapp' && appSignatureOn() ? { appSignature } : {})
       }
     const client = await SignClient.init(options)
+    // For the Verify v4 POC's end-to-end tests and walkthrough, which drive the client the way a
+    // script injected into the page could (a compromised frontend has this access anyway).
+    ;(window as unknown as { nimbus?: { client: SignClient } }).nimbus = { client }
     return { client, projectId, clientId: await client.core.crypto.getClientId() }
   })()
   return started
