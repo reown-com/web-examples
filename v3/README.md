@@ -7,7 +7,7 @@ Two Next.js apps on the Sign v3 protocol:
 Both use `@walletconnect/sign-client`'s `SignClient`, which speaks Sign v3 over the Sign v3 Rust SDK, with the WASM embedded, and falls back to Sign v2. They install the `2.26.1-canary-2` canary from npm; `scripts/use-local-sdk.sh` swaps in a local build.
 
 ```bash
-cd v3/dapp && pnpm install && pnpm dev      # http://localhost:3000
+cd v3/app && pnpm install && pnpm dev      # http://localhost:3000
 cd v3/wallet && pnpm install && pnpm dev    # http://localhost:3001
 ```
 
@@ -42,9 +42,9 @@ Nimbus can sign every request it sends, and Ember shows who sent it as the Relay
 - **Policy.** It refuses to sign ETH sent to a denylisted address: `0x…dEaD`, or `APP_SIGNATURE_DENYLIST`. Nimbus then fails the request instead of sending it unsigned.
 - **The JWT.** ES256, with the key in `APP_SIGNATURE_PRIVATE_JWK`. The claims are `iss`, the host; `sub`, base64url SHA-256 of the request JSON exactly as the SDK sends it; and `exp`, 2 minutes. `sub` always covers the plaintext, Sign v2 and sealed messages included, so the backend signs only a request it has read. No claim covers the encrypted bytes, which the backend couldn't check; the wallet's `sub` check binds the JWT to the content. A send retried after its JWT expired asks the backend again; wallets never check `exp`.
 
-**Ember.** It shows who sent a proposal, request or session from the SDK's `verification` only, never from the dApp's own name, URL or icon, which the SDK no longer exposes to wallets. It renders whatever is present:
+**Ember.** It shows who sent a proposal, request or session from the SDK's `verification` only, never from the app's own name, URL or icon, which the SDK no longer exposes to wallets. It renders whatever is present:
 
-- **the domain,** when the dApp's signature checked out;
+- **the domain,** when the app's signature checked out;
 - **the name and icon,** when WalletConnect reviewed the app;
 - **a "✓ Verified" badge** when `isVerified`;
 - **warning banners** for `isScam` and `isSimilarTo`, whatever else is present.
@@ -55,12 +55,12 @@ Nimbus signs its Sign v2 traffic too (the fallback offer and requests on a v2 se
 
 **Run it against a Relay dev slot:**
 
-1. Make a key pair for the host the dApp runs on:
+1. Make a key pair for the host the app runs on:
    ```bash
-   cd v3/dapp && node scripts/app-signature-keys.mjs localhost
+   cd v3/app && node scripts/app-signature-keys.mjs localhost
    ```
    It prints three things:
-   - the dApp's env, for `v3/dapp/.env.local`;
+   - the app's env, for `v3/app/.env.local`;
    - `wc-domain-verify.json`, `{ allowed_organizations, keys }`, for `https://<host>/.well-known/`;
    - `RELAY_VERIFY_V4_DOMAINS`, the Relay's static registry entry.
 2. Deploy the Relay's Verify v4 branch to a dev slot with that `RELAY_VERIFY_V4_DOMAINS`.
@@ -74,11 +74,11 @@ All settings are optional. See `.env.local.example` in each app.
 - **`NEXT_PUBLIC_RELAY_URL`:** a Relay that speaks Sign v3. Defaults to the dev Relay, `https://pool-1.dev-relay.walletconnect.com`; production doesn't speak v3 yet.
 - **`NEXT_PUBLIC_PROJECT_ID`:** the default project, `sign-v3-demo`.
 - **`NEXT_PUBLIC_WALLET_URL`:** dApp only, where "Open Ember Wallet" points. Defaults to `http://localhost:3001`.
-- **`NEXT_PUBLIC_APP_SIGNATURE`:** dApp only, `on` to sign with the backend, which then needs `APP_SIGNATURE_PRIVATE_JWK`. It signs as the host the page is on (`iss`), and only on the hosts in `NEXT_PUBLIC_APP_SIGNATURE_DOMAINS` (comma-separated), the ones whose published keys include this key; on any other host it sends unsigned. Empty, it signs on every host.
+- **`NEXT_PUBLIC_APP_SIGNATURE`:** app only, `on` to sign with the backend, which then needs `APP_SIGNATURE_PRIVATE_JWK`. It signs as the host the page is on (`iss`), and only on the hosts in `NEXT_PUBLIC_APP_SIGNATURE_DOMAINS` (comma-separated), the ones whose published keys include this key; on any other host it sends unsigned. Empty, it signs on every host.
 
 ## Deploying to Vercel
 
-Make one Vercel project per app, with **Root Directory** set to `v3/dapp` or `v3/wallet`. The framework is detected as Next.js. On the dApp, set `NEXT_PUBLIC_WALLET_URL` to the wallet's URL.
+Make one Vercel project per app, with **Root Directory** set to `v3/app` or `v3/wallet`. The framework is detected as Next.js. On the dApp, set `NEXT_PUBLIC_WALLET_URL` to the wallet's URL.
 
 ## Using a local SDK build
 
@@ -97,11 +97,11 @@ Run it again after changing the SDK, then restart `pnpm dev`. A plain `pnpm inst
 With rs-relay's `scripts/verify-v4-local/up.sh` running, the Relay is `http://127.0.0.1:8080`, it knows one project, and the `*.localhost` domains publish the keys in its `.state/keys.json`. Browsers resolve `*.localhost` to this machine, so Nimbus can run as any of them; `iss` must be the host it's opened at.
 
 ```bash
-# v3/dapp/.env.local
+# v3/app/.env.local
 NEXT_PUBLIC_RELAY_URL=http://127.0.0.1:8080
 NEXT_PUBLIC_PROJECT_ID=c0ffee254729296a45a3885639ac7e10
 NEXT_PUBLIC_APP_SIGNATURE=on
-NEXT_PUBLIC_APP_SIGNATURE_DOMAINS=dapp.localhost,required.localhost,scam.localhost   # the domains publishing the app key
+NEXT_PUBLIC_APP_SIGNATURE_DOMAINS=app.localhost,required.localhost,scam.localhost   # the domains publishing the app key
 APP_SIGNATURE_PRIVATE_JWK='…'   # jq -c .app.privateJwk <rs-relay>/scripts/verify-v4-local/.state/keys.json
 
 # v3/wallet/.env.local
@@ -111,7 +111,7 @@ NEXT_PUBLIC_PROJECT_ID=c0ffee254729296a45a3885639ac7e10
 
 Open Ember at `http://localhost:3001` and Nimbus at any of these, with no restart in between:
 
-- `http://dapp.localhost:3000`: signed, Ember shows "Business verified";
+- `http://app.localhost:3000`: signed, Ember shows "Business verified";
 - `http://required.localhost:3000`: signed, and the domain requires signatures;
 - `http://scam.localhost:3000`: signed, Ember shows the "Known scam" warning;
 - `http://unknown.localhost:3000` or `http://other.localhost:3000`: not in the list, so unsigned, and Ember shows "Unverified app" (`other.localhost` publishes only the `other` key).

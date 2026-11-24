@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Makes an ES256 key pair for Verify v4 App Signatures and prints what goes where:
 //   node scripts/app-signature-keys.mjs [host]      host defaults to localhost
-// 1. APP_SIGNATURE_PRIVATE_JWK, for the dApp's server (.env.local);
+// 1. APP_SIGNATURE_PRIVATE_JWK, for the app's server (.env.local);
 // 2. wc-domain-verify.json, which the domain publishes at /.well-known/wc-domain-verify.json;
 // 3. RELAY_VERIFY_V4_DOMAINS, the Relay's static registry entry for the domain.
 import { createHash, webcrypto } from 'node:crypto'
@@ -33,7 +33,7 @@ const registry = [
   }
 ]
 
-console.log(`# 1. dApp server, in v3/dapp/.env.local (keep it secret)
+console.log(`# 1. App server, in v3/app/.env.local (keep it secret)
 NEXT_PUBLIC_APP_SIGNATURE=on
 NEXT_PUBLIC_APP_SIGNATURE_DOMAINS=${host}
 APP_SIGNATURE_PRIVATE_JWK='${JSON.stringify(privJwk)}'

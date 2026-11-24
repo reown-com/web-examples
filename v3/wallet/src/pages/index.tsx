@@ -103,7 +103,7 @@ export default function Ember() {
     refresh()
     const gone = ({ topic }: { topic: string }) => {
       const s = sessionsRef.current.find(x => x.topic === topic)
-      toast(`${s ? appLabel(verificationOf(s)) : 'The dApp'} disconnected`, 'warn')
+      toast(`${s ? appLabel(verificationOf(s)) : 'The app'} disconnected`, 'warn')
       setQueue(q => q.filter(r => r.topic !== topic))
       refresh()
     }

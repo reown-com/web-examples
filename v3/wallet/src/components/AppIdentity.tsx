@@ -2,7 +2,7 @@ import { AppIcon } from '@/components/ui'
 
 /**
  * Who sent a proposal or request, as the Relay vouches for it (Verify v4): the SDK's
- * `verification`. Every field comes from the Relay, never from the dApp's own metadata. Newer than
+ * `verification`. Every field comes from the Relay, never from the app's own metadata. Newer than
  * the SDK's published types, so declared here.
  */
 export interface AppVerification {
