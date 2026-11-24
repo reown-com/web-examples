@@ -4,7 +4,7 @@ Two Next.js apps on the Sign v3 protocol:
 - **Nimbus**, in `dapp/`, is the dApp.
 - **Ember**, in `wallet/`, is the wallet.
 
-Both use `@walletconnect/sign-client/v3`, which is v2's `SignClient` API over the Sign v3 Rust SDK, with the WASM embedded. The client is vendored in each app's source, at `src/lib/sign-client-v3`, so nothing about it comes from npm. It's an experimental, unpublished build.
+Both use `@walletconnect/sign-client`'s `SignClient`, which speaks Sign v3 over the Sign v3 Rust SDK, with the WASM embedded, and falls back to Sign v2. They install the `2.26.1-canary-2` canary from npm; `scripts/use-local-sdk.sh` swaps in a local build.
 
 ```bash
 cd v3/dapp && pnpm install && pnpm dev      # http://localhost:3000
@@ -80,16 +80,36 @@ All settings are optional. See `.env.local.example` in each app.
 
 Make one Vercel project per app, with **Root Directory** set to `v3/dapp` or `v3/wallet`. The framework is detected as Next.js. On the dApp, set `NEXT_PUBLIC_WALLET_URL` to the wallet's URL.
 
-## Updating the vendored client
+## Using a local SDK build
 
-The vendored files carry a first-line comment naming the walletconnect-monorepo commit and engine they came from. To refresh them:
+`scripts/use-local-sdk.sh` builds `@walletconnect/types`, `utils`, `core` and `sign-client` in a walletconnect-monorepo checkout, packs them to `v3/.local-sdk`, and installs them into both apps. It leaves `package.json` and `pnpm-lock.yaml` alone: a pnpmfile points every dependency on those four packages at the tarballs, and pnpm runs without a lockfile. The Sign v3 WASM is already embedded in sign-client's source, so it needs no Rust; the monorepo's `scripts/sync-v3-wasm.sh` rebuilds it.
 
 ```bash
-# in walletconnect-monorepo
-npm run build -w @walletconnect/sign-client
-# in web-examples
-v3/scripts/vendor-sign-client.sh      # MONOREPO_DIR defaults to ../walletconnect-monorepo
+MONOREPO_DIR=../walletconnect-monorepo v3/scripts/use-local-sdk.sh   # the default MONOREPO_DIR
+SKIP_BUILD=1 v3/scripts/use-local-sdk.sh                              # pack what's already built
+v3/scripts/use-local-sdk.sh --undo                                    # back to the lockfile's packages
 ```
+
+Run it again after changing the SDK, then restart `pnpm dev`. A plain `pnpm install` in an app puts the published packages back.
+
+### Against a local Relay
+
+With rs-relay's `scripts/verify-v4-local/up.sh` running, the Relay is `http://127.0.0.1:8080`, it knows one project, and the `*.localhost` domains publish the keys in its `.state/keys.json`. Browsers resolve `*.localhost` to this machine, so Nimbus can run as any of them; `iss` must be the host it's opened at.
+
+```bash
+# v3/dapp/.env.local
+NEXT_PUBLIC_RELAY_URL=http://127.0.0.1:8080
+NEXT_PUBLIC_PROJECT_ID=c0ffee254729296a45a3885639ac7e10
+NEXT_PUBLIC_APP_SIGNATURE=on
+APP_SIGNATURE_DOMAIN=dapp.localhost
+APP_SIGNATURE_PRIVATE_JWK='…'   # jq -c .app.privateJwk <rs-relay>/scripts/verify-v4-local/.state/keys.json
+
+# v3/wallet/.env.local
+NEXT_PUBLIC_RELAY_URL=http://127.0.0.1:8080
+NEXT_PUBLIC_PROJECT_ID=c0ffee254729296a45a3885639ac7e10
+```
+
+Open Nimbus at `http://dapp.localhost:3000` and Ember at `http://localhost:3001`. For the other cases, change `APP_SIGNATURE_DOMAIN`, the key and the host together, and restart Nimbus: `scam.localhost` (the `app` key) shows the scam warning, `other.localhost` (the `other` key) a domain without a name, and `NEXT_PUBLIC_APP_SIGNATURE` off shows "Unverified app".
 
 ## License
 
