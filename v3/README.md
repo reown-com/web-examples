@@ -61,7 +61,7 @@ Nimbus signs its Sign v2 traffic too (the fallback offer and requests on a v2 se
    ```
    It prints three things:
    - the dApp's env, for `v3/dapp/.env.local`;
-   - `wc-domain-validate.json`, `{ allowed_organizations, keys }`, for `https://<host>/.well-known/`;
+   - `wc-domain-verify.json`, `{ allowed_organizations, keys }`, for `https://<host>/.well-known/`;
    - `RELAY_VERIFY_V4_DOMAINS`, the Relay's static registry entry.
 2. Deploy the Relay's Verify v4 branch to a dev slot with that `RELAY_VERIFY_V4_DOMAINS`.
 3. Point both apps at the slot: `NEXT_PUBLIC_RELAY_URL=https://pool-N.dev-relay.walletconnect.com` in each `.env.local`.
