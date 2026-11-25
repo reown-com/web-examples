@@ -1,8 +1,14 @@
 // The local Verify v4 stack (rs-relay's scripts/verify-v4-local) these tests run against: where it
 // is, its keys, and the organization service's API and local development controls.
 import { execFileSync } from "node:child_process";
-import { randomBytes } from "node:crypto";
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash, randomBytes } from "node:crypto";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -72,29 +78,45 @@ export const freshDomain = (label: string) =>
 
 const wellKnown = (domain: string) =>
   join(STATE, "well-known", `${domain}.json`);
+/** `*.localhost` has no DNS: the stack's domain server answers its TXT records from here. */
+const txtRecords = (domain: string) => join(STATE, "txt", `${domain}.txt`);
+
+/** The TXT record at `_wc_domain_verify.<domain>` that vouches for a document's exact bytes. */
+export const txtValue = (document: string | Buffer) =>
+  `sha256=${createHash("sha256").update(document).digest("base64url")}`;
 
 /**
  * Publishes `domain`'s /.well-known/wc-domain-verify.json, naming the stack's organization (or
- * the given domain verification IDs instead).
+ * the given domain verification IDs instead), and its `_wc_domain_verify` TXT record with the
+ * document's hash: the service needs both. `txt: false` leaves the TXT record as it was (a change
+ * of the web host alone, which no longer matches it).
  */
 export function publishDocument(
   domain: string,
   publicJwks: JsonWebKey[],
   {
     organizations = [DOMAIN_VERIFICATION_ID],
-  }: { organizations?: string[] } = {},
+    txt = true,
+  }: { organizations?: string[]; txt?: boolean } = {},
 ) {
   const doc = {
     allowed_organizations: organizations,
     allowed_projects: [PROJECT_ID],
     keys: publicJwks,
   };
-  writeFileSync(wellKnown(domain), JSON.stringify(doc, null, 2));
+  const body = JSON.stringify(doc, null, 2);
+  writeFileSync(wellKnown(domain), body);
+  if (txt) {
+    mkdirSync(dirname(txtRecords(domain)), { recursive: true });
+    writeFileSync(txtRecords(domain), `${txtValue(body)}\n`);
+  }
   return doc;
 }
 
+/** Removes the document and its TXT record. */
 export function unpublishDocument(domain: string) {
   rmSync(wellKnown(domain), { force: true });
+  rmSync(txtRecords(domain), { force: true });
 }
 
 async function call(url: string, init: RequestInit = {}) {
