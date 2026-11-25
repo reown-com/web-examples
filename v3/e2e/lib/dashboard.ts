@@ -1,5 +1,6 @@
 // Drives the WalletConnect Dashboard (wc-web-monorepo apps/dashboard, `pnpm dev`) against the local
-// organization service: the project's Domains allowlist and its "Domain verification" section.
+// organization service: the project's Domains allowlist, and each domain's verification page,
+// opened from its row's menu.
 import { expect, type Browser, type Page } from "@playwright/test";
 
 import { DASHBOARD_URL } from "./stack";
@@ -27,7 +28,7 @@ export class Dashboard {
       viewport: { width: 1400, height: 1000 },
     });
     await page.goto(`${DASHBOARD_URL}/sign-in`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForSelector("[data-hydrated]", { state: "attached" });
     const email = page.locator("input[name=email]");
     // The form only works once hydrated: retry until the fields take input.
     await expect(async () => {
@@ -46,7 +47,9 @@ export class Dashboard {
 
   private async open(path: string) {
     await this.page.goto(`${this.app}${path}`);
-    await this.page.waitForLoadState("networkidle");
+    // The app marks the document once React has attached its handlers; a dev server's open
+    // connections can keep "networkidle" from ever arriving.
+    await this.page.waitForSelector("[data-hydrated]", { state: "attached" });
   }
 
   /** Configuration → Domains: adds `https://<domain>` to the project's allowlist. */
@@ -74,34 +77,48 @@ export class Dashboard {
     ).toHaveCount(0);
   }
 
-  /** The domain's row in Configuration's "Domain verification" section. */
-  verificationRow(domain: string) {
-    return this.page
-      .locator("li")
-      .filter({ has: this.page.getByText(domain, { exact: true }) })
-      .filter({
-        has: this.page.getByRole("button", {
-          name: "Refresh domain verification",
-        }),
-      });
+  /** The domain's row in Configuration's Domains allowlist, with its status badge. */
+  allowlistRow(domain: string) {
+    return this.page.getByRole("listitem").filter({
+      has: this.page.getByText(`https://${domain}`, { exact: true }),
+    });
   }
 
+  /**
+   * Opens the domain's verification page from its row's menu ("Verify domain", or "Domain
+   * verification" once verified) and returns its Status section.
+   */
   async openVerification(domain: string) {
     await this.open("/configuration");
-    const row = this.verificationRow(domain);
-    await row.scrollIntoViewIfNeeded();
-    return row;
-  }
-
-  /** Presses "Refresh domain verification" and waits for the row's status to change. */
-  async refresh(domain: string) {
-    const row = await this.openVerification(domain);
-    await row
-      .getByRole("button", { name: "Refresh domain verification" })
+    await this.page
+      .getByRole("button", {
+        name: `More actions for https://${domain}`,
+        exact: true,
+      })
+      .click();
+    await this.page
+      .getByRole("menuitem", { name: /^(Verify domain|Domain verification)$/ })
       .click();
     await expect(
-      row.getByText(/Verified|Not set up|Pending|Held/).first(),
+      this.page.getByRole("heading", { name: domain, exact: true }),
     ).toBeVisible();
-    return row;
+    return this.page.getByRole("region", { name: "Status", exact: true });
+  }
+
+  /** Presses Refresh on the domain's verification page and waits for the check to answer. */
+  async refresh(domain: string) {
+    const status = await this.openVerification(domain);
+    await status.getByRole("button", { name: "Refresh", exact: true }).click();
+    await expect(
+      this.page
+        .getByText(/Domain verification refreshed|Couldn't verify the domain/)
+        .first(),
+    ).toBeVisible();
+    return status;
+  }
+
+  /** The domain's Require App Signatures switch, on its verification page. */
+  requireSignatures() {
+    return this.page.getByRole("switch", { name: /Require App Signatures/ });
   }
 }

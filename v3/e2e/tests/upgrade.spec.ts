@@ -121,12 +121,16 @@ test("walk an app up: Default → Domain verified → Business verified (→ Sec
     if (dashboard) {
       await dashboard.addDomain(domain);
       await shot(dashboard.page, testInfo, "upgrade-3-dashboard-domain-added");
-      const row = await dashboard.openVerification(domain);
-      await expect(row).toContainText("Not set up");
-      await shot(dashboard.page, testInfo, "upgrade-4-dashboard-not-set-up");
+      await expect(dashboard.allowlistRow(domain)).toContainText(
+        "Not verified",
+      );
+      const status = await dashboard.openVerification(domain);
+      await expect(status).toContainText("Not verified");
+      await shot(dashboard.page, testInfo, "upgrade-4-dashboard-not-verified");
       await dashboard.refresh(domain);
-      await expect(row).toContainText("Verified");
-      await expect(row).toContainText(keys.app.kid);
+      await expect(status).toContainText("Verified");
+      await expect(status).toContainText(keys.app.kid);
+      await expect(dashboard.requireSignatures()).toBeEnabled();
       await shot(dashboard.page, testInfo, "upgrade-5-dashboard-verified");
     } else {
       expect((await refreshDomain(domain)).body.status).toBe("verified");
