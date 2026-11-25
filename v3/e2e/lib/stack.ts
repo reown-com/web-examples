@@ -1,5 +1,7 @@
 // The local Verify v4 stack (rs-relay's scripts/verify-v4-local) these tests run against: where it
 // is, its keys, and the organization service's API and local development controls.
+import { execFileSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -71,10 +73,19 @@ export const freshDomain = (label: string) =>
 const wellKnown = (domain: string) =>
   join(STATE, "well-known", `${domain}.json`);
 
-/** Publishes `domain`'s /.well-known/wc-domain-verify.json, naming the stack's organization. */
-export function publishDocument(domain: string, publicJwks: JsonWebKey[]) {
+/**
+ * Publishes `domain`'s /.well-known/wc-domain-verify.json, naming the stack's organization (or
+ * the given domain verification IDs instead).
+ */
+export function publishDocument(
+  domain: string,
+  publicJwks: JsonWebKey[],
+  {
+    organizations = [DOMAIN_VERIFICATION_ID],
+  }: { organizations?: string[] } = {},
+) {
   const doc = {
-    allowed_organizations: [DOMAIN_VERIFICATION_ID],
+    allowed_organizations: organizations,
     allowed_projects: [PROJECT_ID],
     keys: publicJwks,
   };
@@ -118,6 +129,52 @@ export async function refreshDomain(
     if (r.status !== 429 || !waitForLimit || Date.now() > deadline) return r;
     await new Promise((resolve) => setTimeout(resolve, 5_000));
   }
+}
+
+/**
+ * Refresh as another organization (one `createOrganization` made), through the same API the
+ * Dashboard calls, waiting out the one-refresh-a-minute limit as `refreshDomain` does.
+ */
+export async function refreshDomainAs(organizationId: string, domain: string) {
+  const deadline = Date.now() + 75_000;
+  for (;;) {
+    const r = await call(
+      `${ORGANIZATION_API}/v1/organizations/${organizationId}/domains/${domain}/refresh`,
+      { method: "POST" },
+    );
+    if (r.status !== 429 || Date.now() > deadline) return r;
+    await new Promise((resolve) => setTimeout(resolve, 5_000));
+  }
+}
+
+/**
+ * Seeds another organization (a fresh key, name and project ID) with up.sh's `local_seed`, the
+ * only way to create one locally: the service doesn't serve its create endpoints yet.
+ */
+export function createOrganization(name: string): {
+  organizationId: string;
+  domainVerificationId: string;
+} {
+  const seed = join(STATE, "target/pay-core/debug/examples/local_seed");
+  const suffix = randomBytes(8).toString("hex");
+  const out = execFileSync(
+    seed,
+    [`e2e-organization:${suffix}`, name, randomBytes(16).toString("hex")],
+    {
+      env: {
+        ...process.env,
+        ORGANIZATION_DYNAMODB_ENDPOINT:
+          process.env.FLOCI_URL ?? "http://localhost:4566",
+        ORGANIZATION_DYNAMODB_TABLE:
+          process.env.ORGANIZATION_TABLE ?? "local-organization",
+        AWS_ACCESS_KEY_ID: "test",
+        AWS_SECRET_ACCESS_KEY: "test",
+        AWS_REGION: "eu-central-1",
+      },
+      encoding: "utf8",
+    },
+  );
+  return JSON.parse(out.trim().split("\n").pop()!);
 }
 
 /** The organization's domains as the Dashboard sees them. */

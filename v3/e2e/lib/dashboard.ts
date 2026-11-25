@@ -117,6 +117,30 @@ export class Dashboard {
     return status;
   }
 
+  /** The verification page's "Changes on this domain" section: held joins and keys, and organizations that left. */
+  changes() {
+    return this.page.getByRole("region", {
+      name: "Changes on this domain",
+      exact: true,
+    });
+  }
+
+  /**
+   * Presses an action in the Changes section (its accessible name, e.g. "Contest key k2" or
+   * "Confirm removal wc_org_…"), checks the confirmation says nothing comes back without a new
+   * 24-hour hold, confirms with `confirm`, and waits for the toast.
+   */
+  async confirmChange(action: string, confirm: string, toast: string) {
+    await this.changes()
+      .getByRole("button", { name: action, exact: true })
+      .click();
+    const dialog = this.page.getByRole("alertdialog");
+    await expect(dialog).toContainText("new 24-hour hold");
+    await dialog.getByRole("button", { name: confirm, exact: true }).click();
+    await expect(this.page.getByText(toast).first()).toBeVisible();
+    await expect(dialog).toHaveCount(0);
+  }
+
   /** The domain's Require App Signatures switch, on its verification page. */
   requireSignatures() {
     return this.page.getByRole("switch", { name: /Require App Signatures/ });
