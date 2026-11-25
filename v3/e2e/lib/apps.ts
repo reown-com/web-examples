@@ -27,17 +27,33 @@ export async function shot(page: Page, testInfo: TestInfo, name: string) {
   }
 }
 
-/** Opens Nimbus at `http://<host>:3000`, with App Signatures on or off for that host if given. */
+/**
+ * Opens Nimbus at `http://<host>:3000`, with App Signatures on or off for that host if given. With
+ * them on, it also signs in to Nimbus (its backend signs only for a signed-in session, so signed
+ * out the connection would go out unsigned), unless `signIn` is false.
+ */
 export async function openNimbus(
   context: BrowserContext,
   host: string,
   appSignature?: "on" | "off",
+  { signIn = appSignature === "on" }: { signIn?: boolean } = {},
 ): Promise<Page> {
   const page = await context.newPage();
   await page.goto(
     `${nimbusUrl(host)}/${appSignature ? `?appSignature=${appSignature}` : ""}`,
   );
   await expect(page.locator("#connect")).toBeEnabled({ timeout: 30_000 });
+  if (signIn) {
+    const signOut = page.locator("#sign-out");
+    const button = page.locator("#sign-in").first();
+    await expect(signOut.or(button)).toBeVisible();
+    if (!(await signOut.isVisible())) {
+      // Signing in reloads the page, and the SDK starts again with signing on.
+      await Promise.all([page.waitForEvent("load"), button.click()]);
+      await expect(signOut).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator("#connect")).toBeEnabled({ timeout: 30_000 });
+    }
+  }
   if (appSignature)
     await expect(page.locator("#app-signature-toggle")).toHaveText(
       `App Signatures: ${appSignature}`,

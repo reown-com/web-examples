@@ -69,6 +69,8 @@ export const DOMAINS = {
   unknown: "unknown.localhost",
   scam: "scam.localhost",
   required: "required.localhost",
+  /** Requires signed connection requests too (requireSignedConnections). */
+  strict: "strict.new.localhost",
 } as const;
 export const VERIFIED_NAME = "Verify v4 E2E";
 
@@ -192,6 +194,9 @@ export function createOrganization(name: string): {
         AWS_ACCESS_KEY_ID: "test",
         AWS_SECRET_ACCESS_KEY: "test",
         AWS_REGION: "eu-central-1",
+        // The AWS SDK loads native root certificates even for Floci's plain HTTP; without a
+        // readable store it panics.
+        SSL_CERT_FILE: process.env.SSL_CERT_FILE ?? "/etc/ssl/cert.pem",
       },
       encoding: "utf8",
     },

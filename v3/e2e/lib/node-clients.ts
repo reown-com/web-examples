@@ -57,6 +57,8 @@ export function newClient(
   appSignature?: (p: {
     request: unknown;
     requestJson: string;
+    /** The Sign v3 connection the JWT must name (the SDK passes it). */
+    cnx?: string;
   }) => Promise<{ appSignature: string }>,
 ) {
   return NewSignClient.init({

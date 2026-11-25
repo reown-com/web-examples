@@ -8,14 +8,17 @@ import { NIMBUS_PORT, PROJECT_ID, RELAY_URL } from "./stack";
 
 /**
  * Calls Nimbus's signing backend as served on `host` (`/api/wc-attestation`, or the insecure demo
- * one), from a script: no browser, so any Host and no Origin rules.
+ * one), from a script: no browser, so any Host and no Origin rules. The real backend signs only
+ * for a signed-in session: pass its `cookie` (`signInCookie`). `cnx` is the Sign v3 connection the
+ * JWT is for.
  */
 export function callBackend(
   host: string,
   requestJson: string,
   path = "/api/wc-attestation",
+  { cookie, cnx }: { cookie?: string; cnx?: string } = {},
 ): Promise<{ status: number; appSignature?: string; error?: string }> {
-  const body = JSON.stringify({ requestJson });
+  const body = JSON.stringify({ requestJson, ...(cnx ? { cnx } : {}) });
   return new Promise((resolve, reject) => {
     const req = httpRequest(
       {
@@ -25,6 +28,7 @@ export function callBackend(
         method: "POST",
         headers: {
           host: `${host}:${NIMBUS_PORT}`,
+          ...(cookie ? { cookie } : {}),
           "content-type": "application/json",
           "content-length": Buffer.byteLength(body),
         },
@@ -53,11 +57,15 @@ export function callBackend(
  */
 export async function replaceSigner(
   page: Page,
-  sign: (requestJson: string, route: Route) => Promise<string | undefined>,
+  sign: (
+    requestJson: string,
+    route: Route,
+    cnx?: string,
+  ) => Promise<string | undefined>,
 ) {
   await page.route("**/api/wc-attestation", async (route) => {
-    const { requestJson } = JSON.parse(route.request().postData() ?? "{}");
-    const jwt = await sign(requestJson, route);
+    const { requestJson, cnx } = JSON.parse(route.request().postData() ?? "{}");
+    const jwt = await sign(requestJson, route, cnx);
     if (jwt === undefined) return route.continue();
     await route.fulfill({ json: { appSignature: jwt } });
   });
@@ -180,4 +188,31 @@ export function v2Proposal(url: string) {
     crypto.getRandomValues(new Uint8Array(60)),
   ]).toString("base64");
   return { plaintext, envelope };
+}
+
+/**
+ * Signs in to Nimbus on `host` as a script would (no browser, no Origin) and returns the session
+ * cookie to send: what an attacker who has a Nimbus account of its own holds.
+ */
+export function signInCookie(host: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const req = httpRequest(
+      {
+        host: "127.0.0.1",
+        port: NIMBUS_PORT,
+        path: "/api/nimbus-session",
+        method: "POST",
+        headers: { host: `${host}:${NIMBUS_PORT}`, "content-length": 0 },
+      },
+      (res) => {
+        res.resume();
+        const set = res.headers["set-cookie"]?.[0];
+        if (res.statusCode !== 200 || !set)
+          return reject(new Error(`sign in to Nimbus: ${res.statusCode}`));
+        resolve(set.split(";")[0]);
+      },
+    );
+    req.on("error", reject);
+    req.end();
+  });
 }

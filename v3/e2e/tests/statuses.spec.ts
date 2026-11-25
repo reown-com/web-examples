@@ -88,10 +88,10 @@ test.describe("each status in the wallet", () => {
     await shot(ember, testInfo, "status-security-risk");
   });
 
-  test("Requires signatures: unsigned Nimbus on required.localhost is refused, and Ember gets nothing", async ({
+  test("Requires signatures with signed connections: unsigned Nimbus on strict.new.localhost is refused, and Ember gets nothing", async ({
     context,
   }, testInfo) => {
-    const nimbus = await openNimbus(context, DOMAINS.required, "off");
+    const nimbus = await openNimbus(context, DOMAINS.strict, "off");
     const started = Date.now();
     const { uri, error } = await startConnect(nimbus);
     expect(uri).toBeUndefined();
@@ -101,11 +101,30 @@ test.describe("each status in the wallet", () => {
     await shot(nimbus, testInfo, "status-requires-signatures-refused");
 
     // Signed, the same domain connects.
-    const signed = await openNimbus(context, DOMAINS.required, "on");
+    const signed = await openNimbus(context, DOMAINS.strict, "on");
     const ember = await proposal(context, signed);
     expect(await identity(ember)).toMatchObject({
-      title: DOMAINS.required,
+      title: DOMAINS.strict,
       unsigned: false,
     });
+  });
+
+  test("Requires signatures on requests only: unsigned Nimbus on required.localhost connects with no app identity", async ({
+    context,
+  }, testInfo) => {
+    // requireSignedConnections is off there: the relay delivers the unsigned connection request
+    // without app identity (later requests must be signed: exploits-fail.spec.ts).
+    const nimbus = await openNimbus(context, DOMAINS.required, "off");
+    const ember = await proposal(context, nimbus);
+    expect(await identity(ember)).toMatchObject({
+      title: "Unverified app",
+      verified: false,
+      unsigned: true,
+    });
+    await shot(
+      ember,
+      testInfo,
+      "status-requires-signatures-unsigned-connection",
+    );
   });
 });

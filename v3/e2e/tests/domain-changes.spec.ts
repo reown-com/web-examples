@@ -1,10 +1,10 @@
 // What an organization allowed on a domain can do about changes it didn't make, from the
 // Dashboard's verification page: contest a held key (the hold is cancelled, and the key needs a
 // new refresh and a new 24-hour hold), and confirm that an organization the domain dropped left on
-// purpose (it no longer comes back at once if the domain names it again).
+// purpose (it is no longer told about the domain).
 //
-// Needs DASHBOARD_PASSWORD for the local Dashboard. Each test refreshes its domain twice, so it
-// waits out the one-refresh-a-minute limit once.
+// Needs DASHBOARD_PASSWORD for the local Dashboard. Each test refreshes its domain more than once,
+// so it waits out the one-refresh-a-minute limit (the removal twice).
 import { expect, test } from "@playwright/test";
 
 import { Dashboard, dashboardCredentials } from "../lib/dashboard";
@@ -23,7 +23,7 @@ import {
 
 test.describe("changes on a domain, from the Dashboard", () => {
   test.skip(!dashboardCredentials(), "needs DASHBOARD_PASSWORD");
-  test.setTimeout(240_000);
+  test.setTimeout(300_000);
 
   test.afterEach(async () => {
     await setKeyHold(0);
@@ -70,7 +70,7 @@ test.describe("changes on a domain, from the Dashboard", () => {
     }
   });
 
-  test("confirm a removal: the organization that left doesn't come back at once", async ({
+  test("confirm a removal: the organization that left is no longer told about the domain", async ({
     browser,
   }) => {
     const domain = freshDomain("removal");
@@ -78,19 +78,24 @@ test.describe("changes on a domain, from the Dashboard", () => {
     const dashboard = await Dashboard.signIn(browser);
     try {
       await setKeyHold(0);
-      // The agency verifies the domain first; then the owner's document names only the owner.
+      // The agency verifies the domain, then the owner joins it.
       publishDocument(domain, [keys.app.publicJwk], {
-        organizations: [agency.domainVerificationId],
+        organizations: [agency.domainVerificationId, DOMAIN_VERIFICATION_ID],
       });
       const joined = await refreshDomainAs(agency.organizationId, domain);
       expect(
         joined.body.allowedOrganizationIds,
         JSON.stringify(joined.body),
       ).toEqual([agency.organizationId]);
+      await dashboard.addDomain(domain);
+      expect(
+        (await refreshDomain(domain)).body.allowedOrganizationIds,
+      ).toContain(agency.organizationId);
+      // The owner stops working with the agency: its own refresh with a document that names
+      // only the owner removes it (deliberately; a re-check finding that would block the domain).
       publishDocument(domain, [keys.app.publicJwk], {
         organizations: [DOMAIN_VERIFICATION_ID],
       });
-      await dashboard.addDomain(domain);
       const refreshed = await refreshDomain(domain);
       expect(
         refreshed.body.formerOrganizations,
@@ -98,6 +103,7 @@ test.describe("changes on a domain, from the Dashboard", () => {
       ).toEqual([
         expect.objectContaining({ organizationId: agency.organizationId }),
       ]);
+      expect(refreshed.body.blocked).toBeNull();
 
       await dashboard.openVerification(domain);
       await expect(dashboard.changes()).toContainText(
@@ -110,20 +116,6 @@ test.describe("changes on a domain, from the Dashboard", () => {
       );
       await expect(dashboard.changes()).toHaveCount(0);
       expect((await domainRecord(domain)).formerOrganizations).toEqual([]);
-
-      // The agency asking again now is a new join, held, not a return.
-      await setKeyHold(3_600);
-      publishDocument(domain, [keys.app.publicJwk], {
-        organizations: [DOMAIN_VERIFICATION_ID, agency.domainVerificationId],
-      });
-      const again = await refreshDomainAs(agency.organizationId, domain);
-      expect(again.status, JSON.stringify(again.body)).toBe(200);
-      expect(again.body.pendingOrganizations).toEqual([
-        expect.objectContaining({ organizationId: agency.organizationId }),
-      ]);
-      expect(again.body.allowedOrganizationIds).not.toContain(
-        agency.organizationId,
-      );
     } finally {
       await dashboard.removeDomain(domain).catch(() => undefined);
       await dashboard.page.close();

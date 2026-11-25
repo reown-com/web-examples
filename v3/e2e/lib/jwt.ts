@@ -12,7 +12,8 @@ export const sha256 = (s: string) =>
 /** An App Signature: what an app backend returns, signed with `privateJwk`. */
 export async function appSignature(
   privateJwk: JsonWebKey & { kid?: string },
-  claims: { iss: string; sub: string; exp?: number },
+  /** `cnx`: the Sign v3 connection the SDK names, which the relay requires there. */
+  claims: { iss: string; sub: string; exp?: number; cnx?: string },
 ) {
   const key = await webcrypto.subtle.importKey(
     "jwk",
