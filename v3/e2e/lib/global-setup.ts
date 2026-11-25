@@ -3,7 +3,11 @@ import {
   nimbusUrl,
   ORGANIZATION_URL,
   RELAY_URL,
+  setBusinessVerified,
+  setProjectReview,
   STACK_DIR,
+  VERIFIED_ICON,
+  VERIFIED_NAME,
 } from "./stack";
 
 /** Fails early, and clearly, when something the tests need isn't running. */
@@ -32,4 +36,8 @@ export default async function globalSetup() {
     throw new Error(
       `Not running (stack: ${STACK_DIR}):\n  ${missing.join("\n  ")}`,
     );
+  // The review covers every domain the organization signs for (its business and its project),
+  // so it starts off: the tests that show Business verified turn it on.
+  await setProjectReview(VERIFIED_NAME, VERIFIED_ICON);
+  await setBusinessVerified(false, { force: true });
 }

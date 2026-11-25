@@ -12,12 +12,15 @@ import {
   shot,
   startConnect,
 } from "../lib/apps";
-import { DOMAINS, VERIFIED_NAME } from "../lib/stack";
+import { DOMAINS, setBusinessVerified, VERIFIED_NAME } from "../lib/stack";
 
 test.describe("each status in the wallet", () => {
+  test.afterEach(() => setBusinessVerified(false));
+
   test("Business verified: app.localhost, with its reviewed name and the checkmark", async ({
     context,
   }, testInfo) => {
+    await setBusinessVerified(true);
     const nimbus = await openNimbus(context, DOMAINS.businessVerified, "on");
     const ember = await proposal(context, nimbus);
     expect(await identity(ember)).toEqual({

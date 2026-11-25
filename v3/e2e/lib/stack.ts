@@ -214,20 +214,13 @@ export const setRequireSignatures = (domain: string, enabled: boolean) =>
 // The organization service's local development controls (pay-core services/organization
 // src/local_dev.rs). They exist only with ORGANIZATION_LOCAL_DEV=true.
 
+/** WalletConnect's scam data for a domain: either flag refuses its first Refresh (422 domain_flagged). */
 export interface DomainFacts {
-  tier?: "verified" | "domain_verified";
-  name?: string;
-  icon?: string;
   isScam?: boolean;
   isSimilarTo?: string;
 }
 
-/**
- * Stands in for WalletConnect's review and scam data: sets a domain's tier, name, icon or scam flag.
- * A review (tier, name, icon) is bound to the domain's first allowed organization, so set it only
- * once the domain is refreshed (409 before); a change of the domain's keys or allowed
- * organizations clears it. A flag refuses the domain's first Refresh (422 domain_flagged).
- */
+/** Stands in for WalletConnect's scam data: sets a domain's flags (`{}` clears them). */
 export async function setFacts(domain: string, facts: DomainFacts) {
   const r = await call(
     `${ORGANIZATION_URL}/local-dev/domains/${domain}/facts`,
@@ -239,6 +232,51 @@ export async function setFacts(domain: string, facts: DomainFacts) {
   if (r.status !== 200)
     throw new Error(
       `set facts for ${domain}: ${r.status} ${JSON.stringify(r.body)}`,
+    );
+}
+
+/** The reviewed business of the stack's organization ("by …"). */
+export const VERIFIED_BUSINESS = "Verify v4 Local Inc.";
+export const VERIFIED_ICON = "https://walletconnect.com/favicon.ico";
+
+/**
+ * Stands in for WalletConnect's review of the stack's organization (its business). Business
+ * verified needs it `verified` and the project's review (`setProjectReview`). It covers every
+ * domain the organization's keys sign for, so tests that expect the domain only turn it off.
+ * Waits out the validate cache the relay keeps (up to ~10 s), so the next request sees it. Off by
+ * default (global setup); a test that turns it on turns it off again in `afterEach`.
+ */
+let businessVerified = false;
+export async function setBusinessVerified(
+  verified: boolean,
+  { force = false }: { force?: boolean } = {},
+) {
+  // Global setup turns it off; each worker remembers what it set since.
+  if (!force && verified === businessVerified) return;
+  businessVerified = verified;
+  const r = await call(
+    `${ORGANIZATION_URL}/local-dev/organizations/${ORGANIZATION_ID}/review`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ businessName: VERIFIED_BUSINESS, verified }),
+    },
+  );
+  if (r.status !== 200)
+    throw new Error(
+      `set organization review: ${r.status} ${JSON.stringify(r.body)}`,
+    );
+  await new Promise((resolve) => setTimeout(resolve, 11_000));
+}
+
+/** Stands in for WalletConnect's review of the stack's project (its app): the name and icon shown. */
+export async function setProjectReview(name: string, icon?: string) {
+  const r = await call(
+    `${ORGANIZATION_URL}/local-dev/projects/${PROJECT_ID}/review`,
+    { method: "PUT", body: JSON.stringify({ name, icon }) },
+  );
+  if (r.status !== 200)
+    throw new Error(
+      `set project review: ${r.status} ${JSON.stringify(r.body)}`,
     );
 }
 

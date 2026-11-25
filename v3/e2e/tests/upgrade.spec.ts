@@ -5,8 +5,9 @@
 // The Dashboard steps need DASHBOARD_PASSWORD (and DASHBOARD_EMAIL, default
 // agent@walletconnect.invalid) for the local Dashboard; without them the test refreshes through
 // the organization API, as the Dashboard does. WalletConnect's review has no API yet: the
-// organization service's local development control (PUT /local-dev/domains/{domain}/facts) stands
-// in for it.
+// organization service's local development controls stand in for it, for the organization (the
+// business) and the project (the app). It covers every domain the organization signs for, so it
+// is off until step 5.
 import {
   expect,
   test,
@@ -29,8 +30,12 @@ import {
   keys,
   publishDocument,
   refreshDomain,
+  setBusinessVerified,
   setFacts,
+  setProjectReview,
   unpublishDocument,
+  VERIFIED_ICON,
+  VERIFIED_NAME,
 } from "../lib/stack";
 
 const NAME = "Shop on Nimbus";
@@ -155,8 +160,10 @@ test("walk an app up: Default → Domain verified → Business verified (→ Sec
       "upgrade-6-nimbus-signatures-on",
     );
 
-    // 5. WalletConnect reviews the business: the tier goes up, with the reviewed name and icon.
-    await setFacts(domain, { tier: "verified", name: NAME, icon: ICON });
+    // 5. WalletConnect reviews the app (the project) and the business (the organization): the tier
+    // goes up, with the reviewed app's name and icon.
+    await setProjectReview(NAME, ICON);
+    await setBusinessVerified(true);
     ember = await emberShows(browser, domain, "on", {
       title: NAME,
       domain,
@@ -165,12 +172,7 @@ test("walk an app up: Default → Domain verified → Business verified (→ Sec
     await shot(ember, testInfo, "upgrade-7-business-verified");
 
     // 6. Later, WalletConnect flags it as a scam: the warning shows on top of the tier.
-    await setFacts(domain, {
-      tier: "verified",
-      name: NAME,
-      icon: ICON,
-      isScam: true,
-    });
+    await setFacts(domain, { isScam: true });
     ember = await emberShows(browser, domain, "on", {
       title: NAME,
       scam: true,
@@ -180,6 +182,8 @@ test("walk an app up: Default → Domain verified → Business verified (→ Sec
     await open?.close();
     open = undefined;
     await setFacts(domain, {}).catch(() => {});
+    await setProjectReview(VERIFIED_NAME, VERIFIED_ICON).catch(() => {});
+    await setBusinessVerified(false).catch(() => {});
     unpublishDocument(domain);
     if (dashboard) {
       if (!process.env.KEEP_DASHBOARD_DOMAINS)
