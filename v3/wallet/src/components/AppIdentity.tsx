@@ -9,6 +9,8 @@ export interface AppVerification {
   domain?: string
   name?: string
   icon?: string
+  /** The reviewed business behind the app: only for Business verified. */
+  organizationName?: string
   isVerified: boolean
   isScam: boolean
   isSimilarTo?: string
@@ -44,7 +46,15 @@ export function AppIdentity({
           {v.domain ? '🌐' : '?'}
         </span>
       )}
-      <h3 style={{ margin: 0 }}>{appLabel(v)}</h3>
+      <div style={{ textAlign: 'center' }}>
+        <h3 style={{ margin: 0, display: 'inline' }}>{appLabel(v)}</h3>
+        {v.organizationName && (
+          <span id="app-business">
+            {' '}
+            · by <strong>{v.organizationName}</strong> ✓
+          </span>
+        )}
+      </div>
       {v.name && v.domain && <span className="from">{v.domain}</span>}
       {v.isVerified && (
         <span className="badge ok" id="verified-badge">

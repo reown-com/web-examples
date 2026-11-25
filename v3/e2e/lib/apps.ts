@@ -95,6 +95,8 @@ export async function openEmber(
 export interface Identity {
   /** The one-line name: the reviewed name, else the domain, else "Unverified app". */
   title: string;
+  /** The reviewed business after the name ("App · by Business ✓"), for Business verified. */
+  business?: string;
   /** The domain under the name, when there's a name. */
   domain?: string;
   verified: boolean;
@@ -108,8 +110,12 @@ export async function identity(ember: Page): Promise<Identity> {
   const id = ember.locator(".sheet #app-identity").last();
   await expect(id).toBeVisible({ timeout: 30_000 });
   const domain = id.locator(".from");
+  const business = id.locator("#app-business strong");
   return {
     title: (await id.locator("h3").innerText()).trim(),
+    business: (await business.count())
+      ? (await business.innerText()).trim()
+      : undefined,
     domain: (await domain.count())
       ? (await domain.innerText()).trim()
       : undefined,

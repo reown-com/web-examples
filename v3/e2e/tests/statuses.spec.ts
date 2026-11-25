@@ -12,12 +12,17 @@ import {
   shot,
   startConnect,
 } from "../lib/apps";
-import { DOMAINS, setBusinessVerified, VERIFIED_NAME } from "../lib/stack";
+import {
+  DOMAINS,
+  setBusinessVerified,
+  VERIFIED_BUSINESS,
+  VERIFIED_NAME,
+} from "../lib/stack";
 
 test.describe("each status in the wallet", () => {
   test.afterEach(() => setBusinessVerified(false));
 
-  test("Business verified: app.localhost, with its reviewed name and the checkmark", async ({
+  test("Business verified: app.localhost, with its reviewed name, business and the checkmark", async ({
     context,
   }, testInfo) => {
     await setBusinessVerified(true);
@@ -25,6 +30,7 @@ test.describe("each status in the wallet", () => {
     const ember = await proposal(context, nimbus);
     expect(await identity(ember)).toEqual({
       title: VERIFIED_NAME,
+      business: VERIFIED_BUSINESS,
       domain: DOMAINS.businessVerified,
       verified: true,
       scam: false,
@@ -38,8 +44,12 @@ test.describe("each status in the wallet", () => {
     await expect(ember.locator("#confirm")).toBeVisible();
     expect(await identity(ember)).toMatchObject({
       title: VERIFIED_NAME,
+      business: VERIFIED_BUSINESS,
       verified: true,
     });
+    await expect(ember.locator(".sheet #app-business").last()).toContainText(
+      `· by ${VERIFIED_BUSINESS} ✓`,
+    );
     await shot(ember, testInfo, "status-business-verified-request");
   });
 
