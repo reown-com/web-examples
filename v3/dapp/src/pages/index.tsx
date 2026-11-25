@@ -7,8 +7,17 @@ import { ActionCard, ActivityCard, type Activity, type Form, type Kind } from '@
 import { ConnectSheet, type ConnectState } from '@/components/ConnectSheet'
 import { accountOf, SessionCard } from '@/components/SessionCard'
 import { Avatar, copy, DevLog, ProjectPicker, toast, Toaster, useLog } from '@/components/ui'
-import { resetApp, startClient, type Started } from '@/lib/client'
 import {
+  appSignatureOn,
+  resetApp,
+  setAppSignature,
+  setSignedIn,
+  signedInUser,
+  startClient,
+  type Started
+} from '@/lib/client'
+import {
+  APP_SIGNATURE,
   EVENTS,
   explain,
   isSanctioned,
@@ -30,6 +39,10 @@ const optionalNamespaces = {
     events: ['chainChanged', 'accountsChanged']
   }
 }
+
+// Nimbus's backend refused to sign it (lib/client.ts): nothing went out.
+const refusedByBackend = (e: unknown) =>
+  /Nimbus's backend refused to sign/.test((e as Error)?.message ?? '')
 
 const isAddress = (a: string) => /^0x[0-9a-fA-F]{40}$/.test(a)
 const hexOf = (text: string) =>
@@ -60,6 +73,8 @@ export default function Nimbus() {
   const { entries, log } = useLog()
   const [sdk, setSdk] = useState<Started>()
   const [failed, setFailed] = useState(false)
+  // Who is signed in to Nimbus: undefined until known, null when signed out.
+  const [user, setUser] = useState<string | null>()
   const [sessions, setSessions] = useState<SessionTypes.Struct[]>([])
   const [connect, setConnect] = useState<ConnectState | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -79,16 +94,22 @@ export default function Nimbus() {
       url: location.origin,
       icons: [NIMBUS_ICON]
     }
-    startClient('dapp', metadata).then(
-      s => {
-        setSdk(s)
-        log('ready', { clientId: s.clientId, projectId: s.projectId })
-      },
-      e => {
-        setFailed(true)
-        log('error', String(e?.message ?? e))
-      }
-    )
+    signedInUser()
+      .then(u => {
+        setUser(u)
+        // The backend signs only for a signed-in session: signed out, Nimbus sends unsigned.
+        return startClient('dapp', metadata, APP_SIGNATURE && appSignatureOn() && !!u)
+      })
+      .then(
+        s => {
+          setSdk(s)
+          log('ready', { clientId: s.clientId, projectId: s.projectId })
+        },
+        e => {
+          setFailed(true)
+          log('error', String(e?.message ?? e))
+        }
+      )
   }, [log])
 
   useEffect(() => {
@@ -216,8 +237,13 @@ export default function Nimbus() {
       log('error', e)
       // As in v2: the wallet's { code, message }, or an Error with code 6 when nothing came back.
       const err = e as { code?: unknown; message: string }
-      const status =
-        err.code === 6 ? 'expired' : typeof err.code === 'number' ? 'rejected' : 'failed'
+      const status = refusedByBackend(e)
+        ? 'refused'
+        : err.code === 6
+          ? 'expired'
+          : typeof err.code === 'number'
+            ? 'rejected'
+            : 'failed'
       update(id, {
         status,
         note: status === 'rejected' ? `Declined in the wallet: ${err.message}` : explain(e)
@@ -250,6 +276,14 @@ export default function Nimbus() {
   }
 
   const address = accountOf(session)
+  // App Signatures are on for this host, but nobody signed in: the backend won't sign.
+  // (`user` stays undefined while rendering on the server, so `location` isn't read there.)
+  const signedOut = APP_SIGNATURE && user === null && appSignatureOn()
+  const signIn = (
+    <button className="btn grad sm" id="sign-in" onClick={() => setSignedIn(true)}>
+      Sign in as demo user
+    </button>
+  )
 
   return (
     <div className="dapp">
@@ -271,6 +305,30 @@ export default function Nimbus() {
           {sdk && (
             <>
               <ProjectPicker app="dapp" projectId={sdk.projectId} />
+              {APP_SIGNATURE &&
+                (user ? (
+                  <button
+                    className="chip pill-btn"
+                    id="sign-out"
+                    title="Signed in to Nimbus: its backend signs your connection and requests. Click to sign out."
+                    onClick={() => setSignedIn(false)}
+                  >
+                    Signed in: {user} · Sign out
+                  </button>
+                ) : (
+                  signIn
+                ))}
+              {APP_SIGNATURE && (
+                <button
+                  className="chip pill-btn"
+                  id="app-signature-toggle"
+                  data-on={appSignatureOn()}
+                  title="Whether Nimbus signs its requests with its backend (Verify v4 App Signatures)"
+                  onClick={() => setAppSignature(!appSignatureOn())}
+                >
+                  App Signatures: {appSignatureOn() ? 'on' : 'off'}
+                </button>
+              )}
               <span className="chip">
                 <i
                   className="chip-dot"
@@ -323,6 +381,12 @@ export default function Nimbus() {
         <div className="col">
           {session ? (
             <>
+              {signedOut && (
+                <div className="callout amber" id="signed-out-note">
+                  You're signed out of Nimbus, so its backend signs nothing: your requests go out
+                  unsigned, and the wallet can't tell they came from Nimbus. {signIn}
+                </div>
+              )}
               <ActionCard account={address} onSubmit={submit} />
               <ActivityCard items={activity} />
             </>
@@ -335,9 +399,18 @@ export default function Nimbus() {
                 Connect a wallet to request signatures and transactions. Every message travels
                 through the v3 Relay.
               </p>
-              <button className="btn grad lg" onClick={openConnect} disabled={!sdk}>
-                Connect wallet
-              </button>
+              {signedOut && (
+                <div className="callout amber" id="signed-out-note">
+                  Signed out: Nimbus's backend signs nothing, so your connection request goes out
+                  unsigned and the wallet shows no app identity. Sign in to have it signed.
+                </div>
+              )}
+              <div className="row" style={{ justifyContent: 'center' }}>
+                {signedOut && sdk && signIn}
+                <button className="btn grad lg" onClick={openConnect} disabled={!sdk}>
+                  Connect wallet
+                </button>
+              </div>
             </section>
           )}
         </div>

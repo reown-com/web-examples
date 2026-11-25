@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
-import { AppIcon, Avatar, Sheet, SheetHead } from '@/components/ui'
+import { AppIdentity, type AppVerification } from '@/components/AppIdentity'
+import { Avatar, Sheet, SheetHead } from '@/components/ui'
 import { isSanctioned, same, SANCTIONED, short, TRANSFER, USDC } from '@/lib/common'
 
 export interface Request {
@@ -8,6 +9,8 @@ export interface Request {
   topic: string
   chainId: string
   request: { method: string; params: any }
+  /** Verify v4: who sent this request, as the Relay vouches. */
+  verification: AppVerification
 }
 
 function decodeText(hex: string) {
@@ -128,14 +131,12 @@ export function describe(r: Request): {
 export function RequestSheet({
   open,
   request,
-  peer,
   pending,
   canSign,
   onAnswer
 }: {
   open: boolean
   request?: Request
-  peer?: { name: string; url?: string; icons?: string[] }
   pending: number
   canSign: (address?: string) => boolean
   onAnswer: (approve: boolean) => void
@@ -152,10 +153,7 @@ export function RequestSheet({
         }
       />
       <div className="req-hero" style={{ marginBottom: 14 }}>
-        <AppIcon src={peer?.icons?.[0]} size={48} name={peer?.name} />
-        <span className="from">
-          {peer?.name ?? 'dApp'} · {peer?.url ?? ''}
-        </span>
+        <AppIdentity verification={request.verification} size={48} />
       </div>
       <div className="stack">{d.body}</div>
       {watchOnly && (
