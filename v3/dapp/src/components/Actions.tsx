@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { useNow } from '@/components/ui'
-import { APP_SIGNATURE, DENYLISTED, SANCTIONED, short } from '@/lib/common'
+import { NIMBUS_VAULT, SANCTIONED, short } from '@/lib/common'
 
 export type Kind = 'sign' | 'eth' | 'usdc'
 export interface Form {
@@ -16,7 +16,7 @@ export interface Activity {
   kind: Kind
   title: string
   detail: string
-  status: 'pending' | 'done' | 'rejected' | 'expired' | 'failed'
+  status: 'pending' | 'done' | 'rejected' | 'expired' | 'failed' | 'refused'
   giveUpAt: number
   risky: boolean
   note?: string
@@ -24,11 +24,12 @@ export interface Activity {
 }
 
 const SAMPLE = '0x2222222222222222222222222222222222222222'
+// Nimbus's backend signs value sent only to the account itself or to Nimbus's own contracts.
 export const initialForm: Form = {
   message: 'Welcome to Nimbus! Sign to verify you own this account.',
-  ethTo: SAMPLE,
+  ethTo: NIMBUS_VAULT,
   ethAmount: '0.01',
-  usdcTo: SAMPLE,
+  usdcTo: NIMBUS_VAULT,
   usdcAmount: '25'
 }
 
@@ -61,16 +62,16 @@ export function ActionCard({
         />
       </label>
       <div className="quick">
-        <button onClick={() => set({ [key]: SAMPLE })}>Sample address</button>
+        <button id={`${key}-vault`} onClick={() => set({ [key]: NIMBUS_VAULT })}>
+          Nimbus vault
+        </button>
         <button onClick={() => set({ [key]: account })}>My address</button>
+        <button id={`${key}-other`} onClick={() => set({ [key]: SAMPLE })}>
+          Someone else
+        </button>
         <button className="risk" onClick={() => set({ [key]: SANCTIONED })}>
           Sanctioned address
         </button>
-        {APP_SIGNATURE && key === 'ethTo' && (
-          <button className="risk" onClick={() => set({ [key]: DENYLISTED })}>
-            Denylisted address
-          </button>
-        )}
       </div>
     </div>
   )
@@ -144,7 +145,8 @@ const STATUS: Record<Activity['status'], [string, string]> = {
   done: ['Confirmed', 'ok'],
   rejected: ['Declined', 'amber'],
   expired: ['No answer', 'warn'],
-  failed: ['Failed', 'warn']
+  failed: ['Failed', 'warn'],
+  refused: ['Not signed', 'warn']
 }
 const GLYPH: Record<Kind, string> = { sign: '✍️', eth: 'Ξ', usdc: '$' }
 

@@ -5,13 +5,14 @@ import type { NextApiRequest, NextApiResponse } from 'next'
  * ⚠️  NEVER DO THIS. AN INSECURE SIGNING BACKEND, FOR THE VERIFY V4 POC'S EXPLOIT DEMO ONLY. ⚠️
  *
  * This is how NOT to write an App Signature backend. It signs whatever plaintext any caller sends,
- * from anywhere, with no policy at all: no denylist, no check of who is asking, CORS open to every
+ * from anywhere, with no policy at all: no sign-in, no allowlist, CORS open to every
  * site. Anyone who can reach it gets the app's domain, and its Business verified name and
  * checkmark, on a request of their choosing, such as sending all of a user's ETH to themselves.
  * Verify v4 can't stop that: the Relay and the wallet only check that the app's key signed the
  * request, and here it signs everything.
  *
- * The real backend is `wc-attestation.ts`, which refuses ETH sent to a denylisted address.
+ * The real backend is `wc-attestation.ts`, which signs only for a signed-in Nimbus session and only
+ * what its policy allows (lib/policy.ts).
  *
  * Off unless APP_SIGNATURE_INSECURE_DEMO=on, which only the local POC sets: otherwise 404. The
  * e2e test `v3/e2e/tests/exploits-succeed.spec.ts` uses it to show that the security boundary is
@@ -27,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.setHeader('access-control-allow-headers', 'content-type')
   if (req.method === 'OPTIONS') return res.status(204).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' })
-  const { requestJson } = req.body ?? {}
+  const { requestJson, cnx } = req.body ?? {}
   if (typeof requestJson !== 'string') return res.status(400).json({ error: 'requestJson' })
   const raw = process.env.APP_SIGNATURE_PRIVATE_JWK
   if (!raw) return res.status(500).json({ error: 'APP_SIGNATURE_PRIVATE_JWK is not set' })
@@ -43,6 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const claims = {
     iss: (req.headers.host ?? '').replace(/:\d+$/, '').toLowerCase(),
     sub: b64u(createHash('sha256').update(requestJson, 'utf8').digest()),
+    ...(typeof cnx === 'string' && cnx ? { cnx } : {}),
     exp: Math.floor(Date.now() / 1000) + 120
   }
   const header = { alg: 'ES256', typ: 'JWT', ...(jwk.kid ? { kid: jwk.kid } : {}) }

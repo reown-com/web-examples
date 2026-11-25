@@ -39,8 +39,9 @@ The dev Relay screens connections and messages.
 Nimbus can sign every request it sends, and Ember shows who sent it as the Relay vouches for it.
 
 **Nimbus.** `src/pages/api/wc-attestation.ts` is a tiny signing backend. The SDK calls it before it creates a connection and before every message, through the `appSignature` callback in `src/lib/client.ts`.
-- **Policy.** It refuses to sign ETH sent to a denylisted address: `0x…dEaD`, or `APP_SIGNATURE_DENYLIST`. Nimbus then fails the request instead of sending it unsigned.
-- **The JWT.** ES256, with the key in `APP_SIGNATURE_PRIVATE_JWK`. The claims are `iss`, the host; `sub`, base64url SHA-256 of the request JSON exactly as the SDK sends it; and `exp`, 2 minutes. `sub` always covers the plaintext, Sign v2 and sealed messages included, so the backend signs only a request it has read. No claim covers the encrypted bytes, which the backend couldn't check; the wallet's `sub` check binds the JWT to the content. A send retried after its JWT expired asks the backend again; wallets never check `exp`.
+- **Sign-in.** It signs nothing without a Nimbus session: an HttpOnly, SameSite=Strict cookie that **Sign in as demo user** sets (`src/pages/api/nimbus-session.ts`, no real auth). Signed out, Nimbus sends its connection request and requests unsigned, so Ember shows no app identity; signing a connection is optional for an app.
+- **Policy: intent, not requests** (`src/lib/policy.ts`). It signs a connection, a ping, and only `personal_sign`, `eth_signTypedData_v4` and `eth_sendTransaction`. Value may go only to the connected account itself or to Nimbus's own contracts (`NEXT_PUBLIC_NIMBUS_CONTRACTS`, a demo vault by default), ERC-20 transfers and approvals included; any other call is refused. It reads the very `requestJson` string it hashes into `sub`, never a separately supplied object. Nimbus shows the refusal ("Not signed") and sends nothing.
+- **The JWT.** ES256, with the key in `APP_SIGNATURE_PRIVATE_JWK`. The claims are `iss`, the host; `sub`, base64url SHA-256 of the request JSON exactly as the SDK sends it; `cnx`, on Sign v3, the connection the SDK names (the connectionId, or the proposal's bindingPub), copied verbatim, which the Relay requires so a signature can't be replayed on another connection; and `exp`, 2 minutes. `sub` always covers the plaintext, Sign v2 and sealed messages included, so the backend signs only a request it has read. No claim covers the encrypted bytes, which the backend couldn't check; the wallet's `sub` check binds the JWT to the content. A send retried after its JWT expired asks the backend again; wallets never check `exp`.
 
 **Ember.** It shows who sent a proposal, request or session from the SDK's `verification` only, never from the app's own name, URL or icon, which the SDK no longer exposes to wallets. It renders whatever is present:
 
@@ -72,7 +73,7 @@ Nimbus signs its Sign v2 traffic too (the fallback offer and requests on a v2 se
 2. Deploy the Relay's Verify v4 branch to a dev slot with that `RELAY_VERIFY_V4_DOMAINS`.
 3. Point both apps at the slot: `NEXT_PUBLIC_RELAY_URL=https://pool-N.dev-relay.walletconnect.com` in each `.env.local`.
 4. Install an `@walletconnect/sign-client` build with Verify v4 in both apps, then `pnpm dev`. The published `2.26.1-canary-2` predates it: Nimbus would send nothing signed, and Ember would show every app as "Unverified app".
-5. In Nimbus, set **Denylisted address** as the ETH recipient to see a refused signature.
+5. In Nimbus, click **Sign in as demo user**, connect, then send ETH to **Someone else** to see a refused signature.
 
 ## Configuration
 
@@ -81,6 +82,8 @@ All settings are optional. See `.env.local.example` in each app.
 - **`NEXT_PUBLIC_PROJECT_ID`:** the default project, `sign-v3-demo`.
 - **`NEXT_PUBLIC_WALLET_URL`:** dApp only, where "Open Ember Wallet" points. Defaults to `http://localhost:3001`.
 - **`NEXT_PUBLIC_APP_SIGNATURE`:** app only, `on` to sign with the backend, which then needs `APP_SIGNATURE_PRIVATE_JWK`. It signs as the host the page is on (`iss`), and only on the hosts in `NEXT_PUBLIC_APP_SIGNATURE_DOMAINS` (comma-separated, `*.example.com` for any name under it), the ones whose published keys include this key; on any other host it sends unsigned. Empty, it signs on every host.
+- **`NEXT_PUBLIC_NIMBUS_CONTRACTS`:** app only, comma-separated: Nimbus's own contracts, which the backend lets value go to besides the account itself.
+- **`NIMBUS_SESSION_SECRET`:** app only, the key for the sign-in cookie. Defaults to one derived from `APP_SIGNATURE_PRIVATE_JWK`.
 - **`APP_SIGNATURE_INSECURE_DEMO`:** app only, never in a deployment. `on` serves the insecure demo backend, `/api/wc-attestation-insecure`.
 
 ## Deploying to Vercel

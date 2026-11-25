@@ -59,24 +59,42 @@ interface AppSignatureParams {
   request: Record<string, unknown>
   /** `request` exactly as sent: the JWT's `sub` is the SHA-256 of these bytes. */
   requestJson: string
+  /** Sign v3: the connection the signature is for, the JWT's `cnx` claim verbatim. */
+  cnx?: string
 }
 
 /**
  * Verify v4: the SDK calls this before it creates a connection and before every message, and
- * sends the JWT with it. The backend holds the key and decides what it signs; if it refuses,
- * this throws and the request fails, rather than going out unsigned.
+ * sends the JWT with it. The backend holds the key and decides what it signs, from `requestJson`
+ * alone; if it refuses, this throws and the request fails, rather than going out unsigned.
  */
 const appSignature = {
-  callback: async ({ requestJson }: AppSignatureParams) => {
+  callback: async ({ requestJson, cnx }: AppSignatureParams) => {
     const res = await fetch('/api/wc-attestation', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ requestJson })
+      body: JSON.stringify({ requestJson, ...(cnx ? { cnx } : {}) })
     })
     const body = await res.json().catch(() => ({}))
-    if (!res.ok) throw new Error(`App Signature refused: ${body.error ?? res.status}`)
+    if (!res.ok) throw new Error(`Nimbus's backend refused to sign: ${body.error ?? res.status}`)
     return { appSignature: body.appSignature as string }
   }
+}
+
+/** Who is signed in to Nimbus (the backend's HttpOnly cookie), or null. */
+export async function signedInUser(): Promise<string | null> {
+  try {
+    const res = await fetch('/api/nimbus-session', { cache: 'no-store' })
+    return ((await res.json()) as { user: string | null }).user
+  } catch {
+    return null
+  }
+}
+
+/** Signs in (as the demo user) or out, then reloads: the client picks its signer at start. */
+export async function setSignedIn(on: boolean) {
+  await fetch('/api/nimbus-session', { method: on ? 'POST' : 'DELETE' })
+  location.reload()
 }
 
 const APP_SIGNATURE_KEY = 'demo-app-signature'
@@ -107,8 +125,16 @@ let started: Promise<Started> | undefined
 /**
  * Starts the one client this page uses. It speaks Sign v3, with Sign v2 as the fallback. It loads
  * in the browser only, and once, even with React strict mode running effects twice.
+ *
+ * `sign`: whether the backend signs (App Signatures on and someone signed in). The SDK can't send
+ * one message unsigned and sign the next, so signed out, Nimbus sends everything unsigned: its
+ * connection request then shows no app identity in the wallet.
  */
-export function startClient(app: App, metadata: SignClientTypes.Metadata): Promise<Started> {
+export function startClient(
+  app: App,
+  metadata: SignClientTypes.Metadata,
+  sign = false
+): Promise<Started> {
   started ??= (async () => {
     const { SignClient } = await import('@walletconnect/sign-client')
     const projectId = currentProject(app)
@@ -120,7 +146,7 @@ export function startClient(app: App, metadata: SignClientTypes.Metadata): Promi
         relayUrl: RELAY_URL,
         customStoragePrefix: prefixFor(app, projectId),
         storage: localStorageKV,
-        ...(app === 'dapp' && appSignatureOn() ? { appSignature } : {})
+        ...(app === 'dapp' && sign ? { appSignature } : {})
       }
     const client = await SignClient.init(options)
     // For the Verify v4 POC's end-to-end tests and walkthrough, which drive the client the way a
