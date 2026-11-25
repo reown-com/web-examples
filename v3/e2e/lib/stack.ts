@@ -103,9 +103,22 @@ async function call(url: string, init: RequestInit = {}) {
 
 const domainsApi = `${ORGANIZATION_API}/v1/organizations/${ORGANIZATION_ID}/domains`;
 
-/** What the Dashboard's "Refresh domain verification" does, through the organization API. */
-export const refreshDomain = (domain: string) =>
-  call(`${domainsApi}/${domain}/refresh`, { method: "POST" });
+/**
+ * What the Dashboard's "Refresh domain verification" does, through the organization API. Refresh
+ * is limited to one per domain per minute (429); by default this waits that out and refreshes
+ * again, so a test can refresh a domain twice (`waitForLimit: false` returns the 429).
+ */
+export async function refreshDomain(
+  domain: string,
+  { waitForLimit = true }: { waitForLimit?: boolean } = {},
+) {
+  const deadline = Date.now() + 75_000;
+  for (;;) {
+    const r = await call(`${domainsApi}/${domain}/refresh`, { method: "POST" });
+    if (r.status !== 429 || !waitForLimit || Date.now() > deadline) return r;
+    await new Promise((resolve) => setTimeout(resolve, 5_000));
+  }
+}
 
 /** The organization's domains as the Dashboard sees them. */
 export async function domainRecord(domain: string): Promise<any> {
@@ -130,7 +143,12 @@ export interface DomainFacts {
   isSimilarTo?: string;
 }
 
-/** Stands in for WalletConnect's review and scam data: sets a domain's tier, name, icon or scam flag. */
+/**
+ * Stands in for WalletConnect's review and scam data: sets a domain's tier, name, icon or scam flag.
+ * A review (tier, name, icon) is bound to the domain's first allowed organization, so set it only
+ * once the domain is refreshed (409 before); a change of the domain's keys or allowed
+ * organizations clears it. A flag refuses the domain's first Refresh (422 domain_flagged).
+ */
 export async function setFacts(domain: string, facts: DomainFacts) {
   const r = await call(
     `${ORGANIZATION_URL}/local-dev/domains/${domain}/facts`,
