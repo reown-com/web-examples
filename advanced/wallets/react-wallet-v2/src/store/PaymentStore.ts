@@ -1,3 +1,4 @@
+import { providers } from 'ethers'
 import { proxy, ref } from 'valtio'
 import type {
   ConfirmPaymentParams,
@@ -5,6 +6,7 @@ import type {
   PaymentOption
 } from '@walletconnect/pay'
 
+import { EIP155_CHAINS, TEIP155Chain } from '@/data/EIP155Data'
 import { walletkit } from '@/utils/WalletConnectUtil'
 import { eip155Wallets } from '@/utils/EIP155WalletUtil'
 import { stellarWallets } from '@/utils/StellarWalletUtil'
@@ -13,6 +15,22 @@ import { TRON_SIGNING_METHODS } from '@/data/TronData'
 import SettingsStore from '@/store/SettingsStore'
 import { detectErrorType, getErrorMessage, formatAmount } from '@/components/PaymentModal/utils'
 import type { ErrorType, Step } from '@/components/PaymentModal/utils'
+
+/**
+ * Maps a WC Pay `eth_sendTransaction` action param to an ethers transaction request.
+ * Only the known fields are carried over: ethers rejects keys it does not know, such
+ * as the JSON-RPC `gas`. `from` is optional — a deposit payment leaves it out and the
+ * wallet's own account sends.
+ */
+function toTransactionRequest(raw: any): providers.TransactionRequest {
+  const tx: providers.TransactionRequest = { to: raw.to }
+  if (raw.from) tx.from = raw.from
+  if (raw.data && raw.data !== '0x') tx.data = raw.data
+  if (raw.value) tx.value = raw.value
+  const gasLimit = raw.gas ?? raw.gasLimit
+  if (gasLimit) tx.gasLimit = gasLimit
+  return tx
+}
 
 interface PaymentState {
   paymentOptions: PaymentOptionsResponse | null
@@ -203,6 +221,36 @@ const PaymentStore = {
               delete types.EIP712Domain
               const signature = await wallet._signTypedData(domain, types, messageData)
               data.push(signature)
+            } else if (method === 'eth_sendTransaction') {
+              // Not every option is paid with a signature alone. A token without
+              // ERC-3009 (USDT, USDtb) settles through Permit2, which first needs an
+              // on-chain approve(Permit2), and a native-coin or deposit payment is a
+              // transfer the wallet sends itself. WC Pay returns each of these as an
+              // eth_sendTransaction action: broadcast it, wait for it to be mined so
+              // the allowance exists before the payment is confirmed, then hand back
+              // the transaction hash.
+              const chain = EIP155_CHAINS[chainId as TEIP155Chain]
+              if (!chain) {
+                throw new Error(`No RPC configured for chain: ${chainId}`)
+              }
+              const request = Array.isArray(parsedParams) ? parsedParams[0] : parsedParams
+              if (!request?.to) {
+                throw new Error('Missing transaction in payment action params')
+              }
+
+              const wallet = eip155Wallets[SettingsStore.state.eip155Address]
+              const provider = new providers.JsonRpcProvider(chain.rpc)
+              const txResponse = await wallet
+                .connect(provider)
+                .sendTransaction(toTransactionRequest(request))
+              // Rejects if the transaction reverts, which fails the payment here
+              // rather than at confirm.
+              await txResponse.wait()
+              console.log('[PaymentStore] payment transaction mined:', {
+                chainId,
+                hash: txResponse.hash
+              })
+              data.push(txResponse.hash)
             } else if (method === 'stellar_signXDR') {
               const stellarAddress = selectedOption.account.split(':')[2]
               const stellarWallet = stellarWallets?.[stellarAddress]
