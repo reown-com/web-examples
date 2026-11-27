@@ -38,7 +38,7 @@ export default function SessionCard({ logo, name, url, topic }: IProps) {
             overflow: 'hidden'
           }}
         >
-          <Avatar src={logo} />
+          <Avatar src={logo} squared />
           <div style={{ flex: 1 }}>
             <Text h5 css={{ marginLeft: '$9' }} data-testid={`session-text`}>
               {name}

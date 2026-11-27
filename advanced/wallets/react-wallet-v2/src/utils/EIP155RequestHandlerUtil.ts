@@ -5,6 +5,7 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
+import { describeSendError, withNodeFees } from '@/utils/EIP155FeeUtil'
 import { KernelSmartAccountLib } from '@/lib/smart-accounts/KernelSmartAccountLib'
 import SettingsStore from '@/store/SettingsStore'
 
@@ -64,7 +65,7 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
     case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
       try {
         const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
-        const sendTransaction = request.params[0]
+        const sendTransaction = await withNodeFees(provider, request.params[0])
         const connectedWallet = await wallet.connect(provider)
         const txResponse = await connectedWallet.sendTransaction(sendTransaction)
         const txHash = typeof txResponse === 'string' ? txResponse : txResponse?.hash
@@ -75,7 +76,7 @@ export async function approveEIP155Request(requestEvent: RequestEventArgs) {
         return formatJsonRpcResult(id, txHash)
       } catch (error: any) {
         console.error(error)
-        return formatJsonRpcError(id, error.message)
+        return formatJsonRpcError(id, describeSendError(error))
       }
 
     case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:

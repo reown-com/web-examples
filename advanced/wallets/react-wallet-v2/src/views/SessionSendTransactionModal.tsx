@@ -7,6 +7,10 @@ import { walletkit } from '@/utils/WalletConnectUtil'
 import { ChainAbstractionService, Transaction } from '@/utils/ChainAbstractionService'
 import ModalStore from '@/store/ModalStore'
 import SettingsStore from '@/store/SettingsStore'
+import McpStore, { McpPlanMatch } from '@/store/McpStore'
+import { primaryFacts } from '@/components/McpPlanSteps'
+import { McpKeyValue } from '@/components/McpUi'
+import { useSnapshot } from 'valtio'
 
 import RequestDataCard from '@/components/RequestDataCard'
 import RequestDetailsCard from '@/components/RequestDetalilsCard'
@@ -36,6 +40,10 @@ export default function SessionSendTransactionModal() {
   const { topic, params } = requestEvent || {}
   const { chainId, request } = params || {}
   const transaction = request?.params[0]
+
+  // Subscribe so the cross-check re-runs when the MCP action advances
+  useSnapshot(McpStore.state)
+  const planMatch = McpStore.actions.matchPlanTx(topic, transaction)
 
   // Check for multi-chain requirement and handle routing
   useEffect(() => {
@@ -151,6 +159,7 @@ export default function SessionSendTransactionModal() {
       transaction={transaction}
       chainId={chainId || ''}
       method={params?.request?.method || ''}
+      planMatch={planMatch}
       onApprove={handleApproval}
       onReject={handleRejection}
       loadingApprove={isLoadingApprove}
@@ -181,6 +190,8 @@ type SingleChainModalProps = {
   transaction: any
   chainId: string
   method: string
+  /** Whether this request matches the plan prepared on the WalletConnect MCP page */
+  planMatch: McpPlanMatch | null
   onApprove: () => Promise<void>
   onReject: () => Promise<void>
   loadingApprove: boolean
@@ -192,6 +203,7 @@ const SingleChainModal = ({
   transaction,
   chainId,
   method,
+  planMatch,
   onApprove,
   onReject,
   loadingApprove,
@@ -205,6 +217,38 @@ const SingleChainModal = ({
     approveLoader={{ active: loadingApprove }}
     rejectLoader={{ active: loadingReject }}
   >
+    {planMatch ? (
+      <Card
+        bordered
+        borderWeight="light"
+        css={{ marginBottom: '$4', borderColor: planMatch.match ? '$success' : '$warning' }}
+      >
+        <Card.Body css={{ padding: '$5' }}>
+          <Text
+            size={13}
+            color={planMatch.match ? 'success' : 'warning'}
+            css={{ marginBottom: planMatch.step ? '$3' : 0 }}
+            data-testid="mcp-plan-check"
+          >
+            {planMatch.match
+              ? `Matches step ${planMatch.step?.n ?? '?'} of ${
+                  planMatch.total
+                } of the action you sent from the MCP page.`
+              : 'Does not match any step of the action you sent from the MCP page. Review it before approving.'}
+          </Text>
+          {planMatch.step ? (
+            <>
+              <Text size={14} weight="medium" css={{ marginBottom: '$2' }}>
+                {planMatch.step.summary}
+              </Text>
+              {primaryFacts(planMatch.step).map(([label, value]) => (
+                <McpKeyValue key={label} label={label} value={value} />
+              ))}
+            </>
+          ) : null}
+        </Card.Body>
+      </Card>
+    ) : null}
     <RequestDataCard data={transaction} />
     <StyledDivider css={{ my: '$4' }} />
     <RequestDetailsCard chains={[chainId]} protocol={session.relay.protocol} />

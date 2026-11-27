@@ -35,7 +35,7 @@ export default function PairingCard({ logo, name, url, topic, onDelete }: IProps
           overflow: 'hidden'
         }}
       >
-        <Avatar src={logo} />
+        <Avatar src={logo} squared />
         <div style={{ flex: 1 }}>
           <Text h5 css={{ marginLeft: '$9' }} data-testid={'pairing-text-' + topic}>
             {name}

@@ -51,10 +51,17 @@ export default function ProjectInfoCard({ metadata, intention }: IProps) {
   const { icons, name, url } = metadata
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        textAlign: 'center'
+      }}
+    >
       <Row justify="center">
         <Col css={{ textAlign: 'center' }}>
-          <Avatar style={{ margin: 'auto' }} src={icons[0]} size={'xl'} />
+          <Avatar style={{ margin: 'auto' }} src={icons[0]} size={'xl'} squared />
         </Col>
       </Row>
       <Row justify="center">
