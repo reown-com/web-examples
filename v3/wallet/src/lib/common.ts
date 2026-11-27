@@ -2,7 +2,9 @@
 
 export const RELAY_URL =
   process.env.NEXT_PUBLIC_RELAY_URL || 'https://pool-1.dev-relay.walletconnect.com'
-export const DEFAULT_PROJECT_ID = process.env.NEXT_PUBLIC_PROJECT_ID || 'sign-v3-demo'
+// The default project comes from the environment alone, as in the other examples. Next.js inlines
+// it at build time, so a change needs a rebuild.
+export const DEFAULT_PROJECT_ID = process.env.NEXT_PUBLIC_PROJECT_ID || ''
 
 // The dev Relay's screening rules (rs-relay src/middleware/screening.rs).
 export const SANCTIONED = '0xEe4AB1140F8f519F0De7FFf252Cf914Ee9154D2e'
@@ -12,7 +14,7 @@ export const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
 export const TRANSFER = '0xa9059cbb'
 
 export const PROJECTS = [
-  { id: DEFAULT_PROJECT_ID, label: 'Demo project' },
+  { id: DEFAULT_PROJECT_ID, label: 'Default project' },
   { id: POLICY_A, label: 'Policy project A' },
   { id: POLICY_B, label: 'Policy project B' }
 ]

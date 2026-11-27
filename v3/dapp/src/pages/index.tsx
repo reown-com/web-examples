@@ -59,7 +59,7 @@ async function verify(address: string, message: string, signature: string) {
 export default function Nimbus() {
   const { entries, log } = useLog()
   const [sdk, setSdk] = useState<Started>()
-  const [failed, setFailed] = useState(false)
+  const [failed, setFailed] = useState('')
   const [sessions, setSessions] = useState<SessionTypes.Struct[]>([])
   const [connect, setConnect] = useState<ConnectState | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -85,8 +85,10 @@ export default function Nimbus() {
         log('ready', { clientId: s.clientId, projectId: s.projectId })
       },
       e => {
-        setFailed(true)
-        log('error', String(e?.message ?? e))
+        const why = String(e?.message ?? e)
+        setFailed(why)
+        log('error', why)
+        toast(why, 'warn')
       }
     )
   }, [log])
@@ -264,7 +266,7 @@ export default function Nimbus() {
         </div>
         <div className="top-actions">
           {!sdk && (
-            <span className={failed ? 'badge warn' : 'muted'}>
+            <span className={failed ? 'badge warn' : 'muted'} title={failed || undefined}>
               {failed ? 'Failed to start' : 'Starting…'}
             </span>
           )}

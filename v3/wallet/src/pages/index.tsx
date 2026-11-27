@@ -45,7 +45,7 @@ export default function Ember() {
   const { entries, log } = useLog()
   const { accounts, current, select, signerFor } = useAccounts()
   const [sdk, setSdk] = useState<Started>()
-  const [failed, setFailed] = useState(false)
+  const [failed, setFailed] = useState('')
   const [sessions, setSessions] = useState<SessionTypes.Struct[]>([])
   const [view, setView] = useState<View>('apps')
   const [pair, setPair] = useState<PairState | null>(null)
@@ -89,8 +89,10 @@ export default function Ember() {
         log('ready', { clientId: s.clientId, projectId: s.projectId })
       },
       e => {
-        setFailed(true)
-        log('error', String(e?.message ?? e))
+        const why = String(e?.message ?? e)
+        setFailed(why)
+        log('error', why)
+        toast(why, 'warn')
       }
     )
   }, [log])
@@ -287,7 +289,11 @@ export default function Ember() {
           {sdk ? (
             <ProjectPicker app="wallet" projectId={sdk.projectId} />
           ) : (
-            failed && <span className="badge warn">Failed to start</span>
+            failed && (
+              <span className="badge warn" title={failed}>
+                Failed to start
+              </span>
+            )
           )}
         </div>
 

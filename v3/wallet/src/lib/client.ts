@@ -1,7 +1,7 @@
 import type SignClient from '@walletconnect/sign-client'
 import type { SignClientTypes } from '@walletconnect/types'
 
-import { DEFAULT_PROJECT_ID, RELAY_URL } from './common'
+import { DEFAULT_PROJECT_ID, PROJECTS, RELAY_URL } from './common'
 
 export type App = 'dapp' | 'wallet'
 export interface Started {
@@ -11,23 +11,33 @@ export interface Started {
 }
 
 const projectKey = (app: App) => `demo-${app}-project`
-export const currentProject = (app: App) =>
-  localStorage.getItem(projectKey(app)) || DEFAULT_PROJECT_ID
+/**
+ * The project picked in the header, or the default one from NEXT_PUBLIC_PROJECT_ID. A saved pick
+ * counts only while the picker still offers it, so a default saved under an earlier
+ * NEXT_PUBLIC_PROJECT_ID doesn't outlive it.
+ */
+export const currentProject = (app: App) => {
+  const picked = localStorage.getItem(projectKey(app))
+  return picked && PROJECTS.some(p => p.id === picked) ? picked : DEFAULT_PROJECT_ID
+}
 
 export function setProject(app: App, id: string) {
-  localStorage.setItem(projectKey(app), id)
+  // The default isn't saved, so it follows NEXT_PUBLIC_PROJECT_ID.
+  if (id === DEFAULT_PROJECT_ID) localStorage.removeItem(projectKey(app))
+  else localStorage.setItem(projectKey(app), id)
   location.reload()
 }
 
 // One identity per project: the Relay keeps the project a client first registered with, so an
-// identity switched to another project would still count as its first one.
-const prefixFor = (app: App, projectId: string) =>
-  projectId === DEFAULT_PROJECT_ID ? `demo-${app}:` : `demo-${app}@${projectId}:`
+// identity switched to another project would still count as its first one. The default project is
+// keyed by its id too, so changing NEXT_PUBLIC_PROJECT_ID starts a new identity.
+const prefixFor = (app: App, projectId: string) => `demo-${app}@${projectId}:`
 
 /** Forgets this app's identities and sessions in every project. */
 export function resetApp(app: App, extraKeys: string[] = []) {
   for (const k of Object.keys(localStorage)) {
-    // the SDK puts its own prefixes in front of ours
+    // The SDK puts its own prefixes in front of ours. `demo-${app}:` was the default project's
+    // prefix before it was keyed by id.
     if (k.includes(`demo-${app}:`) || k.includes(`demo-${app}@`)) localStorage.removeItem(k)
   }
   for (const k of extraKeys) localStorage.removeItem(k)
@@ -62,8 +72,13 @@ let started: Promise<Started> | undefined
  */
 export function startClient(app: App, metadata: SignClientTypes.Metadata): Promise<Started> {
   started ??= (async () => {
-    const { SignClient } = await import('@walletconnect/sign-client')
     const projectId = currentProject(app)
+    if (!projectId) {
+      throw new Error(
+        'NEXT_PUBLIC_PROJECT_ID is not set. Set it in .env.local, or in the Vercel project, then rebuild.'
+      )
+    }
+    const { SignClient } = await import('@walletconnect/sign-client')
     const client = await SignClient.init({
       projectId,
       metadata,

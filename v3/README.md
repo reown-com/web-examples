@@ -36,14 +36,16 @@ The dev Relay screens connections and messages.
 
 ## Configuration
 
-All settings are optional. See `.env.local.example` in each app.
-- **`NEXT_PUBLIC_RELAY_URL`:** a Relay that speaks Sign v3. Defaults to the dev Relay, `https://pool-1.dev-relay.walletconnect.com`; production doesn't speak v3 yet.
-- **`NEXT_PUBLIC_PROJECT_ID`:** the default project, `sign-v3-demo`.
-- **`NEXT_PUBLIC_WALLET_URL`:** dApp only, where "Open Ember Wallet" points. Defaults to `http://localhost:3001`.
+Copy `.env.local.example` to `.env.local` in each app.
+- **`NEXT_PUBLIC_PROJECT_ID`:** required. The project each app starts with, shown as **Default project** in the picker. Without it the app shows "Failed to start".
+- **`NEXT_PUBLIC_RELAY_URL`:** optional. A Relay that speaks Sign v3. Defaults to the dev Relay, `https://pool-1.dev-relay.walletconnect.com`; production doesn't speak v3 yet.
+- **`NEXT_PUBLIC_WALLET_URL`:** optional, dApp only. Where "Open Ember Wallet" points. Defaults to `http://localhost:3001`.
+
+Next.js inlines these values when it builds, so restart `pnpm dev` or rebuild after changing one.
 
 ## Deploying to Vercel
 
-Make one Vercel project per app, with **Root Directory** set to `v3/dapp` or `v3/wallet`. The framework is detected as Next.js. On the dApp, set `NEXT_PUBLIC_WALLET_URL` to the wallet's URL.
+Make one Vercel project per app, with **Root Directory** set to `v3/dapp` or `v3/wallet`. The framework is detected as Next.js. Set `NEXT_PUBLIC_PROJECT_ID` on both projects and, on the dApp, `NEXT_PUBLIC_WALLET_URL` to the wallet's URL. Redeploy after changing either.
 
 ## Updating the vendored client
 
